@@ -56,13 +56,16 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-01-13 12:48:48 -0800 (Wed, 13 Jan 2016) $
-; $LastChangedRevision: 19723 $
+; $LastChangedDate: 2016-02-02 15:34:14 -0800 (Tue, 02 Feb 2016) $
+; $LastChangedRevision: 19879 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
-                      otp_struct = otp_struct, directory = directory, $
-                      fullfile_out = fullfile0, _extra = _extra
+                      otp_struct = otp_struct, $
+                      directory = directory, $
+                      fullfile_out = fullfile0, $
+                      no_compression = no_compression, $
+                      _extra = _extra
 
 ;Keep track of software versioning here
   sw_vsn = fa_esa_current_sw_version()
@@ -134,10 +137,10 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             ['SC_POT', 'FLOAT', 'Spacecraft potential (NUM_DISTS elements)', 'Spacecraft potential'], $
             ['DATA', 'BYTE', 'Raw Counts data with dimensions (96, 64, NUM_DISTS)', 'Raw Counts'], $
             ['EFLUX', 'FLOAT', 'Differential energy flux array with dimensions (96, 64, NUM_DISTS)', 'Energy flux'], $
-            ['PITCH_ANGLE', 'FLOAT', 'Pitch Angle values for each distribution (96, 64, NUM_DISTS); Virtual variable', 'Pitch Angle'], $
-            ['DPITCH_ANGLE', 'FLOAT', 'Angular bin size for each distribution (96, 64, NUM_DISTS); Virtual variable', 'Pitch Angle'], $
-            ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (96, 64, NUM_DISTS); Virtual variable', 'Energy'], $
-            ['DENERGY_FULL', 'FLOAT', 'Energy bin size for each distribution (96, 64, NUM_DISTS); Virtual variable', 'DEnergy'], $
+            ['PITCH_ANGLE', 'FLOAT', 'Pitch Angle values for each distribution (96, 64, NUM_DISTS)', 'Pitch Angle'], $
+;            ['DPITCH_ANGLE', 'FLOAT', 'Angular bin size for each distribution (96, 64, NUM_DISTS); Virtual variable', 'Pitch Angle'], $
+            ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (96, 64, NUM_DISTS)', 'Energy'], $
+            ['DENERGY_FULL', 'FLOAT', 'Energy bin size for each distribution (96, 64, NUM_DISTS)', 'DEnergy'], $
             ['ORBIT_NUMBER', 'FLOAT', 'Orbit number for this file, does not change, so only 2 entries per file', 'Orbit_number'], $
             ['ORBIT_NUMBER_TIME', 'DOUBLE', 'Time array, unix time for orbit number', 'Orbit Number Time'], $
             ['ORBIT_NUMBER_EPOCH', 'CDF_EPOCH', 'CDF Epoch array for orbit number', 'Orbit Number Epoch']]
@@ -217,10 +220,6 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
            End
            'time_delta': dvar = cmn_dat.delta_t
            'time_integ': dvar = cmn_dat.integ_t
-           'pitch_angle': message, /info, 'Variable '+vj+' is Virtual.'
-           'dpitch_angle': message, /info, 'Variable '+vj+' is Virtual.'
-           'energy_full': message, /info, 'Variable '+vj+' is Virtual.'
-           'denergy_full': message, /info, 'Variable '+vj+' is Virtual.'
            'orbit_number': dvar = [cmn_dat.orbit_start, cmn_dat.orbit_end]
            'orbit_number_time': Begin
               dvar = minmax(center_time)
@@ -297,7 +296,8 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
         vatt.units = 'sec'
      Endif Else Begin
         If(strpos(vj, 'time') Ne -1) Then vatt.units = 'sec' $ ;time interval sizes
-        Else If(strpos(vj, 'theta') Ne -1) Then vatt.units = 'degrees' $
+        Else If(strpos(vj, 'theta') Ne -1 Or strpos(vj, 'pitch') Ne -1) Then vatt.units = 'degrees' $
+        Else If(strpos(vj, 'energy') Ne -1) Then vatt.units = 'eV' $
         Else If(vj Eq 'sc_pot') Then vatt.units = 'volts' $
         Else If(vj Eq 'data') Then vatt.units = 'Counts' $
         Else If(vj Eq 'eflux') Then vatt.units = 'eV/sr/sec' ;check this
@@ -314,9 +314,9 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      vatt.lablaxis = rv_vt[3, j]
 
 ;Assign labels and components for vectors
-     If(vj Eq 'data' Or vj Eq 'eflux') Then Begin; Or $
-;        vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
-;        vj Eq 'denergy_full') Then Begin
+     If(vj Eq 'data' Or vj Eq 'eflux' Or $
+        vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
+        vj Eq 'denergy_full') Then Begin
 ;For ISTP compliance, it looks as if the depend's are switched,
 ;probably because we transpose it all in the file
 ;??? Check this ???
@@ -328,30 +328,6 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
  
 ;Time variables are monotonically increasing:
      If(is_tvar) Then vatt.monoton = 'INCREASE' Else vatt.monoton = 'FALSE'
-
-;Add tags for virtual variables
-     If(vj Eq 'pitch_angle') Then Begin
-        str_element, vatt, 'virtual', 'TRUE', /add_replace
-        str_element, vatt, 'funct', 'fa_esa_pa', /add_replace
-        str_element, vatt, 'component_0', 'theta', /add_replace
-        str_element, vatt, 'component_1', 'theta_shift', /add_replace
-        str_element, vatt, 'component_2', 'mode_ind', /add_replace
-     Endif Else If(vj Eq 'dpitch_angle') Then Begin
-        str_element, vatt, 'virtual', 'TRUE', /add_replace
-        str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
-        str_element, vatt, 'component_0', 'dtheta', /add_replace
-        str_element, vatt, 'component_1', 'mode_ind', /add_replace
-     Endif Else If(vj Eq 'energy_full') Then Begin
-        str_element, vatt, 'virtual', 'TRUE', /add_replace
-        str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
-        str_element, vatt, 'component_0', 'energy', /add_replace
-        str_element, vatt, 'component_1', 'mode_ind', /add_replace
-     Endif Else If(vj Eq 'denergy_full') Then Begin
-        str_element, vatt, 'virtual', 'TRUE', /add_replace
-        str_element, vatt, 'funct', 'fa_esa_energy', /add_replace
-        str_element, vatt, 'component_0', 'denergy', /add_replace
-        str_element, vatt, 'component_1', 'mode_ind', /add_replace
-     Endif
 
 ;delete all 'NA' tags
      vatt_tags = tag_names(vatt)
@@ -372,27 +348,17 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             type:0, numattr: -1, numelem: 1, recvary: 1b, $
             numrec:0L, ndimen: 0, d:lonarr(6), dataptr:ptr_new(), $
             attrptr:ptr_new()}
-;Virtual variable setup:
-     If(vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
-        vj Eq 'dpitch_angle' Or vj Eq 'denergy_full') Then Begin
-        vsj.name = vj
-        vsj.datatype = cdf_type
-        vsj.type = dtype
-        vsj.attrptr = ptr_new(vatt)
-        vsj.dataptr = ptr_new()
-     Endif Else Begin
-        vsj.name = vj
-        vsj.datatype = cdf_type
-        vsj.type = dtype
-        vsj.numrec = num_dists
+     vsj.name = vj
+     vsj.datatype = cdf_type
+     vsj.type = dtype
+     vsj.numrec = num_dists
 ;It looks as if you do not include the time variation?
-        ndim = size(dvar, /n_dimen)
-        dims = size(dvar, /dimen)
-        vsj.ndimen = ndim-1
-        If(ndim Gt 1) Then vsj.d[0:ndim-2] = dims[1:*]
-        vsj.dataptr = ptr_new(dvar)
-        vsj.attrptr = ptr_new(vatt)
-     Endelse
+     ndim = size(dvar, /n_dimen)
+     dims = size(dvar, /dimen)
+     vsj.ndimen = ndim-1
+     If(ndim Gt 1) Then vsj.d[0:ndim-2] = dims[1:*]
+     vsj.dataptr = ptr_new(dvar)
+     vsj.attrptr = ptr_new(vatt)
      
 ;Append the variables structure
      If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
@@ -602,7 +568,12 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
   otp_struct.g_attributes.logical_source = 'fa_esa_l2_'+ext
 
 ;save the file -- full database management
-  dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)
+  If(keyword_set(no_compression)) Then Begin
+     dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)
+  Endif Else Begin
+     dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update, $
+                           /set_compression)
+  Endelse
 
   Return
 End

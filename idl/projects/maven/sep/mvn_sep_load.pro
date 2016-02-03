@@ -17,10 +17,10 @@ if keyword_set(ancillary) then begin
   ;sav_files = mvn_pfp_file_retrieve(sav_format,/daily_names,trange=trange,/valid_only,/last_version)
      if ~keyword_set(download_only) then begin 
         cdf2tplot,cdf_files
-        get_data, 'sep-1f_fov_mso', data = FOV_1F
-        get_data, 'sep-1r_fov_mso', data = FOV_1R
-        get_data, 'sep-2f_fov_mso', data = FOV_2F
-        get_data, 'sep-2r_fov_mso', data = FOV_2R
+        get_data, 'sep_1f_fov_mso', data = FOV_1F
+        get_data, 'sep_1r_fov_mso', data = FOV_1R
+        get_data, 'sep_2f_fov_mso', data = FOV_2F
+        get_data, 'sep_2r_fov_mso', data = FOV_2R
 ; translate to spherical polar coordinates
         cart2spc, FOV_1F.y [*, 0],FOV_1F.y [*, 1],FOV_1F.y [*, 2], r, theta_1F, phi_1F
         cart2spc, FOV_1R.y [*, 0],FOV_1R.y [*, 1],FOV_1R.y [*, 2], r, theta_1R, phi_1R
@@ -81,16 +81,16 @@ if keyword_set(ancillary) then begin
         options, 'MSO_phi','labels',['1F','1R','2F','2R']
         options, 'MSO_theta','labels',['1F','1R','2F','2R']
         options,'MSO_*','labflag',1
-        store_data, 'Mars_in_FOV', data = ['sep-1f_frac_fov_mars', 'sep-1r_frac_fov_mars',$
-                                           'sep-2f_frac_fov_mars', 'sep-2r_frac_fov_mars']
+        store_data, 'Mars_in_FOV', data = ['sep_1f_frac_fov_mars', 'sep_1r_frac_fov_mars',$
+                                           'sep_2f_frac_fov_mars', 'sep_2r_frac_fov_mars']
         options, 'Mars_in_FOV', 'colors', [1, 2, 4, 6]
         options, 'Mars_in_FOV', 'labels',['1F','1R','2F','2R']
         options, 'Mars_in_FOV', 'labflag', 1
         options, 'Mars_in_FOV', 'ytitle', 'Fraction !c FOV Mars'
-        store_data, 'Nadir_angles', Data = ['sep-1f_fov_nadir_angle', $             
-                                            'sep-1r_fov_nadir_angle', $    
-                                            'sep-2f_fov_nadir_angle', $             
-                                            'sep-2r_fov_nadir_angle']
+        store_data, 'Nadir_angles', Data = ['sep_1f_fov_nadir_angle', $             
+                                            'sep_1r_fov_nadir_angle', $    
+                                            'sep_2f_fov_nadir_angle', $             
+                                            'sep_2r_fov_nadir_angle']
         options, 'Nadir_angles', 'colors', [1, 2, 4, 6]
         options, 'Nadir_angles', 'ytitle', 'Angle from !c nadir'
         options, 'Nadir_angles', 'labels',['1F','1R','2F','2R']

@@ -55,6 +55,9 @@
 ;data, eflux and orbit are filled here, all else is input
 ;   DATA            BYTE      Array[96, 64, 59832]
 ;   EFLUX           FLOAT     Array[96, 64, 59832]
+;   ENERGY_FULL     FLOAT     Array[96, 64, 59832]
+;   DENERGY_FULL    FLOAT     Array[96, 64, 59832]
+;   PITCH_ANGLE     FLOAT     Array[96, 64, 59832]
 ;   ORBIT_START     LONG
 ;   ORBIT_END       LONG
 ;;
@@ -62,9 +65,10 @@
 ; Dillon Wong, 2009
 ; added eflux variable, 2015-08-21, jmm
 ; added orbit stat and end tags, 2015-08-24, jmm
+; added energy_full, denergy_full, pitch_angle arrays 2016-02-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-17 19:52:53 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19402 $
+; $LastChangedDate: 2016-02-02 14:11:07 -0800 (Tue, 02 Feb 2016) $
+; $LastChangedRevision: 19876 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2create.pro $
 ;-
 pro fa_esa_l2create,type=type, $
@@ -215,6 +219,14 @@ pro fa_esa_l2create,type=type, $
      all_dat.dtheta[xxx] = -1.0e+31
   Endif
  Return
+
+  energy_full = fa_esa_energy(all_dat.energy, all_dat.mode_ind)
+  denergy_full = fa_esa_energy(all_dat.denergy, all_dat.mode_ind)
+  pitch_angle = fa_esa_pa(all_dat.theta, all_dat.theta_shift, all_dat.mode_ind)
+
+  str_element, all_dat, 'energy_full', energy_full, /add_replace
+  str_element, all_dat, 'denergy_full', denergy_full, /add_replace
+  str_element, all_dat, 'pitch_angle', pitch_angle, /add_replace
 
 end
 

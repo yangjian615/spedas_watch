@@ -25,6 +25,240 @@ end
 
 
 
+pro spp_swp_ptp_stream_read,buffer,info=info  ;,time=time
+
+  bsize= n_elements(buffer) * (size(/n_dimen,buffer) ne 0)
+  time = info.time_received
+  
+  if n_elements( *info.exec_proc_ptr ) ne 0 then begin 
+     ;; Handle remainder of buffer from previous call               
+     remainder =  *info.exec_proc_ptr
+     dprint,dlevel=4,'Using remainder buffer from previous call'
+     dprint,dlevel=3,/phelp, remainder
+     undefine , *info.exec_proc_ptr
+     if bsize gt 0 then  spp_ptp_stream_read, [remainder,buffer],info=info
+     return
+  endif
+
+  
+  ;if debug() then dprint,/phelp,time_string(time),buffer,dlevel=3
+  p=0L
+  while p lt bsize do begin
+     if p gt bsize-3 then begin
+        dprint,dlevel=1,'Warning PTP stream size can not be read ',p,bsize
+        ptp_size = 17           ; (minimum value possible) Dummy value that will trigger end of buffer
+     endif else  ptp_size = swap_endian( uint(buffer,p) ,/swap_if_little_endian)
+     if ptp_size lt 17 then begin
+        dprint,dlevel=1,'PTP packet size is too small!'
+        dprint,dlevel=1,p,ptp_size,buffer,/phelp
+        break
+     endif
+     if p+ptp_size gt bsize then begin ; Buffer doesn't have complete pkt.                                            
+        dprint,dlevel=3,'Buffer has incomplete packet. Saving ',n_elements(buffer)-p,' bytes for next call.'
+       ;dprint,dlevel=1,p,ptp_size,buffer,/phelp
+        *info.exec_proc_ptr = buffer[p:*]                   
+      ;; Store remainder of buffer to be used on the next call to this procedure
+        return
+        break
+     endif
+     spp_swp_ptp_pkt_handler,buffer[p:p+ptp_size-1],time=time
+     p += ptp_size
+  endwhile
+  if p ne bsize then dprint,dlevel=1,'Buffer incomplete',p,ptp_size,bsize
+  return
+end
+
+
+
+
+
+
+pro spp_swp_msg_pkt_handler,buffer,time=time
+  source = 0b
+  spare = 0b
+  ptp_scid = 0u
+  path =  0u
+  ptp_size = 0u
+  utime = time
+  ptp_header ={ ptp_time:utime, $
+                ptp_scid: 0u, $
+                ptp_source:source, $
+                ptp_spare:spare, $
+                ptp_path:path, $
+                ptp_size:ptp_size }
+  spp_ccsds_pkt_handler,buffer,ptp_header = ptp_header
+  return
+end
+
+
+pro spp_swp_msg_stream_read,buffer, info=info  
+
+  bsize= n_elements(buffer)
+  time = info.time_received
+
+  ;;Handle remainder of buffer from previous call
+  if n_elements( *info.exec_proc_ptr ) ne 0 then begin   
+     remainder =  *info.exec_proc_ptr
+     if debug(3) then begin
+        dprint,dlevel=2,'Using remainder buffer from previous call'
+        dprint,dlevel=2,/phelp, remainder
+        hexprint,remainder[0:31]
+     endif
+     undefine , *info.exec_proc_ptr
+     if bsize gt 0 then  spp_msg_stream_read, [remainder,buffer],info=info
+     return
+  endif
+  
+  if 0 && debug(3) then dprint,/phelp,time_string(time),buffer,dlevel=3
+  
+  ptr=0L
+  while ptr lt bsize do begin
+     if ptr gt bsize-6 then begin
+        dprint,dlevel=0,'SWEMulator MSG stream size error ',ptr,bsize
+        return
+     endif
+     msg_header = swap_endian( uint(buffer,ptr,3) ,/swap_if_little_endian)
+     sync  = msg_header[0]
+     code  = msg_header[1]
+     psize = msg_header[2]*2
+
+     if 0 then begin
+        dprint,ptr,psize,bsize
+        hexprint,msg_header
+        ;hexprint,buffer,nbytes=32
+     endif
+     
+     if sync ne 'a829'x then begin
+        dprint,format='(i,z,z,i,a)',ptr,sync,code,psize,dlevel=0,    ' Sync not recognized'
+        ;;hexprint,buffer
+        return
+     endif
+
+     if psize lt 12 then begin
+        dprint,format="('Bad MSG packet size',i,' in file: ',a,' at file position: ',i)",psize,'???',0
+        break
+     endif
+
+
+     if ptr+6+psize gt bsize then begin
+        dprint,dlevel=3,'Buffer has incomplete packet. Saving ',n_elements(buffer)-ptr,' bytes for next call.'
+        *info.exec_proc_ptr = buffer[ptr:*] 
+        ;; Store remainder of buffer to be used on the next call to
+        ;; this procedure
+        return
+        break
+     endif
+     
+     if debug(3) then begin
+        dprint,format='(i,i,z,z,i)',ptr,bsize,sync,code,psize,dlevel=3
+        ;hexprint,buffer[ptr+6:ptr+6+psize-1] ;,nbytes=32
+        hexprint,buffer[ptr:ptr+6+psize-1] ;,nbytes=32
+     endif
+     
+     case code of
+        'c1'x :begin
+           time_status = spp_swemulator_time_status(buffer[ptr:ptr+6+psize-1])
+           store_data,/append,'swemulator_',data=time_status,tagnames='*'
+        end
+        'c2'x : dprint,dlevel=2,"Can't deal with C2 messages now'
+        'c3'x :begin
+           spp_swp_msg_pkt_handler,buffer[ptr+6:ptr+6+psize-1],time=time
+        end
+        else:  dprint,dlevel=1,'Unknown code'
+     endcase
+     ptr += ( psize+6)
+  endwhile
+  if ptr ne bsize then dprint,'MSG buffer size error?'
+  return
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+pro spp_swp_msg_file_read,files
+  
+;  common spp_msg_file_read, time_status                                                                               
+  t0 = systime(1)
+  spp_apid_data,/clear,rt_flag=0
+  
+  for i=0,n_elements(files)-1 do begin
+     file = files[i]
+     file_open,'r',file,unit=lun,dlevel=4
+     sizebuf = bytarr(6)
+     fi = file_info(file)
+     dprint,dlevel=1,'Reading file: '+file+' LUN:'+strtrim(lun,2)+'   Size: '+strtrim(fi.size,2)
+     while ~eof(lun) do begin
+        point_lun,-lun,fp
+        readu,lun,sizebuf
+        msg_header = swap_endian( uint(sizebuf,0,3) ,/swap_if_little_endian)
+        sync  = msg_header[0]
+        code  = msg_header[1]
+        psize = msg_header[2]*2
+        if sync ne 'a829'x then begin
+           hexprint,msg_header
+           dprint,sync,code,psize,fp   ,  ' Sync not recognized'
+           point_lun,lun, fp+2
+           continue
+        endif
+        
+        if psize lt 12 then begin
+           dprint,format="('Bad MSG packet size',i,' in file: ',a,' at file position: ',i)",psize,file,fp
+           hexprint,msg_header
+        ;continue                                                                                                      
+        endif
+        if psize gt 2L^13 then begin
+           dprint,format="('Large MSG packet size',i,' in file: ',a,' at file position: ',i)",psize,file,fp
+           hexprint,msg_header
+        endif
+        
+        buffer = bytarr(psize)
+        readu,lun,buffer
+        
+        ; Read only a single message and pass it on             
+        spp_msg_stream_read,[sizebuf,buffer] ,time=systime(1) 
+
+        if 0 then begin
+           w= where(buffer ne 0,nw)
+           if code eq 'c1'x then begin
+              time_status = spp_swemulator_time_status(buffer)
+              dprint,dlevel=3,time_status
+              ;hexprint,buffer
+              ;v = swap_endian( uint(buffer,0,12) ,/swap_if_little_endian)
+              ;dprint,v
+              continue
+           endif
+      
+      ;;hexprint,buffer
+      ;;,time=systime(1)   ;,size=ptp_size
+           spp_msg_pkt_handler,[sizebuf,buffer]   
+           if nw lt 20000 then begin
+              dprint,dlevel=1,code,psize,nw,fp
+           endif
+        endif
+     endwhile
+     free_lun,lun
+  endfor
+  dt = systime(1)-t0
+  dprint,format='("Finished loading in ",f0.1," seconds")',dt
+  spp_apid_data,/finish,rt_flag=1
+end
+
+
+
+
+
+
+
 
 function spp_swp_log_decomp,bdata,ctype,compress=compress
 

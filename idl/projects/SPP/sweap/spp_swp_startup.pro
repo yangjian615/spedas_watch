@@ -159,7 +159,7 @@ pro spp_swp_startup, spanai = spanai,$
   ;;############################################
   spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',       tfields='*',     save=0,rt_tags='*_?',   rt_flag=1
   spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='unwrap_',   tfields='UNWRAP',save=0,rt_tags='unwrap',rt_flag=1
-  spp_apid_data,'7c0'x,routine='spp_log_message_decom', tname='log_',      tfields='MSG',   save=1,rt_tags='MSG',   rt_flag=1
+  spp_apid_data,'7c0'x,routine='spp_log_msg_decom', tname='log_',      tfields='MSG',   save=1,rt_tags='MSG',   rt_flag=1
   spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',   tname='spp_manip_',tfields='*',     save=1,rt_tags='MANIP', rt_flag=1
 
 
@@ -174,6 +174,6 @@ pro spp_swp_startup, spanai = spanai,$
 
   ;;------------------------------
   ;; Connect to GSEOS
-  ;spp_init_realtime
+  spp_init_realtime
 
 end
