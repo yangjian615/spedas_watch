@@ -5,13 +5,12 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-01-15 09:29:26 -0800 (Fri, 15 Jan 2016) $
-; $LastChangedRevision: 19747 $
+; $LastChangedDate: 2016-02-03 14:42:31 -0800 (Wed, 03 Feb 2016) $
+; $LastChangedRevision: 19895 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_hpca_crib_qlplots.pro $
 ;-
 
 ; initialize and define parameters
-;@mms_load_hpca
 probes = ['1', '2', '3', '4']
 species = ['H+', 'He+', 'He++', 'O+']
 tplotvar_species = ['hplus', 'heplus', 'heplusplus', 'oplus']
@@ -21,14 +20,14 @@ pid = probes[0]      ; set probe to mms1
 sid = species[0]     ; set species to H+
 tsid = tplotvar_species[0]    
 
-trange = ['2015-08-15', '2015-08-16']
-timespan, '2015-08-15', 1
+;timespan, '2015-08-15', 1
+timespan, '2015-11-13', 1
 ;trange = ['2015-11-02', '2015-11-03']
 tplotvar = 'mms'+pid + '_hpca_' + tsid + '_RF_corrected'
 
 iw = 2
-width = 900
-height = 1200
+width = 800
+height = 900
 
 ; options for send_plots_to:
 ;   ps: postscript files
@@ -49,6 +48,9 @@ endif
 
 ; load mms survey HPCA data
 mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='srvy', suffix='_srvy'
+
+; load QL FGM data, currently only for ephemeris data 
+mms_load_fgm, instrument='dfg', trange=trange, probes=pid, level='ql', /no_attitude_data
 
 ; sum over nodes
 mms_hpca_calc_anodes, anode=[5, 6], probe=pid, suffix='_srvy'
@@ -71,16 +73,16 @@ store_data, tplotvar+'_brst_srvy_13_14', data=[tplotvar+'_brst_anodes_13_14', tp
 ;options, tplotvar+'_brst_srvy_0_15', 'labels'
 
 ; get ephemeris data for x-axis annotation
-mms_load_state, probes=pid, trange = trange, /ephemeris
-eph_j2000 = 'mms'+pid+'_defeph_pos'
-eph_gei = 'mms'+pid+'_defeph_pos_gei'
-eph_gse = 'mms'+pid+'_defeph_pos_gse'
-eph_gsm = 'mms'+pid+'_defeph_pos_gsm'
+;mms_load_state, probes=pid, trange = trange, /ephemeris
+;eph_j2000 = 'mms'+pid+'_defeph_pos'
+;eph_gei = 'mms'+pid+'_defeph_pos_gei'
+;eph_gse = 'mms'+pid+'_defeph_pos_gse'
+eph_gsm = 'mms'+pid+'_ql_pos_gsm'
 
 ; convert from J2000 to gsm coordinates
-cotrans, eph_j2000, eph_gei, /j20002gei
-cotrans, eph_gei, eph_gse, /gei2gse
-cotrans, eph_gse, eph_gsm, /gse2gsm
+;cotrans, eph_j2000, eph_gei, /j20002gei
+;cotrans, eph_gei, eph_gse, /gei2gse
+;cotrans, eph_gse, eph_gsm, /gse2gsm
 
 ; convert km to re
 calc,'"'+eph_gsm+'_re" = "'+eph_gsm+'"/6378.'
@@ -89,15 +91,16 @@ calc,'"'+eph_gsm+'_re" = "'+eph_gsm+'"/6378.'
 split_vec, eph_gsm+'_re'
 
 ; set the label to show along the bottom of the tplot
-options, eph_gsm+'_re_x',ytitle='X-GSM (Re)'
-options, eph_gsm+'_re_y',ytitle='Y-GSM (Re)'
-options, eph_gsm+'_re_z',ytitle='Z-GSM (Re)'
-position_vars = [eph_gsm+'_re_z', eph_gsm+'_re_y', eph_gsm+'_re_x']
+options, eph_gsm+'_re_0',ytitle='X-GSM (Re)'
+options, eph_gsm+'_re_1',ytitle='Y-GSM (Re)'
+options, eph_gsm+'_re_2',ytitle='Z-GSM (Re)'
+options, eph_gsm+'_re_3',ytitle='R (Re)'
+position_vars = [eph_gsm+'_re_0', eph_gsm+'_re_1', eph_gsm+'_re_2', eph_gsm+'_re_3']
 
 ; create a tplot variable with flags for burst and survey data
 ;mode_var=mms_hpca_mode(tplotvar+'_brst', tplotvar+'_srvy')
 ; use bss routine to create tplot variables for fast, burst, status, and/or FOM
-spd_mms_load_bss, trange=trange, /include_labels
+spd_mms_load_bss, trange=trange, /include_labels, datatype=['fast', 'burst']
 
 ; set up some plotting parameters
 tplot_options, 'xmargin', [20, 15]

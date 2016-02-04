@@ -4,6 +4,7 @@ function ksem_spc_met_to_unixtime,met
   epoch = 978307200  ; long(time_double('2001-1-1/00:00'))
   ;  epoch =  1262304000   ; long(time_double('2010-1-1/0:00'))  ; Correct SWEM use
   unixtime =  met +  epoch
+ ; dprint,dlevel=4,time_string(unixtime),met
   return,unixtime
 end
 
@@ -412,13 +413,14 @@ pro ksem_tplot_init
   tplot_options,'no_interp',1
   tplot_options,'wshow',0
   tplot_options,'lazy_ytitle',1
-  options,'ksem_noise_DDATA',spec=1,panel_size=3,yrange=[0,80],zrange=[0,100]
-  options,'ksem_science_DATA',spec=1,panel_size=7
-  ylim,'ksem_science_DATA',-1,256,0
-  zlim,'ksem_science_DATA',.8,200,1
+  options,'ksem?_noise_DDATA',spec=1,panel_size=3,yrange=[0,80],zrange=[0,100],constant=findgen(8)*10+5
+  options,'ksem?_science_DATA',spec=1,panel_size=7
+  ylim,'ksem?_science_DATA',-1,256,0
+  zlim,'ksem?_science_DATA',.8,200,1
   options,'*FLAGS',tplot_routine='bitplot'
-  ylim,'ksem_hkp_RATES',.8,1e5 ,1
-  tplot,'ksem_hkp_MON ksem_hkp_RATES ksem_hkp_MADDR ksem_hkp_FTUO_FLAGS ksem_science_DATA ksem_noise_DDATA ksem_noise_BASELINE ksem_noise_SIGMA'
+  ylim,'ksem?_hkp_RATES',.8,1e5 ,1
+  options,'ksem?_hkp_RATES',psym=-1
+  tplot,'ksem?_hkp_MON ksem?_hkp_RATES ksem?_hkp_MADDR ksem?_hkp_FTUO_FLAGS ksem?_science_DATA ksem?_noise_DDATA ksem?_noise_BASELINE ksem?_noise_SIGMA'
 end
 
 
@@ -426,10 +428,17 @@ pro ksem_apid_data_init,save=save,rt_flag=rt_flag,reset=reset
 
   if keyword_set(reset) then ksem_apid_data,/reset
   if n_elements(rt_flag) eq 0 then   rt_flag=1
-  ksem_apid_data,'36a'x ,routine='ksem_noise_decom',tname='ksem_noise_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ksem_apid_data,'36a'x ,routine='ksem_noise_decom',tname='ksem1_noise_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ksem_apid_data,'360'x ,routine='ksem_science_decom',tname='ksem1_science_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ksem_apid_data,'36e'x ,routine='ksem_hkp_decom',tname='ksem1_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
 
-  ksem_apid_data,'360'x ,routine='ksem_science_decom',tname='ksem_science_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-  ksem_apid_data,'36e'x ,routine='ksem_hkp_decom',tname='ksem_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ksem_apid_data,'37a'x ,routine='ksem_noise_decom',tname='ksem2_noise_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ksem_apid_data,'370'x ,routine='ksem_science_decom',tname='ksem2_science_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ksem_apid_data,'37e'x ,routine='ksem_hkp_decom',tname='ksem2_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+
+  ksem_apid_data,'38a'x ,routine='ksem_noise_decom',tname='ksem4_noise_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ksem_apid_data,'380'x ,routine='ksem_science_decom',tname='ksem4_science_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+  ksem_apid_data,'38e'x ,routine='ksem_hkp_decom',tname='ksem4_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
 
   ksem_apid_data,'7c0'x,routine='ksem_log_message_decom',tname='log_',tfields='MSG',save=save,rt_tags='MSG',rt_flag=1
   ksem_apid_data,'7c1'x,routine='ksem_power_supply_decom',tname='HV_',rt_tags='*_?',rt_flag=1,tfields='*'
@@ -454,7 +463,13 @@ pro ksem_ccsds_pkt_handler,buffer,ptp_header=ptp_header
     return
   endif
 
-  ;  ccsds.time = ptp_header.ptp_time   ; remove this line when the time gets fixed.
+  bad_time_flag = ccsds.time lt 1451606400
+  ;bad_time_flag = 1    ; Set to 1 if the MISG is working incorrectly
+  ;bad_time_flag = 0    ; Set to 0 if the MISG is working correctly
+  if bad_time_flag then begin     ; set to 1 to use MISG time
+    dprint,dlevel=2,'Bad time detected. defaulting to MISG time',dwait=20
+    ccsds.time = ptp_header.ptp_time  
+  endif
 
   if 1 then begin
     ksem_apid_data,ccsds.apid,apdata=apdat,/increment
@@ -615,19 +630,16 @@ end
 
 
 pro ksem_recorders
-  common ksem_crib_com, recorder_base1, recorder_base2,exec_base
-  exec,exec_base,exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
+  exec,exec_text = ['tplot,verbose=0,trange=systime(1)+[-1,.05]*300','timebar,systime(1)']
 
   ;host = 'ABIAD-SW'
   ;host = 'localhost'
-  host = '128.32.98.101'  ;  room 160 Silver
+  ;host = '128.32.98.101'  ;  room 160 Silver
+  ;host = '163.180.171.55'  ; 
   ;host = '128.32.13.37'   ;  room 133 addition
-  ;  recorder,recorder_base1,title='GSEOS PTP room 320',port=2024,host='ABIAD-SW',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  ;  recorder,recorder_base2,title='GSEOS PTP 133 addition',port=2024,host='128.32.13.37',exec_proc='spp_ptp_stream_read',destination='spp_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  recorder,recorder_base2,title='KSEM room 160',port=4040,host='128.32.98.101' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  printdat,recorder_base,filename,exec_base,/value
+  ;recorder,title='KSEM @ SSL-160',port=4040,host='128.32.98.101' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  recorder,title='KSEM @ KHU',port=4040,host='163.180.171.55' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
 end
-
 
 
 

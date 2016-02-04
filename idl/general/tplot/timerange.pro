@@ -14,9 +14,9 @@
 ;REPLACES:  "get_timespan"
 ;
 ;CREATED BY:	Davin Larson
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-02-02 16:56:39 -0800 (Sun, 02 Feb 2014) $
-; $LastChangedRevision: 14127 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2016-02-03 17:03:41 -0800 (Wed, 03 Feb 2016) $
+; $LastChangedRevision: 19898 $
 ; $URL: svn+ssh:$
 ;
 ;-

@@ -25,9 +25,9 @@ End
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-12-01 12:08:36 -0800 (Tue, 01 Dec 2015) $
-; $LastChangedRevision: 19506 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2016-02-03 15:31:18 -0800 (Wed, 03 Feb 2016) $
+; $LastChangedRevision: 19896 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -62,6 +62,14 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
         'init':begin
            print, 'Problem with initialization'
            goto, skip_db
+        end
+        'ephemeris_l0':begin
+           print, 'Problem with SPICE'
+           goto, skip_ephemeris_l0
+        end
+        'ephemeris_l2':begin
+           print, 'Problem with SPICE'
+           goto, skip_ephemeris_l2
         end
         '2A':begin
            print, 'Problem in '+load_position
@@ -232,11 +240,14 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
 ;Added dead_time_load, 2015-03-03, jmm
 ;Add mag load, ephemeris_load, 2015-03-15, jmm
      mvn_sta_mag_load
-     mvn_sta_ephemeris_load
      mvn_sta_qf14_load
 ;added mvn_sta_sc_bins_load, 2015-10-25, jmm
      mk = mvn_spice_kernels(/all,/load,trange=timerange())
      If(is_struct(mvn_c8_dat)) Then mvn_sta_sc_bins_load
+;ephemeris might crash, don't kill the process, jmm, 2016-02-03
+     load_position = 'ephemeris_l2'
+     mvn_sta_ephemeris_load
+skip_ephemeris_l2:
   Endif Else Begin
      mvn_sta_l0_load, files = filex
 ;Only call ephemeris_load if the date is more than 5 days ago
@@ -244,9 +255,12 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      ttest = systime(/sec)-time_double(date)
      If(ttest Gt 10.0*86400.0d0) Then Begin
         mvn_sta_mag_load
-        mvn_sta_ephemeris_load
         mk = mvn_spice_kernels(/all,/load,trange=timerange())
         If(is_struct(mvn_c8_dat)) Then mvn_sta_sc_bins_load
+;ephemeris might crash, don't kill the process, jmm, 2016-02-03
+        load_position = 'ephemeris_l0'
+        mvn_sta_ephemeris_load
+skip_ephemeris_l0:
      Endif
   Endelse
 ;If yyy is set, we are replicating some app id's

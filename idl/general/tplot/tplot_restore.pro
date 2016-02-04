@@ -25,6 +25,10 @@
 ;						  text.                   21-may-2008, cg
 ;                       Removed additional output text - Use dprint,debug=3  to restore text.   Nov 2008
 ;
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2016-02-03 17:03:41 -0800 (Wed, 03 Feb 2016) $
+; $LastChangedRevision: 19898 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_restore.pro $
 ;-
 pro tplot_restore,filenames=filenames,all=all,append=append,sort=sort,$
 	get_tvars=get_tvars,verbose=verbose, restored_varnames=restored_varnames
@@ -37,7 +41,8 @@ if size(/type,filenames) ne 7 then $
   filenames = 'saved.tplot'
 n = n_elements(filenames)
 restored_varnames = ''
-for i=0,n-1 do begin
+for i=0L, n[0] - 1L do begin
+;for i=0,n-1 do begin
   fi = file_info(filenames[i])
   if fi.exists eq 0 then begin
     dprint,dlevel=1,'File '+filenames[i]+' Does not exist! Skipping.'
@@ -60,7 +65,8 @@ for i=0,n-1 do begin
   if (n_elements(tplot_vars) eq 0) or keyword_set(get_tvars) then $
   	if keyword_set(tv) then tplot_vars = tv
   if keyword_set(dq) then begin
-  	for j=0,n_elements(dq.name)-1 do begin
+  	for j=0L, n_elements(dq.name) - 1L do begin
+;  	for j=0,n_elements(dq.name)-1 do begin
   		thisdq = dq[j]
   		dprint,dlevel=3, 'The tplot variable '+thisdq.name+' is being restored.'
         restored_varnames = [restored_varnames, thisdq.name]
@@ -75,12 +81,38 @@ for i=0,n-1 do begin
   					oldv = ptr_new()
   					str_element,olddata,'v',oldv
   					if ptr_valid(oldv) then begin
-  						if ndimen(*oldv) eq 1 then $
-  							newv = ptr_new(*oldv) else $
-  							newv = ptr_new([*oldv,*(*thisdq.dh).v])
-  						ptr_free,(*thisdq.dh).v
+  						;;  V tag is present
+  						if ndimen(*oldv) eq 1 then begin
+  							;;  1D --> no need to append
+  							newv = ptr_new(*oldv)
+  						endif else begin
+  							;;  2D --> need to append (if present)
+  							if (struct_value((*thisdq.dh),'v')) then begin
+  								;;  present --> append
+  								newv = ptr_new([*oldv,*(*thisdq.dh).v])
+  							endif else begin
+  								;;  not present --> replicate old to make dimensions correct???
+  								szdox = size(*olddata.x,/dimensions)
+  								szdnx = size(*newx,/dimensions)
+  								szdo  = size(*oldv,/dimensions)
+  								dumb  = make_array(szdnx[0],szdo[1],TYPE=size(*oldv,/type))
+  								avgo  = total(*oldv,1,/nan)/total(finite(*oldv),1,/nan)
+  								dumb[0L:(szdox[0] - 1L),*] = *oldv
+  								for kk=0L, szdo[1] - 1L do dumb[szdox[0]:(szdnx[0] - 1L),kk] = avgo[kk]
+  								newv = ptr_new(dumb)
+  							endelse
+  						endelse
+;  						if ndimen(*oldv) eq 1 then $
+;  							newv = ptr_new(*oldv) else $
+;  							newv = ptr_new([*oldv,*(*thisdq.dh).v])
+  						if (struct_value((*thisdq.dh),'v')) then ptr_free,(*thisdq.dh).v
+;  						ptr_free,(*thisdq.dh).v
   						newdata={x: newx, y: newy, v: newv}
-  					endif else newdata={x: newx, y: newy}
+;  					endif else newdata={x: newx, y: newy}
+  					endif else begin
+  						;;  V tag is not present --> Only X and Y tags should be present
+  						newdata={x: newx, y: newy}
+  					endelse
   					olddata = 0
   				endif else begin
   					newdata = olddata

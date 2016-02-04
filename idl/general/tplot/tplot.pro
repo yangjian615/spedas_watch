@@ -90,9 +90,9 @@
 ;Still have questions:
 ;   Send e-mail to:  tplot@ssl.berkeley.edu    someone might answer!
 ;
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-01-06 23:52:45 -0800 (Wed, 06 Jan 2016) $
-; $LastChangedRevision: 19682 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2016-02-03 17:03:41 -0800 (Wed, 03 Feb 2016) $
+; $LastChangedRevision: 19898 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot.pro $
 ;-
 

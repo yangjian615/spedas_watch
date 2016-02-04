@@ -17,9 +17,8 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-15 16:04:49 -0800 (Fri, 15 Jan 2016) $
-;$LastChangedRevision: 19750 $
+;$LastChangedDate: 2016-02-03 12:28:09 -0800 (Wed, 03 Feb 2016) $
+;$LastChangedRevision: 19886 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 
@@ -27,12 +26,13 @@ pro mms_part_products, $
                      in_tvarname, $ ;the tplot variable name for the MMS being processed
                      energy=energy,$ ;energy range
                      trange=trange,$
-                     
+                     probe=probe,$ ;needed for some field aligned transforms
+                                          
                      phi=phi_in,$ ;angle limist 2-element array [min,max], in degrees, spacecraft spin plane
                      theta=theta,$ ;angle limits 2-element array [min,max], in degrees, normal to spacecraft spin plane
                      pitch=pitch,$ ;angle limits 2-element array [min,max], in degrees, magnetic field pitch angle
                      gyro=gyro_in,$ ;angle limits 2-element array [min,max], in degrees, gyrophase  
-                     
+   
                      outputs=outputs,$ ;list of requested output types (simpler than the angle=angle & /energy setup from before
                      
                      units=units,$ ;scalar unit conversion for data 
@@ -88,6 +88,7 @@ pro mms_part_products, $
   if undefined(suffix) then begin
     suffix = ''
   endif
+  
   
   ;units_lc = 'f (s!U3!N/cm!U6!N)'
   
@@ -212,7 +213,7 @@ pro mms_part_products, $
   
   ;create rotation matrix to field aligned coordinates if needed
   if in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy') then begin
-    mms_pgs_make_fac,times,mag_name,pos_name,probe_lc,fac_output=fac_matrix,fac_type=fac_type_lc,display_object=display_object
+    mms_pgs_make_fac,times,mag_name,pos_name,fac_output=fac_matrix,fac_type=fac_type_lc,display_object=display_object,probe=probe
     ;remove FAC outputs if there was an error, return if no outputs remain
     if undefined(fac_matrix) then begin
       outputs_lc = ssl_set_complement(['pa','gyro','fac_energy'],outputs_lc)

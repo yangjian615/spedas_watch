@@ -6,9 +6,9 @@
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate pitch angle and gyrophase distributions
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-15 11:37:57 -0800 (Fri, 15 Jan 2016) $
-;$LastChangedRevision: 19748 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-02-03 12:28:09 -0800 (Wed, 03 Feb 2016) $
+;$LastChangedRevision: 19886 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_part_products_crib.pro $
 ;
 ;-
@@ -50,7 +50,7 @@
   ;convert particle data to 3D structures
   name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
  
-  mms_part_products,name,mag_name=bname,pos_name=pos_name,trange=trange,outputs=['phi','theta','pa','gyro','energy']
+  mms_part_products,name,mag_name=bname,pos_name=pos_name,trange=trange,outputs=['phi','theta','pa','gyro','energy'],probe=probe
   tplot,'mms'+probe+'_d'+species+'s_brstSkyMap_dist'+['energy','theta','phi','pa','gyro']
   tlimit,['2015-09-19/09:08:14', '2015-09-19/09:08:15'] 
 
@@ -99,7 +99,7 @@
   name =  'mms'+probe+'_hpca_'+species+'_vel_dist_fn'
  
   mms_part_products, name, mag_name=bname, pos_name=pos_name, trange=trange,$
-                    outputs=['phi','theta','pa','gyro','energy']
+                    outputs=['phi','theta','pa','gyro','energy'],probe=probe
 
   tplot,name+['energy','theta','phi','pa','gyro']
 

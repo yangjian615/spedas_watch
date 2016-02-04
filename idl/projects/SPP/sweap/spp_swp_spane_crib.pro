@@ -52,7 +52,7 @@ pro spane_threshold_scan_phd,tranges=trange,lim=lim
   xlim,lim,0,550
   ylim,lim,10,5000,1
   options,lim,psym=4
-  scat_plot,swap_interp=swap_interp,'spp_spane_hkp_ACC_DAC','spp_spane_spec_CNTS2',trange=trange,lim=lim,xvalue=dac,yvalue=cnts,ydimen= 4;,color=4
+  scat_plot,swap_interp=swap_interp,'spp_spane_hkp_ACC_DAC','spp_spane_p1_CNTS',trange=trange,lim=lim,xvalue=dac,yvalue=cnts,ydimen= 4;,color=4
   range = [80,500]
   xp = dgen(8,range=range)
   yp = xp*0+500

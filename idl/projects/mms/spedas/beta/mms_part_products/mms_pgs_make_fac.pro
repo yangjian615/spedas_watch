@@ -1,6 +1,6 @@
 
 ;so we don't have one long routine of doom, all transforms should be separate helper functions
-pro mms_pgs_xgse,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
+pro mms_pgs_xgse,mag_temp,pos_temp,x_basis,y_basis,z_basis,probe=probe
 
   compile_opt idl2,hidden
 
@@ -28,7 +28,7 @@ pro mms_pgs_xgse,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
 end
 
 ;so we don't have one long routine of doom, all transforms should be separate helper functions
-pro mms_pgs_phigeo,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
+pro mms_pgs_phigeo,mag_temp,pos_temp,x_basis,y_basis,z_basis,probe=probe
 
   compile_opt idl2,hidden
 
@@ -58,7 +58,7 @@ pro mms_pgs_phigeo,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
 end
 
 ;so we don't have one long routine of doom, all transforms should be separate helper functions
-pro mms_pgs_mphigeo,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
+pro mms_pgs_mphigeo,mag_temp,pos_temp,x_basis,y_basis,z_basis,probe=probe
   
   compile_opt idl2,hidden
   
@@ -107,17 +107,17 @@ end
 ;  If an error occurs fac_output will be undfined on return
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
+;$LastChangedDate: 2016-02-03 12:28:09 -0800 (Wed, 03 Feb 2016) $
+;$LastChangedRevision: 19886 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_make_fac.pro $
 ;-
 pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
                   mag_tvar_in,$ ;tplot variable containing the mag data
                   pos_tvar_in,$ ;position variable containing the position data
-                  probe, $ ;string designating the probe being transformed
                   fac_output=fac_output,$ ; output time series field aligned coordinate transform matrix
                   fac_type=fac_type, $ ;field aligned coordinate transform type (only mphigeo, atm)
-                  display_object=display_object ;(optional) dprint display object
+                  display_object=display_object,$ ;(optional) dprint display object
+                  probe=probe ;string designating the probe being transformed
 
     compile_opt idl2, hidden
 
@@ -168,14 +168,14 @@ pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
     ;mphigeo
     ;--------------------------------------------------------------------
     
-    mms_pgs_mphigeo,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
+    mms_pgs_mphigeo,mag_temp,pos_temp,x_basis,y_basis,z_basis,probe=probe
      
   endif else if fac_type eq 'phigeo' then begin
     ;--------------------------------------------------------------------
     ;phigeo
     ;--------------------------------------------------------------------
     
-    mms_pgs_phigeo,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
+    mms_pgs_phigeo,mag_temp,pos_temp,x_basis,y_basis,z_basis,probe=probe
     
 
   endif else if fac_type eq 'xgse' then begin
@@ -185,7 +185,7 @@ pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
     ;--------------------------------------------------------------------
     
     ;position isn't necessary for this one, but uniformity of interface and requirements trumps here 
-    mms_pgs_xgse,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
+    mms_pgs_xgse,mag_temp,pos_temp,x_basis,y_basis,z_basis,probe=probe
     
   endif 
   

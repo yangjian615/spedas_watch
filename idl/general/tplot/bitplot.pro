@@ -20,9 +20,9 @@
 ;    NUMBITS: the number of bits that will be plot
 ;    SYMSIZE: set the size of the symbol
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-05-23 12:02:40 -0700 (Thu, 23 May 2013) $
-; $LastChangedRevision: 12402 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2016-02-03 17:03:41 -0800 (Wed, 03 Feb 2016) $
+; $LastChangedRevision: 19898 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/bitplot.pro $
 ;-
 pro bitplot,x,y,psyms=psyms,overplot=overplot,di=di,limits=lim,data=data,numbits=nb,symsize=symsize

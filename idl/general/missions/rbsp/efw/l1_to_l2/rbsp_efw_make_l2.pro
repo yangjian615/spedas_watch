@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-02-01 08:27:47 -0800 (Mon, 01 Feb 2016) $
-; $LastChangedRevision: 19868 $
+; $LastChangedDate: 2016-02-03 14:38:10 -0800 (Wed, 03 Feb 2016) $
+; $LastChangedRevision: 19893 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -335,7 +335,13 @@ pro rbsp_efw_make_l2,sc,date,$
                                 ;Spinfit with corotation field
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit',data=tmp
         if is_struct(tmp) then begin
-           if type eq 'spinfit' then tmp.y[*,0] = -1.0E31
+           if type eq 'spinfit' then begin
+              tmp.y[*,0] = -1.0E31
+              eclipse_tmp = where(flag_arr[*,1] eq 1)
+              if eclipse_tmp[0] ne -1 then tmp.y[eclipse_tmp,1] = -1.0E31
+              if eclipse_tmp[0] ne -1 then tmp.y[eclipse_tmp,2] = -1.0E31
+           endif
+
            spinfit_vxb = tmp.y
            tmp = 0.
         endif
@@ -920,6 +926,8 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'epoch',epoch
      cdf_varput,cdfid,'epoch_e',epoch_e
 
+     cdf_varrename,cdfid,'flags_all','efw_qual'
+
 
 ;spinfit resolution
      cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
@@ -932,7 +940,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
      cdf_varput,cdfid,'orbit_num',orbit_num.y
-     cdf_varput,cdfid,'Lstar',lstar
+;     cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
      
@@ -944,6 +952,10 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
+     cdf_vardelete,cdfid,'vsvy_vavg_lowcadence'
+     cdf_vardelete,cdfid,'density_v12_hires'
+     cdf_vardelete,cdfid,'density_v34_hires'
+     cdf_vardelete,cdfid,'Lstar'
      cdf_vardelete,cdfid,'efield_spinfit_mgse'
      cdf_vardelete,cdfid,'VxB_mgse'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
@@ -994,6 +1006,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
      cdf_varput,cdfid,'epoch',epoch
      cdf_varput,cdfid,'epoch_v',epoch_v
+     cdf_varrename,cdfid,'flags_all','efw_qual'
 
 ;spinfit resolution
      cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
@@ -1005,7 +1018,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
      cdf_varput,cdfid,'orbit_num',orbit_num.y
-     cdf_varput,cdfid,'Lstar',lstar
+;     cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
 
@@ -1017,6 +1030,10 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
+     cdf_vardelete,cdfid,'vsvy_vavg_lowcadence'
+     cdf_vardelete,cdfid,'density_v12_hires'
+     cdf_vardelete,cdfid,'density_v34_hires'
+     cdf_vardelete,cdfid,'Lstar'
      cdf_vardelete,cdfid,'efield_spinfit_mgse'
      cdf_vardelete,cdfid,'VxB_mgse'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
