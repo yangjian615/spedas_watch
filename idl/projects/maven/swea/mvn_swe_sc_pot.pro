@@ -69,20 +69,24 @@
 ;   BADVAL:    If the algorithm cannot estimate the potential, then set it
 ;              to this value.  Units = volts.  Default = NaN.
 ;
+;   ANGCORR:   Angular distribution correction based on interpolated 3d data
+;              to emphasize the returning photoelectrons and improve 
+;              the edge detection (added by Yuki Harada).
+;
 ;OUTPUTS:
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-01-12 11:50:43 -0800 (Tue, 12 Jan 2016) $
-; $LastChangedRevision: 19713 $
+; $LastChangedBy: haraday $
+; $LastChangedDate: 2016-02-04 09:54:57 -0800 (Thu, 04 Feb 2016) $
+; $LastChangedRevision: 19900 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
 pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
                     pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
-                    mask_sc=mask_sc, setval=setval, badval=badval
+                    mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr
 
   compile_opt idl2
   
@@ -171,6 +175,29 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
 
   endelse
   
+;  Angular distribution correction based on interpolated 3d data
+;  to emphasize the returning photoelectrons.
+;  This section was added by Yuki Harada.
+  if keyword_set(angcorr) and (size(mvn_swe_3d,/type) eq 8) then begin
+     ww = finite(mvn_swe_3d.data) * 1.
+     wsky = where( mvn_swe_3d.phi gt 112.5 and mvn_swe_3d.phi lt 292.5 $
+                   and mvn_swe_3d.theta gt -45 and mvn_swe_3d.theta lt 45 , comp=cwsky )
+     ww[cwsky] = 0.
+     skyflux = total(mvn_swe_3d.data*mvn_swe_3d.domega*ww,2,/nan) $
+               /total(mvn_swe_3d.domega*ww,2,/nan)
+
+     ww = finite(mvn_swe_3d.data) * 1.
+     aveflux = total(mvn_swe_3d.data*mvn_swe_3d.domega*ww,2,/nan) $
+               /total(mvn_swe_3d.domega*ww,2,/nan)
+
+     fr = f * !values.f_nan
+     for j=0,63 do fr[j,*] = interp(reform(skyflux[j,*]/aveflux[j,*]),mvn_swe_3d.time,t) < 1.2
+;  A maximum factor of 1.2 is set to avoid too much emphasis on lowest
+;  energy photoelectrons
+     f = f * fr
+  endif
+
+
   indx = where(e[*,0] lt 60., n_e)
   e = e[indx,*]
   f = alog10(f[indx,*])

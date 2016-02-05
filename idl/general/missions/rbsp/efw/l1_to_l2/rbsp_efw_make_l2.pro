@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-02-03 14:38:10 -0800 (Wed, 03 Feb 2016) $
-; $LastChangedRevision: 19893 $
+; $LastChangedDate: 2016-02-04 09:23:28 -0800 (Thu, 04 Feb 2016) $
+; $LastChangedRevision: 19899 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -931,7 +931,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
 ;spinfit resolution
      cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
-     cdf_varput,cdfid,'flags_all',transpose(flag_arr)
+     cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
 
      cdf_varput,cdfid,'mlt',transpose(mlt.y)
      cdf_varput,cdfid,'mlat',transpose(mlat.y)

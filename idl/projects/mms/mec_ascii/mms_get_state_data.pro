@@ -13,8 +13,8 @@
 ;   predeph - predicted ephemeris data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:31:13 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19594 $
+;$LastChangedDate: 2016-02-04 14:58:12 -0800 (Thu, 04 Feb 2016) $
+;$LastChangedRevision: 19902 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_get_state_data.pro $
 ;-
 pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames, $
@@ -35,7 +35,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
     start_time_str = time_string(start_time, tformat='YYYY-MM-DD')
     end_time_str = time_string(end_time+add_day, tformat= 'YYYY-MM-DD')
 
-    file_dir = local_data_dir + 'mms' + probe + '/state/' + level + '/'
+    ;file_dir = local_data_dir + 'mms' + probe + '/state/' + level + '/'
 
     idx=where(datatypes EQ 'pos' OR datatypes EQ 'vel',ephcnt)
     if ephcnt gt 0 then filetype = ['eph']
@@ -45,6 +45,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
     endif
 
     for i = 0, n_elements(filetype)-1 do begin
+        file_dir = local_data_dir + 'ancillary/' + 'mms' + probe + '/' + level + filetype[i] + '/'
 
         product = level + filetype[i]
         ;keep last iteration's file list from being appended to
