@@ -9,8 +9,8 @@
 ;
 ;VERSION:
 ;  $LastChangedBy: aaflores $
-;  $LastChangedDate: 2013-08-28 10:30:47 -0700 (Wed, 28 Aug 2013) $
-;  $LastChangedRevision: 12904 $
+;  $LastChangedDate: 2016-02-05 14:02:49 -0800 (Fri, 05 Feb 2016) $
+;  $LastChangedRevision: 19904 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_sst_psif.pro $
 ;-
 
@@ -34,7 +34,7 @@ dptr = data.sif_064_data
 dim = size(/dimension,*dptr)
 dist = thm_sst_dist3d_16x64(/ion,probe=probe)
 
-dist.project_name = 'THEMIS '+strupcase(probe)
+dist.project_name = 'THEMIS'
 dist.spacecraft = strlowcase(probe)
 dist.data_name = 'SST Ion Full distribution'
 dist.apid = '45a'x

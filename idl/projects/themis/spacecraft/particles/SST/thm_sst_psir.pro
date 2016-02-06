@@ -1,5 +1,5 @@
 ;+
-;  $Id: thm_sst_psir.pro 12904 2013-08-28 17:30:47Z aaflores $
+;  $Id: thm_sst_psir.pro 19904 2016-02-05 22:02:49Z aaflores $
 ;-
 function thm_sst_psir,time,index=index,probe=probe,times=times,$
                       err_msg=err_msg, msg_suppress=msg_suppress,$ 
@@ -55,7 +55,7 @@ endcase
 
 ;dim = size(/dimension,*dptr)
 ;dist = dst.d3d
-dist.project_name = 'THEMIS '+strupcase(probe)
+dist.project_name = 'THEMIS'
 dist.spacecraft = strlowcase(probe)
 dist.data_name  = 'SST Ion Reduced Distribution'
 dist.apid = '45b'x

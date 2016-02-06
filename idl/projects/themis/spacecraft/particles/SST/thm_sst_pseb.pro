@@ -35,7 +35,7 @@ dptr = data.seb_064_data
 dim = size(/dimension,*dptr)
 dist = thm_sst_dist3d_16x64(/elec,probe=probe)
 
-dist.project_name = 'THEMIS '+strupcase(probe)
+dist.project_name = 'THEMIS'
 dist.spacecraft = strlowcase(probe)
 dist.data_name = 'SST Electron Full Burst distribution'
 dist.apid = '45f'x

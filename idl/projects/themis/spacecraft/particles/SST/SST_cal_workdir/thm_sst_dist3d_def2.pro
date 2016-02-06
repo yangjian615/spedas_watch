@@ -8,8 +8,8 @@
 ;  the structure should be considered incomplete. 
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2012-11-01 16:46:42 -0700 (Thu, 01 Nov 2012) $
-;$LastChangedRevision: 11152 $
+;$LastChangedDate: 2016-02-05 14:02:49 -0800 (Fri, 05 Feb 2016) $
+;$LastChangedRevision: 19904 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/SST_cal_workdir/thm_sst_dist3d_def2.pro $
 ;-
 
@@ -39,7 +39,7 @@ dat.magf = !values.f_nan
 dat.eclipse_dphi = !values.d_nan
 ;dat.sc_pot = !values.f_nan
 dat.index = -1
-dat.project_name = 'THEMIS '+strupcase(prb)
+dat.project_name = 'THEMIS'
 dat.data_name = strmid(dformat,4,4)
 dat.spacecraft = prb
 dat.units_name = 'Compressed Counts'

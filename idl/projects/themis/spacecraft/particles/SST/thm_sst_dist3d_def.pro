@@ -21,7 +21,7 @@ endcase
 dat.magf = !values.f_nan
 ;dat.sc_pot = !values.f_nan
 dat.index = -1
-dat.project_name = 'THEMIS '+strupcase(prb)
+dat.project_name = 'THEMIS'
 dat.data_name = strmid(dformat,4,4)
 dat.spacecraft = prb
 dat.units_name = 'Compressed Counts'
