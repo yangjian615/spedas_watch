@@ -20,9 +20,9 @@
 ;PLEASE DO NOT USE this routine within general "LOAD" routines using the LOAD keyword. "LOAD" routines should assume that SPICE kernels are already loaded.
 ; 
 ;Author: Davin Larson  - January 2014
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-11-06 11:51:22 -0800 (Fri, 06 Nov 2015) $
-; $LastChangedRevision: 19288 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2016-02-08 17:23:37 -0800 (Mon, 08 Feb 2016) $
+; $LastChangedRevision: 19912 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear  $
@@ -102,7 +102,8 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
           if (tr[1] gt time_double('2015-01-01')) && (tr[0] le time_double('2015-04-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_150101_150401_v?.bsp',_extra=source,no_update=no_update)
           if (tr[1] gt time_double('2015-04-01')) && (tr[0] le time_double('2015-07-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_150401_150701_v?.bsp',_extra=source,no_update=no_update)
           if (tr[1] gt time_double('2015-07-01')) && (tr[0] le time_double('2015-10-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_150701_151001_v?.bsp',_extra=source,no_update=no_update)
-          if (tr[1] gt time_double('2015-07-01')) && (tr[0] le time_double('2035-04-01'))  then begin
+          if (tr[1] gt time_double('2015-10-01')) && (tr[0] le time_double('2016-01-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_151001_160101_v?.bsp',_extra=source,no_update=no_update)
+          if (tr[1] gt time_double('2016-01-01')) && (tr[0] le time_double('2035-04-01'))  then begin
             if keyword_set(reconstruct) then begin
               append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source,no_update=0)
             endif else begin

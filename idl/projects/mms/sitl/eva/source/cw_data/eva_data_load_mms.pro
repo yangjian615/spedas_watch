@@ -216,13 +216,13 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
           mms_sitl_get_dsp, sc = sc, datatype = 'bpsd', level = 'l2', data_rate='fast'
           tn = tnames(sc+'_dsp_bpsd_*',cnt)
           if (strlen(tn[0]) gt 0) and (cnt gt 1) then begin
-            options,sc+'_dsp_bpsd_omni', spec=1,zlog=1,ytitle=sc+'!CDSP!Cfast!Cbpsd_omni',ysubtitle='[Hz]',ztitle='[(nT)!U2!N/Hz]'
+            options,sc+'_dsp_bpsd_omni_fast_l2', spec=1,zlog=1,ytitle=sc+'!CDSP!Cfast!Cbpsd_omni',ysubtitle='[Hz]',ztitle='[(nT)!U2!N/Hz]'
             ylim, tn, 32, 4000, 1
             for m=1,3 do begin
               strm = strtrim(string(m),2)
-              options,sc+'_dsp_bpsd_scm'+strm,spec=1,zlog=1,ytitle=sc+'!CDSP!Cfast!Cbpsd_scm'+strm,$
+              options,sc+'_dsp_bpsd_scm'+strm+'_fast_l2',spec=1,zlog=1,ytitle=sc+'!CDSP!Cfast!Cbpsd_scm'+strm,$
                 ysubtitle='[Hz]',ztitle='[(nT)!U2!N/Hz]'
-              ylim, sc+'_dsp_bpsd_scm'+strm, 32, 4000, 1
+              ylim, sc+'_dsp_bpsd_scm'+strm+'_fast_l2', 32, 4000, 1
             endfor
             answer = 'Yes'
           endif

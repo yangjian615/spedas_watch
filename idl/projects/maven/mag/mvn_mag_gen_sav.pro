@@ -29,7 +29,7 @@ pro mvn_mag_gen_sav,trange=trange0,$
   ;; Level 1 data
 
   STS_fileformat =  'maven/data/sci/mag/l1/YYYY/MM/'+$
-                    'mvn_mag_ql_YYYYdDOY'+coord+'_YYYYMMDD_v??_r??.sts' 
+                    'mvn_mag_ql_YYYY*DOY'+coord+'_YYYYMMDD_v??_r??.sts' 
   sav_fileformat =  'maven/data/sci/mag/l1/sav/$RES/YYYY/MM/'+$
                     'mvn_mag_l1_'+coord+'_$RES_YYYYMMDD.sav'
   

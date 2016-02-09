@@ -10,9 +10,9 @@
 ; Purpose:  Loads MAVEN mag data into tplot variables
 ;
 ; Author: Davin Larson and Roberto Livi
-; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2015-07-22 14:59:48 -0700 (Wed, 22 Jul 2015) $
-; $LastChangedRevision: 18210 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-02-08 10:11:24 -0800 (Mon, 08 Feb 2016) $
+; $LastChangedRevision: 19909 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load.pro $
 
 ;-
@@ -362,7 +362,7 @@ pro mvn_mag_load,format,$
      ;; Level 2: CDF
      'L2_CDF': begin
         pathname = 'maven/data/sci/mag/'+$
-                   'l2_cdf/YYYY/MM/mvn_mag_ql_YYYYdDOYpl_YYYYMMDD_v??_r??.cdf'
+                   'l2_cdf/YYYY/MM/mvn_mag_ql_YYYYDOYpl_YYYYMMDD_v??_r??.cdf'
         files = mvn_pfp_file_retrieve($
                 pathname,$
                 /daily,$
@@ -659,7 +659,7 @@ pro mvn_mag_load,format,$
         print, '**********************************'
         print, ' '
         pathname = 'maven/data/sci/mag/'+$
-                   'l1_sav/YYYY/MM/mvn_mag_ql_YYYYdDOYpl_YYYYMMDD_v??_r??.sav'
+                   'l1_sav/YYYY/MM/mvn_mag_ql_YYYY*DOYpl_YYYYMMDD_v??_r??.sav'
         files = mvn_pfp_file_retrieve($
                 pathname,$
                 /daily,$
@@ -708,8 +708,8 @@ pro mvn_mag_load,format,$
         print, 'This data may not be used for publication.'
         print, '**********************************'
         print, ' '
-        pathname = 'maven/data/sci/mag/'+$
-                   'l1/YYYY/MM/mvn_mag_ql_YYYYdDOYpl_YYYYMMDD_v??_r??.sts'
+        pathname = 'maven/data/sci/mag/'+$ ;jmm, 2016-02-08
+                   'l1/YYYY/MM/mvn_mag_ql_YYYY*DOYpl_YYYYMMDD_v??_r??.sts'
         files = mvn_pfp_file_retrieve($
                 pathname,$
                 /daily,$

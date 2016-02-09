@@ -11,7 +11,7 @@ endif else trange0 = timerange(trange0)
 
 ;filename example:  http://sprg.ssl.berkeley.edu/data/maven/data/sci/mag/l1/2014/10/mvn_mag_ql_2014d290pl_20141017_v00_r01.sts
 
-STS_fileformat =  'maven/data/sci/mag/l1/YYYY/MM/mvn_mag_ql_YYYYdDOYpl_YYYYMMDD_v??_r??.sts' 
+STS_fileformat =  'maven/data/sci/mag/l1/YYYY/MM/mvn_mag_ql_YYYY*DOYpl_YYYYMMDD_v??_r??.sts'  ;jmm, 2016-02-08
 sav_fileformat =  'maven/data/sci/mag/l1/sav/$RES/YYYY/MM/mvn_mag_l1_pl_$RES_YYYYMMDD.sav'
 ;   pathformat =  'maven/data/sci/mag/l1/sav/$RES/YYYY/MM/mvn_mag_l1_pl_$RES_YYYYMMDD.sav'
 
