@@ -11,8 +11,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-19 08:43:08 -0800 (Tue, 19 Jan 2016) $
-;$LastChangedRevision: 19755 $
+;$LastChangedDate: 2016-02-09 09:02:03 -0800 (Tue, 09 Feb 2016) $
+;$LastChangedRevision: 19913 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_spectra.pro $
 ;-
 pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rate = data_rate, datatype = datatype
@@ -38,7 +38,8 @@ pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rat
 
     for species_idx = 0, n_elements(species_arr)-1 do begin
         species = species_arr[species_idx]
-        spec_regex = level eq 'ql' ? prefix + '_?'+species+'?_*nergySpectr_*' : prefix + '_fpi_'+species+'EnergySpectr_*'
+        spec_regex = level eq 'ql' ? prefix + '_?'+species+'?_*nergySpectr_[mp]?' : prefix + '_fpi_'+species+'EnergySpectr_[mp]?'
+        spec_regex = level eq 'l2' ? prefix + '_?'+species+'?_*nergyspectr_[mp]?_'+data_rate : spec_regex
         spectra_where = strmatch(tplotnames, spec_regex)
 
         if n_elements(spectra_where) ne 0 then begin
@@ -47,27 +48,31 @@ pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rat
               get_data, tplotnames[var_idx], data=fpi_d, dlimits=dl
               if is_struct(fpi_d) then begin
                 ; set some metadata before saving
-                options, tplotnames[var_idx], ysubtitle='[eV]'
+              ;  options, tplotnames[var_idx], ysubtitle='[eV]'
     
                 ; get the direction from the variable name
                 spec_pieces = strsplit(tplotnames[var_idx], '_', /extract)
-                if level ne 'ql' then begin
+                if level eq 'l2' then begin
+                ; assumption here: name of the variable is:
+                ; mms3_des_energyspectr_my_fast
+                  part_direction = (spec_pieces)[n_elements(spec_pieces)-2]
+                endif else if level eq 'sitl' then begin
                   ; assumption here: name of the variable is:
                   ; mms3_fpi_iEnergySpectr_pZ
                   part_direction = (spec_pieces)[n_elements(spec_pieces)-1]
-                endif else begin
+                endif else if level eq 'ql' then begin
                   ; assumption here: name of the variable is:
                   ; mms3_dis_energySpectr_pZ
                   part_direction = (spec_pieces)[n_elements(spec_pieces)-1]
-                endelse
+                endif
                 species_str = species eq 'e' ? 'electron' : 'ion'
     
                 if data_rate ne 'brst' then fpi_energies = mms_fpi_energies(species) $
                 else fpi_energies = mms_fpi_burst_energies(species, probe)
     
-                options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+species_str+'!C'+part_direction
-                options, tplotnames[var_idx], ysubtitle='[eV]'
-                options, tplotnames[var_idx], ztitle='Counts'
+              ;  options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+species_str+'!C'+part_direction
+              ;  options, tplotnames[var_idx], ysubtitle='[eV]'
+              ;  options, tplotnames[var_idx], ztitle='Counts'
                 ylim, tplotnames[var_idx], 0, 0, 1
                 zlim, tplotnames[var_idx], 0, 0, 1
     

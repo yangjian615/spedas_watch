@@ -10,18 +10,17 @@
 ; mode = 0, 1 (or 2) the mode index used to get the correct value of
 ;               energy to apply for each time interval
 ;KEYWORDS:
-; fillval = the fill value, the default is !values.f_nan
 ;HISTORY:
 ; 2015-08-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-02-02 14:00:09 -0800 (Tue, 02 Feb 2016) $
-; $LastChangedRevision: 19875 $
+; $LastChangedDate: 2016-02-09 13:24:52 -0800 (Tue, 09 Feb 2016) $
+; $LastChangedRevision: 19916 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_energy.pro $
 ;-
-Function fa_esa_energy, energy, mode_ind, fillval = fillval
+Function fa_esa_energy, energy, mode_ind
 
   ntimes = n_elements(mode_ind)
-  If(keyword_set(fillval)) Then fv = fillval Else fv = !values.f_nan
+  fv = !values.f_nan
   energy_out = fltarr(96, 64, ntimes) & energy_out[*] = fv
   mode0 = where(mode_ind Eq 0, nmode0)
   If(nmode0 Gt 0) Then Begin

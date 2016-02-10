@@ -81,7 +81,7 @@ pro stel3d, $
 
 compile_opt idl2
   @stel3d_common
-  cd, file_dirname(routine_filepath())
+;  cd, file_dirname(routine_filepath())
   ptr = ptr_valid(COUNT=ptr_count)
   obj = obj_valid(COUNT=obj_count)
   ;
@@ -98,7 +98,7 @@ compile_opt idl2
 
   ; CHECK INPUT FILE FOR 3D DISTRIBUTIONS. 
   if not keyword_set(infile) then begin
-    cd, file_dirname(routine_filepath())
+;    cd, file_dirname(routine_filepath())
     if ~n_elements(infile) then infile = dialog_pickfile(FILTER='19971212_lep_psd_8532.txt')
     if infile eq '' then begin
       print, 'please specify input file'

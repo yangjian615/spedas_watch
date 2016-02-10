@@ -89,13 +89,22 @@ function stel_import_lep::read_lep, infile, DATA=data, TRANGE=trange
   ;
   ;Todo: need to modify  
   ; - - - - - - - - - - - - - - - - - - - - 
-  num_elems = 32*16*7 
+;  num_elems = 32*16*7 
   tmp = ''
+  tmp2 = ''
   data = hash()
   
   openR, lun, infile, /GET_LUN
   while ~eof(lun) do begin
-    readf, lun, tmp
+    ;process the last line read from the previous iteration's 
+    ;internal loop before reading the next line
+    ;(in case there is no blank line separating distributions in the file)
+    if tmp2 eq '' then begin
+      readf, lun, tmp
+    endif else begin
+      tmp = tmp2
+    endelse
+    tmp2 = '' ;clear last line
     if tmp eq '' then continue
     pos = strpos(tmp, ' ') 
     if (pos[0] ne 0) then begin
@@ -106,24 +115,22 @@ function stel_import_lep::read_lep, infile, DATA=data, TRANGE=trange
         if ob_time gt end_time then break
       endif
       print, 'reading: [', tmp, '] data ....'
-      energy = fltarr(num_elems)
-      v = intarr(num_elems)
-      azim = fltarr(num_elems)
-      elev = fltarr(num_elems)
-      count = fltarr(num_elems)
-      psd = dblarr(num_elems)
-      
-      tmp2 =''
-      for i=0, num_elems-1 do begin
+      ;ensure variables from previous iteration are clear
+      undefine, energy, v, azim, elev, count, psd
+      ;read lines as data until they no longer conform
+      ;(assumes data is line with at least 6 space separated values)
+      while ~eof(lun) do begin
         readf, lun, tmp2
         tmp2_arr = strsplit(tmp2, /EXTRACT)
-        energy[i] = tmp2_arr[0]
-        v[i] = tmp2_arr[1]
-        azim[i] = tmp2_arr[2]
-        elev[i] = tmp2_arr[3]
-        count[i] = tmp2_arr[4]
-        psd[i] = tmp2_arr[5]
-      endfor
+        ;exit loop when data ends
+        if tmp2_arr[0] eq '' || n_elements(tmp2_arr) lt 6 then break
+        energy = array_concat(float(tmp2_arr[0]),energy,/no_copy)
+        v = array_concat(fix(tmp2_arr[1]),v,/no_copy) ;not sure why velocity is stored as int
+        azim = array_concat(float(tmp2_arr[2]),azim,/no_copy)
+        elev = array_concat(float(tmp2_arr[3]),elev,/no_copy)
+        count = array_concat(float(tmp2_arr[4]),count,/no_copy)
+        psd = array_concat(double(tmp2_arr[5]),psd,/no_copy)
+      endwhile
       data[tmp] = hash('energy', energy, 'v', v, 'azim', azim, 'elev', elev, 'count', count, 'psd', psd)
       ;print, 'complete: ', tmp
     endif
@@ -187,7 +194,14 @@ end
 function stel_import_lep::getVector, cTime, VEL=vel
 @stel3d_common
 
-   tplot_restore, FILE=in_slice
+   ;verify presense of file
+   infile = file_which(in_slice, /INCLUDE_CURRENT_DIR)
+   if infile eq '' then begin
+     message, /info, 'cannot determine supplementary vector:' + $
+                      keyword_set(vel) ? 'velocity':'B field'
+     return, !null
+   endif
+   tplot_restore, FILE=infile
    if cTime eq !null then begin
     tmpkeys=(self.stel_import_lep)['keys']
     cTime=tmpkeys[0]

@@ -146,8 +146,8 @@ function show_et_diagram, XSIZE=xsize, YSIZE=ysize
 
   loadct, 39, /SILENT
 
-  path = routine_filepath()
-  cd, file_dirname(path)
+;  path = routine_filepath()
+;  cd, file_dirname(path)
   infile = file_which(in_slice, /INCLUDE_CURRENT_DIR)
   if infile eq '' then begin
     message, '"gtl971212.tplot" file is necessary'

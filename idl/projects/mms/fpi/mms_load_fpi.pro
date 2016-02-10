@@ -56,13 +56,13 @@
 ;        
 ;     for more information
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19843 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-02-09 17:58:37 -0800 (Tue, 09 Feb 2016) $
+;$LastChangedRevision: 19924 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
-pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
+pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, $
@@ -72,7 +72,7 @@ pro mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version
 
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
+    if undefined(trange_in) then trange = timerange() else trange = timerange(trange_in)
     if undefined(probes) then probes = ['3'] ; default to MMS 3
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
     if undefined(level) then level = 'sitl' 

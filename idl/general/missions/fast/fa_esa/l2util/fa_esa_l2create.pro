@@ -58,6 +58,7 @@
 ;   ENERGY_FULL     FLOAT     Array[96, 64, 59832]
 ;   DENERGY_FULL    FLOAT     Array[96, 64, 59832]
 ;   PITCH_ANGLE     FLOAT     Array[96, 64, 59832]
+;   DOMEGA          FLOAT     Array[96, 64, 59832]
 ;   ORBIT_START     LONG
 ;   ORBIT_END       LONG
 ;;
@@ -67,8 +68,8 @@
 ; added orbit stat and end tags, 2015-08-24, jmm
 ; added energy_full, denergy_full, pitch_angle arrays 2016-02-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-02-02 14:11:07 -0800 (Tue, 02 Feb 2016) $
-; $LastChangedRevision: 19876 $
+; $LastChangedDate: 2016-02-09 13:31:35 -0800 (Tue, 09 Feb 2016) $
+; $LastChangedRevision: 19918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2create.pro $
 ;-
 pro fa_esa_l2create,type=type, $
@@ -210,23 +211,42 @@ pro fa_esa_l2create,type=type, $
 ;mode 2 has 96 energies and 32 angles
 ;
 ;Or something like that
-;Set to fill any point with energy = 0.0
+;Set to NaN any point with energy = 0.0
+;This will be needed to process energy_full, etc.. properly
   xxx = where(all_dat.energy Eq 0, nxxx)
+  If(nxxx Gt 0) Then Begin
+     all_dat.energy[xxx] = !values.f_nan
+     all_dat.denergy[xxx] = !values.f_nan
+     all_dat.theta[xxx] = !values.f_nan
+     all_dat.dtheta[xxx] = !values.f_nan
+  Endif
+
+  energy_full = fa_esa_energy(all_dat.energy, all_dat.mode_ind)
+  denergy_full = fa_esa_energy(all_dat.denergy, all_dat.mode_ind)
+  pitch_angle = fa_esa_pa(all_dat.theta, all_dat.theta_shift, all_dat.mode_ind)
+  domega = fa_esa_domega(all_dat.theta, all_dat.dtheta, all_dat.mode_ind)
+
+;reset fill values here
+;This will be needed to process energy_full, etc.. properly
+  xxx = where(~finite(all_dat.energy), nxxx)
   If(nxxx Gt 0) Then Begin
      all_dat.energy[xxx] = -1.0e+31
      all_dat.denergy[xxx] = -1.0e+31
      all_dat.theta[xxx] = -1.0e+31
      all_dat.dtheta[xxx] = -1.0e+31
   Endif
- Return
-
-  energy_full = fa_esa_energy(all_dat.energy, all_dat.mode_ind)
-  denergy_full = fa_esa_energy(all_dat.denergy, all_dat.mode_ind)
-  pitch_angle = fa_esa_pa(all_dat.theta, all_dat.theta_shift, all_dat.mode_ind)
+  yyy = where(~finite(energy_full), nyyy)
+  If(nyyy Gt 0) Then Begin
+     energy_full[yyy] = -1.0e+31
+     denergy_full[yyy] = -1.0e+31
+     pitch_angle[yyy] = -1.0e+31
+     domega[yyy] = -1.0e+31
+  Endif
 
   str_element, all_dat, 'energy_full', energy_full, /add_replace
   str_element, all_dat, 'denergy_full', denergy_full, /add_replace
   str_element, all_dat, 'pitch_angle', pitch_angle, /add_replace
+  str_element, all_dat, 'domega', domega, /add_replace
 
 end
 
