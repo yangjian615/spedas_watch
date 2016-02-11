@@ -10,15 +10,16 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-19 08:43:08 -0800 (Tue, 19 Jan 2016) $
-;$LastChangedRevision: 19755 $
+;$LastChangedDate: 2016-02-10 13:56:47 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19931 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_omni.pro $
 ;-
-pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatype = datatype
+pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatype = datatype, data_rate = data_rate
     if undefined(datatype) then begin
       dprint, dlevel = 0, 'Error, must provide a datatype to mms_load_fpi_calc_omni'
       return
     endif
+    if undefined(data_rate) then data_rate=''
     if undefined(autoscale) then autoscale = 1
     if undefined(level) then level = 'sitl'
     
@@ -33,13 +34,20 @@ pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatyp
         obs_str_format = level eq 'sitl' ? '_fpi_'+species[sidx] : '_d'+species[sidx]+'s_'
         obsstr='mms'+STRING(probe,FORMAT='(I1)')+obs_str_format
 
+        ; include the data rate as the suffix for L2 data
+        dtype_suffix = level eq 'l2' ? '_'+data_rate : ''
+        
+        ; L2 variable names are all lower case
+        plusminus_vars = obsstr+spec_str_format+['_pX', '_mX', '_pY', '_mY', '_pZ', '_mZ']+dtype_suffix
+        plusminus_vars = level eq 'l2' ? strlowcase(plusminus_vars) : plusminus_vars
+        
         ; get the energy spectra from the tplot variables
-        get_data, obsstr+spec_str_format+'_pX', data=pX, dlimits=dl
-        get_data, obsstr+spec_str_format+'_mX', data=mX, dlimits=dl
-        get_data, obsstr+spec_str_format+'_pY', data=pY, dlimits=dl
-        get_data, obsstr+spec_str_format+'_mY', data=mY, dlimits=dl
-        get_data, obsstr+spec_str_format+'_pZ', data=pZ, dlimits=dl
-        get_data, obsstr+spec_str_format+'_mZ', data=mZ, dlimits=dl
+        get_data, plusminus_vars[0], data=pX, dlimits=dl
+        get_data, plusminus_vars[1], data=mX, dlimits=dl
+        get_data, plusminus_vars[2], data=pY, dlimits=dl
+        get_data, plusminus_vars[3], data=mY, dlimits=dl
+        get_data, plusminus_vars[4], data=pZ, dlimits=dl
+        get_data, plusminus_vars[5], data=mZ, dlimits=dl
 
         ; skip avg/sum when we can't find the tplot names
         if ~is_struct(pX) || ~is_struct(mX) || ~is_struct(pY) || ~is_struct(mY) || ~is_struct(pZ) || ~is_struct(mZ) then continue

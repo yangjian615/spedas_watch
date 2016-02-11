@@ -11,8 +11,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-09 09:02:03 -0800 (Tue, 09 Feb 2016) $
-;$LastChangedRevision: 19913 $
+;$LastChangedDate: 2016-02-10 13:52:17 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19930 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_spectra.pro $
 ;-
 pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rate = data_rate, datatype = datatype
@@ -68,7 +68,7 @@ pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rat
                 species_str = species eq 'e' ? 'electron' : 'ion'
     
                 if data_rate ne 'brst' then fpi_energies = mms_fpi_energies(species) $
-                else fpi_energies = mms_fpi_burst_energies(species, probe)
+                else fpi_energies = mms_fpi_burst_energies(species, probe, level = level)
     
               ;  options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+species_str+'!C'+part_direction
               ;  options, tplotnames[var_idx], ysubtitle='[eV]'

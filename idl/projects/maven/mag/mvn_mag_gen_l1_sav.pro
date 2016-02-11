@@ -1,5 +1,5 @@
 ;+
-;This procedure will creat IDL save files from STS files.  It is only intended to be run from a batch job
+;This procedure will create IDL save files from STS files.  It is only intended to be run from a batch job
 ;-
 
 pro mvn_mag_gen_l1_sav,trange=trange0,load=load,summary=summary,init=init,timestamp=timestamp,verbose=verbose
@@ -11,7 +11,7 @@ endif else trange0 = timerange(trange0)
 
 ;filename example:  http://sprg.ssl.berkeley.edu/data/maven/data/sci/mag/l1/2014/10/mvn_mag_ql_2014d290pl_20141017_v00_r01.sts
 
-STS_fileformat =  'maven/data/sci/mag/l1/YYYY/MM/mvn_mag_ql_YYYY*DOYpl_YYYYMMDD_v??_r??.sts'  ;jmm, 2016-02-08
+STS_fileformat =  'maven/data/sci/mag/l1/YYYY/MM/mvn_mag_ql_YYYY*DOYpl_YYYYMMDD_v??_r??.sts'   ;jmm, 2016-02-08
 sav_fileformat =  'maven/data/sci/mag/l1/sav/$RES/YYYY/MM/mvn_mag_l1_pl_$RES_YYYYMMDD.sav'
 ;   pathformat =  'maven/data/sci/mag/l1/sav/$RES/YYYY/MM/mvn_mag_l1_pl_$RES_YYYYMMDD.sav'
 
@@ -46,6 +46,7 @@ for i=0L,nd-1 do begin
   if prereq_timestamp lt target_timestamp then continue    ; skip if L1 does not need to be regenerated
   dprint,dlevel=1,verbose=verbose,'Generating L1 file: '+sav_filename
   timestamp= systime(1)    ; trigger regeneration of long term plots
+
   data = mvn_mag_l1_sts_read(mag_l1_file,header=header)
   
   dependents = file_checksum(mag_l1_file,/add_mtime)

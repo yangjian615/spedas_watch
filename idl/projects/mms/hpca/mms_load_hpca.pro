@@ -62,13 +62,13 @@
 ; 
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19843 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-02-09 18:22:59 -0800 (Tue, 09 Feb 2016) $
+;$LastChangedRevision: 19925 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
-pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
+pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
                   level = level, data_rate = data_rate, $
                   local_data_dir = local_data_dir, source = source, $
                   get_support_data = get_support_data, varformat = varformat, $
@@ -77,7 +77,7 @@ pro mms_load_hpca, trange = trange, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version
                 
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
+    if undefined(trange_in) then trange = timerange() else trange = timerange(trange_in)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'ion'
     if undefined(level) then level = 'l1b' 

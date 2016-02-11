@@ -11,6 +11,7 @@ species='e'
 ;trange = ['2015-09-19/09:08:13', '2015-09-19/09:09']
 ;trange = ['2015-09-19/09:08:48', '2015-09-19/09:09:00']
 trange = ['2015-09-19/09:08:00', '2015-09-19/09:08:15']
+level = 'l1b'
 
 ;load particle & support data
 mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
@@ -28,7 +29,7 @@ join_vec, vname + ['X','Y','Z'], vname
 
 ;convert particle data to 3D structures
 name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
-dist = mms_get_fpi_dist(name, trange=time_double(trange))
+dist = mms_get_fpi_dist(name, trange=time_double(trange), probe=probe, species=species, data_rate='brst', level=level)
 
 
 ;set slice orientation

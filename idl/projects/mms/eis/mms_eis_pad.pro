@@ -29,8 +29,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp and Ian Cohen (APL)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 08:56:38 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19696 $
+;$LastChangedDate: 2016-02-10 15:07:50 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19941 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -38,6 +38,8 @@
 ;       + 2015-11-12, I. Cohen      : changed sizing of second dimension of flux_file and pa_file to reflect number of elements in "scopes"
 ;       + 2015-12-14, I. Cohen      : introduced data_rate keyword and conditional definition of prefix to handle burst data
 ;       + 2016-1-8, egrimes         : moved eis_pabin_info, mms_eis_pad_spinavg into separate routines; changed stops to returns
+;       + 2016-01-26, I. Cohen      : added scope_suffix definition to allow for distinction between single telescope PADs
+;                                   : added to call to mms_eis_pad_spinavg.pro
 ;-
 
 pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = data_rate, $
@@ -62,6 +64,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
     if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_' else prefix = 'mms'+probe+'_epd_eis_'
     ;suffix = '_spin'
     suffix = ''
+    if (n_elements(scopes) eq 1) then scope_suffix = '_t'+scopes else if (n_elements(scopes) eq 6) then scope_suffix = '_omni'
 
     if energy[0] gt energy[1] then begin
         print, 'Low energy must be given first, then high energy in "energy" keyword'
@@ -156,7 +159,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
           endfor
 
           en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV
-          new_name = prefix + datatype + '_' + en_range_string + '_' + ion_type[ion_type_idx] + '_' + data_units + '_pad'
+          new_name = prefix + datatype + '_' + en_range_string + '_' + ion_type[ion_type_idx] + '_' + data_units + scope_suffix + '_pad'
          ; store_data, new_name, data={x:d.x, y:pa_flux, v:pa_label}
           store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_label}
           options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1 , $
@@ -164,7 +167,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
           zlim, new_name, 0, 0, 1
                
           ; now do the spin average
-          mms_eis_pad_spinavg, probe=probe, species=ion_type[ion_type_idx], datatype=datatype, energy=energy, data_units=data_units, bin_size=bin_size, data_rate = data_rate
+          mms_eis_pad_spinavg, probe=probe, species=ion_type[ion_type_idx], datatype=datatype, energy=energy, data_units=data_units, bin_size=bin_size, data_rate = data_rate, scopes=scopes
       endfor
     endif
 end

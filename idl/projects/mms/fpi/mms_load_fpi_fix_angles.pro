@@ -11,11 +11,11 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-19 08:43:08 -0800 (Tue, 19 Jan 2016) $
-;$LastChangedRevision: 19755 $
+;$LastChangedDate: 2016-02-10 13:56:47 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19931 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_angles.pro $
 ;-
-pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, level = level
+pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, level = level, data_rate = data_rate
     if undefined(datatype) then begin
         dprint, dlevel = 0, 'Error, must provide a datatype to mms_load_fpi_fix_angles'
         return
@@ -40,8 +40,9 @@ pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, lev
     for species_idx = 0, n_elements(species_arr)-1 do begin
         species = species_arr[species_idx]
         pad_regex = level eq 'ql' ? prefix + '_?'+species+'?_*itchAngDist_*En' : prefix + '_fpi_'+species+'PitchAngDist_*En'
+        pad_regex = level eq 'l2' ? prefix + '_?'+species+'?_*itchangdist_*en_*' : pad_regex
         spectra_where = strmatch(tplotnames, pad_regex)
-    
+
         if n_elements(spectra_where) ne 0 then begin
             for var_idx = 0, n_elements(tplotnames)-1 do begin
                 if spectra_where[var_idx] ne 0 then begin

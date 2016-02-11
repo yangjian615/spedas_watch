@@ -3,10 +3,13 @@
 ;
 ; Vectorized version of spd_get_nut_angles from spd_gei2j2000.pro
 ;
+; History: 
+;   2016-02-10 - Optimized to reduce memory spike for large data sets
+;                (combined a few lines and added temporary() calls)
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-23 11:28:47 -0700 (Wed, 23 Sep 2015) $
-; $LastChangedRevision: 18890 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2016-02-10 12:59:53 -0800 (Wed, 10 Feb 2016) $
+; $LastChangedRevision: 19928 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/spd_get_nut_angles_vec.pro $
 ;-
 PRO spd_get_nut_angles_vec,time,deleps,delpsi,eps,error=error
@@ -178,7 +181,13 @@ PRO spd_get_nut_angles_vec,time,deleps,delpsi,eps,error=error
   ;
   ;      arg = funarg # fund
   ;      arg = fund # funarg
-  arg = TRANSPOSE(TRANSPOSE(funarg) # TRANSPOSE(fund))
+;original--------------------------------------------------------
+;  arg = TRANSPOSE(TRANSPOSE(funarg) # TRANSPOSE(fund))
+;----------------------------------------------------------------
+
+;optimized------------------------------------------------
+  arg = TRANSPOSE(TRANSPOSE(funarg) # TRANSPOSE(temporary(fund)))
+;----------------------------------------------------------------
 
   ;
   ;    (2) CALCULATE COEFFICIENTS OF sinE AND COsinE, WHICH ARE THE PRODUCTS
@@ -192,11 +201,13 @@ PRO spd_get_nut_angles_vec,time,deleps,delpsi,eps,error=error
   ;      cofsin = sincof # T
   ;      cofcos = T # coscof
   ;      cofsin = T # sincof
-  cofcos = TRANSPOSE(TRANSPOSE(coscof) # TRANSPOSE(T))
-  cofsin = TRANSPOSE(TRANSPOSE(sincof) # TRANSPOSE(T))
-
-  cofcos=cofcos*DOUBLE(1.E-4)
-  cofsin=cofsin*DOUBLE(1.E-4)
+;original--------------------------------------------
+;  cofcos = TRANSPOSE(TRANSPOSE(coscof) # TRANSPOSE(T))
+;  cofsin = TRANSPOSE(TRANSPOSE(sincof) # TRANSPOSE(T))
+;
+;  cofcos=cofcos*DOUBLE(1.E-4)
+;  cofsin=cofsin*DOUBLE(1.E-4)
+;-----------------------------------------------------
 
   ;
   ;    (3) CALCULATE THE sinES AND COsinES OF THE argUMENTS AND MULTIPLY
@@ -205,15 +216,23 @@ PRO spd_get_nut_angles_vec,time,deleps,delpsi,eps,error=error
   sumpsi=DOUBLE(0.0)
   sumeps=DOUBLE(0.0)
 
-  sinp=sin(arg)
-  cose=cos(arg)
+;original-------------------------
+;  sinp=sin(arg)
+;  cose=cos(arg)
+;
+; ; FOR E=0,105 DO BEGIN
+;  prodps=cofsin*sinp
+;  prodep=cofcos*cose
+;  
+;  sumpsi=total(prodps,2)
+;  sumeps=total(prodep,2)
+;---------------------------------
 
- ; FOR E=0,105 DO BEGIN
-  prodps=cofsin*sinp
-  prodep=cofcos*cose
-  
-  sumpsi=total(prodps,2)
-  sumeps=total(prodep,2)
+;optimized----------------------------------------------------------------------
+  sumpsi = total( 1d-4*TRANSPOSE(TRANSPOSE(sincof) # TRANSPOSE(T)) * sin(arg) ,2)
+  sumeps = total( 1d-4*TRANSPOSE(TRANSPOSE(coscof) # TRANSPOSE(T)) * cos(temporary(arg)) ,2)
+;-------------------------------------------------------------------------------
+
 
   deleps=sumeps*str
   delpsi=sumpsi*str

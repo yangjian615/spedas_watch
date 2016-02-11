@@ -6,17 +6,24 @@
 ;    this function splits the last integral channel from the FEEPS spectra
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-19 15:25:55 -0800 (Tue, 19 Jan 2016) $
-;$LastChangedRevision: 19762 $
+;$LastChangedDate: 2016-02-10 15:55:09 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19945 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
-pro mms_feeps_split_integral_ch, type, species, probe, suffix = suffix
+pro mms_feeps_split_integral_ch, type, species, probe, suffix = suffix, data_rate = data_rate
   if undefined(species) then species = 'electron' ; default to electrons
   if undefined(probe) then probe = '1' ; default to probe 1
   if undefined(suffix) then suffix = ''
+  if undefined(data_rate) then data_rate = 'srvy'
   bottom_en = species eq 'electron' ? 71 : 96
+  
+  ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
   if species eq 'electron' then sensors = [3, 4, 5, 11, 12] else sensors = [6, 7, 8]
+  
+  ; special case for burst mode data
+  if data_rate eq 'brst' && species eq 'electron' then sensors = ['1','2','3','4','5','9','10','11','12']
+  if data_rate eq 'brst' && species eq 'ion' then sensors = ['6','7','8']
 
   for sensor_idx = 0, n_elements(sensors)-1 do begin
     top_name = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+suffix, /rem)
@@ -38,5 +45,10 @@ pro mms_feeps_split_integral_ch, type, species, probe, suffix = suffix
     ; store the integral channel
     store_data, top_name+'_500keV_int', data={x: top_data.X, y: top_data.Y[*, n_elements(bottom_data.V)-1]}
     store_data, bottom_name+'_500keV_int', data={x: bottom_data.X, y: bottom_data.Y[*, n_elements(bottom_data.V)-1]}
+    
+    ; delete the variable that contains both the spectra and the integral channel
+    ; so users don't accidently plot the wrong quantity (discussed with Drew Turner 2/4/16)
+    del_data, top_name
+    del_data, bottom_name
   endfor
 end

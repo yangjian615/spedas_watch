@@ -24,15 +24,20 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 15:22:13 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19853 $
+;$LastChangedDate: 2016-02-10 14:23:03 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19934 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
-function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure
+function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure, $
+    level = level, data_rate = data_rate, species = species, probe = probe
 
     compile_opt idl2
 
+if undefined(level) then level = ''
+if undefined(data_rate) then data_rate = ''
+if undefined(species) then species = 'e'
+if undefined(probe) then probe = '1'
 
 name = (tnames(tname))[0]
 if name eq '' then begin
@@ -83,10 +88,12 @@ endelse
 
 
 ;get info from tplot variable name
-var_info = stregex(name, '(mms([1-4])_d([ei])s_)(.*)SkyMap_dist', /subexpr, /extract)
-probe = var_info[2]
-species = var_info[3]
-rate = var_info[4]
+var_regex = level eq 'l2' ? '(mms([1-4])_d([ei])s)_dist_'+data_rate : '(mms([1-4])_d([ei])s_)(.*)SkyMap_dist'
+var_info = stregex(name, var_regex, /subexpr, /extract)
+; the following is for backwards compatibility - grab the info from the variable name if level isn't set
+if level eq '' then probe = var_info[2]
+if level eq '' then species = var_info[3]
+if level eq '' then rate = var_info[4] else rate = data_rate
 
 ; Initialize energies, angles, and support data
 ;-----------------------------------------------------------------
@@ -107,9 +114,11 @@ base_arr = fltarr(dim)
 if strlowcase(rate) eq 'fast' then begin
   step = replicate(2,n_elements(*p.x))
 endif else begin
-  step_name = (tnames(var_info[1]+'stepTable_parity'))[0]
+  step_var = 'mms'+probe+'_d'+species+'s_stepTable_parity'
+  step_var = level eq 'l2' ? strlowcase(step_var+'_'+rate) : step_var
+  step_name = (tnames(step_var))[0]
   if step_name eq '' then begin
-    dprint, 'Cannot find energy table data: "'+var_info[1]+'stepTable_parity'
+    dprint, 'Cannot find energy table data: '+step_var
     return, 0
   endif
   get_data, step_name, data=step_data

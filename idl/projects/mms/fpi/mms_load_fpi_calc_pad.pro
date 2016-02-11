@@ -10,33 +10,37 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-19 08:43:08 -0800 (Tue, 19 Jan 2016) $
-;$LastChangedRevision: 19755 $
+;$LastChangedDate: 2016-02-10 13:56:47 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19931 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_pad.pro $
 ;-
-pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype = datatype
+pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype = datatype, data_rate = data_rate
     if undefined(datatype) then begin
         dprint, dlevel = 0, 'Error, must provide a datatype to mms_load_fpi_calc_pad'
         return
     endif
     if undefined(autoscale) then autoscale = 1
     if undefined(level) then level = 'sitl'
+    if undefined(data_rate) then data_rate = ''
     
     ; in case the user passes datatype = '*'
     if (datatype[0] eq '*' || datatype[0] eq '') && level eq 'ql' then datatype=['des', 'dis']
     if (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist']
 
-    
     species = strmid(datatype, 1, 1)
     for sidx=0, n_elements(species)-1 do begin
         spec_str_format = level eq 'sitl' ? 'PitchAngDist' : 'pitchAngDist'
         obs_str_format = level eq 'sitl' ? '_fpi_'+species[sidx] : '_d'+species[sidx]+'s_'
+        spec_str_format = level eq 'l2' ? 'pitchangdist' : spec_str_format
         obsstr='mms'+STRING(probe,FORMAT='(I1)')+obs_str_format
 
+        ; now concatenate the full variable names, based on the level
+        pad_vars = level eq 'l2' ? obsstr+spec_str_format+'_'+['low', 'mid', 'high']+'en_'+data_rate : obsstr+spec_str_format+'_'+['low', 'mid', 'high']+'En'
+        
         ; get the PAD from the tplot variables
-        get_data, obsstr+spec_str_format+'_lowEn', data=lowEn, dlimits=dl
-        get_data, obsstr+spec_str_format+'_midEn', data=midEn, dlimits=dl
-        get_data, obsstr+spec_str_format+'_highEn', data=highEn, dlimits=dl
+        get_data, pad_vars[0], data=lowEn, dlimits=dl
+        get_data, pad_vars[1], data=midEn, dlimits=dl
+        get_data, pad_vars[2], data=highEn, dlimits=dl
 
         ; skip avg/sum when we can't find the tplot names
         if ~is_struct(lowEn) || ~is_struct(midEn) || ~is_struct(highEn) then continue

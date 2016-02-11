@@ -12,9 +12,9 @@
 ;  *** This is a work in progress ***
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-13 16:05:41 -0800 (Wed, 13 Jan 2016) $
-;$LastChangedRevision: 19725 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-02-10 14:23:41 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19935 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_slice2d_fpi_crib.pro $
 ;-
 
@@ -38,6 +38,7 @@
 ;---------------------------------------------
 probe='1'
 species='i'
+data_rate='brst'
 trange=['2015-8-15/12:50','2015-8-15/12:51']
 
 
@@ -52,8 +53,7 @@ name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
 ;reformat data from tplot variable into compatible 3D structures
 ;  -this will return a pointer to the structure array in order to save memory 
 ;---------------------------------------------
-dist = mms_get_fpi_dist(name, trange=trange)
-
+dist = mms_get_fpi_dist(name, trange=trange, probe=probe, species=species, data_rate=data_rate)
 
 ;basic slice
 ;  -some plot annotations will need to be set manually for now
@@ -171,7 +171,7 @@ mms_load_fpi, data_rate='fast', level='l1b', datatype='d'+species+'s-dist', $
 
 ;reformat data
 name = 'mms'+probe+'_d'+species+'s_fastSkyMap_dist'
-dist_fast = mms_get_fpi_dist(name, trange=trange)
+dist_fast = mms_get_fpi_dist(name, trange=trange, probe=probe, species=species, data_rate=data_rate)
 
 time = '2015-8-15/12:50' ;start time of slice
 
