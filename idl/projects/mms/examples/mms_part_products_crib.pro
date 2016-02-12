@@ -6,9 +6,9 @@
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate pitch angle and gyrophase distributions
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-02-03 12:28:09 -0800 (Wed, 03 Feb 2016) $
-;$LastChangedRevision: 19886 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-02-10 19:23:21 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19951 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_part_products_crib.pro $
 ;
 ;-
@@ -22,6 +22,7 @@
   ;set time interval
   probe='3'
   species='e'
+  rate='brst'
   ;timespan,'2015-09-21/13:52', 2, /min
   ;trange = timerange()
   ;trange = ['2015-09-19/09:08:13', '2015-09-19/09:09']
@@ -35,7 +36,7 @@
   mms_load_state, probes=probe, level=level
 
   ;load particle data
-  mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
+  mms_load_fpi, data_rate=rate, level='l1b', datatype='d'+species+'s-dist', $
     probe=probe, trange=trange
     
   ;load magnetic field data
@@ -48,10 +49,11 @@
   pos_name = 'mms' + probe+ '_defeph_pos'
   
   ;convert particle data to 3D structures
-  name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
+  name =  'mms'+probe+'_d'+species+'s_'+rate+'SkyMap_dist'
  
   mms_part_products,name,mag_name=bname,pos_name=pos_name,trange=trange,outputs=['phi','theta','pa','gyro','energy'],probe=probe
-  tplot,'mms'+probe+'_d'+species+'s_brstSkyMap_dist'+['energy','theta','phi','pa','gyro']
+
+  tplot,name+'_'+['energy','theta','phi','pa','gyro']
   tlimit,['2015-09-19/09:08:14', '2015-09-19/09:08:15'] 
 
   stop
@@ -101,7 +103,7 @@
   mms_part_products, name, mag_name=bname, pos_name=pos_name, trange=trange,$
                     outputs=['phi','theta','pa','gyro','energy'],probe=probe
 
-  tplot,name+['energy','theta','phi','pa','gyro']
+  tplot,name+'_'+['energy','theta','phi','pa','gyro']
 
   
 

@@ -15,9 +15,9 @@ pro thm_pgs_xgse,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
     
   ;create orthonormal basis set
   tnormalize,mag_temp,out=z_basis
-  tcrossp,z_basis,'xgse_pgs_temp',out=x_basis
-  tnormalize,x_basis,out=x_basis
-  tcrossp,z_basis,x_basis,out=y_basis
+  tcrossp,z_basis,'xgse_pgs_temp',out=y_basis
+  tnormalize,y_basis,out=y_basis
+  tcrossp,y_basis,z_basis,out=x_basis
   
   ;create orthonormal basis set
   ;  z_basis = mag/norm(mag)
@@ -38,14 +38,14 @@ pro thm_pgs_phigeo,mag_temp,pos_temp,probe,x_basis,y_basis,z_basis
   ;All the conversions to polar and trig simplifies to this.
   ;But the reason the conversion is why this is the conversion that is done, is lost on me.
   ;The conversion swaps the x & y components of position, reflects over x=0,z=0 then projects into the xy plane
-  store_data,pos_temp[0],data={x:pos_data.x,y:[[pos_data.y[*,1]],[pos_data.y[*,0]],[replicate(0.,n_elements(pos_data.x))]]}
+  store_data,pos_temp[0],data={x:pos_data.x,y:[[-pos_data.y[*,1]],[pos_data.y[*,0]],[replicate(0.,n_elements(pos_data.x))]]}
   
   ;transform into dsl because particles are in dsl
   thm_cotrans,pos_temp,pos_temp,out_coord='dsl',probe=probe
   
   ;create orthonormal basis set
   tnormalize,mag_temp,out=z_basis
-  tcrossp,z_basis,pos_temp,out=x_basis
+  tcrossp,pos_temp,z_basis,out=x_basis
   tnormalize,x_basis,out=x_basis
   tcrossp,z_basis,x_basis,out=y_basis
   
@@ -107,8 +107,8 @@ end
 ;  If an error occurs fac_output will be undfined on return
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-22 16:14:14 -0700 (Mon, 22 Jun 2015) $
-;$LastChangedRevision: 17937 $
+;$LastChangedDate: 2016-02-10 19:03:17 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19949 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_make_fac.pro $
 ;-
 pro thm_pgs_make_fac,times,$ ;the time grid of the particle data

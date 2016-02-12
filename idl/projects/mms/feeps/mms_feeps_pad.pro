@@ -26,8 +26,8 @@
 ;     Based on the EIS pitch angle code by Brian Walsh
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-14 16:08:11 -0800 (Thu, 14 Jan 2016) $
-;$LastChangedRevision: 19739 $
+;$LastChangedDate: 2016-02-11 15:26:00 -0800 (Thu, 11 Feb 2016) $
+;$LastChangedRevision: 19963 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -76,7 +76,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
 
       for t=0, n_elements(particle_idxs)-1 do begin
          ; tdeflag, prefix+'_epd_feeps_' + s_type + '_intensity_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+suffix, 'linear', /overwrite
-          get_data, prefix+'_epd_feeps_' + s_type + '_intensity_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+suffix+'_clean', data = d
+          get_data, prefix+'_epd_feeps_' + s_type + '_intensity_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+'_clean'+suffix, data = d
           
           indx = where((d.v le energy[1]) and (d.v ge energy[0]), energy_count)
 

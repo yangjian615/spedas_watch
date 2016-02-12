@@ -17,8 +17,8 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedDate: 2016-02-03 12:28:09 -0800 (Wed, 03 Feb 2016) $
-;$LastChangedRevision: 19886 $
+;$LastChangedDate: 2016-02-10 19:04:54 -0800 (Wed, 10 Feb 2016) $
+;$LastChangedRevision: 19950 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 
@@ -340,7 +340,7 @@ pro mms_part_products, $
   ;Create tplot variables for requested data types
   ;--------------------------------------------------------
 
-  tplot_prefix = in_tvarname
+  tplot_prefix = in_tvarname+'_'
  
 
   ;NOTE: these test for generating spectra will not work if we decide to loop over probe/datatype

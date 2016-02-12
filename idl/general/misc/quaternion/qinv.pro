@@ -49,7 +49,7 @@ qn = qnorm(qi)
 ;if norm fails
 if(size(qn,/n_dim) eq 0 && qn[0] eq -1) then return,qi
 
-if(qn eq 0) then begin
+if total(qn eq 0) gt 0 then begin
    dprint,'0 length quaternion has no inverse'
    return,-1
 endif

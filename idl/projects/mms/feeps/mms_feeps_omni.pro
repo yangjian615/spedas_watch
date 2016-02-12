@@ -11,8 +11,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-10 16:00:10 -0800 (Wed, 10 Feb 2016) $
-; $LastChangedRevision: 19948 $
+; $LastChangedDate: 2016-02-11 09:08:45 -0800 (Thu, 11 Feb 2016) $
+; $LastChangedRevision: 19954 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
@@ -39,7 +39,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   ;species_str = datatype+'_'+species
   ;if (data_rate) eq 'brst' then prefix = 'mms'+probe+'_epd_feeps_brst_' else prefix = 'mms'+probe+'_epd_feeps_'
   prefix = 'mms'+probe+'_epd_feeps_'
-  get_data, prefix+'top_'+data_units+'_sensorID_3_clean'+suffix, data = d, dlimits=dl
+  get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[0]+'_clean'+suffix, data = d, dlimits=dl
 
   if is_struct(d) then begin
     flux_omni = dblarr(n_elements(d.x),n_elements(d.v))
@@ -52,11 +52,12 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
       get_data, prefix+'bottom_'+data_units+'_sensorID_'+sensors[i]+'_clean'+suffix, data = d
       flux_omni = flux_omni + d.Y
     endfor
-    newname = prefix+data_units+'_omni'+suffix
+    newname = prefix+datatype+'_'+data_units+'_omni'+suffix
     store_data, newname[0], data={x:d.x, y:flux_omni/n_elements(sensors)*2., v:d.v}, dlimits=dl
 
     ylim, newname[0], lower_en, 500., 1
-    zlim, newname[0], 0, 0, 1.
+    zlim, newname[0], 0, 0, 1
+
     options, newname[0], spec = 1, yrange = en_range, $
       ytitle = 'mms'+probe+'!Cfeeps!C'+datatype+'!Comni', $
       ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default, minzlog = .01
