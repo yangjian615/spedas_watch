@@ -26,13 +26,14 @@
 ;     Based on the EIS pitch angle code by Brian Walsh
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-11 15:26:00 -0800 (Thu, 11 Feb 2016) $
-;$LastChangedRevision: 19963 $
+;$LastChangedDate: 2016-02-12 15:11:20 -0800 (Fri, 12 Feb 2016) $
+;$LastChangedRevision: 19986 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
 pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     suffix = suffix, datatype = datatype, data_units = data_units
+    
     if undefined(datatype) then datatype='electron'
     if undefined(probe) then probe = '1'
     if undefined(suffix) then suffix = ''
@@ -122,6 +123,6 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
         zlog = 1, ytitle = 'MMS'+probe+' FEEPS ' + datatype, ysubtitle=en_range_string+'!CPA [Deg]', ztitle=out_units
 
     ; calculate the spin average
-    ;mms_feeps_pad_spinavg, probe=probe, datatype=datatype, energy=energy, bin_size=bin_size, data_units=out_units
+    mms_feeps_pad_spinavg, probe=probe, datatype=datatype, energy=energy, bin_size=bin_size, data_units=out_units, suffix = suffix
 
 end

@@ -1,3 +1,12 @@
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2016-02-12 12:50:15 -0800 (Fri, 12 Feb 2016) $
+; $LastChangedRevision: 19980 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
+
+
+
+
+
 function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
 
@@ -6,6 +15,9 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   data      = ccsds.data[20:*]
   data_size = n_elements(data)
   apid_name = string(format='(z02)',ccsds.data[1])
+
+  ;;-------------------------------------------
+  ;; 
 
   ;;-------------------------------------------
   ;; Use APID to determine packet side
@@ -20,11 +32,12 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   compression = (ccsds.data[12] and '20'x) ne 0
   bps = (compression eq 0) * 4
   nbytes = ns * bps
-  if n_elements(data) ne nbytes then begin
-     dprint,dlevel=3, 'Size error ',$
-            n_elements(data),ccsds.size,ccsds.apid
-     return, 0
-  endif
+
+  ;if n_elements(data) ne nbytes then begin
+  ;   dprint,dlevel=3, 'Size error ',$
+  ;          n_elements(data),ccsds.size,ccsds.apid
+  ;   return, 0
+  ;endif
 
 
   ;;-------------------------------------------
@@ -33,6 +46,17 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
      cnts = spp_swp_log_decomp(data[0:ns-1],0) $
   else $
      cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian ) 
+
+  ;; WORD 7
+  log_flag    = data[12]
+
+  status_flag = data[18]
+
+  f_counter = swap_endian(ulong(data,16,1), /swap_if_little_endian)
+
+  ;;--------------
+  ;; Peaks
+  peak_bin = data[19]
 
 
   case 1 of
@@ -45,6 +69,10 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
               seq_cntr:ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat: n_elements(cnts), $
+              peak_bin: peak_bin, $
+              log_flag: log_flag, $
+              status_flag: status_flag,$
+              f_counter: f_counter,$
               cnts: float(cnts)}
      end
 
@@ -57,6 +85,10 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
               seq_cntr:  ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat:      n_elements(cnts), $
+              peak_bin: peak_bin, $
+              log_flag: log_flag, $
+              status_flag: status_flag,$
+              f_counter: f_counter,$
               cnts_a00:  float(reform(cnts[ 0,*])), $
               cnts_a01:  float(reform(cnts[ 1,*])), $
               cnts_a02:  float(reform(cnts[ 2,*])), $
@@ -84,17 +116,26 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
               seq_cntr:ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat: n_elements(cnts), $
+              peak_bin: peak_bin, $
+              log_flag: log_flag, $
+              status_flag: status_flag,$
+              f_counter: f_counter,$
               cnts: float(cnts[*])}
      end
 
      ;;-----------------------------------------
      ;;Product Targeted Sweep - 32Ex16A - '363'x
      (apid_name eq '63') : begin
+        cnts = reform(cnts,16,32)
         str = { $
               time:ccsds.time, $
               seq_cntr:ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat: n_elements(cnts), $
+              peak_bin: peak_bin, $
+              log_flag: log_flag, $
+              status_flag: status_flag,$
+              f_counter: f_counter,$
               cnts: float(cnts[*]),$
               cnts_a00:  float(reform(cnts[ 0,*])), $
               cnts_a01:  float(reform(cnts[ 1,*])), $

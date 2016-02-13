@@ -269,9 +269,9 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
         
         pcode=37
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_edp_fast_scpot') and (cp eq 0)) then begin
-          mms_sitl_get_edp, sc=sc, data_rate = 'fast', level='l2', datatype='scpot'
-          tn = tnames(sc+'_edp_fast_scpot',cnt)
+        if (strmatch(paramlist[i],'*_edp_fast_scpot*') and (cp eq 0)) then begin
+          mms_sitl_get_edp, sc=sc, data_rate = 'fast', level='sitl', datatype='scpot'
+          tn = tnames(sc+'_edp_fast_scpot_sitl',cnt)
           if (strlen(tn[0]) gt 0) and (cnt eq 1) then begin
             get_data,tn,data=D,dl=dl,lim=lim
             ynew = (-1)*alog10(D.y > 0)

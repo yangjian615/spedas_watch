@@ -87,9 +87,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2016-01-11 10:26:42 -0800 (Mon, 11 Jan 2016) $
-;$LastChangedRevision: 19705 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-02-12 11:21:57 -0800 (Fri, 12 Feb 2016) $
+;$LastChangedRevision: 19973 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -143,8 +143,14 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     ; check for wild cards
     if probes[0] EQ '*' then probes = p_names
     if datatypes[0] EQ '*' then datatypes = t_names  
-    if keyword_set(ephemeris_only) then datatypes = ['pos', 'vel']
-    if keyword_set(attitude_only) then datatypes = ['spinras', 'spindec']
+    if keyword_set(ephemeris_only) then begin
+      datatypes = ['pos', 'vel']
+      mec_varformat = '*_v_* *_r_*'
+    endif
+    if keyword_set(attitude_only) then begin 
+      datatypes = ['spinras', 'spindec']
+      mec_varformat = '*_ang_mom_*'
+    endif
     if keyword_set(attitude_only) && keyword_set(ephemeris_only) then begin
        dprint, 'mms_load_state error, cannot set both attitude_only and ephemeris_only keywords'
        return 
@@ -188,7 +194,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     for i = 0, n_elements(probes)-1 do begin      
        for j = 0, n_elements(level)-1 do begin
             if mec_flag EQ 1 then begin
-                 mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files 
+                 mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files, varformat=mec_varformat 
                  ; check that data was loaded if not try def
                  if undefined(cdf_files) OR neph GT 0 then begin
                     if undefined(cdf_files) then dt = datatypes else dt = datatypes[eph_idx]

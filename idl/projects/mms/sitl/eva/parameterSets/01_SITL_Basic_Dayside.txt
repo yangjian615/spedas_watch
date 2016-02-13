@@ -9,7 +9,7 @@ mms*_fpi_iEnergySpectr_omni
 mms*_fpi_eEnergySpectr_omni
 
 mms*_fpi_DISnumberDensity
-mms*_edp_fast_scpot; SC-potential
+mms*_edp_fast_scpot_sitl; SC-potential
 
 mms*_fpi_iBulkV_DSC
 mms*_exb_vperp_z; comparison between (ExB)z and FPI Vperp,z

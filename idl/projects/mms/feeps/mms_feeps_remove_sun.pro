@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-11 15:40:33 -0800 (Thu, 11 Feb 2016) $
-; $LastChangedRevision: 19964 $
+; $LastChangedDate: 2016-02-12 07:40:36 -0800 (Fri, 12 Feb 2016) $
+; $LastChangedRevision: 19968 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -36,38 +36,41 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
     ; get the sector masks
     mask_sectors = mms_feeps_sector_masks()
     
-    ; top sensors
-    for sensor_idx = 0, n_elements(sensors)-1 do begin
-        var_name = 'mms'+probe+'_epd_feeps_top_'+data_units+'_sensorID_'+sensors[sensor_idx]+suffix
-        get_data, var_name, data = top_data, dlimits=top_dlimits
-        if mask_sectors.haskey('mms'+probe+'imaskt'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]] ne !NULL then begin
+    for data_units_idx = 0, n_elements(data_units)-1 do begin
+        these_units = data_units[data_units_idx]
+        ; top sensors
+        for sensor_idx = 0, n_elements(sensors)-1 do begin
+          var_name = 'mms'+probe+'_epd_feeps_top_'+these_units+'_sensorID_'+sensors[sensor_idx]+suffix
+          get_data, var_name, data = top_data, dlimits=top_dlimits
+          if mask_sectors.haskey('mms'+probe+'imaskt'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]] ne !NULL then begin
             bad_sectors = mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]]
-
-            for bad_sector_idx = 0, n_elements(bad_sectors)-1 do begin
-                this_bad_sector = where(spin_sector.Y eq bad_sectors[bad_sector_idx], bad_sect_count)
-                if bad_sect_count ne 0 then top_data.Y[this_bad_sector, *] = !values.d_nan
-            endfor
-        endif
-        
-        ; resave the data, with the sunlight contamination removed
-        store_data, var_name, data=top_data, dlimits=top_dlimits
-    endfor
     
-    ; bottom sensors
-    for sensor_idx = 0, n_elements(sensors)-1 do begin
-      var_name = 'mms'+probe+'_epd_feeps_bottom_'+data_units+'_sensorID_'+sensors[sensor_idx]+suffix
-      get_data, var_name, data = bottom_data, dlimits=bottom_dlimits
-      if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
-        bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]
-
-        for bad_sector_idx = 0, n_elements(bad_sectors)-1 do begin
-          this_bad_sector = where(spin_sector.Y eq bad_sectors[bad_sector_idx], bad_sect_count)
-          if bad_sect_count ne 0 then bottom_data.Y[this_bad_sector, *] = !values.d_nan
+            for bad_sector_idx = 0, n_elements(bad_sectors)-1 do begin
+              this_bad_sector = where(spin_sector.Y eq bad_sectors[bad_sector_idx], bad_sect_count)
+              if bad_sect_count ne 0 then top_data.Y[this_bad_sector, *] = !values.d_nan
+            endfor
+          endif
+    
+          ; resave the data, with the sunlight contamination removed
+          store_data, var_name, data=top_data, dlimits=top_dlimits
         endfor
-      endif
-
-      ; resave the data, with the sunlight contamination removed
-      store_data, var_name, data=bottom_data, dlimits=bottom_dlimits
+    
+        ; bottom sensors
+        for sensor_idx = 0, n_elements(sensors)-1 do begin
+          var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+suffix
+          get_data, var_name, data = bottom_data, dlimits=bottom_dlimits
+          if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
+            bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]
+    
+            for bad_sector_idx = 0, n_elements(bad_sectors)-1 do begin
+              this_bad_sector = where(spin_sector.Y eq bad_sectors[bad_sector_idx], bad_sect_count)
+              if bad_sect_count ne 0 then bottom_data.Y[this_bad_sector, *] = !values.d_nan
+            endfor
+          endif
+    
+          ; resave the data, with the sunlight contamination removed
+          store_data, var_name, data=bottom_data, dlimits=bottom_dlimits
+        endfor
     endfor
   
 end

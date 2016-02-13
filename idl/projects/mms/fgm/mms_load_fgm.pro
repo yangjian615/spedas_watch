@@ -52,9 +52,9 @@
 ;     
 ;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19843 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-02-12 11:21:57 -0800 (Fri, 12 Feb 2016) $
+;$LastChangedRevision: 19973 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -94,7 +94,9 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
 
     
     ; load the atttude data to do the coordinate transformation 
-    if undefined(no_attitude_data) && level ne 'l2pre' then mms_load_state, trange = trange, probes = probes, level = 'def', datatypes=['spinras', 'spindec'], suffix = suffix
+    if undefined(no_attitude_data) && level ne 'l2pre' then begin
+      mms_load_state, trange = trange, probes = probes, level = 'def', /attitude_only, suffix = suffix
+    endif
     ; Note: not all MEC files have right ascension and declination data, commented out until LANL reprocesses
   ;  if undefined(no_attitude_data) && level ne 'l2pre' then mms_load_mec, trange = trange, probes = probes, suffix = suffix
 

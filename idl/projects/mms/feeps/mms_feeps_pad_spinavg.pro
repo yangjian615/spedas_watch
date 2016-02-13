@@ -20,12 +20,12 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-12 15:10:52 -0800 (Tue, 12 Jan 2016) $
-;$LastChangedRevision: 19720 $
+;$LastChangedDate: 2016-02-12 15:10:46 -0800 (Fri, 12 Feb 2016) $
+;$LastChangedRevision: 19985 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
-  datatype = datatype, energy = energy, bin_size = bin_size
+  datatype = datatype, energy = energy, bin_size = bin_size, suffix = suffix
   if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
   if undefined(datatype) then datatype = 'electron'
   if undefined(data_units) then data_units = 'cps'
@@ -37,11 +37,15 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
   units_label = data_units eq 'Counts' ? 'Counts': '[(cm!E2!N s sr KeV)!E-1!N]'
 
   prefix = 'mms'+probe+'_epd_feeps_'
-  ; get the spin #s asscoiated with each measurement
-  get_data, prefix + 'spin', data=spin_nums
+  ; get the spin sectors
+  get_data, prefix + 'spinsectnum'+suffix, data=spin_sectors
+  
+  if ~is_struct(spin_sectors) then begin
+    dprint, dlevel = 0, 'Error, couldn''t find the tplot variable containing the spin sectors for calculating the spin averages.'
+  endif
+  
+  spin_starts = where(spin_sectors.Y[0:n_elements(spin_sectors.Y)-2] ge spin_sectors.Y[1:n_elements(spin_sectors.Y)-1])+1
 
-  ; find where the spins start
-  spin_starts = uniq(spin_nums.Y)
   pad_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'
 
   get_data, pad_name, data=pad_data, dlimits=pad_dl

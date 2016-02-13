@@ -10,7 +10,7 @@ mms*_dis_EnergySpectr_omni_avg
 mms*_des_EnergySpectr_omni_avg
 
 mms*_dis_numberDensity
-mms*_edp_fast_scpot; SC-potential
+mms*_edp_fast_scpot_sitl; SC-potential
 
 mms*_dis_bulk
 ;mms*_exb_vperp_z; comparison between (ExB)z and FPI Vperp,z

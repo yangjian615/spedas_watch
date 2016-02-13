@@ -28,8 +28,8 @@ if (! -e /tmp/STAL2Rlock.txt) then
     echo $line > run_sta_l2reprocess.bm
     set line="rerun_sta_l2gen, ndays = 30"
     echo $line >> run_sta_l2reprocess.bm
-    set line="rerun_sta_l2gen, ndays = 60"
-    echo $line >> run_sta_l2reprocess.bm
+#    set line="rerun_sta_l2gen, ndays = 60"
+#    echo $line >> run_sta_l2reprocess.bm
     echo exit >> run_sta_l2reprocess.bm
 
     idl run_sta_l2reprocess.bm > /tmp/run_sta_l2reprocess.txt &
