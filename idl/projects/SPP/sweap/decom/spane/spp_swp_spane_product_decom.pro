@@ -1,6 +1,6 @@
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-02-12 12:50:15 -0800 (Fri, 12 Feb 2016) $
-; $LastChangedRevision: 19980 $
+; $LastChangedBy: rlivi2 $
+; $LastChangedDate: 2016-02-12 21:24:54 -0800 (Fri, 12 Feb 2016) $
+; $LastChangedRevision: 19991 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
 
 
@@ -12,18 +12,28 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
   ;;-------------------------------------------
   ;; Parse data
+  header    = ccsds.data[0:19]
   data      = ccsds.data[20:*]
   data_size = n_elements(data)
   apid_name = string(format='(z02)',ccsds.data[1])
 
+
+  ;;---------------------------------------------
+  ;; WORD 1 - 00001aaa aaaaaaaa   
+  ;; a = APID bits 
+  flag = ishft(ccsds.data[0],-3)
+  ;apid = 
+
   ;;-------------------------------------------
-  ;; 
+  ;; WORD 6 - ssssssss ssssssxx  
+  ;; s=MET subseconds, x=Cyclecnt LSBs
+  MET = ishft(data[10],8) and ishft(data[11],-2)
 
   ;;-------------------------------------------
   ;; Use APID to determine packet side
   ;; '60' -> '360'x ...
-  pkt_size = [16, 512, 16, 512] 
-  apid_loc = ['60','61','62','63']
+  pkt_size = [  8,  512,   8,  512] 
+  apid_loc = ['60', '61', '62', '63']
   ns = pkt_size[where(apid_loc eq apid_name)]
 
 
@@ -47,22 +57,43 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   else $
      cnts = swap_endian(ulong(data,0,ns) ,/swap_if_little_endian ) 
 
-  ;; WORD 7
-  log_flag    = data[12]
 
-  status_flag = data[18]
+  ;; WORD 1 - 00001aaa aaaaaaaa - ApID bits
+
+
+  ;; WORD 7
+  log_flag    = header[12]
+
+  status_flag = header[18]
 
   f_counter = swap_endian(ulong(data,16,1), /swap_if_little_endian)
 
   ;;--------------
   ;; Peaks
-  peak_bin = data[19]
+  peak_bin = header[19]
 
 
   case 1 of
 
      ;;-----------------------------------------
      ;;Product Full Sweep - 16A - '360'x
+     ;(apid_name eq '60') and () : begin
+     ;   str = { $
+     ;         title:'[16A]',$
+     ;         time:ccsds.time, $
+     ;         seq_cntr:ccsds.seq_cntr,  $
+     ;         seq_group: ccsds.seq_group,  $
+     ;         ndat: n_elements(cnts), $
+     ;         peak_bin: peak_bin, $
+     ;         log_flag: log_flag, $
+     ;         status_flag: status_flag,$
+     ;         f_counter: f_counter,$
+     ;         cnts: float(cnts)}
+     ;end
+
+
+     ;;-----------------------------------------
+     ;;Product Full Sweep - 08D - '360'x
      (apid_name eq '60') : begin
         str = { $
               time:ccsds.time, $
@@ -75,6 +106,7 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
               f_counter: f_counter,$
               cnts: float(cnts)}
      end
+
 
      ;;-----------------------------------------
      ;;Product Full Sweep - 32Ex16A - '361'x

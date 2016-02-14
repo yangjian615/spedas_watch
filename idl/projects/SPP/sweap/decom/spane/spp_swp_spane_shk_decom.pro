@@ -128,19 +128,3 @@ end
 
 
 
-pro spp_swp_spane_shk_init
-
-  spp_apid_data,'36e'x,$
-                routine='spp_swp_spane_shk_decom',$
-                tname='spp_swp_spane_shk_',$
-                tfields='*',$
-                name='SPP SWEAP SPANE SHK',$
-                rt_tags='*',$
-                save=1,$
-                rt_flag=rt_flag
-end
-
-
-
-
-

@@ -1,13 +1,4 @@
 
-;function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
-;
-;  str = create_struct(ptp_header,ccsds)  
-;  ;dprint,format="('Generic routine for ',Z04)",ccsds.apid                                                                                              
-;  stop
-;  return,str
-;
-;end
-
 function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   ;; From Tony's e-mail, the buffer should
@@ -78,16 +69,3 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
 end
 
-
-;pro spp_swp_manip_init
-;
-;  spp_apid_data,'7c3'x,$
-;                routine='spp_swp_manip_decom',$
-;                tname='spp_swp_manip_',$
-;                tfields='*',$
-;                name='SPP SWEAP Manip',$
-;                rt_tags='M???POS',$
-;                save=1,$
-;                /rt_flag
-;
-;end
