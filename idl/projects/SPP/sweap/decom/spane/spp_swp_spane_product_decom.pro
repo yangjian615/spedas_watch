@@ -1,13 +1,13 @@
 ; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2016-02-12 21:24:54 -0800 (Fri, 12 Feb 2016) $
-; $LastChangedRevision: 19991 $
+; $LastChangedDate: 2016-02-15 16:33:06 -0800 (Mon, 15 Feb 2016) $
+; $LastChangedRevision: 20006 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
 
 
 
 
 
-function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
+function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 
 
   ;;-------------------------------------------
@@ -96,15 +96,15 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
      ;;Product Full Sweep - 08D - '360'x
      (apid_name eq '60') : begin
         str = { $
-              time:ccsds.time, $
-              seq_cntr:ccsds.seq_cntr,  $
-              seq_group: ccsds.seq_group,  $
-              ndat: n_elements(cnts), $
-              peak_bin: peak_bin, $
-              log_flag: log_flag, $
+              time:        ccsds.time, $
+              seq_cntr:    ccsds.seq_cntr,  $
+              seq_group:   ccsds.seq_group,  $
+              ndat:        n_elements(cnts), $
+              peak_bin:    peak_bin, $
+              log_flag:    log_flag, $
               status_flag: status_flag,$
-              f_counter: f_counter,$
-              cnts: float(cnts)}
+              f_counter:   f_counter,$
+              cnts:        float(cnts)}
      end
 
 
@@ -117,8 +117,8 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
               seq_cntr:  ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat:      n_elements(cnts), $
-              peak_bin: peak_bin, $
-              log_flag: log_flag, $
+              peak_bin:  peak_bin, $
+              log_flag:  log_flag, $
               status_flag: status_flag,$
               f_counter: f_counter,$
               cnts_a00:  float(reform(cnts[ 0,*])), $
@@ -144,15 +144,15 @@ function spp_swp_spane_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
      ;;Product Targeted Sweep - 16A - '362'x
      (apid_name eq '62') : begin
         str = { $
-              time:ccsds.time, $
-              seq_cntr:ccsds.seq_cntr,  $
+              time:      ccsds.time, $
+              seq_cntr:  ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
-              ndat: n_elements(cnts), $
-              peak_bin: peak_bin, $
-              log_flag: log_flag, $
+              ndat:      n_elements(cnts), $
+              peak_bin:  peak_bin, $
+              log_flag:  log_flag, $
               status_flag: status_flag,$
               f_counter: f_counter,$
-              cnts: float(cnts[*])}
+              cnts:      float(cnts[*])}
      end
 
      ;;-----------------------------------------

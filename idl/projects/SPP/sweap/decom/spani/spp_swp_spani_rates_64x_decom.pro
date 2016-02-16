@@ -36,14 +36,3 @@ function spp_swp_spani_rates_64x_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
 end
 
-
-
-;pro spp_swp_spani_rates_decom_64x_init
-;
-;  spp_apid_data,'3bb'x,$
-;                routine='spp_swp_spani_rates_64x_decom',$
-;                tname='spp_spani_rates_',$
-;                tfields='*',$
-;                save=save
-;
-;end

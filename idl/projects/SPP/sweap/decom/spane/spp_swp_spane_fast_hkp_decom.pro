@@ -30,16 +30,3 @@ function spp_swp_spane_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 end
 
 
-;pro spp_swp_spane_fhk_init;
-;
-;  spp_apid_data,'36F'x,$
-;                routine='spp_swp_spane_fhk_decom',$
-;                tname='spp_swp_spane_fhk_',$
-;                tfields='*',$
-;                name='SPP SWEAP SPANE FHK',$
-;                rt_tags='*',$
-;                save=1
-;
-;end
-
-

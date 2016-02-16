@@ -1,4 +1,4 @@
-function spp_log_message_decom,ccsds, ptp_header=ptp_header, apdat=apdat
+function spp_log_msg_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
   ;printdat,ccsds
   ;time=ccsds.time

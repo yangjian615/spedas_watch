@@ -1,3 +1,10 @@
+; $LastChangedBy: rlivi2 $
+; $LastChangedDate: 2016-02-15 16:33:06 -0800 (Mon, 15 Feb 2016) $
+; $LastChangedRevision: 20006 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/spp_swp_functions.pro $
+
+
+
 
 function spp_swp_word_decom,buffer,n,signed=signed
    return,   swap_endian(/swap_if_little_endian,  uint(buffer,n) )
@@ -13,14 +20,41 @@ end
 
 
 
-function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
-  str = create_struct(ptp_header,ccsds)
-  if debug(3) then begin
-    dprint,dlevel=2,'swem',ccsds.size+7, n_elements(ccsds.data)
-    hexprint,ccsds.data
- endif
-  return,str
+
+
+
+pro spp_swp_ptp_file_read,files
+
+  t0 = systime(1)
+  spp_apid_data,/clear,rt_flag=0
+  
+  for i=0,n_elements(files)-1 do begin
+     file = files[i]
+     file_open,'r',file,unit=lun,dlevel=4
+     sizebuf = bytarr(2)
+     fi = file_info(file)
+     dprint,dlevel=1,'Reading file: '+file+' LUN:'+strtrim(lun,2)+'   Size: '+strtrim(fi.size,2)
+     while ~eof(lun) do begin
+        point_lun,-lun,fp
+        readu,lun,sizebuf
+        ;point_lun,lun,fp
+        sz = sizebuf[0]*256 + sizebuf[1]
+        if sz lt 17 then begin
+           dprint,format="('Bad PTP packet size',i,' in file: ',a,' at file position: ',i)",sz,file,fp
+           break
+        endif
+        buffer = bytarr(sz-2)
+        readu,lun,buffer
+        spp_swp_ptp_pkt_handler,[sizebuf,buffer] ;,time=systime(1)   ;,size=ptp_size
+     endwhile
+     free_lun,lun
+  endfor
+  dt = systime(1)-t0
+  dprint,format='("Finished loading in ",f0.1," seconds")',dt
+  spp_apid_data,/finish,rt_flag=1
+
 end
+
 
 
 
@@ -160,7 +194,7 @@ pro spp_swp_msg_stream_read,buffer, info=info
            time_status = spp_swemulator_time_status(buffer[ptr:ptr+6+psize-1])
            store_data,/append,'swemulator_',data=time_status,tagnames='*'
         end
-        'c2'x : dprint,dlevel=2,"Can't deal with C2 messages now'
+        'c2'x : dprint,dlevel=2,"Can't deal with C2 messages now"
         'c3'x :begin
            spp_swp_msg_pkt_handler,buffer[ptr+6:ptr+6+psize-1],time=time
         end
@@ -187,7 +221,7 @@ end
 
 pro spp_swp_msg_file_read,files
   
-;  common spp_msg_file_read, time_status                                                                               
+;  common spp_msg_file_read, time_status
   t0 = systime(1)
   spp_apid_data,/clear,rt_flag=0
   
@@ -214,7 +248,7 @@ pro spp_swp_msg_file_read,files
         if psize lt 12 then begin
            dprint,format="('Bad MSG packet size',i,' in file: ',a,' at file position: ',i)",psize,file,fp
            hexprint,msg_header
-        ;continue                                                                                                      
+        ;continue
         endif
         if psize gt 2L^13 then begin
            dprint,format="('Large MSG packet size',i,' in file: ',a,' at file position: ',i)",psize,file,fp

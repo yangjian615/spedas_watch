@@ -1,6 +1,12 @@
 
 function spp_swp_spani_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
+
+
   b = ccsds.data
+  if n_elements(b) le 20 then begin
+     print,'ERROR: CCSDS data packet smaller than 20 bytes'
+     return, 0
+  endif
 ;  psize = 269+7
 ;  if n_elements(b) ne psize then begin
 ;    dprint,dlevel=1,dwait=30., 'Size error ',string(ccsds.size + 7,ccsds.apid,format='(i4," - ",z03)')
@@ -35,8 +41,12 @@ function spp_swp_spani_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
       spec1 = cnts
  ;     printdat,cnts
     end
-    else: dprint,dlevel=2,dwait=10.,string(ccsds.apid,data_size,format='("Packet 0x",z04, " Unknown size:",i5)')
+    else: begin
+       dprint,dlevel=2,dwait=10.,string(ccsds.apid,data_size,format='("Packet 0x",z04, " Unknown size:",i5)')
+       return, 0
+    end
   endcase
+
     
   prod_str = { $
     time: time, $
@@ -52,7 +62,6 @@ function spp_swp_spani_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
     cnts_total: total_cnts, $
     gap: 0 }
 
-;printdat,prod_str
   return,prod_str
 end
 

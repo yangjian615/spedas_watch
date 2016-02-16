@@ -1,8 +1,7 @@
 ; Slow Housekeeping
-function spp_swp_spani_slow_hkp_84x_decom, ccsds , ptp_header=ptp_header, apdat=apdat
+function spp_swp_spani_slow_hkp_91x_decom, ccsds , ptp_header=ptp_header, apdat=apdat
 
   b = ccsds.data
-  psize = 97+7                  ; should be 94
   psize = 117+7                 ; new version
   if n_elements(b) ne psize then begin
      dprint,dlevel=1, 'Size error ',psize,ccsds.size,ccsds.apid

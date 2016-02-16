@@ -77,8 +77,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-11-25 11:30:14 -0800 (Wed, 25 Nov 2015) $
-; $LastChangedRevision: 19477 $
+; $LastChangedDate: 2016-02-15 13:50:06 -0800 (Mon, 15 Feb 2016) $
+; $LastChangedRevision: 19994 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
@@ -87,7 +87,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
                           sc_pot=sc_pot, vsc=vsc
 
-  IF !d.name EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
+  IF STRUPCASE(STRMID(!version.os, 0, 3)) EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
   dsize = GET_SCREEN_SIZE()
   IF SIZE(var2, /type) NE 0 THEN BEGIN
@@ -101,8 +101,10 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
   IF SIZE(var2, /type) NE 0 THEN trange = time_double(var2)
 
   IF keyword_set(window) THEN wnum = window ELSE BEGIN
-     WINDOW, /free, xsize=dsize[0]/2., ysize=dsize[1]*2./3., xpos=0., ypos=0.
-     wnum = !d.window
+     IF !d.name NE 'PS' THEN BEGIN
+        WINDOW, /free, xsize=dsize[0]/2., ysize=dsize[1]*2./3., xpos=0., ypos=0.
+        wnum = !d.window
+     ENDIF 
   ENDELSE 
   ochsz = !p.charsize
   IF keyword_set(chsz) THEN !p.charsize = chsz
@@ -213,8 +215,10 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            undefine, v_sc
         ENDIF ELSE vel = v_3d(d)
 
-        wstat = EXECUTE("wset, wnum")
-        IF wstat EQ 0 THEN wi, wnum, wsize=[dsize[0]/2., dsize[1]*2./3.] ELSE undefine, wstat
+        IF !d.name NE 'PS' THEN BEGIN
+           wstat = EXECUTE("wset, wnum")
+           IF wstat EQ 0 THEN wi, wnum, wsize=[dsize[0]/2., dsize[1]*2./3.] ELSE undefine, wstat
+        ENDIF 
         status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel")
         IF status EQ 1 THEN $
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal
@@ -227,7 +231,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         IF (SIZE(trange, /type) EQ 5) THEN ok = 1 ELSE ok = 0
      ENDIF ELSE ok = 0
   ENDWHILE 
-  IF ~keyword_set(keepwin) THEN wdelete, wnum
+  IF ~keyword_set(keepwin) THEN IF !d.name NE 'PS' THEN wdelete, wnum
   !p.charsize = ochsz
   RETURN
 END 

@@ -62,8 +62,8 @@ pro spane_threshold_scan_phd,tranges=trange,lim=lim
   fit,dac,cnts,param=p
   pf,p,/over
  ; wi,2
-  plot,dac,cnts,psym=4,xtitle='Threshold DAC level',ytitle='Counts
-  pf,p,/over
+  plot,dac,cnts,psym=4,xtitle='Threshold DAC level',ytitle='Counts'
+  ;pf,p,/over
   plt1 = get_plot_state()
   xv = dgen(range=range)
 ;  wi,3
@@ -98,6 +98,8 @@ endif else begin
   options,'spp_spane_spec_CNTS1',spec=1,yrange=[-1,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp
   options,'spp_spane_spec_CNTS2',spec=1,yrange=[-1,16],ylog=0,zrange=[1,500.],zlog=1,/no_interp
 endelse
+
+
 
 end
 
