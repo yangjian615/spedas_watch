@@ -26,8 +26,8 @@
 ;     Based on the EIS pitch angle code by Brian Walsh
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-12 15:11:20 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19986 $
+;$LastChangedDate: 2016-02-16 14:53:09 -0800 (Tue, 16 Feb 2016) $
+;$LastChangedRevision: 20020 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -42,7 +42,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     if undefined(energy) then energy = [0,1000]
     if undefined(data_units) then data_units = 'intensity'
     if data_units eq 'intensity' then out_units = '(cm!E2!N s sr KeV)!E-1!N'
-    if data_units eq 'count_rate' then out_units = 'Counts/s'
+    if data_units eq 'cps' then out_units = 'Counts/s'
     if data_units eq 'counts' then out_units = 'Counts'
     
     ; set up the number of pa bins to create

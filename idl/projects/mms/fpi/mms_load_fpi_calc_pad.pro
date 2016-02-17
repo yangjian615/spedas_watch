@@ -10,8 +10,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 13:56:47 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19931 $
+;$LastChangedDate: 2016-02-16 14:20:48 -0800 (Tue, 16 Feb 2016) $
+;$LastChangedRevision: 20016 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_pad.pro $
 ;-
 pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype = datatype, data_rate = data_rate
@@ -59,8 +59,8 @@ pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype
         options, obsstr+'PitchAngDist_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Cavg'
         options, obsstr+'PitchAngDist_sum', ysubtitle='[deg]'
         options, obsstr+'PitchAngDist_avg', ysubtitle='[deg]'
-        options, obsstr+'PitchAngDist_sum', ztitle='Counts'
-        options, obsstr+'PitchAngDist_avg', ztitle='Counts'
+;        options, obsstr+'PitchAngDist_sum', ztitle='Counts'
+;        options, obsstr+'PitchAngDist_avg', ztitle='Counts'
         if autoscale then zlim, obsstr+'PitchAngDist_avg', 0, 0, 1 else $
             zlim, obsstr+'PitchAngDist_avg', min(e_PAD_avg), max(e_PAD_avg), 1
         ylim, obsstr+'PitchAngDist_avg', 0, 180, 0

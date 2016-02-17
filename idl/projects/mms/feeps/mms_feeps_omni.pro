@@ -11,8 +11,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-12 14:02:09 -0800 (Fri, 12 Feb 2016) $
-; $LastChangedRevision: 19981 $
+; $LastChangedDate: 2016-02-16 11:59:00 -0800 (Tue, 16 Feb 2016) $
+; $LastChangedRevision: 20013 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
@@ -21,7 +21,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   if undefined(datatype) then datatype = 'electron'
   if undefined(suffix) then suffix = ''
   if undefined(data_rate) then data_rate = 'srvy'
-  if undefined(data_units) then data_units = 'flux'
+  if undefined(data_units) then data_units = 'cps'
   if (data_units eq 'flux') then data_units = 'intensity'
   if (data_units eq 'cps') then data_units = 'count_rate'
   units_label = data_units eq 'intensity' ? '#/(cm!U2!N-sr-s-keV)' : 'Counts/s'
@@ -42,25 +42,26 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[0]+'_clean'+suffix, data = d, dlimits=dl
 
   if is_struct(d) then begin
-    flux_omni = dblarr(n_elements(d.x),n_elements(d.v))
+    flux_omni = dblarr(n_elements(d.x), n_elements(sensors)*2., n_elements(d.v))
+    sensor_count = 0
 
     for i=0, n_elements(sensors)-1. do begin ; loop through each top sensor
       get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[i]+'_clean'+suffix, data = d
-      ;flux_omni = flux_omni + d.Y
-      for time_idx = 0, n_elements(d.X)-1 do begin
-          if (finite(d.Y[time_idx, *]))[0] then flux_omni[time_idx, *] = flux_omni[time_idx, *] + d.Y[time_idx, *]
-      endfor
+      flux_omni[*, sensor_count, *] = d.Y
+      sensor_count += 1
     endfor
     for i=0, n_elements(sensors)-1. do begin ; loop through each bottom sensor
       get_data, prefix+'bottom_'+data_units+'_sensorID_'+sensors[i]+'_clean'+suffix, data = d
-      ;flux_omni = flux_omni + d.Y
-      for time_idx = 0, n_elements(d.X)-1 do begin
-        if (finite(d.Y[time_idx, *]))[0] then flux_omni[time_idx, *] = flux_omni[time_idx, *] + d.Y[time_idx, *]
-      endfor
+      flux_omni[*, sensor_count, *] = d.Y
+      sensor_count += 1
     endfor
-    newname = prefix+datatype+'_'+data_units+'_omni'+suffix
-    store_data, newname[0], data={x:d.x, y:flux_omni/n_elements(sensors)*2., v:d.v}, dlimits=dl
 
+    newname = prefix+datatype+'_'+data_units+'_omni'+suffix
+    
+    flux_avg = average(flux_omni, 2, /nan)
+    
+    store_data, newname[0], data={x:d.x, y:flux_avg, v:d.v}, dlimits=dl
+    
     ylim, newname[0], lower_en, 500., 1
     zlim, newname[0], 0, 0, 1
 

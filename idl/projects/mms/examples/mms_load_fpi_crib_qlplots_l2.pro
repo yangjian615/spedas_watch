@@ -21,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-10 13:58:51 -0800 (Wed, 10 Feb 2016) $
-; $LastChangedRevision: 19932 $
+; $LastChangedDate: 2016-02-16 14:32:34 -0800 (Tue, 16 Feb 2016) $
+; $LastChangedRevision: 20018 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fpi_crib_qlplots_l2.pro $
 ;-
 
@@ -33,14 +33,14 @@ start_time = systime(/seconds)
 ;date = '15-9-01/00:00:00'
 
 ; full day for FS
-date = '2016-1-12/00:00:00'
-timespan, date, 1, /day
-data_rate = 'fast'
+;date = '2016-1-12/00:00:00'
+;timespan, date, 1, /day
+;data_rate = 'fast'
 
 ; small interval for burst
-;date = '2015-10-16/13:05'
-;timespan, date, 5, /min
-;data_rate = 'brst'
+date = '2015-12-06/04:14'
+timespan, date, 15, /min
+data_rate = 'brst'
 
 ;probes = [1, 2, 3, 4]
 probes = [1]
@@ -79,7 +79,7 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     local_data_dir = local_data_dir, source = source, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
-    autoscale = autoscale, /no_update
+    autoscale = autoscale
 
 ; load ephemeris data for all 4 probes
 ; as of 1/29/16, we use the S/C position data loaded from the FGM files
@@ -119,7 +119,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0], eph_variable+'_R_gsm']
 
     ; Data quality bar
-    qual_bar = mms_quality_bar(obsstr+'dataQuality')
+    qual_bar = mms_quality_bar(obsstr+'dataquality')
     
     ; combine bent pipe B DSC into a single tplot variable
     prefix = 'mms'+strcompress(string(i), /rem)

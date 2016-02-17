@@ -11,8 +11,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 13:56:47 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19931 $
+;$LastChangedDate: 2016-02-16 14:26:00 -0800 (Tue, 16 Feb 2016) $
+;$LastChangedRevision: 20017 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_angles.pro $
 ;-
 pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, level = level, data_rate = data_rate
@@ -53,7 +53,7 @@ pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, lev
                         en = en[n_elements(strsplit(tplotnames[var_idx], '_', /extract))-1]
                         options, tplotnames[var_idx], ysubtitle='[deg]'
                         options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+en+'!CPAD'
-                        options, tplotnames[var_idx], ztitle='Counts'
+                       ; options, tplotnames[var_idx], ztitle='Counts'
                         options, tplotnames[var_idx], ystyle=1
                         zlim, tplotnames[var_idx], 0, 0, 1
                         store_data, tplotnames[var_idx], data={x: fpi_d.X, y:fpi_d.Y, v: fpi_angles}, dlimits=dl

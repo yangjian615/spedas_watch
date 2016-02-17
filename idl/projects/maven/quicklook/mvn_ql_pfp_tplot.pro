@@ -64,8 +64,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2016-01-26 09:20:54 -0800 (Tue, 26 Jan 2016) $
-; $LastChangedRevision: 19811 $
+; $LastChangedDate: 2016-02-16 15:22:28 -0800 (Tue, 16 Feb 2016) $
+; $LastChangedRevision: 20021 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -402,7 +402,8 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      options, 'mvn_sep2_B-O_Eflux_Energy', ytitle='SEP 2F!CIon', ysubtitle='Energy [keV]', /def
      options, 'mvn_sep1_A-F_Eflux_Energy', ytitle='SEP 1F!Ce!E-!N', ysubtitle='Energy [keV]', /def
      options, 'mvn_sep2_A-F_Eflux_Energy', ytitle='SEP 2F!Ce!E-!N', ysubtitle='Energy [keV]', /def
-     
+     ylim, 'mvn_sep*_A-F_Eflux_Energy', 20., 200., 1
+     zlim, 'mvn_sep*_Eflux_Energy', 1.e1, 1.e5, 1
      tname = tnames('mvn_sep*', index=n)
      septn = 'mvn_sep' + ['1_B-O', '2_B-O', '1_A-F', '2_A-F'] + '_Eflux_Energy'
      septn = tnames(septn, index=m)

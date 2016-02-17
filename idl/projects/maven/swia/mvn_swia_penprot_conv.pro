@@ -17,13 +17,13 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-07-02 07:40:22 -0700 (Thu, 02 Jul 2015) $
-; $LastChangedRevision: 18011 $
+; $LastChangedDate: 2016-02-16 10:49:30 -0800 (Tue, 16 Feb 2016) $
+; $LastChangedRevision: 20012 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_conv.pro $
 ;
 ;-
 
-pro mvn_swia_penprot_conv
+pro mvn_swia_penprot_conv, penonly = penonly
 
 ecross = [200,500,1000,2000,3000,4000,5000,10000]
 csx = [22e-16,17e-16,15e-16,13.5e-16,13.3e-16,13.1e-16,12.9e-16,10e-16]
@@ -42,6 +42,7 @@ epen = 0.5*1.67e-27*vpen.y*vpen.y*1e6/1.6e-19
 conv = interpol(formula,ecross,epen)
 
 nsc = (npen.y+nbpen.y)/conv
+if keyword_set(penonly) then nsc = npen.y/conv
 
 store_data,'nsc',data = {x:npen.x,y:nsc}
 
