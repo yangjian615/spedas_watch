@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-12 07:40:36 -0800 (Fri, 12 Feb 2016) $
-; $LastChangedRevision: 19968 $
+; $LastChangedDate: 2016-02-17 14:30:36 -0800 (Wed, 17 Feb 2016) $
+; $LastChangedRevision: 20052 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -22,6 +22,7 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(datatype) then datatype = 'electron'
     if undefined(probe) then probe = '1'
+    
     
     ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
     if datatype eq 'electron' then sensors = ['3', '4', '5', '11', '12'] else sensors = ['6', '7', '8']
@@ -38,6 +39,9 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
     
     for data_units_idx = 0, n_elements(data_units)-1 do begin
         these_units = data_units[data_units_idx]
+        
+        if these_units eq 'cps' then these_units = 'count_rate'
+        
         ; top sensors
         for sensor_idx = 0, n_elements(sensors)-1 do begin
           var_name = 'mms'+probe+'_epd_feeps_top_'+these_units+'_sensorID_'+sensors[sensor_idx]+suffix

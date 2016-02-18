@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-13 16:16:11 -0800 (Wed, 13 Jan 2016) $
-;$LastChangedRevision: 19727 $
+;$LastChangedDate: 2016-02-17 17:51:00 -0800 (Wed, 17 Feb 2016) $
+;$LastChangedRevision: 20059 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_rotate.pro $
 ;
 ;-
@@ -51,7 +51,7 @@ pro spd_slice2d_rotate, rotation=rotation, $
     return
   endif
 
-  if n_elements(vbulk) ne 3 && req_bfield then begin
+  if n_elements(vbulk) ne 3 && req_vbulk then begin
     fail = ~undefined(vbulk) ? 'Invalid bulk velocity provided' : $ 
            '"'+rotation+'" rotation requires bulk velocity data; use VEL_DATA keyword to specify vector or tplot variable'
     dprint, dlevel=1, fail

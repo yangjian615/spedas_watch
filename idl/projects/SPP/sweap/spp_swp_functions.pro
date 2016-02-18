@@ -1,6 +1,6 @@
 ; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2016-02-15 16:33:06 -0800 (Mon, 15 Feb 2016) $
-; $LastChangedRevision: 20006 $
+; $LastChangedDate: 2016-02-17 14:11:44 -0800 (Wed, 17 Feb 2016) $
+; $LastChangedRevision: 20050 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/spp_swp_functions.pro $
 
 
@@ -10,9 +10,11 @@ function spp_swp_word_decom,buffer,n,signed=signed
    return,   swap_endian(/swap_if_little_endian,  uint(buffer,n) )
 end
 
+
 function spp_swp_int4_decom,buffer,n
    return,   swap_endian(/swap_if_little_endian,  long(buffer,n) )
 end
+
 
 function spp_swp_float_decom,buffer,n
    return,   swap_endian(/swap_if_little_endian,  float(buffer,n) )
@@ -413,7 +415,6 @@ pro spp_init_realtime,filename=filename,base=base
   ;spp_apid_data,'3be'x,name='SWEAP SPAN-I HKP',rt_tags='*'
   ;spp_apid_data, rt_flag = 1
   ;spp_swp_manip_init
-
   ;wait,1
   
   spp_set_tplot_options

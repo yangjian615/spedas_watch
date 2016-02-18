@@ -32,7 +32,7 @@ end
 
 function spp_swp_spane_functiontest1_files
   src = spp_file_source()
-  pathnames = 'spp/sweap/prelaunch/gsedata/EM/spanbe/2015021[234]_*/GSE_all_msg.dat
+  pathnames = 'spp/sweap/prelaunch/gsedata/EM/spanbe/2015021[234]_*/GSE_all_msg.dat'
   printdat,src
   files=file_retrieve(pathnames,_extra=src)
   return,files
@@ -42,135 +42,136 @@ end
 
 
 pro poisson_plot,s,index=index
-if not keyword_set(s) then s = tsample()
-nd = size(/dimen,s)
+  if not keyword_set(s) then s = tsample()
+  nd = size(/dimen,s)
 ;avg = average(s,1)
 ;tot = total(s,1)
-par = poisson()
-
-if n_elements(index) eq 0  then index = 2
-i=index
-s_i = s[*,i]
-cs_i = spp_sweap_log_decomp( s_i,/comp)
-h = histbins(cs_i,xb,binsize=1)
-
-par.avg = average(s_i)
-par.h   = nd[0]
-printdat,par
-xv=dindgen(10000)
-pc =  poisson(xv,param=par) 
-printdat,pc
-cxv = spp_sweap_log_decomp( xv,/comp)
-
-cpc = average_hist(pc,cxv,xbins=ccxv,binsize=1,/ret_total)
-
-plot,xb,h, psym=4,xrange=minmax([ccxv,cxv,xb]),yrange=minmax([pc,h,cpc])
-oplot,xb,h,psym=10
-
+  par = poisson()
+  
+  if n_elements(index) eq 0  then index = 2
+  i=index
+  s_i = s[*,i]
+  cs_i = spp_sweap_log_decomp( s_i,/comp)
+  h = histbins(cs_i,xb,binsize=1)
+  
+  par.avg = average(s_i)
+  par.h   = nd[0]
+  printdat,par
+  xv=dindgen(10000)
+  pc =  poisson(xv,param=par) 
+  printdat,pc
+  cxv = spp_sweap_log_decomp( xv,/comp)
+  
+  cpc = average_hist(pc,cxv,xbins=ccxv,binsize=1,/ret_total)
+  
+  plot,xb,h, psym=4,xrange=minmax([ccxv,cxv,xb]),yrange=minmax([pc,h,cpc])
+  oplot,xb,h,psym=10
+  
 
 ;oplot,xv,pc,color=6,psym=10
-oplot,ccxv,cpc,color=6,psym=10
+  oplot,ccxv,cpc,color=6,psym=10
 end
 
 
 
 pro print_rates,t
-if ~keyword_set(t) then ctime,t,npoint=2,/silent
-
-valids=tsample('spp_spanai_rates_VALID_CNTS',t,/average)
-multis=tsample('spp_spanai_rates_MULTI_CNTS',t,/average)
-ostarts=tsample('spp_spanai_rates_START_CNTS',t,/average)
-ostops =tsample('spp_spanai_rates_STOP_CNTS',t,/average)
-
-print,findgen(16)
-print
-print,valids
-print,multis
-print,ostarts
-print,ostops
-
-starts = ostarts+valids
-stops = ostops+valids
-print
-print,valids/starts
-print,valids/stops
+  if ~keyword_set(t) then ctime,t,npoint=2,/silent
+  
+  valids=tsample('spp_spanai_rates_VALID_CNTS',t,/average)
+  multis=tsample('spp_spanai_rates_MULTI_CNTS',t,/average)
+  ostarts=tsample('spp_spanai_rates_START_CNTS',t,/average)
+  ostops =tsample('spp_spanai_rates_STOP_CNTS',t,/average)
+  
+  print,findgen(16)
+  print
+  print,valids
+  print,multis
+  print,ostarts
+  print,ostops
+  
+  starts = ostarts+valids
+  stops = ostops+valids
+  print
+  print,valids/starts
+  print,valids/stops
 end
 
 
 
 
 pro spp_tof_histogram,trange=trange,xrange=xrange,ylog=ylog,binsize=binsize,noerase=noerase,channels=channels,xlog=xlog,hist=h
-if ~keyword_set(trange) then ctime,trange,npoints=2
-
-csize = 2
-spp_apid_data,'3B9'x,apdata=ap
+  if ~keyword_set(trange) then ctime,trange,npoints=2
+  
+  csize = 2
+  spp_apid_data,'3B9'x,apdata=ap
 ;print_struct,ap
-events = *ap.dataptr
-if not keyword_set(trange) then ctime,trange
-
-if keyword_set(trange) then begin
-  w = where(events.time ge trange[0] and events.time le trange[1],nw)
-  if nw ne 0 then events = events[w] else dprint,'No points selected - using all'
-endif
-
-col = bytescale(indgen(16))
-nc = n_elements(col)
+  events = *ap.dataptr
+  if not keyword_set(trange) then ctime,trange
+  
+  if keyword_set(trange) then begin
+     w = where(events.time ge trange[0] and events.time le trange[1],nw)
+     if nw ne 0 then events = events[w] else dprint,'No points selected - using all'
+  endif
+  
+  col = bytescale(indgen(16))
+  nc = n_elements(col)
 ;if ~keyword_set(xrange) then xrange=[450,600]
-if ~keyword_set(binsize) then binsize = 1
-h = histbins(events.tof,xb,binsize=binsize,shift=0,/extend_range)
+  if ~keyword_set(binsize) then binsize = 1
+  h = histbins(events.tof,xb,binsize=binsize,shift=0,/extend_range)
+  
+  if keyword_set(ylog) then begin
+     mx = max(h)
+     yrange = [mx/10^(ylog+3),mx]
+     yrange  = [.5,mx*2]
+  endif
+  
+  if keyword_set(xlog) && ~keyword_set(xrange) then begin
+     xrange = minmax(/pos,xb) > 10
+     xrange = [10,2500]
+  endif
 
-if keyword_set(ylog) then begin
-  mx = max(h)
-  yrange = [mx/10^(ylog+3),mx]
-  yrange  = [.5,mx*2]
-endif
 
-if keyword_set(xlog) && ~keyword_set(xrange) then begin
-  xrange = minmax(/pos,xb) > 10
-  xrange = [10,2500]
-endif
-
-
-plot,/nodata,xb,h * 1.1,xrange=xrange,/xstyle,charsize=csize,yrange=yrange,ylog=ylog,ystyle=3,noerase=noerase,xtitle='Time of Flight channel',ytitle='Counts',xlog=xlog
-mxt = max(h)
-
-if n_elements(channels) eq 0 then channels = reverse(indgen(16))
-
-for i=0,n_elements(channels)-1 do begin
-  ch = channels[i]
-  c=col[ch mod nc]
-  w = where(events.channel eq ch, nw)
-  if nw eq 0 then continue
-  h = histbins(events[w].tof,xb,binsize=binsize,shift=0)
-  oplot,xb,h,color=c,psym=10
-  oplot,xb,h,color=c,psym=1
-  mx = max(h,b)
-  xyouts,xb[b],h[b]+mxt*.03,strtrim(ch,2),color=c,align=.5,charsize=2
-  if keyword_set(dt)  then begin
+  plot,/nodata,xb,h * 1.1,xrange=xrange,/xstyle,charsize=csize,yrange=yrange,ylog=ylog,ystyle=3,noerase=noerase,xtitle='Time of Flight channel',ytitle='Counts',xlog=xlog
+  mxt = max(h)
+  
+  if n_elements(channels) eq 0 then channels = reverse(indgen(16))
+  
+  for i=0,n_elements(channels)-1 do begin
+     ch = channels[i]
+     c=col[ch mod nc]
+     w = where(events.channel eq ch, nw)
+     if nw eq 0 then continue
+     h = histbins(events[w].tof,xb,binsize=binsize,shift=0)
+     oplot,xb,h,color=c,psym=10
+     oplot,xb,h,color=c,psym=1
+     mx = max(h,b)
+     xyouts,xb[b],h[b]+mxt*.03,strtrim(ch,2),color=c,align=.5,charsize=2
+     if keyword_set(dt)  then begin
      
  ;   dt = findgen(44)+7
-
-    pks = find_peaks( [replicate(0,round(xb[0])),h],roiw=5 )    
-    
-    plot,dt,pks.x0,/psym,yrange=[-100,500],xrange=[0,55],/ystyle,/xstyle,xtitle='Delay (ns)',ytitle='TOF value',title='Fit to response'
-    par = polycurve()
-    fit,dt[1:*],pks[1:*].x0,param=par,names='a0 a1'
-    oplot,dt,(pks.x0-func(dt,param=pc)) * 10,psym=4,color=6
-    oplot,xv,func(xv,param=pc)
-    xv=dgen()
-    oplot,xv,func(xv,param=pc)
-    oplot,[0,60],[0,0],color=5,linestyle=2
-    oplot,[0,60],[0,0],color=2,linestyle=2
-
-    
-  endif
-endfor
-
-
+        
+        pks = find_peaks( [replicate(0,round(xb[0])),h],roiw=5 )    
+        
+        plot,dt,pks.x0,/psym,yrange=[-100,500],xrange=[0,55],/ystyle,/xstyle,xtitle='Delay (ns)',ytitle='TOF value',title='Fit to response'
+        par = polycurve()
+        fit,dt[1:*],pks[1:*].x0,param=par,names='a0 a1'
+        oplot,dt,(pks.x0-func(dt,param=pc)) * 10,psym=4,color=6
+        oplot,xv,func(xv,param=pc)
+        xv=dgen()
+        oplot,xv,func(xv,param=pc)
+        oplot,[0,60],[0,0],color=5,linestyle=2
+        oplot,[0,60],[0,0],color=2,linestyle=2
+        
+        
+     endif
+  endfor
+  
+  
 end
 
 
 pro spp_set_tplot_options
+
   ylim,'*rate*CNTS',1,1,1
   options,'*rates*CNTS',labels='CH'+strtrim(indgen(16),2),labflag=-1,yrange=[.5,1e3],/ylog,ystyle=3,psym=-1,symsize=.5
   options,'*rates*CNTS_t',labels='CH'+strtrim(indgen(16),2),labflag=-1,yrange=[.01,100],/ylog,ystyle=3,psym=-1,symsize=.5
@@ -197,20 +198,21 @@ end
 
 
 pro temp
-if 1 then begin
-  spp_apid_data,959,apdata=fhkp
-  dat= *(fhkp.last_ccsds)
-  d=  swap_endian(/swap_if_little_endian,   uint(dat.data,20,512) )
-  plot,d,/ynozer,psym=-1
-  wshow
-endif
+  if 1 then begin
+     spp_apid_data,959,apdata=fhkp
+     dat= *(fhkp.last_ccsds)
+     d=  swap_endian(/swap_if_little_endian,   uint(dat.data,20,512) )
+     plot,d,/ynozer,psym=-1
+     wshow
+  endif
 end
+
 
 pro temp2
   tplot,'*spane_hkp*MON* *RIO*'
-  tplot,'*spanai_hkp *rate*
-
+  tplot,'*spanai_hkp *rate*'
 end
+
 
 
 pro spp_recorders,msg=msg
@@ -347,7 +349,7 @@ if 0 then begin
 
   if 0 then begin
     src = file_retrieve(/str)
-    src.remote_data_dir='http://sprg.ssl.berkeley.edu/data/
+    src.remote_data_dir='http://sprg.ssl.berkeley.edu/data/'
     url_index = 'http://sprg.ssl.berkeley.edu/data/spp/sweap/prelaunch/gsedata/EM/spanai/'
     pathindex = strmid(url_index,strlen(src.remote_data_dir))
     indexfile = file_retrieve(_extra=src,pathindex)+'/.remote-index.html'
@@ -356,7 +358,7 @@ if 0 then begin
   endif
 
   src = file_retrieve(/str)
-  src.remote_data_dir='http://sprg.ssl.berkeley.edu/data/
+  src.remote_data_dir='http://sprg.ssl.berkeley.edu/data/'
   fileformat = 'spp/sweap/prelaunch/gsedata/EM/spanai/2015*/PTP_data.dat'
   files = file_retrieve(_extra=src,fileformat,last_version=1)
   spp_ptp_file_read,files

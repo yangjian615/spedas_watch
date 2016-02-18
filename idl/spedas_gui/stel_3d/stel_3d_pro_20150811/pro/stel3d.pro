@@ -4,6 +4,8 @@
 pro stel3d, $
     ; INPUT FILE  
     infile, $                     ; 入力ファイル。
+    ; HASH CONTAINING DATA
+    data=data, $
     ; TIME RANGE. If not set, use mouse click to determine time range. 
     TRANGE=trange, $              ; 時間幅。現在必須データ(指定が無ければtlimitのようにマウスクリックで指定。)
     CURTIME=curtime, $
@@ -97,7 +99,7 @@ compile_opt idl2
   endif
 
   ; CHECK INPUT FILE FOR 3D DISTRIBUTIONS. 
-  if not keyword_set(infile) then begin
+  if not keyword_set(infile) and undefined(data) then begin
 ;    cd, file_dirname(routine_filepath())
     if ~n_elements(infile) then infile = dialog_pickfile(FILTER='19971212_lep_psd_8532.txt')
     if infile eq '' then begin
@@ -110,7 +112,11 @@ compile_opt idl2
   ; ファイルの読み込み
   ;
   olep = obj_new('stel_import_lep')
-  res = olep.read_lep(infile, TRANGE=trange)
+  if undefined(data) then begin
+    res = olep.read_lep(infile, TRANGE=trange)
+  endif else begin
+    res = olep.read_hash(data, trange=trange)
+  endelse
   ; 
   ; UPDATE TIME RANGE, USING THE INPUT FILE (INFILE). 
   ; trangeをファイルからのデータに更新する

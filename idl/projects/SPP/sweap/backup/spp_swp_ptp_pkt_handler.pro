@@ -1,3 +1,8 @@
+
+
+
+
+
 pro spp_swp_ptp_stream_read,buffer,info=info  ;,time=time
 
   bsize= n_elements(buffer) * (size(/n_dimen,buffer) ne 0)
@@ -39,6 +44,11 @@ pro spp_swp_ptp_stream_read,buffer,info=info  ;,time=time
   if p ne bsize then dprint,dlevel=1,'Buffer incomplete',p,ptp_size,bsize
   return
 end
+
+
+
+
+
 
 
 
@@ -205,9 +215,9 @@ end
   ;          updated by Roberto Livi Jan 28 2016
   ;
   ; $LastChangedBy: rlivi2 $
-  ; $LastChangedDate: 2016-01-29 15:21:06 -0800 (Fri, 29 Jan 2016) $
-  ; $LastChangedRevision: 19852 $
-  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/spp_swp_ptp_pkt_handler.pro $
+  ; $LastChangedDate: 2016-02-17 13:27:22 -0800 (Wed, 17 Feb 2016) $
+  ; $LastChangedRevision: 20036 $
+  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/backup/spp_swp_ptp_pkt_handler.pro $
   ;
   ;-
 pro spp_swp_ptp_pkt_handler,buffer,time=time,size=ptp_size

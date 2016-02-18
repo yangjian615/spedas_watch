@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-09 18:23:40 -0800 (Tue, 09 Feb 2016) $
-;$LastChangedRevision: 19926 $
+;$LastChangedDate: 2016-02-17 17:49:01 -0800 (Wed, 17 Feb 2016) $
+;$LastChangedRevision: 20058 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_crib_stel3d.pro $
 ;-
 
@@ -21,8 +21,6 @@
 ;   For now, it will only store the last sample from each second.
 ;
 ;  -Data in counts is not available so eflux data is used instead.
-;
-;  -ASCII files will be very large (~10 mb/sec for FPI ion)
 ;
 ;  -Data must have at least 3 distributions within the time range.
 ;
@@ -73,16 +71,19 @@ dist = mms_get_hpca_dist(tname)
 ;-----------------------------------------------------------------------------
 
 
-;write to ascii file compatible with stel3d
-file = 'mms_part_test_file.txt'
-mms_part_write_ascii, dist, filename=file
+;fill the counts field with eflux for now (df not working atm)
+mms_part_process, dist, dist_counts, units='eflux'
+
+
+;convert to stel3d data model
+data = spd_dist_to_hash(dist, counts=dist_counts)
 
 
 ;required by stel3d
 thm_init
 
 
-stel3d, file, trange=trange
+stel3d, data=data, trange=trange
 
 
 ;compare with first sample's original (non-interpolated) data

@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-12 15:10:46 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19985 $
+;$LastChangedDate: 2016-02-17 14:29:26 -0800 (Wed, 17 Feb 2016) $
+;$LastChangedRevision: 20051 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -34,7 +34,7 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
   if undefined(bin_size) then bin_size = 15
 
   en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV'
-  units_label = data_units eq 'Counts' ? 'Counts': '[(cm!E2!N s sr KeV)!E-1!N]'
+ ; units_label = data_units eq 'Counts' ? 'Counts': '[(cm!E2!N s sr KeV)!E-1!N]'
 
   prefix = 'mms'+probe+'_epd_feeps_'
   ; get the spin sectors

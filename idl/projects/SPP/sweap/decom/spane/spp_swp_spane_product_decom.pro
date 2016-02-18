@@ -1,6 +1,6 @@
 ; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2016-02-15 16:33:06 -0800 (Mon, 15 Feb 2016) $
-; $LastChangedRevision: 20006 $
+; $LastChangedDate: 2016-02-17 11:22:25 -0800 (Wed, 17 Feb 2016) $
+; $LastChangedRevision: 20031 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
 
 
@@ -32,7 +32,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   ;;-------------------------------------------
   ;; Use APID to determine packet side
   ;; '60' -> '360'x ...
-  pkt_size = [  8,  512,   8,  512] 
+  pkt_size = [ 16,  512,   16,  512] 
   apid_loc = ['60', '61', '62', '63']
   ns = pkt_size[where(apid_loc eq apid_name)]
 

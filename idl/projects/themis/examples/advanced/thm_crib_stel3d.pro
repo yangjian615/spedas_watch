@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-09 18:27:18 -0800 (Tue, 09 Feb 2016) $
-;$LastChangedRevision: 19927 $
+;$LastChangedDate: 2016-02-17 17:49:01 -0800 (Wed, 17 Feb 2016) $
+;$LastChangedRevision: 20058 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_stel3d.pro $
 ;-
 
@@ -35,12 +35,16 @@ trange = '2008-02-26/' + ['04:54','04:55'] + ':00'
 dist = thm_part_dist_array(probe=probe, datatype=datatype, trange=trange)
 
 
-;write to ascii file compatible with stel3d
-file = 'thm_part_test_file.txt'
-thm_part_write_ascii, dist, filename=file
+;apply standard processing
+thm_part_process, dist, dist_counts, units='counts'
+thm_part_process, dist, dist_df, units='df'
 
 
-stel3d, file, trange=trange
+;convert to stel3d data model
+data = spd_dist_to_hash(dist_df, counts=dist_counts)
+
+
+stel3d, data=data, trange=trange 
 
 
 ;compare with first sample's original (non-interpolated) data

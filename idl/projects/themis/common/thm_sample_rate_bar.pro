@@ -19,8 +19,8 @@
 ;HISTORY:
 ; 20-nov-2007, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-08-03 13:08:10 -0700 (Mon, 03 Aug 2015) $
-; $LastChangedRevision: 18369 $
+; $LastChangedDate: 2016-02-17 10:47:06 -0800 (Wed, 17 Feb 2016) $
+; $LastChangedRevision: 20029 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_sample_rate_bar.pro $
 ;-
 Function thm_sample_rate_bar, date, duration, probe,outline=outline, _extra = _extra
@@ -50,17 +50,29 @@ Function thm_sample_rate_bar, date, duration, probe,outline=outline, _extra = _e
     if (ind_ufs[0] ne -1) then ufs_data[ind_ufs] = 0.0
   endelse
 
-  ind_fs = where(dfs.y eq 1)
-  fs_time = float(dfs.x)
-  fs_data = float(dfs.y)
-  fs_data[*] = float('NaN')
-  if (ind_fs[0] ne -1) then fs_data[ind_fs] = 0.0
+  if (size(dfs,/type) ne 8) then begin
+    fs_time = float('NaN')
+    fs_data = float('NaN')
+    fs_data[*] = float('NaN')   
+  endif else begin
+    ind_fs = where(dfs.y eq 1)
+    fs_time = float(dfs.x)
+    fs_data = float(dfs.y)
+    fs_data[*] = float('NaN')
+    if (ind_fs[0] ne -1) then fs_data[ind_fs] = 0.0
+  endelse
 
-  ind_ss = where(dss.y eq 1)
-  ss_time = float(dss.x)
-  ss_data = float(dss.y)
-  ss_data[*] = float('NaN')
-  if (ind_ss[0] ne -1) then ss_data[ind_ss] = 0.0
+  if (size(dss,/type) ne 8) then begin
+    ss_time = float('NaN')
+    ss_data = float('NaN')
+    ss_data[*] = float('NaN')   
+  endif else begin
+    ind_ss = where(dss.y eq 1)
+    ss_time = float(dss.x)
+    ss_data = float(dss.y)
+    ss_data[*] = float('NaN')
+    if (ind_ss[0] ne -1) then ss_data[ind_ss] = 0.0
+  endelse
     
   str_element,dl,'labels',/delete
   str_element,dl,'ysubtitle',/delete

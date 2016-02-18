@@ -8,15 +8,15 @@
 ;       with each measurement)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-12 14:24:27 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19983 $
+;$LastChangedDate: 2016-02-17 14:31:07 -0800 (Wed, 17 Feb 2016) $
+;$LastChangedRevision: 20053 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_spin_avg.pro $
 ;-
 pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
   suffix = suffix
   if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
   if undefined(datatype) then datatype = 'electron'
-  if undefined(data_units) then data_units = 'intensity'
+  if undefined(data_units) then data_units = 'flux'
   if undefined(suffix) then suffix=''
 
   prefix = 'mms'+probe+'_epd_feeps_'

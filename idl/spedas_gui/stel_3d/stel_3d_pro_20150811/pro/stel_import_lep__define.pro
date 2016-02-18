@@ -152,6 +152,48 @@ end
 ;
 ;
 ;
+; import hash that already conforms to data model
+; apply time range, if present, and store copy
+function stel_import_lep::read_hash, input, trange=trange
+    
+    compile_opt idl2
+
+  if ~obj_valid(input) || ~obj_isa(input,'HASH') then return, 0
+
+  if input.isempty() then return, 0
+
+  ;get sorted list of times
+  times = (input.keys()).toarray()
+  times = times.sort()
+
+  ;apply time range  
+  if undefined(trange) then begin
+
+    in = lindgen(n_elements(times))
+
+  endif else begin
+
+    tr = time_double(trange)
+    times_d = time_double(times)
+    in = where( times_d ge min(tr) and times_d lt max(tr), n_in)
+
+    if n_in eq 0 then begin
+      message, 'no data found within the specified time range', /continue
+      return, 0
+    endif
+
+  endelse
+
+  ;store copy
+  (self.stel_import_lep)['data'] = input[times[in]]
+  (self.stel_import_lep)['keys'] = times[in]
+
+  return, 1
+
+end
+;
+;
+;
 function stel_import_lep::getXYZCoord, indata, ALL=all,   $
     VELOCITY=velocity, ENERGY=energy
     
