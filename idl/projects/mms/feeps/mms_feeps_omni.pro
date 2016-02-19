@@ -11,8 +11,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-16 11:59:00 -0800 (Tue, 16 Feb 2016) $
-; $LastChangedRevision: 20013 $
+; $LastChangedDate: 2016-02-18 15:48:53 -0800 (Thu, 18 Feb 2016) $
+; $LastChangedRevision: 20065 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
@@ -67,7 +67,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
 
     options, newname[0], spec = 1, yrange = en_range, $
       ytitle = 'mms'+probe+'!Cfeeps!C'+datatype+'!Comni', $
-      ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default, minzlog = .01
+      ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default
     append_array, tplotnames, newname[0]
 
   endif

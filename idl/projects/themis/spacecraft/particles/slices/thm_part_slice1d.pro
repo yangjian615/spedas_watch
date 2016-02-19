@@ -33,8 +33,8 @@
 ;   
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-06-20 18:44:58 -0700 (Fri, 20 Jun 2014) $
-;$LastChangedRevision: 15400 $
+;$LastChangedDate: 2016-02-18 11:45:09 -0800 (Thu, 18 Feb 2016) $
+;$LastChangedRevision: 20062 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice1d.pro $
 ;
 ;-
@@ -126,11 +126,12 @@ pro thm_part_slice1d, slice, $
 
 
   ;Annotations for plotting
-  title = 'th'+strlowcase(slice.probe)+' ' + $
-          strjoin(slice.dist,'/') + $
+  title = 'th'+strlowcase(slice.spacecraft)+' ' + $
+          strjoin(slice.data_name,'/') + $
           ' ('+strupcase(slice.rot)+') ' + $
           time_string(slice.trange[0]) + $
-          ' -> '+strmid(time_string(slice.trange[1]),11,8)
+          ' -> '+strmid(time_string(slice.trange[1]),11,8) + $
+            ' ('+strtrim(fix(slice.n_samples),2)+')'
   xtitle = xtitle ;determined above
   ytitle = units_string(strlowcase(slice.units))
   

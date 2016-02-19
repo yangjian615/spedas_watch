@@ -26,8 +26,8 @@
 ;     Based on the EIS pitch angle code by Brian Walsh
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-16 14:53:09 -0800 (Tue, 16 Feb 2016) $
-;$LastChangedRevision: 20020 $
+;$LastChangedDate: 2016-02-18 15:47:02 -0800 (Thu, 18 Feb 2016) $
+;$LastChangedRevision: 20064 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -42,9 +42,9 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     if undefined(energy) then energy = [0,1000]
     if undefined(data_units) then data_units = 'intensity'
     if data_units eq 'intensity' then out_units = '(cm!E2!N s sr KeV)!E-1!N'
-    if data_units eq 'cps' then out_units = 'Counts/s'
+    if data_units eq 'cps' || data_units eq 'count_rate' then out_units = 'Counts/s'
     if data_units eq 'counts' then out_units = 'Counts'
-    
+
     ; set up the number of pa bins to create
     bin_size = float(bin_size)
     n_pabins = 180./bin_size
@@ -76,8 +76,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
       particle_pa = pa_data.Y[*, pa_data_map[s_type+'-'+datatype]]
 
       for t=0, n_elements(particle_idxs)-1 do begin
-         ; tdeflag, prefix+'_epd_feeps_' + s_type + '_intensity_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+suffix, 'linear', /overwrite
-          get_data, prefix+'_epd_feeps_' + s_type + '_intensity_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+'_clean'+suffix, data = d
+          get_data, prefix+'_epd_feeps_' + s_type + '_'+data_units+'_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+'_clean'+suffix, data = d
           
           indx = where((d.v le energy[1]) and (d.v ge energy[0]), energy_count)
 

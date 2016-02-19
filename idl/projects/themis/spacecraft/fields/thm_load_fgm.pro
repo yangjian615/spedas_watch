@@ -74,9 +74,9 @@
 ;Notes:
 ;  This routine is (should be) platform independent.
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2012-11-05 17:02:47 -0800 (Mon, 05 Nov 2012) $
-; $LastChangedRevision: 11187 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-02-18 10:24:04 -0800 (Thu, 18 Feb 2016) $
+; $LastChangedRevision: 20060 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fgm.pro $
 ;-
 
@@ -185,7 +185,8 @@ pro thm_load_fgm_post, sname=probe, datatype=dt, level=lvl, $
         thm_cal_fgm, probe=probe, datatype=dt, coord=coord, $
                      in_suffix=suffix, out_suffix=suffix,$
                      cal_spin_harmonics=cal_spin_harmonics,$
-                     cal_dac_offset=cal_dac_offset,$
+                     cal_dac_offset=cal_dac_offset,$                     
+                     interpolate_cal=interpolate_cal,$
                      cal_tone_removal=cal_tone_removal,$
                      cal_get_fulloffset=cal_get_fulloffset,$
                      cal_get_dac_dat=cal_get_dac_dat,$
@@ -207,7 +208,8 @@ pro thm_load_fgm, probe = probe, datatype = datatype, trange = trange, $
                   relpathnames_all = relpathnames_all, no_download = no_download, $
                   cdf_data = cdf_data, get_support_data = get_support_data, $
                   varnames = varnames, valid_names = valid_names, files = files, $
-                  suffix = suffix, type = type, coord = coord, $
+                  suffix = suffix, type = type, coord = coord,  $
+                  interpolate_cal=interpolate_cal,$
                   progobj = progobj, cal_spin_harmonics = cal_spin_harmonics, $
                   cal_dac_offset = cal_dac_offset, cal_tone_removal = cal_tone_removal, $
                   cal_get_fulloffset = cal_get_fulloffset, cal_get_dac_dat = cal_get_dac_dat, $

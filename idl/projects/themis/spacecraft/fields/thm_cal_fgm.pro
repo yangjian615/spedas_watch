@@ -49,6 +49,7 @@
 ;                       Will print the fulloffset for probe a and datatype fgl.
 ;  cal_get_dac_dat = Returns the raw data from directly after the DAC(non-linearity offset) calibration is applied.  For verification.
 ;  cal_get_spin_dat = Returns the raw data from directly after the spin harmonic(solar array current) calibration is applied.  For verification.
+;  interpolate_cal = if it is set, then thm_cal values are interpolated to 10 min time intervals
 ;
 ;
 ; use_eclipse_corrections:  Only applies when loading and calibrating
@@ -78,8 +79,8 @@
 ;
 ;Written by Hannes Schwarzl.
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-12-14 11:00:27 -0800 (Mon, 14 Dec 2015) $
-; $LastChangedRevision: 19628 $
+; $LastChangedDate: 2016-02-18 10:24:04 -0800 (Thu, 18 Feb 2016) $
+; $LastChangedRevision: 20060 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -93,6 +94,86 @@
 ;            Search this string to see changes: Hannes 05/21/2007
 ;-
 
+pro thm_interpolate_cal_apply, thx_fgx, utcStr=utcStr, offi=offi, cali=cali, ncal=ncal
+  ; interpolate the cal file parameter to 10-min intervals
+  ; we use +- a week for a fit
+  compile_opt idl2, hidden
+  
+  if (size(thx_fgx,/type) ne 8) then return 
+  if (n_elements(thx_fgx.X) lt 2) then return 
+  fit_interval = 10.0*60.0 ; ten minutes 
+  fit_span = 7*24*3600.0  ; one week interpolation window
+  
+  utcd=time_double(utcStr)
+  start_time=time_double(thx_fgx.X[0]) - fit_span
+  end_time=time_double(thx_fgx.X[n_elements(thx_fgx.X)-1]) + fit_span
+  
+   ; there are cases where corrections are too sparse
+  idx = where((utcd ge start_time) and (utcd le end_time), ct)
+  if ct lt 1 then return
+  if (idx[ct-1] lt (n_elements(utcd)-1)) then idx = [idx , idx[ct-1]+1]
+  if (idx[0] gt 0) then idx = [idx[0]-1, idx]
+  ct = n_elements(idx)
+  
+  start_time = utcd[idx[0]]
+  end_time = utcd[idx[ct-1]]
+  
+  fit_count = floor((end_time-start_time)/fit_interval)
+  fit_times = dblarr(fit_count)
+  for i=0, fit_count-1 do begin
+    fit_times[i] = start_time + fit_interval*i
+  endfor
+
+  ; now compute calibration values using interpolation
+  new_offi_0 = INTERPOL(offi[idx,0], utcd[idx], fit_times, /quadratic)
+  new_offi_1 = INTERPOL(offi[idx,1], utcd[idx], fit_times, /quadratic)
+  new_offi_2 = INTERPOL(offi[idx,2], utcd[idx], fit_times, /quadratic)
+  
+  ncal = fit_count
+  offi=dblarr(ncal,3)
+  cali_new=dblarr(ncal,9)
+  utcStr=strarr(ncal)  
+  
+  utcStr = time_string(fit_times)
+  offi[*,0] = new_offi_0
+  offi[*,1] = new_offi_1
+  offi[*,2] = new_offi_2  
+        
+  m = MAKE_ARRAY(ct, 3, 3, /double)
+  for i=0,2 do begin
+    for j=0,2 do begin
+      for k=0, ct-1 do begin
+        m[k,i,j] = cali[idx[k],3*i+j]
+      endfor
+    endfor
+  endfor
+  q_in = mtoq(m)
+  qi = qvalidate(q_in,'qi','qslerp')    
+  if (qi[0] eq -1) then begin
+    ; validation failed, use the previous value for each vector    
+    for i=0, fit_count-1 do begin
+      idc = max([0,where(utcd le fit_times[i])])
+      cali_new[i,*] = cali[idc,*]
+    endfor 
+  endif else begin
+    ;interpolate quaternions
+    q_out = qslerp(q_in,utcd[idx],fit_times)
+    ;turn quaternions back into matrices
+    cali_out = qtom(q_out)
+    for i=0,2 do begin
+      for j=0,2 do begin
+        cali_new[*,3*i+j] = cali_out[*,i,j]
+      endfor
+    endfor
+  endelse     
+  cali = dblarr(ncal,9) 
+  cali = cali_new
+
+  DPRINT, dlevel=4, 'Interpollation was applied for cal parameters.'
+
+end
+
+
 pro thm_cal_fgm,$
          probe=probe,$
          datatype=datatype,$
@@ -103,6 +184,7 @@ pro thm_cal_fgm,$
          name_thx_fgx_hed,$
          name_thx_fgx_out,$
          pathfile,$
+         interpolate_cal=interpolate_cal,$
          interpolate_state=interpolate_state,$
          cal_spin_harmonics=cal_spin_harmonics,$
          cal_dac_offset=cal_dac_offset,$
@@ -114,6 +196,11 @@ pro thm_cal_fgm,$
          cal_file_in=cal_file_in, no_spin_tone_batch=no_spin_tone_batch, $
          _extra=_extra      
          ;eg 30/3/2007;Hannes 30/3/2007 ;kb
+
+
+compile_opt idl2, hidden
+
+if ~keyword_set(interpolate_cal) then interpolate_cal=0 else interpolate_cal=1
 
   ;; implement the 'standard' interface as a wrapper around the original
   ;; interface if no positional parameters are present.
@@ -179,6 +266,7 @@ if n_params() eq 0 then begin
                         hed_name,$
                         cal_name,$
                         cal_file,$
+                        interpolate_cal=interpolate_cal,$
                         coord=coord,$
                         cal_spin_harmonics=cal_spin_harmonics,$
                         cal_dac_offset=cal_dac_offset,$
@@ -366,9 +454,14 @@ for i=0,ncal-1 DO BEGIN
     STRPUT, utci, '/', 10
     utc[i]=time_double(utci)
 ENDFOR
-
-
 DPRINT, dlevel=4, 'done reading calibration file'
+
+
+if (interpolate_cal eq 1) then begin
+  thm_interpolate_cal_apply, thx_fgx, utcStr=utcStr, offi=offi, cali=cali, ncal=ncal
+  utc=dblarr(ncal)
+  utc=time_double(utcStr)
+endif  
 
 DPRINT, dlevel=4, 'search calibration for selected time interval ...'
 calIndex=0
@@ -383,7 +476,6 @@ WHILE ((compTime lt reftime) && (i lt ncal-1)) DO BEGIN
        BREAK
     ENDIF
 ENDWHILE
-
 
 ;change  2007-03-29
 istart=i
@@ -401,12 +493,16 @@ ENDWHILE
 
 istop=i
 
-
 DPRINT, dlevel=4,  'Select calibrations from:'
-FOR i=istart,istop DO BEGIN
-	DPRINT, dlevel=4,  utcStr[i]
-ENDFOR
-
+if (interpolate_cal eq 1) then begin 
+  DPRINT, dlevel=4,  'Start time: ' + utcStr[istart]
+  DPRINT, dlevel=4,  'End time: ' + utcStr[istop]
+  DPRINT, dlevel=4,  'Count: ' + string(istop-istart)
+endif else begin
+  FOR i=istart,istop DO BEGIN
+    DPRINT, dlevel=4,  utcStr[i]
+  ENDFOR
+endelse
 
 ;DPRINT, 'offsets: ',TRANSPOSE(offs)
 ;DPRINT, 'cal matrix: '
