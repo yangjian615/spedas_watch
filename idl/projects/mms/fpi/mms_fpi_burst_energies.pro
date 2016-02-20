@@ -11,11 +11,12 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 13:51:39 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19929 $
+;$LastChangedDate: 2016-02-19 15:36:47 -0800 (Fri, 19 Feb 2016) $
+;$LastChangedRevision: 20069 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_burst_energies.pro $
 ;-
-function mms_fpi_burst_energies, species, probe, level = level
+function mms_fpi_burst_energies, species, probe, level = level, suffix = suffix
+  if undefined(suffix) then suffix = ''
   if undefined(probe) then begin
     dprint, dlevel = 'Error, need probe to find burst mode energies'
     return, 0
@@ -31,7 +32,7 @@ function mms_fpi_burst_energies, species, probe, level = level
 
   ; get the step table
   step_var = 'mms'+probe+'_d'+species+'s_stepTable_parity'
-  step_var = level eq 'l2' ? strlowcase(step_var+'_'+data_rate) : step_var
+  step_var = level eq 'l2' ? strlowcase(step_var+'_'+data_rate)+suffix : step_var+suffix
   
   step_name = (tnames(step_var))[0]
   if step_name eq '' then begin

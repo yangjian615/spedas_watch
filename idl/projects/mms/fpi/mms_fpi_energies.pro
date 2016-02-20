@@ -11,11 +11,12 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-22 11:25:52 -0800 (Tue, 22 Dec 2015) $
-;$LastChangedRevision: 19645 $
+;$LastChangedDate: 2016-02-19 15:36:47 -0800 (Fri, 19 Feb 2016) $
+;$LastChangedRevision: 20069 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_energies.pro $
 ;-
-function mms_fpi_energies, species
+function mms_fpi_energies, species, suffix = suffix
+    if undefined(suffix) then suffix = ''
     if undefined(species) || (species ne 'i' && species ne 'e') then begin
         dprint, dlevel = 1, "Error, species type ('i' or 'e') required for FPI energies"
         return, -1

@@ -10,11 +10,13 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-16 12:37:13 -0800 (Tue, 16 Feb 2016) $
-;$LastChangedRevision: 20014 $
+;$LastChangedDate: 2016-02-19 15:40:47 -0800 (Fri, 19 Feb 2016) $
+;$LastChangedRevision: 20070 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_omni.pro $
 ;-
-pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatype = datatype, data_rate = data_rate
+pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatype = datatype, $
+    data_rate = data_rate, suffix = suffix
+    if undefined(suffix) then suffix = ''
     if undefined(datatype) then begin
       dprint, dlevel = 0, 'Error, must provide a datatype to mms_load_fpi_calc_omni'
       return
@@ -35,7 +37,7 @@ pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatyp
         obsstr='mms'+STRING(probe,FORMAT='(I1)')+obs_str_format
 
         ; include the data rate as the suffix for L2 data
-        dtype_suffix = level eq 'l2' ? '_'+data_rate : ''
+        dtype_suffix = level eq 'l2' ? '_'+data_rate+suffix : suffix
         
         ; L2 variable names are all lower case
         plusminus_vars = obsstr+spec_str_format+['_pX', '_mX', '_pY', '_mY', '_pZ', '_mZ']+dtype_suffix
@@ -56,26 +58,26 @@ pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatyp
         e_omni_avg=e_omni_sum/6.0
 
         if is_array(e_omni_sum) then begin
-            store_data, obsstr+'EnergySpectr_omni_avg', data = {x:pX.X, y:e_omni_avg, v:pX.V}, dlimits=dl
-            store_data, obsstr+'EnergySpectr_omni_sum', data = {x:pX.X, y:e_omni_sum, v:pX.V}, dlimits=dl
+            store_data, obsstr+'EnergySpectr_omni_avg'+suffix, data = {x:pX.X, y:e_omni_avg, v:pX.V}, dlimits=dl
+            store_data, obsstr+'EnergySpectr_omni_sum'+suffix, data = {x:pX.X, y:e_omni_sum, v:pX.V}, dlimits=dl
         endif
 
         species_str = species[sidx] eq 'e' ? 'electron' : 'ion'
         ; set the metadata for omnidirectional spectra
-        options, obsstr+'EnergySpectr_omni_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Csum'
-        options, obsstr+'EnergySpectr_omni_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Cavg'
-;        options, obsstr+'EnergySpectr_omni_sum', ysubtitle='[eV]'
-;        options, obsstr+'EnergySpectr_omni_avg', ysubtitle='[eV]'
-;        options, obsstr+'EnergySpectr_omni_sum', ztitle='Counts'
-;        options, obsstr+'EnergySpectr_omni_avg', ztitle='Counts'
-        ylim, obsstr+'EnergySpectr_omni_avg', min(pX.V), max(pX.V), 1
-        if autoscale then zlim, obsstr+'EnergySpectr_omni_avg', 0, 0, 1 else $
-            zlim, obsstr+'EnergySpectr_omni_avg', min(e_omni_avg), max(e_omni_avg), 1
-        ylim, obsstr+'EnergySpectr_omni_sum', min(pX.V), max(pX.V), 1
-        if autoscale then zlim, obsstr+'EnergySpectr_omni_sum', 0, 0, 1 else $
-            zlim, obsstr+'EnergySpectr_omni_sum', min(e_omni_sum), max(e_omni_sum), 1
+        options, obsstr+'EnergySpectr_omni_sum'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Csum'
+        options, obsstr+'EnergySpectr_omni_avg'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Cavg'
+;        options, obsstr+'EnergySpectr_omni_sum'+suffix, ysubtitle='[eV]'
+;        options, obsstr+'EnergySpectr_omni_avg'+suffix, ysubtitle='[eV]'
+;        options, obsstr+'EnergySpectr_omni_sum'+suffix, ztitle='Counts'
+;        options, obsstr+'EnergySpectr_omni_avg'+suffix, ztitle='Counts'
+        ylim, obsstr+'EnergySpectr_omni_avg'+suffix, min(pX.V), max(pX.V), 1
+        if autoscale then zlim, obsstr+'EnergySpectr_omni_avg'+suffix, 0, 0, 1 else $
+            zlim, obsstr+'EnergySpectr_omni_avg'+suffix, min(e_omni_avg), max(e_omni_avg), 1
+        ylim, obsstr+'EnergySpectr_omni_sum'+suffix, min(pX.V), max(pX.V), 1
+        if autoscale then zlim, obsstr+'EnergySpectr_omni_sum'+suffix, 0, 0, 1 else $
+            zlim, obsstr+'EnergySpectr_omni_sum'+suffix, min(e_omni_sum), max(e_omni_sum), 1
 
         ; if autoscale isn't set, set the scale to the min/max of the average
-        if ~autoscale then zlim, obsstr+'EnergySpectr_'+['pX', 'mX', 'pY', 'mY', 'pZ', 'mZ'], min(e_omni_avg), max(e_omni_avg), 1
+        if ~autoscale then zlim, obsstr+'EnergySpectr_'+['pX', 'mX', 'pY', 'mY', 'pZ', 'mZ']+suffix, min(e_omni_avg), max(e_omni_avg), 1
     endfor
 end

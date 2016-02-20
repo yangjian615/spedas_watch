@@ -68,8 +68,8 @@
 ;                  mms_eis_omni to address burst variable name changes
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19843 $
+;$LastChangedDate: 2016-02-19 08:17:06 -0800 (Fri, 19 Feb 2016) $
+;$LastChangedRevision: 20066 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 
@@ -90,6 +90,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(data_units) then data_units = 'flux'
     if undefined(suffix) then suffix = ''
+    if undefined(get_support_data) then get_support_data = 1 ; turn on support data by default, need the spin variable for spin averaging
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'epd-eis', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

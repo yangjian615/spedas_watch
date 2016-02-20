@@ -11,11 +11,13 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 13:52:17 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19930 $
+;$LastChangedDate: 2016-02-19 15:48:04 -0800 (Fri, 19 Feb 2016) $
+;$LastChangedRevision: 20071 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_spectra.pro $
 ;-
-pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rate = data_rate, datatype = datatype
+pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rate = data_rate, $
+    datatype = datatype, suffix = suffix
+    if undefined(suffix) then suffix = ''
     if undefined(datatype) then begin
         dprint, dlevel = 0, 'Error, must provide a datatype to mms_load_fpi_fix_spectra'
         return
@@ -38,8 +40,8 @@ pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rat
 
     for species_idx = 0, n_elements(species_arr)-1 do begin
         species = species_arr[species_idx]
-        spec_regex = level eq 'ql' ? prefix + '_?'+species+'?_*nergySpectr_[mp]?' : prefix + '_fpi_'+species+'EnergySpectr_[mp]?'
-        spec_regex = level eq 'l2' ? prefix + '_?'+species+'?_*nergyspectr_[mp]?_'+data_rate : spec_regex
+        spec_regex = level eq 'ql' ? prefix + '_?'+species+'?_*nergySpectr_*' : prefix + '_fpi_'+species+'EnergySpectr_*'
+        spec_regex = level eq 'l2' ? prefix + '_?'+species+'?_*nergyspectr_*_'+data_rate+suffix : spec_regex+suffix
         spectra_where = strmatch(tplotnames, spec_regex)
 
         if n_elements(spectra_where) ne 0 then begin
@@ -67,8 +69,8 @@ pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rat
                 endif
                 species_str = species eq 'e' ? 'electron' : 'ion'
     
-                if data_rate ne 'brst' then fpi_energies = mms_fpi_energies(species) $
-                else fpi_energies = mms_fpi_burst_energies(species, probe, level = level)
+                if data_rate ne 'brst' then fpi_energies = mms_fpi_energies(species, suffix = suffix) $
+                else fpi_energies = mms_fpi_burst_energies(species, probe, level = level, suffix = suffix)
     
               ;  options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+species_str+'!C'+part_direction
               ;  options, tplotnames[var_idx], ysubtitle='[eV]'

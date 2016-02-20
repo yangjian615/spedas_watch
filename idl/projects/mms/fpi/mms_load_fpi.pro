@@ -57,8 +57,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 13:56:47 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19931 $
+;$LastChangedDate: 2016-02-19 15:36:47 -0800 (Fri, 19 Feb 2016) $
+;$LastChangedRevision: 20069 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -102,12 +102,13 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     if ~undefined(tplotnames) && n_elements(tplotnames) ne 0 then begin
         for probe_idx = 0, n_elements(probes)-1 do begin
             mms_load_fpi_fix_spectra, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $
-                level = level, data_rate = data_rate, datatype = datatype
+                level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
             mms_load_fpi_fix_angles, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $ 
-                level = level, data_rate = data_rate, datatype = datatype
+                level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
             mms_load_fpi_calc_omni, probes[probe_idx], autoscale = autoscale, level = level, $
-                datatype = datatype, data_rate = data_rate
-            mms_load_fpi_calc_pad, probes[probe_idx], level = level, datatype = datatype, data_rate = data_rate
+                datatype = datatype, data_rate = data_rate, suffix = suffix
+            mms_load_fpi_calc_pad, probes[probe_idx], level = level, datatype = datatype, $
+                suffix = suffix, data_rate = data_rate
         endfor
     endif
 end

@@ -10,11 +10,13 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-16 14:20:48 -0800 (Tue, 16 Feb 2016) $
-;$LastChangedRevision: 20016 $
+;$LastChangedDate: 2016-02-19 15:40:47 -0800 (Fri, 19 Feb 2016) $
+;$LastChangedRevision: 20070 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_pad.pro $
 ;-
-pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype = datatype, data_rate = data_rate
+pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype = datatype, $
+    data_rate = data_rate, suffix = suffix
+    if undefined(suffix) then suffix = ''
     if undefined(datatype) then begin
         dprint, dlevel = 0, 'Error, must provide a datatype to mms_load_fpi_calc_pad'
         return
@@ -35,7 +37,7 @@ pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype
         obsstr='mms'+STRING(probe,FORMAT='(I1)')+obs_str_format
 
         ; now concatenate the full variable names, based on the level
-        pad_vars = level eq 'l2' ? obsstr+spec_str_format+'_'+['low', 'mid', 'high']+'en_'+data_rate : obsstr+spec_str_format+'_'+['low', 'mid', 'high']+'En'
+        pad_vars = level eq 'l2' ? obsstr+spec_str_format+'_'+['low', 'mid', 'high']+'en_'+data_rate+suffix : obsstr+spec_str_format+'_'+['low', 'mid', 'high']+'En'+suffix
         
         ; get the PAD from the tplot variables
         get_data, pad_vars[0], data=lowEn, dlimits=dl
@@ -49,25 +51,25 @@ pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype
         e_PAD_avg=e_PAD_sum/3.0
 
         if is_array(e_PAD_sum) then begin
-            store_data, obsstr+'PitchAngDist_sum', data = {x:lowEn.X, y:e_PAD_sum, v:lowEn.V}, dlimits=dl
-            store_data, obsstr+'PitchAngDist_avg', data = {x:lowEn.X, y:e_PAD_avg, v:lowEn.V}, dlimits=dl
+            store_data, obsstr+'PitchAngDist_sum'+suffix, data = {x:lowEn.X, y:e_PAD_sum, v:lowEn.V}, dlimits=dl
+            store_data, obsstr+'PitchAngDist_avg'+suffix, data = {x:lowEn.X, y:e_PAD_avg, v:lowEn.V}, dlimits=dl
         endif
 
         species_str = species[sidx] eq 'e' ? 'electron' : 'ion'
         ; set the metadata for the PADs
-        options, obsstr+'PitchAngDist_sum', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Csum'
-        options, obsstr+'PitchAngDist_avg', ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Cavg'
-        options, obsstr+'PitchAngDist_sum', ysubtitle='[deg]'
-        options, obsstr+'PitchAngDist_avg', ysubtitle='[deg]'
-;        options, obsstr+'PitchAngDist_sum', ztitle='Counts'
-;        options, obsstr+'PitchAngDist_avg', ztitle='Counts'
-        if autoscale then zlim, obsstr+'PitchAngDist_avg', 0, 0, 1 else $
-            zlim, obsstr+'PitchAngDist_avg', min(e_PAD_avg), max(e_PAD_avg), 1
-        ylim, obsstr+'PitchAngDist_avg', 0, 180, 0
-        if autoscale then zlim, obsstr+'PitchAngDist_sum', 0, 0, 1 else $
-            zlim, obsstr+'PitchAngDist_sum', min(e_PAD_sum), max(e_PAD_sum), 1
-        ylim, obsstr+'PitchAngDist_sum', 0, 180, 0
+        options, obsstr+'PitchAngDist_sum'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Csum'
+        options, obsstr+'PitchAngDist_avg'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Cavg'
+        options, obsstr+'PitchAngDist_sum'+suffix, ysubtitle='[deg]'
+        options, obsstr+'PitchAngDist_avg'+suffix, ysubtitle='[deg]'
+;        options, obsstr+'PitchAngDist_sum'+suffix, ztitle='Counts'
+;        options, obsstr+'PitchAngDist_avg'+suffix, ztitle='Counts'
+        if autoscale then zlim, obsstr+'PitchAngDist_avg'+suffix, 0, 0, 1 else $
+            zlim, obsstr+'PitchAngDist_avg'+suffix, min(e_PAD_avg), max(e_PAD_avg), 1
+        ylim, obsstr+'PitchAngDist_avg'+suffix, 0, 180, 0
+        if autoscale then zlim, obsstr+'PitchAngDist_sum'+suffix, 0, 0, 1 else $
+            zlim, obsstr+'PitchAngDist_sum'+suffix, min(e_PAD_sum), max(e_PAD_sum), 1
+        ylim, obsstr+'PitchAngDist_sum'+suffix, 0, 180, 0
 
-        if ~autoscale then zlim, obsstr+'PitchAngDist_'+['lowEn', 'midEn', 'highEn'], min(e_PAD_avg), max(e_PAD_avg), 1
+        if ~autoscale then zlim, obsstr+'PitchAngDist_'+['lowEn', 'midEn', 'highEn']+suffix, min(e_PAD_avg), max(e_PAD_avg), 1
     endfor
 end

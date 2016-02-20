@@ -209,13 +209,17 @@ function stel3d_create_scatter, oData, MINVAL=minval, MAXVAL=maxval, UPDATE=oSca
   ;
   ; store original values
   allmin = min(fn, MAX=allmax)
+
+;2016/02/17 by Kuni 
+if allmax ge 1. then begin 
+
   xrange = oData.getXSouceRange()
   yrange = oData.getYSouceRange()
   zrange = oData.getZSouceRange()
-  
+
   if ~keyword_set(minval) then minval=min(fN)
   if ~keyword_set(maxval) then maxval=max(fN)
-  ;
+  ;^M
   ; subset by data range specified by keywords
   pos = where((fN ge minval) and (fn le maxval))
   fX = fX[pos]
@@ -223,10 +227,39 @@ function stel3d_create_scatter, oData, MINVAL=minval, MAXVAL=maxval, UPDATE=oSca
   fZ = fZ[pos]
   fN = fN[pos]
   ;
-  ; RE-SCALING OF N (0-255) 
+  ; RE-SCALING OF N (0-255)
   ; N値を0～255の値にスケーリングする
   ; ToDo: change if psd
+  ;
   bN = bytscl(fN, MAX=allmax, MIN=allmin)
+
+endif else begin 
+     allmax = alog10(allmax) 
+     if allmin eq 0 then allmin=-17. else allmin=alog10(allmin) 
+
+     xrange = oData.getXSouceRange()
+     yrange = oData.getYSouceRange()
+     zrange = oData.getZSouceRange()
+  
+     ;if ~keyword_set(minval) then minval=alog10(min(fN))
+     ;if ~keyword_set(maxval) then maxval=alog10(max(fN))
+     if ~keyword_set(minval) then minval=10^allmin
+     if ~keyword_set(maxval) then maxval=10^allmax 
+     ;
+     ; subset by data range specified by keywords
+     pos = where((fN ge minval) and (fn le maxval))
+     fX = fX[pos]
+     fY = fY[pos]
+     fZ = fZ[pos]
+     fN = fN[pos]
+     ;
+     ; RE-SCALING OF N (0-255) 
+     ; N値を0～255の値にスケーリングする
+     ;
+     bN = bytscl(alog10(fN), MAX=allmax,MIN=allmin) 
+endelse 
+;2016/02/17 by Kuni -END-
+
 
   oPalette = oData->getPalette()
   oPalette->GetProperty, Red=bRed, Green=bGreen, Blue=bBlue

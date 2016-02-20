@@ -24,6 +24,7 @@ function spp_swp_spani_slow_hkp_91x_decom, ccsds , ptp_header=ptp_header, apdat=
          met:            ccsds.met,  $
          delay_time:     ptp_header.ptp_time - ccsds.time, $
          seq_cntr:       ccsds.seq_cntr, $
+
          REVN:           b[12],  $
          CMDS_REC:       spp_swp_word_decom(b,13),  $
          cmds_unk:       ishft(b[15],4), $
@@ -62,6 +63,7 @@ function spp_swp_spani_slow_hkp_91x_decom, ccsds , ptp_header=ptp_header, apdat=
          DAC_ACC:        spp_swp_word_decom(b,78), $
          MAXCNT:         spp_swp_word_decom(b,80), $
          USRVAR:         spp_swp_word_decom(b,82), $
+
          sram_ADDR:      ishft(b[84] and '3f'xUL,16)  + spp_swp_word_decom(b,85), $
          reset_cntr:     b[87], $
          chksums:        b[88:95] , $
@@ -73,12 +75,38 @@ function spp_swp_spani_slow_hkp_91x_decom, ccsds , ptp_header=ptp_header, apdat=
          MRAN_chksum:    b[93], $
          PSUM_chksum:    b[94], $
          PADD_chksum:    b[95], $
-         time_cmds:      b[96], $
+
+         prod_srv:       ishft(b[96],-7) and 1,$ ; 1 bit
+         prod_ap:        ishft(b[96],-6) and 1,$ ; 1 bit
+         tof_hist:       ishft(b[96],-5) and 1,$ ; 1 bit - currently named processing
+         raw_events:     ishft(b[96],-4) and 1,$ ; 1 bit
+         time_cmds:      b[96] and '1111'b    ,$ ; 4 bits         
+
          peadl_chksum:   b[97], $
          PMBINS_chksum:  b[98], $
          table_chksum:   b[99], $
-         cycle_cntr:     ishft(spp_swp_word_decom(b,100) ,-5), $
-         MRAM_ADDR:      ishft( b[101] and '1f'xul  ,16) + spp_swp_word_decom(b,102), $
+
+         cycle_cntr:     ishft(spp_swp_word_decom(b,100) ,-5), $ ;top 11 bits
+         MRAM_ADDR:      ishft( b[101] and '1f'xul  ,16) + spp_swp_word_decom(b,102), $ ; 21 bits
+
+         
+         err_atn:         ishft(b[104],-2)  ,$        ;  6 bits
+         err_cvr:         (b[104] and '11'b),$        ;  2 bits
+         timeout_cvr:     b[105],$                    ;  8 bits
+         timeout_atn:     b[106],$                    ;  8 bits
+         timeout_relax:   b[107],$                    ;  8 bits
+         atn_relax_tm:    spp_swp_word_decom(b,108),$ ; 16 bits
+         cvr_relax_tm:    spp_swp_word_decom(b,110),$ ; 16 bits
+         actin_act_time:  spp_swp_word_decom(b,112),$ ; 16 bits
+         actout_act_time: spp_swp_word_decom(b,114),$ ; 16 bits
+         zero:            b[116] ,$                   ;  8 bits
+         peak_cnt:        spp_swp_word_decom(b,117),$ ; 16 bits
+         peak_step:       b[119],$                    ;  8 bits
+         fsm_errcnt:      b[120],$                    ;  8 bits
+         mem_errcnt:      b[121],$                    ;  8 bits
+         chksum_spsum:    b[122],$                    ;  8 bits
+         act_override:    b[123],$                    ;  8 bits
+
          GAP:            ccsds.gap }
   
   if debug(3) then printdat,spai,/hex
