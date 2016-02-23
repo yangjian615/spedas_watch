@@ -44,7 +44,7 @@
 ;       NOOLINES: suppresses the black contour lines
 ;       NUMOLINES: how many black contour lines (DEFAULT 20, MAX 60)
 ;       REMOVEZERO: removes the data with zero counts for plotting
-;       SHOWDATA: plots all the data points over the contour
+;       SHOWDATA: plots all the data points over the contour (symsize = showdata)
 ;       VEL: specifies the bulk velocity in the instrument coordinates
 ;            used for subtraction & rotation (default is calculated with v_3d)
 ;       NOGRID: forces no triangulation (no interpolation)
@@ -59,13 +59,16 @@
 ;       RESOLUTION: resolution of the mesh (DEFAULT 51)
 ;       ISOTROPIC: forces the scaling of the X and Y axes to be equal
 ;       XTITLE, YTITLE, ZTITLE, TITLE: set titles
+;       NOPLOT: if set, does not generate a plot
+;       DATPLOT: returns a structure which contains data used to plot
+;       other keywords are passed to contour
 ; CREATED BY:
 ;       Yuki Harada on 2014-05-26
 ;       Modified from 'thm_esa_slice2d' written by Arjun Raj & Xuzhi Zhou
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-10-30 10:57:31 -0700 (Fri, 30 Oct 2015) $
-; $LastChangedRevision: 19188 $
+; $LastChangedDate: 2016-02-22 16:02:11 -0800 (Mon, 22 Feb 2016) $
+; $LastChangedRevision: 20105 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -90,7 +93,7 @@ function slice2d_cal_rot,v1,v2
 end
 
 ;- main procedure
-pro slice2d, dat, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic, xtitle=xtitle, ytitle=ytitle, ztitle=ztitle, title=title
+pro slice2d, dat, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic, xtitle=xtitle, ytitle=ytitle, ztitle=ztitle, title=title, noplot=noplot, datplot=datplot, _extra=_extra
 
 
 ;- default setting
@@ -482,6 +485,9 @@ if ~keyword_set(title) then $
    title = dat2.data_name+' '+time_string(dat2.time) $
            +'->'+strmid(time_string(dat2.end_time),11,8)
 
+xg = !values.f_nan
+yg = !values.f_nan
+surf = !values.f_nan
 if not keyword_set(nogrid) then begin
    spacing = (xrange[1]-xrange[0])/(resolution-1)
 
@@ -500,54 +506,59 @@ if not keyword_set(nogrid) then begin
    if n_elements(xg) mod 2 ne 1 then $
       dprint, 'The line plots are invalid', n_elements(xg)
 
-   contour,surf,xg,yg, $
-           /closed, levels=levels, c_color=colors, fill=fill, $
-           ticklen=-0.01, isotropic=isotropic, $
-           xstyle=1, xrange=xrange, xtitle=xtitle,$
-           ystyle=1, yrange=xrange, ytitle=ytitle, $
-           title=title, position=position
-   if not keyword_set(noolines) then begin
+   if ~keyword_set(noplot) then begin
       contour,surf,xg,yg, $
-              /closed, /noerase, levels=levels2,  $
-              ticklen=0, isotropic=isotropic, color=0, $
-              xstyle=5, xrange=xrange,$
-              ystyle=5, yrange=xrange, position=position
-   endif
+              /closed, levels=levels, c_color=colors, fill=fill, $
+              ticklen=-0.01, isotropic=isotropic, $
+              xstyle=1, xrange=xrange, xtitle=xtitle,$
+              ystyle=1, yrange=xrange, ytitle=ytitle, $
+              title=title, position=position, _extra=_extra
+      if not keyword_set(noolines) then begin
+         contour,surf,xg,yg, $
+                 /closed, /noerase, levels=levels2,  $
+                 ticklen=0, isotropic=isotropic, color=0, $
+                 xstyle=5, xrange=xrange,$
+                 ystyle=5, yrange=xrange, position=position
+      endif
+   endif                        ;- noplot
 endif else begin
-   contour,cntplot,xplot,yplot, /irregular, $
-           /closed, levels=levels, c_color=colors, fill=fill, $
-           ticklen=-0.01, isotropic=isotropic, $
-           xstyle=1, xrange=xrange, xtitle=xtitle,$
-           ystyle=1, yrange=xrange, ytitle=ytitle, $
-           title=title, position=position
-   if not keyword_set(noolines) then begin
+   if ~keyword_set(noplot) then begin
       contour,cntplot,xplot,yplot, /irregular, $
-              /closed, /noerase, levels=levels2,  $
-              ticklen=0, isotropic=isotropic, color=0, $
-              xstyle=5, xrange=xrange,$
-              ystyle=5, yrange=xrange, position=position
-   endif
+              /closed, levels=levels, c_color=colors, fill=fill, $
+              ticklen=-0.01, isotropic=isotropic, $
+              xstyle=1, xrange=xrange, xtitle=xtitle,$
+              ystyle=1, yrange=xrange, ytitle=ytitle, $
+              title=title, position=position, _extra=_extra
+      if not keyword_set(noolines) then begin
+         contour,cntplot,xplot,yplot, /irregular, $
+                 /closed, /noerase, levels=levels2,  $
+                 ticklen=0, isotropic=isotropic, color=0, $
+                 xstyle=5, xrange=xrange,$
+                 ystyle=5, yrange=xrange, position=position
+      endif
+   endif                        ;- noplot
 endelse
 
 if not keyword_set(subtract) then begin
 ;- inner circle (minimum energy)
    circx = cos(findgen(361)*!dtor)*sqrt(2.*erange[0]/mass)
    circy = sin(findgen(361)*!dtor)*sqrt(2.*erange[0]/mass)
-   polyfill,circx,circy,/fill,color=!p.background ;- fill the inner circle
-   oplot,circx,circy,thick=2
+   if ~keyword_set(noplot) then polyfill,circx,circy,/fill,color=!p.background ;- fill the inner circle
+   if ~keyword_set(noplot) then oplot,circx,circy,thick=2
 ;- outer circle (maximum energy)
    circx = cos(findgen(361)*!dtor)*sqrt(2.*erange[1]/mass)
    circy = sin(findgen(361)*!dtor)*sqrt(2.*erange[1]/mass)
-   oplot,circx,circy,thick=2
-   if not keyword_set(novelline) then oplot,[0,vvec[0]],[0,vvec[1]],col= !d.table_size-9
+   if ~keyword_set(noplot) then oplot,circx,circy,thick=2
+   if ~keyword_set(noplot) and ~keyword_set(novelline) then oplot,[0,vvec[0]],[0,vvec[1]],col= !d.table_size-9
 endif ;- Since velocity subtraction modifies energy boundaries, inner & outer circles are plotted only when no subtraction is conducted
 
-if keyword_set(sundir) then oplot,[0,xsun*xmax],[0,ysun*xmax]
+if ~keyword_set(noplot) and keyword_set(sundir) then oplot,[0,xsun*xmax],[0,ysun*xmax]
 
 if ~keyword_set(ztitle) then ztitle = units_string(dat2.units_name)
-draw_color_scale, range=[cntmin,cntmax], log=zlog, yticks=10, title = ztitle
+if ~keyword_set(noplot) then draw_color_scale, range=[cntmin,cntmax], log=zlog, yticks=10, title = ztitle
 
-if keyword_set(showdata) then oplot,xplot,yplot,psym=1
+if ~keyword_set(noplot) and keyword_set(showdata) then oplot,xplot,yplot,psym=1,symsize=showdata
+datplot = {x:xplot,y:yplot,v:cntplot,xg:xg,yg:yg,vg:surf}
 ;=== plot the data ===
 
 

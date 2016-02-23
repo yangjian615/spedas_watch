@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-17 07:45:24 -0800 (Wed, 17 Feb 2016) $
-;$LastChangedRevision: 20028 $
+;$LastChangedDate: 2016-02-22 12:28:58 -0800 (Mon, 22 Feb 2016) $
+;$LastChangedRevision: 20103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -237,9 +237,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             local_files = mms_get_local_files(probe=probe, instrument=instrument, $
                     data_rate=data_rate, level=level, datatype=datatype, trange=time_double([day_string, end_string]))
 
-            ;Filter files by time
-            if is_array(local_files) then local_files = unh_mms_file_filter(local_files, trange=time_double([day_string, end_string]), $
-                version=cdf_version, min_version = min_version, latest_version = latest_version)
+;            ;Filter files by time
+;            if is_array(local_files) then local_files = unh_mms_file_filter(local_files, trange=time_double([day_string, end_string]), $
+;                version=cdf_version, min_version = min_version, latest_version = latest_version)
 
             if is_string(local_files) then begin
                 append_array, files, local_files

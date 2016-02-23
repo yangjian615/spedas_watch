@@ -23,14 +23,13 @@ function spp_swp_spani_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   spec2 = 0
   spec3 = 0
   cnts_full = cnts
-
   case data_size of 
      4096: begin
         cnts  = reform(cnts,32,16,8,/overwrite)
         spec1 = total(total(cnts,3),2)
         spec2 = total(total(cnts,1),2)
         spec3 = total(total(cnts,1),1)
-;      printdat,spec1,spec2,spec3
+        ;printdat,spec1,spec2,spec3
      end
      512: begin
         cnts  = reform(cnts,32,16,/overwrite)
@@ -43,8 +42,7 @@ function spp_swp_spani_product_decom,ccsds, ptp_header=ptp_header, apdat=apdat
         spec2 = total(cnts,1)
      end
      16: begin
-        spec1 = cnts
-                                ;     printdat,cnts
+        spec1 = cnts                                ;     printdat,cnts
      end
      else: begin
        dprint,dlevel=2,dwait=10.,$

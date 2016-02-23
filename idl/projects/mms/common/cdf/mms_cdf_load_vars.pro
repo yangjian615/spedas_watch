@@ -271,8 +271,14 @@ for fi=0,n_elements(files)-1 do begin
                     if (vi.ndimen ge 1 and n_elements(record) eq 0) then begin
                         if numrec eq 1 then begin
                             dprint,dlevel=3,'Warning: Single record! ',vi.name,vi.ndimen,vi.d
-                            if (~is_array(size(/dimensions,value)) && size(/dimensions,value) eq 0) then value = reform(value) else value = transpose(reform(/overwrite,value, [1,size(/dimensions,value)] ))  ; Special case for variables with a single record
-
+                            if (~is_array(size(/dimensions,value)) && size(/dimensions,value) eq 0) then begin
+                                value = reform(value)
+                            endif else begin
+                                value = reform(/overwrite,value, [1,size(/dimensions,value)] )
+                                ; the following broke on L2 FPI files with only a single time stored in them
+                                ;value = transpose(reform(/overwrite,value, [1,size(/dimensions,value)] ))  ; Special case for variables with a single record
+                            endelse
+                            
                             ;if is_array(value) && n_elements(value) ne 1 then value = reform(/overwrite,value, [1,size(/dimensions,value)] ) $ ; Special case for variables with a single record
                             ;    else value = reform(value,/overwrite)
                         endif else begin
