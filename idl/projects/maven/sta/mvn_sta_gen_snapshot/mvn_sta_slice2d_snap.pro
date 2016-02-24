@@ -48,6 +48,9 @@
 ;
 ;       VSC:      Corrects for the spacecraft velocity.
 ;
+;  SHOWDATA:      Plos all the data points over the contour (symsize = showdata).
+;                 Pluses = Free sky bins, Crosses = Blocked bins.
+;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
 ;                 ; Uses archive data, and shows the B field direction.
@@ -77,24 +80,21 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2016-02-15 13:50:06 -0800 (Mon, 15 Feb 2016) $
-; $LastChangedRevision: 19994 $
+; $LastChangedDate: 2016-02-23 16:01:49 -0800 (Tue, 23 Feb 2016) $
+; $LastChangedRevision: 20116 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id,    $
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
-                          sc_pot=sc_pot, vsc=vsc
+                          sc_pot=sc_pot, vsc=vsc, showdata=showdata
 
   IF STRUPCASE(STRMID(!version.os, 0, 3)) EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
   dsize = GET_SCREEN_SIZE()
   IF SIZE(var2, /type) NE 0 THEN BEGIN
      keepwin = 1
-     str_element, _extra, 'rot', 'perp', /add_replace
-     str_element, _extra, 'subtract', 1, /add_replace
-     str_element, _extra, 'showdata', 1, /add_replace
      window = topt.window + 1 
   ENDIF 
   IF SIZE(var1, /type) NE 0 AND SIZE(var2, /type) EQ 0 THEN var2 = var1
@@ -197,7 +197,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
                  v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')
               ENDIF 
               IF SIZE(v_sc, /type) NE 0 THEN BEGIN
-                 v_sc = spice_vector_rotate(v_sc, 0.5*(d.time + d.end_time), 'MAVEN_MSO', 'MAVEN_STATIC', verbose=verbose, check='MAVEN_SPACECRAFT')
+                 v_sc = spice_vector_rotate(v_sc, 0.5*(d.time + d.end_time), 'MAVEN_MSO', 'MAVEN_STATIC', verbose=verbose)
                  dprint, dlevel=2, verbose=verbose, $
                          lbreak + '  Correcting f(v) for the spacecraft velocity:' + lbreak + $
                          '  V_sc (km/s) = [   ' + STRING(v_sc, '(3(F0, :, ",   "))') + '].'
@@ -219,11 +219,24 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            wstat = EXECUTE("wset, wnum")
            IF wstat EQ 0 THEN wi, wnum, wsize=[dsize[0]/2., dsize[1]*2./3.] ELSE undefine, wstat
         ENDIF 
-        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel")
-        IF status EQ 1 THEN $
-           XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal
 
-        undefine, status, d, vel
+        IF keyword_set(showdata) THEN BEGIN
+           dummy = d
+           dummy.data = FLOAT(d.bins_sc) 
+           status = EXECUTE("slice2d, dummy, _extra=_extra, vel=vel, /noplot, datplot=block, /verbose")
+           undefine, dummy
+        ENDIF
+        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=dpts")
+        IF status EQ 1 THEN BEGIN
+           XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal
+           IF keyword_set(showdata) THEN BEGIN
+              wb = WHERE(block.v LE 0., nwb, complement=wf, ncomplement=nwf)
+              IF nwb GT 0 THEN OPLOT, block.x[wb], block.y[wb], psym=7, color=1, symsize=showdata ; blocked bins
+              IF nwf GT 0 THEN OPLOT, block.x[wf], block.y[wf], psym=1, symsize=showdata          ; free space bins
+              undefine, block, wb, nwb, wf, nwf
+           ENDIF 
+        ENDIF 
+        undefine, status, d, vel, dpts
      ENDIF ELSE dprint, 'Click again.', dlevel=2, verbose=verbose
 
      IF SIZE(var2, /type) EQ 0 THEN BEGIN

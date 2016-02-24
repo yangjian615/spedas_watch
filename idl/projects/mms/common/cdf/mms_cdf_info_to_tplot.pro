@@ -94,7 +94,7 @@ for i=0,nv-1 do begin
    plottable_data= total(/preserve,v.name eq varnames) ne 0
    
    ;if keyword_set(non_record_varying) then plottable_data = plottable_data else plottable_data = plottable_data and v.recvary
-   plottable_data = plottable_data and v.recvary
+   ;plottable_data = plottable_data and v.recvary
 
    if plottable_data eq 0 then begin
       dprint,dlevel=6,verbose=verbose,'Skipping variable: "'+v.name+'" ('+var_type+')'

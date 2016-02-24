@@ -11,8 +11,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-18 15:48:53 -0800 (Thu, 18 Feb 2016) $
-; $LastChangedRevision: 20065 $
+; $LastChangedDate: 2016-02-23 17:54:33 -0800 (Tue, 23 Feb 2016) $
+; $LastChangedRevision: 20119 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
@@ -33,7 +33,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   if data_rate eq 'brst' && datatype eq 'electron' then sensors = ['1','2','3','4','5','9','10','11','12']
   if data_rate eq 'brst' && datatype eq 'ion' then sensors = ['6','7','8']
   
-  lower_en = datatype eq 'electron' ? 71 : 96
+  lower_en = datatype eq 'electron' ? 71 : 78
 
   probe = strcompress(string(probe), /rem)
   ;species_str = datatype+'_'+species
@@ -65,7 +65,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
     ylim, newname[0], lower_en, 500., 1
     zlim, newname[0], 0, 0, 1
 
-    options, newname[0], spec = 1, yrange = en_range, $
+    options, newname[0], spec = 1, yrange = en_range, yticks=3, $
       ytitle = 'mms'+probe+'!Cfeeps!C'+datatype+'!Comni', $
       ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default
     append_array, tplotnames, newname[0]

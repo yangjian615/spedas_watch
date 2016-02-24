@@ -6,8 +6,8 @@
 ;    this function splits the last integral channel from the FEEPS spectra
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-16 14:51:29 -0800 (Tue, 16 Feb 2016) $
-;$LastChangedRevision: 20019 $
+;$LastChangedDate: 2016-02-23 14:03:55 -0800 (Tue, 23 Feb 2016) $
+;$LastChangedRevision: 20108 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
@@ -37,10 +37,6 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
       bottom_name_out = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean'+suffix, /rem)
       store_data, top_name_out, data={x: top_data.X, y: top_data.Y[*, 0:n_elements(top_data.V)-2], v: top_data.V[0:n_elements(top_data.V)-2]}, dlimits=top_dl
       store_data, bottom_name_out, data={x: bottom_data.X, y: bottom_data.Y[*, 0:n_elements(bottom_data.V)-2], v: bottom_data.V[0:n_elements(bottom_data.V)-2]}, dlimits=bottom_dl
-  
-      ; repeat last good value
-      tdeflag, top_name_out, 'repeat', /overwrite
-      tdeflag, bottom_name_out, 'repeat', /overwrite
      
       ; limit the lower energy plotted
       options, top_name_out, ystyle=1

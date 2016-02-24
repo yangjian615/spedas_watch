@@ -50,8 +50,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-12 11:55:36 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19977 $
+;$LastChangedDate: 2016-02-23 14:34:20 -0800 (Tue, 23 Feb 2016) $
+;$LastChangedRevision: 20111 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -83,14 +83,14 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     
     for probe_idx = 0, n_elements(probes)-1 do begin
       this_probe = string(probes[probe_idx])
+      ; split the extra integral channel from all of the spectrograms
+      mms_feeps_split_integral_ch, ['count_rate', 'intensity', 'counts'], datatype, this_probe, $
+        suffix = suffix, data_rate = data_rate
+        
       ; remove the sunlight contamination
       mms_feeps_remove_sun, probe = this_probe, datatype = datatype, $
           data_rate = data_rate, suffix = suffix, data_units = ['count_rate', 'intensity', 'counts']
 
-      ; split the extra integral channel from all of the spectrograms
-      mms_feeps_split_integral_ch, ['count_rate', 'intensity', 'counts'], datatype, this_probe, $
-          suffix = suffix, data_rate = data_rate
-        
       ; calculate the omni-directional spectra
       mms_feeps_omni, this_probe, datatype = datatype, tplotnames = tplotnames, data_units = data_units, $
           data_rate = data_rate, suffix=suffix

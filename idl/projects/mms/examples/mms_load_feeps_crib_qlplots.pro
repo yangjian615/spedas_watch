@@ -6,13 +6,12 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-17 14:31:45 -0800 (Wed, 17 Feb 2016) $
-; $LastChangedRevision: 20054 $
+; $LastChangedDate: 2016-02-23 18:02:16 -0800 (Tue, 23 Feb 2016) $
+; $LastChangedRevision: 20122 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_feeps_crib_qlplots.pro $
 ;-
 
 probe = '1'
-;timespan, '2015-10-16', 1
 timespan, '2015-12-15', 1
 width = 950
 height = 1000
@@ -44,8 +43,10 @@ endif
 
 mms_load_feeps, probe=probe, data_rate=data_rate, datatype='electron', suffix='_electrons', data_units = type
 mms_load_feeps, probe=probe, data_rate=data_rate, datatype='ion', suffix='_ions', data_units = type
-mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[71, 600], data_units = type
-mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[96, 600], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[71, 71], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[201, 201], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[78, 78], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[206, 206], data_units = type
 
 ; we use the B-field data at the top of the plot, and the position data in GSM coordinates
 ; loaded from the QL DFG files
@@ -94,5 +95,4 @@ tplot, [['mms_bss_burst', 'mms_bss_fast'], $
                     '_epd_feeps_*keV_pad*ions*spin' $
                     ]], var_label=position_vars
 
-stop
 end

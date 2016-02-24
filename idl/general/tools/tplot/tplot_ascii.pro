@@ -12,7 +12,7 @@
 ;        current directory with name tplot_name.txt.  Use this
 ;        keyword to set the .txt extension to a different extension.
 ;  dir:  Put output  in dir as opposed to current working directory.
-;  precise: increases precision to maximum
+;  precise: increases precision to maximum (microseconds)
 ;  trange: array[2] of double  or string. Specify time range for output.
 ;  header: optional keyword, if set ascii file will contain header information
 ;History:
@@ -37,7 +37,8 @@ pro tplot_ascii,names,trange=trange,fname=fname,ext=ext,dir=dir,$
 if not keyword_set(fname) then fname = '' else fname = fname+'_'
 if not keyword_set(ext) then ext = '.txt'
 if not keyword_set(dir) then dir = '' else dir = file_expand_path(dir)+ '/'
-if not keyword_set(precise) then precise=3
+if not keyword_set(precise) then precise=3 else precise=6
+time_precision_str = 'A' + strtrim(20 + precise,2) ;this will now be either 23 or 26 characters
 
 tvar=tnames(names)
 
@@ -145,15 +146,15 @@ for n=0,nv-1 do begin
      if ~keyword_set(format_string) then begin
        dtype = size(data, /type)
        Case dtype of 
-         2: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,I12))'
-         3: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,I12))'
-         4: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,e20.7))'
-         5: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,e20.7))' 
-         12: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,I12))'
-         13: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,I12))'
-         14: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,I12))'
-         15: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,I12))'
-       Else: format_string = '(A23, ' + strtrim(ncol, 2) + '(2X,e20.7))'
+         2: format_string = '(' + time_precision_str + '(2X,I12))'
+         3: format_string = '(' + time_precision_str + ', ' + strtrim(ncol, 2) + '(2X,I12))'
+         4: format_string = '(' + time_precision_str + ', ' + strtrim(ncol, 2) + '(2X,e20.7))'
+         5: format_string = '(' + time_precision_str + ', ' + strtrim(ncol, 2) + '(2X,e20.7))' 
+         12: format_string = '(' + time_precision_str + ', ' + strtrim(ncol, 2) + '(2X,I12))'
+         13: format_string = '(' + time_precision_str + ', ' + strtrim(ncol, 2) + '(2X,I12))'
+         14: format_string = '(' + time_precision_str + ', ' + strtrim(ncol, 2) + '(2X,I12))'
+         15: format_string = '(' + time_precision_str + ', ' + strtrim(ncol, 2) + '(2X,I12))'
+       Else: format_string = '(' + time_precision_str + ', ' + strtrim(ncol, 2) + '(2X,e20.7))'
        EndCase
      endif    
     

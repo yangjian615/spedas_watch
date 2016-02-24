@@ -66,9 +66,9 @@
 ;       Yuki Harada on 2014-05-26
 ;       Modified from 'thm_esa_slice2d' written by Arjun Raj & Xuzhi Zhou
 ;
-; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-02-22 16:02:11 -0800 (Mon, 22 Feb 2016) $
-; $LastChangedRevision: 20105 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2016-02-23 16:03:11 -0800 (Tue, 23 Feb 2016) $
+; $LastChangedRevision: 20117 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -93,7 +93,7 @@ function slice2d_cal_rot,v1,v2
 end
 
 ;- main procedure
-pro slice2d, dat, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic, xtitle=xtitle, ytitle=ytitle, ztitle=ztitle, title=title, noplot=noplot, datplot=datplot, _extra=_extra
+pro slice2d, dat, rotation=rotation, angle=angle, thirddirlim=thirddirlim, xrange=xrange, range=range, erange=erange, units=units, nozlog=nozlog, position=position, nofill=nofill, nlines=nlines, noolines=noolines, numolines=numolines, removezero=removezero, showdata=showdata, vel=vel, nogrid=nogrid, nosmooth=nosmooth, sundir=sundir, novelline=novelline, subtract=subtract, resolution=resolution, isotropic=isotropic, xtitle=xtitle, ytitle=ytitle, ztitle=ztitle, title=title, noplot=noplot, datplot=datplot, _extra=_extra, verbose=verbose
 
 
 ;- default setting
@@ -117,6 +117,7 @@ if not keyword_set(position) then begin
    ;- just copied from 'thm_esa_slice2d'
    ;- is this the best default position?
 endif
+if strmid(strupcase(!version.os_family), 0, 3) eq 'WIN' then lb = string([13B, 10B]) else lb = string(10B) 
 
 
 ;- valid data check
@@ -183,8 +184,9 @@ if rotation ne 'xy' and rotation ne 'xz' and rotation ne 'yz' then begin
    if tag_exist(dat2,'magf') eq 1 then begin
       bvec = dat2.magf
       if total(bvec^2) ne 0 and total(finite(bvec)) eq 3 then begin
-         dprint,'Magntic field is taken from MAGF tag in the data structure'
-         dprint,'bvec =',bvec
+         dprint, dlevel=2, verbose=verbose, $
+                 lb + '  Magntic field is taken from MAGF tag in the data structure' + $
+                 lb + '  bvec =' + string(bvec, '(3(a0))')
       endif else begin
          dprint,'Invalid MAGF:',bvec
          return
@@ -238,16 +240,16 @@ newdata.n = ncounts
 ;- set velocity
 if keyword_set(vel) then begin
    vvec = vel
-   dprint,'Velocity used for subtraction/rotation/display is '+vel
+   dprint, dlevel=2, verbose=verbose, 'Velocity used for subtraction/rotation/display is' + string(vel, '(3(a0))')
 endif else begin 
    vvec = v_3d(dat2)
-   dprint,'Velocity used for subtraction/rotation/display is V_3D',vvec
+   dprint,'Velocity used for subtraction/rotation/display is V_3D' + string(vvec, '(3(a0))'), dlevel=2, verbose=verbose
 endelse
 
 
 ;- velocity subtraction
 if not keyword_set(subtract) then begin 
-   dprint, 'No velocity subtraction'
+   dprint, 'No velocity subtraction', dlevel=2, verbose=verbose
 endif else begin
    newdata.v[*,0] = newdata.v[*,0] - vvec[0]
    newdata.v[*,1] = newdata.v[*,1] - vvec[1]
@@ -277,12 +279,12 @@ endif
 newdata.v = newdata.v # rot
 vvec = vvec # rot
 if keyword_set(sundir) then begin
-   sundir = sundir # rot
-;;    if sundir[1] ne 0 then $     ;- assumes axisymmetry
-;;       ysun = sqrt( sundir[1]^2 + sundir[2]^2 )*sundir[1]/abs(sundir[1]) $
+   sundir2 = sundir # rot
+;;    if sundir2[1] ne 0 then $     ;- assumes axisymmetry
+;;       ysun = sqrt( sundir2[1]^2 + sundir2[2]^2 )*sundir2[1]/abs(sundir2[1]) $
 ;;    else ysun = 0.
-   ysun = sundir[1]             ;- simple projection
-   xsun = sundir[0]
+   ysun = sundir2[1]            ;- simple projection
+   xsun = sundir2[0]
 endif
 ;=== rotation to the required frame of reference ===
 

@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-17 14:29:26 -0800 (Wed, 17 Feb 2016) $
-;$LastChangedRevision: 20051 $
+;$LastChangedDate: 2016-02-23 17:58:40 -0800 (Tue, 23 Feb 2016) $
+;$LastChangedRevision: 20121 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -82,7 +82,7 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
   rebinned_data = congrid(spin_sum_flux, n_elements(spin_starts), n_elements(new_bins), /center, /interp)
 
   store_data, newname, data={x: spin_times, y: rebinned_data, v: new_bins}, dlimits=flux_dl
-  options, newname, spec=1, ystyle=1, ztitle=units_label, ytitle='MMS'+probe+' FEEPS '+datatype, ysubtitle=en_range_string+'!CPAD (deg)'
+  options, newname, spec=1, ystyle=1, ztitle=units_label, ytitle='MMS'+probe+' FEEPS!C'+datatype, ysubtitle=en_range_string+'!CPAD (deg)'
   ylim, newname, 1., 180.
   zlim, newname, 0, 0, 1
 end
