@@ -10,8 +10,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-19 15:40:47 -0800 (Fri, 19 Feb 2016) $
-;$LastChangedRevision: 20070 $
+;$LastChangedDate: 2016-02-23 21:06:03 -0800 (Tue, 23 Feb 2016) $
+;$LastChangedRevision: 20130 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_omni.pro $
 ;-
 pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatype = datatype, $
@@ -58,24 +58,29 @@ pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatyp
         e_omni_avg=e_omni_sum/6.0
 
         if is_array(e_omni_sum) then begin
-            store_data, obsstr+'EnergySpectr_omni_avg'+suffix, data = {x:pX.X, y:e_omni_avg, v:pX.V}, dlimits=dl
-            store_data, obsstr+'EnergySpectr_omni_sum'+suffix, data = {x:pX.X, y:e_omni_sum, v:pX.V}, dlimits=dl
+            omni_avg_name = obsstr+'EnergySpectr_omni_avg'+suffix
+            ; lower case for level 2
+            if level eq 'l2' then omni_avg_name = strlowcase(omni_avg_name)
+            store_data, omni_avg_name, data = {x:pX.X, y:e_omni_avg, v:pX.V}, dlimits=dl
+            ; still creating the sum for the QL plots
+            if level eq 'ql' then store_data, obsstr+'EnergySpectr_omni_sum'+suffix, data = {x:pX.X, y:e_omni_sum, v:pX.V}, dlimits=dl
         endif
 
         species_str = species[sidx] eq 'e' ? 'electron' : 'ion'
         ; set the metadata for omnidirectional spectra
-        options, obsstr+'EnergySpectr_omni_sum'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Csum'
-        options, obsstr+'EnergySpectr_omni_avg'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Cavg'
-;        options, obsstr+'EnergySpectr_omni_sum'+suffix, ysubtitle='[eV]'
-;        options, obsstr+'EnergySpectr_omni_avg'+suffix, ysubtitle='[eV]'
-;        options, obsstr+'EnergySpectr_omni_sum'+suffix, ztitle='Counts'
-;        options, obsstr+'EnergySpectr_omni_avg'+suffix, ztitle='Counts'
-        ylim, obsstr+'EnergySpectr_omni_avg'+suffix, min(pX.V), max(pX.V), 1
-        if autoscale then zlim, obsstr+'EnergySpectr_omni_avg'+suffix, 0, 0, 1 else $
-            zlim, obsstr+'EnergySpectr_omni_avg'+suffix, min(e_omni_avg), max(e_omni_avg), 1
-        ylim, obsstr+'EnergySpectr_omni_sum'+suffix, min(pX.V), max(pX.V), 1
-        if autoscale then zlim, obsstr+'EnergySpectr_omni_sum'+suffix, 0, 0, 1 else $
-            zlim, obsstr+'EnergySpectr_omni_sum'+suffix, min(e_omni_sum), max(e_omni_sum), 1
+        if level eq 'ql' then options, obsstr+'EnergySpectr_omni_sum'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Csum'
+        options, omni_avg_name, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Cavg'
+        options, omni_avg_name, ztitle='eV/(cm!U2!N s sr eV)'
+        
+        ylim, omni_avg_name, min(pX.V), max(pX.V), 1
+        if autoscale then zlim, omni_avg_name, 0, 0, 1 else $
+            zlim, omni_avg_name, min(e_omni_avg), max(e_omni_avg), 1
+            
+        if level eq 'ql' then begin
+            ylim, obsstr+'EnergySpectr_omni_sum'+suffix, min(pX.V), max(pX.V), 1
+            if autoscale then zlim, obsstr+'EnergySpectr_omni_sum'+suffix, 0, 0, 1 else $
+                zlim, obsstr+'EnergySpectr_omni_sum'+suffix, min(e_omni_sum), max(e_omni_sum), 1
+        endif
 
         ; if autoscale isn't set, set the scale to the min/max of the average
         if ~autoscale then zlim, obsstr+'EnergySpectr_'+['pX', 'mX', 'pY', 'mY', 'pZ', 'mZ']+suffix, min(e_omni_avg), max(e_omni_avg), 1

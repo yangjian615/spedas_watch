@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-17 17:49:01 -0800 (Wed, 17 Feb 2016) $
-;$LastChangedRevision: 20058 $
+;$LastChangedDate: 2016-02-24 11:09:47 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20156 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_stel3d.pro $
 ;-
 
@@ -18,9 +18,6 @@
 ;IMPORTANT NOTES =======================================================
 ;
 ;  -Data must have at least 3 distributions within the time range.
-;
-;  -Time range must be a string and fully qualified.
-;     e.g.  '2008-2-1' should be '2008-02-01/00:00:00'
 ;
 ;======================================================================
 
@@ -46,9 +43,6 @@ data = spd_dist_to_hash(dist_df, counts=dist_counts)
 
 stel3d, data=data, trange=trange 
 
-
-;compare with first sample's original (non-interpolated) data
-;spd_part_vis, dist
 
 
 end

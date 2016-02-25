@@ -47,11 +47,20 @@
 ;     MMS1> mms_feeps_pad,  probe='1', datatype='electron'
 ;     
 ; NOTES:
+;     The spectra variables created with "_clean" in their names have 
+;       the 500 keV integral channel removed.
+;     The spectra variables with '_sun_removed' in their names 
+;       have the sun contamination removed 
+;       
+;       (*_clean_sun_removed variables have both the 500 keV integral 
+;         channel removed and the sun contamination removed)
+; 
+; 
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-23 14:34:20 -0800 (Tue, 23 Feb 2016) $
-;$LastChangedRevision: 20111 $
+;$LastChangedDate: 2016-02-24 08:51:46 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20146 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -96,7 +105,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
           data_rate = data_rate, suffix=suffix
 
       ; calculate the spin averages
-      mms_feeps_spin_avg, probe=probes[probe_idx], datatype=datatype, suffix = suffix
+      mms_feeps_spin_avg, probe=probes[probe_idx], datatype=datatype, suffix = suffix, data_units = data_units
     endfor
     
     ; interpolate to account for gaps in data near perigee for srvy data

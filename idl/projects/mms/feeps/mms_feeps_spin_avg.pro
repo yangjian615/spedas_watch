@@ -8,16 +8,18 @@
 ;       with each measurement)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-17 14:31:07 -0800 (Wed, 17 Feb 2016) $
-;$LastChangedRevision: 20053 $
+;$LastChangedDate: 2016-02-24 08:51:15 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20145 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_spin_avg.pro $
 ;-
 pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
   suffix = suffix
   if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
   if undefined(datatype) then datatype = 'electron'
-  if undefined(data_units) then data_units = 'flux'
+  if undefined(data_units) then data_units = 'intensity'
   if undefined(suffix) then suffix=''
+  
+  lower_en = datatype eq 'electron' ? 71 : 78 ; keV
 
   prefix = 'mms'+probe+'_epd_feeps_'
 
@@ -31,11 +33,12 @@ pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatyp
   spin_starts = where(spin_sectors.Y[0:n_elements(spin_sectors.Y)-2] ge spin_sectors.Y[1:n_elements(spin_sectors.Y)-1])+1
  
   prefix = 'mms'+probe+'_epd_feeps_'
-  var_name = prefix+datatype+'_'+data_units+'_omni'+suffix
-  get_data, var_name, data=flux_data, dlimits=flux_dl
+  var_name = prefix+datatype+'_'+data_units+'_omni'
+
+  get_data, var_name+suffix, data=flux_data, dlimits=flux_dl
 
   if ~is_struct(flux_data) || ~is_struct(flux_dl) then begin
-    dprint, dlevel = 0, 'Error, no data or metadata for the variable: ' + prefix+suffix
+    dprint, dlevel = 0, 'Error, no data or metadata for the variable: ' + var_name+suffix
     return
   endif
 
@@ -52,7 +55,7 @@ pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatyp
   store_data,var_name+'_spin'+suffix, data={x: flux_data.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
   options, var_name+'_spin'+suffix, spec=1
   
-  ylim, var_name+'_spin'+suffix, 50., 600., 1
+  ylim, var_name+'_spin'+suffix, lower_en, 600., 1
   zlim, var_name+'_spin'+suffix, 0, 0, 1
 
 end

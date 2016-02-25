@@ -42,7 +42,7 @@ na = dat.nenergy
 nb = dat.nbins
 nm = dat.nmass
 
-data = dat.data 
+data = dat.cnts 
 energy = dat.energy
 denergy = dat.denergy
 theta = dat.theta/!radeg

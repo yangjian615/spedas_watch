@@ -36,6 +36,8 @@ if dat2.valid eq 0 then begin
 	return, vel
 endif
 
+if (dat2.quality_flag and 195) gt 0 then return,vel
+
 if dat2.nbins eq 1 then return,vb_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 
 flux = j_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)

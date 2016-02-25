@@ -135,8 +135,9 @@ dat = 		{project_name:		all_dat.project_name,						$
 		bins_sc:		reform(all_dat.bins_sc[ind,*]),					$
 		pos_sc_mso:		reform(all_dat.pos_sc_mso[ind,*]),				$
 
-		bkg:	 		reform(all_dat.bkg[ind,*,*,*]),					$
-		dead:	 		reform(all_dat.dead[ind,*,*,*]),				$
+		bkg:	 		reform(all_dat.bkg[ind,*,*],nenergy,nbins),			$
+		dead:	 		reform(all_dat.dead[ind,*,*],nenergy,nbins),			$
+		cnts:	 		reform(all_dat.data[ind,*,*],nenergy,nbins),			$
 
 		data: 			reform(all_dat.data[ind,*,*],nenergy,nbins)}
 

@@ -34,11 +34,16 @@ if dat2.valid eq 0 then begin
 	return, !Values.F_NAN
 endif
 
+if (dat2.quality_flag and 195) gt 0 then return,!Values.F_NAN
+
 dat = conv_units(dat2,"counts")		; initially use counts
+
 dat = omni4d(dat,/mass)
 n_e = dat.nenergy
 if dat.nmass gt 1 then mass = dat.mass*dat.mass_arr else mass = dat.mass
-data = dat.data
+
+data = dat.cnts 
+bkg = dat.bkg
 energy = dat.energy	
 if n_e eq 64 then nne=4 else nne=3
 if n_e eq 48 then nne=5
@@ -46,29 +51,39 @@ if n_e eq 48 then nne=5
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 endif
+
 if keyword_set(ms) then begin
 	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 ; the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
 	if dat.time lt time_double('14-10-1') then begin
 		tcnts = total(data,2)
 		maxcnt = max(tcnts,mind)
 		data[0:(mind-nne>0),*]=0.
 		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
+		bkg[0:(mind-nne>0),*]=0.
+		bkg[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
 	endif	
 endif
 
 ; the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
+if 0 then begin
 if dat.nmass eq 1 then begin
 	if dat.time lt time_double('14-10-1') then begin
 		maxcnt = max(data,mind)
 		data[0:(mind-nne>0)]=0.
 		data[((mind+nne)<(n_e-1)):(n_e-1)]=0.
+		bkg[0:(mind-nne>0)]=0.
+		bkg[((mind+nne)<(n_e-1)):(n_e-1)]=0.
 	endif	
 endif
+endif
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return, !Values.F_NAN
+if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, !Values.F_NAN
+if total(data-bkg) lt 1 then return, !Values.F_NAN
 
 charge=dat.charge
 if keyword_set(q) then charge=q
@@ -95,9 +110,9 @@ v = v>.001			; eliminate values too close to zero
 ;print,minmax(data/v)
 
 if keyword_set(ms) then begin
-	vd = total(data)/total((data/v)>1.e-20)
+	vd = total((data-bkg)>0.)/total((((data-bkg)>0.)/v)>1.e-20)
 endif else begin
-	vd = total(data,1)/total((data/v)>1.e-20,1)
+	vd = total((data-bkg)>0.,1)/total((((data-bkg)>0.)/v)>1.e-20,1)
 endelse
 
 return, vd

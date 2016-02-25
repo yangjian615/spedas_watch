@@ -29,10 +29,15 @@
 ;-
 function vp_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
+
+
+
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
 	return, !Values.F_NAN
 endif
+
+if (dat2.quality_flag and 195) gt 0 then return,!Values.F_NAN
 
 if dat2.apid ne 'c8' and dat2.apid ne 'ca' then begin
 	print,'Invalid Data: Data must be Maven APID c8 or ca'
@@ -43,17 +48,22 @@ dat = conv_units(dat2,"counts")		; initially use counts
 n_e = dat.nenergy
 n_m = dat.nmass
 mass_amu = dat.mass_arr
-data = dat.data
+
+data = dat.cnts 
+bkg = dat.bkg
 energy = dat.energy
 if dat2.apid eq 'ca' then data = total(reform(data,16,4,16),2)
+if dat2.apid eq 'ca' then bkg = total(reform(bkg,16,4,16),2)
 if dat2.apid eq 'ca' then energy = total(reform(energy,16,4,16),2)/4.
 
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 endif
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return, !Values.F_NAN
+if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, !Values.F_NAN
+if total(data-bkg) lt 1 then return, !Values.F_NAN
 
 charge=dat.charge
 if keyword_set(q) then charge=q
@@ -75,7 +85,7 @@ endif else sth = sin((dat.theta+offset)/!radeg)
 
 vp = v*sth									; km/s
 
-vperp = total(vp*data)/total(data)
+vperp = total(vp*((data-bkg)>0.))/total((data-bkg)>0.)
 
 return, vperp									; km/s
 

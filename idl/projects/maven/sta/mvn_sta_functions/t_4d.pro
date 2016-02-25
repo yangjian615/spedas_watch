@@ -39,6 +39,8 @@ if dat2.valid eq 0 then begin
 	return, [Tx,Ty,Tz,Tavg]
 endif
 
+if (dat2.quality_flag and 195) gt 0 then return,[Tx,Ty,Tz,Tavg]
+
 if dat2.nbins eq 1 then return,tb_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q)
 
 press   = p_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)

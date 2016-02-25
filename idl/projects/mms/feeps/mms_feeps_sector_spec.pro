@@ -9,8 +9,8 @@
 ;
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-23 17:51:16 -0800 (Tue, 23 Feb 2016) $
-; $LastChangedRevision: 20118 $
+; $LastChangedDate: 2016-02-24 08:52:22 -0800 (Wed, 24 Feb 2016) $
+; $LastChangedRevision: 20147 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_sector_spec.pro $
 ;-
 
@@ -20,7 +20,7 @@ pro mms_feeps_sector_spec, probe = probe, data_units = data_units, data_rate = d
     if undefined(data_units) then data_units = 'count_rate'
     if undefined(data_rate) then data_rate = 'brst'
     if undefined(datatype) then datatype = 'electron'
-    if undefined(remove_sun) then remove_sun = 1 ; 1=true/0=false
+    if undefined(remove_sun) then remove_sun = 0 ; 1=true/0=false
 
     suffix_in = remove_sun eq 1 ? suffix+'_sun_removed' : suffix
 

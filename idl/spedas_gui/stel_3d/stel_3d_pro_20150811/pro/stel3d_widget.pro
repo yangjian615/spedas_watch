@@ -208,8 +208,11 @@ function stel3d_create_scatter, oData, MINVAL=minval, MAXVAL=maxval, UPDATE=oSca
   ;  fMinN = Min(fN, MAX=fMaxN)
   ;
   ; store original values
-  allmin = min(fn, MAX=allmax)
-
+;  allmin = min(fn, MAX=allmax)
+  orange = oData->getNSouceRange()
+  allmin = orange[0]
+  allmax = orange[1]
+  
 ;2016/02/17 by Kuni 
 if allmax ge 1. then begin 
 
@@ -234,8 +237,6 @@ if allmax ge 1. then begin
   bN = bytscl(fN, MAX=allmax, MIN=allmin)
 
 endif else begin 
-     allmax = alog10(allmax) 
-     if allmin eq 0 then allmin=-17. else allmin=alog10(allmin) 
 
      xrange = oData.getXSouceRange()
      yrange = oData.getYSouceRange()
@@ -243,8 +244,8 @@ endif else begin
   
      ;if ~keyword_set(minval) then minval=alog10(min(fN))
      ;if ~keyword_set(maxval) then maxval=alog10(max(fN))
-     if ~keyword_set(minval) then minval=10^allmin
-     if ~keyword_set(maxval) then maxval=10^allmax 
+     if ~keyword_set(minval) then minval=allmin
+     if ~keyword_set(maxval) then maxval=allmax 
      ;
      ; subset by data range specified by keywords
      pos = where((fN ge minval) and (fn le maxval))
@@ -256,7 +257,7 @@ endif else begin
      ; RE-SCALING OF N (0-255) 
      ; N値を0～255の値にスケーリングする
      ;
-     bN = bytscl(alog10(fN), MAX=allmax,MIN=allmin) 
+     bN = bytscl(alog10(fN), MAX=alog10(allmax),MIN=alog10(allmin), /nan) 
 endelse 
 ;2016/02/17 by Kuni -END-
 

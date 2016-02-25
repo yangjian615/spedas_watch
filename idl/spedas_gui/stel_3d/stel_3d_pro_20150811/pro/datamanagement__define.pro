@@ -595,7 +595,7 @@ function DataManagement::getVolumeData, ORIGINAL=original ;, XRANGE=xrange, YRAN
 ;        print, (self.oConf).color_min_val
 ;        print, (self.oConf).color_max_val
         if unit eq 'psd' then begin
-          vol = temporary(alog10(vol > (self.oConf).color_min_val < (self.oConf).color_max_val))
+          vol = temporary(bytscl(/nan,alog10(vol > (self.oConf).color_min_val < (self.oConf).color_max_val)))
         endif else begin
           vol = temporary(bytscl(vol > (self.oConf).color_min_val < (self.oConf).color_max_val))
         endelse
@@ -753,7 +753,19 @@ end
 ;
 ;-
 function DataManagement::getNSouceRange
-  fmin = min((*self.pfN), MAX=fmax)
+  (self.oConf).GetProperty, UNIT=unit
+  ;return range of data > 0 if using psd units (log scaling)
+  if unit eq 'psd' then begin
+    gtz = where( *self.pfN gt 0, n_gtz)
+    if n_gtz gt 0 then begin
+      fmin = min((*self.pfN)[gtz], MAX=fmax)
+    endif else begin
+      fmin = 0. ;all data is zero, basically an error case
+      fnax = 1.
+    endelse
+  endif else begin
+    fmin = min((*self.pfN), MAX=fmax)
+  endelse
   return, [fmin, fmax]
 end
 ;

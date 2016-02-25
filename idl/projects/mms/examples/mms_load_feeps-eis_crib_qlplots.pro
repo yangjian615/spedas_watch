@@ -11,8 +11,8 @@
 ;-
 
 probe = '1'
-trange = ['2015-08-15', '2015-08-16']
-timespan, '2015-08-15', 1
+trange = ['2015-12-15', '2015-12-16']
+timespan, '2015-12-15'
 iw = 0
 width = 850
 height = 1200
@@ -47,6 +47,7 @@ mms_load_eis, probes=probe, trange=trange, datatype='electronenergy', level='l1b
 ; setup for plotting the proton flux for all channels
 ;ylim, feeps_prefix+'_electronenergy_electron_flux_omni_spin', 30, 1000, 1
 ;zlim, feeps_prefix+'_electronenergy_electron_flux_omni_spin', 0, 0, 1
+ylim, feeps_prefix+'_electron_intensity_omni_spin', 71, 600, 1 ; don't include the bottom channel
 ylim, eis_prefix+'_electronenergy_electron_flux_omni_spin', 30, 1000, 1
 zlim, eis_prefix+'_electronenergy_electron_flux_omni_spin', 0, 0, 1
 ylim, eis_prefix+'_extof_proton_flux_omni_spin', 50, 500, 1
@@ -94,10 +95,10 @@ position_vars = ['mms'+probe+'_defeph_R_gsm', eph_gsm+'_re_z', eph_gsm+'_re_y', 
 ;tplot_options, 'ymargin', [5, 5]
 ;tplot_options, 'xmargin', [15, 15]
 
-spd_mms_load_bss, trange=trange, /include_labels
+spd_mms_load_bss, datatype=['fast','burst'], /include_labels
 
-panels = ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
-  ;feeps_prefix+'_electronenergy_electron_flux_omni_spin', $
+panels = ['mms_bss_burst', 'mms_bss_fast', $
+  feeps_prefix+'_electron_intensity_omni_spin', $
   eis_prefix+'_electronenergy_electron_flux_omni_spin', $
   ; fast ion survey
   eis_prefix+'_extof_proton_flux_omni_spin', $

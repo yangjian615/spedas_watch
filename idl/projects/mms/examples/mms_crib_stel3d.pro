@@ -9,23 +9,17 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-17 17:49:01 -0800 (Wed, 17 Feb 2016) $
-;$LastChangedRevision: 20058 $
+;$LastChangedDate: 2016-02-24 11:09:47 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20156 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_crib_stel3d.pro $
 ;-
 
 
 ;IMPORTANT NOTES =======================================================
 ; 
-;  -STEL3D does not currently support subsecond resolution data. 
-;   For now, it will only store the last sample from each second.
-;
 ;  -Data in counts is not available so eflux data is used instead.
 ;
 ;  -Data must have at least 3 distributions within the time range.
-;
-;  -Time range must be a string and fully qualified.
-;     e.g.  '2008-2-1' should be '2008-02-01/00:00:00'
 ;
 ;======================================================================
 
@@ -36,7 +30,7 @@
 ;
 ;probe='1'
 ;species='i'
-;trange='2015-08-15/12:50:' + ['00','03']  ;this will be ~30mb
+;trange='2015-08-15/12:50:' + ['00','02']
 ;
 ;mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
 ;              probe=probe, trange=trange
@@ -71,7 +65,8 @@ dist = mms_get_hpca_dist(tname)
 ;-----------------------------------------------------------------------------
 
 
-;fill the counts field with eflux for now (df not working atm)
+
+;fill the counts field with eflux for now
 mms_part_process, dist, dist_counts, units='eflux'
 
 
@@ -85,9 +80,6 @@ thm_init
 
 stel3d, data=data, trange=trange
 
-
-;compare with first sample's original (non-interpolated) data
-;spd_part_vis, dist
 
 
 end

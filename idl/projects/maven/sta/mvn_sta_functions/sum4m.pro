@@ -54,6 +54,7 @@ if dat.data_name eq 'C8 Energy-Angle-Mass' then begin
 	str_element,/add,omni, 'eff'   ,reform(dat.eff)
 	str_element,/add,omni, 'bkg'    ,reform(dat.bkg)
 	str_element,/add,omni, 'dead'    ,reform(dat.dead)
+	str_element,/add,omni, 'cnts'    ,reform(dat.cnts)
 	str_element,/add,omni, 'data'   ,reform(dat.data)
 
 endif else if ndimen(dat.data) eq 2 and dat.nbins eq 1 then begin
@@ -71,6 +72,7 @@ endif else if ndimen(dat.data) eq 2 and dat.nbins eq 1 then begin
 	str_element,/add,omni, 'eff'   ,total(dat.eff[*,*],2)/dat.nmass
 	str_element,/add,omni, 'bkg'    ,total(dat.bkg[*,*],2)
 	str_element,/add,omni, 'dead'   ,total(dat.dead[*,*],2)
+	str_element,/add,omni, 'cnts'   ,total(dat.cnts[*,*],2)
 	str_element,/add,omni, 'data'   ,total(dat.data[*,*],2)
 
 endif else if ndimen(dat.data) eq 3 then begin
@@ -89,6 +91,7 @@ endif else if ndimen(dat.data) eq 3 then begin
 	str_element,/add,omni, 'eff'    ,reform(total( dat.eff[*,*,*],3),dat.nenergy,dat.nbins)/dat.nmass
 	str_element,/add,omni, 'bkg'    ,reform(total( dat.bkg[*,*,*],3),dat.nenergy,dat.nbins)
 	str_element,/add,omni, 'dead'    ,reform(total( dat.dead[*,*,*],3),dat.nenergy,dat.nbins)
+	str_element,/add,omni, 'cnts'    ,reform(total( dat.cnts[*,*,*],3),dat.nenergy,dat.nbins)
 	str_element,/add,omni, 'data'   ,reform(total(dat.data[*,*,*],3),dat.nenergy,dat.nbins)
 
 endif

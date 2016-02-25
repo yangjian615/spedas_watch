@@ -111,13 +111,13 @@ endif
 		mlut = mvn_c0_dat.mlut_ind
 		nenergy = mvn_c0_dat.nenergy
 		nmass = mvn_c0_dat.nmass
+		qf = (mvn_c0_dat.quality_flag and 128)/128 or (mvn_c0_dat.quality_flag and 64)/64
 
 		time = (mvn_c0_dat.time + mvn_c0_dat.end_time)/2.
 		data = mvn_c0_dat.data
 		energy = reform(mvn_c0_dat.energy[iswp,*,0])
 		mass = total(mvn_c0_dat.mass_arr[iswp,*,*],2)/nenergy
 		str_element,mvn_c0_dat,'eflux',eflux,success=success
-;		eflux = mvn_c0_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c0_dat.bkg
@@ -133,14 +133,19 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c0 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1)
+			data[ind,*,*]=0.
+			eflux[ind,*,*]=0.
 
 		store_data,'mvn_sta_c0_P1A_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c0_P1A_H_E',data={x:time,y:reform( (data[*,*,1]-0.006*data[*,*,0]/(1.-(data[*,*,0]/1200.<.9))) >0.),v:energy}
 ;		store_data,'mvn_sta_c0_P1A_H_E',data={x:time,y:reform( (data[*,*,1]-scale*data[*,*,0]/(1.-(data[*,*,0]/dead_c0<.9))) >0.),v:energy}
+		store_data,'mvn_sta_c0_P1A_L_E',data={x:time,y:reform(data[*,*,0]),v:energy}
 		store_data,'mvn_sta_c0_P1A_M',data={x:time,y:total(data,2),v:mass}
 		store_data,'mvn_sta_c0_E',data={x:time,y:total(eflux,3),v:energy}
 		store_data,'mvn_sta_c0_H_E',data={x:time,y:reform((eflux[*,*,1]-0.006*eflux[*,*,0]/(1.-(data[*,*,0]/1200.<.9))) >0.),v:energy}
 ;		store_data,'mvn_sta_c0_H_E',data={x:time,y:reform((eflux[*,*,1]-scale*eflux[*,*,0]/(1.-(data[*,*,0]/dead_c0<.9))) >0.),v:energy}
+		store_data,'mvn_sta_c0_L_E',data={x:time,y:reform(eflux[*,*,0]),v:energy}
 		store_data,'mvn_sta_c0_M',data={x:time,y:total(eflux,2),v:mass}
 		store_data,'mvn_sta_c0_tot',data={x:time,y:total(total(data,3),2)}
 		store_data,'mvn_sta_c0_att',data={x:time,y:iatt}
@@ -150,39 +155,48 @@ endif
 			ylim,'mvn_sta_c0_tot',0,0,1
 			ylim,'mvn_sta_c0_P1A_E',.1,40000.,1
 			ylim,'mvn_sta_c0_P1A_H_E',.1,40000.,1
+			ylim,'mvn_sta_c0_P1A_L_E',.1,40000.,1
 			ylim,'mvn_sta_c0_P1A_M',.5,100,1
 			ylim,'mvn_sta_c0_E',.1,40000.,1
 			ylim,'mvn_sta_c0_H_E',.1,40000.,1
+			ylim,'mvn_sta_c0_L_E',.1,40000.,1
 			ylim,'mvn_sta_c0_M',.5,100,1
 			ylim,'mvn_sta_c0_att',-1,4,0
 
 			zlim,'mvn_sta_c0_P1A_E',1,1.e4,1
 			zlim,'mvn_sta_c0_P1A_H_E',1,1.e4,1
+			zlim,'mvn_sta_c0_P1A_L_E',1,1.e4,1
 			zlim,'mvn_sta_c0_P1A_M',1,1.e4,1
 			zlim,'mvn_sta_c0_E',1.e3,1.e9,1
 			zlim,'mvn_sta_c0_H_E',1.e3,1.e9,1
+			zlim,'mvn_sta_c0_L_E',1.e3,1.e9,1
 			zlim,'mvn_sta_c0_M',1.e3,1.e9,1
 
 			options,'mvn_sta_c0*',datagap=7.
 	
 			options,'mvn_sta_c0_P1A_E','spec',1
 			options,'mvn_sta_c0_P1A_H_E','spec',1
+			options,'mvn_sta_c0_P1A_L_E','spec',1
 			options,'mvn_sta_c0_P1A_M','spec',1
 			options,'mvn_sta_c0_E','spec',1
 			options,'mvn_sta_c0_H_E','spec',1
+			options,'mvn_sta_c0_L_E','spec',1
 			options,'mvn_sta_c0_M','spec',1
 
 			options,'mvn_sta_c0_P1A_E',ytitle='sta!CP1A-c0!C!CEnergy!CeV'
 			options,'mvn_sta_c0_P1A_H_E',ytitle='sta!CP1A-c0!CM>12amu!CEnergy!CeV'
+			options,'mvn_sta_c0_P1A_L_E',ytitle='sta!CP1A-c0!CM<10amu!CEnergy!CeV'
 			options,'mvn_sta_c0_P1A_M',ytitle='sta!CP1A-c0!C!CMass!Camu'
 			options,'mvn_sta_c0_E',ytitle='sta!Cc0!C!CEnergy!CeV'
 			options,'mvn_sta_c0_H_E',ytitle='sta!Cc0!CM>12amu!CEnergy!CeV'
+			options,'mvn_sta_c0_L_E',ytitle='sta!Cc0!CM<10amu!CEnergy!CeV'
 			options,'mvn_sta_c0_M',ytitle='sta!Cc0!C!CMass!Camu'
 			options,'mvn_sta_c0_tot',ytitle='sta!Cc0!C!CCounts'
 			options,'mvn_sta_c0_att',ytitle='sta!Cc0!C!CAttenuator'
 
 			options,'mvn_sta_c0_E',ztitle='eflux'
 			options,'mvn_sta_c0_H_E',ztitle='eflux'
+			options,'mvn_sta_c0_L_E',ztitle='eflux'
 			options,'mvn_sta_c0_M',ztitle='eflux'
 	endif
 
@@ -198,13 +212,13 @@ endif
 		mlut = mvn_c2_dat.mlut_ind
 		nenergy = mvn_c2_dat.nenergy
 		nmass = mvn_c2_dat.nmass
+		qf = (mvn_c2_dat.quality_flag and 128)/128 or (mvn_c2_dat.quality_flag and 64)/64
 
 		time = (mvn_c2_dat.time + mvn_c2_dat.end_time)/2.
 		data = mvn_c2_dat.data
 		energy = reform(mvn_c2_dat.energy[iswp,*,0])
 		mass = total(mvn_c2_dat.mass_arr[iswp,*,*],2)/nenergy
 		str_element,mvn_c2_dat,'eflux',eflux,success=success
-;		eflux = mvn_c2_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c2_dat.bkg
@@ -220,6 +234,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c2 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*]=0.
+			if count gt 0 then eflux[ind,*,*]=0.
 
 		store_data,'mvn_sta_c2_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c2_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -278,13 +295,13 @@ endif
 		mlut = mvn_c4_dat.mlut_ind
 		nenergy = mvn_c4_dat.nenergy
 		nmass = mvn_c4_dat.nmass
+		qf = (mvn_c4_dat.quality_flag and 128)/128 or (mvn_c4_dat.quality_flag and 64)/64
 
 		time = (mvn_c4_dat.time + mvn_c4_dat.end_time)/2.
 		data = mvn_c4_dat.data
 		energy = reform(mvn_c4_dat.energy[iswp,*,0])
 		mass = total(mvn_c4_dat.mass_arr[iswp,*,*],2)/nenergy
 		str_element,mvn_c4_dat,'eflux',eflux,success=success
-;		eflux = mvn_c4_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c4_dat.bkg
@@ -300,6 +317,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c4 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*]=0.
+			if count gt 0 then eflux[ind,*,*]=0.
 
 		store_data,'mvn_sta_c4_P1D_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c4_P1D_M',data={x:time,y:total(data,2),v:mass}
@@ -360,13 +380,14 @@ endif
 		nenergy = mvn_c6_dat.nenergy
 		nmass = mvn_c6_dat.nmass
 		eprom_ver = mvn_c6_dat.eprom_ver
+		scpot = mvn_c6_dat.sc_pot
+		qf = (mvn_c6_dat.quality_flag and 128)/128 or (mvn_c6_dat.quality_flag and 64)/64
 
 		time = (mvn_c6_dat.time + mvn_c6_dat.end_time)/2.
 		data = mvn_c6_dat.data
 		energy = reform(mvn_c6_dat.energy[iswp,*,0])
 		mass = total(mvn_c6_dat.mass_arr[iswp,*,*],2)/nenergy
 		str_element,mvn_c6_dat,'eflux',eflux,success=success
-;		eflux = mvn_c6_dat.eflux
 
 		cnt_low_nrg=fltarr(npts)
 		for i=0l,npts-1 do begin
@@ -388,6 +409,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c6 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*]=0.
+			if count gt 0 then eflux[ind,*,*]=0.
 
 		if keyword_set(test) then begin
 			store_data,'mvn_sta_c6_gf30_att',data={x:time,y:reform(mvn_c6_dat.gf[iswp,30,*])}
@@ -416,6 +440,9 @@ endif
 				options,'mvn_sta_c6_quality_flag',tplot_routine='bitplot',psym = 1,symsize=1
 			store_data,'mvn_sta_c6_eprom_ver',data={x:time,y:eprom_ver}
 				ylim,'mvn_sta_c6_eprom_ver',min(eprom_ver)-1,max(eprom_ver)+1,0				
+			store_data,'mvn_sta_c6_scpot',data={x:time,y:scpot}
+			store_data,'mvn_sta_c6_neg_scpot',data={x:time,y:-scpot}
+				options,'mvn_sta_c6_neg_scpot',colors=cols.red
 
 			ylim,'mvn_sta_c6_tot',0,0,1
 				ylim,'mvn_sta_c6_tot_le_10eV',0,0,1
@@ -427,6 +454,8 @@ endif
 			ylim,'mvn_sta_c6_att',-1,4,0
 			ylim,'mvn_sta_c6_mode',-1,7,0
 			ylim,'mvn_sta_c6_rate',-1,7,0
+			ylim,'mvn_sta_c6_scpot',0,0,0
+			ylim,'mvn_sta_c6_neg_scpot',.1,30,1
 
 			zlim,'mvn_sta_c6_P1D_E',1,1.e4,1
 			zlim,'mvn_sta_c6_P1D_M',1,1.e4,1
@@ -443,6 +472,8 @@ endif
 			options,'mvn_sta_c6_tot',datagap=datagap
 				options,'mvn_sta_c6_tot_le_10eV',datagap=datagap
 			options,'mvn_sta_c6_att',datagap=datagap
+			options,'mvn_sta_c6_scpot',datagap=datagap
+			options,'mvn_sta_c6_neg_scpot',datagap=datagap
 
 			options,'mvn_sta_c6_P1D_E','spec',1
 			options,'mvn_sta_c6_P1D_M','spec',1
@@ -458,6 +489,8 @@ endif
 			options,'mvn_sta_c6_tot',ytitle='sta!Cc6!C!CCounts'
 				options,'mvn_sta_c6_tot_le_10eV',ytitle='sta!Cc6!C!C<10eV Cnts'
 			options,'mvn_sta_c6_att',ytitle='sta!Cc6!C!CAttenuator'
+			options,'mvn_sta_c6_scpot',ytitle='sta!Cc6!C!Cscpot'
+			options,'mvn_sta_c6_neg_scpot',ytitle='sta!Cc6!C!C-scpot'
 
 			options,'mvn_sta_c6_E',ztitle='eflux'
 			options,'mvn_sta_c6_M',ztitle='eflux'
@@ -476,13 +509,13 @@ endif
 		mlut = mvn_c8_dat.mlut_ind
 		nenergy = mvn_c8_dat.nenergy
 		ndef = mvn_c8_dat.ndef
+		qf = (mvn_c8_dat.quality_flag and 128)/128 or (mvn_c8_dat.quality_flag and 64)/64
 
 		time = (mvn_c8_dat.time + mvn_c8_dat.end_time)/2.
 		data = mvn_c8_dat.data
 		energy = reform(mvn_c8_dat.energy[iswp,*,0])
 		theta = reform(mvn_c8_dat.theta[iswp,nenergy-1,*])
 		str_element,mvn_c8_dat,'eflux',eflux,success=success
-;		eflux = mvn_c8_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_c8_dat.bkg
@@ -498,6 +531,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF c8 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*]=0.
+			if count gt 0 then eflux[ind,*,*]=0.
 
 		store_data,'mvn_sta_c8_P2_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_c8_P2_D',data={x:time,y:total(data,2),v:theta}
@@ -556,6 +592,7 @@ endif
 		nbins = mvn_ca_dat.nbins
 		ndef = mvn_ca_dat.ndef
 		nanode = mvn_ca_dat.nanode
+		qf = (mvn_ca_dat.quality_flag and 128)/128 or (mvn_ca_dat.quality_flag and 64)/64
 
 		time = (mvn_ca_dat.time + mvn_ca_dat.end_time)/2.
 		data = mvn_ca_dat.data
@@ -563,7 +600,6 @@ endif
 		theta = total(reform(mvn_ca_dat.theta[iswp,nenergy-1,*],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_ca_dat.phi[iswp,nenergy-1,*],npts,ndef,nanode),2)/ndef
 		str_element,mvn_ca_dat,'eflux',eflux,success=success
-;		eflux = mvn_ca_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_ca_dat.bkg
@@ -579,6 +615,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF ca eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*]=0.
+			if count gt 0 then eflux[ind,*,*]=0.
 
 		store_data,'mvn_sta_ca_P3_E',data={x:time,y:total(data,3),v:energy}
 		store_data,'mvn_sta_ca_P3_D',data={x:time,y:total(total(reform(data,npts,nenergy,ndef,nanode),4),2),v:theta}
@@ -655,6 +694,7 @@ endif
 		ndef = mvn_cc_dat.ndef
 		nanode = mvn_cc_dat.nanode
 		nmass = mvn_cc_dat.nmass
+		qf = (mvn_cc_dat.quality_flag and 128)/128 or (mvn_cc_dat.quality_flag and 64)/64
 
 		time = (mvn_cc_dat.time + mvn_cc_dat.end_time)/2.
 		data = mvn_cc_dat.data
@@ -663,7 +703,6 @@ endif
 		theta = total(reform(mvn_cc_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cc_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 		str_element,mvn_cc_dat,'eflux',eflux,success=success
-;		eflux = mvn_cc_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_cc_dat.bkg
@@ -680,6 +719,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF cc eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*,*]=0.
+			if count gt 0 then eflux[ind,*,*,*]=0.
 
 		store_data,'mvn_sta_cc_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cc_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
@@ -754,6 +796,7 @@ endif
 		ndef = mvn_cd_dat.ndef
 		nanode = mvn_cd_dat.nanode
 		nmass = mvn_cd_dat.nmass
+		qf = (mvn_cd_dat.quality_flag and 128)/128 or (mvn_cd_dat.quality_flag and 64)/64
 
 		time = (mvn_cd_dat.time + mvn_cd_dat.end_time)/2.
 		data = mvn_cd_dat.data
@@ -762,7 +805,6 @@ endif
 		theta = total(reform(mvn_cd_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cd_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 		str_element,mvn_cd_dat,'eflux',eflux,success=success
-;		eflux = mvn_cd_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_cd_dat.bkg
@@ -779,6 +821,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/(eflux>.01))) gt 0. then print,'Error in CDF cd eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*,*]=0.
+			if count gt 0 then eflux[ind,*,*,*]=0.
 
 		store_data,'mvn_sta_cd_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cd_P4B_D',data={x:time,y:total(total(data,4),2),v:theta}
@@ -853,6 +898,7 @@ endif
 		ndef = mvn_ce_dat.ndef
 		nanode = mvn_ce_dat.nanode
 		nmass = mvn_ce_dat.nmass
+		qf = (mvn_ce_dat.quality_flag and 128)/128 or (mvn_ce_dat.quality_flag and 64)/64
 
 		time = (mvn_ce_dat.time + mvn_ce_dat.end_time)/2.
 		data = mvn_ce_dat.data
@@ -861,7 +907,6 @@ endif
 		theta = total(reform(mvn_ce_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_ce_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 		str_element,mvn_ce_dat,'eflux',eflux,success=success
-;		eflux = mvn_ce_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_ce_dat.bkg
@@ -878,6 +923,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF ce eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*,*]=0.
+			if count gt 0 then eflux[ind,*,*,*]=0.
 
 		store_data,'mvn_sta_ce_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_ce_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -964,6 +1012,7 @@ endif
 		ndef = mvn_cf_dat.ndef
 		nanode = mvn_cf_dat.nanode
 		nmass = mvn_cf_dat.nmass
+		qf = (mvn_cf_dat.quality_flag and 128)/128 or (mvn_cf_dat.quality_flag and 64)/64
 
 		time = (mvn_cf_dat.time + mvn_cf_dat.end_time)/2.
 		data = mvn_cf_dat.data
@@ -972,7 +1021,6 @@ endif
 		theta = total(reform(mvn_cf_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_cf_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 		str_element,mvn_cf_dat,'eflux',eflux,success=success
-;		eflux = mvn_cf_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_cf_dat.bkg
@@ -989,6 +1037,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF cf eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*,*]=0.
+			if count gt 0 then eflux[ind,*,*,*]=0.
 
 		store_data,'mvn_sta_cf_P4B_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_cf_P4B_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1075,6 +1126,7 @@ endif
 		ndef = mvn_d0_dat.ndef
 		nanode = mvn_d0_dat.nanode
 		nmass = mvn_d0_dat.nmass
+		qf = (mvn_d0_dat.quality_flag and 128)/128 or (mvn_d0_dat.quality_flag and 64)/64
 
 		time = (mvn_d0_dat.time + mvn_d0_dat.end_time)/2.
 		data = mvn_d0_dat.data
@@ -1083,7 +1135,6 @@ endif
 		theta = total(reform(mvn_d0_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d0_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 		str_element,mvn_d0_dat,'eflux',eflux,success=success
-;		eflux = mvn_d0_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_d0_dat.bkg
@@ -1100,6 +1151,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d0 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*,*]=0.
+			if count gt 0 then eflux[ind,*,*,*]=0.
 
 		store_data,'mvn_sta_d0_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d0_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1206,6 +1260,7 @@ endif
 		ndef = mvn_d1_dat.ndef
 		nanode = mvn_d1_dat.nanode
 		nmass = mvn_d1_dat.nmass
+		qf = (mvn_d1_dat.quality_flag and 128)/128 or (mvn_d1_dat.quality_flag and 64)/64
 
 		time = (mvn_d1_dat.time + mvn_d1_dat.end_time)/2.
 		data = mvn_d1_dat.data
@@ -1214,7 +1269,6 @@ endif
 		theta = total(reform(mvn_d1_dat.theta[iswp,nenergy-1,*,0],npts,ndef,nanode),3)/nanode
 		phi = total(reform(mvn_d1_dat.phi[iswp,nenergy-1,*,0],npts,ndef,nanode),2)/ndef
 		str_element,mvn_d1_dat,'eflux',eflux,success=success
-;		eflux = mvn_d1_dat.eflux
 
 ;		this section needed because eflux in the CDFs got screwed up
 			bkg = mvn_d1_dat.bkg
@@ -1231,6 +1285,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d1 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*,*]=0.
+			if count gt 0 then eflux[ind,*,*,*]=0.
 
 		store_data,'mvn_sta_d1_P4C_E',data={x:time,y:total(total(data,4),3),v:energy}
 		store_data,'mvn_sta_d1_P4C_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
@@ -1317,6 +1374,7 @@ endif
 		ndef = mvn_d4_dat.ndef
 		nanode = mvn_d4_dat.nanode
 		nmass = mvn_d4_dat.nmass
+		qf = (mvn_d4_dat.quality_flag and 128)/128 or (mvn_d4_dat.quality_flag and 64)/64
 
 		time = (mvn_d4_dat.time + mvn_d4_dat.end_time)/2.
 		data = mvn_d4_dat.data
@@ -1341,6 +1399,9 @@ endif
 			eflux2 = float(eflux2)
 			if success and keyword_set(test) then if max(abs((eflux-eflux2)/eflux)) gt 0. then print,'Error in CDF d4 eflux ',max(abs((eflux-eflux2)/(eflux>.01)))
 			if not success or keyword_set(replace) then eflux = eflux2
+			ind = where(qf eq 1,count)
+			if count gt 0 then data[ind,*,*,*]=0.
+			if count gt 0 then eflux[ind,*,*,*]=0.
 
 		store_data,'mvn_sta_d4_P4E_D',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),4),2),v:theta}
 		store_data,'mvn_sta_d4_P4E_A',data={x:time,y:total(total(total(reform(data,npts,nenergy,ndef,nanode,nmass),5),3),2),v:phi}

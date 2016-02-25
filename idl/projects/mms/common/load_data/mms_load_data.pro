@@ -85,8 +85,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-22 12:28:58 -0800 (Mon, 22 Feb 2016) $
-;$LastChangedRevision: 20103 $
+;$LastChangedDate: 2016-02-23 19:55:35 -0800 (Tue, 23 Feb 2016) $
+;$LastChangedRevision: 20126 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -97,7 +97,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup, $
                   suffix = suffix, time_clip = time_clip, no_update = no_update, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version
+                  min_version = min_version, cdf_records = cdf_records
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -260,7 +260,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             lt0 = systime(/sec) ;temporary
             mms_cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, $
                 suffix = suffix, get_support_data = get_support_data, /load_labels, $
-                min_version=min_version,version=cdf_version,latest_version=latest_version
+                min_version=min_version,version=cdf_version,latest_version=latest_version, $
+                number_records=cdf_records
             dt_load += systime(/sec) - lt0 ;temporary
         endif
         

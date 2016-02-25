@@ -35,33 +35,35 @@ end
 ;
 function stel_import_lep::checkTimeFormat, strtime
   
-  cnt = 0
-  foreach elem, strtime do begin
-    res = strmatch(elem, '????-??-??/??:??:??')
-    if (res eq 0) then begin
-      pos = strpos(elem, ' ')
-      if pos ne -1 then begin 
-        strtime_arr = strsplit(elem, ' ', /EXTRACT)
-        if ~strmatch(strtime_arr[0], '????-??-??') then begin
-          year = strmid(strtime_arr[0], 0, 4)
-          mon = strmid(strtime_arr[0], 4, 2)
-          day = strmid(strtime_arr[0], 6, 2)
-          strday = strjoin([year, mon, day], '-')
-        endif else strday = strtime_arr[0]
-        if ~strmatch(strtime_arr[1], '??:??:??') then begin
-          hour = strmid(strtime_arr[1], 0, 2)
-          min = strmid(strtime_arr[1], 2, 2)
-          sec = strmid(strtime_arr[1], 4, 2)
-          strhour = strjoin([hour, min, sec], ':')
-        endif else strhour = strtime_arr[1]
-      endif
-      strtime[cnt] = strday+'/'+strhour
-    endif
-    
-    cnt ++
-  endforeach
-  
-  return, strtime
+;  cnt = 0
+;  foreach elem, strtime do begin
+;    res = strmatch(elem, '????-??-??/??:??:??')
+;    if (res eq 0) then begin
+;      pos = strpos(elem, ' ')
+;      if pos ne -1 then begin 
+;        strtime_arr = strsplit(elem, ' ', /EXTRACT)
+;        if ~strmatch(strtime_arr[0], '????-??-??') then begin
+;          year = strmid(strtime_arr[0], 0, 4)
+;          mon = strmid(strtime_arr[0], 4, 2)
+;          day = strmid(strtime_arr[0], 6, 2)
+;          strday = strjoin([year, mon, day], '-')
+;        endif else strday = strtime_arr[0]
+;        if ~strmatch(strtime_arr[1], '??:??:??') then begin
+;          hour = strmid(strtime_arr[1], 0, 2)
+;          min = strmid(strtime_arr[1], 2, 2)
+;          sec = strmid(strtime_arr[1], 4, 2)
+;          strhour = strjoin([hour, min, sec], ':')
+;        endif else strhour = strtime_arr[1]
+;      endif
+;      strtime[cnt] = strday+'/'+strhour
+;    endif
+;    
+;    cnt ++
+;  endforeach
+;  
+;  return, strtime
+
+  return, time_string(strtime, /msec)
 
 end
 ;
@@ -164,7 +166,7 @@ function stel_import_lep::read_hash, input, trange=trange
 
   ;get sorted list of times
   times = (input.keys()).toarray()
-  times = times.sort()
+  times = times[sort(times)]
 
   ;apply time range  
   if undefined(trange) then begin
@@ -299,7 +301,7 @@ function stel_import_lep::getTrange
     tmpkeys = (self.stel_import_lep)['keys']
     dTime = time_double(tmpkeys)
     dTRange = [min(dtime), max(dtime)]
-    return, time_string(dTrange)
+    return, time_string(dTrange,/msec)
   endif else begin
     message, 'no keys exists', /CONTINUE
     return, !null

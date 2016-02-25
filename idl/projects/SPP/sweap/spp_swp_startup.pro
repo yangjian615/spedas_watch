@@ -17,8 +17,8 @@ pro spp_swp_startup, spanai = spanai,$
 
   ;;--------------------------------------------
   ;; Compile necessary programs
-  resolve_routine, 'spp_swp_functions'
-  resolve_routine, 'spp_swp_ptp_pkt_handler'
+  ;resolve_routine, 'spp_swp_functions'
+  resolve_routine, 'spp_ptp_pkt_handler'
 
 
 
@@ -127,7 +127,7 @@ pro spp_swp_startup, spanai = spanai,$
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Slow Housekeeping
      ;;----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v3d_decom',tname='spp_spanae_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v43x_decom',tname='spp_spanae_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; Fast Housekeeping

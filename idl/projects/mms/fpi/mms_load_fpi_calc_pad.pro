@@ -10,8 +10,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-19 15:40:47 -0800 (Fri, 19 Feb 2016) $
-;$LastChangedRevision: 20070 $
+;$LastChangedDate: 2016-02-23 22:36:04 -0800 (Tue, 23 Feb 2016) $
+;$LastChangedRevision: 20138 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_pad.pro $
 ;-
 pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype = datatype, $
@@ -51,24 +51,28 @@ pro mms_load_fpi_calc_pad, probe, autoscale = autoscale, level = level, datatype
         e_PAD_avg=e_PAD_sum/3.0
 
         if is_array(e_PAD_sum) then begin
-            store_data, obsstr+'PitchAngDist_sum'+suffix, data = {x:lowEn.X, y:e_PAD_sum, v:lowEn.V}, dlimits=dl
-            store_data, obsstr+'PitchAngDist_avg'+suffix, data = {x:lowEn.X, y:e_PAD_avg, v:lowEn.V}, dlimits=dl
+            pad_avg_name = obsstr+'PitchAngDist_avg'+suffix
+            if level eq 'l2' then pad_avg_name = strlowcase(pad_avg_name)
+            if level eq 'ql' then store_data, obsstr+'PitchAngDist_sum'+suffix, data = {x:lowEn.X, y:e_PAD_sum, v:lowEn.V}, dlimits=dl
+            store_data, pad_avg_name, data = {x:lowEn.X, y:e_PAD_avg, v:lowEn.V}, dlimits=dl
         endif
 
         species_str = species[sidx] eq 'e' ? 'electron' : 'ion'
         ; set the metadata for the PADs
-        options, obsstr+'PitchAngDist_sum'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Csum'
-        options, obsstr+'PitchAngDist_avg'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Cavg'
-        options, obsstr+'PitchAngDist_sum'+suffix, ysubtitle='[deg]'
-        options, obsstr+'PitchAngDist_avg'+suffix, ysubtitle='[deg]'
-;        options, obsstr+'PitchAngDist_sum'+suffix, ztitle='Counts'
-;        options, obsstr+'PitchAngDist_avg'+suffix, ztitle='Counts'
-        if autoscale then zlim, obsstr+'PitchAngDist_avg'+suffix, 0, 0, 1 else $
-            zlim, obsstr+'PitchAngDist_avg'+suffix, min(e_PAD_avg), max(e_PAD_avg), 1
-        ylim, obsstr+'PitchAngDist_avg'+suffix, 0, 180, 0
-        if autoscale then zlim, obsstr+'PitchAngDist_sum'+suffix, 0, 0, 1 else $
-            zlim, obsstr+'PitchAngDist_sum'+suffix, min(e_PAD_sum), max(e_PAD_sum), 1
-        ylim, obsstr+'PitchAngDist_sum'+suffix, 0, 180, 0
+        options, pad_avg_name, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Cavg'
+        options, pad_avg_name, ysubtitle='[deg]'
+        options, pad_avg_name, ztitle='eV/(cm!U2!N s sr eV)'
+        if level eq 'ql' then begin
+            options, obsstr+'PitchAngDist_sum'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!CPAD!Csum'
+            options, obsstr+'PitchAngDist_sum'+suffix, ysubtitle='[deg]'
+            if autoscale then zlim, obsstr+'PitchAngDist_sum'+suffix, 0, 0, 1 else $
+                zlim, obsstr+'PitchAngDist_sum'+suffix, min(e_PAD_sum), max(e_PAD_sum), 1
+            ylim, obsstr+'PitchAngDist_sum'+suffix, 0, 180, 0
+            
+        endif
+        if autoscale then zlim, pad_avg_name, 0, 0, 1 else $
+            zlim, pad_avg_name, min(e_PAD_avg), max(e_PAD_avg), 1
+        ylim, pad_avg_name, 0, 180, 0
 
         if ~autoscale then zlim, obsstr+'PitchAngDist_'+['lowEn', 'midEn', 'highEn']+suffix, min(e_PAD_avg), max(e_PAD_avg), 1
     endfor

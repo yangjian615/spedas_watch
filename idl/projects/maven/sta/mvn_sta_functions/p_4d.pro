@@ -39,6 +39,8 @@ if dat.valid eq 0 then begin
   return, [p4dxx,p4dyy,p4dzz,p4dxy,p4dxz,p4dyz]
 endif
 
+if (dat2.quality_flag and 195) gt 0 then return,[p4dxx,p4dyy,p4dzz,p4dxy,p4dxz,p4dyz]
+
 nmass = dat.nmass
 nenergy = dat.nenergy
 mass = dat.mass*dat.mass_arr 

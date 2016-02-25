@@ -11,8 +11,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-23 17:54:33 -0800 (Tue, 23 Feb 2016) $
-; $LastChangedRevision: 20119 $
+; $LastChangedDate: 2016-02-23 21:52:40 -0800 (Tue, 23 Feb 2016) $
+; $LastChangedRevision: 20134 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
@@ -39,19 +39,19 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   ;species_str = datatype+'_'+species
   ;if (data_rate) eq 'brst' then prefix = 'mms'+probe+'_epd_feeps_brst_' else prefix = 'mms'+probe+'_epd_feeps_'
   prefix = 'mms'+probe+'_epd_feeps_'
-  get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[0]+'_clean'+suffix, data = d, dlimits=dl
+  get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[0]+'_clean_sun_removed'+suffix, data = d, dlimits=dl
 
   if is_struct(d) then begin
     flux_omni = dblarr(n_elements(d.x), n_elements(sensors)*2., n_elements(d.v))
     sensor_count = 0
 
     for i=0, n_elements(sensors)-1. do begin ; loop through each top sensor
-      get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[i]+'_clean'+suffix, data = d
+      get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix, data = d
       flux_omni[*, sensor_count, *] = d.Y
       sensor_count += 1
     endfor
     for i=0, n_elements(sensors)-1. do begin ; loop through each bottom sensor
-      get_data, prefix+'bottom_'+data_units+'_sensorID_'+sensors[i]+'_clean'+suffix, data = d
+      get_data, prefix+'bottom_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix, data = d
       flux_omni[*, sensor_count, *] = d.Y
       sensor_count += 1
     endfor

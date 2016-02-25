@@ -11,8 +11,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-19 15:36:47 -0800 (Fri, 19 Feb 2016) $
-;$LastChangedRevision: 20069 $
+;$LastChangedDate: 2016-02-24 14:52:46 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20165 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_angles.pro $
 ;-
 pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, level = level, data_rate = data_rate, $
@@ -28,7 +28,6 @@ pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, lev
     endif
     if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
     prefix = 'mms' + probe
-    fpi_angles = mms_fpi_angles()
     
     ; in case the user passes datatype = '*'
     if (datatype[0] eq '*' || datatype[0] eq '') && level eq 'ql' then datatype=['des', 'dis']
@@ -45,6 +44,8 @@ pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, lev
         pad_regex = level eq 'l2' ? prefix + '_?'+species+'?_*itchangdist_*en_*'+suffix : pad_regex+suffix
         spectra_where = strmatch(tplotnames, pad_regex)
 
+        fpi_angles = mms_fpi_angles(probe = probe, level = level, data_rate = data_rate, species = species, suffix = suffix)
+        
         if n_elements(spectra_where) ne 0 then begin
             for var_idx = 0, n_elements(tplotnames)-1 do begin
                 if spectra_where[var_idx] ne 0 then begin
@@ -54,8 +55,8 @@ pro mms_load_fpi_fix_angles, tplotnames, probe = probe, datatype = datatype, lev
                         en = strsplit(tplotnames[var_idx], '_', /extract)
                         en = en[n_elements(strsplit(tplotnames[var_idx], '_', /extract))-1]
                         options, tplotnames[var_idx], ysubtitle='[deg]'
-                        options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+en+'!CPAD'
-                       ; options, tplotnames[var_idx], ztitle='Counts'
+                        ;options, tplotnames[var_idx], ytitle=strupcase(prefix)+'!C'+en+'!CPAD'
+                        options, tplotnames[var_idx], ztitle='eV/(cm!U2!N s sr eV)'
                         options, tplotnames[var_idx], ystyle=1
                         zlim, tplotnames[var_idx], 0, 0, 1
                         store_data, tplotnames[var_idx], data={x: fpi_d.X, y:fpi_d.Y, v: fpi_angles}, dlimits=dl

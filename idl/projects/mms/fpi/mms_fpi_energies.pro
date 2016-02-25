@@ -11,15 +11,24 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-19 15:36:47 -0800 (Fri, 19 Feb 2016) $
-;$LastChangedRevision: 20069 $
+;$LastChangedDate: 2016-02-24 14:52:46 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20165 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_energies.pro $
 ;-
-function mms_fpi_energies, species, suffix = suffix
+function mms_fpi_energies, species, suffix = suffix, level = level, probe = probe
     if undefined(suffix) then suffix = ''
     if undefined(species) || (species ne 'i' && species ne 'e') then begin
         dprint, dlevel = 1, "Error, species type ('i' or 'e') required for FPI energies"
         return, -1
+    endif
+    if ~undefined(level) && level eq 'l2' then begin
+        ; get the energies from the variable: mms#_d?s_energy_fast
+        get_data, 'mms'+strcompress(string(probe), /rem)+'_d'+species+'s_energy_fast'+suffix, data=d
+        if ~is_struct(d) then begin
+            dprint, dlevel = 0, 'Error, couldn''t find the variable containing the energy table'
+            return, -1
+        endif
+        return, d.Y
     endif
 
     des_energies = [11.66161217, $

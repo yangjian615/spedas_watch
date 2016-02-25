@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-23 14:34:52 -0800 (Tue, 23 Feb 2016) $
-; $LastChangedRevision: 20112 $
+; $LastChangedDate: 2016-02-24 07:57:59 -0800 (Wed, 24 Feb 2016) $
+; $LastChangedRevision: 20142 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -44,8 +44,8 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         
         ; top sensors
         for sensor_idx = 0, n_elements(sensors)-1 do begin
-          var_name = 'mms'+probe+'_epd_feeps_top_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'+suffix
-          get_data, var_name, data = top_data, dlimits=top_dlimits
+          var_name = 'mms'+probe+'_epd_feeps_top_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
+          get_data, var_name+suffix, data = top_data, dlimits=top_dlimits
           if mask_sectors.haskey('mms'+probe+'imaskt'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]] ne !NULL then begin
             bad_sectors = mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]]
     
@@ -56,13 +56,13 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
           endif
     
           ; resave the data, with the sunlight contamination removed
-          store_data, var_name+'_sun_removed', data=top_data, dlimits=top_dlimits
+          store_data, var_name+'_sun_removed'+suffix, data=top_data, dlimits=top_dlimits
         endfor
     
         ; bottom sensors
         for sensor_idx = 0, n_elements(sensors)-1 do begin
-          var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'+suffix
-          get_data, var_name, data = bottom_data, dlimits=bottom_dlimits
+          var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
+          get_data, var_name+suffix, data = bottom_data, dlimits=bottom_dlimits
           if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
             bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]
     
@@ -73,7 +73,7 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
           endif
     
           ; resave the data, with the sunlight contamination removed
-          store_data, var_name+'_sun_removed', data=bottom_data, dlimits=bottom_dlimits
+          store_data, var_name+'_sun_removed'+suffix, data=bottom_data, dlimits=bottom_dlimits
         endfor
     endfor
   

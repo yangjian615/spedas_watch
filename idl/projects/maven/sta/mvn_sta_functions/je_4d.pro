@@ -37,12 +37,15 @@ if dat2.valid eq 0 then begin
   return, eflux
 endif
 
+if (dat2.quality_flag and 195) gt 0 then return,-1
+
 dat = conv_units(dat2,"counts")		; initially use counts
 na = dat.nenergy
 nb = dat.nbins
 nm = dat.nmass
 
-data = dat.data 
+data = dat.cnts 
+bkg = dat.bkg 
 energy = dat.energy
 denergy = dat.denergy
 theta = dat.theta/!radeg
@@ -52,14 +55,23 @@ dphi = dat.dphi/!radeg
 domega = dat.domega
 	if ndimen(domega) eq 0 then domega=replicate(1.,dat.nenergy)#domega
 mass = dat.mass*dat.mass_arr 
+pot = dat.sc_pot
+
+if keyword_set(bins) and nb gt 1 then begin
+	bins2 = transpose(reform(bins#replicate(1.,na*nm),nb,nm,na),[2,0,1])
+	data=data*bins2
+	bkg = bkg*bins2
+endif
 
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 endif
 if keyword_set(ms) then begin
 	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 endif
 
 if keyword_set(mi) then begin
@@ -68,9 +80,12 @@ endif else begin
 	dat.mass_arr[*]=round(dat.mass_arr-.1)>1. & mass=dat.mass*dat.mass_arr	; the minus 0.1 helps account for straggling at low mass
 endelse
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+;if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, !Values.F_NAN
+if total(data-bkg) lt 1 then return, !Values.F_NAN
 
-dat.data=data
+dat.cnts=data
+dat.bkg=bkg
 dat = conv_units(dat,"df")		; Use distribution function
 data=dat.data
 

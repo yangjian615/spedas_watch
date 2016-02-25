@@ -17,6 +17,7 @@
 ;					nb = dat.ntheta
 ;	BINS:	bytarr(na,nb),	optional, energy/angle bins array for integration
 ;					0,1=exclude,include
+;
 ;PURPOSE:
 ;	Returns the anisotropy 
 ;NOTES:	
@@ -36,11 +37,15 @@ if dat2.valid eq 0 then begin
 	return, iso
 endif
 
-if dat2.nbins eq 1 then return,iso
+if (dat2.quality_flag and 195) gt 0 or dat2.nbins eq 1 then return,iso
 
 dat = conv_units(dat2,"counts")		; initially use counts
 
-data = dat.data 
+
+
+
+data = dat.cnts 
+bkg = dat.bkg
 energy = dat.energy
 theta = dat.theta/!radeg
 phi = dat.phi/!radeg
@@ -48,15 +53,19 @@ phi = dat.phi/!radeg
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 endif
 if keyword_set(ms) then begin
 	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 endif
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, !Values.F_NAN
+if total(data-bkg) lt 1 then return, !Values.F_NAN
 
-dat.data=data
+dat.cnts=data
+dat.bkg=bkg
 dat = conv_units(dat2,"eflux")		; Use energy flux
 data=dat.data
 

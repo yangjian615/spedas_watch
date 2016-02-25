@@ -30,10 +30,14 @@
 ;-
 function nb_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
+density = 0.
+
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
 	return, !Values.F_NAN
 endif
+
+if (dat2.quality_flag and 195) gt 0 then return,-1
 
 if keyword_set(mi) and keyword_set(en) then begin
 	if mi le 5. and max(en) le 200. and dat2.att_ind ge 2 then return, !Values.F_NAN
@@ -41,7 +45,9 @@ endif
 
 dat = omni4d(dat2,/mass)
 n_e = dat.nenergy
-data = dat.data
+
+data = dat.cnts 
+bkg = dat.bkg
 energy = dat.energy
 denergy = dat.denergy
 theta = dat.theta/!radeg
@@ -60,12 +66,14 @@ en_max = max(energy)
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 	en_min = en_min > en[0]
 	en_max = en_max < en[1]
 endif
 if keyword_set(ms) then begin
 	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 ; 		the following limits the energy range to a few bins around the peak for cruise phase solar wind measurements
 ;	if dat.time lt time_double('14-10-1') then begin
 ;		tcnts = total(data,2)
@@ -82,6 +90,8 @@ if dat.nmass eq 1 then begin
 		if n_e eq 64 then nnne=4 else nnne=nne
 		data[0:(mind-nnne>0)]=0.
 		data[((mind+nnne)<(n_e-1)):(n_e-1)]=0.
+		bkg[0:(mind-nnne>0)]=0.
+		bkg[((mind+nnne)<(n_e-1)):(n_e-1)]=0.
 	endif	
 endif
 
@@ -91,11 +101,15 @@ endif
 		maxcnt = max(total(data,2),mind) 
 		data[0:(mind-nne>0),*]=0.
 		data[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
+		bkg[0:(mind-nne>0),*]=0.
+		bkg[((mind+nne)<(n_e-1)):(n_e-1),*]=0.
 		en_peak=energy[mind,0]
 	endif else begin
 		maxcnt = max(data,mind)
 		data[0:(mind-nne>0)]=0.
 		data[((mind+nne)<(n_e-1)):(n_e-1)]=0.
+		bkg[0:(mind-nne>0)]=0.
+		bkg[((mind+nne)<(n_e-1)):(n_e-1)]=0.
 		en_peak=energy[mind]
 	endelse
 
@@ -110,10 +124,15 @@ if dat.nmass gt 1 then begin
 	endelse
 endif else mass = dat.mass
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return,!Values.F_NAN
+;if keyword_set(mincnt) then if total(data) lt mincnt then return,!Values.F_NAN
+if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, !Values.F_NAN
+if total(data-bkg) lt 1 then return, !Values.F_NAN
+
+
 if en_peak lt 1.5*en_min or en_peak gt en_max/1.5 then return,!Values.F_NAN
 
-dat.data=data
+dat.cnts=data
+dat.bkg=bkg
 dat = conv_units(dat,"df")		; Use distribution function
 data=dat.data
 

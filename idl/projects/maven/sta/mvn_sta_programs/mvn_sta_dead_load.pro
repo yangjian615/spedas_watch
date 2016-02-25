@@ -28,7 +28,7 @@
 ;		then code used for apid cc can be adapted to the above apids.
 ;
 ;-
-pro mvn_sta_dead_load,check=check,test=test,dead_droop=dead_droop,dead_rate=dead_rate
+pro mvn_sta_dead_load,check=check,test=test,dead_droop=dead_droop,dead_rate=dead_rate,make_common=make_common
 
 	common mvn_c0,mvn_c0_ind,mvn_c0_dat 
 	common mvn_c8,mvn_c8_ind,mvn_c8_dat 
@@ -36,6 +36,11 @@ pro mvn_sta_dead_load,check=check,test=test,dead_droop=dead_droop,dead_rate=dead
 	common mvn_d8,mvn_d8_ind,mvn_d8_dat 
 	common mvn_d9,mvn_d9_ind,mvn_d9_dat 
 	common mvn_da,mvn_da_ind,mvn_da_dat 
+
+; Notes on apid d8
+;	0  1  2  3  4   5       6      7    8     9     10  11 
+;	TA,TB,TC,TD,RST,NoStart,Unqual,Qual,AnRej,MaRej,A&B,C&D
+
 
 ; the following calibration efficiencies are not yet used to correct efficiencies by anode
 ;	instead, the instantaneous measured efficiencies from apid d8,d9,da are used
@@ -73,10 +78,11 @@ endif
 
 time = mvn_da_dat.time
 npts = n_elements(mvn_da_dat.time)
-rate = dblarr(npts,64,16)
-dead = dblarr(npts,64,16)
-droop = dblarr(npts,64,16)
-valid = dblarr(npts,64,16)
+rate = dblarr(npts,64,16)					; energy-deflector event rate 
+dead = dblarr(npts,64,16)					; energy-deflector dead time 
+droop = dblarr(npts,64,16)					; energy-deflector droop rate 
+valid = dblarr(npts,64,16)					; energy-deflector valid event rate 
+anode = dblarr(npts,64,16)					; energy-anode distribution of counts, normalized at each energy - assumes anode distribution does not depend on deflector or mass
 qual = intarr(npts)
 eff_start = fltarr(npts)
 eff_stop = fltarr(npts)
@@ -98,7 +104,7 @@ if not keyword_set(dead_droop) then dead_droop=800.		; this was empirically dete
 if not keyword_set(dead_rate) then dead_rate=1.e5		; this was empirically determined from data on 20150107-1520UT, seems good to ~10% 
 st_def = .70							; default start efficiency at low rates
 sp_def = .47							; default stop efficiency at low rates
-ef3_def = .75
+ef3_def = .75							; ef3 accounts for variations in qualified event efficiency including anode losses
 ef_def = st_def*sp_def
 
 for i=0l,npts-1 do begin
@@ -122,16 +128,17 @@ for i=0l,npts-1 do begin
 	c8 = 1.d*reform(replicate(1.,2)#reform(mvn_c8_dat.data[ind_c8,*,*],512),64,16)
 
 	ca = total(reform(mvn_ca_dat.data[ind_ca,*,*],16,4,16),2)						; assume dist of cnts on anode independent of deflectors
+	ca0 = ca/(total(ca,2)#replicate(1.,16)+.001)
+	anode[i,*,*]=reform(replicate(1.,4)#reform(ca0,256),64,16)						; normalized anode distribution
 	ca1 = fltarr(16) 
 	ef1 = fltarr(16) 
-	for j=0,15 do begin
-		ca1[j] = max(ca[j,*]/(total(ca[j,*])+1.))>(1./16.)
-	endfor
+	for j=0,15 do ca1[j] = max(ca[j,*]/(total(ca[j,*])+1.))>(1./16.)			; ca1 is the normalized maximum (1.>ca1>1.16)
+
 	ca2 = reform(replicate(1.,4)#ca1,64)#replicate(1.,16)					; correction for mcp droop to account for dist of cnts over anodes
 	ef1 = total(ca*(replicate(1.,16)#reform(eff_cal[*,4])),2)/total(ca,2)
 	ef2 = reform(replicate(1.,4)#ef1,64)#replicate(1.,16)					; correction for nominal efficiency to account for dist of cnts over anodes
 
-	ef3 = total(c0)/16./(4.*mvn_d8_dat.rates[ind_d8,7])					; x4 converts rates to counts
+	ef3 = total(c0)/16./(4.*mvn_d8_dat.rates[ind_d8,7])					; x4 converts rates to counts in 4 sec, why is this 7 and not 4?????
 
 	ct = 1.*total(c8,2)#replicate(1.,16) > 0.0001
 	r1 = mvn_d8_dat.rates[ind_d8,7]/mvn_d8_dat.rates[ind_d8,4]				; fully qualified processed events 
@@ -153,11 +160,24 @@ for i=0l,npts-1 do begin
 	ef_sp = (ef_sp*fq + sp_def*50.)/(fq+50.)	
 	ef_st = (ef_st*fq + st_def*50.)/(fq+50.)
 
-; use default efficiencies at very low count rates
-	if (fq lt 100.) then begin								; use default efficiencies for low event rates
-		ef_sp = sp_def
-		ef_st = st_def
-		ef3 = ef3_def
+; old code used default efficiencies at very low count rates - this underestimates efficiencies and was replaced below
+;	if (fq lt 100. and i gt 8) then begin								
+;		ef_sp = sp_def
+;		ef_st = st_def
+;		ef3 = ef3_def
+;	endif
+
+; use running average (4) efficiencies at very low count rates
+	if (fq lt 100.) then begin
+		if i lt 4 then begin									; use default efficiencies for first 4 points of day
+			ef_sp = sp_def
+			ef_st = st_def
+			ef3 = ef3_def
+		endif else begin
+			ef_sp = total(eff_stop[i-4:i-1])/4.
+			ef_st = total(eff_start[i-4:i-1])/4.
+			ef3 = total(eff_qual[i-4:i-1])/4.
+		endelse
 	endif
 	
 ; calculate total efficiency 
@@ -174,7 +194,7 @@ for i=0l,npts-1 do begin
 	tmp = da*c8/ct 										; da rate vs E -> rate per accum 
 	dtmp = (da[*,0]-total(tmp,2))#replicate(1./16,16)					; corrects for small round off error
 
-	tmp7 = c0*c8/ct 									; da rate vs E -> rate per accum 
+	tmp7 = c0*c8/ct 									; c0 rate vs E -> rate per accum 
 	dtmp7 = (c0[*,0]-total(tmp7,2))#replicate(1./16,16)					; corrects for small round off error
 	
 	rate[i,*,*] = (tmp + dtmp) >0.								; gets rid of round off errors
@@ -204,7 +224,7 @@ for i=0l,npts-1 do begin
 
 ; this is an empirical formula that corrects for MCP droop at high rates
 ;    a dozen algorithms with various parameters were tried using density variations across attenuator changes at periapsis in Jan 2015
-;	dead_droop is effectively the dead_time of MCP droop
+;	dead_droop is effectively the dead_time of MCP droop in ns, ~800 
 ;	dead_rate is a minimum counting rate that must be exceeded before droop sets in
 ;    several different values for dead_rate and dead_droop were tried 
 ;    the below algorithm worked well for dead_droop=800 and dead_rate=1.e5 
@@ -251,14 +271,21 @@ if min(droop[i,*,*]) lt 0. then print,'STATIC MCP Droop calculation error:',i,' 
 
 endfor
 
+tmp_dat = {time:time,dead:dead,droop:droop,rate:rate,valid:valid,anode:anode}
+
+if keyword_set(make_common) then begin
+	common mvn_sta_dead,dat_dead		& dat_dead=tmp_dat
+endif
+
 if keyword_set(test) then print,'min-max of dead= ',minmax(dead)
 if keyword_set(test) then print,'min-max of droop= ',minmax(droop)
+if keyword_set(test) then print,'min-max of anode= ',minmax(anode)
 
 ; combine both dead time and droop into a single dead time array
 
-dead = dead * droop
+dead7 = dead * droop
 
-if keyword_set(test) then print,'Minimum and maximum dead time corrections in array =',minmax(dead)
+if keyword_set(test) then print,'Minimum and maximum dead time corrections in array =',minmax(dead7)
 
 ;  Science data product common blocks
  
@@ -340,9 +367,9 @@ if size(mvn_c0_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -382,9 +409,9 @@ if size(mvn_c2_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -424,9 +451,9 @@ if size(mvn_c4_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -466,9 +493,9 @@ if size(mvn_c6_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -508,9 +535,9 @@ if size(mvn_c8_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -550,9 +577,9 @@ if size(mvn_ca_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -594,9 +621,9 @@ if size(mvn_cc_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(total(rt_dt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -636,9 +663,9 @@ if size(mvn_cd_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -680,9 +707,9 @@ if size(mvn_ce_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(total(rt_dt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -722,9 +749,9 @@ if size(mvn_cf_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -766,9 +793,9 @@ if size(mvn_d0_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(total(rt_dt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -810,9 +837,9 @@ if size(mvn_d1_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(total(rt_dt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -854,9 +881,9 @@ if size(mvn_d2_dat,/type) eq 8 then begin
 		min_da2 = min(abs(time-dat.end_time[i]+4.),ind_da2)
 		avg_da = ind_da2-ind_da1+1
 
-;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da1:ind_da2,*,*]*dead7[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da1:ind_da2,*,*],avg_da,avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(total(rt_dt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(total(rt,4),2),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -896,9 +923,9 @@ if size(mvn_d3_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 
@@ -938,9 +965,9 @@ if size(mvn_d4_dat,/type) eq 8 then begin
 	for i=0l,npts-1 do begin
 		min_da = min(abs(time-dat.time[i]),ind_da)
 
-;		rt_dt = reform(rate[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+;		rt_dt = reform(rate[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 ;		rt = reform(rate[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
-		rt_dt = reform(valid[ind_da,*,*]*dead[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
+		rt_dt = reform(valid[ind_da,*,*]*dead7[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		rt = reform(valid[ind_da,*,*],avg_nrg,nenergy,avg_def,ndef)
 		tmp1 = reform(total(total(rt_dt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass)
 		tmp2 = reform(total(total(rt,3),1),nenergy*ndef) # replicate(1.,nanode*nmass) 

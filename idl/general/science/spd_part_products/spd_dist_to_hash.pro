@@ -1,26 +1,29 @@
 ;+
 ;Procedure:
-;
+;  spd_dist_to_hash
 ;
 ;Purpose:
-;
+;  Convert standard 3D partical distribution structure into hash
+;  compatible with STEL3D 
 ;
 ;Calling Sequence:
-;
+;  hash = spd_dist_to_hash( dist [,counts=dist_counts]
 ;
 ;Input:
-;
+;  dist:  Standard distribution structure array (pointer) in df units
+;  counts:  Optional copy of dist in counts
 ;
 ;Output:
-;
+;  return value: A hash whose elements are each single distributions,
+;                The keys are the sample time in millisecond precision.
 ;
 ;Notes:
 ;  -Requires IDL 8.0+, 8.2+ recommended
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-17 17:45:39 -0800 (Wed, 17 Feb 2016) $
-;$LastChangedRevision: 20057 $
+;$LastChangedDate: 2016-02-24 11:05:25 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20154 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_dist_to_hash.pro $
 ;-
 
@@ -61,7 +64,7 @@ for i=0, n_elements(d)-1 do begin
   for j=0, n_elements(*d[i])-1 do begin
 
     ;TODO: Include fractional seconds once supported by stel3d
-    time = time_string( (*d[i])[j].time )
+    time = time_string( (*d[i])[j].time, /msec )
 
     ;calculate velocity in km/s
     ;fill counts if not set

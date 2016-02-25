@@ -273,9 +273,20 @@ decomp19[128:255]=$
 ;	16		86   8d		8c   93
 
 ; Anode bin boundaries transfered to decimal, note only the highest 8 bits of a 10 bit tdc3 and tdc4 are used
+
+; Note 	- anode bin boundaries were changed on 20160205 when significant anode rejection was discovered
+;	- the larger then expected anode boundary drift is probably due to temperature - unexpected based on TOF TDC ground measurements
+;	- rejection compared to new tables is roughly as follows on 20160211 - primarily in anodes 0-2,15
+;	- [0.397741, 0.330852, 0.667227, 0.927560, 0.936383, 0.891164, 0.971529, 0.979680
+;	   0.975024, 0.962121, 0.922044, 0.915169, 0.914899, 0.842561, 0.859615, 0.601016]
+;	- anode rejection for O2+ at periapsis is about 30% due to scattering in the stop foils
+;
+;	new tables uploaded 20160205
+
+;	the following are the anode rejection tables from launch to 20160205
 	an_bin_tdc3 = intarr(16,2) 
 	an_bin_tdc4 = intarr(16,2) 
-	an_bin_tdc3[*,0] = [147,128,110, 91, 73, 56, 36, 18,  5, 27, 43, 60, 80, 98,116,134]
+	an_bin_tdc3[*,0] = [147,129,110, 91, 73, 56, 36, 18,  5, 27, 43, 60, 80, 98,116,134]
 	an_bin_tdc3[*,1] = [140,122,103, 84, 66, 49, 29, 11, 12, 35, 50, 67, 87,105,123,141]
 	an_bin_tdc4[*,0] = [147,129,110, 90, 72, 53, 34, 15,  9, 27, 46, 65, 84,103,121,140]
 	an_bin_tdc4[*,1] = [140,122,103, 83, 65, 46, 27,  8, 16, 34, 53, 72, 91,110,128,147]
@@ -493,14 +504,15 @@ def_eff = .285		; early mission solar wind proton efficiency
 ; Science modes - TBD - when next eprom update is performed
 	slut[21,*] = 	[   50.0,	0.1500,	22.5,	0.,	12.5,	5.0,		25.]		; ram4			eprom 4
 	slut[22,*] = 	[  500.0,	0.3000,	45.0,	0.,	12.8,	5.0,		25.]		; conic4		grid scale changed to 5 so attE works for deep dips
-	slut[23,*] = 	[30000.0,	0.3500,	45.0,	0.,	12.8,	5.0,		25.]		; pickup4		gridon decreased to avoid ionization of neutrals between grids during deep dip
-	slut[24,*] = 	[30000.0,	0.3500,	45.0,	0.,	12.8,	5.0,		25.]		; scan4			
-	slut[25,*] = 	[30000.0,	0.3500,	45.0,	0.,	12.8,	5.0,		25.]		; eclip4		
+	slut[23,*] = 	[30000.0,	0.3500,	45.0,	0.,	12.8,	5.0,		25.]		; pickup4		atten disabled, gridon decreased to avoid ionization of neutrals between grids during deep dip
+	slut[24,*] = 	[30000.0,	0.3500,	45.0,	0.,	12.8,	5.0,		25.]		; scan4			atten enabled, same as pickup but with high data rate
+	slut[25,*] = 	[30000.0,	0.3500,	45.0,	0.,	12.8,	5.0,		25.]		; eclip4		atten enabled, same as pickup otherwise
 	slut[26,*] = 	[30000.0,	25.000,	45.0,	0.,	 0.0,	2.0,		25.]		; protect4		
 
 ; iswp to MLUT map	
 	swp2mlut = [0,0,0,3,3,1,1,4,4,1,1,5,5,5,6,1,1,7,7,7,6,1,1,8,8,8,6]				; MLUT table associated with each SLUT sweep table
 
+; Assumptions about how to deal with mechanical attenuator for data products with no angular info 
 ; iswp to anode & def range for geometric factor considerations
 ;    these tables are needed to help approximate gf for omindirectional data - apid c0,c2,c4,c6
 ;    the assumption is that: ions are in anode 0 in ram mode, ions are in anodes 6-8 in conic mode, ions are uniformly distributed over anodes 0-15 in other modes 
@@ -508,15 +520,15 @@ def_eff = .285		; early mission solar wind proton efficiency
 ;    a more accurate GF estimate could be made by using apid CA to determine the anode distribution of counts -- at some future date if needed
 ;    a problem with this method is dealing with the non-uniform mechanical attenuator.
 ;    a better approach might be to have a mechanical attenuator dependence in this table - swp2gfan[nswp,2,4], swp2gfdf[nswp,2,4]
-;    right now, the case of mechanical attenuator closed in pickup mode (and protect,eclipse,etc) is handled in the apid secions by a factor of 50 division 
+;    right now, the case of mechanical attenuator closed in pickup mode (and protect,eclipse,etc) is handled in the apid sections by a factor of 50 division 
 
 	swp2gfan = intarr(n_swp,2)									; For data averaged over anode, swp2gfan gives the assumed anode range for most counts 
 	swp2gfdf = intarr(n_swp,2)									; For data averaged over def step, swp2gfdf gives the assumed def range for most counts 
 	swp2gfan[*,0] = [7,7,6, 0, 0,7,6, 0, 0,7,6, 0, 0, 0, 0,7,6, 0, 0, 0, 0,7,6, 0, 0, 0, 0]		;   Used for APIDs with anode compressed data
 	swp2gfan[*,1] = [7,7,8,15,15,7,8,15,15,7,8,15,15,15,15,7,8,15,15,15,15,7,8,15,15,15,15]		;   RAM mode counts assumed to land in anode 7, CONIC mode counts assumed to land in anodes 6 to 8
 
-	swp2gfdf[*,0] = [7,7, 5, 0, 0,7, 5, 0, 0,7, 5, 0, 0, 0, 0,7, 5, 0, 0, 0, 0,7, 5, 0, 0, 0, 0]			;   Used for APIDs with deflector compressed data, determines which sweeps should assume inclusion of large def angles where gf response rolls off
-	swp2gfdf[*,1] = [8,8,10,15,15,8,10,15,15,8,10,15,15,15,15,8,10,15,15,15,15,8,10,15,15,15,15]			;   RAM mode counts assumed to land in def 7-8, CONIC mode counts assumed to land in def 5-10
+	swp2gfdf[*,0] = [7,7, 5, 0, 0,7, 5, 0, 0,7, 5, 0, 0, 0, 0,7, 5, 0, 0, 0, 0,7, 5, 0, 0, 0, 0]	;   Used for APIDs with deflector compressed data, determines which sweeps should assume inclusion of large def angles where gf response rolls off
+	swp2gfdf[*,1] = [8,8,10,15,15,8,10,15,15,8,10,15,15,15,15,8,10,15,15,15,15,8,10,15,15,15,15]	;   RAM mode counts assumed to land in def 7-8, CONIC mode counts assumed to land in def 5-10
 
 	def_volt_max = 4000.										; max deflector voltage, high energy steps have limited deflection range
 
@@ -539,6 +551,7 @@ endif								;
 ;   The following will require an inflight calibration for tuning to exact values
 ;	mec = [1.00,1.00,1.00,0.30,.040,.010,.010,.010,.010,.010,.020,0.10,1.00,1.00,1.00,1.00]			; ground calibration approximate value of mec = mgf*bgf
 	attM = 0.01												; inflight calibration - first approximation
+	attM = 0.013												; inflight calibration - 20160112 based on 20151126
 
 	agf = [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00]			; anode dependent gf - grid attenuation, active foil area
 
@@ -554,7 +567,10 @@ endif								;
 	gf_an_on =  reform(agf#[1,1,1,1] * (bgf#[1,0,1,0]+egf#[0,1,0,1]) * (replicate(1.,16)#[1,1,0,0]+mgf#[0,0,1,1]),16*4)	; electrostatic attenuator on
 	gf_an_off = reform(agf#[1,1,1,1] * (bgf#[1,1,1,1])               * (replicate(1.,16)#[1,1,0,0]+mgf#[0,0,1,1]),16*4)	; electrostatic attenuator off
 
-;	this correction factor is used correct apids c6,c0,c2,c4 for attM closed conditions
+;	this correction factor is used to compensate for attM closed conditions for apid c6,c0,c2,c4,c8 (which have no anode info)  
+;		the correction is only applied during pickup/eclipse/protect modes - these modes have swp2gfan[?,0:1]=[0,15] which assumes the flux is isotropic 
+;		however, for att=2 or att=3 conditions, we instead assume the flux is attenuated by the mechanical attenuator
+;		att_corr reduces the gf in apid c6,c0,c2,c4,c8 when att=2 or att=3 (ie when the mechanical attenuator is engaged)
 	att_corr = total(mgf[5:9])/5./(total(mgf)/16.)
 
 
@@ -1535,14 +1551,19 @@ print,'Processing apid c6'
 			gf2[7:8,*,3]=gf2[7:8,*,3]/50.
 		endelse
 	endif
-; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated in all modes 
+;	compensates for swp2gfan[*,0:1]=[0,15] in pickup,eclipse,scan,protect modes. - see definintion of att_corr 
 	if first_t ge time_double('2014-09-01/0') then begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
 			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
 			gf2[7:8,*,2]=gf2[7:8,*,2]*att_corr
 			gf2[7:8,*,3]=gf2[7:8,*,3]*att_corr
 			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
+			gf2[11:14,*,3]=gf2[11:14,*,3]*att_corr
+			gf2[17:20,*,2]=gf2[17:20,*,2]*att_corr
 			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
+			gf2[23:26,*,2]=gf2[23:26,*,2]*att_corr
+			gf2[23:26,*,3]=gf2[23:26,*,3]*att_corr
 	endif
 
 ; ??????? i think the above line should sum over anodes and average over deflections so that the integ_t can reflect the dead time correctly
@@ -1847,14 +1868,19 @@ print,'Processing apid c0'
 			gf2[7:8,*,3]=gf2[7:8,*,3]/50.
 		endelse
 	endif
-; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated in all modes 
+;	compensates for swp2gfan[*,0:1]=[0,15] in pickup,eclipse,scan,protect modes. - see definintion of att_corr 
 	if first_t ge time_double('2014-09-01/0') then begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
 			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
 			gf2[7:8,*,2]=gf2[7:8,*,2]*att_corr
 			gf2[7:8,*,3]=gf2[7:8,*,3]*att_corr
 			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
+			gf2[11:14,*,3]=gf2[11:14,*,3]*att_corr
+			gf2[17:20,*,2]=gf2[17:20,*,2]*att_corr
 			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
+			gf2[23:26,*,2]=gf2[23:26,*,2]*att_corr
+			gf2[23:26,*,3]=gf2[23:26,*,3]*att_corr
 	endif
 
 ; the following line need to be fixed ?????????????????????????????
@@ -2127,14 +2153,19 @@ print,'Processing apid c2'
 			gf2[7:8,*,3]=gf2[7:8,*,3]/50.
 		endelse
 	endif
-; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated in all modes 
+;	compensates for swp2gfan[*,0:1]=[0,15] in pickup,eclipse,scan,protect modes. - see definintion of att_corr 
 	if first_t ge time_double('2014-09-01/0') then begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
 			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
 			gf2[7:8,*,2]=gf2[7:8,*,2]*att_corr
 			gf2[7:8,*,3]=gf2[7:8,*,3]*att_corr
 			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
+			gf2[11:14,*,3]=gf2[11:14,*,3]*att_corr
+			gf2[17:20,*,2]=gf2[17:20,*,2]*att_corr
 			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
+			gf2[23:26,*,2]=gf2[23:26,*,2]*att_corr
+			gf2[23:26,*,3]=gf2[23:26,*,3]*att_corr
 	endif
 
 ; the following line need to be fixed ?????????????????????????????
@@ -2417,14 +2448,19 @@ print,'Processing apid c4'
 			gf2[7:8,*,3]=gf2[7:8,*,3]/50.
 		endelse
 	endif
-; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated in all modes 
+;	compensates for swp2gfan[*,0:1]=[0,15] in pickup,eclipse,scan,protect modes. - see definintion of att_corr 
 	if first_t ge time_double('2014-09-01/0') then begin
 			gf2[3:4,*,2]=gf2[3:4,*,2]*att_corr
 			gf2[3:4,*,3]=gf2[3:4,*,3]*att_corr
 			gf2[7:8,*,2]=gf2[7:8,*,2]*att_corr
 			gf2[7:8,*,3]=gf2[7:8,*,3]*att_corr
 			gf2[11:14,*,2]=gf2[11:14,*,2]*att_corr
+			gf2[11:14,*,3]=gf2[11:14,*,3]*att_corr
+			gf2[17:20,*,2]=gf2[17:20,*,2]*att_corr
 			gf2[17:20,*,3]=gf2[17:20,*,3]*att_corr
+			gf2[23:26,*,2]=gf2[23:26,*,2]*att_corr
+			gf2[23:26,*,3]=gf2[23:26,*,3]*att_corr
 	endif
 
 ; the following line need to be fixed ?????????????????????????????
@@ -2699,6 +2735,34 @@ print,'Processing apid c8'
 	gf2 = fltarr(n_swp,nenergy,ndef,4)
 	gf1 = total(reform(gf,n_swp,avg_nrg,nenergy,16,16,4),2)/avg_nrg
 	for i=0,n_swp-1 do gf2[i,*,*,*] = avg_an*total(gf1[i,*,*,swp2gfan[i,0]:swp2gfan[i,1],*],4)/(swp2gfan[i,1]-swp2gfan[i,0]+1)
+
+; kluge for pre-MOI solar wind -- assume all counts are through mech attenuator when activated
+;	factor of 50 is because mech attenuator is factor of 100, but only covers half the FOV
+	if first_t lt time_double('2014-09-01/0') then begin
+		if keyword_set(gf_nor) then begin
+			for i=0,n_swp-1 do gf2[i,*,*,2]=gf2[i,*,2]/50.
+			for i=0,n_swp-1 do gf2[i,*,*,3]=gf2[i,*,3]/50.
+		endif else begin
+			gf2[3:4,*,*,2]=gf2[3:4,*,*,2]/50.
+			gf2[3:4,*,*,3]=gf2[3:4,*,*,3]/50.
+			gf2[7:8,*,*,2]=gf2[7:8,*,*,2]/50.
+			gf2[7:8,*,*,3]=gf2[7:8,*,*,3]/50.
+		endelse
+	endif
+; the following assumes that if the mechanical attenuator is closed, then the particles are attenuated except for pickup, eclipse and protect modes 
+;     note that scan mode (iswp=24) is used near planet when ram ions are in mech attenuator direction and therefore should not have this correction 
+	if first_t ge time_double('2014-09-01/0') then begin
+			gf2[3:4  ,*,*,2]=gf2[3:4  ,*,*,2]*att_corr
+			gf2[3:4  ,*,*,3]=gf2[3:4  ,*,*,3]*att_corr
+			gf2[7:8  ,*,*,2]=gf2[7:8  ,*,*,2]*att_corr
+			gf2[7:8  ,*,*,3]=gf2[7:8  ,*,*,3]*att_corr
+			gf2[11:14,*,*,2]=gf2[11:14,*,*,2]*att_corr
+			gf2[11:14,*,*,3]=gf2[11:14,*,*,3]*att_corr
+			gf2[17:20,*,*,2]=gf2[17:20,*,*,2]*att_corr
+			gf2[17:20,*,*,3]=gf2[17:20,*,*,3]*att_corr
+			gf2[23:26,*,*,2]=gf2[23:26,*,*,2]*att_corr
+			gf2[23:26,*,*,3]=gf2[23:26,*,*,3]*att_corr
+	endif
 
 
 ; the following line need to be fixed ?????????????????????????????
@@ -6086,7 +6150,7 @@ print,'Processing apid d8'
 		store_data,'mvn_sta_D8_R1_eff_all',data=['mvn_sta_D8_R1_eff_start','mvn_sta_D8_R1_eff_stop','mvn_sta_D8_R1_eff']
 		ylim,'mvn_sta_D8_R1_eff_all',.1,1,1
 
-		options,'mvn_sta_D8_R1_Time_ABCD','colors',[cols.green,cols.blue,cols.red,cols.yellow]
+		options,'mvn_sta_D8_R1_Time_ABCD','colors',[cols.green,cols.blue,cols.cyan,cols.red]
 
 		ylim,'mvn_sta_D8_R1*',0,0,1
 		options,'mvn_sta_D8_R1*',datagap=64.

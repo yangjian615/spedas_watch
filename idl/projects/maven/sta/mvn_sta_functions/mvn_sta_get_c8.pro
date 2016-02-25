@@ -139,6 +139,7 @@ dat = 		{project_name:		all_dat.project_name,						$
 
 		bkg:	 		reform(all_dat.bkg[ind,*,*,*],nenergy,nbins,nmass),		$
 		dead:	 		reform(all_dat.dead[ind,*,*,*],nenergy,nbins,nmass),		$
+		cnts:	 		reform(all_dat.data[ind,*,*,*],nenergy,nbins,nmass),		$
 
 		data: 			reform(all_dat.data[ind,*,*,*],nenergy,nbins,nmass)}
 

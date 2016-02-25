@@ -19,7 +19,7 @@
 ;					0,1=exclude,include
 ;	MASS:	intarr(nm)	optional, 
 ;PURPOSE:
-;	Returns the density array, n, 1/cm^3, corrects for spacecraft potential if dat.sc_pot exists
+;	Returns the components of the momentum tensor, corrects for spacecraft potential if dat.sc_pot exists
 ;NOTES:	
 ;	Function normally called by "get_4dt" to
 ;	generate time series data for "tplot.pro".
@@ -30,19 +30,22 @@
 ;-
 function m_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
-density = 0.
+mom_ten = [0.,0.,0.,0.,0.,0.]
 
 if dat2.valid eq 0 then begin
   print,'Invalid Data'
-  return, density
+  return, mom_ten
 endif
+
+if (dat2.quality_flag and 195) gt 0 then return,mom_ten
 
 dat = conv_units(dat2,"counts")		; initially use counts
 na = dat.nenergy
 nb = dat.nbins
 nm = dat.nmass
 
-data = dat.data 
+data = dat.cnts 
+bkg = dat.bkg
 energy = dat.energy
 denergy = dat.denergy
 theta = dat.theta/!radeg
@@ -52,14 +55,23 @@ dphi = dat.dphi/!radeg
 domega = dat.domega
 	if ndimen(domega) eq 0 then domega=replicate(1.,dat.nenergy)#domega
 mass = dat.mass*dat.mass_arr 
+pot = dat.sc_pot
+
+if keyword_set(bins) and nb gt 1 then begin
+	bins2 = transpose(reform(bins#replicate(1.,na*nm),nb,nm,na),[2,0,1])
+	data=data*bins2
+	bkg = bkg*bins2
+endif
 
 if keyword_set(en) then begin
 	ind = where(energy lt en[0] or energy gt en[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 endif
 if keyword_set(ms) then begin
 	ind = where(dat.mass_arr lt ms[0] or dat.mass_arr gt ms[1],count)
 	if count ne 0 then data[ind]=0.
+	if count ne 0 then bkg[ind]=0.
 endif
 
 if keyword_set(mi) then begin
@@ -68,9 +80,12 @@ endif else begin
 	dat.mass_arr[*]=round(dat.mass_arr-.1)>1. & mass=dat.mass*dat.mass_arr	; the minus 0.1 helps account for straggling at low mass
 endelse
 
-if keyword_set(mincnt) then if total(data) lt mincnt then return,0
+;if keyword_set(mincnt) then if total(data) lt mincnt then return,mom_ten
+if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, mom_ten
+if total(data-bkg) lt 1 then return, mom_ten
 
-dat.data=data
+dat.cnts=data
+dat.bkg=bkg
 dat = conv_units(dat,"df")		; Use distribution function
 data=dat.data
 

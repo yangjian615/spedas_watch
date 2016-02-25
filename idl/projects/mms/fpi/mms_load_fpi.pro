@@ -57,8 +57,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-19 15:36:47 -0800 (Fri, 19 Feb 2016) $
-;$LastChangedRevision: 20069 $
+;$LastChangedDate: 2016-02-23 21:16:43 -0800 (Tue, 23 Feb 2016) $
+;$LastChangedRevision: 20133 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -78,6 +78,10 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     if undefined(level) then level = 'sitl' 
     if undefined(data_rate) then data_rate = 'fast'
     if undefined(autoscale) then autoscale = 1
+    ; 2/22/2016 - getting the support data, for grabbing the energy and PA tables
+    ; so that we can hard code the variable names for these, instead of hard
+    ; coding the tables directly
+    if undefined(get_support_data) then get_support_data = 1
     
     ; different datatypes for burst mode files
     if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']

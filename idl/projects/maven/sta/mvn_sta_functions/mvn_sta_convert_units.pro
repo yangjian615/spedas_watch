@@ -14,24 +14,12 @@ gf = data.geom_factor*data.gf*data.eff
 dt = data.integ_t
 mass = data.mass*data.mass_arr
 dead = data.dead						; dead time array usec for STATIC
+bkg = data.bkg							; background array usec for STATIC
 
-case strupcase(data.units_name) of 
-;'COMPRESSED' :  scale = 1.d						
-'COUNTS' :  scale = 1.d							; 1/sec			
-'RATE'   :  scale = 1.d*dt							; 1/sec
-'CRATE'  :  scale = 1.d*dt						; 1/sec, corrected for dead time rate
-'EFLUX'  :  scale = 1.d*dt*gf 						; eV/cm^2-sec-sr-eV
-'FLUX'   :  scale = 1.d*dt*gf * energy					; 1/cm^2-sec-sr-eV
-'DF'     :  scale = 1.d*dt*gf * energy^2 * 2./mass/mass*1e5		; 1/(cm^3-(km/s)^3)
-else: begin
-        print,'Unknown starting units: ',data.units_name
-	return
-      end
-endcase
+; get COUNTS
+tmp = data.cnts
 
-; convert to COUNTS
-tmp=data.data
-tmp = scale * tmp
+; if physical units, remove background
 
 ; take out dead time correction
 if strupcase(data.units_name) ne 'COUNTS' and strupcase(data.units_name) ne 'RATE' then tmp = tmp/dead
@@ -49,6 +37,16 @@ else: begin
         message,'Undefined units: '+units
         return
       end
+endcase
+
+case strupcase(units) of
+'COMPRESSED' :  tmp=tmp
+'COUNTS' :  tmp=tmp
+'RATE'   :  tmp=tmp
+'CRATE'  :  tmp=tmp
+'EFLUX'  :  tmp = tmp-bkg
+'FLUX'   :  tmp = tmp-bkg
+'DF'     :  tmp = tmp-bkg
 endcase
 
 ; dead time correct data if not counts or rate
