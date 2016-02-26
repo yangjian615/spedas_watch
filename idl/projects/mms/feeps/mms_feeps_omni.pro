@@ -11,12 +11,12 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-23 21:52:40 -0800 (Tue, 23 Feb 2016) $
-; $LastChangedRevision: 20134 $
+; $LastChangedDate: 2016-02-25 14:06:17 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20188 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
-  
+  if undefined(probe) then probe = '1'
   ; default to electrons
   if undefined(datatype) then datatype = 'electron'
   if undefined(suffix) then suffix = ''

@@ -108,6 +108,10 @@ endif
 			options,'mvn_sta_test_cnts_p',colors=cols.cyan,ytitle='sta!Cc6!CH+!C<10eV!Ccnts',psym=-1
 			ylim,'mvn_sta_test_cnts_p',1,30,1
 
+		get_4dt,'c_4d','mvn_sta_get_c6',mass=[12,100],name='mvn_sta_test_cnts_o',m_int=32,energy=[30,40000.]
+			options,'mvn_sta_test_cnts_o',colors=cols.cyan,ytitle='sta!Cc6!CO+,O++!C>30eV!Ccnts',psym=-1
+			ylim,'mvn_sta_test_cnts_o',1,100,1
+
 		get_4dt,'v_4d','mvn_sta_get_ca',name='mvn_sta_ca_vel3',m_int=1.,energy=[0,40000.]
 			get_data,'mvn_sta_ca_vel3',data=tmp
 			store_data,'mvn_sta_ca_vel',data={x:tmp.x,y:(total(tmp.y*tmp.y,2))^.5}
@@ -135,6 +139,8 @@ endif
 		p_low = interp(tmp.y[ind]+.1,tmp.x[ind],time)
 	get_data,'mvn_sta_ca_vel',data=tmp
 		p_vel = interp(tmp.y,tmp.x,time)
+	get_data,'mvn_sta_test_cnts_o',data=tmp
+		o_cnt=interp(tmp.y,tmp.x,time)
 
 	store_data,'mvn_sta_test_density',data=['mvn_sta_test_density1','mvn_sta_test_density2']
 		ylim,'mvn_sta_test_density',.1,1.e5,1
@@ -270,18 +276,22 @@ if keyword_set(tplot) then store_data,'mvn_sta_c6_pot_ec',data={x:time,y:0.5*ms*
 ;	get_data,'mvn_sta_test_density3',data=tmp3
 ;	den2 = interp(tmp3.x,tmp3.y,time2)
 
+	oxgt30eV=mvn_c0_dat
 
 ;	get_data,'alt',data=tmp
 ;		alt2 = interp(tmp.y,tmp.x,time2)
 		alt2 = interp(alt,time,time2)
 	pot1 = interp(pot,time,time2)
 
+	sha2 = interp(shadow,time,time2)
+	o_cnt2 = interp(o_cnt,time,time2)
+
 for i=1l,npts2-2 do begin
 	if mvn_c0_dat.energy[mvn_c0_dat.swp_ind[i],63,0] lt 2. then begin	; the lower energy limit of the sweep must be less then 2 eV
 
 		modep = mvn_c0_dat.mode[i] eq mvn_c0_dat.mode[i+1] 
 		modem = mvn_c0_dat.mode[i] eq mvn_c0_dat.mode[i-1]
-		if pot1[i] lt 3. then begin				
+		if (pot1[i] lt 3.) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25)) then begin				
 			dat1c=total(reform(mvn_c0_dat.data[i,*,*]),2)
 			dat1p=total(reform(mvn_c0_dat.data[i+1,*,*]),2)
 			dat1m=total(reform(mvn_c0_dat.data[i-1,*,*]),2)
@@ -302,8 +312,7 @@ for i=1l,npts2-2 do begin
 		ind0 = 0 
 		ind0 = where (data ge 1. and data2 ge 1. and (data+data2) ge 4.,count)
 		if count gt 0 then mind0=max(ind0) else mind0=0
-;		if energy[mind0] lt max_nrg and alt2[i] gt 180. and (alt2[i] gt 250. or pot1[i] lt 5.) then begin	; not sure why I had second criteria
-;		if energy[mind0] lt max_nrg and alt2[i] gt 180. then begin
+
 		if energy[mind0] lt max_nrg and ((alt2[i] gt 180.) or ((data[mind0]+data2[mind0]) gt 20.)) then begin
 			e0 = energy[mind0] - denergy[mind0]/2.
 			d1 = data[mind0] 
@@ -459,7 +468,8 @@ scpot_invalid =  (alt gt max_alt) or $
 		((alt gt 250.) and (c6_ec gt 400.) and (p_low lt 4.)) or $
 		((alt gt 400.) and (p_vel gt 120.) and (not shadow)) or $
 		((alt gt 400.) and (c6_mode lt 2) and (not shadow)) or $
-		(den lt .5)
+		((alt gt 400.) and (c6_mode lt 2) and (not shadow)) or $
+		((den lt .5) and (not shadow)) 
 
 sc_neg = 1-sc_pos
 
@@ -536,16 +546,23 @@ if not keyword_set(tplot) then 	store_data,delete='mvn_sta_test*'
 	common mvn_d3,mvn_d3_ind,mvn_d3_dat 
 	common mvn_d4,mvn_d4_ind,mvn_d4_dat 
 
+
 	mvn_c6_dat.sc_pot = pot_all
+	mvn_c6_dat.quality_flag = (mvn_c6_dat.quality_flag and 30719) or fix(round(2^11*(1-pot_valid)))
 
 	pot_c0 = interp(pot_all,time,(mvn_c0_dat.time+mvn_c0_dat.end_time)/2.) & mvn_c0_dat.sc_pot = pot_c0
+	pot_valid_c0 = fix(round(interp(pot_valid,time,(mvn_c0_dat.time+mvn_c0_dat.end_time)/2.))) & mvn_c0_dat.quality_flag = (mvn_c0_dat.quality_flag and 30719) or 2^11*(1-pot_valid_c0)
+
 	pot_ca = interp(pot_all,time,(mvn_ca_dat.time+mvn_ca_dat.end_time)/2.) & mvn_ca_dat.sc_pot = pot_ca
+	pot_valid_ca = fix(round(interp(pot_valid,time,(mvn_ca_dat.time+mvn_ca_dat.end_time)/2.))) & mvn_ca_dat.quality_flag = (mvn_ca_dat.quality_flag and 30719) or 2^11*(1-pot_valid_ca)
 
 	if size(mvn_c8_dat,/type) eq 8 then begin
 		pot_c8 = interp(pot_all,time,(mvn_c8_dat.time+mvn_c8_dat.end_time)/2.) & mvn_c8_dat.sc_pot = pot_c8
+		pot_valid_c8 = fix(round(interp(pot_valid,time,(mvn_c8_dat.time+mvn_c8_dat.end_time)/2.))) & mvn_c8_dat.quality_flag = (mvn_c8_dat.quality_flag and 30719) or 2^11*(1-pot_valid_c8)
 	endif
 	if size(mvn_d4_dat,/type) eq 8 then begin
 		pot_d4 = interp(pot_all,time,(mvn_d4_dat.time+mvn_d4_dat.end_time)/2.) & mvn_d4_dat.sc_pot = pot_d4
+		pot_valid_d4 = fix(round(interp(pot_valid,time,(mvn_d4_dat.time+mvn_d4_dat.end_time)/2.))) & mvn_d4_dat.quality_flag = (mvn_d4_dat.quality_flag and 30719) or 2^11*(1-pot_valid_d4)
 	endif
 
 	if size(mvn_cc_dat,/type) eq 8 then begin
@@ -553,48 +570,72 @@ if not keyword_set(tplot) then 	store_data,delete='mvn_sta_test*'
 		pot_ccb = interp(pot_all,time,mvn_cc_dat.end_time-2.)
 		pot_ccc = interp(pot_all,time,(mvn_cc_dat.time+mvn_cc_dat.end_time)/2.)
 		mvn_cc_dat.sc_pot = (pot_cca+pot_ccb+2.*pot_ccc)/4.
+		ind = where(mvn_cc_dat.sc_pot eq 0.,count)
+		mvn_cc_dat.quality_flag = mvn_cc_dat.quality_flag and 30719
+		mvn_cc_dat.quality_flag[ind] = mvn_cc_dat.quality_flag[ind] or 2^11
 	endif
 	if size(mvn_cd_dat,/type) eq 8 then begin
 		pot_cda = interp(pot_all,time,mvn_cd_dat.time+2.)
 		pot_cdb = interp(pot_all,time,mvn_cd_dat.end_time-2.)
 		pot_cdc = interp(pot_all,time,(mvn_cd_dat.time+mvn_cd_dat.end_time)/2.)
 		mvn_cd_dat.sc_pot = (pot_cda+pot_cdb+2.*pot_cdc)/4.
+		ind = where(mvn_cd_dat.sc_pot eq 0.,count)
+		mvn_cd_dat.quality_flag = mvn_cd_dat.quality_flag and 30719
+		mvn_cd_dat.quality_flag[ind] = mvn_cd_dat.quality_flag[ind] or 2^11
 	endif
 	if size(mvn_ce_dat,/type) eq 8 then begin
 		pot_cea = interp(pot_all,time,mvn_ce_dat.time+2.)
 		pot_ceb = interp(pot_all,time,mvn_ce_dat.end_time-2.)
 		pot_cec = interp(pot_all,time,(mvn_ce_dat.time+mvn_ce_dat.end_time)/2.)
 		mvn_ce_dat.sc_pot = (pot_cea+pot_ceb+2.*pot_cec)/4.
+		ind = where(mvn_ce_dat.sc_pot eq 0.,count)
+		mvn_ce_dat.quality_flag = mvn_ce_dat.quality_flag and 30719
+		mvn_ce_dat.quality_flag[ind] = mvn_ce_dat.quality_flag[ind] or 2^11
 	endif
 	if size(mvn_cf_dat,/type) eq 8 then begin
 		pot_cfa = interp(pot_all,time,mvn_cf_dat.time+2.)
 		pot_cfb = interp(pot_all,time,mvn_cf_dat.end_time-2.)
 		pot_cfc = interp(pot_all,time,(mvn_cf_dat.time+mvn_cf_dat.end_time)/2.)
 		mvn_cf_dat.sc_pot = (pot_cfa+pot_cfb+2.*pot_cfc)/4.
+		ind = where(mvn_cf_dat.sc_pot eq 0.,count)
+		mvn_cf_dat.quality_flag = mvn_cf_dat.quality_flag and 30719
+		mvn_cf_dat.quality_flag[ind] = mvn_cf_dat.quality_flag[ind] or 2^11
 	endif
 	if size(mvn_d0_dat,/type) eq 8 then begin
 		pot_d0a = interp(pot_all,time,mvn_d0_dat.time+2.)
 		pot_d0b = interp(pot_all,time,mvn_d0_dat.end_time-2.)
 		pot_d0c = interp(pot_all,time,(mvn_d0_dat.time+mvn_d0_dat.end_time)/2.)
 		mvn_d0_dat.sc_pot = (pot_d0a+pot_d0b+2.*pot_d0c)/4.
+		ind = where(mvn_d0_dat.sc_pot eq 0.,count)
+		mvn_d0_dat.quality_flag = mvn_d0_dat.quality_flag and 30719
+		mvn_d0_dat.quality_flag[ind] = mvn_d0_dat.quality_flag[ind] or 2^11
 	endif
 	if size(mvn_d1_dat,/type) eq 8 then begin
 		pot_d1a = interp(pot_all,time,mvn_d1_dat.time+2.)
 		pot_d1b = interp(pot_all,time,mvn_d1_dat.end_time-2.)
 		pot_d1c = interp(pot_all,time,(mvn_d1_dat.time+mvn_d1_dat.end_time)/2.)
 		mvn_d1_dat.sc_pot = (pot_d1a+pot_d1b+2.*pot_d1c)/4.
+		ind = where(mvn_d1_dat.sc_pot eq 0.,count)
+		mvn_d1_dat.quality_flag = mvn_d1_dat.quality_flag and 30719
+		mvn_d1_dat.quality_flag[ind] = mvn_d1_dat.quality_flag[ind] or 2^11
 	endif
 	if size(mvn_d2_dat,/type) eq 8 then begin
 		pot_d2a = interp(pot_all,time,mvn_d2_dat.time+2.)
 		pot_d2b = interp(pot_all,time,mvn_d2_dat.end_time-2.)
 		pot_d2c = interp(pot_all,time,(mvn_d2_dat.time+mvn_d2_dat.end_time)/2.)
 		mvn_d2_dat.sc_pot = (pot_d2a+pot_d2b+2.*pot_d2c)/4.
+		ind = where(mvn_d2_dat.sc_pot eq 0.,count)
+		mvn_d2_dat.quality_flag = mvn_d2_dat.quality_flag and 30719
+		mvn_d2_dat.quality_flag[ind] = mvn_d2_dat.quality_flag[ind] or 2^11
 	endif
 	if size(mvn_d3_dat,/type) eq 8 then begin
 		pot_d3a = interp(pot_all,time,mvn_d3_dat.time+2.)
 		pot_d3b = interp(pot_all,time,mvn_d3_dat.end_time-2.)
 		pot_d3c = interp(pot_all,time,(mvn_d3_dat.time+mvn_d3_dat.end_time)/2.)
 		mvn_d3_dat.sc_pot = (pot_d3a+pot_d3b+2.*pot_d3c)/4.
+		ind = where(mvn_d3_dat.sc_pot eq 0.,count)
+		mvn_d3_dat.quality_flag = mvn_d3_dat.quality_flag and 30719
+		mvn_d3_dat.quality_flag[ind] = mvn_d3_dat.quality_flag[ind] or 2^11
 	endif
 
 print,' c6 sc_pot added to structures c6, c0, c8, ca, cc, cd, ce, cf, d0, d1, d2, d3, d4'

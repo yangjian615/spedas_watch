@@ -21,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-24 07:36:25 -0800 (Wed, 24 Feb 2016) $
-; $LastChangedRevision: 20140 $
+; $LastChangedDate: 2016-02-25 18:00:40 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20196 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fpi_crib_qlplots_l2.pro $
 ;-
 
@@ -119,7 +119,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0], eph_variable+'numberdensity']
 
     ; Data quality bar
-    qual_bar = mms_quality_bar(obsstr+'dataquality')
+    quality_bar = mms_fpi_quality_bar(i, data_rate)
     
     ; combine bent pipe B DSC into a single tplot variable
     prefix = 'mms'+strcompress(string(i), /rem)
@@ -199,7 +199,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     ; replace gaps with NaNs so tplot doesn't interpolate on the X axis
     tdegap, electron_espec, /overwrite
     tdegap, electron_espec_omni, /overwrite
-    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
             prefix+'_dfg_dmpa_srvy_clipped', electron_espec, electron_espec_omni]
    ; window_caption="MMS FPI Electron energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
@@ -222,7 +222,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     tdegap, ion_espec, /overwrite
     tdegap, ion_espec_omni, /overwrite
     
-    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
              prefix+'_dfg_dmpa_srvy_clipped',ion_espec, ion_espec_omni]
    ; window_caption="MMS FPI Ion energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
@@ -244,7 +244,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     tdegap, e_pad, /overwrite
     tdegap, e_pad_allE, /overwrite
     
-    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
              prefix+'_dfg_dmpa_srvy_clipped',e_pad, e_pad_allE]
     window_caption="MMS FPI Electron PAD"
     if ~postscript then window, iw, xsize=width, ysize=height
@@ -261,7 +261,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     fpi_moments = [prefix+'_dfg_dmpa_srvy_clipped', [obsstr+'des_numberdensity', obsstr+'dis_numberdensity']+'_dbcs_'+data_rate, obsstr+'ebulkv_dbcs',  $
                    obsstr+'ibulkv_dbcs', obsstr+'temp']
     fpi_espects = [obsstr+'dis_ energyspectr_omni_avg', obsstr+'des_energyspectr_omni_avg']
-    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
             fpi_moments, obsstr+'des_pitchangdist_avg', fpi_espects]                    
     window_caption="MMS FPI Observatory Summary:"+"MMS"+STRING(i,FORMAT='(I1)')
     if ~postscript then window, iw, xsize=width, ysize=height
@@ -277,7 +277,7 @@ ENDFOR
 
 
 ;-----------FOUR SPACECRAFT SUMMARY PLOT--------------------
-panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, obsstr+'dataQuality']
+panels=['mms_bss_burst', 'mms_bss_fast', quality_bar]
 FOR i=1,4 DO BEGIN
    obsstr = 'mms'+STRING(i,FORMAT='(I1)')
    panels=[panels,obsstr+'_dfg_dmpa_srvy_clipped',obsstr+'_des_energyspectr_omni_avg',obsstr+'_dis_energyspectr_omni_sum'] 

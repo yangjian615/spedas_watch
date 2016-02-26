@@ -8,8 +8,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-12-11 10:51:54 -0800 (Fri, 11 Dec 2015) $
-; $LastChangedRevision: 19605 $
+; $LastChangedDate: 2016-02-25 11:49:59 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20183 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -56,7 +56,7 @@ PRO recorder_event, ev   ; recorder
               if keyword_set(proc_name) then call_procedure,proc_name[0],buffer ,info=info  ;,time=info.time_received   ; Execute exec_proc here
             endif
             widget_control,wids.output_text,set_value=msg
-            dprint,dlevel=dlevel+2,info.title_num+msg,/no_check
+            dprint,dlevel=dlevel+3,info.title_num+msg,/no_check
             widget_control,wids.poll_int,get_value = poll_int
             poll_int = float(poll_int) 
             if poll_int le 0 then poll_int = 1
@@ -206,9 +206,10 @@ PRO exec_proc_template,buffer,info=info
 
     n = n_elements(buffer)
     if n ne 0 then  begin
-      print
-      print,time_string(info.time_received,prec=3) +''+ strtrim(n_elements(buffer))
+    if debug(2) then begin
+      dprint,time_string(info.time_received,prec=3) +''+ strtrim(n_elements(buffer))
       hexprint,buffer    ;,swap_endian(uint(buffer,0,n_elements(buffer)/2))
+    endif
     endif else print,format='(".",$)'
 
     return

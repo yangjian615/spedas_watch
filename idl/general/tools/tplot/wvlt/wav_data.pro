@@ -6,8 +6,8 @@
 ;  Author: Davin Larson
 ;
 ;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-11-22 07:23:29 -0800 (Sat, 22 Nov 2014) $
-;$LastChangedRevision: 16271 $
+;$LastChangedDate: 2016-02-25 11:47:52 -0800 (Thu, 25 Feb 2016) $
+;$LastChangedRevision: 20181 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/wvlt/wav_data.pro $
 ;
 ;-
@@ -535,7 +535,7 @@ if keyword_set(varname)   then begin
      name=name+strcompress(/rem,string('(',dimennum,')'))
   endif
   
-  if n_elements(frange) eq 2 then prange = reverse(1/frange)
+  if n_elements(frange) eq 2 then prange = reverse(1/double(frange))
   
   if keyword_set(rbin) then begin
      n = n_elements(time)

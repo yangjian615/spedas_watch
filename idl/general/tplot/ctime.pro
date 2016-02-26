@@ -323,7 +323,7 @@ if not silent then begin
     strput,prompt2,'comp',21
     prompt2=prompt2+'        (zvalue)'
   end
-  print,prompt,prompt2,format='(a)'
+  dprint,prompt,prompt2,format='(a)'
 endif
 ;;;;;;
 
@@ -394,7 +394,7 @@ endif else begin
   v =  !values.f_nan
   var = 'Null'
 endelse
-print,form=form1,var,time_string(t,prec=prec,local_time=local_time),float(v),cr
+dprint,form=form1,var,time_string(t,prec=prec,local_time=local_time),float(v),cr
 ;;;;;;
 
 ;;;;;; create an error handling routine
@@ -404,8 +404,8 @@ if not keyword_set(debug) then begin
     plots,[0,1],[ohy,ohy], color=color,/norm,/thick,lines=0 ;erase crosshairs
     plots,[hx,hx],[0,1],   color=color,/norm,/thick,lines=0
     print
-    print,'Error: ',!error          ;report problem
-    print,!err_string
+    print,'Error: ',!error_state.code          ;report problem
+    print,!error_state.msg
     tvcrs,0                         ;turn off cursor
     device,set_graphics=old         ;restore old graphics state
     wset,current_window             ;restore old window
@@ -502,9 +502,9 @@ while n lt max do begin
     if not silent then begin    ;print the new data
       if keyword_set(subvar) then varn = var+"->"+subvar else varn = var
       tstr = time_string(t,prec=prec,local_time=local_time)
-      if ind2 eq -1 then print,form=form1,varn,     tstr,v,spaces,cr $
-      else if spec then  print,form=form5,varn,ind2,tstr,v,z     ,cr $
-      else               print,form=form2,varn,ind2,tstr,v,spaces,cr
+      if ind2 eq -1 then dprint,form=form1,varn,     tstr,v,spaces,cr $
+      else if spec then  dprint,form=form5,varn,ind2,tstr,v,z     ,cr $
+      else               dprint,form=form2,varn,ind2,tstr,v,spaces,cr
     endif
   endif
   ;;;; got the current data
@@ -524,9 +524,9 @@ while n lt max do begin
         append_array,inds,ind
         append_array,inds2,ind2 > 0     ;if ind2 eq -1 set to zero
         if not silent then begin
-          if ind2 eq -1 then print,form=form3,np-1,varn,     tstr,v,spaces $
-          else if spec then  print,form=form6,np-1,varn,ind2,tstr,v,z      $
-          else               print,form=form4,np-1,varn,ind2,tstr,v,spaces
+          if ind2 eq -1 then dprint,form=form3,np-1,varn,     tstr,v,spaces $
+          else if spec then  dprint,form=form6,np-1,varn,ind2,tstr,v,z      $
+          else               dprint,form=form4,np-1,varn,ind2,tstr,v,spaces
         endif
         if keyword_set(psym) then plots,t-time_offset,v,psym = psym
         n = n + 1
@@ -552,7 +552,7 @@ while n lt max do begin
           inds   = 0
           inds2  = 0
           zvalue = 0
-          if not silent then print,$
+          if not silent then dprint,$
             form="(79x,a,TL79,'Zero sample (',i0,') set to zero.')",cr,np-1
           n = (n-1) > 0
         end

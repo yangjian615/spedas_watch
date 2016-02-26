@@ -68,6 +68,7 @@
 ;                       Will print the fulloffset for probe a and datatype fgl.
 ;  cal_get_dac_dat = Returns the raw data from directly after the DAC(non-linearity offset) calibration is applied.  For verification.
 ;  cal_get_spin_dat = Returns the raw data from directly after the spin harmonic(solar array current) calibration is applied.  For verification.
+;  interpolate_cal = if it is set, then thm_cal values are interpolated to 10 min time intervals
 ;  
 ;Example:
 ;   thg_load_fgm,probe=['a','b']
@@ -75,8 +76,8 @@
 ;  This routine is (should be) platform independent.
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-02-18 10:24:04 -0800 (Thu, 18 Feb 2016) $
-; $LastChangedRevision: 20060 $
+; $LastChangedDate: 2016-02-25 07:52:49 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20173 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fgm.pro $
 ;-
 
@@ -108,6 +109,7 @@ end
 
 pro thm_load_fgm_post, sname=probe, datatype=dt, level=lvl, $
                        tplotnames=tplotnames, $
+                       interpolate_cal=interpolate_cal, $
                        suffix=suffix, proc_type=proc_type, coord=coord, $
                        delete_support_data=delete_support_data,cal_spin_harmonics=cal_spin_harmonics,$
                        cal_dac_offset=cal_dac_offset,cal_tone_removal=cal_tone_removal,$
@@ -222,7 +224,8 @@ pro thm_load_fgm, probe = probe, datatype = datatype, trange = trange, $
   if not keyword_set(suffix) then suffix = ''
   if not keyword_set(coord) then coord='dsl'
   if n_elements(use_eclipse_corrections) LT 1 then use_eclipse_corrections=0
-
+  if ~keyword_set(interpolate_cal) then interpolate_cal=0 else interpolate_cal=1
+  
   vlevels = 'l1 l2'
   deflevel = 'l1'
   lvl = thm_valid_input(level,'Level',vinputs=vlevels,definput=deflevel,$
@@ -274,6 +277,7 @@ pro thm_load_fgm, probe = probe, datatype = datatype, trange = trange, $
     cal_get_spin_dat = cal_get_spin_dat, $
     use_eclipse_corrections=use_eclipse_corrections,$
     msg_out = msg_out, $
+    interpolate_cal=interpolate_cal,$
     _extra = _extra
 
   

@@ -28,9 +28,10 @@ function spp_swp_ccsds_decom,buffer
                                 ;    $   ; time to get transferred
                                 ;    from PFDPU to GSEOS                                                               
           data:  buffer[0:*], $
-          gap : 0b }
+          gap : 0b, $ 
+          smples_sumd:  2^(buffer[12] and 'F'x)} ; this is the number of samples used to make the summed product
 
-  
+
   if MET lt -1e5 then begin
      dprint,dlevel=1,'Invalid MET: ',MET,' For packet type: ',ccsds.apid
      ccsds.time = !values.d_nan

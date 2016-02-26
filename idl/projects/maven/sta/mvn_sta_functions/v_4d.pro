@@ -43,7 +43,7 @@ if dat2.nbins eq 1 then return,vb_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=
 flux = j_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 density = n_4d(dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 
-if keyword_set(ms) then begin
+if keyword_set(ms) or dat2.nmass eq 1 then begin
 	return, 1.e-5*flux/(density+1.e-10)
 endif else begin
 	return, 1.e-5*reform([flux[0,*]/(density+1.e-10),flux[1,*]/(density+1.e-10),flux[2,*]/(density+1.e-10)],3,n_elements(density))

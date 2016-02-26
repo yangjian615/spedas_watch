@@ -79,8 +79,8 @@
 ;
 ;Written by Hannes Schwarzl.
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-02-18 10:24:04 -0800 (Thu, 18 Feb 2016) $
-; $LastChangedRevision: 20060 $
+; $LastChangedDate: 2016-02-25 07:52:49 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20173 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -125,9 +125,9 @@ pro thm_interpolate_cal_apply, thx_fgx, utcStr=utcStr, offi=offi, cali=cali, nca
   endfor
 
   ; now compute calibration values using interpolation
-  new_offi_0 = INTERPOL(offi[idx,0], utcd[idx], fit_times, /quadratic)
-  new_offi_1 = INTERPOL(offi[idx,1], utcd[idx], fit_times, /quadratic)
-  new_offi_2 = INTERPOL(offi[idx,2], utcd[idx], fit_times, /quadratic)
+  new_offi_0 = INTERPOL(offi[idx,0], utcd[idx], fit_times)
+  new_offi_1 = INTERPOL(offi[idx,1], utcd[idx], fit_times)
+  new_offi_2 = INTERPOL(offi[idx,2], utcd[idx], fit_times)
   
   ncal = fit_count
   offi=dblarr(ncal,3)

@@ -10,9 +10,9 @@
 ; Purpose:  Loads MAVEN mag data into tplot variables
 ;
 ; Author: Davin Larson and Roberto Livi
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-02-08 10:11:24 -0800 (Mon, 08 Feb 2016) $
-; $LastChangedRevision: 19909 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2016-02-25 17:00:15 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20193 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_load.pro $
 
 ;-
@@ -65,7 +65,7 @@ pro mvn_mag_load,format,$
         file_exist = mvn_pfp_file_retrieve($
                      pathname,$
                      trange = trange,$
-                     /daily_names)
+                     /daily_names, /verbose)
         finfo=file_info(file_exist) 
         indx = where(finfo.exists, nfiles, comp=jndx, ncomp=n)
         if nfiles eq 0 then begin
@@ -171,7 +171,7 @@ pro mvn_mag_load,format,$
         file_exist = mvn_pfp_file_retrieve($
                      pathname,$
                      trange = trange,$
-                     /daily_names)
+                     /daily_names, /verbose)
         finfo=file_info(file_exist) 
         indx = where(finfo.exists, nfiles, comp=jndx, ncomp=n)
         if nfiles eq 0 then begin
@@ -268,7 +268,7 @@ pro mvn_mag_load,format,$
         file_exist = mvn_pfp_file_retrieve($
                      pathname,$
                      trange = trange,$
-                     /daily_names)
+                     /daily_names, /verbose)
         finfo=file_info(file_exist) 
         indx = where(finfo.exists, nfiles, comp=jndx, ncomp=n)
         if nfiles eq 0 then begin

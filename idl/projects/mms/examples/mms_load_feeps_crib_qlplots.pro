@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-24 08:53:14 -0800 (Wed, 24 Feb 2016) $
-; $LastChangedRevision: 20148 $
+; $LastChangedDate: 2016-02-25 14:15:59 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20189 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -88,11 +88,11 @@ tplot_options, 'xmargin', [15, 15]
 spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
 
 tplot, [['mms_bss_burst', 'mms_bss_fast'], $
-        'mms'+probe+['_dfg_srvy_dmpa_clipped', $
-                    '_epd_feeps_electron_'+type+'_omni_spin_electrons', $
+        'mms'+probe+['_epd_feeps_electron_'+type+'_omni_spin_electrons', $
                     '_epd_feeps_*keV_pad*electrons*spin', $
                     '_epd_feeps_ion_'+type+'_omni_spin_ions', $
-                    '_epd_feeps_*keV_pad*ions*spin' $
+                    '_epd_feeps_*keV_pad*ions*spin', $
+                    '_dfg_srvy_dmpa_clipped' $
                     ]], var_label=position_vars
 
 end

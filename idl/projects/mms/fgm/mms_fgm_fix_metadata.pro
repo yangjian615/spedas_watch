@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 08:59:26 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19697 $
+;$LastChangedDate: 2016-02-25 11:03:56 -0800 (Thu, 25 Feb 2016) $
+;$LastChangedRevision: 20179 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_fgm_fix_metadata.pro $
 ;-
 
@@ -32,6 +32,7 @@ pro mms_fgm_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
                     options, /def, tplot_name, 'colors', [2,4,6]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+                    options, /def, tplot_name, 'data_att.coord_sys', 'gse'
                 end
                 prefix[sc_idx] + '_'+instrument+'_'+data_rate_mod+'_gse_btot'+suffix: begin
                     options, /def, tplot_name, 'labflag', 1
@@ -44,6 +45,7 @@ pro mms_fgm_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
                     options, /def, tplot_name, 'colors', [2,4,6]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
                     options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+                    options, /def, tplot_name, 'data_att.coord_sys', 'dmpa'
                 end
                 prefix[sc_idx] + '_'+instrument+'_'+data_rate_mod+'_dmpa_btot'+suffix: begin
                     options, /def, tplot_name, 'labflag', 1

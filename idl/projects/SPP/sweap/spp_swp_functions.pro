@@ -1,31 +1,31 @@
-; $LastChangedBy: rlivi2 $
-; $LastChangedDate: 2016-02-17 14:11:44 -0800 (Wed, 17 Feb 2016) $
-; $LastChangedRevision: 20050 $
+; $LastChangedBy: phyllisw $
+; $LastChangedDate: 2016-02-25 14:25:10 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20190 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/spp_swp_functions.pro $
 
 
 
 
-function spp_swp_word_decom,buffer,n,signed=signed
-   return,   swap_endian(/swap_if_little_endian,  uint(buffer,n) )
-end
+;function spp_swp_word_decom,buffer,n,signed=signed
+;   return,   swap_endian(/swap_if_little_endian,  uint(buffer,n) )
+;end
 
 
-function spp_swp_int4_decom,buffer,n
-   return,   swap_endian(/swap_if_little_endian,  long(buffer,n) )
-end
+;function spp_swp_int4_decom,buffer,n
+;   return,   swap_endian(/swap_if_little_endian,  long(buffer,n) )
+;end
 
 
-function spp_swp_float_decom,buffer,n
-   return,   swap_endian(/swap_if_little_endian,  float(buffer,n) )
-end
-
-
-
+;function spp_swp_float_decom,buffer,n
+;   return,   swap_endian(/swap_if_little_endian,  float(buffer,n) )
+;end
 
 
 
-pro spp_swp_ptp_file_read,files
+
+
+
+pro spp_swp_ptp_file_read,files ; this should now replaced by spp_ptp_file_read
 
   t0 = systime(1)
   spp_apid_data,/clear,rt_flag=0
@@ -60,50 +60,50 @@ end
 
 
 
-
-pro spp_swp_ptp_stream_read,buffer,info=info  ;,time=time
-
-  bsize= n_elements(buffer) * (size(/n_dimen,buffer) ne 0)
-  time = info.time_received
-  
-  if n_elements( *info.exec_proc_ptr ) ne 0 then begin 
-     ;; Handle remainder of buffer from previous call               
-     remainder =  *info.exec_proc_ptr
-     dprint,dlevel=4,'Using remainder buffer from previous call'
-     dprint,dlevel=3,/phelp, remainder
-     undefine , *info.exec_proc_ptr
-     if bsize gt 0 then  spp_ptp_stream_read, [remainder,buffer],info=info
-     return
-  endif
-
-  
-  ;if debug() then dprint,/phelp,time_string(time),buffer,dlevel=3
-  p=0L
-  while p lt bsize do begin
-     if p gt bsize-3 then begin
-        dprint,dlevel=1,'Warning PTP stream size can not be read ',p,bsize
-        ptp_size = 17           ; (minimum value possible) Dummy value that will trigger end of buffer
-     endif else  ptp_size = swap_endian( uint(buffer,p) ,/swap_if_little_endian)
-     if ptp_size lt 17 then begin
-        dprint,dlevel=1,'PTP packet size is too small!'
-        dprint,dlevel=1,p,ptp_size,buffer,/phelp
-        break
-     endif
-     if p+ptp_size gt bsize then begin ; Buffer doesn't have complete pkt.                                            
-        dprint,dlevel=3,'Buffer has incomplete packet. Saving ',n_elements(buffer)-p,' bytes for next call.'
-       ;dprint,dlevel=1,p,ptp_size,buffer,/phelp
-        *info.exec_proc_ptr = buffer[p:*]                   
-      ;; Store remainder of buffer to be used on the next call to this procedure
-        return
-        break
-     endif
-     spp_swp_ptp_pkt_handler,buffer[p:p+ptp_size-1],time=time
-     p += ptp_size
-  endwhile
-  if p ne bsize then dprint,dlevel=1,'Buffer incomplete',p,ptp_size,bsize
-  return
-end
-
+; this should now be replaced by spp_ptp_stream_read
+;pro spp_swp_ptp_stream_read,buffer,info=info  ;,time=time
+;
+;  bsize= n_elements(buffer) * (size(/n_dimen,buffer) ne 0)
+;  time = info.time_received
+;  
+;  if n_elements( *info.exec_proc_ptr ) ne 0 then begin 
+;     ;; Handle remainder of buffer from previous call               
+;     remainder =  *info.exec_proc_ptr
+;     dprint,dlevel=4,'Using remainder buffer from previous call'
+;     dprint,dlevel=3,/phelp, remainder
+;     undefine , *info.exec_proc_ptr
+;     if bsize gt 0 then  spp_ptp_stream_read, [remainder,buffer],info=info
+;     return
+;  endif
+;
+;  
+;  ;if debug() then dprint,/phelp,time_string(time),buffer,dlevel=3
+;  p=0L
+;  while p lt bsize do begin
+;     if p gt bsize-3 then begin
+;        dprint,dlevel=1,'Warning PTP stream size can not be read ',p,bsize
+;        ptp_size = 17           ; (minimum value possible) Dummy value that will trigger end of buffer
+;     endif else  ptp_size = swap_endian( uint(buffer,p) ,/swap_if_little_endian)
+;     if ptp_size lt 17 then begin
+;        dprint,dlevel=1,'PTP packet size is too small!'
+;        dprint,dlevel=1,p,ptp_size,buffer,/phelp
+;        break
+;     endif
+;     if p+ptp_size gt bsize then begin ; Buffer doesn't have complete pkt.                                            
+;        dprint,dlevel=3,'Buffer has incomplete packet. Saving ',n_elements(buffer)-p,' bytes for next call.'
+;       ;dprint,dlevel=1,p,ptp_size,buffer,/phelp
+;        *info.exec_proc_ptr = buffer[p:*]                   
+;      ;; Store remainder of buffer to be used on the next call to this procedure
+;        return
+;        break
+;     endif
+;     spp_swp_ptp_pkt_handler,buffer[p:p+ptp_size-1],time=time
+;     p += ptp_size
+;  endwhile
+;  if p ne bsize then dprint,dlevel=1,'Buffer incomplete',p,ptp_size,bsize
+;  return
+;end
+;
 
 
 
@@ -296,92 +296,92 @@ end
 
 
 
-function spp_swp_log_decomp,bdata,ctype,compress=compress
-
-  if n_elements(ctype) eq 0 then ctype = 0
-
-  clog_19_8=[ $
-              0,       1,      2,      3,      4,      5,      6,      7,  $
-              8,       9,     10,     11,     12,     13,     14,     15,  $
-              16,     17,     18,     19,     20,     21,     22,     23,  $
-              24,     25,     26,     27,     28,     29,     30,     31,  $
-              32,     34,     36,     38,     40,     42,     44,     46,  $
-              48,     50,     52,     54,     56,     58,     60,     62,  $
-              64,     68,     72,     76,     80,     84,     88,     92,  $
-              96,    100,    104,    108,    112,    116,    120,    124,  $
-             128,    136,    144,    152,    160,    168,    176,    184,  $
-             192,    200,    208,    216,    224,    232,    240,    248,  $
-             256,    272,    288,    304,    320,    336,    352,    368,  $
-             384,    400,    416,    432,    448,    464,    480,    496,  $
-             512,    544,    576,    608,    640,    672,    704,    736,  $
-             768,    800,    832,    864,    896,    928,    960,    992,  $
-            1024,   1088,   1152,   1216,   1280,   1344,   1408,   1472,  $
-            1536,   1600,   1664,   1728,   1792,   1856,   1920,   1984,  $
-            2048,   2176,   2304,   2432,   2560,   2688,   2816,   2944,  $
-            3072,   3200,   3328,   3456,   3584,   3712,   3840,   3968,  $
-            4096,   4352,   4608,   4864,   5120,   5376,   5632,   5888,  $
-            6144,   6400,   6656,   6912,   7168,   7424,   7680,   7936,  $
-            8192,   8704,   9216,   9728,  10240,  10752,  11264,  11776,  $
-           12288,  12800,  13312,  13824,  14336,  14848,  15360,  15872,  $
-           16384,  17408,  18432,  19456,  20480,  21504,  22528,  23552,  $
-           24576,  25600,  26624,  27648,  28672,  29696,  30720,  31744,  $
-           32768,  34816,  36864,  38912,  40960,  43008,  45056,  47104,  $
-           49152,  51200,  53248,  55296,  57344,  59392,  61440,  63488,  $
-           65536,  69632,  73728,  77824,  81920,  86016,  90112,  94208,  $
-           98304, 102400, 106496, 110592, 114688, 118784, 122880, 126976,  $
-          131072, 139264, 147456, 155648, 163840, 172032, 180224, 188416,  $
-          196608, 204800, 212992, 221184, 229376, 237568, 245760, 253952,  $
-          262144, 278528, 294912, 311296, 327680, 344064, 360448, 376832,  $
-          393216, 409600, 425984, 442368, 458752, 475136, 491520, 507904]
-
-
-
-  clog_12_8=long([  $
-             0,    1,    2,    3,    4,    5,    6,    7,  $
-             8,    9,   10,   11,   12,   13,   14,   15,  $
-            16,   17,   18,   19,   20,   21,   22,   23,  $
-            24,   25,   26,   27,   28,   29,   30,   31,  $
-            32,   33,   34,   35,   36,   37,   38,   39,  $
-            40,   41,   42,   43,   44,   45,   46,   47,  $
-            48,   49,   50,   51,   52,   53,   54,   55,  $
-            56,   57,   58,   59,   60,   61,   62,   63,  $
-            64,   66,   68,   70,   72,   74,   76,   78,  $
-            80,   82,   84,   86,   88,   90,   92,   94,  $
-            96,   98,  100,  102,  104,  106,  108,  110,  $
-           112,  114,  116,  118,  120,  122,  124,  126,  $
-           128,  132,  136,  140,  144,  148,  152,  156,  $
-           160,  164,  168,  172,  176,  180,  184,  188,  $
-           192,  196,  200,  204,  208,  212,  216,  220,  $
-           224,  228,  232,  236,  240,  244,  248,  252,  $
-           256,  264,  272,  280,  288,  296,  304,  312,  $
-           320,  328,  336,  344,  352,  360,  368,  376,  $
-           384,  392,  400,  408,  416,  424,  432,  440,  $
-           448,  456,  464,  472,  480,  488,  496,  504,  $
-           512,  528,  544,  560,  576,  592,  608,  624,  $
-           640,  656,  672,  688,  704,  720,  736,  752,  $
-           768,  784,  800,  816,  832,  848,  864,  880,  $
-           896,  912,  928,  944,  960,  976,  992, 1008,  $
-          1024, 1056, 1088, 1120, 1152, 1184, 1216, 1248,  $
-          1280, 1312, 1344, 1376, 1408, 1440, 1472, 1504,  $
-          1536, 1568, 1600, 1632, 1664, 1696, 1728, 1760,  $
-          1792, 1824, 1856, 1888, 1920, 1952, 1984, 2016,  $
-          2048, 2112, 2176, 2240, 2304, 2368, 2432, 2496,  $
-          2560, 2624, 2688, 2752, 2816, 2880, 2944, 3008,  $
-          3072, 3136, 3200, 3264, 3328, 3392, 3456, 3520,  $
-          3584, 3648, 3712, 3776, 3840, 3904, 3968, 4032 ])
-
-  
-  ;clog = [[clog_19_8],[clog_12_8]]
-  ;printdat,clog
-  clog = ctype and 1 ? clog_12_8 : clog_19_8
-  if keyword_set(compress) then begin
-     comp = interp(indgen(256),clog*.99999,bdata,index=i)
-     return,fix(i)
-  endif
-
-  return, clog[byte(bdata)]
-
-end
+;function spp_swp_log_decomp,bdata,ctype,compress=compress
+;
+;  if n_elements(ctype) eq 0 then ctype = 0
+;
+;  clog_19_8=[ $
+;              0,       1,      2,      3,      4,      5,      6,      7,  $
+;              8,       9,     10,     11,     12,     13,     14,     15,  $
+;              16,     17,     18,     19,     20,     21,     22,     23,  $
+;              24,     25,     26,     27,     28,     29,     30,     31,  $
+;              32,     34,     36,     38,     40,     42,     44,     46,  $
+;              48,     50,     52,     54,     56,     58,     60,     62,  $
+;              64,     68,     72,     76,     80,     84,     88,     92,  $
+;              96,    100,    104,    108,    112,    116,    120,    124,  $
+;             128,    136,    144,    152,    160,    168,    176,    184,  $
+;             192,    200,    208,    216,    224,    232,    240,    248,  $
+;             256,    272,    288,    304,    320,    336,    352,    368,  $
+;             384,    400,    416,    432,    448,    464,    480,    496,  $
+;             512,    544,    576,    608,    640,    672,    704,    736,  $
+;             768,    800,    832,    864,    896,    928,    960,    992,  $
+;            1024,   1088,   1152,   1216,   1280,   1344,   1408,   1472,  $
+;            1536,   1600,   1664,   1728,   1792,   1856,   1920,   1984,  $
+;            2048,   2176,   2304,   2432,   2560,   2688,   2816,   2944,  $
+;            3072,   3200,   3328,   3456,   3584,   3712,   3840,   3968,  $
+;            4096,   4352,   4608,   4864,   5120,   5376,   5632,   5888,  $
+;            6144,   6400,   6656,   6912,   7168,   7424,   7680,   7936,  $
+;            8192,   8704,   9216,   9728,  10240,  10752,  11264,  11776,  $
+;           12288,  12800,  13312,  13824,  14336,  14848,  15360,  15872,  $
+;           16384,  17408,  18432,  19456,  20480,  21504,  22528,  23552,  $
+;           24576,  25600,  26624,  27648,  28672,  29696,  30720,  31744,  $
+;           32768,  34816,  36864,  38912,  40960,  43008,  45056,  47104,  $
+;           49152,  51200,  53248,  55296,  57344,  59392,  61440,  63488,  $
+;           65536,  69632,  73728,  77824,  81920,  86016,  90112,  94208,  $
+;           98304, 102400, 106496, 110592, 114688, 118784, 122880, 126976,  $
+;          131072, 139264, 147456, 155648, 163840, 172032, 180224, 188416,  $
+;          196608, 204800, 212992, 221184, 229376, 237568, 245760, 253952,  $
+;          262144, 278528, 294912, 311296, 327680, 344064, 360448, 376832,  $
+;          393216, 409600, 425984, 442368, 458752, 475136, 491520, 507904]
+;
+;
+;
+;  clog_12_8=long([  $
+;             0,    1,    2,    3,    4,    5,    6,    7,  $
+;             8,    9,   10,   11,   12,   13,   14,   15,  $
+;            16,   17,   18,   19,   20,   21,   22,   23,  $
+;            24,   25,   26,   27,   28,   29,   30,   31,  $
+;            32,   33,   34,   35,   36,   37,   38,   39,  $
+;            40,   41,   42,   43,   44,   45,   46,   47,  $
+;            48,   49,   50,   51,   52,   53,   54,   55,  $
+;            56,   57,   58,   59,   60,   61,   62,   63,  $
+;            64,   66,   68,   70,   72,   74,   76,   78,  $
+;            80,   82,   84,   86,   88,   90,   92,   94,  $
+;            96,   98,  100,  102,  104,  106,  108,  110,  $
+;           112,  114,  116,  118,  120,  122,  124,  126,  $
+;           128,  132,  136,  140,  144,  148,  152,  156,  $
+;           160,  164,  168,  172,  176,  180,  184,  188,  $
+;           192,  196,  200,  204,  208,  212,  216,  220,  $
+;           224,  228,  232,  236,  240,  244,  248,  252,  $
+;           256,  264,  272,  280,  288,  296,  304,  312,  $
+;           320,  328,  336,  344,  352,  360,  368,  376,  $
+;           384,  392,  400,  408,  416,  424,  432,  440,  $
+;           448,  456,  464,  472,  480,  488,  496,  504,  $
+;           512,  528,  544,  560,  576,  592,  608,  624,  $
+;           640,  656,  672,  688,  704,  720,  736,  752,  $
+;           768,  784,  800,  816,  832,  848,  864,  880,  $
+;           896,  912,  928,  944,  960,  976,  992, 1008,  $
+;          1024, 1056, 1088, 1120, 1152, 1184, 1216, 1248,  $
+;          1280, 1312, 1344, 1376, 1408, 1440, 1472, 1504,  $
+;          1536, 1568, 1600, 1632, 1664, 1696, 1728, 1760,  $
+;          1792, 1824, 1856, 1888, 1920, 1952, 1984, 2016,  $
+;          2048, 2112, 2176, 2240, 2304, 2368, 2432, 2496,  $
+;          2560, 2624, 2688, 2752, 2816, 2880, 2944, 3008,  $
+;          3072, 3136, 3200, 3264, 3328, 3392, 3456, 3520,  $
+;          3584, 3648, 3712, 3776, 3840, 3904, 3968, 4032 ])
+;
+;  
+;  ;clog = [[clog_19_8],[clog_12_8]]
+;  ;printdat,clog
+;  clog = ctype and 1 ? clog_12_8 : clog_19_8
+;  if keyword_set(compress) then begin
+;     comp = interp(indgen(256),clog*.99999,bdata,index=i)
+;     return,fix(i)
+;  endif
+;
+;  return, clog[byte(bdata)]
+;
+;end
 
 
 
@@ -392,57 +392,57 @@ end
 ;;-----------------------------------------------------------------------------
 ;; From SPP_CRIB
 
-pro spp_init_realtime,filename=filename,base=base
+;pro spp_init_realtime,filename=filename,base=base
+;
+;  common spp_crib_com2, recorder_base,exec_base
+;
+;  exec,exec_base, exec_text = $
+;       'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'  
+;  host = 'localhost'
+;  host = '128.32.98.101'
+;  host = 'ABIAD-SW'
+;  recorder,recorder_base,title='GSEOS PTP',$
+;           port=2028,$
+;           host=host,$
+;           exec_proc='spp_swp_ptp_stream_read',$
+;           destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+;
+;  printdat,recorder_base,filename,exec_base,/value
+;  
+;  ;spp_swp_apid_data_init,save=1
+;  ;spp_apid_data,'3b9'x,name='SWEAP SPAN-I Events',rt_tags='*'
+;  ;spp_apid_data,'3bb'x,name='SWEAP SPAN-I Rates',rt_tags='*CNTS'
+;  ;spp_apid_data,'3be'x,name='SWEAP SPAN-I HKP',rt_tags='*'
+;  ;spp_apid_data, rt_flag = 1
+;  ;spp_swp_manip_init
+;  ;wait,1
+;  
+;  spp_set_tplot_options
+;  
+;  ;;--------------------------------------------------
+;  ;; Useful command to see what APIDs have been loaded
+;  ;spp_apid_data,apdata=ap
+;  ;print_struct,ap
+;  ;;-------------------------------------------------
+;  
+;  if 0 then begin
+;     f1= file_search('spp*.ptp')
+;     spp_apid_data,rt_flag=0
+;     spp_ptp_file_read,f1[-1]
+;     spp_apid_data,rt_flag=1
+;  endif
+;  base = recorder_base
+;
+;end
 
-  common spp_crib_com2, recorder_base,exec_base
 
-  exec,exec_base, exec_text = $
-       'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'  
-  host = 'localhost'
-  host = '128.32.98.101'
-  host = 'ABIAD-SW'
-  recorder,recorder_base,title='GSEOS PTP',$
-           port=2028,$
-           host=host,$
-           exec_proc='spp_swp_ptp_stream_read',$
-           destination='spp_raw_YYYYMMDD_hhmmss.ptp'
-
-  printdat,recorder_base,filename,exec_base,/value
-  
-  ;spp_swp_apid_data_init,save=1
-  ;spp_apid_data,'3b9'x,name='SWEAP SPAN-I Events',rt_tags='*'
-  ;spp_apid_data,'3bb'x,name='SWEAP SPAN-I Rates',rt_tags='*CNTS'
-  ;spp_apid_data,'3be'x,name='SWEAP SPAN-I HKP',rt_tags='*'
-  ;spp_apid_data, rt_flag = 1
-  ;spp_swp_manip_init
-  ;wait,1
-  
-  spp_set_tplot_options
-  
-  ;;--------------------------------------------------
-  ;; Useful command to see what APIDs have been loaded
-  ;spp_apid_data,apdata=ap
-  ;print_struct,ap
-  ;;-------------------------------------------------
-  
-  if 0 then begin
-     f1= file_search('spp*.ptp')
-     spp_apid_data,rt_flag=0
-     spp_ptp_file_read,f1[-1]
-     spp_apid_data,rt_flag=1
-  endif
-  base = recorder_base
-
-end
-
-
-function spp_swp_spani_thermaltest1_files
-  src = spp_file_source()
-  pathnames = 'spp/sweap/prelaunch/gsedata/EM/spanai/201502??_*/PTP_data.dat'
-  printdat,src
-  files=file_retrieve(pathnames,_extra=src)
-  return,files
-end
+;function spp_swp_spani_thermaltest1_files
+;  src = spp_file_source()
+;  pathnames = 'spp/sweap/prelaunch/gsedata/EM/spanai/201502??_*/PTP_data.dat'
+;  printdat,src
+;  files=file_retrieve(pathnames,_extra=src)
+;  return,files
+;end
 
 
 pro poisson_plot,s,index=index
@@ -473,29 +473,29 @@ pro poisson_plot,s,index=index
 end
 
 
-pro print_rates,t
-
-  if ~keyword_set(t) then ctime,t,npoint=2,/silent
-  
-  valids=tsample('spp_spanai_rates_VALID_CNTS',t,/average)
-  multis=tsample('spp_spanai_rates_MULTI_CNTS',t,/average)
-  ostarts=tsample('spp_spanai_rates_START_CNTS',t,/average)
-  ostops =tsample('spp_spanai_rates_STOP_CNTS',t,/average)
-  
-  print,findgen(16)
-  print
-  print,valids
-  print,multis
-  print,ostarts
-  print,ostops
-  
-  starts = ostarts+valids
-  stops = ostops+valids
-  print
-  print,valids/starts
-  print,valids/stops
-
-end
+;pro print_rates,t
+;
+;  if ~keyword_set(t) then ctime,t,npoint=2,/silent
+;  
+;  valids=tsample('spp_spanai_rates_VALID_CNTS',t,/average)
+;  multis=tsample('spp_spanai_rates_MULTI_CNTS',t,/average)
+;  ostarts=tsample('spp_spanai_rates_START_CNTS',t,/average)
+;  ostops =tsample('spp_spanai_rates_STOP_CNTS',t,/average)
+;  
+;  print,findgen(16)
+;  print
+;  print,valids
+;  print,multis
+;  print,ostarts
+;  print,ostops
+;  
+;  starts = ostarts+valids
+;  stops = ostops+valids
+;  print
+;  print,valids/starts
+;  print,valids/stops
+;
+;end
 
 
 
@@ -581,47 +581,47 @@ end
 
 
 
-pro spp_swp_reduce,tof_range=tof_range,tof_name=tof_name
-
-  res =5.
-  
-  if 0 then begin
-     reduce_timeres_data,'spp_spanai_rates_*CNTS',res ;,trange=tr
-     get_data,'spp_spanai_rates_VALID_CNTS_t',data=d1
-     get_data,'spp_spanai_rates_START_CNTS_t',data=d3
-     get_data,'spp_spanai_rates_STOP_CNTS_t',data=d4
-     dr =d1
-     dr.y = d1.y/(d1.y+d3.y)
-     store_data,'valid_start',data=dr
-     dr.y = d1.y/(d1.y+d4.y)
-     store_data,'valid_stop',data=dr
-     dr.y = (d1.y+d3.y)/(d1.y+d4.y)
-     store_data,'start_stop',data=dr
-     dr.y = (d1.y+d4.y)/(d1.y+d3.y)
-     store_data,'stop_start',data=dr
-  endif
-
-  if 1 then begin
-     spp_apid_data,'3b9'x,apdata=ap
-     a = *ap.dataptr
-     for ch = 0 ,15 do begin
-        test = a.channel eq ch
-        if n_elements(tof_range) eq 2 then test = test and (a.tof le tof_range[1] and a.tof ge tof_range[0])
-        w = where(test,nw)
-        colors = bytescale(findgen(16))
-        ;dl = {psym:3, colors=0}
-        name =string(ch,format='("spanai_ch",i02,"_")')
-        if keyword_set(tof_name) then name += tof_name+'_'
-        if nw ne 0 then store_data,name,data=a[w],tagnames='*',dlim={TOF:{psym:3,symsize:.4,colors:colors[ch] }}
-        h=histbins(a[w].time,tb,binsize=double(res))
-        store_data,name+'TOT',tb,h,dlim={colors:colors[ch]}
-     endfor
-     store_data,'spanai_all_TOT',data='spanai_ch??_TOT'
-     
-  endif
-  
-end
-
+;pro spp_swp_reduce,tof_range=tof_range,tof_name=tof_name
+;
+;  res =5.
+;  
+;  if 0 then begin
+;     reduce_timeres_data,'spp_spanai_rates_*CNTS',res ;,trange=tr
+;     get_data,'spp_spanai_rates_VALID_CNTS_t',data=d1
+;     get_data,'spp_spanai_rates_START_CNTS_t',data=d3
+;     get_data,'spp_spanai_rates_STOP_CNTS_t',data=d4
+;     dr =d1
+;     dr.y = d1.y/(d1.y+d3.y)
+;     store_data,'valid_start',data=dr
+;     dr.y = d1.y/(d1.y+d4.y)
+;     store_data,'valid_stop',data=dr
+;     dr.y = (d1.y+d3.y)/(d1.y+d4.y)
+;     store_data,'start_stop',data=dr
+;     dr.y = (d1.y+d4.y)/(d1.y+d3.y)
+;     store_data,'stop_start',data=dr
+;  endif
+;
+;  if 1 then begin
+;     spp_apid_data,'3b9'x,apdata=ap
+;     a = *ap.dataptr
+;     for ch = 0 ,15 do begin
+;        test = a.channel eq ch
+;        if n_elements(tof_range) eq 2 then test = test and (a.tof le tof_range[1] and a.tof ge tof_range[0])
+;        w = where(test,nw)
+;        colors = bytescale(findgen(16))
+;        ;dl = {psym:3, colors=0}
+;        name =string(ch,format='("spanai_ch",i02,"_")')
+;        if keyword_set(tof_name) then name += tof_name+'_'
+;        if nw ne 0 then store_data,name,data=a[w],tagnames='*',dlim={TOF:{psym:3,symsize:.4,colors:colors[ch] }}
+;        h=histbins(a[w].time,tb,binsize=double(res))
+;        store_data,name+'TOT',tb,h,dlim={colors:colors[ch]}
+;     endfor
+;     store_data,'spanai_all_TOT',data='spanai_ch??_TOT'
+;     
+;  endif
+;  
+;end
+;
 
 
 
@@ -672,65 +672,65 @@ end
 ;; Functions within pkt_handler
 
 ;coeff = [0.00E+00,  0.00E+00,  -5.76E-20, 5.01E-15,  -1.68E-10, 2.69E-06,  -2.33E-02, 9.33E+01]
-function spp_spc_met_to_unixtime,met
-
-  ;; long(time_double('2000-1-1/12:00'))  ;Early SWEM definition
-  epoch =  946771200d - 12L*3600   
-  ;; long(time_double('2010-1-1/0:00'))  ; Correct SWEM use
-  epoch =  1262304000              
-  unixtime =  met +  epoch
-  return,unixtime
-
-end
-
-
-
-function thermistor_temp,R,parameter=p,b2252=b2252,L1000=L1000
-
-  if not keyword_set(p) then begin
-     p = {func:'thermistor_temp',note:'YSI 46006 (H10000)',R0:10000.,  $
-          T0:24.988792d, t1:-24.809236d, t2:1.6864476d, t3:-0.12038317d, $
-          t4:0.0081576555d, t5:-0.00057545026d ,t6:3.1337558d-005}
-     if keyword_set(B2252) then p={func:'thermistor_temp',note:'YSI (B2252)',R0:2252.,  $
-                                   T0:24.990713d, t1:-22.808501d, t2:1.5334736d, t3:-0.10485403d, $
-                                   t4:0.0076653446d, t5:-0.00084656440d ,t6:6.1095571d-005}
-     if keyword_set(L1000) then p={func:'thermistor_temp',note:'YSI (L1000)',R0:1000.,  $
-                                   T0:25.00077d, t1:-27.123102d, t2:2.2371834d, t3:-0.20295066d, $
-                                   t4:0.022239779d, t5:-0.0024144851d ,t6:0.00013611146d}
-     ;if keyword_set(YSI4908) then p = $
-     ;   {func:'thermistor_temperature_ysi4908',note:'YSI4908'}
-  endif
-
-  if n_params() eq 0 then return,p
-  x = alog(R/p.r0)
-  T = p.t0 + p.t1*x + p.t2*x^2 + p.t3*x^3 + p.t4*x^4 +p.t5*x^5 +p.t6*x^6
-  return,t
-
-end
+;function spp_spc_met_to_unixtime,met
+;
+;  ;; long(time_double('2000-1-1/12:00'))  ;Early SWEM definition
+;  epoch =  946771200d - 12L*3600   
+;  ;; long(time_double('2010-1-1/0:00'))  ; Correct SWEM use
+;  epoch =  1262304000              
+;  unixtime =  met +  epoch
+;  return,unixtime
+;
+;end
 
 
 
-function spp_sweap_therm_temp,dval,parameter=p
-  if not keyword_set (p) then begin
-     ;p = {func:'mvn_sep_therm_temp2',$
-     ;     R1:10000d, $
-     ;     xmax:1023d, $
-     ;     Rv:1d8,$
-     ;     thm:thermistor_temp()}                                                              
-     p = {func:'spp_sweap_therm_temp',$
-          R1:10000d, $
-          xmax:1023d, $
-          Rv:1d7, $
-          thm:'thermistor_resistance_ysi4908'}
-  endif
-  if n_params() eq 0 then return,p
-  ;print,dval
-  x = dval/p.xmax
-  rt = p.r1*(x/(1-x*(1+p.R1/p.Rv)))
-  tc = thermistor_resistance_ysi4908(rt,/inverse)                                
-  ;print,dval,x,rt,tc
-  return,float(tc)
-end
+;function thermistor_temp,R,parameter=p,b2252=b2252,L1000=L1000
+;
+;  if not keyword_set(p) then begin
+;     p = {func:'thermistor_temp',note:'YSI 46006 (H10000)',R0:10000.,  $
+;          T0:24.988792d, t1:-24.809236d, t2:1.6864476d, t3:-0.12038317d, $
+;          t4:0.0081576555d, t5:-0.00057545026d ,t6:3.1337558d-005}
+;     if keyword_set(B2252) then p={func:'thermistor_temp',note:'YSI (B2252)',R0:2252.,  $
+;                                   T0:24.990713d, t1:-22.808501d, t2:1.5334736d, t3:-0.10485403d, $
+;                                   t4:0.0076653446d, t5:-0.00084656440d ,t6:6.1095571d-005}
+;     if keyword_set(L1000) then p={func:'thermistor_temp',note:'YSI (L1000)',R0:1000.,  $
+;                                   T0:25.00077d, t1:-27.123102d, t2:2.2371834d, t3:-0.20295066d, $
+;                                   t4:0.022239779d, t5:-0.0024144851d ,t6:0.00013611146d}
+;     ;if keyword_set(YSI4908) then p = $
+;     ;   {func:'thermistor_temperature_ysi4908',note:'YSI4908'}
+;  endif
+;
+;  if n_params() eq 0 then return,p
+;  x = alog(R/p.r0)
+;  T = p.t0 + p.t1*x + p.t2*x^2 + p.t3*x^3 + p.t4*x^4 +p.t5*x^5 +p.t6*x^6
+;  return,t
+;
+;end
+
+
+
+;function spp_sweap_therm_temp,dval,parameter=p
+;  if not keyword_set (p) then begin
+;     ;p = {func:'mvn_sep_therm_temp2',$
+;     ;     R1:10000d, $
+;     ;     xmax:1023d, $
+;     ;     Rv:1d8,$
+;     ;     thm:thermistor_temp()}                                                              
+;     p = {func:'spp_sweap_therm_temp',$
+;          R1:10000d, $
+;          xmax:1023d, $
+;          Rv:1d7, $
+;          thm:'thermistor_resistance_ysi4908'}
+;  endif
+;  if n_params() eq 0 then return,p
+;  ;print,dval
+;  x = dval/p.xmax
+;  rt = p.r1*(x/(1-x*(1+p.R1/p.Rv)))
+;  tc = thermistor_resistance_ysi4908(rt,/inverse)                                
+;  ;print,dval,x,rt,tc
+;  return,float(tc)
+;end
 
 
 

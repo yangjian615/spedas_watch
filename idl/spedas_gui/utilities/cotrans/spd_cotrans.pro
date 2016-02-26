@@ -180,8 +180,8 @@ end
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-08 21:21:58 -0800 (Tue, 08 Dec 2015) $
-;$LastChangedRevision: 19549 $
+;$LastChangedDate: 2016-02-24 18:53:52 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20171 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/cotrans/spd_cotrans.pro $
 ;
 ;-
@@ -298,22 +298,33 @@ endif
 
 ;Resolve discrepancies between in_coord keyword, and data_att.coord_sys
 ;--------------------------------
-in_coords = strarr(n_elements(in_names))
-for i = 0,n_elements(in_names)-1 do begin
+if keyword_set(ignore_dlimits) then begin
 
-  data_in_coord = cotrans_get_coord(in_names[i])
-  
-  if ~keyword_set(in_coord) || strmatch(in_coord, 'unknown') then begin
-    in_coords[i] = data_in_coord
-  endif else if strmatch(data_in_coord,'unknown') then begin
-    in_coords[i] = in_coord
-  endif else if data_in_coord ne in_coord then begin
-    in_coords[i] = 'conflict'
+  if is_string(in_coord) then begin
+    in_coords = replicate(in_coord,n_elements(in_names))
   endif else begin
-    in_coords[i] = in_coord
+    dprint, 'Must specify input coordinates if /ignore_dlimits is set'
+    return
   endelse
 
-endfor
+endif else begin
+  in_coords = strarr(n_elements(in_names))
+  for i = 0,n_elements(in_names)-1 do begin
+  
+    data_in_coord = cotrans_get_coord(in_names[i])
+    
+    if ~keyword_set(in_coord) || strmatch(in_coord, 'unknown') then begin
+      in_coords[i] = data_in_coord
+    endif else if strmatch(data_in_coord,'unknown') then begin
+      in_coords[i] = in_coord
+    endif else if data_in_coord ne in_coord then begin
+      in_coords[i] = 'conflict'
+    endif else begin
+      in_coords[i] = in_coord
+    endelse
+  
+  endfor
+endelse
 
 
 ;Loop over input variables

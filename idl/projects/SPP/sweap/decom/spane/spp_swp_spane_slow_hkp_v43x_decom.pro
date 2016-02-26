@@ -4,7 +4,7 @@
 function spp_swp_spane_slow_hkp_v43x_decom,ccsds , ptp_header=ptp_header, apdat=apdat
 
   b = ccsds.data
-  print, 'SIZE[B]', size(b)
+  ;print, 'SIZE[B]', size(b)
   ;  psize = 69  ; REV  16
   ;  psize =81   ; REV 19
   ;  psize =89   ; REV 26?

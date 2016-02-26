@@ -56,9 +56,9 @@
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19843 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2016-02-25 09:40:08 -0800 (Thu, 25 Feb 2016) $
+;$LastChangedRevision: 20174 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 pro mms_set_scm_options, tplotnames, prefix = prefix,datatype = datatype, coord=coord
@@ -67,14 +67,14 @@ pro mms_set_scm_options, tplotnames, prefix = prefix,datatype = datatype, coord=
     for sc_idx = 0, n_elements(prefix)-1 do begin
         for name_idx = 0, n_elements(tplotnames)-1 do begin
             tplot_name = tplotnames[name_idx]
-            
+
             case tplot_name of
                 prefix[sc_idx] + '_scm_'+datatype+'_'+coord : begin
                     options, /def, tplot_name, 'labflag', 1
                     options, /def, tplot_name, 'colors', [2,4,6]
                     options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) +' '+ datatype +' ('+coord+')' ;' SCM'
                     options, /def, tplot_name, 'labels', ['1', '2', '3']
-                    
+                                      
                 end
                 else: ; not doing anything
             endcase
@@ -97,17 +97,19 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(datatype) then datatype = 'scf' 
     if undefined(level) then level = 'l1b' 
     if undefined(data_rate) then data_rate = 'fast'
-      
+    if undefined(time_clip) then time_clip = trange  ;to account for tt2000 timerange set in meta data
+    
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'scm', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
-    
+
     if level eq 'l1a' then coord = '123'
     if level eq 'l1b' then coord = 'scm123'
     if level eq 'l2'  then coord = 'gse'
     
     mms_set_scm_options, tplotnames, prefix = 'mms' + probes,datatype = datatype, coord=coord
+    
 end

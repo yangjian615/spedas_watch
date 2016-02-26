@@ -20,7 +20,7 @@ miny = 0.
 maxy = 0.
 str_element,limits,'min_value',min_value
 str_element,limits,'max_value',max_value
-str_element,limits,'ytype',ytype
+str_element,limits,'ylog',ytype
 
 for i=0,n_elements(datastr)-1 do begin
 	get_data,datastr[i],data=data,dtype=dtype
@@ -34,11 +34,9 @@ for i=0,n_elements(datastr)-1 do begin
 		ndx = ndimen(data.x)
 	
 		if ndx eq 1 then $
-			yrange = minmax(data.y[ind,*],posi=ytype,$
-			max=max_value,min=min_value) $
+			yrange = minmax(data.y[ind,*],posi=ytype, max=max_value,min=min_value) $
 		else $
-			yrange = minmax(data.y[ind],posi=ytype,$
-			max=max_value,min=min_value)
+			yrange = minmax(data.y[ind],posi=ytype,	max=max_value,min=min_value)
 		if miny ne maxy then begin
 			if yrange[0] lt miny then miny = yrange[0]
 			if yrange[1] gt maxy then maxy = yrange[1]

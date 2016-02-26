@@ -29,9 +29,9 @@
 ;
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-15 11:37:57 -0800 (Fri, 15 Jan 2016) $
-;$LastChangedRevision: 19748 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-02-25 09:48:42 -0800 (Thu, 25 Feb 2016) $
+;$LastChangedRevision: 20175 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_get_dist.pro $
 ;-
 
@@ -43,8 +43,13 @@ function mms_get_dist, tname, index, trange=trange, times=times, structure=struc
 
 if stregex(tname, 'mms[1-4]_.*_.{4}SkyMap_dist', /bool, /fold) then begin
   
-  ;fpi
+  ;fpi-l1b
   return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure)
+
+endif else if stregex(tname, 'mms[1-4]_.*_dist_.{4}', /bool, /fold) then begin
+
+    ;fpi-l2
+    return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure , level='l2', data_rate=strmid(tname,14,4), species=strmid(tname,6,1), probe=strmid(tname,3,1))
 
 endif else if stregex(tname, 'mms[1-4]_.*_vel_dist_fn', /bool, /fold) then begin
 

@@ -8,7 +8,7 @@
 ;
 ;
 ;Calling Sequence:
-;  spd_cotrans, input_name [,output_name] 
+;  mms_cotrans, input_name [,output_name] 
 ;               ,out_coord=out_coord [,out_suffix=out_suffix] 
 ;               [,in_coord=in_coord] [,in_suffix=in_suffix] ...
 ;
@@ -58,8 +58,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-22 16:35:01 -0800 (Tue, 22 Dec 2015) $
-;$LastChangedRevision: 19649 $
+;$LastChangedDate: 2016-02-24 18:53:52 -0800 (Wed, 24 Feb 2016) $
+;$LastChangedRevision: 20171 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans.pro $
 ;-
 
@@ -218,23 +218,38 @@ endif
 ;   -this code also helps resolve discrepancies between in_coord keyword and data_att.coord_sys
 ;----------------------------------------------------------
 
-in_coords = strarr(n_elements(in_names))
-for i = 0,n_elements(in_names)-1 do begin
+if keyword_set(ignore_dlimits) then begin
 
-  data_in_coord = cotrans_get_coord(in_names[i])
-  
-  if ~is_string(in_coord) then begin
-    in_coords[i] = data_in_coord
-  endif else if data_in_coord eq '' || strmatch(data_in_coord,'unknown') then begin
-    in_coords[i] = in_coord
-  endif else if data_in_coord ne in_coord then begin
-    in_coords[i] = 'conflict'
+  if is_string(in_coord) then begin
+    in_coords = replicate(in_coord,n_elements(in_names))
   endif else begin
-    in_coords[i] = in_coord
+    dprint, 'Must specify input coordinates if /ignore_dlimits is set'
+    return
   endelse
 
-endfor
+endif else begin
 
+  in_coords = strarr(n_elements(in_names))
+  for i = 0,n_elements(in_names)-1 do begin
+  
+    ;this only returns 'unknown' if the field is not present,
+    ;blank fields will be returned and lower routines expect
+    ;them to have been filterted as conflicted 
+    data_in_coord = cotrans_get_coord(in_names[i])
+    
+    if ~is_string(in_coord) then begin
+      in_coords[i] = data_in_coord
+    endif else if strmatch(data_in_coord,'unknown') then begin
+      in_coords[i] = in_coord
+    endif else if data_in_coord ne in_coord then begin
+      in_coords[i] = 'conflict'
+    endif else begin
+      in_coords[i] = in_coord
+    endelse
+  
+  endfor
+
+endelse
 
 
 ; Determine if probe is required
@@ -299,7 +314,7 @@ for i = 0, n_elements(in_names)-1 do begin
 
   in_c = in_coords[i]
 
-  ;notify if in_coord is inconsisten with metadata and skip variable
+  ;notify if in_coord is inconsistent with metadata and skip variable
   if in_c eq 'conflict' then begin
     dprint,'Specified coordinate system does not match metadata for "' + in_name + '". Skipping.'
     continue
