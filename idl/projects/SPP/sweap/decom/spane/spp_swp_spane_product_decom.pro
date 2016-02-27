@@ -1,6 +1,6 @@
 ; $LastChangedBy: phyllisw $
-; $LastChangedDate: 2016-02-25 12:16:37 -0800 (Thu, 25 Feb 2016) $
-; $LastChangedRevision: 20187 $
+; $LastChangedDate: 2016-02-26 16:17:49 -0800 (Fri, 26 Feb 2016) $
+; $LastChangedRevision: 20231 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
 
 
@@ -36,7 +36,6 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   apid_loc = ['60', '61', '62', '63', '64', '65', '66', '67']
   ns = pkt_size[where(apid_loc eq apid_name)]
 
-
   ;;-------------------------------------------
   ;; Check for compression
   compression = (ccsds.data[12] and '20'x) ne 0
@@ -49,6 +48,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   ;   return, 0
   ;endif
 
+  ;print, apid_name, ns, compression, n_elements(data)
 
   ;;-------------------------------------------
   ;; Decompress if necessary
@@ -63,7 +63,6 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 
   ;; WORD 1 - 00001aaa aaaaaaaa - ApID bits
 
-
   ;; WORD 7
   log_flag    = header[12]
 
@@ -74,8 +73,15 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   ;;--------------
   ;; Peaks
   peak_bin = header[19]
-
-
+  
+  ;remap=[3, 2, 1, 0, 15, 14, 13, 12, 8, 7, 6, 5, 4, 9, 10, 11]
+  ;remap=[2, 3, 0, 1, 14, 15, 12, 13, 7, 8, 5, 6, 9, 4, 11, 10]
+  ;remap=[3, 2, 1, 0, 12, 11, 10, 9, 8, 13, 14, 15, 7, 6, 5, 4]
+  ;remap=[2, 3, 0, 1, 11, 12, 9, 10, 13, 8, 15, 14, 6, 7, 4, 5]
+  ;remap=[2, 3, 0, 1, 15, 14, 13, 12, 4, 5, 6, 7, 8, 9, 11, 10]
+  ;remap=[2, 3, 0, 1, 15, 14, 4, 13, 5, 12, 7, 6, 9, 8, 11, 10]
+  remap=[2, 3, 0, 1, 15, 14, 4, 12, 5, 6, 13, 7, 9, 8, 11, 10]
+  
   case 1 of
 
      ;;-----------------------------------------
@@ -95,8 +101,10 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;     end
 
 
+
      ;;------------------------------------------
      ;;Product Full Sweep: Archive - 08D - '360'x
+     
      (apid_name eq '60') : begin
         str = { $
               time:        ccsds.time, $
@@ -107,7 +115,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               log_flag:    log_flag, $
               status_flag: status_flag,$
               f_counter:   f_counter,$
-              cnts:        float(cnts)}
+              cnts:        float(cnts[remap])}
      end
 
 
@@ -140,7 +148,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               cnts_a13:  float(reform(cnts[13,*])), $
               cnts_a14:  float(reform(cnts[14,*])), $
               cnts_a15:  float(reform(cnts[15,*])), $
-              cnts:      float(cnts)}
+              cnts:      float(reform(cnts,16*32))}
      end
 
      ;;----------------------------------------------
@@ -171,7 +179,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               log_flag: log_flag, $
               status_flag: status_flag,$
               f_counter: f_counter,$
-              cnts: float(cnts[*]),$
+              cnts:      float(reform(cnts,32*16)), $
               cnts_a00:  float(reform(cnts[ 0,*])), $
               cnts_a01:  float(reform(cnts[ 1,*])), $
               cnts_a02:  float(reform(cnts[ 2,*])), $
@@ -238,7 +246,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               cnts_a13:  float(reform(cnts[13,*])), $
               cnts_a14:  float(reform(cnts[14,*])), $
               cnts_a15:  float(reform(cnts[15,*])), $
-              cnts:      float(cnts), $
+              cnts:      float(reform(cnts,16*32)), $
               rates_a00: float(reform(cnts[ 0,*])) / float(ccsds.smples_sumd), $
               rates_a01: float(reform(cnts[ 1,*])) / float(ccsds.smples_sumd), $
               rates_a02: float(reform(cnts[ 2,*])) / float(ccsds.smples_sumd), $

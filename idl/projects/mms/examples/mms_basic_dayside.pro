@@ -17,8 +17,8 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-01-15 07:40:55 -0800 (Fri, 15 Jan 2016) $
-; $LastChangedRevision: 19741 $
+; $LastChangedDate: 2016-02-26 14:51:48 -0800 (Fri, 26 Feb 2016) $
+; $LastChangedRevision: 20225 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_basic_dayside.pro $
 ;-
 start_time = systime(/sec)
@@ -45,13 +45,13 @@ mms_load_edp, probe=probe, datatype='scpot', level='l2', no_update = LOCAL_FILES
 mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce', no_update = LOCAL_FILES_ONLY
 mms_load_edp, probe=probe, data_rate='srvy', level='l1b', datatype=['dce', 'hfesp'], no_update = LOCAL_FILES_ONLY
 mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd', no_update = LOCAL_FILES_ONLY
-mms_load_hpca, probe=probe, data_rate='srvy', level='sitl', no_update = LOCAL_FILES_ONLY
+mms_load_hpca, probe=probe, data_rate='srvy', level='l1b', no_update = LOCAL_FILES_ONLY
 
 ; sum the HPCA spectra over the full field of view
 mms_hpca_calc_anodes, fov=[0, 360], probe=probe
 
 ; For the s/c potential, we plot -ln(scpot), to match the plot in EVA
-calc, '"mms'+probe+'_edp_fast_scpot_ln" = -ln("mms'+probe+'_edp_fast_scpot")'
+calc, '"mms'+probe+'_edp_fast_scpot_ln" = -ln("mms'+probe+'_edp_fast_scpot_l2")'
 ; update the Y-axis title
 options, 'mms'+probe+'_edp_fast_scpot_ln', ytitle='EDP!CFAST!C-ln(scpot)'
 
@@ -151,8 +151,8 @@ position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffi
 
 
 ; set some plot options
-ylim, 'mms'+probe+'_dsp_bpsd_omni', 0, 0, 1
-zlim, 'mms'+probe+'_dsp_bpsd_omni', 0, 0, 1
+ylim, 'mms'+probe+'_dsp_bpsd_omni_fast_l2', 0, 0, 1
+zlim, 'mms'+probe+'_dsp_bpsd_omni_fast_l2', 0, 0, 1
 ylim, 'mms'+probe+'_edp_srvy_EPSD_x', 0, 0, 1
 zlim, 'mms'+probe+'_edp_srvy_EPSD_x', 0, 0, 1
 options, 'mms'+probe+'_fpi_iBulkV', colors=[2, 4, 6]
@@ -176,17 +176,17 @@ options, 'mms'+probe+b_variable+'_btot', ytitle='mms'+probe+'!CFGM'
 options, 'mms'+probe+'_dfg_gsm_srvy', ytitle='mms'+probe+'!CFGM!CGSM'
 
 ; degap the FPI spectra
-tdegap, 'mms'+probe+'_fpi_iEnergySpectr_omni_sum', /overwrite
-tdegap, 'mms'+probe+'_fpi_eEnergySpectr_omni_sum', /overwrite
+tdegap, 'mms'+probe+'_fpi_iEnergySpectr_omni_avg', /overwrite
+tdegap, 'mms'+probe+'_fpi_eEnergySpectr_omni_avg', /overwrite
 ; degap the BPSD
-tdegap, 'mms'+probe+'_dsp_bpsd_omni', /overwrite
+tdegap, 'mms'+probe+'_dsp_bpsd_omni_fast_l2', /overwrite
 
 window, ysize=800
 ; plot the data
 tplot, 'mms'+probe+['_dfg_gsm_srvy', $
                     '_dfg_srvy_l2pre_gsm_btot', $
-                    '_fpi_iEnergySpectr_omni_sum', $
-                    '_fpi_eEnergySpectr_omni_sum', $
+                    '_fpi_iEnergySpectr_omni_avg', $
+                    '_fpi_eEnergySpectr_omni_avg', $
                     '_fpi_DISnumberDensity', $
                     '_edp_fast_scpot_ln', $
                     '_fpi_iBulkV', $
@@ -195,7 +195,7 @@ tplot, 'mms'+probe+['_dfg_gsm_srvy', $
                     '_hpca_oplus_RF_corrected_elev_0-360', $
                     '_edp_fast_dce_dsl', $
                     '_edp_srvy_EPSD_x', $
-                    '_dsp_bpsd_omni' $
+                    '_dsp_bpsd_omni_fast_l2' $
                     ], var_label=position_vars
                     
 if postscript then tprint, plot_directory + 'mms'+probe + '_basic_dayside'

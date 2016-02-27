@@ -29,12 +29,12 @@
 ;-
 function v_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
-vel = [0.,0.,0.]
-
 if dat2.valid eq 0 then begin
 	print,'Invalid Data'
-	return, vel
+	return, [0.,0.,0.]
 endif
+
+if dat2.nbins eq 1 then vel=0. else vel = [0.,0.,0.]
 
 if (dat2.quality_flag and 195) gt 0 then return,vel
 

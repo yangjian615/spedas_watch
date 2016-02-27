@@ -306,7 +306,7 @@ if keyword_set(test) then print,'Minimum and maximum dead time corrections in ar
 
 ; these tplot variables are for testing
 
-;if keyword_set(test) then begin
+if keyword_set(test) then begin
 
 	loadct2,43
 	cols=get_colors()
@@ -342,7 +342,7 @@ if keyword_set(test) then print,'Minimum and maximum dead time corrections in ar
 	store_data,'mvn_sta_pk_droop',data=['mvn_sta_pk1_droop','mvn_sta_pk2_droop','mvn_sta_pk3_droop','mvn_sta_pk12_droop']
 		ylim,'mvn_sta_pk_droop',-.1,1.1,0
 
-;endif
+endif
 
 ; Add the dead time to the data arrays
 

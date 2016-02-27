@@ -115,7 +115,7 @@ function ConfigData::init
   self.mag_coord=0B
   self.unit='count'
   self.axis_unit='velocity'
-  self.spinsum= 2
+  self.spinsum= 1
   self.step = 1
   self.iso1_level = [30,50]
   self.iso2_level = [10,30]

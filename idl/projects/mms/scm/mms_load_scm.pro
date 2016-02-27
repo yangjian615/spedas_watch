@@ -21,8 +21,7 @@
 ;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         source:       specifies a different system variable. By default the MMS mission system 
 ;                       ariable is !mms
-;         get_support_data: not yet implemented. when set this routine will load any support data 
-;                       (support data is specified in the CDF file)
+;         get_support_data: load support data (defined by support_data attribute in the CDF)
 ;         tplotnames:   names for tplot variables
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
 ;                       using this load
@@ -36,6 +35,10 @@
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
 ;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
+;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
+;         latest_version: only grab the latest CDF version in the requested time interval
+;                       (e.g., /latest_version)
+;         min_version:  specify a minimum CDF version # to load
 ; 
 ; OUTPUT:
 ; 
@@ -56,9 +59,9 @@
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2016-02-25 09:40:08 -0800 (Thu, 25 Feb 2016) $
-;$LastChangedRevision: 20174 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-02-25 20:27:57 -0800 (Thu, 25 Feb 2016) $
+;$LastChangedRevision: 20203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 pro mms_set_scm_options, tplotnames, prefix = prefix,datatype = datatype, coord=coord

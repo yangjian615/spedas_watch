@@ -30,14 +30,15 @@
 ;-
 function je_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
-eflux = 0.
 
 if dat2.valid eq 0 then begin
   print,'Invalid Data'
-  return, eflux
+  return, [0.,0.,0.]
 endif
 
-if (dat2.quality_flag and 195) gt 0 then return,-1
+if dat2.nbins eq 1 then eflux=0. else eflux=[0.,0.,0.]
+
+if (dat2.quality_flag and 195) gt 0 then return,eflux
 
 dat = conv_units(dat2,"counts")		; initially use counts
 na = dat.nenergy
@@ -81,8 +82,8 @@ endif else begin
 endelse
 
 ;if keyword_set(mincnt) then if total(data) lt mincnt then return,0
-if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, !Values.F_NAN
-if total(data-bkg) lt 1 then return, !Values.F_NAN
+if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, eflux
+if total(data-bkg) lt 1 then return, eflux
 
 dat.cnts=data
 dat.bkg=bkg

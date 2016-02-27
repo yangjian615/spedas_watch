@@ -477,10 +477,12 @@ function DataManagement::getVolumeData, ORIGINAL=original ;, XRANGE=xrange, YRAN
     endfor
     
     if unit eq 'psd' then fn = fn/spinsum ; PSD shoud be an average 
-    ;
-    ; store calculated data 
-    if ptr_valid(self.pfn) then ptr_free, self.pfn
-    self.pfN = ptr_new(fn)
+    
+    ; 2016-02-25 -af
+    ; storing data here appears to cause data array to be out of order
+    ; with coordinates later, also break method's abstraction a bit 
+;    if ptr_valid(self.pfn) then ptr_free, self.pfn
+;    self.pfN = ptr_new(fn)
     
     ;set to original position
     res = self.reload_data(curtime, /NO_DATA_UPDATE)

@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 08:43:59 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19693 $
+;$LastChangedDate: 2016-02-26 11:45:05 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20210 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_spin_avg.pro $
 ;-
 
@@ -45,10 +45,20 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, $
   ; find where the spins start
   spin_starts = uniq(spin_nums.Y)
 
+  ; find the telescope names
+  telescopes = tnames(prefix + species + '_*' + data_units + '_t*'+suffix)
+  telescopes = strsplit(telescopes, prefix + species + '_.' + data_units + '_t*'+suffix, /extract, /regex, /fold_case)
+
+  if telescopes[0] eq '' || n_elements(telescopes) ne 6 then begin
+      dprint, dlevel = 0, 'Error, problem finding the telescopes to calculate the spin averages'
+      return
+  endif
+  
   ; loop over the telescopes
   for scope_idx = 0, 5 do begin
-    tn = strcompress(string(scope_idx), /rem)
-    get_data, prefix + species + '_' + data_units + '_t'+tn+suffix, data=flux_data, dlimits=flux_dl
+    this_scope = (telescopes[scope_idx])[0]
+    get_data, this_scope, data=flux_data, dlimits=flux_dl
+
     spin_sum_flux = dblarr(n_elements(spin_starts), n_elements(flux_data.Y[0, *]))
 
     current_start = 0
@@ -60,9 +70,9 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, $
       current_start = spin_starts[spin_idx]+1
     endfor
     sp = '_spin'
-    store_data, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, data={x: spin_nums.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
-    options, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, spec=1, minzlog = .01
-    ylim, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, 50., 500., 1
-    zlim, prefix+species+'_'+data_units+'_t'+tn+sp+suffix, 0, 0, 1
+    store_data, this_scope+sp+suffix, data={x: spin_nums.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
+    options, this_scope+sp+suffix, spec=1, minzlog = .01
+    ylim, this_scope+sp+suffix, 50., 500., 1
+    zlim, this_scope+sp+suffix, 0, 0, 1
   endfor
 end

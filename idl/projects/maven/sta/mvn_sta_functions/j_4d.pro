@@ -30,14 +30,15 @@
 ;-
 function j_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
-flux = 0.
 
 if dat2.valid eq 0 then begin
   print,'Invalid Data'
-  return, flux
+  return, [0.,0.,0.]
 endif
 
-if (dat2.quality_flag and 195) gt 0 then return,-1
+if dat2.nbins eq 1 then flux=0. else flux = [0.,0.,0.]
+
+if (dat2.quality_flag and 195) gt 0 then return,flux
 
 dat = conv_units(dat2,"counts")		; initially use counts
 na = dat.nenergy
@@ -81,8 +82,10 @@ endif else begin
 endelse
 
 ;if keyword_set(mincnt) then if total(data) lt mincnt then return,0
-if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, !Values.F_NAN
-if total(data-bkg) lt 1 then return, !Values.F_NAN
+;if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, !Values.F_NAN
+if keyword_set(mincnt) then if total(data-bkg) lt mincnt then return, flux
+;if total(data-bkg) lt 1 then return, !Values.F_NAN
+if total(data-bkg) lt 1 then return, flux
 
 dat.cnts=data
 dat.bkg=bkg
@@ -95,7 +98,7 @@ if keyword_set(q) then charge=q
 energy=(dat.energy+charge*dat.sc_pot/abs(charge))>0.		; energy/charge analyzer, require positive energy
 
 if dat.nbins eq 1 then begin
-	; assume you want the omni-directional flux
+	; assume you want the omni-directional flux and put it in the x-direction
 	if keyword_set(ms) then return,total(Const*denergy*(energy)*data) else return,total(Const*denergy*(energy)*data,1)
 endif else begin	
 	flux3dx = total(total(Const*denergy*(energy)*data*(dtheta/2.+cos(2*theta)*sin(dtheta)/2.)*(2.*sin(dphi/2.)*cos(phi)),1),1)

@@ -18,7 +18,7 @@ pro spp_swp_startup, spanai = spanai,$
   ;;--------------------------------------------
   ;; Compile necessary programs
   ;resolve_routine, 'spp_swp_functions'
-  resolve_routine, 'spp_ptp_pkt_handler'
+  ;resolve_routine, 'spp_swp_ptp_pkt_handler'
 
 
 
@@ -61,18 +61,18 @@ pro spp_swp_startup, spanai = spanai,$
      ;;------------------------------------------------------------------------------------------------------------
      ;; SPAN-Ai Full Sweep Products
      ;;------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'380'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'381'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'382'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'383'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m4_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'384'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'385'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'387'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m4_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'388'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p3_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'389'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p3_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'38a'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p3_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'38b'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p3_m4_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'380'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p0_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'381'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p0_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'382'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p0_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'383'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p0_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'384'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'385'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'387'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'388'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'389'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'38a'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'38b'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      
      ;;------------------------------------------------------------------------------------------------------------
      ;; SPAN-Ai Targeted Sweep Products
@@ -109,15 +109,15 @@ pro spp_swp_startup, spanai = spanai,$
      ;;----------------------------------------------------------------------------------------------------------------------------------
      ;; Product Decommutators
      ;;----------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'360'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'361'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_p2_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'362'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_p3_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'363'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_p4_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'360'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_full_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'361'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_full_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'362'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_targ_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'363'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_targ_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
 
-     spp_apid_data,'364'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'365'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_p2_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'366'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_p3_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'367'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_p4_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'364'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_full_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'365'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_full_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'366'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_targ_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'367'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_targ_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
   
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Memory Dump
@@ -127,6 +127,7 @@ pro spp_swp_startup, spanai = spanai,$
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Slow Housekeeping
      ;;----------------------------------------------------------------------------------------------------------------------------------------
+     ;spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v3d_decom',tname='spp_spanae_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v43x_decom',tname='spp_spanae_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;-----------------------------------------------------------------------------------------------------------------------------------------

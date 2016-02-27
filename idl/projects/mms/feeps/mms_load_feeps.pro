@@ -18,12 +18,12 @@
 ;                       If no value is given the default is 'electron'.
 ;         data_rate:    instrument data rates for feeps include 'brst' 'srvy'. The
 ;                       default is 'srvy'.
+;         data_units:   specify units for omni-directional calculation and spin averaging
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         source:       specifies a different system variable. By default the MMS mission 
 ;                       system variable is !mms
-;         get_support_data: not yet implemented. when set this routine will load any support data
-;                       (support data is specified in the CDF file)
+;         get_support_data: load support data (defined by support_data attribute in the CDF)
 ;         tplotnames:   names for tplot variables
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're using 
 ;                       this load routine from a terminal without an X server runningdo not set 
@@ -36,6 +36,11 @@
 ;                       preserving original tplot variable.
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
+;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
+;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
+;         latest_version: only grab the latest CDF version in the requested time interval 
+;                       (e.g., /latest_version)
+;         min_version:  specify a minimum CDF version # to load 
 ;
 ; OUTPUT:
 ;  
@@ -59,8 +64,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-24 08:51:46 -0800 (Wed, 24 Feb 2016) $
-;$LastChangedRevision: 20146 $
+;$LastChangedDate: 2016-02-26 14:18:24 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20223 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -93,12 +98,12 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     for probe_idx = 0, n_elements(probes)-1 do begin
       this_probe = string(probes[probe_idx])
       ; split the extra integral channel from all of the spectrograms
-      mms_feeps_split_integral_ch, ['count_rate', 'intensity', 'counts'], datatype, this_probe, $
-        suffix = suffix, data_rate = data_rate
+      mms_feeps_split_integral_ch, ['count_rate', 'intensity'], datatype, this_probe, $
+        suffix = suffix, data_rate = data_rate, level = level
         
       ; remove the sunlight contamination
-      mms_feeps_remove_sun, probe = this_probe, datatype = datatype, $
-          data_rate = data_rate, suffix = suffix, data_units = ['count_rate', 'intensity', 'counts']
+      mms_feeps_remove_sun, probe = this_probe, datatype = datatype, level = level, $
+          data_rate = data_rate, suffix = suffix, data_units = ['count_rate', 'intensity']
 
       ; calculate the omni-directional spectra
       mms_feeps_omni, this_probe, datatype = datatype, tplotnames = tplotnames, data_units = data_units, $

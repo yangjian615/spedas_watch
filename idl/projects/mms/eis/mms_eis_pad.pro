@@ -29,8 +29,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp and Ian Cohen (APL)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 15:07:50 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19941 $
+;$LastChangedDate: 2016-02-26 11:45:05 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20210 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -40,6 +40,7 @@
 ;       + 2016-1-8, egrimes         : moved eis_pabin_info, mms_eis_pad_spinavg into separate routines; changed stops to returns
 ;       + 2016-01-26, I. Cohen      : added scope_suffix definition to allow for distinction between single telescope PADs
 ;                                   : added to call to mms_eis_pad_spinavg.pro
+;       + 2016-02-26, I. Cohen      : changed 'cps' units_label from 'Counts/s' to '1/s' for compliance with mission standards
 ;-
 
 pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = data_rate, $
@@ -60,7 +61,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
     if datatype eq 'electronenergy' then ion_type = 'electron'
    
     ; would be good to get this from the metadata eventually
-    units_label = data_units eq 'cps' ? 'Counts/s': '#/(cm!U2!N-sr-s-keV)'
+    units_label = data_units eq 'cps' ? '1/s': '1/(cm!U2!N-sr-s-keV)'
     if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_' else prefix = 'mms'+probe+'_epd_eis_'
     ;suffix = '_spin'
     suffix = ''
@@ -89,7 +90,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
       status = 0
       return
     endif
-   
+
     ; if data exists continue
     if status ne 0 then begin
       for ion_type_idx = 0, n_elements(ion_type)-1 do begin
@@ -107,11 +108,20 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
           for t=0, n_elements(scopes)-1 do begin
             get_data, prefix + datatype + '_pitch_angle_t'+scopes[t]+suffix, data = d
             pa_file[*,t] = reform(d.y)
-         
+
+            ; use wild cards to figure out what this variable name should be for telescope 0
+            this_variable = tnames(prefix + datatype + '_' + ion_type[ion_type_idx] + '*_' + data_units + '_t0'+suffix)
+            
+            ; get the P# value from the name of telescope 0:
+            pval_num_in_name = data_rate eq 'brst' ? 6 : 5
+            pvalue = (strsplit(this_variable, '_', /extract))[pval_num_in_name]
+            if pvalue ne data_units then pvalue = pvalue + '_' else pvalue = ''
+
           ; get flux from each detector
-            get_data, prefix + datatype + '_' + ion_type[ion_type_idx] + '_' + data_units + '_t'+scopes[t]+suffix, data = d
-           
-            dprint, dlevel=1, prefix + datatype + '_' + ion_type[ion_type_idx] + '_' + data_units + '_t'+scopes[t]+suffix
+            get_data, prefix + datatype + '_' + ion_type[ion_type_idx] + '_' + pvalue + data_units + '_t'+scopes[t]+suffix, data = d
+
+            dprint, dlevel=1, prefix + datatype + '_' + ion_type[ion_type_idx] + '_' + pvalue + data_units + '_t'+scopes[t]+suffix
+            
             ; get energy range of interest
             e = d.v
             indx = where((e lt energy[1]) and (e gt energy[0]), energy_count)

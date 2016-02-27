@@ -22,8 +22,8 @@
 ; OUTPUT:
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 15:07:50 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19941 $
+;$LastChangedDate: 2016-02-26 11:45:05 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20210 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad_spinavg.pro $
 ;
 ; REVISION HISTORY:
@@ -45,7 +45,7 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
   if undefined(scopes) then scopes = ['0','1','2','3','4','5']
 
   en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV'
-  units_label = data_units eq 'cps' ? 'Counts/s': '#/(cm!U2!N-sr-s-keV)'
+  units_label = data_units eq 'cps' ? '1/s': '1/(cm!U2!N-sr-s-keV)'
 
   if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_'+datatype+'_' else prefix = 'mms'+probe+'_epd_eis_'+datatype+'_'
   if (n_elements(scopes) eq 1) then scope_suffix = '_t'+scopes else if (n_elements(scopes) eq 6) then scope_suffix = '_omni'

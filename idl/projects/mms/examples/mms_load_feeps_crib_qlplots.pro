@@ -6,13 +6,14 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-25 14:15:59 -0800 (Thu, 25 Feb 2016) $
-; $LastChangedRevision: 20189 $
+; $LastChangedDate: 2016-02-26 08:16:57 -0800 (Fri, 26 Feb 2016) $
+; $LastChangedRevision: 20208 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_feeps_crib_qlplots.pro $
 ;-
 
 probe = '1'
-timespan, '2015-12-15', 1
+date = '2015-12-15'
+timespan, date, 1
 width = 950
 height = 1000
 ; options:
@@ -95,4 +96,8 @@ tplot, [['mms_bss_burst', 'mms_bss_fast'], $
                     '_dfg_srvy_dmpa_clipped' $
                     ]], var_label=position_vars
 
+if send_plots_to eq 'png' then begin
+  thm_gen_multipngplot, 'mms'+probe+'_', date, directory = plot_directory, /mkdir
+endif
+if postscript then tprint, plot_directory + 'mms'+probe+'_feeps_qlplots"
 end

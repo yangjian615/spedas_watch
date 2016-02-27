@@ -11,12 +11,13 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-24 07:57:59 -0800 (Wed, 24 Feb 2016) $
-; $LastChangedRevision: 20142 $
+; $LastChangedDate: 2016-02-26 14:18:24 -0800 (Fri, 26 Feb 2016) $
+; $LastChangedRevision: 20223 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
-pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_units, data_rate = data_rate, suffix = suffix
+pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_units, $
+    data_rate = data_rate, level = level, suffix = suffix
     if undefined(data_units) then data_units = 'flux'
     if undefined(suffix) then suffix = ''
     if undefined(data_rate) then data_rate = 'srvy'
@@ -41,10 +42,14 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         these_units = data_units[data_units_idx]
         
         if these_units eq 'cps' then these_units = 'count_rate'
+        ; added datatype to the name for L2 data
+        if level eq 'l2' then these_units = datatype + '_' + these_units
         
         ; top sensors
         for sensor_idx = 0, n_elements(sensors)-1 do begin
           var_name = 'mms'+probe+'_epd_feeps_top_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
+          if level eq 'l2' then var_name = strlowcase(var_name)
+          
           get_data, var_name+suffix, data = top_data, dlimits=top_dlimits
           if mask_sectors.haskey('mms'+probe+'imaskt'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]] ne !NULL then begin
             bad_sectors = mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]]
@@ -62,6 +67,8 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         ; bottom sensors
         for sensor_idx = 0, n_elements(sensors)-1 do begin
           var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
+          if level eq 'l2' then var_name = strlowcase(var_name)
+          
           get_data, var_name+suffix, data = bottom_data, dlimits=bottom_dlimits
           if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
             bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]

@@ -4,19 +4,33 @@
 ;
 ; PURPOSE:
 ;       Calculates the omni-directional flux for all 24 sensors
-;
+; INPUT:
+;       probe:      spacecraft # (1, 2, 3, or 4)
+; 
+; KEYWORDS:
+; 
+;       datatype:   feeps data types include ['electron', 'electron-bottom', 'electron-top',
+;                   'ion', 'ion-bottom', 'ion-top'].
+;                   If no value is given the default is 'electron'.
+;       data_rate:  instrument data rates for feeps include 'brst' 'srvy'. The
+;                   default is 'srvy'
+;       tplotnames: names of loaded tplot variables
+;       suffix:     suffix used in call to mms_load_data; required to find the correct 
+;                   variables
+;       data_units: specify units for omni-directional calculation 
+;       
 ; NOTES:
 ;       Originally based on Brian Walsh's EIS code from 7/29/2015
 ;
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-25 14:06:17 -0800 (Thu, 25 Feb 2016) $
-; $LastChangedRevision: 20188 $
+; $LastChangedDate: 2016-02-25 20:44:48 -0800 (Thu, 25 Feb 2016) $
+; $LastChangedRevision: 20205 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
-  if undefined(probe) then probe = '1'
+  if undefined(probe) then probe = '1' else probe = strcompress(string(probe))
   ; default to electrons
   if undefined(datatype) then datatype = 'electron'
   if undefined(suffix) then suffix = ''

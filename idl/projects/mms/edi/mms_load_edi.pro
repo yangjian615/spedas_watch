@@ -21,8 +21,7 @@
 ;                       *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         source:       specifies a different system variable. By default the MMS mission 
 ;                       system variable is !mms
-;         get_support_data: not yet implemented. when set this routine will load any 
-;                       support data (support data is specified in the CDF file)
+;         get_support_data: load support data (defined by support_data attribute in the CDF)
 ;         tplotnames:   names for tplot variables
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
 ;                       using this load routine from a terminal without an X server running
@@ -36,6 +35,10 @@
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
 ;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
+;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
+;         latest_version: only grab the latest CDF version in the requested time interval
+;                       (e.g., /latest_version)
+;         min_version:  specify a minimum CDF version # to load
 ;
 ; OUTPUT:
 ;
@@ -47,8 +50,8 @@
 ;                trange=['2015-09-03', '2015-09-04']
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-08 10:39:47 -0800 (Fri, 08 Jan 2016) $
-;$LastChangedRevision: 19700 $
+;$LastChangedDate: 2016-02-25 20:31:02 -0800 (Thu, 25 Feb 2016) $
+;$LastChangedRevision: 20204 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edi/mms_load_edi.pro $
 ;-
 
@@ -101,7 +104,8 @@ pro mms_load_edi, trange = trange, probes = probes, datatype = datatype, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
-    varformat = varformat, cdf_filenames = cdf_filenames
+    varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+    latest_version = latest_version, min_version = min_version
 
     if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
@@ -114,7 +118,8 @@ pro mms_load_edi, trange = trange, probes = probes, datatype = datatype, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
-        no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames
+        no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
     
     mms_edi_set_metadata, tplotnames, data_rate=data_rate, suffix=suffix
 

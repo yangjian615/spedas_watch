@@ -3,7 +3,7 @@
 ;         mms_load_fgm
 ;         
 ; PURPOSE:
-;         Load MMS AFG and/or DFG data
+;         Load MMS magnetometer data
 ; 
 ; KEYWORDS:
 ;         trange:       time range of interest [starttime, endtime] with the format 
@@ -11,18 +11,18 @@
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. 
 ;                       if no probe is specified the default is probe '1'
-;         level:        indicates level of data processing. fgm levels include 'l1a', 'l1b',
-;                        'ql'. the default if no level is specified is 'ql'
+;         level:        indicates level of data processing. fgm levels include 'l1a', 'l1b', 'l2' and
+;                        'ql'. the default if no level is specified is 'l2'
 ;         datatype:     currently all data types for fgm are retrieved (datatype not specified)
 ;         data_rate:    instrument data rates for fgm include 'brst' 'fast' 'slow' 'srvy'. The
 ;                       default is 'srvy'.
-;         instrument:   fgm instruments are 'dfg' and 'afg'. default value is 'dfg'
+;         instrument:   fgm instruments are 'fgm', 'dfg' and 'afg'. default value is 'fgm'; you probably
+;                       shouldn't be using 'dfg' or 'afg' without talking to the instrument team
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         source:       specifies a different system variable. By default the MMS mission system 
 ;                       variable is !mms
-;         get_support_data: not yet implemented. when set this routine will load any support data
-;                       (support data is specified in the CDF file)
+;         get_support_data: load support data (defined by support_data attribute in the CDF)
 ;         tplotnames:   names for tplot variables
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're using 
 ;                       this load routine from a terminal without an X server runningdo not set colors
@@ -35,26 +35,29 @@
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
 ;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
+;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
+;         latest_version: only grab the latest CDF version in the requested time interval 
+;                       (e.g., /latest_version)
+;         min_version:  specify a minimum CDF version # to load 
 ;             
 ; OUTPUT:
 ; 
 ; EXAMPLE:
 ;     For examples see crib sheets mms_load_fgm_crib.pro, and mms_load_fgm_brst_crib.pro
 ;     
-;     load MMS AFG burst data for MMS 1
-;     MMS>  mms_load_fgm, probes=['1'], instrument='afg', data_rate='brst', level='ql'
+;     load MMS FGM burst data for MMS 1
+;     MMS>  mms_load_fgm, probes=['1'], data_rate='brst'
 ;     
-;     load MMS QL DFG data for MMS 1 and MMS 2
-;     MMS>  mms_load_dfg, probes=[1, 2], trange=['2015-06-22', '2015-06-23'], level='ql'
+;     load MMS FGM data for MMS 1 and MMS 2
+;     MMS>  mms_load_fgm, probes=[1, 2], trange=['2015-06-22', '2015-06-23']
 ;
 ; NOTES:
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
-;     2) This routine is meant to be called from mms_load_afg and mms_load_dfg
 ;     
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-12 11:21:57 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19973 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-02-26 13:35:52 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20220 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -76,12 +79,9 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     ; default to QL if the trange is within the last 2 weeks, L2pre if older
     if undefined(level) then begin 
         fourteen_days_ago = systime(/seconds)-60*60*24.*14.
-        if trange[1] ge fourteen_days_ago then level = 'ql' else level = 'l2pre'
+        if trange[1] ge fourteen_days_ago then level = 'ql' else level = 'l2'
     endif else level = strlowcase(level)
-    if undefined(instrument) then begin
-        dprint, dlevel = 0, 'Error, must provide an instrument (currently afg or dfg) to mms_load_fgm'
-        return
-    endif
+    if undefined(instrument) then instrument = 'fgm'
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix = ''
 

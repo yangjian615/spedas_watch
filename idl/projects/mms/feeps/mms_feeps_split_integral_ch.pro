@@ -6,12 +6,13 @@
 ;    this function splits the last integral channel from the FEEPS spectra
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-24 08:19:28 -0800 (Wed, 24 Feb 2016) $
-;$LastChangedRevision: 20144 $
+;$LastChangedDate: 2016-02-26 14:18:24 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20223 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
-pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_rate = data_rate
+pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_rate = data_rate, level = level
+  if undefined(level) then level = 'l2'
   if undefined(species) then species = 'electron' ; default to electrons
   if undefined(probe) then probe = '1' ; default to probe 1
   if undefined(suffix) then suffix = ''
@@ -26,15 +27,21 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
   if data_rate eq 'brst' && species eq 'ion' then sensors = ['6','7','8']
 
   for type_idx = 0, n_elements(types)-1 do begin
-    type = types[type_idx]
+    type = level eq 'l2' ? species+'_'+types[type_idx] : types[type_idx]
     for sensor_idx = 0, n_elements(sensors)-1 do begin
       top_name = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx]), /rem)
       bottom_name = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx]), /rem)
+      if level eq 'l2' then top_name = strlowcase(top_name)
+      if level eq 'l2' then bottom_name = strlowcase(bottom_name)
+      
       get_data, top_name+suffix, data=top_data, dlimits=top_dl
       get_data, bottom_name+suffix, data=bottom_data, dlimits=bottom_dl
   
       top_name_out = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
       bottom_name_out = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
+      if level eq 'l2' then top_name_out = strlowcase(top_name_out)
+      if level eq 'l2' then bottom_name_out = strlowcase(bottom_name_out)
+      
       store_data, top_name_out+suffix, data={x: top_data.X, y: top_data.Y[*, 0:n_elements(top_data.V)-2], v: top_data.V[0:n_elements(top_data.V)-2]}, dlimits=top_dl
       store_data, bottom_name_out+suffix, data={x: bottom_data.X, y: bottom_data.Y[*, 0:n_elements(bottom_data.V)-2], v: bottom_data.V[0:n_elements(bottom_data.V)-2]}, dlimits=bottom_dl
      

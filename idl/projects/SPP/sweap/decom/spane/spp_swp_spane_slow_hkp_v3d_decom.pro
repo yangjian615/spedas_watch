@@ -13,7 +13,8 @@ function spp_swp_spane_slow_hkp_v3d_decom,ccsds , ptp_header=ptp_header, apdat=a
   psize = 113                   ; REV ???????
   psize = 117                   ; REV 3B
   psize = 133                   ; rev 3d
-  
+
+
   if n_elements(b) ne psize+7 then begin
      dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
      stop

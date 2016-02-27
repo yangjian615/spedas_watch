@@ -31,9 +31,12 @@
 ;         suffix: append a suffix to tplot variables names
 ;         varformat: should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
-; 
-; OUTPUT:
-; 
+;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
+;         latest_version: only grab the latest CDF version in the requested time interval
+;                       (e.g., /latest_version)
+;         min_version:  specify a minimum CDF version # to load
+;         
+;         
 ; EXAMPLE:
 ;     See the instrument specific crib sheets in the examples/ folder for usage examples
 ; 
@@ -85,8 +88,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-23 19:55:35 -0800 (Tue, 23 Feb 2016) $
-;$LastChangedRevision: 20126 $
+;$LastChangedDate: 2016-02-25 20:44:48 -0800 (Thu, 25 Feb 2016) $
+;$LastChangedRevision: 20205 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
