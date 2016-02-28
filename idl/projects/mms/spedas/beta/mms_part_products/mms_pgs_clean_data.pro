@@ -26,9 +26,9 @@
 ;  -use for fpi and hpca for now
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-15 11:37:57 -0800 (Fri, 15 Jan 2016) $
-;$LastChangedRevision: 19748 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-02-26 18:33:58 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20235 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_clean_data.pro $
 ;
 ;-
@@ -44,6 +44,10 @@ pro mms_pgs_clean_data, data_in, output=output,units=units
   output= {  $
     time: data.time, $
     end_time:data.end_time, $
+    charge:data.charge, $
+    mass:data.mass,$
+    magf:[0.,0.,0.],$
+    sc_pot:0.,$
     scaling:fltarr(dims[0],dims[1]*dims[2])+1,$
     units:units,$
     data: reform(data.data,dims[0],dims[1]*dims[2]), $
@@ -55,6 +59,10 @@ pro mms_pgs_clean_data, data_in, output=output,units=units
     theta:reform(data.theta,dims[0],dims[1]*dims[2]), $
     dtheta:reform(data.dtheta,dims[0],dims[1]*dims[2]) $
   }
- 
 
+  de = output.energy-shift(output.energy,1,0)
+  output.denergy=shift((de+shift(de,1,0))/2.,-1)
+  output.denergy[0,*] = de[1,*] ;just have to make a guess at the edges(bottom edge)
+  output.denergy[dims[0]-1,*] = de[dims[0]-1,*] ;just have to make a guess at the edges(top edge)
+ 
 end

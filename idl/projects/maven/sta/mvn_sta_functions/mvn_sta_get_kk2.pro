@@ -30,13 +30,13 @@ if time_double(time) lt time_double('2015-12-16') then begin				; this works for
 	t0 = time_double('2015-12-09')
 	t1 = time_double('2015-12-16')
 	kk2= 2.5 + (-4.0)*(time_double(time)-t0)/(t1-t0)	> 1.5				; works for 20151209-10 and 1.2*ngi_o2_cnts/(500.-45.*(pot<3.))
-	kk2= 3.5
+;	kk2= 3.5
 endif
 if time_double(time) lt time_double('2015-12-02') then begin				; this works for 11-25,11-30
 	t0 = time_double('2015-11-25')
 	t1 = time_double('2015-12-02')
-;	kk2= (3.5 + (-.8)*(time_double(time)-t0)/(t1-t0)) >3.0
-	kk2= 3.8
+	kk2= (3.5 + (-.8)*(time_double(time)-t0)/(t1-t0)) >3.0
+;	kk2= 3.8
 endif
 if time_double(time) lt time_double('2015-11-18') then begin				; this works for 11-11 to 11-18
 	t0 = time_double('2015-11-11')
@@ -65,10 +65,59 @@ if time_double(time) lt time_double('2015-09-23') then kk2=3.5
 if time_double(time) lt time_double('2015-09-09') then kk2=3.8
 if time_double(time) lt time_double('2015-08-26') then kk2=4.0
 if time_double(time) lt time_double('2015-08-12') then kk2=4.5
-if time_double(time) lt time_double('2015-07-29') then kk2=4.5
+
+if time_double(time) lt time_double('2015-08-10') then kk2=4.5				; works ok   for 20150809
+
+if time_double(time) lt time_double('2015-08-05') then kk2=4.7				; guess
+
+if time_double(time) lt time_double('2015-07-31') then kk2=5.0				; works ok   for 20150730
+
+if time_double(time) lt time_double('2015-07-25') then kk2=5.2				; guess
+
+if time_double(time) lt time_double('2015-07-20') then kk2=5.5				; works ok   for 20150719
+
+if time_double(time) lt time_double('2015-07-16') then kk2=5.5				; guess
+if time_double(time) lt time_double('2015-07-13') then kk2=6.0				; guess
+if time_double(time) lt time_double('2015-07-10') then kk2=6.5				; guess 
+
+if time_double(time) lt time_double('2015-07-07') then kk2=7.0				; works poorly   20150704 
+
+if time_double(time) lt time_double('2015-06-26') then kk2=6.5				; guess 
+if time_double(time) lt time_double('2015-06-16') then kk2=6.0				; guess 
+if time_double(time) lt time_double('2015-06-06') then kk2=5.5				; guess 
 
 
-if time_double(time) lt time_double('2015-01-01') then kk2=1.5				; 
+if time_double(time) lt time_double('2015-05-26') then kk2=5.0				; works ok   for 20150525 on orbits where -1.5V>pot
+
+if time_double(time) lt time_double('2015-04-27') then kk2=5.0				; works ok   for 20150426 on orbits where -1.5V>pot
+
+if time_double(time) lt time_double('2015-03-20') then kk2=4.7				; works ok   for 20150319 on even orbits where -1.5V=pot
+if time_double(time) lt time_double('2015-03-13') then kk2=4.7				; works ok   for 20150312 -1.5V=pot
+if time_double(time) lt time_double('2015-02-23') then kk2=4.6				; works ok   for 20150222 on even orbits where -1.5V=pot
+if time_double(time) lt time_double('2015-02-11') then kk2=4.5				; works well for 20150209
+
+
+if time_double(time) lt time_double('2015-01-24') then kk2=4.1				; works well for 20150123
+
+if time_double(time) lt time_double('2015-01-19') then kk2=3.6				; works well for 20150118
+
+if time_double(time) lt time_double('2015-01-09') then kk2=3.1				; works well for 20150108
+
+if time_double(time) lt time_double('2015-01-03') then kk2=3.0				; works well for 20150102
+
+if time_double(time) lt time_double('2014-12-26') then kk2=2.5				; guess
+
+if time_double(time) lt time_double('2014-12-21') then kk2=2.0				; works well for 20141220
+
+if time_double(time) lt time_double('2014-12-15') then kk2=1.5				; guess
+
+;if time_double(time) lt time_double('2014-12-10') then kk2=1.0				; works well for 20141209, check this later
+
+if time_double(time) lt time_double('2014-12-01') then kk2=1.5				; works well for 20141130
+
+if time_double(time) lt time_double('2014-11-27') then kk2=0.5				; guess
+
+if time_double(time) lt time_double('2014-11-17') then kk2=0.				; attE is leaking - no obvious ion suppression
 
 
 return,kk2

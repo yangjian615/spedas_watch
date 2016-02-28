@@ -17,8 +17,8 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedDate: 2016-02-10 19:04:54 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19950 $
+;$LastChangedDate: 2016-02-26 18:33:58 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20235 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 
@@ -217,21 +217,21 @@ pro mms_part_products, $
     ;remove FAC outputs if there was an error, return if no outputs remain
     if undefined(fac_matrix) then begin
       outputs_lc = ssl_set_complement(['pa','gyro','fac_energy'],outputs_lc)
-      if array_equal(outputs_lc,-1) then begin
+      if ~is_string(outputs_lc) then begin
         return
       endif
     endif
   endif
 ;  
 ;  ;get support data for moments calculation
-;  if in_set(outputs_lc,'moments') then begin
-;    if units_lc ne 'eflux' then begin
-;      dprint,dlevel=1,'Warning: Moments can only be calculated if data is in eflux.  Skipping product.'
-;      outputs_lc[where(outputs_lc eq 'moments')] = ''
-;    endif else begin
-;      mms_pgs_clean_support, times, probe_lc, mag_name, sc_pot_name, mag_out=mag_data, sc_pot_out=sc_pot_data
-;    endelse
-;  endif
+  if in_set(outputs_lc,'moments') then begin
+    if units_lc ne 'eflux' then begin
+      dprint,dlevel=1,'Warning: Moments can only be calculated if data is in eflux.  Skipping product.'
+      outputs_lc[where(outputs_lc eq 'moments')] = ''
+    endif else begin
+      mms_pgs_clean_support, times, probe, mag_name, sc_pot_name, mag_out=mag_data, sc_pot_out=sc_pot_data
+    endelse
+  endif
 
 
   ;--------------------------------------------------------
@@ -265,10 +265,10 @@ pro mms_part_products, $
     
     ;Calculate moments
     ;  -data must be in 'eflux' units 
-;    if in_set(outputs_lc, 'moments') then begin
-;      thm_pgs_moments, clean_data, moments=moments, sigma=mom_sigma,delta_times=delta_times, get_error=get_error, mag_data=mag_data, sc_pot_data=sc_pot_data, index=i , _extra = ex
-;    endif 
-   
+    if in_set(outputs_lc, 'moments') then begin
+      spd_pgs_moments, clean_data, moments=moments, delta_times=delta_times, get_error=get_error, mag_data=mag_data, sc_pot_data=sc_pot_data, index=i , _extra = ex
+    endif 
+
     ;Build theta spectrogram
     if in_set(outputs_lc, 'theta') then begin
       spd_pgs_make_theta_spec, clean_data, spec=theta_spec, yaxis=theta_y
@@ -382,10 +382,10 @@ pro mms_part_products, $
   endif
   
   ;Moments Variables
-;  if ~undefined(moments) then begin
-;    moments.time = times
-;    thm_pgs_moments_tplot, moments, prefix=tplot_mom_prefix, suffix=suffix, tplotnames=tplotnames
-;  endif
+  if ~undefined(moments) then begin
+    moments.time = times
+    spd_pgs_moments_tplot, moments, prefix=tplot_prefix, suffix=suffix, tplotnames=tplotnames
+  endif
 ;  
 ;  ;Moments Error Esitmates
 ;  if ~undefined(mom_sigma) then begin

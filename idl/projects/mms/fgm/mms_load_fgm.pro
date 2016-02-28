@@ -11,8 +11,7 @@
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. 
 ;                       if no probe is specified the default is probe '1'
-;         level:        indicates level of data processing. fgm levels include 'l1a', 'l1b', 'l2' and
-;                        'ql'. the default if no level is specified is 'l2'
+;         level:        indicates level of data processing. the default if no level is specified is 'l2'
 ;         datatype:     currently all data types for fgm are retrieved (datatype not specified)
 ;         data_rate:    instrument data rates for fgm include 'brst' 'fast' 'slow' 'srvy'. The
 ;                       default is 'srvy'.
@@ -56,8 +55,8 @@
 ;     
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 13:35:52 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20220 $
+;$LastChangedDate: 2016-02-27 08:03:42 -0800 (Sat, 27 Feb 2016) $
+;$LastChangedRevision: 20239 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 

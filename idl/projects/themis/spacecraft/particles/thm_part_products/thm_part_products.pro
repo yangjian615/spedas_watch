@@ -17,9 +17,9 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-22 16:52:39 -0800 (Fri, 22 Jan 2016) $
-;$LastChangedRevision: 19800 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-02-26 18:33:58 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20235 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -369,7 +369,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     ;Calculate moments
     ;  -data must be in 'eflux' units 
     if in_set(outputs_lc, 'moments') then begin
-      thm_pgs_moments, clean_data, moments=moments, sigma=mom_sigma,delta_times=delta_times, get_error=get_error, mag_data=mag_data, sc_pot_data=sc_pot_data, index=i , _extra = ex
+      spd_pgs_moments, clean_data, moments=moments, sigma=mom_sigma,delta_times=delta_times, get_error=get_error, mag_data=mag_data, sc_pot_data=sc_pot_data, index=i , _extra = ex
     endif 
    
     ;Build theta spectrogram

@@ -26,8 +26,8 @@
 ;    
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-12-11 14:25:49 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19614 $
+;$LastChangedDate: 2016-02-26 18:33:58 -0800 (Fri, 26 Feb 2016) $
+;$LastChangedRevision: 20235 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_clean_support.pro $
 ;-
 
@@ -51,7 +51,7 @@ pro mms_pgs_clean_support, times, $
     if (tnames(mag_tvar_in))[0] ne '' then begin
       ;Sanitize magnetic field data
       mag_temp = mag_tvar_in + '_pgs_temp'
-      ;mms_cotrans,mag_tvar_in,mag_temp,out_coord='dmpa',probe=probe
+      mms_cotrans,mag_tvar_in,mag_temp,out_coord='dmpa',probe=probe
       tinterpol_mxn,mag_temp,times,newname=mag_temp,/nan_extrapolate
   
       ;Pass out mag data

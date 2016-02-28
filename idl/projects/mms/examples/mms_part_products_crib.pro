@@ -6,9 +6,9 @@
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate pitch angle and gyrophase distributions
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-10 19:23:21 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19951 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-02-27 08:50:32 -0800 (Sat, 27 Feb 2016) $
+;$LastChangedRevision: 20243 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_part_products_crib.pro $
 ;
 ;-
@@ -20,14 +20,12 @@
   ;clear data
   del_data,'*'
   ;set time interval
-  probe='3'
+  probe='1'
   species='e'
   rate='brst'
-  ;timespan,'2015-09-21/13:52', 2, /min
-  ;trange = timerange()
-  ;trange = ['2015-09-19/09:08:13', '2015-09-19/09:09']
-  ;trange = ['2015-09-19/09:08:48', '2015-09-19/09:09:00']
-  trange = ['2015-09-19/09:08:00', '2015-09-19/09:08:15']
+  level = 'l2'
+
+  trange = ['2016-01-20/19:50:00', '2016-01-20/20:00:00']
   timespan,trange
   
   level = 'def'     ; 'pred'
@@ -36,28 +34,36 @@
   mms_load_state, probes=probe, level=level
 
   ;load particle data
-  mms_load_fpi, data_rate=rate, level='l1b', datatype='d'+species+'s-dist', $
+  mms_load_fpi, data_rate=rate, level='l2', datatype='d'+species+'s-dist', $
     probe=probe, trange=trange
     
   ;load magnetic field data
-  mms_load_dfg, probe=probe, trange=trange 
+  mms_load_fgm, probe=probe, trange=trange, /no_att, level='l2'
  
   ;Until coordinate systems are properly labeled in mms metadata, this variable must be dmpa
-  bname = 'mms'+probe+'_dfg_srvy_l2pre_dmpa_bvec'
+  bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
   
   ;Not all mms position data have coordinate systems labeled in metadata, this one does
   pos_name = 'mms' + probe+ '_defeph_pos'
   
   ;convert particle data to 3D structures
-  name =  'mms'+probe+'_d'+species+'s_'+rate+'SkyMap_dist'
+  ; the following name is valid in the L1b files:
+  ;name =  'mms'+probe+'_d'+species+'s_'+rate+'SkyMap_dist'
+  ; and this one is valid for L2 data:
+  name = 'mms'+probe+'_d'+species+'s_dist_'+rate
  
-  mms_part_products,name,mag_name=bname,pos_name=pos_name,trange=trange,outputs=['phi','theta','pa','gyro','energy'],probe=probe
+  mms_part_products,name,mag_name=bname,pos_name=pos_name,trange=trange,outputs=['phi','theta','pa','gyro','energy', 'moments'],probe=probe
 
   tplot,name+'_'+['energy','theta','phi','pa','gyro']
-  tlimit,['2015-09-19/09:08:14', '2015-09-19/09:08:15'] 
+  tlimit,['2016-01-20/19:50:00', '2016-01-20/20:00:00']
 
   stop
  
+  ; plot the moments
+  window, 1
+  tplot, name+'_'+['density', 'avgtemp']
+  
+  stop
 
 ;===================================
 ; HPCA
@@ -89,10 +95,10 @@
   mms_load_state, probes=probe, trange=trange
 
   ;load magnetic field data (for field aligned coordinates)
-  mms_load_dfg, probe=probe, trange=trange 
+  mms_load_fgm, probe=probe, trange=trange, /no_att, level='l2'
  
   ;until coordinate systems are properly labeled in mms metadata, this variable must be dmpa
-  bname = 'mms'+probe+'_dfg_srvy_l2pre_dmpa_bvec'
+  bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
   
   ;not all mms position data have coordinate systems labeled in metadata, this one does
   pos_name = 'mms' + probe+ '_defeph_pos'
@@ -101,12 +107,8 @@
   name =  'mms'+probe+'_hpca_'+species+'_vel_dist_fn'
  
   mms_part_products, name, mag_name=bname, pos_name=pos_name, trange=trange,$
-                    outputs=['phi','theta','pa','gyro','energy'],probe=probe
+                    outputs=['phi','theta','pa','gyro','energy', 'moments'],probe=probe
 
   tplot,name+'_'+['energy','theta','phi','pa','gyro']
-
-  
-
-  
 
 end

@@ -40,9 +40,9 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 11:47:45 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19843 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_afg.pro $
+;$LastChangedDate: 2016-02-27 08:43:39 -0800 (Sat, 27 Feb 2016) $
+;$LastChangedRevision: 20242 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/depreciated/mms_load_afg.pro $
 ;-
 
 pro mms_load_afg, trange = trange, probes = probes, datatype = datatype, $

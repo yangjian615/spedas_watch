@@ -25,9 +25,9 @@ End
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-02-26 08:57:08 -0800 (Fri, 26 Feb 2016) $
-; $LastChangedRevision: 20209 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2016-02-27 08:05:34 -0800 (Sat, 27 Feb 2016) $
+; $LastChangedRevision: 20241 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -247,7 +247,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
 ;ephemeris might crash, don't kill the process, jmm, 2016-02-03
      load_position = 'ephemeris_l2'
      mvn_sta_ephemeris_load
-     mvn_sta_scpot_load
+     If(is_struct(mvn_c6_dat)) Then mvn_sta_scpot_load
 skip_ephemeris_l2:
   Endif Else Begin
      mvn_sta_l0_load, files = filex
@@ -261,9 +261,11 @@ skip_ephemeris_l2:
 ;ephemeris might crash, don't kill the process, jmm, 2016-02-03
         load_position = 'ephemeris_l0'
         mvn_sta_ephemeris_load
-;scpot uses c6 eflux
-        mvn_sta_l2eflux, mvn_c6_dat
-        mvn_sta_scpot_load
+;scpot uses c6 eflux, but only if it exists
+        If(is_struct(mvn_c6_dat)) Then Begin
+           mvn_sta_l2eflux, mvn_c6_dat
+           mvn_sta_scpot_load
+        Endif
 skip_ephemeris_l0:
      Endif
   Endelse
