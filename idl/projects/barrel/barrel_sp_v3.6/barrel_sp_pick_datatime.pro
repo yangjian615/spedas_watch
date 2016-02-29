@@ -60,6 +60,8 @@
 ;8/20/15 DMS - fix bug wherein 3/5 fix only applied to
 ;              screen-selected, not predetermined time intervals.
 ;              This reorders operations somewhat 
+;2/26/16 DMS removed extra line "altitude = altsum/altnorm" just
+;            before the end of the procedure (bug found by Brett Anderson)
 
 ;-
 
@@ -122,12 +124,6 @@ barrel_load_data, probe=payload, datatype=['FSPC'], level=level,/no_clobber,$
     version=version,/no_update
 varname='brl'+payload+'_FSPC'+strtrim(lcband,2)   
 tplot_names,varname, NAMES=matches,/ASORT
-if matches eq '' then begin
-     print,'Warning: original LC band '+string(lcband)+' not available, using 1b!'
-     varname='brl'+payload+'_FSPC1b'
-     tplot_names,varname, NAMES=matches,/ASORT
-endif    
-
 if (n_elements(matches) EQ 1) then get_data, matches[0], data=lc $
 else message, 'Bad number of variable name matches: '+ $
         strtrim(n_elements(matches))
@@ -239,7 +235,6 @@ if not keyword_set(altitude) then begin
       altitude = altsum/altnorm
 endif
   
-altitude = altsum/altnorm
 print,'ALTITUDE! ' , altitude
 
 end

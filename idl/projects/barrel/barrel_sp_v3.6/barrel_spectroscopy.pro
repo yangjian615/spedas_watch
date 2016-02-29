@@ -2,6 +2,10 @@
 ;            - also how lat/lon are picked for bkg model (now in
 ;              chosen time interval ("source") rather than midpoint of
 ;              returned interval of all data.
+;3/5/15 DMS - purge NaNs from lat & lon for bkg model calculation.
+;             2/26/16 DMS - add "uselog" & "level" options to call to
+;                           barrel_sp_pick_datatime; should have been
+;                           there already (found by Brett Anderson)
 
 pro barrel_spectroscopy,$
    specstruct,$                              ;output structure
@@ -28,7 +32,7 @@ pro barrel_spectroscopy,$
 if not keyword_set(lcband) then lcband=1
 if not keyword_set(uselog) then uselog=0
 if not keyword_set(slow) then slow=0
-if not keyword_set(version) then version='v05'
+if not keyword_set(version) then version='.v02'
 if not keyword_set(level) then level=2
 if not keyword_set(numsrc) then numsrc=1
 if not keyword_set(bkgmethod) then bkgmethod=1
@@ -58,8 +62,8 @@ specstruct=barrel_sp_make(numsrc=numsrc,numbkg=numbkg,slow=slow)
 
 ;Pick data times graphically (or if not, collect the altitude):
 barrel_sp_pick_datatime,specstruct,date,hours,payload,bkgmethod,version=version,$
-   lcband=lcband,starttimes=starttimes,endtimes=endtimes,startbkgs=startbkgs,$
-   endbkgs=endbkgs,mticks=mticks,sticks=sticks,altitude=altitude
+   lcband=lcband,uselog=uselog,starttimes=starttimes,endtimes=endtimes,startbkgs=startbkgs,$
+   endbkgs=endbkgs,mticks=mticks,sticks=sticks,altitude=altitude,level=level
 
 
 if (not keyword_set(maglat)) and (bkgmethod eq 2) then begin
@@ -77,7 +81,14 @@ if (not keyword_set(maglat)) and (bkgmethod eq 2) then begin
         strtrim(n_elements(matches))
    for ns=0,specstruct.numsrc-1 do begin
       w=where(gpslat.x ge specstruct.trange[0,ns] and gpslat.x le specstruct.trange[1,ns],nw)
-      latsum += total(gpslat.y[w])
+      vals = gpslat.y[w]
+      wbad = where(finite(vals) eq 0,nbad)
+      if nbad gt 0 then begin
+           wfin=where(finite(vals))
+           latave = average( vals[wfin] )
+           vals[wbad] = latave
+      endif
+      latsum += total(vals)
       latnorm += 1.d * nw
    end
    geolat = latsum/latnorm
@@ -91,7 +102,14 @@ if (not keyword_set(maglat)) and (bkgmethod eq 2) then begin
         strtrim(n_elements(matches))
    for ns=0,specstruct.numsrc-1 do begin
       w=where(gpslon.x ge specstruct.trange[0,ns] and gpslon.x le specstruct.trange[1,ns],nw)
-      lonsum += total(gpslon.y[w])
+      vals = gpslon.y[w]
+      wbad = where(finite(vals) eq 0,nbad)
+      if nbad gt 0 then begin
+           wfin=where(finite(vals))
+           lonave = average( vals[wfin] )
+           vals[wbad] = lonave
+      endif
+      lonsum += total(vals)
       lonnorm += 1.d * nw
    end
    geolon = lonsum/lonnorm
