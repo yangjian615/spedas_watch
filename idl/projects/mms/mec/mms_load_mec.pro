@@ -48,8 +48,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 07:49:22 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20207 $
+;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 
@@ -63,7 +63,6 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
     cdf_version = cdf_version, latest_version = latest_version, $
     min_version = min_version, cdf_records = cdf_records
 
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'ephts04d'
     if undefined(level) then level = 'l2'

@@ -7,11 +7,11 @@
 ;   abs_selections
 ; The 'query' is directly passed to the web service.
 ; See the web service documentation for valid query options.
-function download_mms_files, type, query, local_dir=local_dir, latest=latest
+function download_mms_files, type, query, local_dir=local_dir, latest=latest, max_files=max_files
   ;TODO: make sure type is valid
 
   ; Define the maximum number of files to allow.
-  max_files = 500
+  if n_elements(max_files) eq 0 then max_files = 500
 
   ; Set local_dir to current working dir if not specified.
   if n_elements(local_dir) eq 0 then cd, current=local_dir

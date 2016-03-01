@@ -79,8 +79,8 @@
 ;
 ;Written by Hannes Schwarzl.
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-02-25 07:52:49 -0800 (Thu, 25 Feb 2016) $
-; $LastChangedRevision: 20173 $
+; $LastChangedDate: 2016-02-29 13:39:06 -0800 (Mon, 29 Feb 2016) $
+; $LastChangedRevision: 20268 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -118,7 +118,7 @@ pro thm_interpolate_cal_apply, thx_fgx, utcStr=utcStr, offi=offi, cali=cali, nca
   start_time = utcd[idx[0]]
   end_time = utcd[idx[ct-1]]
   
-  fit_count = floor((end_time-start_time)/fit_interval)
+  fit_count = floor((end_time-start_time)/fit_interval)+1
   fit_times = dblarr(fit_count)
   for i=0, fit_count-1 do begin
     fit_times[i] = start_time + fit_interval*i
@@ -138,12 +138,12 @@ pro thm_interpolate_cal_apply, thx_fgx, utcStr=utcStr, offi=offi, cali=cali, nca
   offi[*,0] = new_offi_0
   offi[*,1] = new_offi_1
   offi[*,2] = new_offi_2  
-        
+          
   m = MAKE_ARRAY(ct, 3, 3, /double)
-  for i=0,2 do begin
-    for j=0,2 do begin
-      for k=0, ct-1 do begin
-        m[k,i,j] = cali[idx[k],3*i+j]
+  for k=0, ct-1 do begin
+    for i=0,2 do begin
+      for j=0,2 do begin
+        m[k,j,i] = cali[idx[k],3*i+j]
       endfor
     endfor
   endfor
@@ -162,7 +162,7 @@ pro thm_interpolate_cal_apply, thx_fgx, utcStr=utcStr, offi=offi, cali=cali, nca
     cali_out = qtom(q_out)
     for i=0,2 do begin
       for j=0,2 do begin
-        cali_new[*,3*i+j] = cali_out[*,i,j]
+        cali_new[*,3*i+j] = cali_out[*,j,i]
       endfor
     endfor
   endelse     

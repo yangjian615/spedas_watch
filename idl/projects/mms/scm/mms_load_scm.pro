@@ -12,11 +12,11 @@
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. If 
 ;                       no probe is specified the default is '1'
 ;         level:        indicates level of data processing. scm levels include 'l1a', 'l1b', 
-;                       'l2'. The default if no level is specified is 'l1b'
+;                       'l2'. The default if no level is specified is 'l2'
 ;         datatype:     scm data types include ['cal', 'scb', 'scf', 'schb', 'scm', 'scs'].
-;                       If no value is given the default is scf.
+;                       If no value is given the default is scsrvy for srvy data, and scb for brst data.
 ;         data_rate:    instrument data rates for MMS scm include 'brst' 'fast' 'slow' 'srvy'. 
-;                       The default is 'fast'. 
+;                       The default is 'srvy'. 
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         source:       specifies a different system variable. By default the MMS mission system 
@@ -60,8 +60,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-25 20:27:57 -0800 (Thu, 25 Feb 2016) $
-;$LastChangedRevision: 20203 $
+;$LastChangedDate: 2016-02-29 12:33:20 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20264 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 pro mms_set_scm_options, tplotnames, prefix = prefix,datatype = datatype, coord=coord
@@ -94,13 +94,14 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
                   no_update = no_update, suffix = suffix, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version
-                  
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
+
     if undefined(probes) then probes = ['1'] ; default to MMS 1
-    if undefined(datatype) then datatype = 'scf' 
-    if undefined(level) then level = 'l1b' 
-    if undefined(data_rate) then data_rate = 'fast'
-    if undefined(time_clip) then time_clip = trange  ;to account for tt2000 timerange set in meta data
+    ;if undefined(datatype) then datatype = 'scsrvy'
+    if undefined(level) then level = 'l2'
+    if undefined(data_rate) then data_rate = 'srvy'
+    if data_rate eq 'srvy' then datatype = 'scsrvy'
+    if undefined(datatype) && data_rate eq 'brst' then datatype = 'scb'
+    if undefined(time_clip) then time_clip = 1  ;to account for tt2000 timerange set in meta data
     
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'scm', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

@@ -53,8 +53,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 07:38:06 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20206 $
+;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/aspoc/mms_load_aspoc.pro $
 ;-
 
@@ -68,7 +68,6 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
                   cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version
                   
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     ; for ASPOC data, datatype = instrument
     if undefined(datatype) then instrument = 'aspoc' else instrument = datatype
@@ -86,13 +85,16 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
-        
-    for tvar_idx = 0, n_elements(tplotnames)-1 do begin
-        tvar_name = tplotnames[tvar_idx]
-        if instrument ne 'aspoc' && strfilter(tvar_name, '*_asp_*') ne '' then begin
-            str_replace, tvar_name, '_asp_', '_'+instrument+'_'
-            tplot_rename, tplotnames[tvar_idx], tvar_name
-            tplotnames[tvar_idx] = tvar_name
-        endif
-    endfor
+         
+; Commented out the following because it doesn't seem to help anymore
+; egrimes, 2/29/2016
+; 
+;    for tvar_idx = 0, n_elements(tplotnames)-1 do begin
+;        tvar_name = tplotnames[tvar_idx]
+;        if instrument ne 'aspoc' && strfilter(tvar_name, '*_asp_*') ne '' then begin
+;            str_replace, tvar_name, '_asp_', '_'+instrument+'_'
+;            tplot_rename, tplotnames[tvar_idx], tvar_name
+;            tplotnames[tvar_idx] = tvar_name
+;        endif
+;    endfor
 end

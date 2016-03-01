@@ -60,8 +60,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 12:42:44 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20213 $
+;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -75,16 +75,18 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version
 
-    if undefined(trange_in) then trange = timerange() else trange = timerange(trange_in)
     if undefined(probes) then probes = ['3'] ; default to MMS 3
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
-    if undefined(level) then level = 'sitl' 
+    if undefined(level) then level = 'l2' 
     if undefined(data_rate) then data_rate = 'fast'
     if undefined(autoscale) then autoscale = 1
     ; 2/22/2016 - getting the support data, for grabbing the energy and PA tables
     ; so that we can hard code the variable names for these, instead of hard
     ; coding the tables directly
-    if undefined(get_support_data) then get_support_data = 1
+    if undefined(varformat) then begin
+        ; turn on get_support_data if the user doesn't specify a varformat
+        if undefined(get_support_data) then get_support_data = 1
+    endif
     
     ; different datatypes for burst mode files
     if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
@@ -94,7 +96,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     ; kludge for level = 'sitl' -> datatype shouldn't be defined for sitl data.
     if level eq 'sitl' then datatype = '*'
 
-    mms_load_data, trange = trange, probes = probes, level = level, instrument = 'fpi', $
+    mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $

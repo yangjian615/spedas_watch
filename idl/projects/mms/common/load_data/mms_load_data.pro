@@ -88,8 +88,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-25 20:44:48 -0800 (Thu, 25 Feb 2016) $
-;$LastChangedRevision: 20205 $
+;$LastChangedDate: 2016-02-29 09:18:17 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20254 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -130,7 +130,12 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     spawn, 'echo ' + local_data_dir, local_data_dir
     if is_array(local_data_dir) then local_data_dir = local_data_dir[0]
 
-   ; if undefined(varformat) then varformat = '*'
+    ; varformat and get_support_data are conflicting; warn the user 
+    ; if they're both set, and default to varformat
+    if ~undefined(varformat) && ~undefined(get_support_data) then begin
+        dprint, dlevel = 1, 'Conflicting keywords set (varformat and get_support_data). Using varformat'
+        get_support_data = 0
+    endif
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
       else tr = timerange()

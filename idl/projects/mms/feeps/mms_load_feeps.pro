@@ -64,8 +64,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 14:18:24 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20223 $
+;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -78,7 +78,6 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version
 
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'electron' 
     if undefined(level) then level = 'l1b' 

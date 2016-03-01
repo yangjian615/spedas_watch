@@ -68,8 +68,8 @@
 ;                  mms_eis_omni to address burst variable name changes
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-19 08:17:06 -0800 (Fri, 19 Feb 2016) $
-;$LastChangedRevision: 20066 $
+;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 
@@ -83,15 +83,17 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version
 
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'extof'
     if undefined(level) then level = 'l1b' 
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(data_units) then data_units = 'flux'
     if undefined(suffix) then suffix = ''
-    if undefined(get_support_data) then get_support_data = 1 ; turn on support data by default, need the spin variable for spin averaging
-
+    
+    if undefined(varformat) then begin
+        ; turn on get_support_data if the user doesn't specify a varformat
+        if undefined(get_support_data) then get_support_data = 1 ; turn on support data by default, need the spin variable for spin averaging
+    endif
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'epd-eis', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, $

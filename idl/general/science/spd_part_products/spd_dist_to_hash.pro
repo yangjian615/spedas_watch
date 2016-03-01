@@ -22,8 +22,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-24 11:05:25 -0800 (Wed, 24 Feb 2016) $
-;$LastChangedRevision: 20154 $
+;$LastChangedDate: 2016-02-29 14:52:20 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20269 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_dist_to_hash.pro $
 ;-
 
@@ -36,7 +36,7 @@ if !version.release lt 8.0 then begin
   message, 'IDL 8.0 or higher is required to use this function'
 endif
 
-if ~ptr_valid(d) || ~is_struct(*d[0]) then begin
+if in_set(ptr_valid(d),0) || ~is_struct(*d[0]) then begin
   dprint, dlevel=0, 'Invalid input data'
   return, !null
 endif
@@ -63,17 +63,16 @@ for i=0, n_elements(d)-1 do begin
 
   for j=0, n_elements(*d[i])-1 do begin
 
-    ;TODO: Include fractional seconds once supported by stel3d
     time = time_string( (*d[i])[j].time, /msec )
 
     ;calculate velocity in km/s
-    ;fill counts if not set
     ;use lat instead of co-lat
+    ;fill counts if not set
     out[time] = hash( 'energy', reform( (*d[i])[j].energy ,n), $
                       'v', reform( c * sqrt( 1 - 1/(((*d[i])[j].energy/erest + 1)^2) )  /  1000. ,n), $
                       'azim', reform( (*d[i])[j].phi ,n), $
                       'elev', 90-reform( (*d[i])[j].theta ,n), $
-                      'count', reform( counts_set ? (*counts[i])[j].data : (*d[i])[j].data*0. ,n), $
+                      'count', reform( counts_set ? (*counts[i])[j].data : fltarr(n) ,n), $
                       'psd', reform( (*d[i])[j].data ,n)  )
 
   endfor

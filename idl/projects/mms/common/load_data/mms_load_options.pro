@@ -155,6 +155,7 @@ s = { $
               l1a: [ '' ], $
               l1b: [ '' ], $
               ql: [ '' ], $
+              l2: [''], $
               l2pre: [''] $
             }, $
       fast: { $
@@ -171,6 +172,7 @@ s = { $
               l1a: [ '' ], $
               l1b: [ '' ], $
               ql:  [ '' ], $
+              l2: [''], $
               l2pre: [''] $
             } $
     }
@@ -492,8 +494,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:33:38 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19596 $
+;$LastChangedDate: 2016-02-29 12:42:17 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20266 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_options.pro $
 ;-
 pro mms_load_options, $
@@ -522,6 +524,7 @@ endif
 case strupcase(instrument) of 
   'AFG': s = mms_load_options_fgm()
   'DFG': s = mms_load_options_fgm()
+  'FGM': s = mms_load_options_fgm()
   'EIS': s = mms_load_options_eis()
   'FEEPS': s = mms_load_options_feeps()
   'FPI': s = mms_load_options_fpi()

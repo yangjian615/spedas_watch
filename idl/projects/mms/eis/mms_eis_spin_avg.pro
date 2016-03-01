@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 11:45:05 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20210 $
+;$LastChangedDate: 2016-02-29 08:07:18 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20246 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_spin_avg.pro $
 ;-
 
@@ -46,9 +46,9 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, $
   spin_starts = uniq(spin_nums.Y)
 
   ; find the telescope names
-  telescopes = tnames(prefix + species + '_*' + data_units + '_t*'+suffix)
+  telescopes = tnames(prefix + species + '_*' + data_units + '_t?'+suffix)
   telescopes = strsplit(telescopes, prefix + species + '_.' + data_units + '_t*'+suffix, /extract, /regex, /fold_case)
-
+  
   if telescopes[0] eq '' || n_elements(telescopes) ne 6 then begin
       dprint, dlevel = 0, 'Error, problem finding the telescopes to calculate the spin averages'
       return

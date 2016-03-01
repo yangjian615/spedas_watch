@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 13:52:35 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20221 $
+;$LastChangedDate: 2016-02-29 09:52:53 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20255 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_fgm_fix_metadata.pro $
 ;-
 
@@ -27,6 +27,24 @@ pro mms_fgm_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
             tplot_name = tplotnames[name_idx]
 
             case tplot_name of
+                prefix[sc_idx] + '_'+instrument+'_b_gse_'+data_rate_mod+'_l2_bvec'+suffix: begin
+                  options, /def, tplot_name, 'labflag', 1
+                  options, /def, tplot_name, 'colors', [2,4,6]
+                  options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument) + '!CGSE'
+                  options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+                end
+                prefix[sc_idx] + '_'+instrument+'_b_dmpa_'+data_rate_mod+'_l2_bvec'+suffix: begin
+                  options, /def, tplot_name, 'labflag', 1
+                  options, /def, tplot_name, 'colors', [2,4,6]
+                  options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument) + '!CDMPA'
+                  options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+                end
+                prefix[sc_idx] + '_'+instrument+'_b_gsm_'+data_rate_mod+'_l2_bvec'+suffix: begin
+                  options, /def, tplot_name, 'labflag', 1
+                  options, /def, tplot_name, 'colors', [2,4,6]
+                  options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument) + '!CGSM'
+                  options, /def, tplot_name, 'labels', ['Bx', 'By', 'Bz']
+                end
                 prefix[sc_idx] + '_'+instrument+'_b_gse_'+data_rate_mod+'_l2'+suffix: begin
                   options, /def, tplot_name, 'labflag', 1
                   options, /def, tplot_name, 'colors', [2,4,6,8]

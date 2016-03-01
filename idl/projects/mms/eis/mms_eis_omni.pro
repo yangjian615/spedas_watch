@@ -10,8 +10,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 11:46:36 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20211 $
+;$LastChangedDate: 2016-02-29 08:07:18 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20246 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_omni.pro $
 ;
 ; REVISION HISTORY:
@@ -36,7 +36,7 @@ pro mms_eis_omni, probe, species = species, datatype = datatype, tplotnames = tp
   if (data_rate) eq 'brst' then prefix = 'mms'+probe+'_epd_eis_brst_' else prefix = 'mms'+probe+'_epd_eis_'
 
   ; find the telescope names
-  telescopes = tnames(prefix + species_str + '_*' + data_units + '_t*'+suffix)
+  telescopes = tnames(prefix + species_str + '_*' + data_units + '_t?'+suffix)
   telescopes = strsplit(telescopes, prefix + species_str + '_.' + data_units + '_t*'+suffix, /extract, /regex, /fold_case)
 
   if telescopes[0] eq '' || n_elements(telescopes) ne 6 then begin

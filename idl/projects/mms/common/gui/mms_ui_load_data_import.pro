@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:24:15 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19590 $
+;$LastChangedDate: 2016-02-29 12:44:09 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20267 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -55,8 +55,8 @@ pro mms_ui_load_data_import,$
 
   if instrument eq 'STATE' then begin
      mms_load_state, probes=probes, level=level, datatypes=datatype, trange=timeRange, tplotnames=tplotnames
-  endif else if instrument eq 'AFG' or instrument eq 'DFG' then begin
-     mms_load_fgm, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames
+  endif else if instrument eq 'AFG' or instrument eq 'DFG' or instrument eq 'FGM' then begin
+     mms_load_fgm, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames, /no_attitude_data
   endif else if instrument eq 'FPI' then begin
      mms_load_fpi, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
   endif else if instrument eq 'SCM' then begin

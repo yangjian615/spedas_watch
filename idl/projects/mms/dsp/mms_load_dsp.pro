@@ -1,348 +1,120 @@
 ;+
-; PROCEDURE: mms_load_dsp
+; PROCEDURE:
+;         mms_load_dsp
 ;
-; PURPOSE: Fetches desired data from the DSP (Digital Signal Processing) Board.
+; PURPOSE:
+;         Load data from the Digital Signal Processing (DSP) board.
 ;
-; INPUT:
-; :Keywords:
-;    trange       : OPTIONAL - time range of desired data. Ex: ['2015-05-01', '2015-05-02']
-;                    Default input is timespan input.
-;    probes       : OPTIONAL - desired spacecraft, Ex: '1' for mms1, '2' for mms2, etc.
-;                    Default input is all s/c
-;    data_rate    : OPTIONAL - desired data sampling mode, Example: mode='srvy'
-;                             due to cataloging at the SDC, WE REQUIRE YOU LOAD ONLY ONE MODE AT A TIME
-;                    Default input - srvy mode
-;    level        : OPTIONAL - desired level, options are level 1a, 1b, ql, 2
-;                    Default input - all levels
-;    datatype    : OPTIONAL - desired data type. Ex: ['epsd', 'tdn', 'swd']
-;                    Default input - all data types!
+; KEYWORDS:
+;         trange:       time range of interest [starttime, endtime] with the format
+;                       ['YYYY-MM-DD','YYYY-MM-DD'] or to specify more or less than a day
+;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
+;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4'].
+;                       if no probe is specified the default is probe '1'
+;         level:        indicates level of data processing. Current level is ['ql','l1a']. 
+;                       if no level is specified the routine defaults to 'ql' (for survey mode).
+;         datatype:     ['epsd', 'bpsd','tdn', 'swd']
+
+;         data_rate:    instrument data rates include ['brst', 'fast', 'slow', 'srvy']. 
+;                       the default is 'srvy'
+;         local_data_dir: local directory to store the CDF files; should be set if you're on
+;                       *nix or OSX, the default currently assumes Windows (c:\data\mms\)
+;         source:       specifies a different system variable. By default the MMS mission 
+;                       system variable is !mms
+;         get_support_data:  loads any support data (support data is specified by var_type in the CDF file)
+;         tplotnames:   names for tplot variables
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
+;                       using this load routine from a terminal without an X server running
+;                       do not set colors
+;         time_clip:    clip the data to the requested time range; note that if you do not 
+;                       use this keyword you may load a longer time range than requested
+;         no_update:    set this flag to preserve the original data. if not set and newer 
+;                       data is found the existing data will be overwritten
+;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
+;                       preserving original tplot variable.
+;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
+;                       that should be loaded into tplot variables
+;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
+;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
+;         latest_version: only grab the latest CDF version in the requested time interval
+;                       (e.g., /latest_version)
+;         min_version:  specify a minimum CDF version # to load
 ;
-;    no_update    : OPTIONAL - /no_update to ensure your current data is not reloaded due to an update at the SDC
-;    reload       : OPTIONAL - /reload to ensure current data is reloaded due to an update at the SDC
-;    DO NOT DO BOTH /NO_UPDATE AND /RELOAD TOGETHER. THAT IS SILLY!
-;    get_support_data  : OPTIONAL - /get_support_data to get support data within the CDF
+; OUTPUT:
 ;
-;
-; OUTPUT: tplot variables listed at the end of the procedure
-; :Author: Katherine Goodrich, contact: katherine.goodrich@colorado.edu
-; 
 ; EXAMPLE:
-;     See crib sheets mms_load_edp_crib.pro and mms_load_data_crib.pro for usage examples
-;     
+;     See crib sheet mms_load_dsp_crib.pro for usage examples
+;
 ;     ; set time frame and load edp level 2 data
 ;     MMS>  timespan, '2015-06-22', 1, /day
 ;     MMS>  mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='epsd', level='l2'
 ; 
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-02-29 15:29:29 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20273 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
-; MODIFICATION HISTORY:
-;
-;
-;  $LastChangedBy: egrimes $
-;  $LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-;  $LastChangedRevision: 19585 $
-;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 
-pro mms_load_dsp, trange=trange, probes=probes, $
-  data_rate=data_rate, level=level, datatype=datatype, $
-  no_update=no_update, reload=reload, get_support_data=get_support_data
-  
-  ; Handle trange
-  if not keyword_set(trange) then begin
-    t = timerange(/current)
-    st = time_string(t)
-    datestrings=mms_convert_timespan_to_date()
-    start_date = datestrings.start_date
-    end_date = datestrings.end_date
-  endif else begin
-    t0 = time_double(trange[0])
-    t1 = time_double(trange[1])
-    t = [t0, t1]
-    st = time_string(t)
-    start_date = strmid(trange[0],0,10) + '-00-00-00'
-    end_date = strmatch(strmid(trange[1],11,8),'00:00:00')?strmid(time_string(t[1]-10.d0),0,10):strmid(trange[1],0,10)
-    end_date = end_date + '-23-59-59'
-  endelse
-  
-  instrument_id = 'dsp'
-  
-;  status = mms_login_lasp(login_info = login_info)
-;  if status ne 1 then return
-  
-  if not keyword_set(probes) then sc = ['mms1', 'mms2', 'mms3', 'mms4'] else sc = 'mms' + strcompress(string(probes),/rem)
-  
-  ;if not keyword_set(sc) then sc = ['mms1', 'mms2', 'mms3', 'mms4']  
-  if not keyword_set(data_rate) then mode = 'srvy' else mode = data_rate
-  if n_elements(mode) gt 1 then begin
-    dprint, 'Cannot select more than one mode at a time.'
-    print, 'Please confine your query to one mode (Ex: mode="srvy")'
-    print, 'Exiting, MMS_LOAD_DSP, no tplot variables loaded'
-    return
-  endif
+pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
+    level = level, data_rate = data_rate, $
+    local_data_dir = local_data_dir, source = source, $
+    get_support_data = get_support_data, $
+    tplotnames = tplotnames, no_color_setup = no_color_setup, $
+    time_clip = time_clip, no_update = no_update, suffix = suffix, $
+    varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+    latest_version = latest_version, min_version = min_version
 
-  if not keyword_set(datatype) then datatype = ['epsd', 'bpsd','tdn', 'swd']
-  if not keyword_set(level) then level = ['l1a', 'l1b', 'l2']
-  if keyword_set(no_update) and keyword_set(reload) then begin
-    dprint, 'Keywords NO_UPDATE and RELOAD are incompatible and cannot be called at once'
-    print, 'You silly person.'
-    print, 'Exiting, MMS_LOAD_DSP, no tplot variables loaded'
-    return
-  endif
-  if size(sc, /type) ne 7 then sc = strtrim(string(sc),1)
-  sc_len = strlen(sc)
-
-  if sc_len[0] eq 1 then sc = 'mms'+sc
-  sc_len = strlen(sc)
-  if sc_len[0] ne 4 or total(strmatch(['mms1', 'mms2', 'mms3', 'mms4'],sc[0])) eq 0 then begin
-    dprint, 'MMS_LOAD_EDP: INVALID SC ENTRY. VALID INPUTS EITHER "MMS#" OR "#"'
-    print, 'Exiting, MMS_LOAD_DSP, no tplot variables loaded'
-    return
-  endif
-  
-  if keyword_set(get_support_data) then var_type = ['support_data', 'data'] else var_type = 'data'
-  
-  ;names = []
+    if undefined(probes) then probes = [1, 2, 3, 4] ; default to MMS 1
+    if undefined(datatype) then datatype = ['epsd', 'bpsd','tdn', 'swd']
+    if undefined(level) then level = ['l1a', 'l1b', 'l2']
+    if undefined(suffix) then suffix = ''
+    if undefined(data_rate) then data_rate = 'srvy'
     
-  if total(strmatch(level, 'l1a')) eq 1 or total(strmatch(level, 'l1b')) eq 1 then begin
-    if total(strmatch(datatype, 'bpsd')) eq 1 then begin
-      data_type_l1 = ['179', '17a', '17b']
-      finfo = mms_get_science_file_info(sc_id=sc, $
-        instrument_id=instrument_id, data_rate_mode=mode, $
-        data_level=level, descriptor=data_type_l1, start_date=start_date, end_date=end_date)
-      if strlen(finfo[0]) eq 0 then begin
-        print, 'MMS_LOAD_DSP: COULD NOT FIND ANY DATA MATCHING CRITERIA:'
-        print, 'TIME RANGE = ', st
-        print, 'SC = ', sc
-        print, 'DATA_TYPE = bpsd'
-        print, 'LEVEL = ', level
-        print, 'MODE = ', mode
-        print, 'PLEASE ALTER SEARCH'
-        print, 'NO BPSD tplot variables loaded'
-      endif else begin
-        mms_data_fetch, flist, login_flag, dwnld_flag, sc_id=sc, $
-          instrument_id=instrument_id, mode=mode, level=level, optional_descriptor=data_type_l1, $
-          no_update=no_update, reload=reload
-        nf = n_elements(flist)
-        mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
-          descriptors, version_strings, start_strings, years, /contains_dir
-;        if nf gt 1 then begin 
-;          flist = flist[sort(sc_ids)]
-;          flist = mms_sort_filenames_by_date(flist)
-;        endif        
-        
-        ind = sort(descriptors)
-        ;  flist = flist[ind]
-        dtypes = descriptors[ind]
-        dtypes = dtypes[uniq(dtypes)]
-        nd = n_elements(dtypes)
-        mds = modes[sort(modes)]
-        mds = mds[uniq(mds)]
-        nm = n_elements(mds)
-        for obs = 0, n_elements(sc) -1  do begin
-          mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
-            types, version_strings, start_strings, years, /contains_dir
-          ind = where(sc_ids eq sc[obs])
-          if total(ind) eq -1 then break
-          fles = flist[ind]
-          for d=0, nd-1 do begin
-            dtyp = dtypes[d]
-            mms_parse_file_name, fles, sc_ids, inst_ids, modes, levels, $
-              descriptors, version_strings, start_strings, years, /contains_dir
-            ind = where(descriptors eq dtyp)
-            if total(ind) eq -1 then break
-            fles1 = fles[ind]
+    if array_contains(level, 'l1a') || array_contains(level, 'l1b') then begin
+        if array_contains(datatype, 'bpsd') then begin
+            datatype_l1 = ['179', '17a', '17b']
+            suffixes = '_'+['x', 'y', 'z']
 
-            for m=0, nm-1 do begin
-              mde = mds[m]
-              mms_parse_file_name, fles1, sc_ids, inst_ids, modes, levels, $
-                descriptors, version_strings, start_strings, years, /contains_dir
-              ind = where(modes eq mde)
-              if total(ind) eq -1 then break
-              fles2 = fles1[ind]
-              fles2 = mms_sort_filenames_by_date(fles2)
-              cdfi = cdf_load_vars(fles2, var_type=var_type, varnames=varnames)
-              oldname = varnames[0]
-              cdf_info_to_tplot, cdfi
-              case dtyp of
-                '179': newname = oldname + '_x'
-                '17a': newname = oldname + '_y'
-                '17b': newname = oldname + '_z'
-              endcase
-              get_data, oldname, data=data, dlim=dlim, lim=lim
-              store_data, newname, data=data, dlim=dlim, lim=lim
-              del_data, oldname
-              ;names = [names, newname]
-              append_array, names, newname
-
+            for datatype_idx = 0, n_elements(datatype_l1)-1 do begin
+                mms_load_data, trange = trange, probes = probes, level = level, instrument = 'dsp', $
+                    data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
+                    datatype = datatype_l1[datatype_idx], get_support_data = get_support_data, $
+                    tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+                    no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
+                    cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                    latest_version = latest_version, min_version = min_version
             endfor
-          endfor
-        endfor
+        endif
+        if array_contains(datatype, 'epsd') then begin
+            datatype_l1 = ['173', '174', '175', '176', '177', '178']
+            suffixes = '_'+['x', 'y', 'z', 'x', 'y', 'z']
+            ; only grab l1b if the user requested both l1a and l1b
+            if array_contains(level, 'l1a') and array_contains(level, 'l1b') then $
+                level = ssl_set_complement(['l1a'], level) 
 
-      endelse  
-    endif
-    if total(strmatch(datatype, 'epsd')) eq 1 then begin
-      data_type_l1 = ['173', '174', '175', '176', '177', '178']
-      ;in the event of both level 1a and level 1b selected, default goes to level 1b
-      if total([strmatch(level, 'l1a'), strmatch(level, 'l1b')]) eq 2 then lower_level = 'l1b' else lower_level = level
-
-      finfo = mms_get_science_file_info(sc_id=sc, $
-        instrument_id=instrument_id, data_rate_mode=mode, $
-        data_level=lower_level, descriptor=data_type_l1, start_date=start_date, end_date=end_date)
-      if strlen(finfo[0]) eq 0 then begin
-        print, 'MMS_LOAD_DSP: COULD NOT FIND ANY DATA MATCHING CRITERIA:'
-        print, 'TIME RANGE = ', st
-        print, 'SC = ', sc
-        print, 'DATA_TYPE = epsd'
-        print, 'LEVEL = ', lower_level
-        print, 'MODE = ', mode
-        print, 'PLEASE ALTER SEARCH'
-        print, 'NO EPSD tplot variables loaded'
-      endif else begin
-        mms_data_fetch, flist, login_flag, dwnld_flag, sc_id=sc, $
-          instrument_id=instrument_id, mode=mode, level=lower_level, optional_descriptor=data_type_l1, $
-          no_update=no_update, reload=reload
-        nf = n_elements(flist)
-        mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
-          descriptors, version_strings, start_strings, years, /contains_dir
-;        if nf gt 1 then begin 
-;          flist = flist[sort(sc_ids)]
-;          flist = mms_sort_filenames_by_date(flist)
-;        endif        
-        
-        ind = sort(descriptors)
-        ;  flist = flist[ind]
-        dtypes = descriptors[ind]
-        dtypes = dtypes[uniq(dtypes)]
-        nd = n_elements(dtypes)
-        mds = modes[sort(modes)]
-        mds = mds[uniq(mds)]
-        nm = n_elements(mds)
-        for obs = 0, n_elements(sc) -1 do begin
-          mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
-            types, version_strings, start_strings, years, /contains_dir
-          ind = where(sc_ids eq sc[obs])
-          if total(ind) eq -1 then break
-          fles = flist[ind]
-          for d=0, nd-1 do begin
-            dtyp = dtypes[d]
-            mms_parse_file_name, fles, sc_ids, inst_ids, modes, levels, $
-              descriptors, version_strings, start_strings, years, /contains_dir
-            ind = where(descriptors eq dtyp)
-            if total(ind) eq -1 then break
-            fles1 = fles[ind]
-
-            for m=0, nm-1 do begin
-              mde = mds[m]
-              mms_parse_file_name, fles1, sc_ids, inst_ids, modes, levels, $
-                descriptors, version_strings, start_strings, years, /contains_dir
-              ind = where(modes eq mde)
-              if total(ind) eq -1 then break
-              fles2 = fles1[ind]
-              fles2 = mms_sort_filenames_by_date(fles2)
-              cdfi = cdf_load_vars(fles2, var_type=var_type, varnames=varnames)
-              oldname = varnames[0]
-              cdf_info_to_tplot, cdfi
-              case dtyp of
-                '173': newname = oldname+'_x'
-                '174': newname = oldname+'_y'
-                '175': newname = oldname+'_z'
-                '176': newname = oldname+'_x'
-                '177': newname = oldname+'_y'
-                '178': newname = oldname+'_z'
-              endcase
-              get_data, oldname, data=data, dlim=dlim, lim=lim
-              store_data, newname, data=data, dlim=dlim, lim=lim
-              del_data, oldname
-              ;names = [names, newname]
-              append_array, names, newname
+            for datatype_idx = 0, n_elements(datatype_l1)-1 do begin
+                mms_load_data, trange = trange, probes = probes, level = level, instrument = 'dsp', $
+                    data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
+                    datatype = datatype_l1[datatype_idx], get_support_data = get_support_data, $
+                    tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+                    no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
+                    cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                    latest_version = latest_version, min_version = min_version
             endfor
-          endfor
-        endfor
-
-;        for f=0, nf-1 do begin
-;          cdf2tplot, flist[f], varnames=varnames
-;          mms_parse_file_name, flist[f], sc_ids, inst_ids, modes, levels, $
-;            types, version_strings, start_strings, years, /contains_dir
-;          oldname = varnames[0]
-;          newname = ''
-;          case types of
-;            '173': newname = oldname+'_x'
-;            '174': newname = oldname+'_y'
-;            '175': newname = oldname+'_z'
-;            '176': newname = oldname+'_x'
-;            '177': newname = oldname+'_y'
-;            '178': newname = oldname+'_z'
-;          endcase
-;          get_data, oldname, data=data, dlim=dlim, lim=lim
-;          store_data, newname, data=data, dlim=dlim, lim=lim
-;          del_data, oldname
-;        endfor
-
-      endelse
+        endif
     endif
-  endif
-  if total(strmatch(level, 'l2')) eq 1 then  begin
-    finfo = mms_get_science_file_info(sc_id=sc, $
-      instrument_id=instrument_id, data_rate_mode=mode, $
-      data_level=level, descriptor=datatype, start_date=start_date, end_date=end_date)
-    if strlen(finfo[0]) eq 0 then begin
-      dprint, 'COULD NOT FIND ANY DATA MATCHING CRITERIA:'
-      print, 'TIME RANGE = ', st
-      print, 'SC = ', sc
-      print, 'DATA_TYPE = ', datatype
-      print, 'LEVEL = ', 'l2'
-      print, 'MODE = ', mode
-      print, 'PLEASE ALTER SEARCH'
-      print, 'No tplot variables loaded'
-    endif 
-    if strlen(finfo[0]) ne 0 then begin
-      mms_data_fetch, flist, login_flag, dwnld_flag, sc_id=sc, $
-        instrument_id=instrument_id, mode=mode, level='l2', optional_descriptor=datatype, $
-        no_update=no_update, reload=reload
-      mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
-        descriptors, version_strings, start_strings, years, /contains_dir
-      
-; sort filenames by data type, then mode, then date
-      ind = sort(descriptors)
-    ;  flist = flist[ind]
-      dtypes = descriptors[ind]
-      dtypes = dtypes[uniq(dtypes)]
-      nd = n_elements(dtypes)
-      mds = modes[sort(modes)]
-      mds = mds[uniq(mds)]
-      nm = n_elements(mds)
-      for obs = 0, n_elements(sc) -1  do begin
-        mms_parse_file_name, flist, sc_ids, inst_ids, modes, levels, $
-          descriptors, version_strings, start_strings, years, /contains_dir
-        ind = where(sc_ids eq sc[obs])
-        if total(ind) eq -1 then break
-        fles = flist[ind]
-        for d=0, nd-1 do begin
-          dtyp = dtypes[d]
-          mms_parse_file_name, fles, sc_ids, inst_ids, modes, levels, $
-            descriptors, version_strings, start_strings, years, /contains_dir
-          ind = where(descriptors eq dtyp)
-          if total(ind) eq -1 then break
-          fles1 = fles[ind]
-          for m=0, nm-1 do begin
-            mde = mds[m]
-            mms_parse_file_name, fles1, sc_ids, inst_ids, modes, levels, $
-              descriptors, version_strings, start_strings, years, /contains_dir
-            ind = where(modes eq mde)
-            if total(ind) eq -1 then break
-            fles2 = fles1[ind]
-            fles2 = mms_sort_filenames_by_date(fles2)
-            cdfi = cdf_load_vars(fles2, var_type=var_type)
-            cdf_info_to_tplot, cdfi, tplotnames=tplotnames
-            append_array, names, tplotnames
-          endfor
+    if array_contains(level, 'l2') then begin
+        for datatype_idx = 0, n_elements(datatype)-1 do begin
+            mms_load_data, trange = trange, probes = probes, level = level, instrument = 'dsp', $
+                data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
+                datatype = datatype[datatype_idx], get_support_data = get_support_data, $
+                tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+                no_update = no_update, suffix = suffix, varformat = varformat, $
+                cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                latest_version = latest_version, min_version = min_version
         endfor
-      endfor
+        
+    endif
     
-         
-    endif
-  endif
-  PRINT, 'LOADED THE FOLLOWING VARIABLES:'
-  tplot_names, names, /sort
-
 end
-

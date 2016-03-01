@@ -1,6 +1,6 @@
-; $LastChangedBy: phyllisw $
-; $LastChangedDate: 2016-02-26 16:17:49 -0800 (Fri, 26 Feb 2016) $
-; $LastChangedRevision: 20231 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2016-02-29 17:07:52 -0800 (Mon, 29 Feb 2016) $
+; $LastChangedRevision: 20274 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
 
 
@@ -8,7 +8,6 @@
 
 
 function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
-
 
   ;;-------------------------------------------
   ;; Parse data
@@ -32,21 +31,21 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   ;;-------------------------------------------
   ;; Use APID to determine packet size
   ;; '60' -> '360'x ...
-  pkt_size = [ 16,  512,  16,   512, 16, 512, 16, 512] 
+  pkt_size_expected = [ 16,  512,  16,   512, 16, 512, 16, 512] 
   apid_loc = ['60', '61', '62', '63', '64', '65', '66', '67']
-  ns = pkt_size[where(apid_loc eq apid_name)]
+  ns = pkt_size_expected[(where(apid_loc eq apid_name))[0]]
+
 
   ;;-------------------------------------------
   ;; Check for compression
   compression = (ccsds.data[12] and '20'x) ne 0
-  bps = (compression eq 0) * 4
-  nbytes = ns * bps
+  bps =  ([4,1])[ compression ]  
+  nbytes_expected = ns * bps
 
-  ;if n_elements(data) ne nbytes then begin
-  ;   dprint,dlevel=3, 'Size error ',$
-  ;          n_elements(data),ccsds.size,ccsds.apid
-  ;   return, 0
-  ;endif
+  if n_elements(data) ne nbytes_expected then begin
+     dprint,dlevel=3, 'Size error ',  n_elements(data),nbytes_expected,ccsds.size+7,ccsds.apid, format='(a,i5,i5,i5," ",z03)'
+     return, 0
+  endif
 
   ;print, apid_name, ns, compression, n_elements(data)
 
@@ -68,7 +67,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 
   status_flag = header[18]
 
-  f_counter = swap_endian(ulong(data,16,1), /swap_if_little_endian)
+  f_counter = swap_endian(ulong(header,16,1), /swap_if_little_endian)
 
   ;;--------------
   ;; Peaks

@@ -55,8 +55,8 @@
 ;     
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-27 08:03:42 -0800 (Sat, 27 Feb 2016) $
-;$LastChangedRevision: 20239 $
+;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -74,7 +74,6 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
     if undefined(datatype) then datatype = '' ; grab all data in the CDF
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
     ; default to QL if the trange is within the last 2 weeks, L2pre if older
     if undefined(level) then begin 
         fourteen_days_ago = systime(/seconds)-60*60*24.*14.

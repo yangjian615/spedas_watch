@@ -320,6 +320,12 @@ function stel3d_create_isosurface, oVol, iso_level, UPDATE=oISO
   ;IsoSurface, data0, isosurface_threshold, verts, conn
   ;shade_volume, data0, isosurface1_threshold, verts, conn
   interval_volume, data0, iso_level[0], iso_level[1], verts, conn
+  ;in case data is uniform or out of range
+  if conn[0] eq -1 then begin
+    message, /continue, 'cannot construct isosurface'
+    return, obj_new('IDLgrPolygon', COLOR=[127,127,127], SHADING=1, $
+                     XCOORD_CONV=xs, YCOORD_CONV=ys, ZCOORD_CONV=zs)
+  endif
   conn = tetra_surface(verts, conn)
   oVol.SetProperty, DATA0=data0, /NO_COPY
   if (n_elements(verts) le 0) then begin
@@ -607,6 +613,11 @@ pro stel3d_widget, oData, $
     curtimeArr = (oData.olep).getTimeKeys()
     curtime = curtimeArr[0]
     oConf.SetProperty, CURTIME=curtime
+  endif
+
+  ;prevent error if data is uniform
+  if nrange[0] eq nrange[1] then begin
+    nrange = [0,1.]
   endif
   ;
   ; check values for isosurface

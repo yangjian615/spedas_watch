@@ -66,8 +66,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-25 20:27:57 -0800 (Thu, 25 Feb 2016) $
-;$LastChangedRevision: 20203 $
+;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20259 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -80,7 +80,6 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version
                 
-    if undefined(trange_in) then trange = timerange() else trange = timerange(trange_in)
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'ion'
     if undefined(level) then level = 'l1b' 
@@ -106,7 +105,7 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
     endif
     ;if level eq 'sitl' then varformat = '*'
     
-    mms_load_data, trange = trange, probes = probes, level = level, instrument = 'hpca', $
+    mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'hpca', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
         datatype = datatype, get_support_data = get_support_data, varformat = varformat, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $

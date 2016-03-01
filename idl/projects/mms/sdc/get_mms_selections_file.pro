@@ -17,7 +17,9 @@ function get_mms_selections_file, type, start_time=start_time, end_time=end_time
   else  query = strjoin(query_args[1:*], "&") ;drop the "hack"
   
   ; Execute the query.
-  status = download_mms_files(type, query, local_dir=local_dir, latest=latest)
+  ; Allow more than default number of files since they are small
+  ; and when the limit is exceeded a unit test breaks
+  status = download_mms_files(type, query, local_dir=local_dir, latest=latest, max_files=10000)
 
   return, status  
 end

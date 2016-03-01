@@ -406,8 +406,8 @@ end
 ;      
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:24:15 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19590 $
+;$LastChangedDate: 2016-02-29 12:41:51 -0800 (Mon, 29 Feb 2016) $
+;$LastChangedRevision: 20265 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -465,7 +465,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
     
   probeArrayValues = ['1', '2', '3', '4']
   probeArrayDisplayed = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
-  instrumentArray = ['AFG', 'DFG','EIS', 'FEEPS', 'FPI', 'HPCA', 'SCM', 'EDP', 'DSP', 'ASPOC', 'STATE', 'MEC']
+  instrumentArray = ['FGM','EIS', 'FEEPS', 'FPI', 'HPCA', 'SCM', 'EDP', 'DSP', 'ASPOC', 'STATE', 'MEC']
   ;science fields now populated dynamically
 ;  sciRateArray = ['srvy', 'slow', 'fast', 'brst']
 ;  sciLevelArray = ['ql', 'l1a', 'l1b', 'l2', 'sitl']
