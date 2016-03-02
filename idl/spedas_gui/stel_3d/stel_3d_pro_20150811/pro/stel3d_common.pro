@@ -9,9 +9,9 @@ COMPILE_OPT strictarr, hidden
 ;COMMON E_UTILITY_DEBUG, E_UTILITY_DEBUG_ON
 
 
-DEFSYSV, '!THEMIS', EXISTS=tflag
+DEFSYSV, '!SPEDAS', EXISTS=tflag
 if tflag eq 0 then begin
-  message, 'Please initialize TDAS (thm_init)'
+  spedas_init
 endif
 ;
 ; tplot data for et-diagram

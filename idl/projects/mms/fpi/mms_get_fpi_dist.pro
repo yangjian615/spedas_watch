@@ -23,9 +23,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 14:23:03 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19934 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-03-01 16:45:13 -0800 (Tue, 01 Mar 2016) $
+;$LastChangedRevision: 20280 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -95,51 +95,34 @@ if level eq '' then probe = var_info[2]
 if level eq '' then species = var_info[3]
 if level eq '' then rate = var_info[4] else rate = data_rate
 
-; Initialize energies, angles, and support data
+
+; Initialize angles, and support data
 ;-----------------------------------------------------------------
 
-;get energy tables
+;get azimuth and elevation (energies retrieved separately)
 s = mms_get_fpi_info()
 
 ;dimensions
-;data is stored as azimuth x elevation x energy
+;data is stored as azimuth x elevation x energy x time
+;time must be last for fields to be added to time varying structure array
 ;slice code expects energy to be the first dimension
 dim = (size(*p.y,/dim))[1:*]
 dim = dim[[2,0,1] ]
 base_arr = fltarr(dim)
 
 
-;get support data specifying which energy table to use
-;fast data will always use constant table, burst requires support var
-if strlowcase(rate) eq 'fast' then begin
-  step = replicate(2,n_elements(*p.x))
-endif else begin
-  step_var = 'mms'+probe+'_d'+species+'s_stepTable_parity'
-  step_var = level eq 'l2' ? strlowcase(step_var+'_'+rate) : step_var
-  step_name = (tnames(step_var))[0]
-  if step_name eq '' then begin
-    dprint, 'Cannot find energy table data: '+step_var
-    return, 0
-  endif
-  get_data, step_name, data=step_data
-  step = temporary(step_data.y)
-endelse
-
-
-;mass, charge, & energies
+;support data
 ;  -slice routines assume mass in eV/(km/s)^2
 case strlowcase(species) of 
   'i': begin
          mass = 1.04535e-2
          charge = 1.
-         energy_table = transpose(s.ion_energy) 
          data_name = 'FPI Ion'
          integ_time = .150
        end
   'e': begin
          mass = 5.68566e-06
          charge = -1.
-         energy_table = transpose(s.electron_energy)
          data_name = 'FPI Electron'
          integ_time = .03
        end
@@ -198,12 +181,15 @@ dist.time = (*p.x)[index]
 dist.end_time = (*p.x)[index] + integ_time
 
 ;shuffle data to be energy-azimuth-elevation-time
-;time must be last to be added to structure array
 dist.data = transpose((*p.y)[index,*,*,*],[3,1,2,0])
 
 ;get energy values for each time sample and copy into
 ;structure array with the correct dimensions
-e0 = reform(energy_table[*,step[index]], [dim[0],1,1,n_times])
+if size(/n_dim, *p.v1) eq 1 then begin
+  e0 = *p.v1 ;fast data uses constant table
+endif else begin
+  e0 = reform( transpose((*p.v1)[index,*]), [dim[0],1,1,n_times])
+endelse
 dist.energy = rebin( e0, [dim,n_times] )
 
 ;phi must be in [0,360)

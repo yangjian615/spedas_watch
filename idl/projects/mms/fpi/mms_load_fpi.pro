@@ -59,9 +59,9 @@
 ;        
 ;     for more information
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20259 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-03-01 16:45:13 -0800 (Tue, 01 Mar 2016) $
+;$LastChangedRevision: 20280 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -111,6 +111,8 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     if ~undefined(tplotnames) && n_elements(tplotnames) ne 0 then begin
         for probe_idx = 0, n_elements(probes)-1 do begin
             mms_load_fpi_fix_spectra, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $
+                level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
+            mms_load_fpi_fix_dist, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $
                 level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
             mms_load_fpi_fix_angles, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $ 
                 level = level, data_rate = data_rate, datatype = datatype, suffix = suffix

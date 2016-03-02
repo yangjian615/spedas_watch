@@ -6,9 +6,9 @@
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate pitch angle and gyrophase distributions
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-27 08:50:32 -0800 (Sat, 27 Feb 2016) $
-;$LastChangedRevision: 20243 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-03-01 17:01:38 -0800 (Tue, 01 Mar 2016) $
+;$LastChangedRevision: 20282 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_part_products_crib.pro $
 ;
 ;-
@@ -25,7 +25,8 @@
   rate='brst'
   level = 'l2'
 
-  trange = ['2016-01-20/19:50:00', '2016-01-20/20:00:00']
+  ;use short time range due to high data resolution
+  trange = ['2016-01-20/19:50:00', '2016-01-20/19:50:30']
   timespan,trange
   
   level = 'def'     ; 'pred'
@@ -46,22 +47,23 @@
   ;Not all mms position data have coordinate systems labeled in metadata, this one does
   pos_name = 'mms' + probe+ '_defeph_pos'
   
-  ;convert particle data to 3D structures
   ; the following name is valid in the L1b files:
   ;name =  'mms'+probe+'_d'+species+'s_'+rate+'SkyMap_dist'
   ; and this one is valid for L2 data:
   name = 'mms'+probe+'_d'+species+'s_dist_'+rate
  
-  mms_part_products,name,mag_name=bname,pos_name=pos_name,trange=trange,outputs=['phi','theta','pa','gyro','energy', 'moments'],probe=probe
+  mms_part_products, name, probe=probe, trange=trange, $
+                     mag_name=bname, pos_name=pos_name, $
+                     outputs=['phi','theta','energy','moments','pa','gyro']
 
   tplot,name+'_'+['energy','theta','phi','pa','gyro']
-  tlimit,['2016-01-20/19:50:00', '2016-01-20/20:00:00']
+  tlimit,trange
 
   stop
  
   ; plot the moments
   window, 1
-  tplot, name+'_'+['density', 'avgtemp']
+  tplot, name+'_'+['density', 'avgtemp'], window=1
   
   stop
 
@@ -110,5 +112,11 @@
                     outputs=['phi','theta','pa','gyro','energy', 'moments'],probe=probe
 
   tplot,name+'_'+['energy','theta','phi','pa','gyro']
+
+  ; plot the moments
+  window, 1
+  tplot, name+'_'+['density', 'avgtemp'], window=1
+  
+  stop
 
 end

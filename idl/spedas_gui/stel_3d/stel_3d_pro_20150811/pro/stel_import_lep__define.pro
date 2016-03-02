@@ -63,7 +63,15 @@ function stel_import_lep::checkTimeFormat, strtime
 ;  
 ;  return, strtime
 
-  return, time_string(strtime, /msec)
+  ;default parse has trouble with no "/" between date & time
+  ;assumes input array has uniform format
+  if stregex(strtime[0],'[0-9]{8} [0-9]{2}:[0-9]{2}:[0-9]{2}',/bool) then begin
+    temp = time_string( time_struct(strtime, tformat='YYYYMMDD hh:mm:ss'), /msec)
+    ;time_struct mutates scalar to single-element array
+    if n_elements(temp) eq 1 then return, temp[0] else return, temp
+  endif else begin
+    return, time_string(strtime, /msec)
+  endelse
 
 end
 ;
@@ -112,7 +120,7 @@ function stel_import_lep::read_lep, infile, DATA=data, TRANGE=trange
     if (pos[0] ne 0) then begin
       if keyword_set(trange) then begin
         ;ob_time = self.convertJulday(tmp)
-        ob_time = self.convertUnixTime(tmp)
+        ob_time = self.convertUnixTime(tmp) ;this also converts the input!
         if ob_time lt start_time then continue
         if ob_time gt end_time then break
       endif

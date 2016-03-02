@@ -88,8 +88,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 09:18:17 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20254 $
+;$LastChangedDate: 2016-03-01 09:03:12 -0800 (Tue, 01 Mar 2016) $
+;$LastChangedRevision: 20276 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -114,8 +114,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; probes should be strings
-    if undefined(levels) then levels = 'ql' ; default to quick look
-    if undefined(instrument) then instrument = 'dfg'
+    if undefined(levels) then levels = 'l2'
+    if undefined(instrument) then instrument = 'fgm'
     if undefined(data_rates) then data_rates = 'srvy'
 
     ;ensure datatypes are explicitly set for simplicity 

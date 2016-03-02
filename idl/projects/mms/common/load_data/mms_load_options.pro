@@ -271,7 +271,11 @@ function mms_load_options_fpi
     
 s = { $
       fast: { $
-              sitl: [ '' ] $
+              L2: [ 'des-dist', 'des-moms', 'dis-dist', 'dis-moms' ] $
+            }, $
+
+      brst: { $
+              L2: [ 'des-dist', 'des-moms', 'dis-dist', 'dis-moms' ] $
             } $
     }
 
@@ -494,8 +498,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:42:17 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20266 $
+;$LastChangedDate: 2016-03-01 14:45:21 -0800 (Tue, 01 Mar 2016) $
+;$LastChangedRevision: 20278 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_options.pro $
 ;-
 pro mms_load_options, $

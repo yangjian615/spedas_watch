@@ -55,8 +55,8 @@
 ;     
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20259 $
+;$LastChangedDate: 2016-03-01 07:10:35 -0800 (Tue, 01 Mar 2016) $
+;$LastChangedRevision: 20275 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -70,14 +70,17 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   no_attitude_data = no_attitude_data, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version
-    
+
+    if ~undefined(trange) && n_elements(trange) eq 2 $
+      then tr = timerange(trange) $
+      else tr = timerange()
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
     if undefined(datatype) then datatype = '' ; grab all data in the CDF
     ; default to QL if the trange is within the last 2 weeks, L2pre if older
     if undefined(level) then begin 
         fourteen_days_ago = systime(/seconds)-60*60*24.*14.
-        if trange[1] ge fourteen_days_ago then level = 'ql' else level = 'l2'
+        if tr[1] ge fourteen_days_ago then level = 'ql' else level = 'l2'
     endif else level = strlowcase(level)
     if undefined(instrument) then instrument = 'fgm'
     if undefined(data_rate) then data_rate = 'srvy'
