@@ -561,7 +561,7 @@ if(dims[n_elements(dims)-1]) eq 2 then begin
    vecs = temp
 endif
 
-if(dims[n_elements(dims)-1] ne 3) then message, 'last dimension of vector argument must be size 3'
+;if(dims[n_elements(dims)-1] ne 3) then message, 'last dimension of vector argument must be size 3'
 
 ;if a 2-d argument is passed, make it 3-d so all cases can be handled
 ;using the same code

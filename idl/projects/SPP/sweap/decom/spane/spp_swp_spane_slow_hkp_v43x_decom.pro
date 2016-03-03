@@ -68,19 +68,19 @@ function spp_swp_spane_slow_hkp_v43x_decom,ccsds , ptp_header=ptp_header, apdat=
     RIO_P5IA:       swap_endian(/swap_if_little_endian,  fix(b,48 ) ),$
     RIO_M5IA:       swap_endian(/swap_if_little_endian,  fix(b,50 ) ),$
 
-    adc_ch00:       swap_endian(/swap_if_little_endian,  fix(b,52 ) ) * ref/4095. , $
+    adc_VMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,52 ) ) * ref/4095. , $
     adc_VMON_DEF1:  swap_endian(/swap_if_little_endian,  fix(b,54 ) ) * ref*1000./4095. , $
-    adc_ch02:       swap_endian(/swap_if_little_endian,  fix(b,56 ) ) * ref/4095. , $
+    adc_IMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,56 ) ) * ref/4095. , $
     adc_VMON_DEF2:  swap_endian(/swap_if_little_endian,  fix(b,58 ) ) * ref*1000./4095. , $
-    adc_VMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,60 ) ) * ref*752.88/4095. , $
+    adc_VMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,60 ) ) * ref*752.88/4095. , $
     adc_VMON_SPL:   swap_endian(/swap_if_little_endian,  fix(b,62 ) ) * ref*20.12/4095. , $
-    adc_IMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,64 ) ) * ref*1000./40.2/4095. , $
-    adc_ch07:       swap_endian(/swap_if_little_endian,  fix(b,66 ) ) * ref/4095. , $
-    adc_VMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,68 ) ) * ref*1271./4095. , $
-    adc_ch09:       swap_endian(/swap_if_little_endian,  fix(b,70 ) ) * ref/4095. , $
-    adc_IMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,72 ) ) * ref*1000./40.2/4095. , $
-    adc_ch11:       swap_endian(/swap_if_little_endian,  fix(b,74 ) ) * ref/4095. , $
-    adc_VMON_HEM:   swap_endian(/swap_if_little_endian,  fix(b,76 ) ) * ref*1000./4095. , $
+    adc_IMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,64 ) ) * ref*1000./40.2/4095. , $
+    adc_PCBT:       swap_endian(/swap_if_little_endian,  fix(b,66 ) ) * ref/4095. , $
+    adc_HEMIV:      swap_endian(/swap_if_little_endian,  fix(b,68 ) ) * ref*1271./4095. , $
+    adc_FPGAT:      swap_endian(/swap_if_little_endian,  fix(b,70 ) ) * ref/4095. , $
+    adc_ch10:       swap_endian(/swap_if_little_endian,  fix(b,72 ) ) * ref*1000./40.2/4095. , $
+    adc_ASICT:      swap_endian(/swap_if_little_endian,  fix(b,74 ) ) * ref/4095. , $
+    adc_ch12:       swap_endian(/swap_if_little_endian,  fix(b,76 ) ) * ref*1000./4095. , $
     adc_ch13:       swap_endian(/swap_if_little_endian,  fix(b,78 ) ) * ref/4095. , $
     adc_ch14:       swap_endian(/swap_if_little_endian,  fix(b,80 ) ) * ref/4095. , $
     adc_ch15:       swap_endian(/swap_if_little_endian,  fix(b,82 ) ) * ref/4095. , $
@@ -96,7 +96,6 @@ function spp_swp_spane_slow_hkp_v43x_decom,ccsds , ptp_header=ptp_header, apdat=
     ACTSTAT_FLAG:   b[95]  , $
     mcp_dac:        swap_endian(/swap_if_little_endian, uint( b,96  ) ) and 'ffff'x , $
     acc_dac:        swap_endian(/swap_if_little_endian, uint( b,98  ) ) and 'ffff'x , $
-    ; this deviates from current CTM below this point
     max_cnt:        swap_endian(/swap_if_little_endian, uint( b,100 ) ) and 'ffff'x , $
     cycle_cnt:      swap_endian(/swap_if_little_endian, uint( b,102 ) ) and 'ffff'x , $
     peak_ch_cnt:    swap_endian(/swap_if_little_endian, uint( b,104 ) ) and 'ffff'x , $

@@ -26,8 +26,8 @@
 ;     Based on the EIS pitch angle code by Brian Walsh
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-18 15:47:02 -0800 (Thu, 18 Feb 2016) $
-;$LastChangedRevision: 20064 $
+;$LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20296 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -53,7 +53,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     
     ; get the pitch angles
    ; tdeflag, prefix+'_epd_feeps_pitch_angle'+suffix, 'linear', /overwrite
-    get_data, prefix+'_epd_feeps_pitch_angle'+suffix, data=pa_data, dlimits=pa_dlimits
+    get_data, prefix+'_epd_feeps_'+datatype+'_pitch_angle'+suffix, data=pa_data, dlimits=pa_dlimits
     
     ; From Allison Jaynes @ LASP: The 6,7,8 sensors (out of 12) are ions,
     ; so in the pitch angle array, the 5,6,7 columns (counting from zero) will be the ion pitch angles.
@@ -76,12 +76,15 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
       particle_pa = pa_data.Y[*, pa_data_map[s_type+'-'+datatype]]
 
       for t=0, n_elements(particle_idxs)-1 do begin
-          get_data, prefix+'_epd_feeps_' + s_type + '_'+data_units+'_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+'_clean'+suffix, data = d
+          var_name = prefix+'_epd_feeps_' + s_type + '_' + datatype + '_'+data_units+'_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+'_clean'+suffix
+          var_name = strlowcase(var_name)
+          get_data, var_name, data = d
           
           indx = where((d.v le energy[1]) and (d.v ge energy[0]), energy_count)
 
           if energy_count eq 0 then begin
               dprint, dlevel = 0, 'Energy range selected is not covered by the detector for FEEPS ' + datatype + ' data'
+              stop
               continue
           endif
           for i=0l, n_elements(d.x)-1 do begin ; loop through time

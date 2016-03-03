@@ -53,10 +53,20 @@
 ; NOTES:
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
+;     2) Ephemeris variables stored in the L2 FGM burst mode CDFs are
+;        not produced to be monotonically increasing across mutliple CDF files
+;        due to an issue in the FGM processing software. 
+;        We strongly advise against using the variables:
+;               mms#_fgm_r_gse_brst_l2
+;               mms#_fgm_r_gsm_brst_l2
+;       
+;        Instead, load ephemeris data using mms_load_mec
+;        
+;     
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-01 07:10:35 -0800 (Tue, 01 Mar 2016) $
-;$LastChangedRevision: 20275 $
+;$LastChangedDate: 2016-03-02 11:33:03 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20289 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -69,7 +79,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   no_attitude_data = no_attitude_data, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-                  latest_version = latest_version, min_version = min_version
+                  latest_version = latest_version, min_version = min_version, $
+                  spdf = spdf
 
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
@@ -91,7 +102,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
-        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+        spdf = spdf
 
     
     ; load the atttude data to do the coordinate transformation 
@@ -116,6 +128,12 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         endif
         ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
         mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate
+    
+        ; delete the bad ephemeris variables if this is burst data
+        if data_rate eq 'brst' && level eq 'l2' then begin
+            del_data, this_probe+'_fgm_r_gse_brst_l2'
+            del_data, this_probe+'_fgm_r_gsm_brst_l2'
+        endif 
     endfor
 
     

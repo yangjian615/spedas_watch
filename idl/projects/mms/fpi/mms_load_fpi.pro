@@ -59,9 +59,9 @@
 ;        
 ;     for more information
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-01 16:45:13 -0800 (Tue, 01 Mar 2016) $
-;$LastChangedRevision: 20280 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-03-02 08:47:44 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20286 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -73,7 +73,8 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   autoscale = autoscale, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-                  latest_version = latest_version, min_version = min_version
+                  latest_version = latest_version, min_version = min_version, $
+                  spdf = spdf
 
     if undefined(probes) then probes = ['3'] ; default to MMS 3
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
@@ -101,7 +102,8 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
-        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+        spdf = spdf
 
     ; since the SITL files contain both ion and electron data, and datatype = '*' doesn't work
     ; in our 'fix'/'calc' routines for the FPI metadata

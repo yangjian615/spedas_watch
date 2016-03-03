@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-26 14:18:24 -0800 (Fri, 26 Feb 2016) $
-; $LastChangedRevision: 20223 $
+; $LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
+; $LastChangedRevision: 20296 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -33,8 +33,12 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
     if data_rate eq 'brst' && datatype eq 'ion' then sensors = ['6','7','8']
 
     ; get the sector data
-    get_data, 'mms'+probe+'_epd_feeps_spinsectnum'+suffix, data=spin_sector
+    get_data, 'mms'+probe+'_epd_feeps_'+datatype+'_spinsectnum'+suffix, data=spin_sector
     
+    if ~is_struct(spin_sector) then begin
+        dprint, dlevel = 0, 'Error - couldn''t find the spin sector variable!!!! Cannot remove sun contamination!'
+        return
+    endif
     ; get the sector masks
     mask_sectors = mms_feeps_sector_masks()
     
@@ -43,12 +47,12 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         
         if these_units eq 'cps' then these_units = 'count_rate'
         ; added datatype to the name for L2 data
-        if level eq 'l2' then these_units = datatype + '_' + these_units
+        these_units = datatype + '_' + these_units
         
         ; top sensors
         for sensor_idx = 0, n_elements(sensors)-1 do begin
           var_name = 'mms'+probe+'_epd_feeps_top_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
-          if level eq 'l2' then var_name = strlowcase(var_name)
+          var_name = strlowcase(var_name)
           
           get_data, var_name+suffix, data = top_data, dlimits=top_dlimits
           if mask_sectors.haskey('mms'+probe+'imaskt'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]] ne !NULL then begin
@@ -67,7 +71,7 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         ; bottom sensors
         for sensor_idx = 0, n_elements(sensors)-1 do begin
           var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
-          if level eq 'l2' then var_name = strlowcase(var_name)
+          var_name = strlowcase(var_name)
           
           get_data, var_name+suffix, data = bottom_data, dlimits=bottom_dlimits
           if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin

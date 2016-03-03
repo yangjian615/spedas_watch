@@ -6,9 +6,9 @@
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate pitch angle and gyrophase distributions
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-01 17:01:38 -0800 (Tue, 01 Mar 2016) $
-;$LastChangedRevision: 20282 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-03-02 15:54:03 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20298 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_part_products_crib.pro $
 ;
 ;-
@@ -26,20 +26,21 @@
   level = 'l2'
 
   ;use short time range due to high data resolution
-  trange = ['2016-01-20/19:50:00', '2016-01-20/19:50:30']
+  trange = ['2016-01-20/19:50:00', '2016-01-20/19:50:15']
   timespan,trange
   
   level = 'def'     ; 'pred'
  
   ;load state data.(needed for coordinate transforms and field aligned coordinates)
-  mms_load_state, probes=probe, level=level
+  ; note on trange: loading a larger trange on state data for the transformations
+  mms_load_state, probes=probe, level=level, trange=['2016-01-20/19:49:00', '2016-01-20/19:52:00']
 
   ;load particle data
   mms_load_fpi, data_rate=rate, level='l2', datatype='d'+species+'s-dist', $
     probe=probe, trange=trange
     
   ;load magnetic field data
-  mms_load_fgm, probe=probe, trange=trange, /no_att, level='l2'
+  mms_load_fgm, probe=probe, trange=trange, level='l2', /no_attitude
  
   ;Until coordinate systems are properly labeled in mms metadata, this variable must be dmpa
   bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
@@ -58,7 +59,7 @@
 
   tplot,name+'_'+['energy','theta','phi','pa','gyro']
   tlimit,trange
-
+  
   stop
  
   ; plot the moments

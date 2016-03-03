@@ -64,8 +64,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20259 $
+;$LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20296 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -76,44 +76,45 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   varformat = varformat, cdf_filenames = cdf_filenames, $
                   cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version
+                  min_version = min_version, spdf = spdf
 
-    if undefined(probes) then probes = ['1'] ; default to MMS 1
-    if undefined(datatype) then datatype = 'electron' 
-    if undefined(level) then level = 'l1b' 
+    if undefined(probes) then probes_in = ['1'] else probes_in = probes
+    if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
+    if undefined(level) then level_in = 'l1b' else level_in = level
     if undefined(data_units) then data_units = 'flux'
-    if undefined(data_rate) then data_rate = 'srvy'
+    if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
     if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '4.3.0'
       
-    mms_load_data, trange = trange, probes = probes, level = level, instrument = 'feeps', $
-        data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
-        datatype = datatype, get_support_data = get_support_data, $
+    mms_load_data, trange = trange, probes = probes_in, level = level_in, instrument = 'feeps', $
+        data_rate = data_rate_in, local_data_dir = local_data_dir, source = source, $
+        datatype = datatype_in, /get_support_data, $ ; support data is needed for spin averaging, etc.
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
-        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+        spdf = spdf
     
     if undefined(tplotnames) || tplotnames[0] eq '' then return
     
-    for probe_idx = 0, n_elements(probes)-1 do begin
-      this_probe = string(probes[probe_idx])
+    for probe_idx = 0, n_elements(probes_in)-1 do begin
+      this_probe = string(probes_in[probe_idx])
       ; split the extra integral channel from all of the spectrograms
-      mms_feeps_split_integral_ch, ['count_rate', 'intensity'], datatype, this_probe, $
-        suffix = suffix, data_rate = data_rate, level = level
+      mms_feeps_split_integral_ch, ['count_rate', 'intensity'], datatype_in, this_probe, $
+        suffix = suffix, data_rate = data_rate_in, level = level_in
         
       ; remove the sunlight contamination
-      mms_feeps_remove_sun, probe = this_probe, datatype = datatype, level = level, $
-          data_rate = data_rate, suffix = suffix, data_units = ['count_rate', 'intensity']
+      mms_feeps_remove_sun, probe = this_probe, datatype = datatype_in, level = level_in, $
+          data_rate = data_rate_in, suffix = suffix, data_units = ['count_rate', 'intensity']
 
       ; calculate the omni-directional spectra
-      mms_feeps_omni, this_probe, datatype = datatype, tplotnames = tplotnames, data_units = data_units, $
-          data_rate = data_rate, suffix=suffix
+      mms_feeps_omni, this_probe, datatype = datatype_in, tplotnames = tplotnames, data_units = data_units, $
+          data_rate = data_rate_in, suffix=suffix
 
       ; calculate the spin averages
-      mms_feeps_spin_avg, probe=probes[probe_idx], datatype=datatype, suffix = suffix, data_units = data_units
+      mms_feeps_spin_avg, probe=this_probe, datatype=datatype_in, suffix = suffix, data_units = data_units
     endfor
     
     ; interpolate to account for gaps in data near perigee for srvy data
-    if data_rate eq 'srvy' then begin
+    if data_rate_in eq 'srvy' then begin
       tdeflag, tnames('*_intensity_*'), 'repeat', /overwrite
       tdeflag, tnames('*_count_rate_*'), 'repeat', /overwrite
       tdeflag, tnames('*_counts_*'), 'repeat', /overwrite

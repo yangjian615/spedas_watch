@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-23 17:58:40 -0800 (Tue, 23 Feb 2016) $
-;$LastChangedRevision: 20121 $
+;$LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20296 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -38,10 +38,11 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
 
   prefix = 'mms'+probe+'_epd_feeps_'
   ; get the spin sectors
-  get_data, prefix + 'spinsectnum'+suffix, data=spin_sectors
+  get_data, prefix + datatype + '_spinsectnum'+suffix, data=spin_sectors
   
   if ~is_struct(spin_sectors) then begin
     dprint, dlevel = 0, 'Error, couldn''t find the tplot variable containing the spin sectors for calculating the spin averages.'
+    return
   endif
   
   spin_starts = where(spin_sectors.Y[0:n_elements(spin_sectors.Y)-2] ge spin_sectors.Y[1:n_elements(spin_sectors.Y)-1])+1

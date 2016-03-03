@@ -88,12 +88,12 @@
 ;        
 ;         
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-12 11:21:57 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19973 $
+;$LastChangedDate: 2016-03-02 16:15:29 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20300 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
-pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
+pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, $
     level = level, local_data_dir = local_data_dir, source = source, $
     remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
     ephemeris_only = ephemeris_only, no_download=no_download, login_info=login_info, $
@@ -131,7 +131,7 @@ pro mms_load_state, trange = trange, probes = probes, datatypes = datatypes, $
     endif
     
     ; initialize undefined values
-    if undefined(trange) then trange = timerange() else trange = timerange(trange)
+    if undefined(trange_in) then trange = timerange() else trange = timerange(trange_in)
     if undefined(probes) then probes = p_names else probes = strcompress(string(probes), /rem)
     if undefined(level) then level = 'def' else level = strlowcase(level)
     if undefined(datatypes) then datatypes = '*' else datatypes = strlowcase(datatypes) 

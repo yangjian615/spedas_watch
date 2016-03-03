@@ -50,8 +50,8 @@
 ;                trange=['2015-09-03', '2015-09-04']
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20259 $
+;$LastChangedDate: 2016-03-02 08:47:44 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20286 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edi/mms_load_edi.pro $
 ;-
 
@@ -105,7 +105,7 @@ pro mms_load_edi, trange = trange, probes = probes, datatype = datatype, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-    latest_version = latest_version, min_version = min_version
+    latest_version = latest_version, min_version = min_version, spdf = spdf
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'efield'
@@ -118,7 +118,8 @@ pro mms_load_edi, trange = trange, probes = probes, datatype = datatype, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
-        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+        spdf = spdf
     
     mms_edi_set_metadata, tplotnames, data_rate=data_rate, suffix=suffix
 

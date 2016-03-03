@@ -80,8 +80,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2016-02-23 16:01:49 -0800 (Tue, 23 Feb 2016) $
-; $LastChangedRevision: 20116 $
+; $LastChangedDate: 2016-03-02 16:35:44 -0800 (Wed, 02 Mar 2016) $
+; $LastChangedRevision: 20301 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
@@ -188,7 +188,6 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         str_element, d, 'nenergy', (d.nenergy), /add_replace
         str_element, d, 'bins', REBIN(TRANSPOSE(d.bins), d.nenergy, d.nbins), /add_replace
         str_element, d, 'bins_sc', REBIN(TRANSPOSE(d.bins_sc), d.nenergy, d.nbins), /add_replace
-
         IF keyword_set(sc_pot) OR keyword_set(vsc) THEN BEGIN
            IF keyword_set(vsc) THEN BEGIN
               sstat = EXECUTE("v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')")
@@ -222,11 +221,12 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
 
         IF keyword_set(showdata) THEN BEGIN
            dummy = d
-           dummy.data = FLOAT(d.bins_sc) 
+           dummy = conv_units(dummy, 'df')
+           dummy.data = FLOAT(dummy.bins_sc)
            status = EXECUTE("slice2d, dummy, _extra=_extra, vel=vel, /noplot, datplot=block, /verbose")
            undefine, dummy
         ENDIF
-        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=dpts")
+        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel")
         IF status EQ 1 THEN BEGIN
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal
            IF keyword_set(showdata) THEN BEGIN

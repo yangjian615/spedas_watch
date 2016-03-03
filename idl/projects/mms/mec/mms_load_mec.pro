@@ -48,8 +48,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20259 $
+;$LastChangedDate: 2016-03-02 08:47:44 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20286 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 
@@ -61,7 +61,8 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, $
     cdf_version = cdf_version, latest_version = latest_version, $
-    min_version = min_version, cdf_records = cdf_records
+    min_version = min_version, cdf_records = cdf_records, $
+    spdf = spdf
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'ephts04d'
@@ -75,7 +76,7 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        cdf_records = cdf_records
+        cdf_records = cdf_records, spdf = spdf
 
     ; turn the right ascension and declination of the L vector into separate tplot variables
     ; this is for passing to dmpa2gse

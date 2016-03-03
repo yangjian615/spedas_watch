@@ -60,8 +60,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:33:20 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20264 $
+;$LastChangedDate: 2016-03-02 08:47:44 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20286 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 pro mms_set_scm_options, tplotnames, prefix = prefix,datatype = datatype, coord=coord
@@ -93,7 +93,8 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
                   no_color_setup = no_color_setup, time_clip = time_clip, $
                   no_update = no_update, suffix = suffix, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-                  latest_version = latest_version, min_version = min_version
+                  latest_version = latest_version, min_version = min_version, $
+                  spdf = spdf
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     ;if undefined(datatype) then datatype = 'scsrvy'
@@ -108,7 +109,8 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
-        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+        spdf = spdf
 
     if level eq 'l1a' then coord = '123'
     if level eq 'l1b' then coord = 'scm123'

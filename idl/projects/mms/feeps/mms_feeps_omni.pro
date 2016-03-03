@@ -25,8 +25,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-25 20:44:48 -0800 (Thu, 25 Feb 2016) $
-; $LastChangedRevision: 20205 $
+; $LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
+; $LastChangedRevision: 20296 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
@@ -53,19 +53,25 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   ;species_str = datatype+'_'+species
   ;if (data_rate) eq 'brst' then prefix = 'mms'+probe+'_epd_feeps_brst_' else prefix = 'mms'+probe+'_epd_feeps_'
   prefix = 'mms'+probe+'_epd_feeps_'
-  get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[0]+'_clean_sun_removed'+suffix, data = d, dlimits=dl
+  var_name = prefix+'top_'+datatype+'_'+data_units+'_sensorID_'+sensors[0]+'_clean_sun_removed'+suffix
+  var_name = strlowcase(var_name)
+  get_data, var_name, data = d, dlimits=dl
 
   if is_struct(d) then begin
     flux_omni = dblarr(n_elements(d.x), n_elements(sensors)*2., n_elements(d.v))
     sensor_count = 0
 
     for i=0, n_elements(sensors)-1. do begin ; loop through each top sensor
-      get_data, prefix+'top_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix, data = d
+      var_name = prefix+'top_'+datatype+'_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix
+      var_name = strlowcase(var_name)
+      get_data, var_name, data = d
       flux_omni[*, sensor_count, *] = d.Y
       sensor_count += 1
     endfor
     for i=0, n_elements(sensors)-1. do begin ; loop through each bottom sensor
-      get_data, prefix+'bottom_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix, data = d
+      var_name = prefix+'bottom_'+datatype+'_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix
+      var_name = strlowcase(var_name)
+      get_data, var_name, data = d
       flux_omni[*, sensor_count, *] = d.Y
       sensor_count += 1
     endfor

@@ -88,8 +88,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-01 09:03:12 -0800 (Tue, 01 Mar 2016) $
-;$LastChangedRevision: 20276 $
+;$LastChangedDate: 2016-03-02 08:48:56 -0800 (Wed, 02 Mar 2016) $
+;$LastChangedRevision: 20287 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -100,7 +100,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup, $
                   suffix = suffix, time_clip = time_clip, no_update = no_update, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version, cdf_records = cdf_records
+                  min_version = min_version, cdf_records = cdf_records, spdf = spdf
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -124,7 +124,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     endif else begin
         datatypes = datatypes_in
     endelse
-
+    
     if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
     ; handle shortcut characters in the user's local data directory
     spawn, 'echo ' + local_data_dir, local_data_dir
@@ -151,12 +151,24 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     if no_download eq 0 then begin
         status = mms_login_lasp(login_info = login_info)
         if status ne 1 then no_download = 1
+       ; if status eq -2 then public=1 ; soon
     endif
-    
+
     ;clear so new names are not appended to existing array
     undefine, tplotnames
     ; clear CDF filenames, so we're not appending to an existing array
     undefine, cdf_filenames
+
+    if keyword_set(spdf) then begin
+        qt0 = systime(/sec)
+        mms_load_data_spdf, probes = probes, datatype = datatypes, instrument = instrument, $
+          trange = trange, source = source, level = level, tplotnames = tplotnames, $
+          remote_data_dir = remote_data_dir, local_data_dir = local_data_dir, $
+          attitude_data = attitude_data, no_download = no_download, $
+          no_server = no_server, data_rate = data_rates
+        no_download = 1
+        dt_query += systime(/sec) - qt0
+    endif
     
     ;loop over probe, rate, level, and datatype
     ;omitting some tabbing to keep format reasonable
@@ -185,7 +197,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             qt0 = systime(/sec) ;temporary
             data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
                     data_rate_mode=data_rate, data_level=level, start_date=day_string, $
-                    end_date=end_string, descriptor=descriptor)
+                    end_date=end_string, descriptor=descriptor) ;, public=public)
             dt_query += systime(/sec) - qt0 ;temporary
         endif
 
@@ -226,7 +238,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 if same_file eq 0 then begin
                     td0 = systime(/sec) ;temporary
                     dprint, dlevel = 0, 'Downloading ' + filename[file_idx] + ' to ' + file_dir
-                    status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir)
+                    status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir) ;, public=public)
 
                     dt_download += systime(/sec) - td0 ;temporary
                     if status eq 0 then append_array, files, file_dir + '/' + filename[file_idx]

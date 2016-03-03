@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-26 08:16:57 -0800 (Fri, 26 Feb 2016) $
-; $LastChangedRevision: 20208 $
+; $LastChangedDate: 2016-03-02 15:16:40 -0800 (Wed, 02 Mar 2016) $
+; $LastChangedRevision: 20297 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -44,10 +44,10 @@ endif
 
 mms_load_feeps, probe=probe, data_rate=data_rate, datatype='electron', suffix='_electrons', data_units = type
 mms_load_feeps, probe=probe, data_rate=data_rate, datatype='ion', suffix='_ions', data_units = type
-mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[71, 71], data_units = type
-mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[201, 201], data_units = type
-mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[78, 78], data_units = type
-mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[206, 206], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[70, 71], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[200, 201], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[76, 77], data_units = type
+mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[205, 206], data_units = type
 
 ; we use the B-field data at the top of the plot, and the position data in GSM coordinates
 ; loaded from the QL DFG files
