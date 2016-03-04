@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-01 16:49:04 -0800 (Tue, 01 Mar 2016) $
-;$LastChangedRevision: 20281 $
+;$LastChangedDate: 2016-03-03 16:40:10 -0800 (Thu, 03 Mar 2016) $
+;$LastChangedRevision: 20323 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_crib_stel3d.pro $
 ;-
 
@@ -46,8 +46,21 @@ dist = mms_get_fpi_dist(name, trange=trange)
 ;convert structures to stel3d data model
 data = spd_dist_to_hash(dist)
 
+
+;load bfield (cyan vector) and velocity (yellow vector) support data
+mms_load_dfg, probe=probe, trange=trange, level='ql'
+mms_load_fpi, data_rate=data_rate, level='l1b', datatype='d'+species+'s-moms', $
+              probe=probe, trange=trange
+
+bfield = 'mms'+probe+'_dfg_srvy_gse_bvec'
+velocity = 'mms'+probe+'_d'+species+'s_bulk'
+
+;combine separate velocity components
+join_vec, velocity + ['X','Y','Z'], velocity
+
+
 ;once GUI is open select PSD from Units menu
-stel3d, data=data, trange=trange
+stel3d, data=data, trange=trange, bfield=bfield, velocity=velocity
 
 
 stop
@@ -79,8 +92,18 @@ dist = mms_get_hpca_dist(tname)
 ;convert structures to stel3d data model
 data = spd_dist_to_hash(dist)
 
+
+;load bfield (cyan vector) and velocity (yellow vector) support data
+mms_load_dfg, probe=probe, trange=trange, level='ql'
+mms_load_hpca, probes=probe, trange=trange, data_rate=data_rate, level='l1b', $
+               datatype='moments', varformat='*_hplus_ion_bulk_velocity'
+
+bfield = 'mms'+probe+'_dfg_srvy_gse_bvec'
+velocity = 'mms'+probe+'_hpca_hplus_ion_bulk_velocity'
+
+
 ;once GUI is open select PSD from Units menu
-stel3d, data=data, trange=trange
+stel3d, data=data, trange=trange, bfield=bfield, velocity=velocity
 
 
 

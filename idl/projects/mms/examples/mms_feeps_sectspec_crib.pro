@@ -12,36 +12,41 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-24 09:12:06 -0800 (Wed, 24 Feb 2016) $
-; $LastChangedRevision: 20149 $
+; $LastChangedDate: 2016-03-03 13:14:38 -0800 (Thu, 03 Mar 2016) $
+; $LastChangedRevision: 20312 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_feeps_sectspec_crib.pro $
 ;-
 
-trange = ['2015-08-24/13:53', '2015-08-24/14:05']
+trange = ['2016-1-20/19:50', '2016-1-20/19:55']
 data_rate = 'brst'
 probe = '1'
+level = 'l2'
 
 ; load the FEEPS data
-mms_load_feeps, probe = probe, trange = trange, data_rate = data_rate, /time_clip
+mms_load_feeps, probe = probe, trange = trange, data_rate = data_rate, level='l2', /time_clip
 
 ; generate the sector-time spectrograms, no sun contamination removed
 mms_feeps_sector_spec, probe = probe, data_rate = data_rate
 
-; no sun contamination removed
-tplot, ['mms1_epd_feeps_bottom_count_rate_sensorID_3_sectspec', $
-        'mms1_epd_feeps_bottom_count_rate_sensorID_4_sectspec', $
-        'mms1_epd_feeps_bottom_count_rate_sensorID_5_sectspec', $
-        'mms1_epd_feeps_bottom_count_rate_sensorID_10_sectspec', $
-        'mms1_epd_feeps_bottom_count_rate_sensorID_11_sectspec']
-        
+stop
+
+; electrons, no sun contamination removed
+tplot, ['mms1_epd_feeps_bottom_electron_count_rate_sensorid_3_sectspec', $
+        'mms1_epd_feeps_bottom_electron_count_rate_sensorid_4_sectspec', $
+        'mms1_epd_feeps_bottom_electron_count_rate_sensorid_5_sectspec', $
+        'mms1_epd_feeps_bottom_electron_count_rate_sensorid_10_sectspec', $
+        'mms1_epd_feeps_bottom_electron_count_rate_sensorid_11_sectspec']
+
+stop
+
 ; generate the sector-time spectrograms with sun contamination removed
 mms_feeps_sector_spec, probe = probe, data_rate = data_rate, /remove_sun
 
 window, 1
-tplot, window=1, ['mms1_epd_feeps_bottom_count_rate_sensorID_3_sun_removed_sectspec', $
-  'mms1_epd_feeps_bottom_count_rate_sensorID_4_sun_removed_sectspec', $
-  'mms1_epd_feeps_bottom_count_rate_sensorID_5_sun_removed_sectspec', $
-  'mms1_epd_feeps_bottom_count_rate_sensorID_10_sun_removed_sectspec', $
-  'mms1_epd_feeps_bottom_count_rate_sensorID_11_sun_removed_sectspec']
+tplot, window=1, ['mms1_epd_feeps_bottom_electron_count_rate_sensorid_3_sun_removed_sectspec', $
+  'mms1_epd_feeps_bottom_electron_count_rate_sensorid_4_sun_removed_sectspec', $
+  'mms1_epd_feeps_bottom_electron_count_rate_sensorid_5_sun_removed_sectspec', $
+  'mms1_epd_feeps_bottom_electron_count_rate_sensorid_10_sun_removed_sectspec', $
+  'mms1_epd_feeps_bottom_electron_count_rate_sensorid_11_sun_removed_sectspec']
 stop
 end

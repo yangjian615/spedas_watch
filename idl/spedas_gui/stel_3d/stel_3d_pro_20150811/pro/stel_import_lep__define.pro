@@ -241,19 +241,60 @@ function stel_import_lep::getXYZCoord, indata, ALL=all,   $
   
 end
 ;
+; Interpolate a tplot variable to the particle data sample times 
+; and store interpolated array in object with specified key.
+;
+function stel_import_lep::store_tvar, name, type
+
+  if ~is_string(name) then return, 0
+  if ~is_string(type) then return, 0
+
+  suffix = '_stel3d_temp'
+
+  !null = tnames(name,n)
+
+  ;ensure the variable exists and was uniquely specified
+  if n ne 1 then return, 0
+
+  times = time_double(self.stel_import_lep['keys'])
+
+  ;interpolate to particle data
+  tinterpol_mxn, name, times, newname=name+suffix, /nan_extrapolate
+
+  get_data, name+suffix, data=data
+
+  ;delete temporary variable
+  store_data, name+suffix, /delete
+
+  self.stel_import_lep[type] = data
+
+  return, 1
+
+end
+;
+; Store support data, returns 0 if one or more attempts fail 
+;
+function stel_import_lep::read_support, bfield=bfield, velocity=velocity
+
+  success = 1
+
+  if is_string(bfield) then begin
+    success = self->store_tvar(bfield,'bfield') and success
+  endif
+
+  if is_string(velocity) then begin
+    success = self->store_tvar(velocity,'velocity') and success
+  endif
+
+  return, success
+
+end
+;
 ; Get magnetic filed and/or velocity vector
 ;
 function stel_import_lep::getVector, cTime, VEL=vel
 @stel3d_common
 
-   ;verify presense of file
-   infile = file_which(in_slice, /INCLUDE_CURRENT_DIR)
-   if infile eq '' then begin
-     message, /info, 'cannot determine supplementary vector:' + $
-                      keyword_set(vel) ? 'velocity':'B field'
-     return, !null
-   endif
-   tplot_restore, FILE=infile
    if cTime eq !null then begin
     tmpkeys=(self.stel_import_lep)['keys']
     cTime=tmpkeys[0]
@@ -265,6 +306,25 @@ function stel_import_lep::getVector, cTime, VEL=vel
     message, 'specified time is out of range '
     return, !null
    endif
+
+   ;check for presense of imported tplot variables first
+   ; (see read_support method)
+   tag = keyword_set(vel) ? 'velocity' : 'bfield'
+
+   if (self.stel_import_lep).haskey(tag) then begin
+     data = self.stel_import_lep[tag]
+     !null = min( abs(data.x - dtime) ,pos)
+     return, data.y[pos,*]
+   endif
+
+   ;verify presense of file
+   infile = file_which(in_slice, /INCLUDE_CURRENT_DIR)
+   if infile eq '' then begin
+     message, /info, 'cannot determine supplementary vector:' + $
+                      keyword_set(vel) ? 'velocity':'B field'
+     return, !null
+   endif
+   tplot_restore, FILE=infile
    
    if keyword_set(vel) then begin ; Velocity
 ;     print, 'Velocity vector'

@@ -129,6 +129,12 @@ compile_opt idl2
     return
   endif
   
+  ;import support variables
+  support = olep.read_support(bfield=bfield, velocity=velocity)
+  if ~support then begin
+    message, /info, 'failed to import one or more specified support variable'
+  endif
+
   timeKeys = olep.getTimeKeys()
   numTimeKeys = n_elements(timeKeys)
   if ~keyword_set(curtime) then begin

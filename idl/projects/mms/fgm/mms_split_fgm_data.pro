@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-27 08:04:12 -0800 (Sat, 27 Feb 2016) $
-;$LastChangedRevision: 20240 $
+;$LastChangedDate: 2016-03-03 08:06:46 -0800 (Thu, 03 Mar 2016) $
+;$LastChangedRevision: 20302 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_split_fgm_data.pro $
 ;-
 pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate, instrument = instrument
@@ -34,6 +34,9 @@ pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level =
             store_data, tplot_name + '_bvec'+suffix, data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
             store_data, tplot_name + '_btot'+suffix, data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits
 
+            options, tplot_name + '_btot'+suffix, labels='Bmag'
+            options, tplot_name + '_btot'+suffix, ytitle=probe+'!CFGM'
+            
             ; need to add the newly created variables from the previous procedure to the list of tplot names
             append_array, tplotnames, tplot_name + '_bvec'+suffix
             append_array, tplotnames, tplot_name + '_btot'+suffix

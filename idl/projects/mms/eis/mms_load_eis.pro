@@ -68,8 +68,8 @@
 ;                  mms_eis_omni to address burst variable name changes
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20259 $
+;$LastChangedDate: 2016-03-03 13:32:29 -0800 (Thu, 03 Mar 2016) $
+;$LastChangedRevision: 20313 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 
@@ -81,7 +81,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, no_interp = no_interp, $
                   suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
                   cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version
+                  min_version = min_version, spdf = spdf
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'extof'
@@ -99,7 +99,8 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
         datatype = datatype, get_support_data = get_support_data, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
-        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+        spdf = spdf
     
     ; don't try to calculate omnidirectional quantities if no data was loaded
     if undefined(tplotnames) || tplotnames[0] eq '' then return

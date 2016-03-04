@@ -28,7 +28,7 @@ if resolution eq 0 and geometric eq 0 then resolution=150
 folder = 'slice_test/'
 
 ;trange = ['2015-09-1/12:20:09', '2015-09-1/12:20:09.05'] 
-trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:01']
+trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:00.05']
 coord_sys = 'dbcs'
 data_rate = 'brst'
 level = 'l2'
@@ -36,16 +36,18 @@ level = 'l2'
 ;load particle, field & support data
 ;---------------------------------------------
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-dist', $
-              probe=probe, trange=trange, /no_update
-mms_load_fgm, probe=probe, trange=trange, instrument='dfg', level='l2pre'
+              probe=probe, trange=trange
+mms_load_fgm, probe=probe, trange=trange, level=level, data_rate=data_rate
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $
-              probe=probe, trange=trange, /no_update
+              probe=probe, trange=trange
 
   
 ; b-field vector for data within the last 2 weeks (ql)
 ; bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
 ; b-field vector for data older than 2 weeks ago (l2pre)
-bname = 'mms'+probe+'_dfg_srvy_l2pre_gse_bvec'
+; bname = 'mms'+probe+'_dfg_srvy_l2pre_gse_bvec'
+;  b-field vector for L2 data
+bname = 'mms'+probe+'_fgm_b_gse_brst_l2_bvec'
 vname = 'mms'+probe+'_d'+species+'s_bulk'
 join_vec, level eq 'l2' ? vname + ['x','y','z'] + '_' + coord_sys + '_' + data_rate : vname + ['X','Y','Z'], vname
 

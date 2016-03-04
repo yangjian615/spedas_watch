@@ -21,8 +21,8 @@
 ;       SPDF doesn't. 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 08:39:40 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20285 $
+;$LastChangedDate: 2016-03-03 13:32:56 -0800 (Thu, 03 Mar 2016) $
+;$LastChangedRevision: 20314 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -94,7 +94,7 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
                     path_count += 1
                 endfor
               end
-             'eis': begin
+             'epd-eis': begin
                 ; EIS
                 ; mms1/epd-eis/srvy/l2/extof/2016/01/
                 instru = 'epd-eis' ; different instrument name for EIS data in the directory structure
