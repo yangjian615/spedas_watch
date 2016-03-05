@@ -1,53 +1,3 @@
-
-
-;+
-; Purpose:
-;   Find the sun direcion vector if requested
-;
-;-
-function thm_part_dist_array_getsun, probe=probe, times=times, fail=fail
-
-    compile_opt idl2, hidden
-
-  
-  ctn = '2dslice_temp_sundir'
-  nt = n_elements(times)
-   
-  ; Caculation needed for dsl
-  dprint, dlevel=4, 'Finding sun direction in DSL...'
-
-
-  thm_load_state, probe=probe, trange=minmax(times) + 120*[-1,1], suffix='_'+ctn, $
-                  /get_support_data
-
-  ;Transform GSE x-axis (defined by sun)
-  store_data, ctn, data = {x: times, $
-                           y: [1.,0,0] ## replicate(1,nt) }
-  thm_cotrans, ctn, probe=probe, in_coord='gse', out_coord='dsl', $
-               support_suffix='_'+ctn, out_suff='_dsl'
-
-
-  ;Return array of transformed vectors
-  get_data, ctn+'_dsl', data=ctd
-  if size(ctd,/type) ne 8 then begin
-    fail = 'Could not obtain coordinate transform from GSE -> DSL'+ $
-           ', check for error from THM_COTRANS.'
-    dprint, dlevel=0, fail
-    return, -1
-  endif
-  sundir = ctd.y
-  
-  
-  ;Delete temporary tplot data
-  store_data, '*'+ctn+'*', /delete
-
-
-  return, sundir
-
-end
-
-
-
 ;+
 ;
 ;Procedure:
@@ -126,8 +76,8 @@ end
 ;Modified by A. Flores
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-02-24 18:05:51 -0800 (Mon, 24 Feb 2014) $
-; $LastChangedRevision: 14423 $
+; $LastChangedDate: 2016-03-04 17:47:13 -0800 (Fri, 04 Mar 2016) $
+; $LastChangedRevision: 20329 $
 ; $URL $
 ;-
 
@@ -276,13 +226,6 @@ endif
 
 
 
-;get sun vector (in DSL) if requested
-if keyword_set(get_sun_direction) then begin
-  sundir = thm_part_dist_array_getsun(probe=probe, times=times[time_ind], fail=fail)
-endif
-
-
-
 ; Find all mode changes.  This will allow pre-allocation of memory 
 ; for the data structure arrays and bypass costly concatenations
 ; in the following for loop.
@@ -322,9 +265,9 @@ for i=0L,n_times-1 do begin
   endelse
 
 
-  ;add sun direction vector
-  if keyword_set(sundir) && n_elements(sundir) gt 1 then begin
-    str_element, /add, dat, 'sun_vector', reform(sundir[i,*])
+  ;add placeholder for sun direction vector
+  if keyword_set(get_sun_direction) then begin
+    str_element, /add, dat, 'sun_vector', replicate(!values.f_nan,3)
   endif
   
   
@@ -351,6 +294,12 @@ for i=0L,n_times-1 do begin
   
   
 endfor
+
+
+;populate sun direction field
+if keyword_set(get_sun_direction) then begin
+  thm_part_addsun, dist_ptrs, probe=probe, trange=trange
+endif
 
 
 return, dist_ptrs

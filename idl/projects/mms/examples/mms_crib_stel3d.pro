@@ -4,13 +4,15 @@
 ;
 ;
 ;Notes:
-;  -Currently only compatible with modified tool at:
-;    /spedas_gui/stel_3d/stel_3d_pro_20150811/pro
+;  -See also:
+;      mms_crib_stel3d_l2
+;  -Compatible with modified tool at:
+;      /spedas_gui/stel_3d/stel_3d_pro_20150811/pro
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-03 16:40:10 -0800 (Thu, 03 Mar 2016) $
-;$LastChangedRevision: 20323 $
+;$LastChangedDate: 2016-03-04 13:54:29 -0800 (Fri, 04 Mar 2016) $
+;$LastChangedRevision: 20326 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_crib_stel3d.pro $
 ;-
 
