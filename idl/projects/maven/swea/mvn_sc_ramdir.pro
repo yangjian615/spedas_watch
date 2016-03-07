@@ -26,6 +26,17 @@
 ;  This is the velocity vector -- the RAM flow is incident on the spacecraft
 ;  from the opposite direction.
 ;
+;  The corotation velocity in the IAU_MARS frame as a function of altitude
+;  (h) and latitude (lat) is:
+;
+;      V_corot = (240 m/s)*[1 + h/3390]*cos(lat)
+;
+;  Models (LMD and MTGCM) predict that peak horizontal winds are 190-315 m/s 
+;  near the exobase and 155-165 m/s near the homopause.  These are comparable 
+;  to the corotation velocity.  The spacecraft velocity is ~4200 m/s in this 
+;  altitude range, so winds could result in up to a ~4-deg angular offset of 
+;  the actual flow from the nominal ram direction.
+;
 ;USAGE:
 ;  mvn_sc_ramdir, trange
 ;
@@ -39,18 +50,21 @@
 ;       FRAME:    Rotate to FRAME coordinates instead of Spacecraft coord.
 ;                 Any frame defined in the MAVEN frames kernel is allowed.
 ;
+;       MSO:      Calculate ram vector in the MSO frame instead of the
+;                 rotating IAU_MARS frame.  May be useful at high altitudes.
+;
 ;       APP:      Shorthand for FRAME='MAVEN_APP'.
 ;
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-08 16:34:47 -0800 (Sun, 08 Nov 2015) $
-; $LastChangedRevision: 19306 $
+; $LastChangedDate: 2016-03-06 15:04:38 -0800 (Sun, 06 Mar 2016) $
+; $LastChangedRevision: 20335 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
-pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
+pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame, mso=mso
 
   @maven_orbit_common
 
@@ -74,17 +88,31 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame
   mk = spice_test('*', verbose=-1)
   indx = where(mk ne '', count)
   if (count eq 0) then mvn_swe_spice_init, trange=[tmin,tmax]
-  
-  if keyword_set(dt) then begin
-    npts = ceil((tmax - tmin)/dt)
-    Tsc = tmin + dt*dindgen(npts)
-    Vsc = fltarr(npts,3)
-    Vsc[*,0] = spline(state.time, state.geo_v[*,0], Tsc)
-    Vsc[*,1] = spline(state.time, state.geo_v[*,1], Tsc)
-    Vsc[*,2] = spline(state.time, state.geo_v[*,2], Tsc)
+
+  if keyword_set(mso) then begin
+    if keyword_set(dt) then begin
+      npts = ceil((tmax - tmin)/dt)
+      Tsc = tmin + dt*dindgen(npts)
+      Vsc = fltarr(npts,3)
+      Vsc[*,0] = spline(state.time, state.mso_v[*,0], Tsc)
+      Vsc[*,1] = spline(state.time, state.mso_v[*,1], Tsc)
+      Vsc[*,2] = spline(state.time, state.mso_v[*,2], Tsc)
+    endif else begin
+      Tsc = state.time
+      Vsc = state.mso_v
+    endelse
   endif else begin
-    Tsc = state.time
-    Vsc = state.geo_v
+    if keyword_set(dt) then begin
+      npts = ceil((tmax - tmin)/dt)
+      Tsc = tmin + dt*dindgen(npts)
+      Vsc = fltarr(npts,3)
+      Vsc[*,0] = spline(state.time, state.geo_v[*,0], Tsc)
+      Vsc[*,1] = spline(state.time, state.geo_v[*,1], Tsc)
+      Vsc[*,2] = spline(state.time, state.geo_v[*,2], Tsc)
+    endif else begin
+      Tsc = state.time
+      Vsc = state.geo_v
+    endelse
   endelse
 
 ; Spacecraft velocity in IAU_MARS frame --> rotate to S/C or APP frame

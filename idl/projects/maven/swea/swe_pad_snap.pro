@@ -52,11 +52,13 @@
 ;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
 ;                      Default = 1 (yes).
 ;
-;       SPEC:          Plot energy spectra for parallel and anti-parallel
-;                      populations.  The value of this keyword is the pitch 
-;                      angle width (deg) to include:
+;       SPEC:          Plot energy spectra for parallel, anti-parallel, and
+;                      90-degree pitch angle populations.  The value of this 
+;                      keyword is the pitch angle width (deg) that is used
+;                      to separate the populations:
 ;
 ;                        parallel      : 0 to SPEC degrees
+;                        middle        : SPEC to (180 - SPEC) degrees
 ;                        anti-parallel : (180 - SPEC) to 180 degrees
 ;
 ;                      Pitch angle bins must be entirely contained within
@@ -64,10 +66,12 @@
 ;
 ;                      Any value of SPEC < 30 deg is taken to be 30 deg.
 ;
+;        NOMID:        When using keyword SPEC, do not plot the energy spectrum
+;                      for the middle range of pitch angles.  Plot only the 
+;                      spectra for parallel and anti-parallel populations.
+;
 ;        PLOTLIMS:     Plot dashed lines at the limits of the pitch angle
 ;                      coverage.
-;
-;        NOMID:        Do not plot a horizontal line at the average flux.
 ;
 ;        PEP:          Plot vertical dashed lines at the nominal photoelectron
 ;                      energy peaks at 23 and 27 eV (due to ionization of CO2
@@ -75,7 +79,7 @@
 ;
 ;        RESAMPLE:     Two independent pitch angle distributions are measured 
 ;                      for each PAD data structure.  This keyword averages them
-;                      together.
+;                      together and plots the result.
 ;
 ;        UNCERTAINTY:  If set, show the relative uncertainty of the resampled PAD.
 ;
@@ -101,8 +105,8 @@
 ;                      one gyroradius.  Only works when HIRES is set.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-01-12 12:28:19 -0800 (Tue, 12 Jan 2016) $
-; $LastChangedRevision: 19714 $
+; $LastChangedDate: 2016-03-06 15:05:53 -0800 (Sun, 06 Mar 2016) $
+; $LastChangedRevision: 20336 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -114,7 +118,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   pot=pot, scp=scp, spec=spec, plotlims=plotlims, norm=norm, $
                   center=center, pep=pep, resample=resample, hires=hires, $
                   fbdata=fbdata, window=window, adiabatic=adiabatic, $
-                  nomid=nomid, uncertainty=uncertainty
+                  nomid=nomid, uncertainty=uncertainty, nospec90=nospec90
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt

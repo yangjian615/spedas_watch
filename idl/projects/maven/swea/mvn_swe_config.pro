@@ -15,8 +15,8 @@
 ;    LIST:          List all configuration changes.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 14:43:14 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17641 $
+; $LastChangedDate: 2016-03-06 15:11:44 -0800 (Sun, 06 Mar 2016) $
+; $LastChangedRevision: 20340 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -74,6 +74,9 @@ pro mvn_swe_config, list=list, timebar=timebar
 
   t_mcp = time_double('2013-11-18/18:28')              ; MAVEN launch (bias = 2500 V)
   t_mcp = [t_mcp, time_double('2014-10-17/02:26:41')]  ; bias adjustment (2500 -> 2600 V)
+  t_mcp = [t_mcp, time_double('2015-12-18/23:39:09')]  ; bias adjustment (2600 -> 2700 V)
+  t_mcp = [t_mcp, time_double('2015-12-22/20:01:45')]  ; revert to 2600 V after HV reset
+  t_mcp = [t_mcp, time_double('2015-12-30/02:28:57')]  ; back to correct bias (2700 V)
 
 ; Gather all the configuration change times into one variable (for timebar).
 

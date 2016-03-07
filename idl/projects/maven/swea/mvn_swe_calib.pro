@@ -54,8 +54,8 @@
 ;       DFGON:        Turn on the elevation-dependent sensitivity.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-04 17:42:27 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19249 $
+; $LastChangedDate: 2016-03-06 15:12:33 -0800 (Sun, 06 Mar 2016) $
+; $LastChangedRevision: 20341 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -267,7 +267,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
 ;      2.275        2014-12-21                     Steady solar wind; S/C sun point
 ;
 
-  swe_crosscal = [2.585, 2.275]
+  swe_crosscal = [2.585, 2.275, 2.272, 2.275, 2.275]
 
 ; Add a dimension for relative variation among the 16 anodes.  This variation is
 ; dominated by the MCP efficiency, but I include the same dimension here for ease

@@ -11,8 +11,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-19 12:09:05 -0700 (Sun, 19 Apr 2015) $
-; $LastChangedRevision: 17367 $
+; $LastChangedDate: 2016-03-06 15:07:07 -0800 (Sun, 06 Mar 2016) $
+; $LastChangedRevision: 20337 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_stat.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -45,9 +45,9 @@ pro mvn_swe_stat, npkt=npkt, silent=silent
     if (size(swe_3d_arc,/type) eq 8) then n_a1 = n_elements(swe_3d_arc) else n_a1 = 0L
     if (size(a2,/type) eq 8) then n_a2 = n_elements(a2) else n_a2 = 0L
     if (size(a3,/type) eq 8) then n_a3 = n_elements(a3) else n_a3 = 0L
-    if (size(a4,/type) eq 8) then n_a4 = n_elements(a4) else n_a4 = 0L
+    if (size(a4,/type) eq 8) then n_a4 = n_elements(a4)*16 else n_a4 = 0L
     if (size(a5,/type) eq 8) then n_a5 = n_elements(a5)*16 else n_a5 = 0L
-    if (size(a6,/type) eq 8) then n_a6 = n_elements(a6)*16 else n_a6 = 0L
+    if (size(a6,/type) eq 8) then n_a6 = n_elements(a6) else n_a6 = 0L
   endelse
   
   npkt = [n_a0, n_a1, n_a2, n_a3, n_a4, n_a5, n_a6, n_hsk]

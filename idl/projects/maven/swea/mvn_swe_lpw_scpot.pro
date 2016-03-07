@@ -47,8 +47,8 @@
 ;       Yuki Harada on 2016-02-29
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-03-03 12:51:17 -0800 (Thu, 03 Mar 2016) $
-; $LastChangedRevision: 20309 $
+; $LastChangedDate: 2016-03-06 09:38:42 -0800 (Sun, 06 Mar 2016) $
+; $LastChangedRevision: 20334 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
@@ -169,7 +169,7 @@ endif                           ;- plot
 
 
 
-;;; generate iv inflec ene
+;;; generate iv inflection voltages
 if ~keyword_set(novinfl) then begin
 ;;; set up data containers
 ders = fltarr(n_elements(div.x),128)*!values.f_nan
@@ -229,10 +229,10 @@ for it=(ntsmo-1)/2,n_elements(div.x)-(ntsmo-1)/2-1 do begin
    ;;; smooth in time
    cur = reform(div.y[it,*]) * 0.
    nsum = 0.
-   for itmso=-(ntsmo-1)/2,(ntsmo-1)/2 do begin
-      vdif0 = total(abs(div.v[it+itmso,*]-div.v[it,*]))
-      if vdif0 eq 0 and validiv[it+itmso] then begin ;- only same V steps
-         cur = cur + reform(div.y[it+itmso,*])
+   for itsmo=-(ntsmo-1)/2,(ntsmo-1)/2 do begin
+      vdif0 = total(abs(div.v[it+itsmo,*]-div.v[it,*]))
+      if vdif0 eq 0 and validiv[it+itsmo] then begin ;- only same V steps
+         cur = cur + reform(div.y[it+itsmo,*])
          nsum = nsum + 1.
       endif
    endfor
@@ -307,15 +307,15 @@ for it=(ntsmo-1)/2,n_elements(div.x)-(ntsmo-1)/2-1 do begin
          fit,x,y2,param=p,funct='gauss2',verb=-1, $ ;- 2nd fit
              fitvalues=yfit
          if p.x0 gt vrinfl[0] and p.x0 lt vrinfl[1] then begin
-            vinfl[it] = p.x0
-            chi2[it] = total((y-yfit)^2)/(n_elements(y)-3.)
+            vinfl[it] = p.x0    ;- This is what I want
+            chi2[it] = total((y-yfit)^2)/(n_elements(y)-3.) ;- chi2 for qflag
          endif
       endif
    endif
 endfor                          ;- it loop
 
 w = where(ders eq 0 , nw)
-if nw gt 0 then ders[w] = !values.f_nan
+if nw gt 0 then ders[w] = !values.f_nan ;- Don't plot invalid parts
 
 ;;; store tplot variables
 store_data,'mvn_lpw_swp1_IV_log', $
@@ -349,6 +349,9 @@ store_data,'mvn_lpw_swp1_IV_vinfl_chi2',data={x:div.x,y:chi2}, $
            dlim={datagap:maxgap}
 store_data,'mvn_lpw_swp1_IV_vinfl_qflag', $ ;- experimental
            data={x:div.x,y:exp(-chi2^2/2/.05^2)}, $
+                       ;;; This is just an arbitrary function
+                       ;;; which shows goodness of dI/dV peak fit
+                       ;;; 1 = good, 0 = bad
            dlim={datagap:maxgap,yrange:[0,1],ytitle:'Vinfl!cqflag'}
 store_data,'IV_log_smo_comb', $
            data=['mvn_lpw_swp1_IV_log_smo','mvn_lpw_swp1_IV_vfloat'], $

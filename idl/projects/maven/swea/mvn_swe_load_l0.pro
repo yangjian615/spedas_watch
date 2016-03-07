@@ -41,6 +41,8 @@
 ;       trange:        Load SWEA packets from L0 data spanning this time range.
 ;                      (Reads multiple L0 files, if necessary.  Use MAXBYTES to
 ;                      protect against brobdingnagian loads.)
+;                      OPTIONAL - recommended method is to run timespan before
+;                      calling this routine.
 ;
 ;KEYWORDS:
 ;       FILENAME:      Full path and file name for loading data.  Can be multiple
@@ -54,7 +56,8 @@
 ;                      last orbit number.
 ;
 ;       LATEST:        Ignore trange (if present), and load all data within the
-;                      LATEST days leading up to the current date.
+;                      LATEST days where data exist.  (Routine checks the database
+;                      to find latest L0 file.)
 ;
 ;       CDRIFT:        Correct for spacecraft clock drift using SPICE.
 ;                      Default = 1 (yes).
@@ -72,9 +75,11 @@
 ;
 ;       SPICEINIT:     Force a re-initialization of SPICE.  Use with caution!
 ;
+;       NODUPE:        Filter out identical packets.  Default = 1 (yes).
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 16:10:45 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19401 $
+; $LastChangedDate: 2016-03-06 15:10:43 -0800 (Sun, 06 Mar 2016) $
+; $LastChangedRevision: 20339 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -82,14 +87,14 @@
 ;-
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
                              cdrift=cdrift, sumplot=sumplot, status=status, orbit=orbit, $
-                             loadonly=loadonly, spiceinit=spiceinit
+                             loadonly=loadonly, spiceinit=spiceinit, nodupe=nodupe
 
   @mvn_swe_com
 
 ; Process keywords
 
   if not keyword_set(maxbytes) then maxbytes = 0
-  nodupe = 1
+  if (size(nodupe,/type) eq 0) then nodupe = 1
   oneday = 86400D
   
   if (size(status,/type) eq 0) then status = 1
