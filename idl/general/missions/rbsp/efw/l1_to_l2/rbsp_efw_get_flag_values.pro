@@ -10,15 +10,15 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-02-01 08:05:19 -0800 (Mon, 01 Feb 2016) $
-;   $LastChangedRevision: 19867 $
+;   $LastChangedDate: 2016-03-07 13:38:31 -0800 (Mon, 07 Mar 2016) $
+;   $LastChangedRevision: 20346 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
 
-function rbsp_efw_get_flag_values,sc,times
+function rbsp_efw_get_flag_values,sc,times,density_min=dmin
 
-
+  if ~keyword_set(dmin) then dmin = 10.
   date = strmid(time_string(timerange()),0,10)
   date = date[0]
 
@@ -87,14 +87,14 @@ function rbsp_efw_get_flag_values,sc,times
   store_data,'sc_potential',data={x:times,y:sum12}
   rbsp_efw_density_fit_from_uh_line,'sc_potential',sc,$
                                     newname='rbsp'+sc+'_density12',$
-                                    dmin=10.,$
+                                    dmin=dmin,$
                                     dmax=3000.,$
                                     setval=-1.e31
 
   store_data,'sc_potential',data={x:times,y:sum34}
   rbsp_efw_density_fit_from_uh_line,'sc_potential',sc,$
                                     newname='rbsp'+sc+'_density34',$
-                                    dmin=10.,$
+                                    dmin=dmin,$
                                     dmax=3000.,$
                                     setval=-1.e31
 

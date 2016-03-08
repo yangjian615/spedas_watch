@@ -20,8 +20,8 @@
 ;                      Default = 1
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-03-04 15:35:09 -0800 (Fri, 04 Mar 2016) $
-; $LastChangedRevision: 20327 $
+; $LastChangedDate: 2016-03-07 09:58:29 -0800 (Mon, 07 Mar 2016) $
+; $LastChangedRevision: 20342 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot_save.pro $
 ;
 ;CREATED BY:    Yuki Harada  03-04-16
@@ -84,7 +84,7 @@ pro mvn_swe_lpw_scpot_save, start_day=start_day, interval=interval, ndays=ndays,
        store_data,tname[itn],data=newd,dlim=dlim
     endfor
     validtname = tnames(tname,n)
-    if n gt 0 then tplot_save,validtname,file=ofile
+    if n gt 0 then tplot_save,validtname,file=ofile,/compress
 
  endfor
 

@@ -49,8 +49,8 @@
 ; 24-Apr-2015, af, updating plugins, reformatting code
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-11-06 11:15:11 -0800 (Fri, 06 Nov 2015) $
-;$LastChangedRevision: 19278 $
+;$LastChangedDate: 2016-03-07 10:51:31 -0800 (Mon, 07 Mar 2016) $
+;$LastChangedRevision: 20343 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_loaded_data__dproc.pro $
 Function spd_ui_loaded_data::dproc, dp_task, dp_pars,callSequence=callSequence,replay=replay,in_vars=in_vars, names_out = names_out, $
                            no_setactive = no_setactive, hwin = hwin, sbar = sbar, gui_id = gui_id, $
@@ -451,7 +451,7 @@ For j = 0, n_elements(operation)-1 Do Begin
            spd_ui_wavelet, input, nn, dp_pars.trange, $
                            maxpoints=nsstx+16, $
                            temp_names = temp_names, $
-                           display_object=display_object
+                           display_object=display_object, prange=dp_pars.prange
            if is_string(temp_names) then begin
               store_data, temp_names, /delete
            endif

@@ -29,9 +29,9 @@
 ;  opt_struct: The anonymous structure contain options and keyword settings for
 ;              SPD_UI_WAVELET.
 ;            
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-02-09 13:30:58 -0800 (Mon, 09 Feb 2015) $
-;$LastChangedRevision: 16923 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-03-07 10:51:31 -0800 (Mon, 07 Mar 2016) $
+;$LastChangedRevision: 20343 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/dproc/spd_ui_wavelet_options.pro $
 ;-
 
@@ -83,6 +83,20 @@ pro spd_ui_wavelet_options_event, event
         Endif
         memtest = spd_ui_wv_memory_test(state.varname, (*state.tptr)[sst], $
                                         jv, prange, info_txt, memok=memok, jvok=jvok)
+        prange0_widget = widget_info(event.top, find_by_uname='prange0')
+        widget_control, prange0_widget, get_value=prange0
+        prange1_widget = widget_info(event.top, find_by_uname='prange1')
+        widget_control, prange1_widget, get_value=prange1
+        if valid_num(prange0) and valid_num(prange1) then begin  
+          if double(prange1) gt double(prange0) then begin   
+            prange = [double(prange0), double(prange1)]
+          endif else begin
+            dprint,"Error: Max period is not larger than min period. We'll use the default prange values."   
+          endelse
+        endif else begin
+          dprint,"Error: Period values are not valid numbers. We'll use the default prange values."  
+        endelse
+                                        
         info_widget = widget_info(event.top, find_by_uname='info')
         widget_control, info_widget, set_value = info_txt
 ;If  memok or jvok are 0, then break
@@ -135,7 +149,7 @@ function spd_ui_wavelet_options, gui_id, dataobj, tr_obj, historyWin, statusBar,
 
   compile_opt idl2
   
-
+  prange = [1.0, 10.0]
   tlb = widget_base(/col, title='Wavelet Options: '+varname, group_leader=gui_id, $
                     /modal, /floating, /base_align_center, /tlb_kill_request_events)
 
@@ -144,9 +158,9 @@ function spd_ui_wavelet_options, gui_id, dataobj, tr_obj, historyWin, statusBar,
 ; Base skeleton          
   mainBase = widget_base(tlb, /col, /align_center, tab_mode=1)
   suffixBase = widget_base(mainBase, /row)
-  prange0base = widget_base(mainBase, /row)
-  prange1base = widget_base(mainBase, /row)
   timeBase = widget_base(mainBase, /col)
+  prange0Base = widget_base(mainBase, /row)
+  prange1Base = widget_base(mainBase, /row)
   buttonBase = widget_base(mainBase, /row, /align_center)
 
 ; Set defaults
@@ -172,15 +186,17 @@ function spd_ui_wavelet_options, gui_id, dataobj, tr_obj, historyWin, statusBar,
   suffixId = widget_text(suffixBase, value = suffix, xsize = 22, ysize = 1, $
                          uvalue = 'SUFFIX', /editable, /all_events, uname='suffix')
 
-;  prange0Label = widget_label(prange0Base, value = 'Min. Period (sec): ')
-;  prange0Id = widget_text(prange0Base, value = prange[0], xsize = 22, ysize = 1, $
-;                          uvalue = 'PRANGE0', /editable, /all_events, uname='prange0')
-;  prange1Label = widget_label(prange1Base, value = 'Max. Period (sec): ')
-;  prange1Id = widget_text(prange1Base, value = prange[1], xsize = 22, ysize = 1, $
-;                          uvalue = 'PRANGE1', /editable, /all_events, uname='prange1')
+  prange0Label = widget_label(prange0Base, value = 'Min. Period (sec): ')
+  prange0Id = widget_text(prange0Base, value = strcompress(/remove_all,prange[0]), xsize = 22, ysize = 1, $
+                          uvalue = 'PRANGE0', /editable, /all_events, uname='prange0')
+  prange1Label = widget_label(prange1Base, value = 'Max. Period (sec): ')
+  prange1Id = widget_text(prange1Base, value = strcompress(/remove_all,prange[1]), xsize = 22, ysize = 1, $
+                          uvalue = 'PRANGE1', /editable, /all_events, uname='prange1')
 
   trWidget = spd_ui_time_widget(timebase,statusBar,historyWin,timeRangeObj=tr_obj, $
                                 uvalue='TIME',uname='time', oneday=0)
+
+
 
 ; Main window buttons
   okButton = Widget_Button(buttonBase, Value='OK', UVal='OK')

@@ -27,12 +27,12 @@
 ; 11-may-2009,prc(pcruce@igpp.ucla.edu) added keyword to return the  
 ;             names of temporary variables created in process
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-04-24 18:45:02 -0700 (Fri, 24 Apr 2015) $
-;$LastChangedRevision: 17429 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-03-07 10:51:31 -0800 (Mon, 07 Mar 2016) $
+;$LastChangedRevision: 20343 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_ui_wavelet.pro $
 ;-
-Pro spd_ui_wavelet, vnames, new_names, trange, polar = polar, $
+Pro spd_ui_wavelet, vnames, new_names, trange, polar = polar, prange=prange, $
                     gui_id = gui_id, messw_id = messw_id, $
                     temp_names=vn_j, maxpoints=maxpoints, $
                     display_object=display_object, $
@@ -85,7 +85,7 @@ Pro spd_ui_wavelet, vnames, new_names, trange, polar = polar, $
           
           ;create an object to pass to wav_data, which is passed to dprint to do error reporting
 ;          display_object = obj_new('spd_ui_dprint_display',historyWin=hwin,statusBar=sBar)
-          wav_data, vn_j[k], trange = trange, maxpoints=maxpoints, display_object=display_object
+          wav_data, vn_j[k], trange = trange, prange=prange, maxpoints=maxpoints, display_object=display_object
           new_names = [new_names, vn_j[k]+'_wv_pow']
           
           ;copy data attributes manually since wav_data does not

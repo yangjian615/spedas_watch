@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-02-04 09:23:28 -0800 (Thu, 04 Feb 2016) $
-; $LastChangedRevision: 19899 $
+; $LastChangedDate: 2016-03-07 11:51:47 -0800 (Mon, 07 Mar 2016) $
+; $LastChangedRevision: 20345 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -68,9 +68,11 @@ pro rbsp_efw_make_l2,sc,date,$
                      testing=testing,$
                      hires=hires,$
                      boom_pair=bp,$
-                     ql=ql
+                     ql=ql,$
+                     density_min=dmin
 
 
+  if ~keyword_set(dmin) then dmin = 10.
   if ~keyword_set(type) then type = 'spinfit'
   if ~keyword_set(bp) then bp = '12'
   if ~keyword_set(ql) then ql = 0
@@ -300,14 +302,14 @@ pro rbsp_efw_make_l2,sc,date,$
 
      ;;Get hires density values
      if type eq 'combo' then begin
-        goo_str = rbsp_efw_get_flag_values(sc,times_v)
+        goo_str = rbsp_efw_get_flag_values(sc,times_v,density_min=dmin)
         copy_data,'rbsp'+sc+'_density12','rbsp'+sc+'_density12_hires'
         copy_data,'rbsp'+sc+'_density34','rbsp'+sc+'_density34_hires'
         store_data,['rbsp'+sc+'_density12','rbsp'+sc+'_density34'],/delete
      endif
 
 
-     flag_str = rbsp_efw_get_flag_values(sc,times)
+     flag_str = rbsp_efw_get_flag_values(sc,times,density_min=dmin)
 
      flag_arr = flag_str.flag_arr
      bias_sweep_flag = flag_str.bias_sweep_flag
@@ -573,8 +575,8 @@ pro rbsp_efw_make_l2,sc,date,$
      get_data,'rbsp'+sc+'_mag_mgse_'+model,data=mag_model
      get_data,'rbsp'+sc+'_mag_mgse_t89_dif',data=mag_diff
 
-     mag_model_magnitude = sqrt(mag_model.y[*,0]^2 + mag_model.y[*,1]^2 + mag_model.y[*,2]^2)
-     mag_data_magnitude = sqrt(mag_mgse.y[*,0]^2 + mag_mgse.y[*,1]^2 + mag_mgse.y[*,2]^2)
+     if is_struct(mag_model) then mag_model_magnitude = sqrt(mag_model.y[*,0]^2 + mag_model.y[*,1]^2 + mag_model.y[*,2]^2) else mag_model_magnitude = replicate(-1.e31,n_elements(times))
+     if is_struct(mag_mgse) then mag_data_magnitude = sqrt(mag_mgse.y[*,0]^2 + mag_mgse.y[*,1]^2 + mag_mgse.y[*,2]^2) else mag_data_magnitude = replicate(-1.e31,n_elements(times))
      mag_diff_magnitude = mag_data_magnitude - mag_model_magnitude
 
      tinterpol_mxn,'rbsp'+sc+'_state_mlt',times,newname='rbsp'+sc+'_state_mlt'
@@ -586,7 +588,8 @@ pro rbsp_efw_make_l2,sc,date,$
      get_data,'rbsp'+sc+'_state_mlt',data=mlt
      get_data,'rbsp'+sc+'_state_mlat',data=mlat
      get_data,'rbsp'+sc+'_state_lshell',data=lshell
-     get_data,'rbsp'+sc+'_ME_orbitnumber',data=orbit_num
+     if keyword_set(orbit_num) then get_data,'rbsp'+sc+'_ME_orbitnumber',data=orbit_num else $
+        orbit_num = replicate(-1.e31,n_elements(times))
      get_data,'rbsp'+sc+'_ME_lstar',data=lstar
      if is_struct(lstar) then lstar = lstar.y[*,0]
 
@@ -872,7 +875,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
      cdf_varput,cdfid,'orbit_num',orbit_num.y
-     cdf_varput,cdfid,'Lstar',lstar
+     ;; cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
 
@@ -884,6 +887,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
+     cdf_vardelete,cdfid,'Lstar'
      cdf_vardelete,cdfid,'vsvy_vavg_lowcadence'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
      cdf_vardelete,cdfid,'e34_spinfit_mgse'
