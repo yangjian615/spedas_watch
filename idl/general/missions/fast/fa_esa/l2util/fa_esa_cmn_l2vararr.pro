@@ -18,8 +18,8 @@
 ;HISTORY:
 ; 1-sep-2015, jmm, Hacked from mvn_sta_cmn_l2vararr
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-04 12:50:41 -0700 (Fri, 04 Sep 2015) $
-; $LastChangedRevision: 18715 $
+; $LastChangedDate: 2016-03-08 14:31:52 -0800 (Tue, 08 Mar 2016) $
+; $LastChangedRevision: 20352 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2vararr.pro $
 ;-
 Function fa_esa_cmn_l2vararr, data_name
@@ -63,6 +63,10 @@ Function fa_esa_cmn_l2vararr, data_name
           ['HEADER_BYTES', 'HEADER_BYTES', 'Y'], $
           ['DATA', 'DATA', 'Y'], $
           ['EFLUX', 'EFLUX', 'Y'], $
+          ['ENERGY_FULL', 'ENERGY_FULL', 'Y'], $
+          ['DENERGY_FULL', 'DENERGY_FULL', 'Y'], $
+          ['PITCH_ANGLE', 'PITCH_ANGLE', 'Y'], $
+          ['DOMEGA', 'DOMEGA', 'Y'], $
           ['ORBIT_START', 'ORBIT_START', 'N'], $
           ['ORBIT_END', 'ORBIT_END', 'N']]
   Return, vars

@@ -54,9 +54,9 @@
 ;  -checks contents of "http_proxy" environment variable for proxy server
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-28 18:23:21 -0800 (Thu, 28 Jan 2016) $
-;$LastChangedRevision: 19833 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-03-08 14:02:56 -0800 (Tue, 08 Mar 2016) $
+;$LastChangedRevision: 20350 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -144,7 +144,7 @@ endif
 if keyword_set(user_agent) then begin
   headers = array_concat('User-Agent: '+user_agent,headers)
 endif else begin
-  headers = array_concat('User-Agent: '+'IDL/'+!version.release+' ('+!version.os+' '+!version.arch+')', headers)
+  headers = array_concat('User-Agent: '+'SPEDAS IDL/'+!version.release+' ('+!version.os+' '+!version.arch+')', headers)
 endelse
 
 ;The file will automatically be overwritten if server is not querried for 

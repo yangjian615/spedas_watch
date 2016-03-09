@@ -55,8 +55,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-12-29 15:10:00 -0800 (Mon, 29 Dec 2014) $
-;$LastChangedRevision: 16549 $
+;$LastChangedDate: 2016-03-08 15:12:27 -0800 (Tue, 08 Mar 2016) $
+;$LastChangedRevision: 20356 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_overview_plot_wrapper.pro $
 ;----------
 
@@ -219,12 +219,12 @@ pro poes_overview_plot_wrapper, date_start = date_start, date_end = date_end, $
     month03 = STRMID(date, 5, 2)
     day03 = STRMID(date, 8, 2)
     directory = base_dir + year03 + path_sep() + month03 + path_sep() + day03 + path_sep()
-    remote_dir = 'satdat.ngdc.noaa.gov/sem/poes/data/avg/cdf/' + year03 + '/'  
+    remote_dir = 'cdaweb.gsfc.nasa.gov/istp_public/data/noaa/'  
    ; remote directory: http://satdat.ngdc.noaa.gov/sem/poes/data/avg/cdf/2014/noaa18/ 
     for j=0, n_elements(probes)-1 do begin
       probe = probes[j]
       ; check if dir exists, eg: http://satdat.ngdc.noaa.gov/sem/poes/data/new_avg/2011/08/poes13/netcdf/
-      remote_http_dir = remote_dir + 'noaa' + probe
+      remote_http_dir = remote_dir + 'noaa' + probe + '/sem2_fluxes-2sec/' + year03
       if check_poes_noaa_dir(base_dir, remote_http_dir) then begin
         dprint, dlevel=1, "====================================================="
         msgstr = "POES OVERVIEW PLOT: Probe= " + string(probe) + ", date= " + date

@@ -24,7 +24,7 @@ Pro fa_esa_load_l2_type, type, trange = trange, orbit = orbit, $
   orbits = indgen(end_orbit-start_orbit+1)+start_orbit
   orbits_str = strcompress(string(orbits,format='(i05)'), /remove_all)
   orbit_dir = strmid(orbits_str,0,2)+'000'
-  relpathnames='l2/'+type+'/'+orbit_dir+'/fa_l2_'+type+'_*_'+orbits_str+'_'+vxx+'.cdf'
+  relpathnames='l2/'+type+'/'+orbit_dir+'/fa_esa_l2_'+type+'_*_'+orbits_str+'_'+vxx+'.cdf'
   filex=file_retrieve(relpathnames,_extra = !fast)
 ;Only files that exist here
   filex = file_search(filex)
@@ -32,7 +32,6 @@ Pro fa_esa_load_l2_type, type, trange = trange, orbit = orbit, $
      dprint, 'No files found for time range and type:'+type
      Return
   Endif
-
 ;Only unique files here
   filex_u = filex[bsort(filex)]
   filex = filex_u[uniq(filex_u)]
@@ -101,8 +100,8 @@ End
 ;HISTORY:
 ; 1-sep-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-14 15:48:59 -0700 (Mon, 14 Sep 2015) $
-; $LastChangedRevision: 18793 $
+; $LastChangedDate: 2016-03-08 14:31:52 -0800 (Tue, 08 Mar 2016) $
+; $LastChangedRevision: 20352 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_load_l2.pro $
 ;-
 Pro fa_esa_load_l2, datatype = datatype, type = type, $

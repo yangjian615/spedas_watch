@@ -496,10 +496,10 @@ function DataManagement::getVolumeData, ORIGINAL=original ;, XRANGE=xrange, YRAN
     mag_vec = (self.olep)->getVector(curtime)
     vel_vec = (self.olep)->getVector(curtime, /VEL)
 
-    res = (self.olep)->getOneData(curtime, DATA=onedata)
-    res = (self.olep)->getXYZCoord(onedata)
-    rec_coord = onedata['xyz']
-    fn = onedata['count']
+;    res = (self.olep)->getOneData(curtime, DATA=onedata)
+;    res = (self.olep)->getXYZCoord(onedata)
+;    rec_coord = onedata['xyz']
+;    fn = onedata['count']
     
 
     ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; 
@@ -518,7 +518,8 @@ function DataManagement::getVolumeData, ORIGINAL=original ;, XRANGE=xrange, YRAN
     ; 
     ;ROTATION USING MATRIX 
     rotmat = [[mvm_p],[mv_p],[mag_vec_unit]]
-    res_mag = invert(rotmat) # rec_coord 
+;    res_mag = invert(rotmat) # rec_coord 
+    res_mag = invert(rotmat) # transpose( [[fx],[fy],[fz]] )
     ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; 
 
 

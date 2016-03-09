@@ -47,6 +47,12 @@
 ;   HEADER_BYTES    BYTE      Array[44, 59832]
 ;   DATA            BYTE      Array[96, 64, 59832]
 ;   EFLUX           FLOAT     Array[96, 64, 59832]
+;   ENERGY_FULL     FLOAT     Array[96, 64, 59832]
+;   DENERGY_FULL    FLOAT     Array[96, 64, 59832]
+;   PITCH_ANGLE     FLOAT     Array[96, 64, 59832]
+;   DOMEGA          FLOAT     Array[96, 64, 59832]
+;   ORBIT_START     LONG
+;   ORBIT_END       LONG
 ;KEYWORDS:
 ; trange = if set, then only input data for that time range, the first
 ;          step would be to input the record times and then obtain a
@@ -56,8 +62,8 @@
 ;HISTORY:
 ; 2014-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-01 16:30:31 -0700 (Tue, 01 Sep 2015) $
-; $LastChangedRevision: 18687 $
+; $LastChangedDate: 2016-03-08 14:31:52 -0800 (Tue, 08 Mar 2016) $
+; $LastChangedRevision: 20352 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2read.pro $
 ;-
 Function fa_esa_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra = _extra
@@ -131,7 +137,6 @@ Function fa_esa_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra =
         count = count+1
      Endelse
   Endfor
-
 ;Done, cmn_dat is only defined if count > 0
   If(count Gt 0) Then Return, cmn_dat Else Return, otp
 

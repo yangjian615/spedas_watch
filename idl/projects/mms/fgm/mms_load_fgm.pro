@@ -65,8 +65,8 @@
 ;     
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 11:33:03 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20289 $
+;$LastChangedDate: 2016-03-08 16:13:05 -0800 (Tue, 08 Mar 2016) $
+;$LastChangedRevision: 20357 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -80,7 +80,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   no_attitude_data = no_attitude_data, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
-                  spdf = spdf
+                  spdf = spdf, no_split_vars=no_split_vars, keep_flagged = keep_flagged
 
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
@@ -96,6 +96,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(instrument) then instrument = 'fgm'
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix = ''
+    ; need support data by default to deflag bad data
+    if undefined(get_support_data) then get_support_data = 1 
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
@@ -105,39 +107,46 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
         spdf = spdf
 
-    
-    ; load the atttude data to do the coordinate transformation 
-    if undefined(no_attitude_data) && level ne 'l2pre' then begin
-      mms_load_state, trange = trange, probes = probes, level = 'def', /attitude_only, suffix = suffix
-    endif
-    ; Note: not all MEC files have right ascension and declination data, commented out until LANL reprocesses
-  ;  if undefined(no_attitude_data) && level ne 'l2pre' then mms_load_mec, trange = trange, probes = probes, suffix = suffix
-
-    ; DMPA coordinates to GSE, for each probe
     for probe_idx = 0, n_elements(probes)-1 do begin
         this_probe = 'mms'+strcompress(string(probes[probe_idx]), /rem)
-        ; make sure the attitude data has been loaded before doing the cotrans operation
-        if tnames(this_probe+'_defatt_spinras'+suffix) ne '' && tnames(this_probe+'_defatt_spindec'+suffix) ne '' $
-            && tnames(this_probe+'_'+instrument+'_'+data_rate+'_dmpa'+suffix) ne '' $
-            && undefined(no_attitude_data) && level ne 'l2pre' then begin 
 
-            dmpa2gse, this_probe+'_'+instrument+'_'+data_rate+'_dmpa'+suffix, this_probe+'_defatt_spinras'+suffix, $
-                this_probe+'_defatt_spindec'+suffix, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix, /ignore_dlimits
-            append_array, tplotnames, this_probe+'_'+instrument+'_'+data_rate+'_gse'+suffix
-            
+        if ~keyword_set(keep_flagged) then begin
+            ; B-field data
+            get_data, this_probe+'_fgm_b_gse_'+data_rate+'_'+level, data=b_data_gse, dlimits=gse_dl
+            get_data, this_probe+'_fgm_b_gsm_'+data_rate+'_'+level, data=b_data_gsm, dlimits=gsm_dl
+            get_data, this_probe+'_fgm_b_dmpa_'+data_rate+'_'+level, data=b_data_dmpa, dlimits=dmpa_dl
+            get_data, this_probe+'_fgm_b_bcs_'+data_rate+'_'+level, data=b_data_bcs, dlimits=bcs_dl
+            ; flags
+            get_data, this_probe+'_fgm_flag_'+data_rate+'_'+level, data=flags
+            if is_struct(flags) then begin
+              bad_data = where(flags.Y ne 0, flag_count) 
+              if flag_count ne 0 then begin
+                  if is_struct(b_data_gse) then b_data_gse.Y[bad_data, *] = !values.d_nan
+                  if is_struct(b_data_gsm) then b_data_gsm.Y[bad_data, *] = !values.d_nan
+                  if is_struct(b_data_dmpa) then b_data_dmpa.Y[bad_data, *] = !values.d_nan
+                  if is_struct(b_data_bcs) then b_data_bcs.Y[bad_data, *] = !values.d_nan
+                  
+                  ; resave them
+                  if is_struct(b_data_gse) then store_data, this_probe+'_fgm_b_gse_'+data_rate+'_'+level, data=b_data_gse, dlimits=gse_dl
+                  if is_struct(b_data_gsm) then store_data, this_probe+'_fgm_b_gsm_'+data_rate+'_'+level, data=b_data_gsm, dlimits=gsm_dl
+                  if is_struct(b_data_dmpa) then store_data, this_probe+'_fgm_b_dmpa_'+data_rate+'_'+level, data=b_data_dmpa, dlimits=dmpa_dl
+                  if is_struct(b_data_bcs) then store_data, this_probe+'_fgm_b_bcs_'+data_rate+'_'+level, data=b_data_bcs, dlimits=bcs_dl
+              endif
+            endif
         endif
-        ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
-        mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate
-    
+        
+        if ~keyword_set(no_split_vars) then begin
+            ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
+            mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate
+        endif 
+        
         ; delete the bad ephemeris variables if this is burst data
-        if data_rate eq 'brst' && level eq 'l2' then begin
-            del_data, this_probe+'_fgm_r_gse_brst_l2'
-            del_data, this_probe+'_fgm_r_gsm_brst_l2'
+        if level eq 'l2' || level eq 'l2pre' then begin
+            del_data, this_probe+'_fgm_r_gse_'+data_rate+'_'+level
+            del_data, this_probe+'_fgm_r_gsm_'+data_rate+'_'+level
         endif 
     endfor
 
-    
-    ; set some of the metadata for the DFG/AFG instruments
+    ; set some of the metadata
     mms_fgm_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = data_rate, suffix = suffix, level=level
-
 end

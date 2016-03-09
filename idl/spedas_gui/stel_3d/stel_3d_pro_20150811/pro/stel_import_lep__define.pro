@@ -313,8 +313,8 @@ function stel_import_lep::getVector, cTime, VEL=vel
 
    if (self.stel_import_lep).haskey(tag) then begin
      data = self.stel_import_lep[tag]
-     !null = min( abs(data.x - dtime) ,pos)
-     return, data.y[pos,*]
+     !null = min( abs(data.x - dtime[0]) ,pos)
+     return, reform(data.y[pos,*])
    endif
 
    ;verify presense of file

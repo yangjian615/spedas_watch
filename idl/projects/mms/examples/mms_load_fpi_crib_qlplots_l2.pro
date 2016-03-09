@@ -21,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-25 18:00:40 -0800 (Thu, 25 Feb 2016) $
-; $LastChangedRevision: 20196 $
+; $LastChangedDate: 2016-03-08 12:41:19 -0800 (Tue, 08 Mar 2016) $
+; $LastChangedRevision: 20348 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fpi_crib_qlplots_l2.pro $
 ;-
 
@@ -89,18 +89,18 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
 ; load DFG data for all 4 probes
 mms_load_fgm, trange = trange, probes = probes, /no_attitude_data, level = dfg_level, instrument='dfg'
 
-FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
-    obsstr='mms'+STRING(i,FORMAT='(I1)')+'_'
+FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
+    obsstr='mms'+STRING(probes[i],FORMAT='(I1)')+'_'
     
     ;SET UP TPLOT VARIABLES
          
     ; convert the position data into Re
-   ; eph_variable = 'mms'+strcompress(string(i), /rem)+'_defeph_pos'
+   ; eph_variable = 'mms'+strcompress(string(probes[i]), /rem)+'_defeph_pos'
     if dfg_level eq 'l2pre' then begin
-        eph_variable = 'mms'+strcompress(string(i), /rem)+'_pos_gsm'
+        eph_variable = 'mms'+strcompress(string(probes[i]), /rem)+'_pos_gsm'
         b_variable = '_dfg_srvy_l2pre_dmpa'
     endif else begin
-        eph_variable = 'mms'+strcompress(string(i), /rem)+'_ql_pos_gsm'
+        eph_variable = 'mms'+strcompress(string(probes[i]), /rem)+'_ql_pos_gsm'
         b_variable = '_dfg_srvy_dmpa'
     endelse
 
@@ -119,10 +119,10 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0], eph_variable+'numberdensity']
 
     ; Data quality bar
-    quality_bar = mms_fpi_quality_bar(i, data_rate)
+    quality_bar = mms_fpi_quality_bar(probes[i], data_rate)
     
     ; combine bent pipe B DSC into a single tplot variable
-    prefix = 'mms'+strcompress(string(i), /rem)
+    prefix = 'mms'+strcompress(string(probes[i]), /rem)
     split_vec, prefix+b_variable
     
     ; time clip the data to -150nT to 150nT
@@ -159,7 +159,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     options, obsstr+'ebulkv_dbcs', 'labels', ['Vx', 'Vy', 'Vz', 'Vmag']
     options, obsstr+'ebulkv_dbcs', 'labflag', -1
     options, obsstr+'ebulkv_dbcs', 'colors', [2, 4, 6, 8]
-    options, obsstr+'ebulkv_dbcs', 'ytitle', 'MMS'+STRING(i,FORMAT='(I1)')+'!CeBulkV!CDBCS'
+    options, obsstr+'ebulkv_dbcs', 'ytitle', 'MMS'+STRING(probes[i],FORMAT='(I1)')+'!CeBulkV!CDBCS'
     options, obsstr+'ebulkv_dbcs', 'ysubtitle', '[km/s]'
     
     ; combine the bulk ion velocity into a single tplot variable
@@ -174,7 +174,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     options, obsstr+'ibulkv_dbcs', 'labels', ['Vx', 'Vy', 'Vz', 'Vmag']
     options, obsstr+'ibulkv_dbcs', 'labflag', -1
     options, obsstr+'ibulkv_dbcs', 'colors', [2, 4, 6, 8]
-    options, obsstr+'ibulkv_dbcs', 'ytitle', 'MMS'+STRING(i,FORMAT='(I1)')+'!CiBulkV!CDBCS'
+    options, obsstr+'ibulkv_dbcs', 'ytitle', 'MMS'+STRING(probes[i],FORMAT='(I1)')+'!CiBulkV!CDBCS'
     options, obsstr+'ibulkv_dbcs', 'ysubtitle', '[km/s]'
     
     ; combine the parallel and perpendicular temperatures into a single tplot variable
@@ -182,7 +182,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
 ;    options, obsstr+'temp', 'labels', ['eTpara', 'eTperp', 'iTpara', 'iTperp']
 ;    options, obsstr+'temp', 'labflag', -1
 ;    options, obsstr+'temp', 'colors', [2, 4, 6, 8]
-;    options, obsstr+'temp', 'ytitle', 'MMS'+STRING(i,FORMAT='(I1)')+'!CTemp'
+;    options, obsstr+'temp', 'ytitle', 'MMS'+STRING(probes[i],FORMAT='(I1)')+'!CTemp'
 
     ; use bss routine to create tplot variables for fast, burst, status, and/or FOM
     trange = timerange(trange)
@@ -263,7 +263,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     fpi_espects = [obsstr+'dis_ energyspectr_omni_avg', obsstr+'des_energyspectr_omni_avg']
     panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
             fpi_moments, obsstr+'des_pitchangdist_avg', fpi_espects]                    
-    window_caption="MMS FPI Observatory Summary:"+"MMS"+STRING(i,FORMAT='(I1)')
+    window_caption="MMS FPI Observatory Summary:"+"MMS"+STRING(probes[i],FORMAT='(I1)')
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
     tplot, panels, window=iw, var_label=position_vars
@@ -285,7 +285,7 @@ ENDFOR
 window_caption="MMS FPI Observatory Summary: MMS1, MMS2, MMS3, MMS4"
 if ~postscript then window, iw, xsize=width, ysize=height
 ;tplot_options,'title', window_caption
-tplot, panels, window=iw, var_label='mms'+strcompress(string(i), /rem)+'_defeph_pos'
+tplot, panels, window=iw, var_label='mms'+strcompress(string(probes[0]), /rem)+'_defeph_pos'
 xyouts, .25, .98, window_caption, /normal, charsize=1.15
 if postscript then tprint, plot_directory + "MMS-all FPI Observatory Summary"
 

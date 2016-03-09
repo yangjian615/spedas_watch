@@ -56,8 +56,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-02-02 15:34:14 -0800 (Tue, 02 Feb 2016) $
-; $LastChangedRevision: 19879 $
+; $LastChangedDate: 2016-03-08 14:31:04 -0800 (Tue, 08 Mar 2016) $
+; $LastChangedRevision: 20351 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -138,7 +138,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             ['DATA', 'BYTE', 'Raw Counts data with dimensions (96, 64, NUM_DISTS)', 'Raw Counts'], $
             ['EFLUX', 'FLOAT', 'Differential energy flux array with dimensions (96, 64, NUM_DISTS)', 'Energy flux'], $
             ['PITCH_ANGLE', 'FLOAT', 'Pitch Angle values for each distribution (96, 64, NUM_DISTS)', 'Pitch Angle'], $
-;            ['DPITCH_ANGLE', 'FLOAT', 'Angular bin size for each distribution (96, 64, NUM_DISTS); Virtual variable', 'Pitch Angle'], $
+            ['DOMEGA', 'FLOAT', 'Solid angle for each distribution (96, 64, NUM_DISTS)', 'DOmega'], $
             ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (96, 64, NUM_DISTS)', 'Energy'], $
             ['DENERGY_FULL', 'FLOAT', 'Energy bin size for each distribution (96, 64, NUM_DISTS)', 'DEnergy'], $
             ['ORBIT_NUMBER', 'FLOAT', 'Orbit number for this file, does not change, so only 2 entries per file', 'Orbit_number'], $
@@ -298,6 +298,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
         If(strpos(vj, 'time') Ne -1) Then vatt.units = 'sec' $ ;time interval sizes
         Else If(strpos(vj, 'theta') Ne -1 Or strpos(vj, 'pitch') Ne -1) Then vatt.units = 'degrees' $
         Else If(strpos(vj, 'energy') Ne -1) Then vatt.units = 'eV' $
+        Else If(strpos(vj, 'omega') Ne -1) Then vatt.units = 'ster' $
         Else If(vj Eq 'sc_pot') Then vatt.units = 'volts' $
         Else If(vj Eq 'data') Then vatt.units = 'Counts' $
         Else If(vj Eq 'eflux') Then vatt.units = 'eV/sr/sec' ;check this
@@ -316,14 +317,14 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 ;Assign labels and components for vectors
      If(vj Eq 'data' Or vj Eq 'eflux' Or $
         vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
-        vj Eq 'denergy_full') Then Begin
+        vj Eq 'denergy_full' Or vj Eq 'domega') Then Begin
 ;For ISTP compliance, it looks as if the depend's are switched,
 ;probably because we transpose it all in the file
 ;??? Check this ???
         vatt.depend_2 = 'compno_96'
         vatt.depend_1 = 'compno_64'
-        vatt.labl_ptr_2 = vj+'_energy_labl_96'
-        vatt.labl_ptr_1 = vj+'_angle_labl_64'
+        vatt.labl_ptr_2 = 'energy_labl_96'
+        vatt.labl_ptr_1 = 'angle_labl_64'
      Endif
  
 ;Time variables are monotonically increasing:
@@ -475,14 +476,12 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
   Endfor
      
 ;Labels now
-  lablvars = ['data_energy_labl_96', $
-              'eflux_energy_labl_96', $
-              'data_angle_labl_64', $
-              'eflux_angle_labl_64']
+  lablvars = ['energy_labl_96', $
+              'angle_labl_64']
   For j = 0, n_elements(lablvars)-1 Do Begin
      vj = lablvars[j]
      xj = strsplit(vj, '_', /extract)
-     nj = Fix(xj[3])
+     nj = Fix(xj[2])
      aj = xj[0]+'@'+strupcase(xj[1])
      dvar = aj+strcompress(/remove_all, string(indgen(nj)))
      ndv = n_elements(dvar)
