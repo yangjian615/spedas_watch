@@ -27,6 +27,10 @@
 ;  esa_datatype:  ESA datatype designation (string).
 ;  sst_datatype:  SST datatype designation (string). 
 ;  units:  String specifying output units ('flux', 'eflux', or 'df') 
+;  esa_dist:  Pass in manually loaded ESA particle data (see thm_part_dist_array)
+;             Must be used with SST_DIST 
+;  sst_dist:  Pass in manually loaded SST particle data (see thm_part_dist_array)
+;             Must be used with ESA_DIST
 ;  regrid:  Two element array specifying the number of points used to regrid
 ;           the data in phi and theta respectively (int or float). 
 ;  energies:  Array specifying the energies used to replace the default SST energies
@@ -85,8 +89,8 @@
 ;     
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-04 18:12:33 -0800 (Fri, 04 Mar 2016) $
-;$LastChangedRevision: 20333 $
+;$LastChangedDate: 2016-03-09 17:50:27 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20379 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -94,6 +98,8 @@
 function thm_part_combine, probe=probe, $
                       esa_datatype=esa_datatype, $
                       sst_datatype=sst_datatype, $
+                      esa_dist=esa_dist, $
+                      sst_dist=sst_dist, $
                       trange=trange, $
                       units=units,  $
                       regrid=regrid, $
@@ -118,6 +124,11 @@ function thm_part_combine, probe=probe, $
 
   heap_gc  ;free memory just in case
   thm_init ;color table & stuffs
+
+  ;get probe and datatype from input structures if provided
+  ;this will not overwrite variables that are already set
+  thm_pgs_get_datatype, esa_dist, probe=probe, datatype=esa_datatype
+  thm_pgs_get_datatype, sst_dist, probe=probe, datatype=sst_datatype  
 
   if ~undefined(probe) then begin
     probe=probe ;placeholder for validation code
@@ -180,9 +191,17 @@ function thm_part_combine, probe=probe, $
   ;-------------------------------------------------------------------------------------------
 
   ;load pointers to distribution arrays
-  sst_cal = stregex(sst_datatype, 'ps[ei]r', /bool, /fold_case) ? 0b:1b
-  sst = thm_part_dist_array(probe=probe,type=sst_datatype,trange=trange,sst_cal=sst_cal,_extra=_extra)
-  esa = thm_part_dist_array(probe=probe,type=esa_datatype,trange=trange,/bgnd_remove,_extra=_extra)
+  if ptr_valid(esa_dist[0]) xor ptr_valid(sst_dist[0]) then begin
+    dprint, dlevel=0, 'ESA_DIST and SST_DIST keywords bust be used simultaneously; canceling.'
+    return, 0
+  endif else if ptr_valid(esa_dist[0]) and ptr_valid(sst_dist[0]) then begin
+    thm_part_copy, sst_dist, sst
+    thm_part_copy, esa_dist, esa
+  endif else begin
+    sst_cal = stregex(sst_datatype, 'ps[ei]r', /bool, /fold_case) ? 0b:1b
+    sst = thm_part_dist_array(probe=probe,type=sst_datatype,trange=trange,sst_cal=sst_cal,_extra=_extra)
+    esa = thm_part_dist_array(probe=probe,type=esa_datatype,trange=trange,/bgnd_remove,_extra=_extra)
+  endelse
 
   if ~ptr_valid(sst[0]) or ~ptr_valid(esa[0]) then begin
     dprint, dlevel=0, 'Unable to load data.  Check requested datatype and time range.'

@@ -38,6 +38,7 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
+;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;
 ; NOTES:
 ;     Please always use error bars on E-field data 
@@ -58,8 +59,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 15:29:29 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20273 $
+;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20377 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
@@ -69,7 +70,7 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-    latest_version = latest_version, min_version = min_version
+    latest_version = latest_version, min_version = min_version, spdf = spdf
 
     if undefined(probes) then probes = [1, 2, 3, 4] 
     if undefined(datatype) then datatype = ['dce']
@@ -83,5 +84,5 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, $
         cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-        latest_version = latest_version, min_version = min_version
+        latest_version = latest_version, min_version = min_version, spdf = spdf
 end

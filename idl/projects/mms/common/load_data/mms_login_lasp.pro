@@ -17,14 +17,15 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:33:38 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19596 $
+;$LastChangedDate: 2016-03-09 15:27:03 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20378 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_login_lasp.pro $
 ;-
 
-function mms_login_lasp, login_info = login_info, save_login_info = save_login_info
+function mms_login_lasp, login_info = login_info, save_login_info = save_login_info, username = username
     common mms_sitl_connection, netUrl, connection_time, login_source
-    if obj_valid(netUrl) then return, 1
+    username = ''
+  ;  if obj_valid(netUrl) then return, 1
     
     ; halt and warn the user if they're using IDL before 7.1 due to SSL/TLS issue
     if double(!version.release) lt 7.1d then begin
@@ -47,6 +48,7 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
             dprint, dlevel=1, 'No valid credentials found in '+file_expand_path(login_info)
         endelse
     endif 
+    
     
     ; prompt the user for their SDC username/password none was found in file
     if undefined(username) || undefined(password) then begin
@@ -79,7 +81,9 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
         ; the IDLnetURL object returned here is also stored in the common block
         ; (this is why we never use net_object after this line, but this call is still
         ; necessary to login)
-        net_object = get_mms_sitl_connection(username=username, password=password)
+       ; net_object = get_mms_sitl_connection(username=username, password=password)
+        net_object = get_mms_sdc_connection(username=username, password=password)
+ 
         if obj_valid(net_object) then connected_to_lasp = 1
         tries += 1
     endwhile

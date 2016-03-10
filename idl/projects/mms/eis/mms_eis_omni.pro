@@ -10,12 +10,13 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 08:07:18 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20246 $
+;$LastChangedDate: 2016-03-09 12:22:37 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20371 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_omni.pro $
 ;
 ; REVISION HISTORY:
 ;       + 2016-02-26, I. Cohen      : changed 'cps' units_label from 'Counts/s' to '1/s' for compliance with mission standards
+;       + 2016-03-09, I. Cohen      : altered ylabel for new omni variables
 ;
 ;-
 
@@ -56,7 +57,7 @@ pro mms_eis_omni, probe, species = species, datatype = datatype, tplotnames = tp
     store_data, newname, data={x:d.x, y:flux_omni/6., v:d.v}, dlimits=dl
 
     options, newname, ylog = 1, spec = 1, yrange = en_range, $
-      ytitle = 'MMS'+probe+' EIS '+species, ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default, minzlog = .01
+      ytitle = 'mms'+probe+'!Ceis!C'+species, ysubtitle='Energy!C[keV]', ztitle=units_label, ystyle=1, /default, minzlog = .01
     zlim, newname, 0., 0., 1.
     append_array, tplotnames, newname
     ; degap the data

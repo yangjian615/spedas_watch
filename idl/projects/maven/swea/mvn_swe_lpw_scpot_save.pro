@@ -20,8 +20,8 @@
 ;                      Default = 1
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-03-07 09:58:29 -0800 (Mon, 07 Mar 2016) $
-; $LastChangedRevision: 20342 $
+; $LastChangedDate: 2016-03-09 11:04:06 -0800 (Wed, 09 Mar 2016) $
+; $LastChangedRevision: 20368 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot_save.pro $
 ;
 ;CREATED BY:    Yuki Harada  03-04-16
@@ -66,7 +66,11 @@ pro mvn_swe_lpw_scpot_save, start_day=start_day, interval=interval, ndays=ndays,
 
 
     ;;; load and process
-    mvn_swe_lpw_scpot, norbwin=norbwin, _extra=_extra
+    s = execute( 'mvn_swe_lpw_scpot, norbwin=norbwin, _extra=_extra' )
+    if ~s then begin
+       store_data,'*',/del      ;- clear data
+       continue
+    endif
 
 
     ;;; trim data and save
@@ -86,6 +90,7 @@ pro mvn_swe_lpw_scpot_save, start_day=start_day, interval=interval, ndays=ndays,
     validtname = tnames(tname,n)
     if n gt 0 then tplot_save,validtname,file=ofile,/compress
 
+    store_data,'*',/del         ;- clear data
  endfor
 
   if size(tr,/type) ne 0 then timespan,tr else timespan, start_day, ndays

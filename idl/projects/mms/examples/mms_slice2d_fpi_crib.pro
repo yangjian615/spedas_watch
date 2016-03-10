@@ -13,8 +13,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-10 14:23:41 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19935 $
+;$LastChangedDate: 2016-03-09 13:25:05 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20375 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_slice2d_fpi_crib.pro $
 ;-
 
@@ -39,27 +39,27 @@
 probe='1'
 species='i'
 data_rate='brst'
-trange=['2015-8-15/12:50','2015-8-15/12:51']
+level='l2'
+trange=['2015-10-16/13:06', '2015-10-16/13:07']
 
 
 ;load particle data into tplot
 ;---------------------------------------------
-mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-dist', $
+mms_load_fpi, data_rate='brst', level=level, datatype='d'+species+'s-dist', $
               probe=probe, trange=trange
 
-name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
-
+name =  'mms'+probe+'_d'+species+'s_dist_'+data_rate
 
 ;reformat data from tplot variable into compatible 3D structures
 ;  -this will return a pointer to the structure array in order to save memory 
 ;---------------------------------------------
-dist = mms_get_fpi_dist(name, trange=trange, probe=probe, species=species, data_rate=data_rate)
+dist = mms_get_fpi_dist(name, trange=trange, probe=probe, species=species, data_rate=data_rate, level=level)
 
 ;basic slice
 ;  -some plot annotations will need to be set manually for now
 ;---------------------------------------------
 
-time = '2015-8-15/12:50' ;start time of slice
+time = '2015-10-16/13:06:00' ;start time of slice
 window = 1 ;window (sec) over which to average
 
 ;get slice
@@ -84,17 +84,17 @@ stop
 ;=============================
 
 ;load B field data
-mms_load_dfg, probe=probe, trange=trange, level='ql'
+mms_load_fgm, probe=probe, trange=trange, level=level
 
 ;load velocity moment
-mms_load_fpi, data_rate='brst', level='l1b', datatype='d'+species+'s-moms', $
+mms_load_fpi, data_rate='brst', level=level, datatype='d'+species+'s-moms', $
               probe=probe, trange=trange
 
-bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
+bname = 'mms'+probe+'_fgm_b_gse_srvy_l2_bvec'
 vname = 'mms'+probe+'_d'+species+'s_bulk'
 
 ;combine separate velocity components
-join_vec, vname + ['X','Y','Z'], vname
+join_vec, vname + ['x','y','z']+'_dbcs_brst', vname
 
 ;field/velocity aligned slice
 ;  -the plot's x axis is parallel to the B field
@@ -115,7 +115,7 @@ stop
 ;=============================
 
 ;produce a plot of 2 seconds of data every 10 seconds for 1 minute
-time = time_double('2015-8-15/12:50')
+time = time_double('2015-10-16/13:06:00')
 times = time + findgen(6) * 10.
 window = 1
 
@@ -166,12 +166,12 @@ stop
 
 
 ;load fast survey data
-mms_load_fpi, data_rate='fast', level='l1b', datatype='d'+species+'s-dist', $
+mms_load_fpi, data_rate='fast', level=level, datatype='d'+species+'s-dist', $
               probe=probe, trange=trange
 
 ;reformat data
-name = 'mms'+probe+'_d'+species+'s_fastSkyMap_dist'
-dist_fast = mms_get_fpi_dist(name, trange=trange, probe=probe, species=species, data_rate=data_rate)
+name = 'mms'+probe+'_d'+species+'s_dist_fast'
+dist_fast = mms_get_fpi_dist(name, trange=trange, probe=probe, species=species, data_rate=data_rate, level=level)
 
 time = '2015-8-15/12:50' ;start time of slice
 

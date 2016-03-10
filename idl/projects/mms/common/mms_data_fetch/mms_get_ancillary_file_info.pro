@@ -17,13 +17,14 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-19 16:07:09 -0700 (Fri, 19 Jun 2015) $
-;$LastChangedRevision: 17926 $
+;$LastChangedDate: 2016-03-09 13:39:34 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20376 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_data_fetch/mms_get_ancillary_file_info.pro $
 ;-
 
 function mms_get_ancillary_file_info, filename=filename, sc_id=sc_id, $
-         product=product, start_date=start_date, end_date=end_date
+         product=product, start_date=start_date, end_date=end_date, $
+         public=public
 
     if ~undefined(sc_id) then sc_id = strlowcase(sc_id)
     if ~undefined(product) then product = strlowcase(product)
@@ -38,7 +39,7 @@ function mms_get_ancillary_file_info, filename=filename, sc_id=sc_id, $
     if n_elements(query_args) lt 2 then query = '' $
     else query = strjoin(query_args, '&')
     
-    file_data = get_mms_file_info('ancillary', query=query)
+    file_data = get_mms_file_info('ancillary', query=query, public=public)
     
     return, file_data
 end

@@ -1,7 +1,7 @@
 function get_mms_science_file, filename=filename, sc_id=sc_id, $
 instrument_id=instrument_id, data_rate_mode=data_rate_mode, $
 data_level=data_level, descriptor=descriptor, start_date=start_date, end_date=end_date, $
-local_dir=local_dir
+local_dir=local_dir, public=public
 
   ; Web API defined with lower case.
   if n_elements(sc_id)          gt 0 then sc_id          = strlowcase(sc_id)
@@ -28,7 +28,7 @@ local_dir=local_dir
   else query = strjoin(query_args[1:*], "&")
   
   ; Execute the query.
-  status = download_mms_files("science", query, local_dir=local_dir)
+  status = download_mms_files("science", query, local_dir=local_dir, public=public)
 
   return, status
 end

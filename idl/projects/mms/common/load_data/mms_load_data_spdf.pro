@@ -21,8 +21,8 @@
 ;       SPDF doesn't. 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-03 13:32:56 -0800 (Thu, 03 Mar 2016) $
-;$LastChangedRevision: 20314 $
+;$LastChangedDate: 2016-03-09 11:03:26 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20367 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -30,7 +30,8 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
                    trange = trange, source = source, level = level, $
                    remote_data_dir = remote_data_dir, local_data_dir = local_data_dir, $
                    attitude_data = attitude_data, no_download = no_download, $
-                   no_server = no_server, data_rate = data_rate, tplotnames = tplotnames
+                   no_server = no_server, data_rate = data_rate, tplotnames = tplotnames, $
+                   get_support_data = get_support_data, varformat = varformat
 
     if not keyword_set(datatype) then datatype = '*'
     if not keyword_set(level) then level = 'l2'
@@ -166,7 +167,9 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
           local_path = local_data_dir, $
           SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0) ; these keywords ignore certificate warnings
 
-        mms_cdf2tplot, files, tplotnames = tplotnames
+        mms_cdf2tplot, files, tplotnames = new_tplotnames, get_support_data = get_support_data, $
+            varformat = varformat
+        append_array, tplotnames, new_tplotnames
         
         data_count += 1
       endfor

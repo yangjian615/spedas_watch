@@ -13,14 +13,15 @@
 ;   predeph - predicted ephemeris data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-04 14:58:12 -0800 (Thu, 04 Feb 2016) $
-;$LastChangedRevision: 19902 $
+;$LastChangedDate: 2016-03-09 13:39:34 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20376 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_get_state_data.pro $
 ;-
 pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames, $
     login_info = login_info, datatypes = datatypes, level = level, $
     local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-    no_download=no_download, pred_or_def=pred_or_def, suffix=suffix
+    no_download=no_download, pred_or_def=pred_or_def, suffix=suffix, $
+    public=public
 
     probe = strcompress(string(probe), /rem)
     start_time = time_double(trange[0])-60*60*24.
@@ -58,7 +59,8 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
 
             if level EQ 'def' then begin
                 ancillary_file_info = mms_get_ancillary_file_info(sc_id='mms'+probe, $
-                    product=product, start_date=start_time_str, end_date=end_time_str)
+                    product=product, start_date=start_time_str, end_date=end_time_str, $
+                    public=public)
 
                 ; if pred_or_def flag was set check that files were found and/or the time frame
                 ; covers the entire time requestd
@@ -78,13 +80,15 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
                         level = 'pred'
                         product = level + filetype[i]
                         ancillary_file_info = mms_get_state_pred_info(sc_id='mms'+probe, $
-                            product=product, start_date=start_time_str, end_date=end_time_str)
+                            product=product, start_date=start_time_str, end_date=end_time_str, $
+                            public=public)
                     endif
                 endif
 
             endif else begin
                 ancillary_file_info = mms_get_state_pred_info(sc_id='mms'+probe, $
-                    product=product, start_date=start_time_str, end_date=end_time_str)
+                    product=product, start_date=start_time_str, end_date=end_time_str, $
+                    public=public)
             endelse
         endif
 
@@ -101,7 +105,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
                 same_file = mms_check_file_exists(remote_file_info[doy_idx], file_dir = file_dir)
                 if same_file eq 0 then begin
                     dprint, dlevel = 0, 'Downloading ' + remote_file_info[doy_idx].filename + ' to ' + file_dir
-                    status = get_mms_ancillary_file(filename=remote_file_info[doy_idx].filename, local_dir=file_dir)
+                    status = get_mms_ancillary_file(filename=remote_file_info[doy_idx].filename, local_dir=file_dir,public=public)
                     if status eq 0 then append_array, daily_names, file_dir + remote_file_info[doy_idx].filename
                 endif else begin
                     dprint, dlevel = 0, 'Loading local file ' + file_dir + remote_file_info[doy_idx].filename
@@ -111,7 +115,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
 
             ; if no remote list was found then search locally
         endif else begin
-            local_files = mms_get_local_state_files(probe='mms'+probe, level= level, filetype=filetype[i], trange=[start_time, end_time])
+            local_files = mms_get_local_state_files(probe='mms'+probe, level= level, filetype=filetype[i], trange=[start_time, end_time], public=public)
             if is_string(local_files) then begin
                 append_array, daily_names, local_files
             endif else begin

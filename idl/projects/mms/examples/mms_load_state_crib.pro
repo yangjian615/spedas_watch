@@ -15,7 +15,7 @@
 ;; 1) Select date and time interval
 ;;    ============================
 ; download SCM data for 8/2/2015
-date = '2015-07-31/00:00:00'
+date = '2015-12-22/00:00:00'
 timespan,date,1,/day
 
 ;;    ===================================
@@ -56,7 +56,7 @@ timespan,date,1,/day
 ; data will not be found. by default the routine will look for predicted
 ; when definitive is not found).
 mms_load_state, probes= ['1'], level='def', datatypes='pos'
-tplot, ['mms*_predeph_*']
+tplot, ['mms*_defeph_*']
 stop
 
 ; requesting predicted this time (result should be the same

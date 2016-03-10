@@ -15,8 +15,8 @@
 ;  If you see any useful examples missing from these cribs, please let us know.
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-14 14:38:31 -0700 (Thu, 14 May 2015) $
-;$LastChangedRevision: 17616 $
+;$LastChangedDate: 2016-03-09 17:50:27 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20379 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
 ;-
 
@@ -257,9 +257,40 @@ tplot,'thd_psif_eflux_energy'
 print,'SST data & interpolated bins used to generate particle products.'
 
 stop
+
+;--------------------------------------------------------------------------------------
+;Use manually loaded data
+;This can be useful if the data needs to be processed before interpolation.
+;--------------------------------------------------------------------------------------
+
+;set probe and time range
+probe = 'd'
+trange = '2011-07-29/' + ['13:00','14:00']
+
+;load data manually
+;IMPORTANT: always use the same time range and probe!
+esa_dist = thm_part_dist_array(probe=probe, trange=trange, datatype = 'peif')
+sst_dist = thm_part_dist_array(probe=probe, trange=trange, datatype = 'psif')
+
+;Pass the pre-loaded data through the ESA_DIST and SST_DIST keywords 
+combined = thm_part_combine(probe=probe, trange=trange, $
+                            esa_dist=esa_dist, sst_dist=sst_dist)
+
+
+thm_part_products, dist_array=combined, outputs='energy'
+
+tplot,'thd_pt??f_eflux_energy'
+
+
+print, ' ','Load original data manually', ' '
+
+stop
+
 ;--------------------------------------------------------------------------------------
 ;End
 ;--------------------------------------------------------------------------------------
+
+
 
 print, 'End of crib.'
 

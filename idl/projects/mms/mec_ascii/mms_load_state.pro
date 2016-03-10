@@ -87,9 +87,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-02 16:15:29 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20300 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-03-09 13:39:34 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20376 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -126,8 +126,9 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
 
     ; only prompt the user if they're going to download data
     if no_download eq 0 then begin
-        status = mms_login_lasp(login_info = login_info)
+        status = mms_login_lasp(login_info = login_info, username=username)
         if status ne 1 then no_download = 1
+        if username eq '' then public=1
     endif
     
     ; initialize undefined values
@@ -185,10 +186,16 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     ; check for attitude data type mec cut off date
     att_idx = where(strpos(datatypes, 'spin') GE 0, natt)
     def_idx = where(strpos(level, 'def') GE 0, nlev)
-    if natt GT 0 && trange[0] GE mec_cutoff_date && nlev GT 0 then begin
+
+;    if natt GT 0 && trange[0] GE mec_cutoff_date && nlev GT 0 then begin
+;       mec_flag = 1
+;       eph_idx = where(strpos(datatypes, 'spin') EQ -1, neph)
+;    endif
+     if trange[0] GE mec_cutoff_date then begin
        mec_flag = 1
        eph_idx = where(strpos(datatypes, 'spin') EQ -1, neph)
-    endif
+     endif
+
 
     ; get state data for each probe and data type (def or pred) 
     for i = 0, n_elements(probes)-1 do begin      
@@ -201,13 +208,15 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
                     mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                       login_info = login_info, datatypes = dt, level = level[j], $
                       local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-                      no_download=no_download, pred_or_def=pred_or_def, suffix = suffix
+                      no_download=no_download, pred_or_def=pred_or_def, suffix = suffix, $
+                      public=public
                  endif
             endif else begin
                  mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $
                    local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-                   no_download=no_download, pred_or_def=pred_or_def, suffix = suffix
+                   no_download=no_download, pred_or_def=pred_or_def, suffix = suffix, $
+                   public=public
             endelse
        endfor
     endfor

@@ -38,6 +38,7 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
+;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ; 
 ; OUTPUT:
 ; 
@@ -53,8 +54,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:11:01 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20259 $
+;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20377 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/aspoc/mms_load_aspoc.pro $
 ;-
 
@@ -66,7 +67,7 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   varformat = varformat, cdf_filenames = cdf_filenames, $
                   cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version
+                  min_version = min_version, spdf = spdf
                   
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     ; for ASPOC data, datatype = instrument
@@ -84,7 +85,8 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
         datatype = datatype, get_support_data = get_support_data, tplotnames = tplotnames, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
-        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version
+        cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+        spdf = spdf
          
 ; Commented out the following because it doesn't seem to help anymore
 ; egrimes, 2/29/2016

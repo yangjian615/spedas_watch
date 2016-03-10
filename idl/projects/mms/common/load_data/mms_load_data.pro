@@ -30,11 +30,14 @@
 ;         no_update: use local data only, don't query the SDC for updated files. 
 ;         suffix: append a suffix to tplot variables names
 ;         varformat: should be a string (wildcards accepted) that will match the CDF variables
-;                       that should be loaded into tplot variables
+;             that should be loaded into tplot variables
 ;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
 ;         latest_version: only grab the latest CDF version in the requested time interval
-;                       (e.g., /latest_version)
+;             (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
+;         cdf_records: specify the # of records to load from the CDF files; this is useful
+;             for grabbing one record from a CDF file
+;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;         
 ;         
 ; EXAMPLE:
@@ -88,8 +91,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 08:48:56 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20287 $
+;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20377 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -149,9 +152,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
     ; only prompt the user if they're going to download data
     if no_download eq 0 then begin
-        status = mms_login_lasp(login_info = login_info)
+        status = mms_login_lasp(login_info = login_info, username=username)
         if status ne 1 then no_download = 1
-       ; if status eq -2 then public=1 ; soon
+        if username eq '' then public=1
     endif
 
     ;clear so new names are not appended to existing array
@@ -165,11 +168,12 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
           trange = trange, source = source, level = level, tplotnames = tplotnames, $
           remote_data_dir = remote_data_dir, local_data_dir = local_data_dir, $
           attitude_data = attitude_data, no_download = no_download, $
-          no_server = no_server, data_rate = data_rates
+          no_server = no_server, data_rate = data_rates, get_support_data = get_support_data, $
+          varformat = varformat
         no_download = 1
         dt_query += systime(/sec) - qt0
     endif
-    
+
     ;loop over probe, rate, level, and datatype
     ;omitting some tabbing to keep format reasonable
     for probe_idx = 0, n_elements(probes)-1 do begin
@@ -197,7 +201,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             qt0 = systime(/sec) ;temporary
             data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
                     data_rate_mode=data_rate, data_level=level, start_date=day_string, $
-                    end_date=end_string, descriptor=descriptor) ;, public=public)
+                    end_date=end_string, descriptor=descriptor, public=public)
             dt_query += systime(/sec) - qt0 ;temporary
         endif
 
@@ -238,7 +242,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 if same_file eq 0 then begin
                     td0 = systime(/sec) ;temporary
                     dprint, dlevel = 0, 'Downloading ' + filename[file_idx] + ' to ' + file_dir
-                    status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir) ;, public=public)
+                    status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir, public=public)
 
                     dt_download += systime(/sec) - td0 ;temporary
                     if status eq 0 then append_array, files, file_dir + '/' + filename[file_idx]

@@ -41,6 +41,7 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval 
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load 
+;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;
 ; OUTPUT:
 ;  
@@ -64,8 +65,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20296 $
+;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20377 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $

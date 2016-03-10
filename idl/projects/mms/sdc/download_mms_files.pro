@@ -7,7 +7,7 @@
 ;   abs_selections
 ; The 'query' is directly passed to the web service.
 ; See the web service documentation for valid query options.
-function download_mms_files, type, query, local_dir=local_dir, latest=latest, max_files=max_files
+function download_mms_files, type, query, local_dir=local_dir, latest=latest, max_files=max_files, public=public
   ;TODO: make sure type is valid
 
   ; Define the maximum number of files to allow.
@@ -17,13 +17,13 @@ function download_mms_files, type, query, local_dir=local_dir, latest=latest, ma
   if n_elements(local_dir) eq 0 then cd, current=local_dir
 
   ; Define the URL path for the download web service for the given data type.
-  url_path = "/mms/sdc/sitl/files/api/v1/download/" + type
+  url_path = keyword_set(public) ? "/mms/sdc/public/files/api/v1/download/" + type : "/mms/sdc/sitl/files/api/v1/download/" + type
 
   ; Get the IDLnetURL singleton. May prompt for password.
   connection = get_mms_sitl_connection()
   
   ; Get the list of files. Names will be full path starting at "mms"?
-  files = get_mms_file_names(type, query=query)
+  files = get_mms_file_names(type, query=query, public=public)
   ; Warn if no files. Error code or empty.
   if (size(files, /type) eq 3 || n_elements(files) eq 0) then begin
     printf, -2, "WARN: No files found for the " + type + " query: " + query 

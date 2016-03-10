@@ -23,7 +23,7 @@
 ;-
 
 function mms_get_state_pred_info, filename=filename, sc_id=sc_id, product=product, $
-  start_date=start_date, end_date=end_date
+  start_date=start_date, end_date=end_date, public=public
 
   ; need yeardoy format for matching with MMS file names
   start_struc=time_struct(start_date)
@@ -42,7 +42,7 @@ function mms_get_state_pred_info, filename=filename, sc_id=sc_id, product=produc
   if n_elements(query_args) lt 2 then query = '' $
   else query = strjoin(query_args, '&')
 
-  file_data = get_mms_file_info('ancillary', query=query)
+  file_data = get_mms_file_info('ancillary', query=query, public=public)
 
   f = '_' 
   name_pattern = strupcase(sc_id)+f+strupcase(product)+f+'[0-9]{7}'+f+'[0-9]{7}'

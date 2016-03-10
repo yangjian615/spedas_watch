@@ -39,6 +39,7 @@
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
 ;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
+;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;
 ; 
 ; OUTPUT:
@@ -68,8 +69,8 @@
 ;                  mms_eis_omni to address burst variable name changes
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-03 13:32:29 -0800 (Thu, 03 Mar 2016) $
-;$LastChangedRevision: 20313 $
+;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20377 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 

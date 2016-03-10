@@ -40,6 +40,7 @@
 ;         cdf_records:  specify a number of records to load from the CDF files.
 ;                       e.g., cdf_records=1 only loads in the first data point in the file
 ;                       This is especially useful for loading S/C position for a single time
+;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;
 ; EXAMPLES:
 ;         to load/plot the S/C position data for probe 3 on 2/20/2016:
@@ -48,8 +49,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 08:47:44 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20286 $
+;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20377 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 
@@ -87,5 +88,8 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
             copy_data, ras_dec_vars[0], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spinras'
             copy_data, ras_dec_vars[1], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spindec'
         endif else dprint, dlevel = 1, 'No right ascension/declination of the L-vector found.'
+    
+        ; fix the metadata
+        mms_mec_fix_metadata, probes[probe_idx]
     endfor
 end

@@ -1,6 +1,9 @@
 ;+
 ; script for basic dayside science (from EVA, first plot)
 ; 
+; Can create the figure for the latest data, but
+; also requires MMS team member access to the SDC
+; 
 ; Plots on the figure include:
 ;   1: DFG, srvy, GSM
 ;   2. DFG magnitude
@@ -17,13 +20,13 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-09 12:37:13 -0800 (Wed, 09 Mar 2016) $
-; $LastChangedRevision: 20373 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_basic_dayside.pro $
+; $LastChangedDate: 2016-03-09 09:42:23 -0800 (Wed, 09 Mar 2016) $
+; $LastChangedRevision: 20364 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_basic_dayside_qlplots.pro $
 ;-
 start_time = systime(/sec)
 
-date = '2015-12-31/00:00:00
+date = '2016-03-7/00:00:00
 timespan, date, 1, /day
 probe = '1'
 ; options for send_plots_to:
@@ -35,37 +38,34 @@ plot_directory = ''
 postscript = send_plots_to eq 'ps' ? 1 : 0
 
 ; load the data
-mms_load_fgm, probe=probe, data_rate='srvy', level='l2'
-mms_load_mec, probe=probe, data_rate='srvy', level='l2'
-mms_load_fpi, probe=probe, data_rate='fast', level='l2', datatype=['des-moms', 'dis-moms']
-mms_load_edp, probe=probe, datatype='scpot', level='l2'
-mms_load_edp, probe=probe, data_rate='fast', level='l2', datatype='dce'
-mms_load_edp, probe=probe, data_rate='srvy', level='l2', datatype=['dce', 'hfesp']
+mms_load_fgm, instrument='dfg', probe=probe, data_rate='srvy', level='ql'
+mms_load_fpi, probe=probe, data_rate='fast', level='sitl'
+mms_load_edp, probe=probe, datatype='scpot', level='sitl'
+mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce'
+mms_load_edp, probe=probe, data_rate='srvy', level='l1b', datatype=['dce', 'hfesp']
 mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd'
-
-; no L2 HPCA data yet 3/9/2016
-;mms_load_hpca, probe=probe, data_rate='srvy', level='l2'
+mms_load_hpca, probe=probe, data_rate='srvy', level='sitl'
 
 ; sum the HPCA spectra over the full field of view
 mms_hpca_calc_anodes, fov=[0, 360], probe=probe
 
 ; For the s/c potential, we plot -ln(scpot), to match the plot in EVA
-calc, '"mms'+probe+'_edp_fast_scpot_ln" = -ln("mms'+probe+'_edp_scpot_fast_l2")'
+calc, '"mms'+probe+'_edp_fast_scpot_ln" = -ln("mms'+probe+'_edp_scpot_fast_sitl")'
 ; update the Y-axis title
 options, 'mms'+probe+'_edp_fast_scpot_ln', ytitle='EDP!CFAST!C-ln(scpot)'
 
 ; join the velocity data into a single variable
-join_vec, 'mms'+probe+['_dis_bulkx_dbcs_fast', '_dis_bulky_dbcs_fast', '_dis_bulkz_dbcs_fast'], 'mms'+probe+'_fpi_ibulkv'
+join_vec, 'mms'+probe+['_fpi_iBulkV_X_DSC', '_fpi_iBulkV_Y_DSC', '_fpi_iBulkV_Z_DSC'], 'mms'+probe+'_fpi_iBulkV'
 
 ;;;;; The following ExB calculations were taken from EVA, 12/10/2015
 ; ExB
 ;------------
 sc = 'mms'+strcompress(string(probe), /rem)
 vthres = 500.
-get_data,sc+'_fgm_b_dmpa_srvy_l2',data=B
-get_data,sc+'_edp_dce_dsl_fast_l2',data=E,dl=dl,lim=lim
-tnB = tnames(sc+'_fgm_b_dmpa_srvy_l2',ctB)
-tnE = tnames(sc+'_edp_dce_dsl_fast_l2',ctE)
+get_data,sc+'_dfg_srvy_dmpa',data=B
+get_data,sc+'_edp_dce_xyz_dsl',data=E,dl=dl,lim=lim
+tnB = tnames(sc+'_dfg_srvy_dmpa',ctB)
+tnE = tnames(sc+'_edp_dce_xyz_dsl',ctE)
 if ctB eq 1 and ctE eq 1 then begin
   ; E has a higher time resolution than B
   ; Here, we interpolate B so that its timestamps will match with those of E.
@@ -98,14 +98,14 @@ endif
 ;-------------------------
 
 ; extract Vperp
-tn = tnames(sc+'_fpi_ibulkv',ct)
+tn = tnames(sc+'_fpi_iBulkV',ct)
 if ct eq 1 then begin
   comp = ['x','y','z']
   clrs = [2,4,6]
   cmax = n_elements(comp)
   ; V has a much lower time resolution than B
   ; Here, we keep the lower time resolution by interpolating B.
-  get_data,sc+'_fpi_ibulkv',data=F
+  get_data,sc+'_fpi_iBulkV',data=F
   wBx = interpol(B.y[*,0], B.x, F.x)
   wBy = interpol(B.y[*,1], B.x, F.x)
   wBz = interpol(B.y[*,2], B.x, F.x)
@@ -131,9 +131,9 @@ if ct eq 1 then begin
 endif
 
 ; let's put the ephemeris data at the bottom
-eph_variable = 'mms'+strcompress(string(probe), /rem)+'_mec_r_gsm'
-b_variable = '_fgm_b_gsm_srvy_l2'
-suffix_kludge = ['x', 'y', 'z'] ; because the suffix is different depending on the level...
+eph_variable = 'mms'+strcompress(string(probe), /rem)+'_ql_pos_gsm'
+b_variable = '_dfg_srvy_dmpa'
+suffix_kludge = ['0', '1', '2'] ; because the suffix is different depending on the level...
 
 ; eph_variable = 'mms'+strcompress(string(i), /rem)+'_dfg_srvy_gsm_dmpa'
 calc,'"'+eph_variable+'_re" = "'+eph_variable+'"/6371.2'
@@ -154,25 +154,25 @@ ylim, 'mms'+probe+'_dsp_bpsd_omni_fast_l2', 0, 0, 1
 zlim, 'mms'+probe+'_dsp_bpsd_omni_fast_l2', 0, 0, 1
 ylim, 'mms'+probe+'_edp_srvy_EPSD_x', 0, 0, 1
 zlim, 'mms'+probe+'_edp_srvy_EPSD_x', 0, 0, 1
-options, 'mms'+probe+'_fpi_ibulkv', colors=[2, 4, 6]
-options, 'mms'+probe+'_fpi_ibulkv', labels=['Vx', 'Vy', 'Vz']
-options, 'mms'+probe+'_fpi_ibulkv', labflag=-1
-options, 'mms'+probe+'_edp_dce_dsl_fast_l2', colors=[2, 4, 6]
-options, 'mms'+probe+'_edp_dce_dsl_fast_l2', labels=['Ex', 'Ey', 'Ez']
-options, 'mms'+probe+'_edp_dce_dsl_fast_l2', labflag=-1
+options, 'mms'+probe+'_fpi_iBulkV', colors=[2, 4, 6]
+options, 'mms'+probe+'_fpi_iBulkV', labels=['Vx', 'Vy', 'Vz']
+options, 'mms'+probe+'_fpi_iBulkV', labflag=-1
+options, 'mms'+probe+'_edp_dce_xyz_dsl', colors=[2, 4, 6]
+options, 'mms'+probe+'_edp_dce_xyz_dsl', labels=['Ex', 'Ey', 'Ez']
+options, 'mms'+probe+'_edp_dce_xyz_dsl', labflag=-1
 options,'mms'+probe+'_fpi_DISnumberDensity', ytitle='FPI!CDIS!CDensity'
 
 ; clip the field data, so the data at perigee doesn't dominate the figure
 split_vec, 'mms'+probe+b_variable+'_bvec'
 tclip, 'mms'+probe+b_variable+'_bvec_?', -150, 150, /overwrite
 tclip, 'mms'+probe+b_variable+'_btot', -150, 150, /overwrite
-store_data, 'mms'+probe+'_fgm_gsm_srvy', data='mms'+probe+b_variable+'_bvec'+['_x', '_y', '_z']
-options, 'mms'+probe+'_fgm_gsm_srvy', labflag=-1
-options, 'mms'+probe+'_fgm_gsm_srvy', labels=['Bx', 'By', 'Bz']
-options, 'mms'+probe+'_fgm_gsm_srvy', colors=[2, 4, 6]
+store_data, 'mms'+probe+'_dfg_gsm_srvy', data='mms'+probe+b_variable+'_bvec'+['_x', '_y', '_z']
+options, 'mms'+probe+'_dfg_gsm_srvy', labflag=-1
+options, 'mms'+probe+'_dfg_gsm_srvy', labels=['Bx', 'By', 'Bz']
+options, 'mms'+probe+'_dfg_gsm_srvy', colors=[2, 4, 6]
 options, 'mms'+probe+b_variable+'_btot', labels='Bmag'
 options, 'mms'+probe+b_variable+'_btot', ytitle='mms'+probe+'!CFGM'
-options, 'mms'+probe+'_fgm_gsm_srvy', ytitle='mms'+probe+'!CFGM!CGSM'
+options, 'mms'+probe+'_dfg_gsm_srvy', ytitle='mms'+probe+'!CFGM!CGSM'
 
 ; degap the FPI spectra
 tdegap, 'mms'+probe+'_fpi_iEnergySpectr_omni_avg', /overwrite
@@ -182,17 +182,17 @@ tdegap, 'mms'+probe+'_dsp_bpsd_omni_fast_l2', /overwrite
 
 window, ysize=800
 ; plot the data
-tplot, 'mms'+probe+['_fgm_gsm_srvy', $
-                    '_fgm_b_gsm_srvy_l2_btot', $
-                    '_dis_energyspectr_omni_avg', $
-                    '_des_energyspectr_omni_avg', $
-                    '_dis_numberdensity_dbcs_fast', $
+tplot, 'mms'+probe+['_dfg_gsm_srvy', $
+                    '_dfg_srvy_dmpa_btot', $
+                    '_fpi_iEnergySpectr_omni_avg', $
+                    '_fpi_eEnergySpectr_omni_avg', $
+                    '_fpi_DISnumberDensity', $
                     '_edp_fast_scpot_ln', $
-                    '_fpi_ibulkv', $
+                    '_fpi_iBulkV', $
                     '_exb_vperp_z', $
                     '_hpca_hplus_RF_corrected_elev_0-360', $
                     '_hpca_oplus_RF_corrected_elev_0-360', $
-                    '_edp_dce_dsl_fast_l2', $
+                    '_edp_dce_xyz_dsl', $
                     '_edp_srvy_EPSD_x', $
                     '_dsp_bpsd_omni_fast_l2' $
                     ], var_label=position_vars

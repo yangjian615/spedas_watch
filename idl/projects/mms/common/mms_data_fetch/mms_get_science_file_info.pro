@@ -1,6 +1,7 @@
 function mms_get_science_file_info, filename=filename, sc_id=sc_id, $
   instrument_id=instrument_id, data_rate_mode=data_rate_mode, $
-  data_level=data_level, descriptor=descriptor, start_date=start_date, end_date=end_date
+  data_level=data_level, descriptor=descriptor, start_date=start_date, end_date=end_date, $
+  public=public
   
   ; Web API defined with lower case.
   if n_elements(sc_id)          gt 0 then sc_id          = strlowcase(sc_id)
@@ -27,7 +28,7 @@ function mms_get_science_file_info, filename=filename, sc_id=sc_id, $
   else query = strjoin(query_args[1:*], "&")
   
   ; Execute the query.
-  file_data = get_mms_file_info("science", query=query)
+  file_data = get_mms_file_info("science", query=query, public=public)
   
   return, file_data
 end

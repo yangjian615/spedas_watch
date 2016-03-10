@@ -1,5 +1,5 @@
 function get_mms_ancillary_file, filename=filename, sc_id=sc_id, product=product, $
-  start_date=start_date, end_date=end_date, local_dir=local_dir
+  start_date=start_date, end_date=end_date, local_dir=local_dir, public=public
 
   ; Web API defined with lower case.
   if n_elements(sc_id)   gt 0 then sc_id   = strlowcase(sc_id)
@@ -21,7 +21,7 @@ function get_mms_ancillary_file, filename=filename, sc_id=sc_id, product=product
   else query = strjoin(query_args[1:*], "&")
   
   ; Execute the query.
-  status = download_mms_files("ancillary", query, local_dir=local_dir)
+  status = download_mms_files("ancillary", query, local_dir=local_dir, public=public)
 
   return, status  
 end
