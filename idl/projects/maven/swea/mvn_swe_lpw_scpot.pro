@@ -47,8 +47,8 @@
 ;       Yuki Harada on 2016-02-29
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-03-06 09:38:42 -0800 (Sun, 06 Mar 2016) $
-; $LastChangedRevision: 20334 $
+; $LastChangedDate: 2016-03-10 12:40:44 -0800 (Thu, 10 Mar 2016) $
+; $LastChangedRevision: 20388 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
@@ -102,6 +102,7 @@ if ~keyword_set(nol0load) then begin
          if dtype eq 1 then tplot_rename,tf[itf],time_string(today,tf='YYYYMMDD_')+tf[itf]
       endfor
       store_data,'mvn_lpw_*',/del
+      mvn_spc_clear_spice_kernels
       timespan,tr
    endfor
    ;;; concat and sort

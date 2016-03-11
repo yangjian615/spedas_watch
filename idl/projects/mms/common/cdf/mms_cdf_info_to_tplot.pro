@@ -18,6 +18,11 @@ pro mms_cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames, non_record_varying=
         force_epoch=force_epoch, $
         verbose=verbose,get_support_data=get_support_data,  $
         tplotnames=tplotnames,$
+        center_measurement=center_measurement, $ ; if set, and the CDF contains the variables delta_plus_var and delta_minus_var on the Epoch
+                                     ; variable, this routine will shift the timestamps so that each measurement time
+                                     ; is in the middle of the data interval for consistency with other instruments; this is 
+                                     ; mostly for FPI - the delta +/- is [10,0] sec for the SITL data product or 
+                                     ; [0.03, 0] sec for a DES burst product
         load_labels=load_labels ;copy labels from labl_ptr_1 in attributes into dlimits
                                       ;resolve labels implemented as keyword to preserve backwards compatibility
 
@@ -25,6 +30,10 @@ dprint,verbose=verbose,dlevel=4,'$Id: mms_cdf_info_to_tplot.pro 19330 2015-11-10
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
+dplus_var = ''
+dminus_var = ''
+time_plus_offset = 0d
+time_minus_offset = 0d
 
 if size(cdfi,/type) ne 8 then begin
     dprint,dlevel=1,verbose=verbose,'Must provide a CDF structure'
@@ -71,6 +80,32 @@ for i=0,nv-1 do begin
      if !CDF_LEAP_SECONDS.preserve_tt2000 then begin
        *(v.dataptr) =add_tt2000_offset(*v.dataptr)   ; convert to UNIX epoch, but leave the offset in.
      endif 
+     
+     ; adjust the Epoch tot he center of the accumulation interval
+     if keyword_set(center_measurement) then begin
+         dplus_var = struct_value(*v.attrptr, 'DELTA_PLUS_VAR', def='')
+         dminus_var = struct_value(*v.attrptr, 'DELTA_MINUS_VAR', def='')
+         ; check for DELTA_PLUS_VAR and DELTA_MINUS_VAR
+         ; on the Epoch variable
+         if dplus_var ne '' then begin
+           j = (where(strcmp(cdfi.vars.name, dplus_var,/fold_case),nj))[0]
+           if nj gt 0 then epoch_plus_var = cdfi.vars[j]
+           ; get the distance from the center of the interval
+           if ptr_valid(epoch_plus_var.dataptr) then begin
+               time_plus_offset = *epoch_plus_var.dataptr
+               if (*epoch_plus_var.attrptr).units eq 'ms' then time_plus_offset = time_plus_offset/1000.
+           endif
+         endif
+         if dminus_var ne '' then begin
+           j = (where(strcmp(cdfi.vars.name, dminus_var,/fold_case),nj))[0]
+           if nj gt 0 then epoch_minus_var = cdfi.vars[j]
+           if ptr_valid(epoch_minus_var.dataptr) then begin
+               time_minus_offset = *epoch_minus_var.dataptr
+               if (*epoch_minus_var.attrptr).units eq 'ms' then time_minus_offset = time_minus_offset/1000.
+           endif
+         endif
+         *(v.dataptr) = *(v.dataptr)+(time_plus_offset-time_minus_offset)
+     endif
      
      continue
      
@@ -135,6 +170,7 @@ for i=0,nv-1 do begin
           if(keyword_set(var_2)) then var_1 = var_2 else var_1 = 0 ;bpif  v.name eq 'thb_sir_001'
           var_2 = 0
      endif
+
      cdfstuff={filename:cdfi.filename,gatt:cdfi.g_attributes,vname:v.name,vatt:attr}
      units = struct_value(attr,'units',default='')
      if keyword_set(var_2) then data = {x:tvar.dataptr,y:v.dataptr,v1:var_1.dataptr, v2:var_2.dataptr} $

@@ -56,8 +56,15 @@ function mms_load_options_edp
             ql: [ $
             'dce', $
             'dce2d' $
-            ] $
-    } $
+            ], $
+            l2: ['dce', 'scpot'] $
+           }, $
+         brst: { $
+            l2: ['dce', 'hmfe', 'scpot'] $
+            }, $
+         slow: { $
+            l2: ['dce', 'scpot'] $
+            } $
 }
 
 return, s
@@ -132,7 +139,11 @@ s = { $
       brst: { $
               l1a: [ $
                      'amb' $
-                   ] $
+                   ], $
+              l2: [ 'amb', 'efield', 'q0'] $
+            }, $
+       srvy: { $
+              l2: [ 'amb', 'efield', 'q0'] $
             } $
     }
 
@@ -200,7 +211,11 @@ s = { $
               l1b: [ $
                      'extof', $
                      'phxtof' $
-                   ] $
+                   ], $
+               l2: [ $
+                     'extof', $
+                     'phxtof' $
+               ] $
             }, $
       srvy: { $
               l1a: [ $
@@ -214,7 +229,12 @@ s = { $
                      'extof', $
                      'partenergy', $
                      'phxtof' $
-                   ] $
+                   ], $
+               l2: [ $
+                     'electronenergy', $
+                     'extof', $
+                     'phxtof' $
+               ] $
             } $
     }
 
@@ -239,6 +259,10 @@ s = { $
                      'electron-top', $
                      'ion-bottom', $
                      'ion-top' $
+                   ], $
+              l2: [ $
+                     'electron', $
+                     'ion' $
                    ] $
             }, $
       srvy: { $
@@ -249,6 +273,10 @@ s = { $
                      'ion-top' $
                    ], $
               l1b: [ $
+                     'electron', $
+                     'ion' $
+                   ], $
+              l2: [ $
                      'electron', $
                      'ion' $
                    ] $
@@ -351,6 +379,10 @@ s = { $
               l1a: [ $
                      'scb', $
                      'schb' $
+                   ], $
+              l2: [ $
+                     'scb', $
+                     'schb' $
                    ] $
             }, $
       fast: { $
@@ -359,10 +391,16 @@ s = { $
                    ], $
               l1b: [ $
                      'scf' $
-                   ] $
+                   ], $
+              l2: [ $
+                     'scf' $
+               ] $
             }, $
       slow: { $
               l1a: [ $
+                     'scs' $
+                   ], $
+              l2: [ $
                      'scs' $
                    ] $
             }, $
@@ -370,6 +408,9 @@ s = { $
               l1a: [ $
                      'cal', $
                      'scm' $
+                   ], $
+              l2: [ $
+                   'scsrvy' $
                    ] $
             } $
     }
@@ -499,8 +540,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 08:26:11 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20362 $
+;$LastChangedDate: 2016-03-09 20:13:31 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20381 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_options.pro $
 ;-
 pro mms_load_options, $

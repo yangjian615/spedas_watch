@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 12:44:09 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20267 $
+;$LastChangedDate: 2016-03-09 19:08:33 -0800 (Wed, 09 Mar 2016) $
+;$LastChangedRevision: 20380 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -75,7 +75,9 @@ pro mms_ui_load_data_import,$
         dummy = where( stregex(tplotnames,search, /bool), ncomp=n_valid, comp=valid_idx)
         tplotnames =  n_valid gt 0 ? tplotnames[valid_idx] : ''
      endif
-
+  
+  endif else if instrument eq 'EDI' then begin
+     mms_load_edi, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
   endif else if instrument eq 'EDP' then begin
      mms_load_edp, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames
   endif else if instrument eq 'DSP' then begin

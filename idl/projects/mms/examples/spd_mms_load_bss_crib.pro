@@ -7,8 +7,8 @@
 ; See also "spd_mms_load_bss", "mms_load_bss", and "mms_load_bss_crib".
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-11-24 13:31:05 -0800 (Tue, 24 Nov 2015) $
-; $LastChangedRevision: 19465 $
+; $LastChangedDate: 2016-03-10 14:23:48 -0800 (Thu, 10 Mar 2016) $
+; $LastChangedRevision: 20395 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/spd_mms_load_bss_crib.pro $
 ;-
 
@@ -21,7 +21,7 @@ timespan, '2015-10-01', 1, /day
 spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
 
 ; now plot bars with some data 
-mms_load_dfg, probe=3, data_rate='brst'
+mms_load_fgm, probe=3, data_rate='brst'
 
 ; degap the mag data to avoid tplot connecting the lines between
 ; burst segments

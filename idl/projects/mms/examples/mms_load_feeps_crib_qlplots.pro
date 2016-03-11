@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-02 15:16:40 -0800 (Wed, 02 Mar 2016) $
-; $LastChangedRevision: 20297 $
+; $LastChangedDate: 2016-03-10 14:24:38 -0800 (Thu, 10 Mar 2016) $
+; $LastChangedRevision: 20396 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -51,7 +51,7 @@ mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[205, 206
 
 ; we use the B-field data at the top of the plot, and the position data in GSM coordinates
 ; loaded from the QL DFG files
-mms_load_dfg, probes=probe, level='ql', /no_attitude_data
+mms_load_fgm, instrument='dfg', probes=probe, level='ql', /no_attitude_data
 
 ; time clip the data to -150nT to 150nT
 b_variable = '_dfg_srvy_dmpa'

@@ -51,8 +51,8 @@
 ;                trange=['2015-09-03', '2015-09-04']
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-10 13:07:07 -0800 (Thu, 10 Mar 2016) $
+;$LastChangedRevision: 20391 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edi/mms_load_edi.pro $
 ;-
 
@@ -110,7 +110,7 @@ pro mms_load_edi, trange = trange, probes = probes, datatype = datatype, $
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'efield'
-    if undefined(level) then level = 'ql'
+    if undefined(level) then level = 'l2'
     if undefined(suffix) then suffix = ''
     if undefined(data_rate) then data_rate = 'srvy'
 

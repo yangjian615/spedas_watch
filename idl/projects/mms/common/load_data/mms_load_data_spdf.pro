@@ -21,8 +21,8 @@
 ;       SPDF doesn't. 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 11:03:26 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20367 $
+;$LastChangedDate: 2016-03-10 10:05:31 -0800 (Thu, 10 Mar 2016) $
+;$LastChangedRevision: 20384 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -31,7 +31,8 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
                    remote_data_dir = remote_data_dir, local_data_dir = local_data_dir, $
                    attitude_data = attitude_data, no_download = no_download, $
                    no_server = no_server, data_rate = data_rate, tplotnames = tplotnames, $
-                   get_support_data = get_support_data, varformat = varformat
+                   get_support_data = get_support_data, varformat = varformat, $
+                   center_measurement=center_measurement
 
     if not keyword_set(datatype) then datatype = '*'
     if not keyword_set(level) then level = 'l2'
@@ -168,7 +169,7 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
           SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0) ; these keywords ignore certificate warnings
 
         mms_cdf2tplot, files, tplotnames = new_tplotnames, get_support_data = get_support_data, $
-            varformat = varformat
+            varformat = varformat, center_measurement=center_measurement
         append_array, tplotnames, new_tplotnames
         
         data_count += 1

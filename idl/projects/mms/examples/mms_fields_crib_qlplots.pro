@@ -4,9 +4,9 @@
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2016-01-13 09:03:40 -0800 (Wed, 13 Jan 2016) $
-; $LastChangedRevision: 19722 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-03-10 07:44:50 -0800 (Thu, 10 Mar 2016) $
+; $LastChangedRevision: 20383 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_fields_crib_qlplots.pro $
 ;-
 
@@ -14,7 +14,7 @@
 ; initialize and define parameters
 probes = ['1', '2', '3', '4']
 ;trange = ['2015-09-05', '2015-09-06']
-timespan, '2015-09-05', 1, /day
+timespan, '2016-02-23', 1, /day
 iw = 0
 width = 750
 height = 1000
@@ -41,7 +41,7 @@ endif
 ; START OF FIELDS PLOTS - ALL SPACECRAFT 
 ;  
 ; load mms survey Fields data
-mms_load_dfg, probes=probes, level='ql', data_rate='srvy'
+mms_load_fgm, instrument='dfg', probes=probes, level='ql', data_rate='srvy'
 
 ; DMPA - Handle Btot and Bvec 
 
@@ -106,8 +106,12 @@ options, 'mms_*_gsm_dmpa_y', ytitle='DFG By'
 options, 'mms_*_gsm_dmpa_z', ytitle='DFG Bz'
 options, 'mms_*_gsm_dmpa_*', ysubtitle='GSM-DMPA [nT]'
 
-;mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='epsd', level='l2'
-;mms_load_dsp,  data_rate='srvy', probes=[1, 2, 3, 4], datatype='bpsd', level='l2'
+mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='epsd', level='l2'
+mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='bpsd', level='l2'
+
+; set the options for the bpsd data
+ylim, 'mms?_dsp_bpsd_omni_fast_l2', 0, 0, 1
+zlim, 'mms?_dsp_bpsd_omni_fast_l2', 0, 0, 1
 
 spd_mms_load_bss, /include_labels
 
@@ -119,8 +123,9 @@ tplot_options, 'panel_size', 0.2
 options, 'mms_bss_burst', charsize=2.5
 
 if ~postscript then window, iw, xsize=width, ysize=height
-tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
-        'mms_dfg_srvy_dmpa_btot', 'mms_dfg_srvy_gsm_dmpa_*', 'mms_dfg_srvy_dmpa_bvec_*'], window=iw
+tplot, ['mms_bss_burst', 'mms_bss_fast', $
+        'mms_dfg_srvy_dmpa_btot', 'mms_dfg_srvy_gsm_dmpa_*', 'mms_dfg_srvy_dmpa_bvec_*',$
+        'mms?_dsp_bpsd_omni_fast_l2'], window=iw
 timebar, 0.0, /databar, varname='mms_dfg_srvy_dmpa_btot', linestyle=2
 timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_x', linestyle=2
 timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_y', linestyle=2
@@ -139,48 +144,50 @@ stop
 ; START OF FIELDS2 E&B PLOTS - ALL SPACECRAFT
 ;
 ; Get dec data
-mms_load_edp, data_rate='fast', probes=[1, 2, 3, 4], datatype='dce', level='ql'
-options, 'mms1*_dce_dsl', colors=[0]    ; black
-options, 'mms2*_dce_dsl', colors=[6]    ; red
-options, 'mms3*_dce_dsl', colors=[4]    ; green
-options, 'mms4*_dce_dsl', colors=[2]    ; blue
-split_vec, 'mms*_dce_dsl'
-store_data, 'mms_edp_fast_dce_dsl_x', data = ['mms1_edp_fast_dce_dsl_x', $
-  'mms2_edp_fast_dce_dsl_x', $
-  'mms3_edp_fast_dce_dsl_x', $
-  'mms4_edp_fast_dce_dsl_x']
-store_data, 'mms_edp_fast_dce_dsl_y', data = ['mms1_edp_fast_dce_dsl_y', $
-  'mms2_edp_fast_dce_dsl_y', $
-  'mms3_edp_fast_dce_dsl_y', $
-  'mms4_edp_fast_dce_dsl_y']
-store_data, 'mms_edp_fast_dce_dsl_z', data = ['mms1_edp_fast_dce_dsl_z', $
-  'mms2_edp_fast_dce_dsl_z', $
-  'mms3_edp_fast_dce_dsl_z', $
-  'mms4_edp_fast_dce_dsl_z']
-options, 'mms_*_dce_dsl_x', ytitle='EDP Ex'
-options, 'mms_*_dce_dsl_y', ytitle='EDP Ey'
-options, 'mms_*_dce_dsl_z', ytitle='EDP Ez'
+mms_load_edp, data_rate='fast', probes=[1, 2, 3, 4], datatype='dce', level='ql', trange=['2016-02-23', '2016-02-24']
+
+options, 'mms1*_dce_xyz_dsl', colors=[0]    ; black
+options, 'mms2*_dce_xyz_dsl', colors=[6]    ; red
+options, 'mms3*_dce_xyz_dsl', colors=[4]    ; green
+options, 'mms4*_dce_xyz_dsl', colors=[2]    ; blue
+split_vec, 'mms?_edp_dce_xyz_dsl'
+store_data, 'mms_edp_dce_xyz_dsl_x', data = ['mms1_edp_dce_xyz_dsl_x', $
+  'mms2_edp_dce_xyz_dsl_x', $
+  'mms3_edp_dce_xyz_dsl_x', $
+  'mms4_edp_dce_xyz_dsl_x']
+store_data, 'mms_edp_dce_xyz_dsl_y', data = ['mms1_edp_dce_xyz_dsl_y', $
+  'mms2_edp_dce_xyz_dsl_y', $
+  'mms3_edp_dce_xyz_dsl_y', $
+  'mms4_edp_dce_xyz_dsl_y']
+store_data, 'mms_edp_dce_xyz_dsl_z', data = ['mms1_edp_dce_xyz_dsl_z', $
+  'mms2_edp_dce_xyz_dsl_z', $
+  'mms3_edp_dce_xyz_dsl_z', $
+  'mms4_edp_dce_xyz_dsl_z']
+options, 'mms_*_dce_xyz_dsl_x', ytitle='EDP Ex'
+options, 'mms_*_dce_xyz_dsl_y', ytitle='EDP Ey'
+options, 'mms_*_dce_xyz_dsl_z', ytitle='EDP Ez'
 
 ; get scpot
-mms_load_aspoc, datatype='asp1', trange=trange, level='l1b', probe=probes
-options, 'mms1*_spot*', colors=[0]    ; black
-options, 'mms2*_spot*', colors=[6]    ; red
-options, 'mms3*_spot*', colors=[4]    ; green
-options, 'mms4*_spot*', colors=[2]    ; blue
-store_data, 'mms_asp1_spot_l1b', data = ['mms1_asp1_spot_l1b', $
-  'mms2_asp1_spot_l1b', $
-  'mms3_asp1_spot_l1b', $
-  'mms4_asp1_spot_l1b']
-options, 'mms_*spot_l1b', ytitle='ASP1 Scpot'
+mms_load_edp, datatype='scpot', trange=trange, level='l2', probe=probes
+
+options, 'mms1_edp_scpot_fast_l2', colors=[0]    ; black
+options, 'mms2_edp_scpot_fast_l2', colors=[6]    ; red
+options, 'mms3_edp_scpot_fast_l2', colors=[4]    ; green
+options, 'mms4_edp_scpot_fast_l2', colors=[2]    ; blue
+store_data, 'mms_edp_scpot_fast_l2', data = ['mms1_edp_scpot_fast_l2', $
+  'mms2_edp_scpot_fast_l2', $
+  'mms3_edp_scpot_fast_l2', $
+  'mms4_edp_scpot_fast_l2']
+options, 'mms_edp_scpot_fast_l2', ytitle='EDP!CScpot'
 
 if ~postscript then window, iw, xsize=width, ysize=height
-tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
-        'mms_*_dce_dsl_*', 'mms_asp1_spot_l1b', 'mms_*_btot', $
+tplot, ['mms_bss_burst', 'mms_bss_fast', $
+        'mms_*_dce_xyz_dsl_*', 'mms_edp_scpot_fast_l2', 'mms_*_btot', $
         'mms_*_gsm_dmpa_*'], window=iw, var_label=position_vars
-timebar, 0.0, /databar, varname='mms_edp_fast_dce_dsl_x', linestyle=2
-timebar, 0.0, /databar, varname='mms_edp_fast_dce_dsl_y', linestyle=2
-timebar, 0.0, /databar, varname='mms_edp_fast_dce_dsl_z', linestyle=2
-timebar, 0.0, /databar, varname='mms_asp1_spot_l1b', linestyle=2
+timebar, 0.0, /databar, varname='mms_edp_dce_xyz_dsl_x', linestyle=2
+timebar, 0.0, /databar, varname='mms_edp_dce_xyz_dsl_y', linestyle=2
+timebar, 0.0, /databar, varname='mms_edp_dce_xyz_dsl_z', linestyle=2
+timebar, 0.0, /databar, varname='mms_edp_scpot_fast_l2', linestyle=2
 timebar, 0.0, /databar, varname='mms_dfg_srvy_dmpa_btot', linestyle=2
 timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_x', linestyle=2
 timebar, 0.0, /databar, varname='mms_dfg_srvy_gsm_dmpa_y', linestyle=2
@@ -195,9 +202,14 @@ stop
 ;
 ; EDP QuickLook Plots 
 ;
+ylim, 'mms?_dsp_epsd_omni', 0, 0, 1
+zlim, 'mms?_dsp_epsd_omni', 0, 0, 1
+tdegap, 'mms?_dsp_epsd_omni', /overwrite
+
 if ~postscript then window, iw, xsize=width, ysize=height
-tplot, ['mms_bss_burst', 'mms_bss_fast', 'mms_bss_status', $
-        'mms_asp1_spot_l1b', 'mms_*_dce_dsl_*'], window=iw
+tplot, ['mms_bss_burst', 'mms_bss_fast', $
+        'mms_edp_scpot_fast_l2', 'mms_*_dce_xyz_dsl_*', $
+        'mms?_dsp_epsd_omni'], window=iw
 for i=3,6 do tplot_panel, oplotvar='dline0', panel=i[0]
 title='MMS EDP Quicklook Plots'
 xyouts, .35, .95, title, /normal, charsize=1.5

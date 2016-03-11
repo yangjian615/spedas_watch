@@ -9,7 +9,7 @@
 ; KEYWORDS:
 ;         trange: time range of interest
 ;         probes: list of probes - values for MMS SC #
-;         instrument: instrument, AFG, DFG, etc.
+;         instrument: instrument, 'fpi', 'hpca', 'fgm', etc.
 ;         datatypes: not implemented yet 
 ;         levels: level of data processing 
 ;         data_rates: instrument data rate
@@ -44,24 +44,17 @@
 ;     See the instrument specific crib sheets in the examples/ folder for usage examples
 ; 
 ; NOTES:
-;     1) I expect this routine to change significantly as the MMS data products are 
-;         released to the public and feedback comes in from scientists - egrimes@igpp
 ;
-;     2) See the following regarding rules for the use of MMS data:
+;     1) See the following regarding rules for the use of MMS data:
 ;         https://lasp.colorado.edu/galaxy/display/mms/MMS+Data+Rights+and+Rules+for+Data+Use
-;         
-;     3) Updated to use the MMS web services API
-;     
-;     4) The LASP web services API uses SSL/TLS, which is only supported by IDLnetURL 
-;         in IDL 7.1 and later. 
-;         
-;     5) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
+;          
+;     2) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
 ;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
 ;         
-;     6) The local paths should be set to mirror the SDC directory structure to avoid
+;     3) The local paths should be set to mirror the SDC directory structure to avoid
 ;         downloading data more than once
 ;         
-;     7) Warning about datatypes and paths:
+;     4) Warning about datatypes and paths:
 ;           -- many of the MMS instruments contain datatype details in their path names; for these CDFs
 ;           to be stored in the correct location locally (i.e., mirroring the SDC directory structure)
 ;           these datatypes must be passed to this routine by a higher level routine via the "datatype"
@@ -74,16 +67,18 @@
 ;               "moments" is the datatype. without passing datatype=["moments", ..], the data are stored locally in:
 ;                                 mms1/hpca/srvy/l1b/2015/07/
 ;               
-;      8) When looking for data availability, look for the CDFs at:
-;               https://lasp.colorado.edu/mms/sdc/about/browse/
+;      5) For data availability:
+;               https://lasp.colorado.edu/mms/sdc/
 ;             
-;      9) Logging into the SDC: 
+;      6) Logging into the SDC: 
 ;           - If you have an internet connection, you'll be prompted for a username and password the 
 ;           first time you use the MMS plugin. There's an option in the widget that allows you 
 ;           to save your password in a save file on the local machine; if you select this option, 
 ;           the login prompt will never come up again and your saved password will be used to 
 ;           login to the SDC. This is insecure and should not be used if you use a common 
-;           password with other services.
+;           password with other services. 
+;           
+;           - Use an empty username and password for public access to the data
 ;
 ;           - If you don't have an internet connection or you can't login remotely, the plugin will 
 ;           look for the files on the local machine using a directory structure that matches 
@@ -91,8 +86,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-10 12:50:30 -0800 (Thu, 10 Mar 2016) $
+;$LastChangedRevision: 20390 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -103,7 +98,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   tplotnames = tplotnames, varformat = varformat, no_color_setup = no_color_setup, $
                   suffix = suffix, time_clip = time_clip, no_update = no_update, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version, cdf_records = cdf_records, spdf = spdf
+                  min_version = min_version, cdf_records = cdf_records, spdf = spdf, $
+                  center_measurement=center_measurement
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -148,7 +144,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable
-    no_download = !mms.no_download or !mms.no_server or (response_code ne 200) or ~undefined(no_update)
+    no_download = !mms.no_download or !mms.no_server or (response_code ne 200) or ~undefined(no_update) or keyword_set(spdf)
 
     ; only prompt the user if they're going to download data
     if no_download eq 0 then begin
@@ -169,7 +165,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
           remote_data_dir = remote_data_dir, local_data_dir = local_data_dir, $
           attitude_data = attitude_data, no_download = no_download, $
           no_server = no_server, data_rate = data_rates, get_support_data = get_support_data, $
-          varformat = varformat
+          varformat = varformat, center_measurement=center_measurement
+
         no_download = 1
         dt_query += systime(/sec) - qt0
     endif
@@ -285,7 +282,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             mms_cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, $
                 suffix = suffix, get_support_data = get_support_data, /load_labels, $
                 min_version=min_version,version=cdf_version,latest_version=latest_version, $
-                number_records=cdf_records
+                number_records=cdf_records, center_measurement=center_measurement
             dt_load += systime(/sec) - lt0 ;temporary
         endif
         

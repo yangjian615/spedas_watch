@@ -89,8 +89,8 @@
 ;     
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-09 17:50:27 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20379 $
+;$LastChangedDate: 2016-03-10 13:42:44 -0800 (Thu, 10 Mar 2016) $
+;$LastChangedRevision: 20394 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -191,10 +191,10 @@ function thm_part_combine, probe=probe, $
   ;-------------------------------------------------------------------------------------------
 
   ;load pointers to distribution arrays
-  if ptr_valid(esa_dist[0]) xor ptr_valid(sst_dist[0]) then begin
+  if (ptr_valid(esa_dist))[0] xor (ptr_valid(sst_dist))[0] then begin
     dprint, dlevel=0, 'ESA_DIST and SST_DIST keywords bust be used simultaneously; canceling.'
     return, 0
-  endif else if ptr_valid(esa_dist[0]) and ptr_valid(sst_dist[0]) then begin
+  endif else if (ptr_valid(esa_dist))[0] and (ptr_valid(sst_dist))[0] then begin
     thm_part_copy, sst_dist, sst
     thm_part_copy, esa_dist, esa
   endif else begin

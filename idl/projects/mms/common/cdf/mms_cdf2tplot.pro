@@ -18,8 +18,8 @@
 ; Forked for MMS, 10/22/2015, egrimes@igpp
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-23 19:53:46 -0800 (Tue, 23 Feb 2016) $
-; $LastChangedRevision: 20125 $
+; $LastChangedDate: 2016-03-10 10:05:31 -0800 (Thu, 10 Mar 2016) $
+; $LastChangedRevision: 20384 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/mms_cdf2tplot.pro $
 ;-
 
@@ -28,10 +28,10 @@ pro mms_cdf2tplot,files,files=files2,prefix=prefix,midfix=midfix,midpos=midpos,s
    ,all=all,verbose=verbose, get_support_data=get_support_data, convert_int1_to_int2=convert_int1_to_int2 $
    ,record=record, tplotnames=tplotnames,load_labels=load_labels $
    ,min_version=min_version,version=version,latest_version=latest_version $
-   ,number_records=number_records
+   ,number_records=number_records, center_measurement=center_measurement
 
 
-dprint,dlevel=4,verbose=verbose,'$Id: mms_cdf2tplot.pro 20125 2016-02-24 03:53:46Z egrimes $'
+dprint,dlevel=4,verbose=verbose,'$Id: mms_cdf2tplot.pro 20384 2016-03-10 18:05:31Z egrimes $'
 vb = keyword_set(verbose) ? verbose : 0
 
 if keyword_set(files2) then files=files2    ; added for backward compatibility  and to make it match the documentation
@@ -52,8 +52,7 @@ cdfi = mms_cdf_load_vars(files,varformat=varformat,var_type=var_type,/spdf_depen
 dprint,dlevel=4,verbose=verbose,'Starting load into tplot'
 ;  Insert into tplot format
 mms_cdf_info_to_tplot,cdfi,varnames2,all=all,prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix,newname=newname, $  ;bpif keyword_set(all) eq 0
-       verbose=verbose,  tplotnames=tplotnames,load_labels=load_labels
-
+       verbose=verbose,  tplotnames=tplotnames,load_labels=load_labels, center_measurement=center_measurement
 
 dprint,dlevel=4,verbose=verbose,'Starting Clean up' ;bpif keyword_set(all) eq 0
 tplot_ptrs = ptr_extract(tnames(/dataquant))

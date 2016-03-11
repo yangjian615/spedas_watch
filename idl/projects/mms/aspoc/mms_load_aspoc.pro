@@ -54,8 +54,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-10 13:15:32 -0800 (Thu, 10 Mar 2016) $
+;$LastChangedRevision: 20392 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/aspoc/mms_load_aspoc.pro $
 ;-
 
@@ -74,8 +74,8 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
     if undefined(datatype) then instrument = 'aspoc' else instrument = datatype
     if instrument eq 'asp1' || instrument eq 'asp2' then datatype = 'beam' else datatype = ''
     
-    if undefined(level) && instrument eq 'aspoc' then level = 'l2' 
-    if undefined(level) then level = 'l1b'
+   ; if undefined(level) && instrument eq 'aspoc' then level = 'l2' 
+    if undefined(level) then level = 'l2'
     ; add the level to the suffix to avoid clobbering l1b and l2 data
     if undefined(suffix) then suffix = '_'+level else suffix = '_' + level + suffix
     if undefined(data_rate) then data_rate = 'srvy'

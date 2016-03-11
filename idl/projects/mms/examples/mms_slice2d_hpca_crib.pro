@@ -9,8 +9,8 @@
 ;  *** This is a work in progress ***
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:18:43 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19587 $
+;$LastChangedDate: 2016-03-10 14:23:48 -0800 (Thu, 10 Mar 2016) $
+;$LastChangedRevision: 20395 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_slice2d_hpca_crib.pro $
 ;-
 
@@ -46,7 +46,7 @@ mms_load_hpca, probe=probe, trange=trange, $
                varformat='*_angles_per_ev_degrees'
 
 ;B field (only necessary for field-aligned slices)
-;mms_load_dfg, probe=probe, trange=trange, level='ql'
+;mms_load_fgm, instrument='dfg', probe=probe, trange=trange, level='ql'
 
 ;use h+ dist function var for example
 tname = 'mms'+probe[0]+'_hpca_hplus_vel_dist_fn'
