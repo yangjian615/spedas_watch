@@ -44,6 +44,10 @@
 ; OUTPUT:
 ;
 ; EXAMPLE:
+;    Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
+;          
+;          
 ;     See crib sheet mms_load_dsp_crib.pro for usage examples
 ;
 ;     ; set time frame and load edp level 2 data
@@ -52,8 +56,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
+;$LastChangedRevision: 20419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
 

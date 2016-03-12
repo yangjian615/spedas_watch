@@ -39,6 +39,10 @@
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load 
 ;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         no_split_vars: don't split the FGM variables into vector + magnitude tplot variables; if set
+;                        vector transformations won't work on the FGM tplot variables. 
+;         keep_flagged: don't remove flagged data (flagged data are set to NaNs by default, this keyword
+;                       turns this off)
 ;             
 ; OUTPUT:
 ; 
@@ -52,22 +56,38 @@
 ;     MMS>  mms_load_fgm, probes=[1, 2], trange=['2015-06-22', '2015-06-23']
 ;
 ; NOTES:
+;    Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
+;         
+;         
 ;     1) See the notes in mms_load_data for rules on the use of MMS data
 ;     
-;     2) Ephemeris variables stored in the L2 FGM burst mode CDFs are
-;        not produced to be monotonically increasing across mutliple CDF files
-;        due to an issue in the FGM processing software. 
+;     2) Ephemeris variables stored in the FGM CDFs have various issues 
+;        that make them incompatible with SPEDAS, including:
+;     
+;        a) L2 FGM burst mode CDFs are not produced to be monotonically 
+;        increasing across mutliple CDF files due to an issue in the
+;        FGM processing software. 
+;        
+;        b) position "vectors" are stored in a single variable containing
+;        the vector components + the magnitude; this leads to errors while
+;        trying to do vector transformations
+;        
 ;        We strongly advise against using the variables:
-;               mms#_fgm_r_gse_brst_l2
-;               mms#_fgm_r_gsm_brst_l2
+;               mms#_fgm_r_gse_brst_l2(pre)
+;               mms#_fgm_r_gsm_brst_l2(pre)
+;               mms#_pos_gse
+;               mms#_pos_gsm
 ;       
-;        Instead, load ephemeris data using mms_load_mec
+;        They're deleted on load for L2 and L2pre data by default. 
+;        Please use the ephemeris data from the official source (LANL) 
+;        using mms_load_mec instead
 ;        
 ;     
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
+;$LastChangedRevision: 20419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -113,12 +133,12 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
 
         if ~keyword_set(keep_flagged) then begin
             ; B-field data
-            get_data, this_probe+'_fgm_b_gse_'+data_rate+'_'+level, data=b_data_gse, dlimits=gse_dl
-            get_data, this_probe+'_fgm_b_gsm_'+data_rate+'_'+level, data=b_data_gsm, dlimits=gsm_dl
-            get_data, this_probe+'_fgm_b_dmpa_'+data_rate+'_'+level, data=b_data_dmpa, dlimits=dmpa_dl
-            get_data, this_probe+'_fgm_b_bcs_'+data_rate+'_'+level, data=b_data_bcs, dlimits=bcs_dl
+            get_data, this_probe+'_fgm_b_gse_'+data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
+            get_data, this_probe+'_fgm_b_gsm_'+data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
+            get_data, this_probe+'_fgm_b_dmpa_'+data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
+            get_data, this_probe+'_fgm_b_bcs_'+data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
             ; flags
-            get_data, this_probe+'_fgm_flag_'+data_rate+'_'+level, data=flags
+            get_data, this_probe+'_fgm_flag_'+data_rate+'_'+level+suffix, data=flags
             if is_struct(flags) then begin
               bad_data = where(flags.Y ne 0, flag_count) 
               if flag_count ne 0 then begin
@@ -128,10 +148,10 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   if is_struct(b_data_bcs) then b_data_bcs.Y[bad_data, *] = !values.d_nan
                   
                   ; resave them
-                  if is_struct(b_data_gse) then store_data, this_probe+'_fgm_b_gse_'+data_rate+'_'+level, data=b_data_gse, dlimits=gse_dl
-                  if is_struct(b_data_gsm) then store_data, this_probe+'_fgm_b_gsm_'+data_rate+'_'+level, data=b_data_gsm, dlimits=gsm_dl
-                  if is_struct(b_data_dmpa) then store_data, this_probe+'_fgm_b_dmpa_'+data_rate+'_'+level, data=b_data_dmpa, dlimits=dmpa_dl
-                  if is_struct(b_data_bcs) then store_data, this_probe+'_fgm_b_bcs_'+data_rate+'_'+level, data=b_data_bcs, dlimits=bcs_dl
+                  if is_struct(b_data_gse) then store_data, this_probe+'_fgm_b_gse_'+data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
+                  if is_struct(b_data_gsm) then store_data, this_probe+'_fgm_b_gsm_'+data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
+                  if is_struct(b_data_dmpa) then store_data, this_probe+'_fgm_b_dmpa_'+data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
+                  if is_struct(b_data_bcs) then store_data, this_probe+'_fgm_b_bcs_'+data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
               endif
             endif
         endif
@@ -143,8 +163,10 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         
         ; delete the bad ephemeris variables if this is burst data
         if level eq 'l2' || level eq 'l2pre' then begin
-            del_data, this_probe+'_fgm_r_gse_'+data_rate+'_'+level
-            del_data, this_probe+'_fgm_r_gsm_'+data_rate+'_'+level
+            del_data, this_probe+'_fgm_r_gse_'+data_rate+'_'+level+suffix
+            del_data, this_probe+'_fgm_r_gsm_'+data_rate+'_'+level+suffix
+            del_data, this_probe+'_pos_gse'+suffix
+            del_data, this_probe+'_pos_gsm'+suffix
         endif 
     endfor
 

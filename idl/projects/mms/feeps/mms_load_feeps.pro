@@ -53,6 +53,10 @@
 ;     MMS1> mms_feeps_pad,  probe='1', datatype='electron'
 ;     
 ; NOTES:
+;     Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
+;          
+;          
 ;     The spectra variables created with "_clean" in their names have 
 ;       the 500 keV integral channel removed.
 ;     The spectra variables with '_sun_removed' in their names 
@@ -65,8 +69,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
+;$LastChangedRevision: 20419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -85,6 +89,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if undefined(data_units) then data_units = 'flux'
     if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
     if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '4.3.0'
+    if undefined(get_support_data) then get_support_data = 1 ; support data needed for sun removal and spin averaging
       
     mms_load_data, trange = trange, probes = probes_in, level = level_in, instrument = 'feeps', $
         data_rate = data_rate_in, local_data_dir = local_data_dir, source = source, $

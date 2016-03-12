@@ -45,6 +45,9 @@
 ;     loaded with this routine; see the crib sheet
 ;     mms_load_edp_crib.pro for an example of using 
 ;     the error bars
+;     
+;     Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
 ;
 ; EXAMPLE:
 ;     See crib sheet mms_load_edp_crib.pro for usage examples.
@@ -59,8 +62,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
+;$LastChangedRevision: 20419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $

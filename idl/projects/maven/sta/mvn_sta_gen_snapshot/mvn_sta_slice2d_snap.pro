@@ -51,6 +51,8 @@
 ;  SHOWDATA:      Plos all the data points over the contour (symsize = showdata).
 ;                 Pluses = Free sky bins, Crosses = Blocked bins.
 ;
+;    ERANGE:      Specifies the energy range used in analyses. 
+;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
 ;                 ; Uses archive data, and shows the B field direction.
@@ -80,15 +82,15 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2016-03-02 16:35:44 -0800 (Wed, 02 Mar 2016) $
-; $LastChangedRevision: 20301 $
+; $LastChangedDate: 2016-03-11 17:09:50 -0800 (Fri, 11 Mar 2016) $
+; $LastChangedRevision: 20420 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id,    $
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
-                          sc_pot=sc_pot, vsc=vsc, showdata=showdata
+                          sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange
 
   IF STRUPCASE(STRMID(!version.os, 0, 3)) EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
@@ -169,10 +171,18 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
      IF d.valid EQ 1 THEN BEGIN
         IF keyword_set(mass) THEN BEGIN
            idx = where(d.mass_arr LT mmin OR d.mass_arr GT mmax, nidx)
-           IF nidx GT 0 THEN d.data[idx] = 0.
+           ;IF nidx GT 0 THEN d.data[idx] = 0.
+           IF nidx GT 0 THEN d.cnts[idx] = 0.
+           undefine, nidx, idx
            IF keyword_set(mq) THEN d.mass *= FLOAT(mq)
         ENDIF
-        
+        IF keyword_set(erange) THEN BEGIN
+           idx = where(d.energy LT MIN(erange) OR d.energy GT MAX(erange), nidx)
+           ;IF nidx GT 0 THEN d.data[idx] = 0.
+           IF nidx GT 0 THEN d.cnts[idx] = 0.
+           undefine, nidx, idx           
+        ENDIF 
+
         IF keyword_set(mso) THEN BEGIN
            mvn_pfp_cotrans, d, from='MAVEN_STATIC', to='MAVEN_MSO', /overwrite
 
@@ -181,7 +191,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            ELSE bnew = REFORM(quaternion_rotation(d.magf, d.quat_mso, /last_ind))
            str_element, d, 'magf', bnew, /add_replace
         ENDIF 
-        
+
         IF keyword_set(bline) THEN bdir = d.magf/SQRT(TOTAL(d.magf*d.magf))
         d = sum4m(d)
         str_element, d, 'nbins', (d.nbins), /add_replace
@@ -226,6 +236,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            status = EXECUTE("slice2d, dummy, _extra=_extra, vel=vel, /noplot, datplot=block, /verbose")
            undefine, dummy
         ENDIF
+
         status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel")
         IF status EQ 1 THEN BEGIN
            XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal

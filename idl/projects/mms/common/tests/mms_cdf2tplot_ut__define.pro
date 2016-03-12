@@ -8,8 +8,8 @@
 ;     taken from v2.1.0 of the FPI CDFs, 3/10/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-10 13:25:34 -0800 (Thu, 10 Mar 2016) $
-; $LastChangedRevision: 20393 $
+; $LastChangedDate: 2016-03-11 12:16:41 -0800 (Fri, 11 Mar 2016) $
+; $LastChangedRevision: 20414 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_cdf2tplot_ut__define.pro $
 ;-
 
@@ -41,7 +41,7 @@ end
 function mms_cdf2tplot_ut::test_fpi_burst_shifted
   mms_load_fpi, trange=['2016-01-21', '2016-01-22'], datatype='des-moms', probe=3, data_rate='brst', /center, suffix='_shifted'
   get_data, 'mms3_des_numberdensity_dbcs_brst_shifted', data=d
-  valid_times_shifted = ['20160121/01:06:24.039', '20160121/01:06:24.069', '20160121/01:06:24.099', '20160121/01:06:24.129']
+  valid_times_shifted = ['20160121/01:06:24.024', '20160121/01:06:24.054', '20160121/01:06:24.084', '20160121/01:06:24.114']
   for vi = 0, n_elements(valid_times_shifted)-1 do begin
     assert, time_string(d.X[vi], tformat='YYYYMMDD/hh:mm:ss.fff') eq valid_times_shifted[vi], 'Problem with the FPI L2 burst shifted data'
   endfor
@@ -62,8 +62,8 @@ end
 ; DELTA_PLUS_VAR/DELTA_MINUS_VAR for L2 FPI FS (shifted)
 function mms_cdf2tplot_ut::test_fpi_fs_shifted
   mms_load_fpi, trange=['2016-01-21', '2016-01-22'], datatype='des-moms', probe=3, data_rate='fast', /center, suffix='_shifted'
-  get_data, 'mms3_des_energyspectr_my_fast', data=d
-  valid_times_shifted = ['20160121/00:00:05.318', '20160121/00:00:09.818', '20160121/00:00:14.318', '20160121/00:00:18.818']
+  get_data, 'mms3_des_energyspectr_my_fast_shifted', data=d
+  valid_times_shifted = ['20160121/00:00:03.068', '20160121/00:00:07.568', '20160121/00:00:12.068', '20160121/00:00:16.568']
   for vi = 0, n_elements(valid_times_noshift)-1 do begin
     assert, time_string(d.X[vi], tformat='YYYYMMDD/hh:mm:ss.fff') eq valid_times_shifted[vi], 'Problem with FPI L2 FS shifted data'
   endfor
@@ -80,6 +80,7 @@ function mms_cdf2tplot_ut::test_fpi_fs_unshifted
   endfor
   return, 1
 end
+
 
 pro mms_cdf2tplot_ut::setup
   ; do some setup for the tests

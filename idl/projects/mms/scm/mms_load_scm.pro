@@ -58,11 +58,15 @@
 ;     See crib sheet mms_load_scm_crib.pro for more detailed usage examples
 ;     
 ; NOTES:
+;    Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
+;          
+;          
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
+;$LastChangedRevision: 20419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 pro mms_set_scm_options, tplotnames, prefix = prefix,datatype = datatype, coord=coord

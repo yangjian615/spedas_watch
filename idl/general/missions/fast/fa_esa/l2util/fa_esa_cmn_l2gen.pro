@@ -56,8 +56,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-08 14:31:04 -0800 (Tue, 08 Mar 2016) $
-; $LastChangedRevision: 20351 $
+; $LastChangedDate: 2016-03-11 10:23:53 -0800 (Fri, 11 Mar 2016) $
+; $LastChangedRevision: 20411 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -196,7 +196,9 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      If(nhave_tag Gt 0) Then Begin
         dvar = cmn_dat.(have_tag)
 ;cdf_save_vars2 expects the ntimes to be first for 2, 3-d variables
-        If(vj Eq 'data' Or vj Eq 'eflux') Then Begin 
+        If(vj Eq 'data' Or vj Eq 'eflux' Or $
+           vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
+           vj Eq 'denergy_full' Or vj Eq 'domega') Then Begin
            dvar = transpose(dvar, [2, 0, 1])
         Endif Else If(vj Eq 'header_bytes') Then dvar = transpose(dvar)
      Endif Else Begin

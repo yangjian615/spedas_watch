@@ -81,7 +81,7 @@ for i=0,nv-1 do begin
        *(v.dataptr) =add_tt2000_offset(*v.dataptr)   ; convert to UNIX epoch, but leave the offset in.
      endif 
      
-     ; adjust the Epoch tot he center of the accumulation interval
+     ; adjust the epoch to the center of the accumulation interval
      if keyword_set(center_measurement) then begin
          dplus_var = struct_value(*v.attrptr, 'DELTA_PLUS_VAR', def='')
          dminus_var = struct_value(*v.attrptr, 'DELTA_MINUS_VAR', def='')
@@ -91,20 +91,35 @@ for i=0,nv-1 do begin
            j = (where(strcmp(cdfi.vars.name, dplus_var,/fold_case),nj))[0]
            if nj gt 0 then epoch_plus_var = cdfi.vars[j]
            ; get the distance from the center of the interval
-           if ptr_valid(epoch_plus_var.dataptr) then begin
+           if ptr_valid(epoch_plus_var.dataptr) && ptr_valid(epoch_plus_var.attrptr) then begin
                time_plus_offset = *epoch_plus_var.dataptr
-               if (*epoch_plus_var.attrptr).units eq 'ms' then time_plus_offset = time_plus_offset/1000.
+               ; need to convert the offset to seconds
+               str_element, (*epoch_plus_var.attrptr), 'SI_CONVERSION', si_conversion_plus
+               if undefined(si_conversion_plus) then begin
+                   str_element, (*epoch_plus_var.attrptr), 'SI_CONV', si_conversion_plus
+                   if undefined(si_conversion_plus) then si_conversion_plus = 1
+               endif
+               conv_factor = (strsplit(si_conversion_plus, '>', /extract))[0]
+               if strtrim(conv_factor) ne '' then time_plus_offset = time_plus_offset*double(conv_factor)
            endif
          endif
          if dminus_var ne '' then begin
            j = (where(strcmp(cdfi.vars.name, dminus_var,/fold_case),nj))[0]
            if nj gt 0 then epoch_minus_var = cdfi.vars[j]
-           if ptr_valid(epoch_minus_var.dataptr) then begin
+           if ptr_valid(epoch_minus_var.dataptr) && ptr_valid(epoch_minus_var.attrptr) then begin
                time_minus_offset = *epoch_minus_var.dataptr
-               if (*epoch_minus_var.attrptr).units eq 'ms' then time_minus_offset = time_minus_offset/1000.
+               ; need to convert the offset to seconds
+               str_element, (*epoch_minus_var.attrptr), 'SI_CONVERSION', si_conversion_minus
+               if undefined(si_conversion_minus) then begin
+                   str_element, (*epoch_minus_var.attrptr), 'SI_CONV', si_conversion_minus
+                   if undefined(si_conversion_minus) then si_conversion_minus = 1
+               endif
+
+               conv_factor = (strsplit(si_conversion_minus, '>', /extract))[0]
+               if strtrim(conv_factor) ne '' then time_minus_offset = time_minus_offset*double(conv_factor)
            endif
          endif
-         *(v.dataptr) = *(v.dataptr)+(time_plus_offset-time_minus_offset)
+         *(v.dataptr) = *(v.dataptr)+(time_plus_offset-time_minus_offset)/2.
      endif
      
      continue

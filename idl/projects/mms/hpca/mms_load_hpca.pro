@@ -58,6 +58,9 @@
 ;
 ; 
 ; NOTES:
+;     Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
+;          
 ;     When loading HPCA energy spectra with this routine, all of the data are loaded in 
 ;        initially. To plot a meaningful spectra, the user must call mms_hpca_calc_anodes
 ;        to sum the data over the look directions for the instrument. This will append
@@ -67,8 +70,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:55:59 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20377 $
+;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
+;$LastChangedRevision: 20419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -83,29 +86,32 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
                   spdf = spdf
                 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
-    if undefined(datatype) then datatype = 'ion'
-    if undefined(level) then level = 'l1b' 
+    if undefined(datatype) then datatype = 'moments'
+    if undefined(level) then level = 'l2' 
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix=''
-    if undefined(varformat) then begin
-        ;convert "datatypes" to actual datatype and varformat
-        if n_elements(level) eq 1 && strlowcase(level) ne 'l1a' then begin
+    if level ne 'l2' then begin
+        ; old stuff for L1b/sitl files
+        if undefined(varformat) then begin
+          ;convert "datatypes" to actual datatype and varformat
+          if n_elements(level) eq 1 && strlowcase(level) ne 'l1a' then begin
             ; allow for the following datatypes:
             ; count_rate, flux, vel_dist, rf_corr, bkgd_corr
-            case datatype of 
-                'ion': varformat = '*_RF_corrected'
-                'rf_corr': varformat = '*_RF_corrected'
-                'count_rate': varformat = '*_count_rate'
-                'flux': varformat = '*_flux'
-                'vel_dist': varformat = '*_vel_dist_fn'
-                'bkgd_corr': varformat = '*_bkgd_corrected'
-                'moments': varformat = '*'
-                else: varformat = '*_RF_corrected'
+            case datatype of
+              'ion': varformat = '*_RF_corrected'
+              'rf_corr': varformat = '*_RF_corrected'
+              'count_rate': varformat = '*_count_rate'
+              'flux': varformat = '*_flux'
+              'vel_dist': varformat = '*_vel_dist_fn'
+              'bkgd_corr': varformat = '*_bkgd_corrected'
+              'moments': varformat = '*'
+              else: varformat = '*_RF_corrected'
             endcase
             if ~undefined(varformat) && varformat ne '*' then datatype = 'ion'
+          endif
         endif
+        if level eq 'sitl' then varformat = '*'
     endif
-    ;if level eq 'sitl' then varformat = '*'
     
     mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'hpca', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

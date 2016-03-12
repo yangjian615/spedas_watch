@@ -57,39 +57,87 @@ pro spp_swp_startup, spanai = spanai,$
         spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_91x_decom', tname='spp_spanai_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3bf'x,routine='spp_generic_decom',                tname='spp_spanai_fhkp_',    tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      endif
-     
-     ;;------------------------------------------------------------------------------------------------------------
+
+
+
+     ;#############################
+     ;######### ARCHIVE ###########
+     ;#############################
+
+     ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; SPAN-Ai Full Sweep Products
-     ;;------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'380'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p0_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'381'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p0_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'382'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p0_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'383'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p0_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'384'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'385'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'387'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p1_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'388'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'389'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'38a'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'38b'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_full_p2_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     ;;-----------------------------------------------------------------------------------------------------------------------------------------
+     spp_apid_data,'380'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p0_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'381'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p0_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'382'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p0_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'383'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p0_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'384'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p1_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'385'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p1_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'386'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p1_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'387'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p1_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'388'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p2_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'389'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p2_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'38a'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p2_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'38b'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_full_p2_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      
-     ;;------------------------------------------------------------------------------------------------------------
+     ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; SPAN-Ai Targeted Sweep Products
-     ;;------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'38c'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p1_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'38d'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p1_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'38e'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p1_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'38f'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p1_m4_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'390'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p2_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'391'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p2_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'392'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p2_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'393'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p2_m4_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'394'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p3_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'395'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p3_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'396'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p3_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-     spp_apid_data,'397'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_targ_p3_m4_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     ;;-----------------------------------------------------------------------------------------------------------------------------------------
+     spp_apid_data,'38c'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p0_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'38d'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p0_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'38e'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p0_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'38f'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p0_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'390'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p1_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'391'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p1_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'392'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p1_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'393'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p1_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'394'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p2_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'395'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p2_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'396'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p2_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'397'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_ar_targ_p2_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      
+
+
+     ;#############################
+     ;########## SURVEY ###########
+     ;#############################
+
+
+     ;;-----------------------------------------------------------------------------------------------------------------------------------------
+     ;; SPAN-Ai Full Sweep Products
+     ;;-----------------------------------------------------------------------------------------------------------------------------------------
+     spp_apid_data,'398'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p0_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'399'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p0_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'39a'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p0_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'39b'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p0_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'39c'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p1_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'39d'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p1_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'39e'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p1_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'39f'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p1_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a0'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p2_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a1'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p2_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a2'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p2_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a3'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_full_p2_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     
+     ;;-----------------------------------------------------------------------------------------------------------------------------------------
+     ;; SPAN-Ai Targeted Sweep Products
+     ;;-----------------------------------------------------------------------------------------------------------------------------------------
+     spp_apid_data,'3a4'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p0_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a5'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p0_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a6'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p0_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a7'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p0_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a8'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p1_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3a9'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p1_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3aa'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p1_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3ab'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p1_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3ac'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p2_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3ad'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p2_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3ae'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p2_m2_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3af'x,routine='spp_swp_spani_product_decom',tname='spp_spanai_sr_targ_p2_m3_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     
+
+
+
      
   endif
      

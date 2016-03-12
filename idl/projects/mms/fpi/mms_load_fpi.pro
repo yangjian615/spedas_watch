@@ -54,6 +54,10 @@
 ;     MMS>  mms_load_fpi, probes = '3', level='sitl', data_rate='fast', datatype='*'
 ;
 ; NOTES:
+;     Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
+;          
+;          
 ;     Please see the notes at:
 ;     
 ;        https://lasp.colorado.edu/galaxy/display/mms/FPI+Release+Notes
@@ -61,8 +65,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-10 10:05:31 -0800 (Thu, 10 Mar 2016) $
-;$LastChangedRevision: 20384 $
+;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
+;$LastChangedRevision: 20419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 

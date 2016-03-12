@@ -49,10 +49,15 @@
 ;     load edi quick look survey data
 ;     MMS>  mms_load_edi, data_rate='srvy', probes=probe, datatype='efield', level='ql', $
 ;                trange=['2015-09-03', '2015-09-04']
+;                
+; NOTES:               
+;    Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
+;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-10 13:07:07 -0800 (Thu, 10 Mar 2016) $
-;$LastChangedRevision: 20391 $
+;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
+;$LastChangedRevision: 20419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edi/mms_load_edi.pro $
 ;-
 
