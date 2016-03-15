@@ -86,8 +86,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-10 12:50:30 -0800 (Thu, 10 Mar 2016) $
-;$LastChangedRevision: 20390 $
+;$LastChangedDate: 2016-03-14 07:53:00 -0700 (Mon, 14 Mar 2016) $
+;$LastChangedRevision: 20423 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -148,7 +148,15 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
     ; only prompt the user if they're going to download data
     if no_download eq 0 then begin
-        status = mms_login_lasp(login_info = login_info, username=username)
+        ; no need to prompt for L2 data
+        if array_contains(levels, 'l1a') || array_contains(levels, 'l1b') $
+          || array_contains(levels, 'ql') || array_contains(levels, 'sitl') $
+          || array_contains(levels, 'l2pre') then begin
+            status = mms_login_lasp(login_info = login_info, username=username)
+        endif else begin
+            status = 1
+            username = ''
+        endelse
         if status ne 1 then no_download = 1
         if username eq '' then public=1
     endif
@@ -271,7 +279,10 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             endelse
         endelse       
 
-        ; sort the data files in time (this is required by 
+        ; if files is undefined, no data were loaded
+        if undefined(files) then continue
+        
+        ; sort the data files in time (this is required by
         ; HPCA (at least) due to multiple files per day
         ; the intention is to order in time before passing
         ; to cdf2tplot

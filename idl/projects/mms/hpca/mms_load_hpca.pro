@@ -70,8 +70,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-03-14 13:00:12 -0700 (Mon, 14 Mar 2016) $
+;$LastChangedRevision: 20441 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -83,7 +83,7 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
-                  spdf = spdf
+                  spdf = spdf, center_measurement = center_measurement
                 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'moments'
@@ -111,7 +111,10 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
           endif
         endif
         if level eq 'sitl' then varformat = '*'
-    endif
+    endif else begin
+        ; required to center the measurements
+        if undefined(get_support_data) then get_support_data = 1
+    endelse
     
     mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'hpca', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
@@ -119,7 +122,7 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf
+        spdf = spdf, center_measurement = center_measurement
     
     if undefined(tplotnames) then return
     

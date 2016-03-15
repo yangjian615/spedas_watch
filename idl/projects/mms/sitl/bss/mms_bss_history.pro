@@ -20,8 +20,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-11-11 08:43:26 -0800 (Wed, 11 Nov 2015) $
-; $LastChangedRevision: 19336 $
+; $LastChangedDate: 2016-03-14 17:06:48 -0700 (Mon, 14 Mar 2016) $
+; $LastChangedRevision: 20449 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
 ;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
@@ -69,17 +69,33 @@ FUNCTION mms_bss_history_threshold, wt
   hard_limit = 24576L
   nmax=n_elements(wt)
   wthres = lonarr(nmax)
-  
+
   ; DEFAULT VALUE
   wthres[0:nmax-1] = hard_limit-18000L
+
+  ; MANUALLY CHANGED VALUES
+  mmax = 100L
+  change_date = strarr(mmax)
+  change_val  = lonarr(mmax)
+  m=0 & change_date[m] = '2015-08-04'       & change_val[m] = 15000L
+  m=1 & change_date[m] = '2016-01-18/17:30' & change_val[m] = 14000L
+  m=2 & change_date[m] = '2016-01-26/23:00' & change_val[m] = 13000L
+  m=3 & change_date[m] = '2016-02-01/16:50' & change_val[m] = 12000L
+  m=4 & change_date[m] = '2016-02-08/17:45' & change_val[m] = 11000L
+  m=5 & change_date[m] = '2016-02-21/16:06' & change_val[m] = 10000L
+  m=6 & change_date[m] = '2016-03-14/17:00' & change_val[m] = 11500L
+  idx=where(change_val gt 0,ct)
+  mmax = ct
   
-  ; TEMPRARY THRESHOLD INCREASE IN AUGUST
-  stime = time_double('2015-08-04')
-  etime = systime(/utc,/seconds)
-  idx=where(stime le wt and wt lt etime, ct)
-  if ct gt 0 then begin
-    wthres[idx] = hard_limit - 15000L
-  endif
+  ; MAIN LOOP
+  for m=0,mmax-1 do begin
+    stime = time_double(change_date[m])
+    etime = systime(/utc,/seconds)
+    idx=where(stime le wt and wt lt etime, ct)
+    if ct gt 0 then begin
+      wthres[idx] = hard_limit - change_val[m]
+    endif
+  endfor
   
   return, wthres
 END
@@ -111,8 +127,8 @@ PRO mms_bss_history, bss=bss, trange=trange, tplot=tplot, csv=csv, dir=dir
   if n_elements(trange) eq 2 then begin
     tr = timerange(trange)
   endif else begin
-    tr = [t3m,tnow]
-    ;tr = [tlaunch,tnow]
+    ;tr = [t3m,tnow]
+    tr = [tlaunch,tnow]
     trange = time_string(tr)
   endelse
   

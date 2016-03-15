@@ -21,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-08 12:41:19 -0800 (Tue, 08 Mar 2016) $
-; $LastChangedRevision: 20348 $
+; $LastChangedDate: 2016-03-14 15:06:40 -0700 (Mon, 14 Mar 2016) $
+; $LastChangedRevision: 20446 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_load_fpi_crib_qlplots_l2.pro $
 ;-
 
@@ -46,7 +46,7 @@ data_rate = 'brst'
 probes = [1]
 datatype = ['des-moms', 'dis-moms'] ; grab all data in the CDF
 level = 'l2' ; FPI data
-dfg_level = 'l2pre' ; FGM
+fgm_level = 'l2' ; FGM
 autoscale = 1
 iw=0
 width = 650
@@ -82,12 +82,11 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     autoscale = autoscale
 
 ; load ephemeris data for all 4 probes
-; as of 1/29/16, we use the S/C position data loaded from the FGM files
-;mms_load_state, trange = trange, probes = probes, /ephemeris
-;if dfg_level ne 'l2pre' then mms_load_mec, trange = trange, probes = probes
+; as of 3/14/16, we no longer use the S/C position data loaded from the FGM files
+mms_load_mec, trange = trange, probes = probes
 
 ; load DFG data for all 4 probes
-mms_load_fgm, trange = trange, probes = probes, /no_attitude_data, level = dfg_level, instrument='dfg'
+mms_load_fgm, trange = trange, probes = probes, level = fgm_level
 
 FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     obsstr='mms'+STRING(probes[i],FORMAT='(I1)')+'_'
@@ -96,15 +95,16 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
          
     ; convert the position data into Re
    ; eph_variable = 'mms'+strcompress(string(probes[i]), /rem)+'_defeph_pos'
-    if dfg_level eq 'l2pre' then begin
-        eph_variable = 'mms'+strcompress(string(probes[i]), /rem)+'_pos_gsm'
-        b_variable = '_dfg_srvy_l2pre_dmpa'
+    if fgm_level eq 'l2' then begin
+        eph_variable = obsstr+'mec_r_gsm'
+        b_variable = '_fgm_b_dmpa_srvy_l2'
     endif else begin
-        eph_variable = 'mms'+strcompress(string(probes[i]), /rem)+'_ql_pos_gsm'
+        eph_variable = obsstr+'mec_r_gsm'
+      ;  eph_variable = 'mms'+strcompress(string(probes[i]), /rem)+'_ql_pos_gsm'
         b_variable = '_dfg_srvy_dmpa'
     endelse
 
-    suffix_kludge = ['0', '1', '2']
+    suffix_kludge = ['x', 'y', 'z']
     calc,'"'+eph_variable+'_re" = "'+eph_variable+'"/6371.2'
     
     ; split the position into its components
@@ -126,10 +126,10 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     split_vec, prefix+b_variable
     
     ; time clip the data to -150nT to 150nT
-    tclip, prefix+b_variable+'_?', -150, 150, /overwrite
+    tclip, prefix+b_variable+'_bvec_?', -150, 150, /overwrite
     tclip, prefix+b_variable+'_btot', -150, 150, /overwrite
     
-    store_data, prefix+'_dfg_dmpa_srvy_clipped', data=prefix+[b_variable+'_'+suffix_kludge, b_variable+'_btot']
+    store_data, prefix+'_dfg_dmpa_srvy_clipped', data=prefix+[b_variable+'_'+['0', '1', '2'], b_variable+'_btot']
     options, prefix+'_dfg_dmpa_srvy_clipped', labflag=-1
     options, prefix+'_dfg_dmpa_srvy_clipped', labels=['Bx', 'By', 'Bz', 'Bmag']
     options, prefix+'_dfg_dmpa_srvy_clipped', colors=[2, 4, 6, 0]
@@ -186,7 +186,9 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
 
     ; use bss routine to create tplot variables for fast, burst, status, and/or FOM
     trange = timerange(trange)
-    spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
+    ; commenting out the fast/brst mode bar, 3/14/2016
+    ; currently requires team member access to the SDC
+   ; spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
         
     ;-----------PLOT ELECTRON ENERGY SPECTRA DETAILS -- ONE SPACECRAFT --------------------
     ;PLOT: electron energy spectra for each observatory

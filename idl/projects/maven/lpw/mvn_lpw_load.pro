@@ -512,7 +512,7 @@ endif
 
 
 ;CLEAR SPICE kernels here:
-if not keyword_set(leavespice) then mvn_lpw_anc_clear_spice_kernels
+if not keyword_set(leavespice) then mvn_spc_clear_spice_kernels
 
 success = 1.
 

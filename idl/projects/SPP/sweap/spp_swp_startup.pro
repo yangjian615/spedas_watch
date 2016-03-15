@@ -27,7 +27,6 @@ pro spp_swp_startup, spanai = spanai,$
   ;;############################################
   if keyword_set(spanai) then begin
 
-     save=1
      rt_flag=1
 
      ;;------------------------------------------------------------------------------------------------------------
@@ -152,7 +151,6 @@ pro spp_swp_startup, spanai = spanai,$
   if keyword_set(spanae) then begin
 
      rt_flag = 1
-     save = 1
 
      ;;----------------------------------------------------------------------------------------------------------------------------------
      ;; Product Decommutators
@@ -175,8 +173,7 @@ pro spp_swp_startup, spanai = spanai,$
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Slow Housekeeping
      ;;----------------------------------------------------------------------------------------------------------------------------------------
-     ;spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v3d_decom',tname='spp_spanae_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v43x_decom',tname='spp_spanae_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v46x_decom',tname='spp_spanae_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; Fast Housekeeping
@@ -195,7 +192,7 @@ pro spp_swp_startup, spanai = spanai,$
      
      ;if n_elements(save) eq 0 then save=0
      rt_flag = 1
-     save = 1
+     save = 0
 
      ;;----------------------------------------------------------------------------------------------------------------------------------
      ;; Product Decommutators
@@ -234,10 +231,10 @@ pro spp_swp_startup, spanai = spanai,$
   ;;############################################
   ;; SETUP Generic APID
   ;;############################################
-  spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',       tfields='*',     save=0,rt_tags='*_?',   rt_flag=1
-  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='unwrap_',   tfields='UNWRAP',save=0,rt_tags='unwrap',rt_flag=1
-  spp_apid_data,'7c0'x,routine='spp_log_msg_decom',     tname='log_',      tfields='MSG',   save=1,rt_tags='MSG',   rt_flag=1
-  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',   tname='spp_manip_',tfields='*',     save=1,rt_tags='MANIP', rt_flag=1
+  spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',       tfields='*',     save=save,rt_tags='*_?',   rt_flag=1
+  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='unwrap_',   tfields='UNWRAP',save=save,rt_tags='unwrap',rt_flag=1
+  spp_apid_data,'7c0'x,routine='spp_log_msg_decom',     tname='log_',      tfields='MSG',   save=save,rt_tags='MSG',   rt_flag=1
+  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',   tname='spp_manip_',tfields='*',     save=save,rt_tags='MANIP', rt_flag=1
 
 
   spp_apid_data,apdata=ap

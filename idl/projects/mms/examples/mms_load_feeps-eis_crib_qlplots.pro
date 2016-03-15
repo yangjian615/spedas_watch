@@ -66,15 +66,8 @@ options, '*_flux_omni*', ystyle=1
 
 ; get ephemeris data for x-axis annotation
 mms_load_state, probes=probe, trange=trange, /ephemeris
-eph_j2000 = 'mms'+probe+'_defeph_pos'
-eph_gei = 'mms'+probe+'defeph_pos_gei'
-eph_gse = 'mms'+probe+'_defeph_pos_gse'
-eph_gsm = 'mms'+probe+'_defeph_pos_gsm'
 
-; convert from gei to gsm coordinates
-cotrans, eph_j2000, eph_gei, /j20002gei
-cotrans, eph_gei, eph_gse, /gei2gse
-cotrans, eph_gse, eph_gsm, /gse2gsm
+eph_gsm = 'mms'+probe+'_mec_r_gsm'
 
 ; convert km to re
 calc,'"'+eph_gsm+'_re" = "'+eph_gsm+'"/6378.'

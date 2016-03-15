@@ -2,22 +2,17 @@ thg_idx_ae
 
 mms*_dfg_srvy_gsm_dmpa; Bx, By, Bz
 mms*_dfg_srvy_gsm_dmpa_m; |B|
-;mms*_dfg_srvy_omb; Temporary parameters to be used when QL data not available. 
+;mms*_dfg_srvy_omb; Temporary parameters to be used when QL data not available.
 ;mms*_dfg_srvy_omb_m; Temporary parameters to be used when QL data not available.
-
-;////// Comment in this block when FPI available ///
 ;mms*_fpi_bentPipeB_DSC; Emergency parameters from FPI when DFG/AFG not available.
 ;mms*_fpi_bentPipeB_DSC_m; ; Emergency parameters from FPI when DFG/AFG not available.
-;mms*_dis_EnergySpectr_omni_avg
-;mms*_des_EnergySpectr_omni_avg
-;mms*_dis_numberDensity
-;mms*_dis_bulk
-;mms*_exbql_vperp_z; comparison between (ExB)z and FPI Vperp,z
-;///////////////////////////////////////
 
-mms*_edp_fast_scpot_sitl; SC-potential
-mms*_hpca_hplus_number_density
-mms*_hpca_hplus_ion_bulk_velocity
+
+mms*_fpi_iEnergySpectr_omni
+mms*_fpi_eEnergySpectr_omni
+
+mms*_fpi_DISnumberDensity
+mms*_fpi_iBulkV_DSC
 
 mms*_hpca_hplus_RF_corrected
 mms*_hpca_heplusplus_RF_corrected

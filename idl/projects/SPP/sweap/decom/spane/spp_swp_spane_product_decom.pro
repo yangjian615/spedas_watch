@@ -1,6 +1,6 @@
 ; $LastChangedBy: phyllisw $
-; $LastChangedDate: 2016-03-04 08:47:44 -0800 (Fri, 04 Mar 2016) $
-; $LastChangedRevision: 20325 $
+; $LastChangedDate: 2016-03-14 10:14:48 -0700 (Mon, 14 Mar 2016) $
+; $LastChangedRevision: 20432 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
 
 
@@ -21,13 +21,13 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   ;; WORD 1 - 00001aaa aaaaaaaa   
   ;; a = APID bits 
   flag = ishft(ccsds.data[0],-3)
-  ;apid = 
+;  ;apid = 
 
   ;;-------------------------------------------
   ;; WORD 6 - ssssssss ssssssxx  
   ;; s=MET subseconds, x=Cyclecnt LSBs
   MET = ishft(data[10],8) and ishft(data[11],-2)
-
+  
   ;;-------------------------------------------
   ;; Use APID to determine packet size
   ;; '60' -> '360'x ...
@@ -72,17 +72,8 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   ;;--------------
   ;; Peaks
   peak_bin = header[19]
-  
-  
-  ; The Remap array is a hacked attempt at solving the test pulser mapping anomaly
-  ;remap=[3, 2, 1, 0, 15, 14, 13, 12, 8, 7, 6, 5, 4, 9, 10, 11]
-  ;remap=[2, 3, 0, 1, 14, 15, 12, 13, 7, 8, 5, 6, 9, 4, 11, 10]
-  ;remap=[3, 2, 1, 0, 12, 11, 10, 9, 8, 13, 14, 15, 7, 6, 5, 4]
-  ;remap=[2, 3, 0, 1, 11, 12, 9, 10, 13, 8, 15, 14, 6, 7, 4, 5]
-  ;remap=[2, 3, 0, 1, 15, 14, 13, 12, 4, 5, 6, 7, 8, 9, 11, 10]
-  ;remap=[2, 3, 0, 1, 15, 14, 4, 13, 5, 12, 7, 6, 9, 8, 11, 10]
-  ;remap=[2, 3, 0, 1, 15, 14, 4, 12, 5, 6, 13, 7, 9, 8, 11, 10]
-  ;remap=[3, 2, 1, 0, 15, 14, 13, 12, 8, 7, 6, 5, 4, 9, 10, 11]
+
+
   
   case 1 of
 
@@ -98,7 +89,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;              peak_bin: peak_bin, $
 ;              log_flag: log_flag, $
 ;              status_flag: status_flag,$
-;              f_counter: f_counter,$
+;              f0:          f0,$
 ;              cnts: float(cnts)}
 ;     end
 
@@ -116,9 +107,12 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               peak_bin:    peak_bin, $
               log_flag:    log_flag, $
               status_flag: status_flag,$
-              f_counter:   f_counter,$
+              f0:   f0,$
               cnts:        float(cnts[*])};[remap])}
      end
+     
+     
+   
 
 
      ;;----------------------------------------------
@@ -133,7 +127,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               peak_bin:  peak_bin, $
               log_flag:  log_flag, $
               status_flag: status_flag,$
-              f_counter: f_counter,$
+              f0:        f0,$
               cnts_a00:  float(reform(cnts[ 0,*])), $
               cnts_a01:  float(reform(cnts[ 1,*])), $
               cnts_a02:  float(reform(cnts[ 2,*])), $
@@ -150,9 +144,29 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               cnts_a13:  float(reform(cnts[13,*])), $
               cnts_a14:  float(reform(cnts[14,*])), $
               cnts_a15:  float(reform(cnts[15,*])), $
-              cnts:      float(cnts[*])}
+              cnts:      float(cnts[*]), $
+              cnts_a00_total:  total(reform(cnts[ 0,*])), $
+              cnts_a01_total:  total(reform(cnts[ 1,*])), $
+              cnts_a02_total:  total(reform(cnts[ 2,*])), $
+              cnts_a03_total:  total(reform(cnts[ 3,*])), $
+              cnts_a04_total:  total(reform(cnts[ 4,*])), $
+              cnts_a05_total:  total(reform(cnts[ 5,*])), $
+              cnts_a06_total:  total(reform(cnts[ 6,*])), $
+              cnts_a07_total:  total(reform(cnts[ 7,*])), $
+              cnts_a08_total:  total(reform(cnts[ 8,*])), $
+              cnts_a09_total:  total(reform(cnts[ 9,*])), $
+              cnts_a10_total:  total(reform(cnts[10,*])), $
+              cnts_a11_total:  total(reform(cnts[11,*])), $
+              cnts_a12_total:  total(reform(cnts[12,*])), $
+              cnts_a13_total:  total(reform(cnts[13,*])), $
+              cnts_a14_total:  total(reform(cnts[14,*])), $
+              cnts_a15_total:  total(reform(cnts[15,*])), $
+              cnts_total:total(cnts)}
+;              printdat, varname = 'cnts_total', str.cnts_total
+;              printdat, varname= 'F0', str.f0
+;              printdat, varname = 'MET', ulong(ccsds.met)
      end
-;     
+
 ;     ;;----------------------------------------------
 ;     ;;Product Full Sweep: Archive - 32Ex16A - '361'x
 ;     (apid_name eq '61') : begin
@@ -165,7 +179,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;         peak_bin:  peak_bin, $
 ;         log_flag:  log_flag, $
 ;         status_flag: status_flag,$
-;         f_counter: f_counter,$
+;         f0: f0,$
 ;         cnts_a00:  float(reform(cnts[ 0,*])), $
 ;         cnts_a01:  float(reform(cnts[ 1,*])), $
 ;         cnts_a02:  float(reform(cnts[ 2,*])), $
@@ -182,7 +196,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;         cnts_a13:  float(reform(cnts[13,*])), $
 ;         cnts_a14:  float(reform(cnts[14,*])), $
 ;         cnts_a15:  float(reform(cnts[15,*])), $
-;         cnts:      float(reform(cnts,16*32))}
+;         cnts:      float(cnts[*])}
 ;     end
 
      ;;----------------------------------------------
@@ -196,7 +210,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               peak_bin:  peak_bin, $
               log_flag:  log_flag, $
               status_flag: status_flag,$
-              f_counter: f_counter,$
+              f0:        f0,$
               cnts:      float(cnts[*])}
      end
 
@@ -214,7 +228,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;         peak_bin: peak_bin, $
 ;         log_flag: log_flag, $
 ;         status_flag: status_flag,$
-;         f_counter: f_counter,$
+;         f0:        f0,$
 ;         cnts:      float(reform(cnts,32*16)), $
 ;         cnts_a00:  float(reform(cnts[ 0,*])), $
 ;         cnts_a01:  float(reform(cnts[ 1,*])), $
@@ -246,7 +260,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               peak_bin: peak_bin, $
               log_flag: log_flag, $
               status_flag: status_flag,$
-              f_counter: f_counter,$
+              f0:        f0,$
              ; cnts:      float(reform(cnts,256*16)), $
               cnts:      float(cnts[*]), $
               cnts_a00:  float(reform(cnts[ 0,*])), $
@@ -264,7 +278,24 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               cnts_a12:  float(reform(cnts[12,*])), $
               cnts_a13:  float(reform(cnts[13,*])), $
               cnts_a14:  float(reform(cnts[14,*])), $
-              cnts_a15:  float(reform(cnts[15,*]))}
+              cnts_a15:  float(reform(cnts[15,*])), $
+              cnts_a00_total:  total(reform(cnts[ 0,*])), $
+              cnts_a01_total:  total(reform(cnts[ 1,*])), $
+              cnts_a02_total:  total(reform(cnts[ 2,*])), $
+              cnts_a03_total:  total(reform(cnts[ 3,*])), $
+              cnts_a04_total:  total(reform(cnts[ 4,*])), $
+              cnts_a05_total:  total(reform(cnts[ 5,*])), $
+              cnts_a06_total:  total(reform(cnts[ 6,*])), $
+              cnts_a07_total:  total(reform(cnts[ 7,*])), $
+              cnts_a08_total:  total(reform(cnts[ 8,*])), $
+              cnts_a09_total:  total(reform(cnts[ 9,*])), $
+              cnts_a10_total:  total(reform(cnts[10,*])), $
+              cnts_a11_total:  total(reform(cnts[11,*])), $
+              cnts_a12_total:  total(reform(cnts[12,*])), $
+              cnts_a13_total:  total(reform(cnts[13,*])), $
+              cnts_a14_total:  total(reform(cnts[14,*])), $
+              cnts_a15_total:  total(reform(cnts[15,*])), $
+              cnts_total:      total(cnts)}
      end
      
      
@@ -281,10 +312,12 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               peak_bin:    peak_bin, $
               log_flag:    log_flag, $
               status_flag: status_flag,$
-              f_counter:   f_counter,$
+              f0:          f0,$
               cnts:        float(cnts[*]),$
               rates:       float(cnts[*]) / float(ccsds.smples_sumd)}
      end
+     
+    
      
 ;     ;;---------------------------------------------
 ;     ;;Product Full Sweep: Survey - 32Ex16A - '365'x
@@ -298,7 +331,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;              peak_bin:  peak_bin, $
 ;              log_flag:  log_flag, $
 ;              status_flag: status_flag,$
-;              f_counter: f_counter,$
+;              f0:        f0,$
 ;              cnts_a00:  float(reform(cnts[ 0,*])), $
 ;              cnts_a01:  float(reform(cnts[ 1,*])), $
 ;              cnts_a02:  float(reform(cnts[ 2,*])), $
@@ -348,7 +381,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               peak_bin:  peak_bin, $
               log_flag:  log_flag, $
               status_flag: status_flag,$
-              f_counter: f_counter,$
+              f0:        f0,$
               cnts_a00:  float(reform(cnts[ 0,*])), $
               cnts_a01:  float(reform(cnts[ 1,*])), $
               cnts_a02:  float(reform(cnts[ 2,*])), $
@@ -366,6 +399,23 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               cnts_a14:  float(reform(cnts[14,*])), $
               cnts_a15:  float(reform(cnts[15,*])), $
               cnts:      float(cnts[*]), $
+              cnts_a00_total:  total(reform(cnts[ 0,*])), $
+              cnts_a01_total:  total(reform(cnts[ 1,*])), $
+              cnts_a02_total:  total(reform(cnts[ 2,*])), $
+              cnts_a03_total:  total(reform(cnts[ 3,*])), $
+              cnts_a04_total:  total(reform(cnts[ 4,*])), $
+              cnts_a05_total:  total(reform(cnts[ 5,*])), $
+              cnts_a06_total:  total(reform(cnts[ 6,*])), $
+              cnts_a07_total:  total(reform(cnts[ 7,*])), $
+              cnts_a08_total:  total(reform(cnts[ 8,*])), $
+              cnts_a09_total:  total(reform(cnts[ 9,*])), $
+              cnts_a10_total:  total(reform(cnts[10,*])), $
+              cnts_a11_total:  total(reform(cnts[11,*])), $
+              cnts_a12_total:  total(reform(cnts[12,*])), $
+              cnts_a13_total:  total(reform(cnts[13,*])), $
+              cnts_a14_total:  total(reform(cnts[14,*])), $
+              cnts_a15_total:  total(reform(cnts[15,*])), $
+              cnts_total:      total(cnts), $
               rates_a00: float(reform(cnts[ 0,*])) / float(ccsds.smples_sumd), $
               rates_a01: float(reform(cnts[ 1,*])) / float(ccsds.smples_sumd), $
               rates_a02: float(reform(cnts[ 2,*])) / float(ccsds.smples_sumd), $
@@ -396,11 +446,11 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
          peak_bin:  peak_bin, $
          log_flag:  log_flag, $
          status_flag: status_flag,$
-         f_counter: f_counter,$
+         f0:        f0,$
          cnts:      float(cnts[*]),$
          rates:     float(cnts[*]) / float(ccsds.smples_sumd)}
      end
-
+     
 
      ;-------------------------------------------------
      ;Product Targeted Sweep: Survey - 16Ax256S - '367'x
@@ -414,7 +464,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               peak_bin: peak_bin, $
               log_flag: log_flag, $
               status_flag: status_flag,$
-              f_counter: f_counter,$
+              f0:        f0,$
               cnts_a00:  float(reform(cnts[ 0,*])), $
               cnts_a01:  float(reform(cnts[ 1,*])), $
               cnts_a02:  float(reform(cnts[ 2,*])), $
@@ -432,6 +482,23 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               cnts_a14:  float(reform(cnts[14,*])), $
               cnts_a15:  float(reform(cnts[15,*])), $
               cnts:      float(cnts[*]),$
+              cnts_a00_total:  total(reform(cnts[ 0,*])), $
+              cnts_a01_total:  total(reform(cnts[ 1,*])), $
+              cnts_a02_total:  total(reform(cnts[ 2,*])), $
+              cnts_a03_total:  total(reform(cnts[ 3,*])), $
+              cnts_a04_total:  total(reform(cnts[ 4,*])), $
+              cnts_a05_total:  total(reform(cnts[ 5,*])), $
+              cnts_a06_total:  total(reform(cnts[ 6,*])), $
+              cnts_a07_total:  total(reform(cnts[ 7,*])), $
+              cnts_a08_total:  total(reform(cnts[ 8,*])), $
+              cnts_a09_total:  total(reform(cnts[ 9,*])), $
+              cnts_a10_total:  total(reform(cnts[10,*])), $
+              cnts_a11_total:  total(reform(cnts[11,*])), $
+              cnts_a12_total:  total(reform(cnts[12,*])), $
+              cnts_a13_total:  total(reform(cnts[13,*])), $
+              cnts_a14_total:  total(reform(cnts[14,*])), $
+              cnts_a15_total:  total(reform(cnts[15,*])), $
+              cnts_total:      total(cnts), $
               rates_a00: float(reform(cnts[ 0,*])) / float(ccsds.smples_sumd), $
               rates_a01: float(reform(cnts[ 1,*])) / float(ccsds.smples_sumd), $
               rates_a02: float(reform(cnts[ 2,*])) / float(ccsds.smples_sumd), $
@@ -450,6 +517,8 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               rates_a15: float(reform(cnts[15,*])) / float(ccsds.smples_sumd), $
               rates:     float(cnts[*]) / float(ccsds.smples_sumd)}
           end
+
+
      ;;-------------------------------------------------
      ;;Product Targeted Sweep: Survey - 32Ex16A - '367'x
 ;     (apid_name eq '67') : begin
@@ -462,7 +531,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;         peak_bin: peak_bin, $
 ;         log_flag: log_flag, $
 ;         status_flag: status_flag,$
-;         f_counter: f_counter,$
+;         f0:        f0,$
 ;         cnts_a00:  float(reform(cnts[ 0,*])), $
 ;         cnts_a01:  float(reform(cnts[ 1,*])), $
 ;         cnts_a02:  float(reform(cnts[ 2,*])), $

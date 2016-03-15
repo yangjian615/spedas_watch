@@ -8,8 +8,8 @@
 ;     taken from v2.1.0 of the FPI CDFs, 3/10/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-11 12:16:41 -0800 (Fri, 11 Mar 2016) $
-; $LastChangedRevision: 20414 $
+; $LastChangedDate: 2016-03-14 13:00:53 -0700 (Mon, 14 Mar 2016) $
+; $LastChangedRevision: 20442 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_cdf2tplot_ut__define.pro $
 ;-
 
@@ -81,6 +81,27 @@ function mms_cdf2tplot_ut::test_fpi_fs_unshifted
   return, 1
 end
 
+; DELTA_PLUS_VAR/DELTA_MINUS_VAR for L2 HPCA 'srvy' (unshifted)
+function mms_cdf2tplot_ut::test_hpca_srvy_unshifted
+  mms_load_hpca, level='l2', trange=['2015-09-15', '2015-09-16'], probe=1
+  get_data, 'mms1_hpca_hplus_number_density', data=d
+  valid_times_noshift = ['20150915/00:00:13.233', '20150915/00:01:23.231', '20150915/00:02:33.230', '20150915/00:03:43.229']
+  for vi = 0, n_elements(valid_times_noshift)-1 do begin
+    assert, time_string(d.X[vi], tformat='YYYYMMDD/hh:mm:ss.fff') eq valid_times_noshift[vi], 'Problem with HPCA L2 srvy unshifted data' 
+  endfor
+  return, 1
+end
+
+; DELTA_PLUS_VAR/DELTA_MINUS_VAR for L2 HPCA 'srvy' (shifted)
+function mms_cdf2tplot_ut::test_hpca_srvy_shifted
+  mms_load_hpca, level='l2', trange=['2015-09-15', '2015-09-16'], probe=1, /center, suffix='_shifted'
+  get_data, 'mms1_hpca_hplus_number_density_shifted', data=d
+  valid_times_shifted = ['20150915/00:00:18.232', '20150915/00:01:28.231', '20150915/00:02:38.229', '20150915/00:03:48.228']
+  for vi = 0, n_elements(valid_times_shifted)-1 do begin
+    assert, time_string(d.X[vi], tformat='YYYYMMDD/hh:mm:ss.fff') eq valid_times_shifted[vi], 'Problem with HPCA L2 srvy shifted data'
+  endfor
+  return, 1
+end
 
 pro mms_cdf2tplot_ut::setup
   ; do some setup for the tests

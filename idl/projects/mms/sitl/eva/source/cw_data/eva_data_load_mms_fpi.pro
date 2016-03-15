@@ -28,4 +28,7 @@ PRO eva_data_load_mms_fpi, sc=sc
     ytitle=sc+'!CFPI!CVi',ysubtitle='[km/s]',constant=0,$
     labels=['V!DX!N', 'V!DY!N', 'V!DZ!N'],labflag=-1,colors=[2,4,6]
 
+  options,sc+'_fpi_bentPipeB_DSC',$
+    labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='DSC',$
+    colors=[2,4,6],labflag=-1,constant=0
 END

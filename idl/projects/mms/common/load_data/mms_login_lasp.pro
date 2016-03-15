@@ -17,8 +17,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 15:27:03 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20378 $
+;$LastChangedDate: 2016-03-14 09:50:22 -0700 (Mon, 14 Mar 2016) $
+;$LastChangedRevision: 20429 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_login_lasp.pro $
 ;-
 
@@ -51,7 +51,7 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
     
     
     ; prompt the user for their SDC username/password none was found in file
-    if undefined(username) || undefined(password) then begin
+    if undefined(password) &&  ~obj_valid(netUrl) then begin
         ; catch errors from widget and ignore
         ;   -this is primarily to catch cases where no X server is running on linux
         ;   -login_widget has it's own handler that calls dialog_message, so
@@ -72,21 +72,26 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
             endif
         endif
     endif
-    
-    connected_to_lasp = 0
-    tries = 0
-    ; retry connecting to LASP if the connection fails at first
-    ; if no username/pw have been set then the user will be prompted on the command line
-    while (connected_to_lasp eq 0 and tries lt 2) do begin
-        ; the IDLnetURL object returned here is also stored in the common block
-        ; (this is why we never use net_object after this line, but this call is still
-        ; necessary to login)
-       ; net_object = get_mms_sitl_connection(username=username, password=password)
-        net_object = get_mms_sdc_connection(username=username, password=password)
- 
-        if obj_valid(net_object) then connected_to_lasp = 1
-        tries += 1
-    endwhile
+
+    if ~obj_valid(netUrl) then begin
+        connected_to_lasp = 0
+        tries = 0
+        ; retry connecting to LASP if the connection fails at first
+        ; if no username/pw have been set then the user will be prompted on the command line
+        while (connected_to_lasp eq 0 and tries lt 2) do begin
+            ; the IDLnetURL object returned here is also stored in the common block
+            ; (this is why we never use net_object after this line, but this call is still
+            ; necessary to login)
+           ; net_object = get_mms_sitl_connection(username=username, password=password)
+            net_object = get_mms_sdc_connection(username=username, password=password)
+     
+            if obj_valid(net_object) then connected_to_lasp = 1
+            tries += 1
+        endwhile
+    endif else begin
+        net_object = netUrl
+        if username eq '' then username = 'temp' 
+    endelse
 
     if obj_valid(net_object) then begin
         ; now save the user/pass to a sav file to remember it in future sessions

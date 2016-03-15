@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
-; $LastChangedRevision: 20296 $
+; $LastChangedDate: 2016-03-14 14:36:30 -0700 (Mon, 14 Mar 2016) $
+; $LastChangedRevision: 20444 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -27,7 +27,8 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
     
     ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
     if datatype eq 'electron' then sensors = ['3', '4', '5', '11', '12'] else sensors = ['6', '7', '8']
-  
+    if level eq 'sitl' && datatype eq 'electron' then sensors = ['5', '11', '12']
+    
     ; special case for burst mode data
     if data_rate eq 'brst' && datatype eq 'electron' then sensors = ['1','2','3','4','5','9','10','11','12']
     if data_rate eq 'brst' && datatype eq 'ion' then sensors = ['6','7','8']
@@ -69,23 +70,26 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         endfor
     
         ; bottom sensors
-        for sensor_idx = 0, n_elements(sensors)-1 do begin
-          var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
-          var_name = strlowcase(var_name)
-          
-          get_data, var_name+suffix, data = bottom_data, dlimits=bottom_dlimits
-          if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
-            bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]
-    
-            for bad_sector_idx = 0, n_elements(bad_sectors)-1 do begin
-              this_bad_sector = where(spin_sector.Y eq bad_sectors[bad_sector_idx], bad_sect_count)
-              if bad_sect_count ne 0 then bottom_data.Y[this_bad_sector, *] = !values.d_nan
-            endfor
-          endif
-    
-          ; resave the data, with the sunlight contamination removed
-          store_data, var_name+'_sun_removed'+suffix, data=bottom_data, dlimits=bottom_dlimits
-        endfor
+        ; note: no bottom data in SITL files
+        if level ne 'sitl' then begin
+          for sensor_idx = 0, n_elements(sensors)-1 do begin
+            var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
+            var_name = strlowcase(var_name)
+            
+            get_data, var_name+suffix, data = bottom_data, dlimits=bottom_dlimits
+            if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
+              bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]
+      
+              for bad_sector_idx = 0, n_elements(bad_sectors)-1 do begin
+                this_bad_sector = where(spin_sector.Y eq bad_sectors[bad_sector_idx], bad_sect_count)
+                if bad_sect_count ne 0 then bottom_data.Y[this_bad_sector, *] = !values.d_nan
+              endfor
+            endif
+      
+            ; resave the data, with the sunlight contamination removed
+            store_data, var_name+'_sun_removed'+suffix, data=bottom_data, dlimits=bottom_dlimits
+          endfor
+        endif
     endfor
   
 end

@@ -120,12 +120,14 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_afg*') and (cp eq 0)) then begin
           mms_sitl_get_afg, sc_id=sc
+          eva_cap,sc+'_afg_srvy_gsm_dmpa'
           options,sc+'_afg_srvy_gsm_dmpa',$
             labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='GSM [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0,cap=1
+            colors=[2,4,6],labflag=-1,constant=0
+          eva_cap,sc+'_afg_srvy_dmpa'
           options,sc+'_afg_srvy_dmpa',$
             labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='DMPA [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0,cap=1
+            colors=[2,4,6],labflag=-1,constant=0
           answer = 'Yes'
         endif
         pcode=31
@@ -134,16 +136,18 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
           mms_sitl_get_afg, sc_id=sc, level='l1b'
           tn=tnames(sc+'*_afg_srvy_omb*',cnt)
           if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            eva_cap,sc+'_afg_srvy_omb'
             options,sc+'_afg_srvy_omb',$
               labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='OMB [nT]',$
-              colors=[2,4,6],labflag=-1,constant=0, cap=1
+              colors=[2,4,6],labflag=-1,constant=0
             answer = 'Yes'
           endif
           tn=tnames(sc+'*_afg_srvy_bcs*',cnt)
           if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            eva_cap,sc+'_afg_srvy_bcs'
             options,sc+'_afg_srvy_bcs',$
               labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='BCS [nT]',$
-              colors=[2,4,6],labflag=-1,constant=0, cap=1
+              colors=[2,4,6],labflag=-1,constant=0
             answer = 'Yes'
           endif
         endif
@@ -155,12 +159,14 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_dfg*') and (cp eq 0)) then begin
           mms_sitl_get_dfg, sc_id=sc
+          eva_cap,sc+'_dfg_srvy_gsm_dmpa'
           options,sc+'_dfg_srvy_gsm_dmpa',$
             labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='GSM [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0, cap=1
+            colors=[2,4,6],labflag=-1,constant=0
+          eva_cap,sc+'_dfg_srvy_dmpa'
           options,sc+'_dfg_srvy_dmpa',$
             labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='DMPA [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0, cap=1
+            colors=[2,4,6],labflag=-1,constant=0
           answer = 'Yes'
         endif
         pcode=33
@@ -169,16 +175,18 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
           mms_sitl_get_dfg, sc_id=sc, level='l1b'
           tn=tnames(sc+'*_dfg_srvy_omb*',cnt)
           if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            eva_cap,sc+'_dfg_srvy_omb'
             options,sc+'_dfg_srvy_omb',$
               labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='OMB [nT]',$
-              colors=[2,4,6],labflag=-1,constant=0, cap=1
+              colors=[2,4,6],labflag=-1,constant=0
             answer = 'Yes'
           endif
           tn=tnames(sc+'*_dfg_srvy_bcs*',cnt)
           if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
+            eva_cap,sc+'_dfg_srvy_bcs'
             options,sc+'_dfg_srvy_bcs',$
               labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='BCS [nT]',$
-              colors=[2,4,6],labflag=-1,constant=0, cap=1
+              colors=[2,4,6],labflag=-1,constant=0
             answer = 'Yes'
           endif
         endif
@@ -323,25 +331,25 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
         ;--------------
         ; FPI BentPipe
         ;--------------
-        pcode=53
-        ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_fpi_bent*') and (cp eq 0)) then begin
-          mms_load_fpi, probes = prb, level='sitl', data_rate='fast'
-          get_data,sc+'_fpi_bentPipeB_X_DSC',data=Dx
-          get_data,sc+'_fpi_bentPipeB_Y_DSC',data=Dy
-          get_data,sc+'_fpi_bentPipeB_Z_DSC',data=Dz
-          get_data,sc+'_fpi_bentPipeB_Norm',data=Dabs
-          ydata = [[Dabs.Y*Dx.Y], [Dabs.Y*Dy.Y], [Dabs.Y*Dz.Y]]
-          ysize = sqrt(ydata[*,0]^2+ydata[*,1]^2+ydata[*,2]^2)
-          store_data,sc+'_fpi_bentPipeB_DSC',data={x:Dx.X, y:ydata}
-          store_data,sc+'_fpi_bentPipeB_DSC_m',data={x:Dx.X, y:ysize}
-          options,sc+'_fpi_bentPipeB_DSC',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='DSC',$
-            colors=[2,4,6],labflag=-1,constant=0
-          options,sc+'_fpi_bentPipeB_DSC_m',constant=0,colors=[0],$
-            ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='(magnitude)'
-          answer = 'Yes'
-        endif
+;        pcode=53
+;        ip=where(perror eq pcode,cp)
+;        if (strmatch(paramlist[i],'*_fpi_bent*') and (cp eq 0)) then begin
+;          mms_load_fpi, probes = prb, level='sitl', data_rate='fast'
+;          get_data,sc+'_fpi_bentPipeB_X_DSC',data=Dx
+;          get_data,sc+'_fpi_bentPipeB_Y_DSC',data=Dy
+;          get_data,sc+'_fpi_bentPipeB_Z_DSC',data=Dz
+;          get_data,sc+'_fpi_bentPipeB_Norm',data=Dabs
+;          ydata = [[Dabs.Y*Dx.Y], [Dabs.Y*Dy.Y], [Dabs.Y*Dz.Y]]
+;          ysize = sqrt(ydata[*,0]^2+ydata[*,1]^2+ydata[*,2]^2)
+;          store_data,sc+'_fpi_bentPipeB_DSC',data={x:Dx.X, y:ydata}
+;          store_data,sc+'_fpi_bentPipeB_DSC_m',data={x:Dx.X, y:ysize}
+;          options,sc+'_fpi_bentPipeB_DSC',$
+;            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='DSC',$
+;            colors=[2,4,6],labflag=-1,constant=0
+;          options,sc+'_fpi_bentPipeB_DSC_m',constant=0,colors=[0],$
+;            ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='(magnitude)'
+;          answer = 'Yes'
+;        endif
         
         ;-----------
         ; HPCA

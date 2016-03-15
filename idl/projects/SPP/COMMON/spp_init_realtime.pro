@@ -2,8 +2,7 @@ pro spp_init_realtime,filename=filename,base=base
 
   common spp_crib_com2, recorder_base,exec_base
   
-  exec,exec_base, exec_text = $
-       'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
+  exec,exec_base, exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
   host = 'localhost'
   host = '128.32.98.101'
   host = 'ABIAD-SW'

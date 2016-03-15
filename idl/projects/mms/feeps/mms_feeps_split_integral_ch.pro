@@ -6,8 +6,8 @@
 ;    this function splits the last integral channel from the FEEPS spectra
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20296 $
+;$LastChangedDate: 2016-03-14 14:19:57 -0700 (Mon, 14 Mar 2016) $
+;$LastChangedRevision: 20443 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
@@ -21,6 +21,7 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
   
   ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
   if species eq 'electron' then sensors = [3, 4, 5, 11, 12] else sensors = [6, 7, 8]
+  if level eq 'sitl' && species eq 'electron' then sensors = [5, 11, 12]
   
   ; special case for burst mode data
   if data_rate eq 'brst' && species eq 'electron' then sensors = ['1','2','3','4','5','9','10','11','12']
@@ -37,14 +38,14 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
       
       get_data, top_name+suffix, data=top_data, dlimits=top_dl
       get_data, bottom_name+suffix, data=bottom_data, dlimits=bottom_dl
-  
+
       top_name_out = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
       bottom_name_out = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
       top_name_out = strlowcase(top_name_out)
       bottom_name_out = strlowcase(bottom_name_out)
       
       store_data, top_name_out+suffix, data={x: top_data.X, y: top_data.Y[*, 0:n_elements(top_data.V)-2], v: top_data.V[0:n_elements(top_data.V)-2]}, dlimits=top_dl
-      store_data, bottom_name_out+suffix, data={x: bottom_data.X, y: bottom_data.Y[*, 0:n_elements(bottom_data.V)-2], v: bottom_data.V[0:n_elements(bottom_data.V)-2]}, dlimits=bottom_dl
+      if level ne 'sitl' then store_data, bottom_name_out+suffix, data={x: bottom_data.X, y: bottom_data.Y[*, 0:n_elements(bottom_data.V)-2], v: bottom_data.V[0:n_elements(bottom_data.V)-2]}, dlimits=bottom_dl
      
       ; limit the lower energy plotted
       options, top_name_out, ystyle=1
@@ -55,8 +56,8 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
       zlim, bottom_name_out, 0, 0, 1
   
       ; store the integral channel
-      store_data, top_name+'_500keV_int'+suffix, data={x: top_data.X, y: top_data.Y[*, n_elements(bottom_data.V)-1]}
-      store_data, bottom_name+'_500keV_int'+suffix, data={x: bottom_data.X, y: bottom_data.Y[*, n_elements(bottom_data.V)-1]}
+      store_data, top_name+'_500keV_int'+suffix, data={x: top_data.X, y: top_data.Y[*, n_elements(top_data.V)-1]}
+      if level ne 'sitl' then store_data, bottom_name+'_500keV_int'+suffix, data={x: bottom_data.X, y: bottom_data.Y[*, n_elements(bottom_data.V)-1]}
   
       ; delete the variable that contains both the spectra and the integral channel
       ; so users don't accidently plot the wrong quantity (discussed with Drew Turner 2/4/16)
