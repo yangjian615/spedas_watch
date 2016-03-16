@@ -514,7 +514,9 @@ function DataManagement::getVolumeData, ORIGINAL=original ;, XRANGE=xrange, YRAN
     vel_vec_unit = vel_vec/sqrt(vel_vec[0]^2.+vel_vec[1]^2.+vel_vec[2]^2.)
     ; 
     mv_p = crossp(mag_vec_unit, vel_vec_unit) ;Cross product of magnetc and velocity vectors, B x V (=new Y) 
-    mvm_p = crossp(mv_p, mag_vec_unit) ; Cross product of (BxV) x B (=new X) 
+    mv_p /= norm(mv_p) ;normalize
+    mvm_p = crossp(mv_p, mag_vec_unit) ; Cross product of (BxV) x B (=new X)
+    mvm_p /= norm(mvm_p) ;normalize
     ; 
     ;ROTATION USING MATRIX 
     rotmat = [[mvm_p],[mv_p],[mag_vec_unit]]

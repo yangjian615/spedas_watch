@@ -31,23 +31,23 @@ folder = 'slice_test/'
 trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:00.05']
 coord_sys = 'dbcs'
 data_rate = 'brst'
+fgm_data_rate = 'brst'
 level = 'l2'
 
 ;load particle, field & support data
 ;---------------------------------------------
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-dist', $
               probe=probe, trange=trange
-mms_load_fgm, probe=probe, trange=trange, level=level, data_rate=data_rate
+mms_load_fgm, probe=probe, trange=trange, level=level, data_rate=fgm_data_rate
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $
               probe=probe, trange=trange
 
-  
 ; b-field vector for data within the last 2 weeks (ql)
 ; bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
 ; b-field vector for data older than 2 weeks ago (l2pre)
 ; bname = 'mms'+probe+'_dfg_srvy_l2pre_gse_bvec'
 ;  b-field vector for L2 data
-bname = 'mms'+probe+'_fgm_b_gse_brst_l2_bvec'
+bname = 'mms'+probe+'_fgm_b_gse_'+fgm_data_rate+'_l2_bvec'
 vname = 'mms'+probe+'_d'+species+'s_bulk'
 join_vec, level eq 'l2' ? vname + ['x','y','z'] + '_' + coord_sys + '_' + data_rate : vname + ['X','Y','Z'], vname
 
@@ -114,7 +114,7 @@ WINDOW,/free, XSIZE=1400, YSIZE=800, TITLE='MMS FPI Distributions'
 ;nx = dimen2(norms)
 nx = 4
 ny = 3
-arrange_plots,x0,y0,x1,y1,nx=nx,ny=ny,ygap=0.056,x1margin=0.1,$
+spd_arrange_plots,x0,y0,x1,y1,nx=nx,ny=ny,ygap=0.056,x1margin=0.1,$
   x0margin=0.1,y1margin=0.02,xgap=0.1,y0margin=0.08
               
 ;loop over time samples and slice orientations to create a set of plots at each sample

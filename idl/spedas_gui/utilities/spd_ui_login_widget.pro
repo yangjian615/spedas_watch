@@ -8,6 +8,7 @@
 ; KEYWORDS:
 ;         title: title of the login window
 ;         group_leader: widget ID of the leader widget
+;         note: add a note to the bottom of the widget
 ; 
 ; OUTPUT:
 ;         Returns a structure containing the username, password, 
@@ -17,10 +18,12 @@
 ; NOTES:
 ;         Written by Doug Lindholm at LASP, forked for SPEDAS on 8/20/2015. 
 ;         Minor modifications by Aaron Flores @ IGPP
-;     
+;         3/15/2016: updated to accept 'note' keyword - allows for 
+;           adding a note to the bottom of the widget
+;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-08-20 15:45:47 -0700 (Thu, 20 Aug 2015) $
-;$LastChangedRevision: 18548 $
+;$LastChangedDate: 2016-03-15 09:23:07 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20458 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_ui_login_widget.pro $
 ;-
 
@@ -89,7 +92,7 @@ pro handle_password, event
 end
 
 function spd_ui_login_widget, title=title, cancel=cancel, $
-      group_leader=group_leader
+      group_leader=group_leader, note=note
       
   ; Error handling. Clean up.
   catch, error
@@ -131,7 +134,12 @@ function spd_ui_login_widget, title=title, cancel=cancel, $
   bbase = widget_base(base, row=1)
   okID     = widget_button(bbase, value = "  OK  ")
   cancelID = widget_button(bbase, value = "Cancel")
-   
+  
+  if keyword_set(note) then begin
+      notebase = widget_base(base, row=1)
+      noteID = widget_label(notebase, value=note)
+  endif 
+  
   ; Center the widget
   device, get_screen_size=screenSize
   if screensize[0] gt 2000 then screenSize[0] = screenSize[0]/2 ; Dual monitors.

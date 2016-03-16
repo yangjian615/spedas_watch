@@ -38,7 +38,7 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval 
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load 
-;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;         no_split_vars: don't split the FGM variables into vector + magnitude tplot variables; if set
 ;                        vector transformations won't work on the FGM tplot variables. 
 ;         keep_flagged: don't remove flagged data (flagged data are set to NaNs by default, this keyword
@@ -47,7 +47,7 @@
 ; OUTPUT:
 ; 
 ; EXAMPLE:
-;     For examples see crib sheets mms_load_fgm_crib.pro, and mms_load_fgm_brst_crib.pro
+;     See mms_load_fgm_crib.pro, and mms_load_fgm_brst_crib.pro for usage examples
 ;     
 ;     load MMS FGM burst data for MMS 1
 ;     MMS>  mms_load_fgm, probes=['1'], data_rate='brst'
@@ -86,8 +86,8 @@
 ;     
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20468 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -161,7 +161,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate
         endif 
         
-        ; delete the bad ephemeris variables if this is burst data
+        ; delete the bad ephemeris variables
+        ; please use ephemeris data in the MEC data (mms_load_mec)
         if level eq 'l2' || level eq 'l2pre' then begin
             del_data, this_probe+'_fgm_r_gse_'+data_rate+'_'+level+suffix
             del_data, this_probe+'_fgm_r_gsm_'+data_rate+'_'+level+suffix

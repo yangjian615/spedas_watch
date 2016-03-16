@@ -38,17 +38,16 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
-;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ; 
 ; OUTPUT:
 ; 
 ; 
 ; EXAMPLE:
-;     See crib sheet mms_load_aspoc_crib.pro for usage details.
+;     See mms_load_aspoc_crib.pro for usage details.
 ; 
-;     load l1b  data for MMS 1 for aspoc1 
-;     MMS> mms_load_aspoc, datatype='asp1', trange=['2015-07-15', '2015-07-16'], $
-;               level='l1b', probe=scid
+;     load L2 data for MMS 1 for aspoc1 
+;     MMS> mms_load_aspoc, trange=['2015-07-15', '2015-07-16'], level='l2', probe=1
 ; 
 ; NOTES:
 ;    Have questions regarding this load routine, or its usage?
@@ -58,8 +57,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20468 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/aspoc/mms_load_aspoc.pro $
 ;-
 

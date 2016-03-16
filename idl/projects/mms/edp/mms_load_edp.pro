@@ -38,7 +38,7 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
-;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;
 ; NOTES:
 ;     Please always use error bars on E-field data 
@@ -50,20 +50,20 @@
 ;          Send me an email --> egrimes@igpp.ucla.edu
 ;
 ; EXAMPLE:
-;     See crib sheet mms_load_edp_crib.pro for usage examples.
+;    See mms_load_edp_crib.pro for usage examples.
 ;     
 ;    set the time frame
-;    MMS1> timespan, '2015-08-15', 1, /day
-;    load quicklook edp dce data for all probes
-;    MMS1> mms_load_edp, data_rate='slow', probes=[1, 2, 3, 4], datatype='dce', level='ql'
+;    MMS1> timespan, '2015-12-15', 1, /day
+;    load L2 edp dce data for all probes
+;    MMS1> mms_load_edp, data_rate='slow', probes=[1, 2, 3, 4], datatype='dce', level='L2'
 ;
 ; HISTORY:
 ;   - Created by Matthew Argall @UNH
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20468 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $

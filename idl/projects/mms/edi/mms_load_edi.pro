@@ -39,16 +39,15 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
-;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;
 ; OUTPUT:
 ;
 ; EXAMPLE:
-;     See crib sheets mms_load_edi_crib.pro and mms_load_data_crib.pro for usage examples.
+;     See mms_load_edi_crib.pro for usage examples.
 ;     
-;     load edi quick look survey data
-;     MMS>  mms_load_edi, data_rate='srvy', probes=probe, datatype='efield', level='ql', $
-;                trange=['2015-09-03', '2015-09-04']
+;     load L2 EDI survey data
+;     MMS>  mms_load_edi, data_rate='srvy', probes=probe, datatype='efield', trange=['2015-09-03', '2015-09-04']
 ;                
 ; NOTES:               
 ;    Have questions regarding this load routine, or its usage?
@@ -56,8 +55,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20468 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edi/mms_load_edi.pro $
 ;-
 

@@ -39,24 +39,23 @@
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
 ;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
-;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;
 ; 
 ; OUTPUT:
 ; 
 ; 
 ; EXAMPLE:
-;     See crib sheets mms_load_eis_crib.pro, mms_load_eis_burst_crib.pro, 
+;     See mms_load_eis_crib.pro, mms_load_eis_burst_crib.pro, 
 ;         mms_load_eis_crib_qlplots.pro, and mms_load_data_crib.pro for usage examples
 ; 
 ;     load ExTOF burst data:
-;     MMS1> mms_load_eis, probes='1', trange=['2015-08-23', '2015-08-24'], $
-;            datatype='extof', data_rate='brst', level='l1b'
+;     MMS1> mms_load_eis, probes='1', trange=['2015-12-23', '2015-12-24'],  datatype='extof', data_rate='brst', level='l2'
 ;            
 ;     load PHxTOF data:
-;     MMS1> mms_load_eis, probes='1', trange=['2015-07-31', '2015-08-01'], datatype='phxtof'
+;     MMS1> mms_load_eis, probes='1', trange=['2015-10-31', '2015-11-01'], datatype='phxtof', level='l2'
 ;     calculate the PHxTOF PAD for protons
-;     MMS1> mms_eis_pad, probe='1', species='ion', datatype='phxtof', ion_type='proton', data_units='flux', energy=[0, 30]
+;     MMS1> mms_eis_pad, probe='1', species='ion', datatype='phxtof', ion_type='proton', data_units='flux', energy=[0, 30], level='l2'
 ;
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
@@ -73,8 +72,8 @@
 ;                  mms_eis_omni to address burst variable name changes
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20468 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 

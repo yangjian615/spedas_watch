@@ -39,7 +39,7 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
-;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;
 ; OUTPUT:
 ;
@@ -48,16 +48,16 @@
 ;          Send me an email --> egrimes@igpp.ucla.edu
 ;          
 ;          
-;     See crib sheet mms_load_dsp_crib.pro for usage examples
+;     See mms_load_dsp_crib.pro for usage examples
 ;
 ;     ; set time frame and load edp level 2 data
-;     MMS>  timespan, '2015-06-22', 1, /day
+;     MMS>  timespan, '2015-12-22', 1, /day
 ;     MMS>  mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='epsd', level='l2'
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20468 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
 

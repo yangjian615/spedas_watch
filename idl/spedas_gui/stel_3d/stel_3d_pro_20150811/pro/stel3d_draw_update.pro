@@ -133,7 +133,9 @@ PRO stel3d_draw_update, evTop, val
     bvec_unit = [bfield.x, bfield.y, bfield.z]/sqrt(bfield.x^2.+bfield.y^2.+bfield.z^2.)
     vvec_unit = [velinfo.x, velinfo.y, velinfo.z]/sqrt(velinfo.x^2.+velinfo.y^2.+velinfo.z^2.)
     mv_p = crossp(bvec_unit, vvec_unit) ;Cross product of magnetc and velocity vectors, B x V (=new Y) ^M
+    mv_p /= norm(mv_p) ;normalize
     mvm_p = crossp(mv_p, bvec_unit) ; Cross product of (BxV) x B (=new X) ^M
+    mvm_p /= norm(mvm_p) ;normalize
     ;
     ;ROTATION USING MATRIX
     rotmat = [[mvm_p],[mv_p],[bvec_unit]]

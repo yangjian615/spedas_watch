@@ -39,19 +39,19 @@
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
-;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ; 
 ; 
 ; EXAMPLE:
-;     See crib sheets mms_load_fpi_crib, mms_load_fpi_burst_crib, and mms_load_fpi_crib_qlplots
+;     See mms_load_fpi_crib, mms_load_fpi_burst_crib, and mms_load_fpi_crib_qlplots
 ;     for usage examples
 ; 
-;     MMS>  timespan, '2015-09-19', 1d
+;     MMS>  timespan, '2015-09-19', 1, /day
 ;     load fpi burst mode data
-;     MMS>  mms_load_fpi, probes = ['1'], level='l1b', data_rate='brst', datatype='des-moms'
+;     MMS>  mms_load_fpi, probes = ['1'], level='l2', data_rate='brst', datatype='des-moms'
 ;     
-;     load fast mode data
-;     MMS>  mms_load_fpi, probes = '3', level='sitl', data_rate='fast', datatype='*'
+;     load FS data
+;     MMS>  mms_load_fpi, probes='3', level='l2', data_rate='fast', datatype='des-moms'
 ;
 ; NOTES:
 ;     Have questions regarding this load routine, or its usage?
@@ -65,8 +65,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20468 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -92,6 +92,10 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     if undefined(varformat) then begin
         ; turn on get_support_data if the user doesn't specify a varformat
         if undefined(get_support_data) then get_support_data = 1
+    endif
+    if ~undefined(center_measurement) && level ne 'l2' then begin
+        dprint, dlevel = 0, 'Error, can only center measurements for L2 FPI data.'
+        return
     endif
     
     ; different datatypes for burst mode files

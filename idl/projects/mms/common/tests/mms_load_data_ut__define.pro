@@ -7,8 +7,8 @@
 ;     test_auth_info_pub.sav - sav file containing an empty username and password
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-10 15:31:00 -0800 (Thu, 10 Mar 2016) $
-; $LastChangedRevision: 20399 $
+; $LastChangedDate: 2016-03-15 11:06:41 -0700 (Tue, 15 Mar 2016) $
+; $LastChangedRevision: 20465 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_data_ut__define.pro $
 ;-
 
@@ -17,6 +17,19 @@ function mms_load_data_ut::test_fgm_l2pre_vars
   del_data, '*'
   ;; placeholder to remind me to add this test when the data are at the SDC
   ;; fails for now
+end
+
+; test MMS team member access
+; after downloading some L2 data
+; regression test for bug in mms_login_lasp, 3/15/2016
+function mms_load_data_ut::test_team_access_after_l2
+  del_data, '*'
+  mms_load_data, login_info='test_auth_info_team.sav', trange=['2016-01-04', '2016-01-05'], $
+    instrument='fgm', level='l2', data_rate='srvy', probe=1
+  assert, tnames('*_fgm_r_gsm_srvy_l2') ne '', 'Problem loading L2 FGM data'
+  mms_load_data, trange=['2016-01-05', '2016-01-06'], instrument='dfg', level='l2pre', data_rate='srvy', probe=1
+  assert, tnames('*_dfg_srvy_l2pre_gsm') ne '', 'Problem loading L2pre FGM data after loading L2 FGM data'
+  return, 1
 end
 
 ; test MMS team member access 

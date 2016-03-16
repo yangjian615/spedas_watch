@@ -13,18 +13,24 @@
 ;         
 ;         save_login_info: set this keyword to save the login information in a local sav file named
 ;             by the keyword login_info - or "mms_auth_info.sav" if the login_info keyword isn't set
+;          
+;         username: this keyword returns the name of the logged in user, or 'public' for public users
+;         
+;         widget_note: text of note to add to the bottom of the login widget
 ;
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-14 09:50:22 -0700 (Mon, 14 Mar 2016) $
-;$LastChangedRevision: 20429 $
+;$LastChangedDate: 2016-03-15 11:09:28 -0700 (Tue, 15 Mar 2016) $
+;$LastChangedRevision: 20466 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_login_lasp.pro $
 ;-
 
-function mms_login_lasp, login_info = login_info, save_login_info = save_login_info, username = username
+function mms_login_lasp, login_info = login_info, save_login_info = save_login_info, $
+    username = username, widget_note = widget_note
     common mms_sitl_connection, netUrl, connection_time, login_source
     username = ''
+    if undefined(widget_note) then widget_note = 'Note: blank username/password for public access'
   ;  if obj_valid(netUrl) then return, 1
     
     ; halt and warn the user if they're using IDL before 7.1 due to SSL/TLS issue
@@ -58,7 +64,7 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
         ;    any error caught here is likely to be a lack of X server
         catch, err
         if err eq 0 then begin
-            login_info_widget = spd_ui_login_widget(title='MMS SDC Login')
+            login_info_widget = spd_ui_login_widget(title='MMS SDC Login', note=widget_note)
         endif
         catch, /cancel
         
@@ -90,7 +96,9 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
         endwhile
     endif else begin
         net_object = netUrl
-        if username eq '' then username = 'temp' 
+        ; already have the IDLnetURL object, need to get the username
+        net_object->getProperty, url_username=username
+        if undefined(username) || username eq '' then username = 'public' 
     endelse
 
     if obj_valid(net_object) then begin
