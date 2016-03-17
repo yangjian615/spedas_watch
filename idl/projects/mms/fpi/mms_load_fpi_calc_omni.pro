@@ -10,8 +10,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-23 21:06:03 -0800 (Tue, 23 Feb 2016) $
-;$LastChangedRevision: 20130 $
+;$LastChangedDate: 2016-03-16 09:33:25 -0700 (Wed, 16 Mar 2016) $
+;$LastChangedRevision: 20473 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_calc_omni.pro $
 ;-
 pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatype = datatype, $
@@ -70,7 +70,12 @@ pro mms_load_fpi_calc_omni, probe, autoscale = autoscale, level = level, datatyp
         ; set the metadata for omnidirectional spectra
         if level eq 'ql' then options, obsstr+'EnergySpectr_omni_sum'+suffix, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Csum'
         options, omni_avg_name, ytitle='MMS'+STRING(probe,FORMAT='(I1)')+'!C'+species_str+'!Cavg'
-        options, omni_avg_name, ztitle='eV/(cm!U2!N s sr eV)'
+        
+        if level eq 'ql' || level eq 'sitl' then begin
+            options, omni_avg_name, ztitle='Counts'
+        endif else begin
+            options, omni_avg_name, ztitle='eV/(cm!U2!N s sr eV)'
+        endelse
         
         ylim, omni_avg_name, min(pX.V), max(pX.V), 1
         if autoscale then zlim, omni_avg_name, 0, 0, 1 else $

@@ -1,6 +1,6 @@
 ;+
 ;
-;PROCEDURE:       MVN_QL_PFP_TPLOT
+;PROCEDURE:       MVN_QL_PFP_TPLOT2
 ;
 ;PURPOSE:         Creates quicklook summary tplot(s) of MAVEN PF packages. 
 ;
@@ -61,12 +61,13 @@
 ;                 no tplot variables.
 ;
 ;CREATED BY:      Takuya Hara on 2015-04-09.
-;
+;                 Temp version, with 2 in name, will load LPW data
+;                 from L0 file, jmm, jimm@ssl.berkeley.edu
 ;LAST MODIFICATION:
 ; $LastChangedBy: jimm $
 ; $LastChangedDate: 2016-03-16 12:39:31 -0700 (Wed, 16 Mar 2016) $
 ; $LastChangedRevision: 20478 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot2.pro $
 ;
 ;-
 
@@ -142,10 +143,10 @@ FUNCTION mvn_ql_pfp_tplot_ytickname_minus_log, axis, index, number
 END
 
 ; Main Routine
-PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
-                      pad=pad, tplot=tplot, window=window, tname=ptname, phobos=phobos, $
-                      bcrust=bcrust, burst_bar=bbar, bvec=bvec, sundir=sundir, tohban=tohban, tobhan=tobhan, $
-                      swia=swi, swea=swe, static=sta, sep=sep, mag=mag, lpw=lpw, euv=euv, spaceweather=spw
+PRO mvn_ql_pfp_tplot2, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
+                       pad=pad, tplot=tplot, window=window, tname=ptname, phobos=phobos, $
+                       bcrust=bcrust, burst_bar=bbar, bvec=bvec, sundir=sundir, tohban=tohban, tobhan=tobhan, $
+                       swia=swi, swea=swe, static=sta, sep=sep, mag=mag, lpw=lpw, euv=euv, spaceweather=spw
 
   oneday = 24.d0 * 3600.d0
   nan = !values.f_nan
@@ -427,24 +428,45 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
   ; LPW
   IF (lflg) THEN BEGIN
      lpath = 'maven/data/sci/lpw/l2/'
-     lname = 'YYYY/MM/mvn_lpw_l2_wspecpas_YYYYMMDD_*.cdf'
+     lname = 'YYYY/MM/mvn_lpw_l2_lpiv_YYYYMMDD_*.cdf'
      lfile = mvn_pfp_file_retrieve(lpath + lname, trange=trange, /daily, /valid_only, /last)
-
      IF lfile[0] NE '' THEN BEGIN
         mvn_lpw_cdf_cdf2tplot, file=lfile, varformat='data'
-        get_data, 'mvn_lpw_w_spec_pas_l2', data=d, dl=dl, lim=lim
+        get_data, 'mvn_lpw_lp_iv_l2', data=d, dl=dl, lim=lim
         extract_tags, nlim, lim, tags=['yrange', 'ylog', 'zlog', 'spec', 'no_interp', 'ystyle']
-        store_data, 'mvn_lpw_w_spec_pas_l2', data=d, dl=dl, lim=nlim
-        zlim, 'mvn_lpw_w_spec_pas_l2', 1.e-15, 1.e-8, /def
-        options, 'mvn_lpw_w_spec_pas_l2', ylog=1
+        nz = where(d.y ne 0, nnz) ;here, guard against no non-zero data
+        If(nnz gt 0) Then Begin
+           mndy = min(d.y[nz])
+           gz = where(d.y Gt 0, ngz)
+           lz = where(d.y lt 0, nlz)
+           zz = where(d.y Eq 0, nzz)
+           If(ngz gt 0) Then d.y[gz] = alog10(d.y[gz]*100) ;scale positive values
+           If(nlz gt 0) Then d.y[lz] = alog10(abs(d.y[lz]))
+           If(nzz gt 0) Then d.y[zz] = alog10(mndy)
+        Endif
+        store_data, 'mvn_lpw_iv', data=d, dl=dl, lim=nlim
         undefine, d, dl, lim, nlim
+        options, 'mvn_lpw_iv', ytitle='LPW (IV)', ysubtitle='[V]', ztitle='Arbitrary.Log', $
+              xsubtitle='', zsubtitle='', no_color_scale=1
      ENDIF ELSE BEGIN
-        store_data, 'mvn_lpw_w_spec_pas_l2', data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [1., 2.d6]}, $
-                    dlim={yrange: [1, 2.d6], ystyle: 1, ylog: 1, zrange: [1.e-14, 1.e-5], zstyle: 1, zlog: 1, spec: 1}  
-        options, 'mvn_lpw_w_spec_pas_l2', bottom=7, top=254
+;Try L0
+        date_str = time_string(mean(time_double(trange)), precision = -3)
+        mvn_lpw_load, date_str, tplot_var='all', packet='nohsbm', $
+                      /notatlasp, /noserver
+        get_data, 'mvn_lpw_swp1_IV_log', data=d, dl=dl, lim=lim
+        If(is_struct(d)) Then Begin
+           extract_tags, nlim, lim, tags=['yrange', 'ylog', 'zlog', 'spec', 'no_interp', 'ystyle']
+           del_data, 'mvn_lpw_*'
+           store_data, 'mvn_lpw_iv', data=d, dl=dl, lim=nlim
+           undefine, d, dl, lim, nlim
+           options, 'mvn_lpw_iv', ytitle='LPW-L0 (IV)', ysubtitle='[V]', ztitle='Current', $
+              xsubtitle='', zsubtitle='', no_color_scale=1
+        Endif Else Begin ;no data -- blank plot
+           store_data, 'mvn_lpw_iv', data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [1., 2.d6]}, $
+                       dlim={yrange: [1, 2.d6], ystyle: 1, ylog: 1, zrange: [1.e-14, 1.e-5], zstyle: 1, zlog: 1, spec: 1}  
+           options, 'mvn_lpw_iv', bottom=7, top=254
+        Endelse
      ENDELSE 
-     options, 'mvn_lpw_w_spec_pas_l2', ytitle='LPW (pas)', ysubtitle='f [Hz]', ztitle='Pwr', $
-              xsubtitle='', zsubtitle=''
      undefine, lpath, lname, lfile
   ENDIF 
 

@@ -88,8 +88,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:39:34 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20376 $
+;$LastChangedDate: 2016-03-16 12:02:58 -0700 (Wed, 16 Mar 2016) $
+;$LastChangedRevision: 20476 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -109,9 +109,8 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
 ;      dprint, dlevel = 0, 'Error loading MMS attitude data - no time range given.'
 ;      return
 ;    endif
-    ; define cutoff date for retrieving attitude files from mec
-    mec_cutoff_date = time_double('2015-09-24')
     mec_flag= 0
+    public = 0
       
     ; set up system variable for MMS if not already set    
     defsysv, '!mms', exists=exists
@@ -128,9 +127,13 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     if no_download eq 0 then begin
         status = mms_login_lasp(login_info = login_info, username=username)
         if status ne 1 then no_download = 1
-        if username eq '' then public=1
+        if username eq '' || username eq 'public' then public=1
     endif
     
+    ; define cutoff date for retrieving attitude files from mec
+    mec_cutoff_date = systime(/seconds)-60.*60.*24.*4.
+    
+
     ; initialize undefined values
     if undefined(trange_in) then trange = timerange() else trange = timerange(trange_in)
     if undefined(probes) then probes = p_names else probes = strcompress(string(probes), /rem)
@@ -187,11 +190,8 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     att_idx = where(strpos(datatypes, 'spin') GE 0, natt)
     def_idx = where(strpos(level, 'def') GE 0, nlev)
 
-;    if natt GT 0 && trange[0] GE mec_cutoff_date && nlev GT 0 then begin
-;       mec_flag = 1
-;       eph_idx = where(strpos(datatypes, 'spin') EQ -1, neph)
-;    endif
-     if trange[0] GE mec_cutoff_date then begin
+     ; cutoff date is now defined to be 
+     if trange[1] le mec_cutoff_date then begin
        mec_flag = 1
        eph_idx = where(strpos(datatypes, 'spin') EQ -1, neph)
      endif
@@ -202,15 +202,6 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
        for j = 0, n_elements(level)-1 do begin
             if mec_flag EQ 1 then begin
                  mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files, varformat=mec_varformat 
-                 ; check that data was loaded if not try def
-                 if undefined(cdf_files) OR neph GT 0 then begin
-                    if undefined(cdf_files) then dt = datatypes else dt = datatypes[eph_idx]
-                    mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
-                      login_info = login_info, datatypes = dt, level = level[j], $
-                      local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
-                      no_download=no_download, pred_or_def=pred_or_def, suffix = suffix, $
-                      public=public
-                 endif
             endif else begin
                  mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $

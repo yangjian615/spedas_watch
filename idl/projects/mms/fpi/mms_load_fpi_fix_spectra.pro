@@ -11,8 +11,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-23 21:08:28 -0800 (Tue, 23 Feb 2016) $
-;$LastChangedRevision: 20131 $
+;$LastChangedDate: 2016-03-16 09:33:25 -0700 (Wed, 16 Mar 2016) $
+;$LastChangedRevision: 20473 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_spectra.pro $
 ;-
 pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rate = data_rate, $
@@ -50,7 +50,11 @@ pro mms_load_fpi_fix_spectra, tplotnames, probe = probe, level = level, data_rat
               get_data, tplotnames[var_idx], data=fpi_d, dlimits=dl
               if is_struct(fpi_d) then begin
                 ; set some metadata before saving
-                options, tplotnames[var_idx], ztitle='eV/(cm!U2!N s sr eV)'
+                if level eq 'sitl' || level eq 'ql' then begin
+                    options, tplotnames[var_idx], ztitle='Counts'
+                endif else begin
+                    options, tplotnames[var_idx], ztitle='eV/(cm!U2!N s sr eV)'
+                endelse
     
                 ; get the direction from the variable name
                 spec_pieces = strsplit(tplotnames[var_idx], '_', /extract)

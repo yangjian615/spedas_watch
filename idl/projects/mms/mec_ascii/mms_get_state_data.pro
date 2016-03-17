@@ -13,8 +13,8 @@
 ;   predeph - predicted ephemeris data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:39:34 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20376 $
+;$LastChangedDate: 2016-03-16 12:02:08 -0700 (Wed, 16 Mar 2016) $
+;$LastChangedRevision: 20475 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_get_state_data.pro $
 ;-
 pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames, $
@@ -115,7 +115,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
 
             ; if no remote list was found then search locally
         endif else begin
-            local_files = mms_get_local_state_files(probe='mms'+probe, level= level, filetype=filetype[i], trange=[start_time, end_time], public=public)
+            local_files = mms_get_local_state_files(probe='mms'+probe, level= level, filetype=filetype[i], trange=[start_time, end_time])
             if is_string(local_files) then begin
                 append_array, daily_names, local_files
             endif else begin

@@ -65,8 +65,8 @@
 ;     for more information
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
-;$LastChangedRevision: 20468 $
+;$LastChangedDate: 2016-03-16 15:13:03 -0700 (Wed, 16 Mar 2016) $
+;$LastChangedRevision: 20480 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -97,6 +97,10 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         dprint, dlevel = 0, 'Error, can only center measurements for L2 FPI data.'
         return
     endif
+    if ~undefined(center_measurement) && ~undefined(varformat) && varformat ne '*' then begin
+        dprint, dlevel = 0, 'Error, cannot specify both the varformat keyword and center measurement keyword in the same call (measurements won''t be centered).'
+        return
+   endif
     
     ; different datatypes for burst mode files
     if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
