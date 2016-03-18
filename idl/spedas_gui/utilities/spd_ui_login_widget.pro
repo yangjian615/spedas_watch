@@ -22,8 +22,8 @@
 ;           adding a note to the bottom of the widget
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-15 09:23:07 -0700 (Tue, 15 Mar 2016) $
-;$LastChangedRevision: 20458 $
+;$LastChangedDate: 2016-03-17 09:10:21 -0700 (Thu, 17 Mar 2016) $
+;$LastChangedRevision: 20483 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_ui_login_widget.pro $
 ;-
 
@@ -159,6 +159,7 @@ function spd_ui_login_widget, title=title, cancel=cancel, $
   info = {ptr:ptr, usernameID:usernameID, passwordID:passwordID, saveID:saveID, cancelID:cancelID, okID:okID}
   
   widget_control, base, set_uvalue=info, /no_copy
+  widget_control, base, default_button = okID
   XManager, 'login_widget', base
   
    

@@ -13,7 +13,9 @@ pro spp_swp_startup, spanai = spanai,$
      spanae = 1
      spanb  = 1
   endif
-     
+    
+  save=0
+ 
 
   ;;--------------------------------------------
   ;; Compile necessary programs
@@ -53,7 +55,7 @@ pro spp_swp_startup, spanai = spanai,$
         spp_apid_data,'3b9'x,routine='spp_swp_spani_event_decom',        tname='spp_spanai_events_',  tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3ba'x,routine='spp_swp_spani_tof_decom',          tname='spp_spanai_tof_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3bb'x,routine='spp_swp_spani_rates_64x_decom',    tname='spp_spanai_rates_',   tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-        spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_91x_decom', tname='spp_spanai_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+        spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_94x_decom', tname='spp_spanai_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3bf'x,routine='spp_generic_decom',                tname='spp_spanai_fhkp_',    tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      endif
 
@@ -192,7 +194,6 @@ pro spp_swp_startup, spanai = spanai,$
      
      ;if n_elements(save) eq 0 then save=0
      rt_flag = 1
-     save = 0
 
      ;;----------------------------------------------------------------------------------------------------------------------------------
      ;; Product Decommutators

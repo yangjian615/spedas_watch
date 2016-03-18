@@ -88,8 +88,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-16 12:02:58 -0700 (Wed, 16 Mar 2016) $
-;$LastChangedRevision: 20476 $
+;$LastChangedDate: 2016-03-17 10:07:55 -0700 (Thu, 17 Mar 2016) $
+;$LastChangedRevision: 20484 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -201,7 +201,8 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     for i = 0, n_elements(probes)-1 do begin      
        for j = 0, n_elements(level)-1 do begin
             if mec_flag EQ 1 then begin
-                 mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files, varformat=mec_varformat 
+                 mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files, varformat=mec_varformat
+                 copy_data, 'mms'+probes[i]+'_mec_r_eci', 'mms'+probes[i]+'_defeph_pos'
             endif else begin
                  mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $

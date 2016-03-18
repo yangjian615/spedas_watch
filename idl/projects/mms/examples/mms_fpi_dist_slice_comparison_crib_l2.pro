@@ -1,4 +1,4 @@
-
+; mms_fpi_dist_slice_comparison_crib_l2.pro
 pro mms_draw_circle,x0,y0,r=r,fill=fill,_extra=extra
   if n_elements(r) eq 0. then r = 1.
   if n_elements(x0) eq 0. then x0 = 0.
@@ -8,9 +8,23 @@ pro mms_draw_circle,x0,y0,r=r,fill=fill,_extra=extra
   oplot, x0 + r*cos(a), y0 + r*sin(a),_extra=extra
   if keyword_set(fill)then polyfill,  x0 + r*cos(a), y0 + r*sin(a),_extra=extra
 end
+
+; MAIN mms_fpi_dist_slice_comparison_crib_l2.pro
+
 start_time = systime(/sec)
 ;setup
 ;---------------------------------------------
+read, 'for FPI data rate input 0 for brst, 1 for fast:', irate ;SAB
+if irate eq 0 then begin ;SAB
+	data_rate = 'brst'
+	fgm_data_rate = 'brst'
+endif else BEGIN ;SAB
+	data_rate = 'fast'
+	fgm_data_rate = 'srvy'
+	trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:5.00'] ;if trange lies within time interval FPI fast, no dist will be returned
+endelse ;SAB
+help, data_rate, fgm_data_rate
+
 probe='1'
 read,'input probe #:',probe
 if probe lt 1 or probe gt 4 then probe=1
@@ -28,10 +42,9 @@ if resolution eq 0 and geometric eq 0 then resolution=150
 folder = 'slice_test/'
 
 ;trange = ['2015-09-1/12:20:09', '2015-09-1/12:20:09.05'] 
-trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:00.05']
+
 coord_sys = 'dbcs'
-data_rate = 'brst'
-fgm_data_rate = 'brst'
+
 level = 'l2'
 
 ;load particle, field & support data
@@ -181,18 +194,17 @@ for i=0, n_elements(*dist)-1 do begin
     if j eq 1 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='BE', geometric=geometric, mag_data=bname, vel_data=vname, resolution=resolution) ;geometric interpolation
     if j eq 2 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='perp', geometric=geometric, mag_data=bname, vel_data=vname, resolution=resolution) ;geometric interpolation
     if j eq 3 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='xvel', geometric=geometric, mag_data=bname, vel_data=vname, resolution=resolution) ;geometric interpolation
+
     spd_slice2d_plot1, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
-      /custom, title='',charsize=1.15, pos = [ x0[ipos], y0[ipos], x1[ipos], y1[ipos] ],$
-      noerase = ipos gt 0, nocolorbar = nocolorbar
+      /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
+      noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
     xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_PSD'
     mms_draw_circle,0.,0.,r=vmin,/fill  ;SAB, mask out interpolation below 10 eV
   endfor
-  plot,[0,1],[0,1],/nodata,/noerase,pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],xstyle=5,ystyle=5; plot,[0,1],[0,1],/nodata,/noerase,pos = [min(x0),min(y0[0]),max(x1),max(y1)],xstyle=5,ystyle=5
-
 
   plot,[0,1],[0,1],/nodata,/noerase,pos = [min(x0),min(y0[0]),max(x1),max(y1)],xstyle=5,ystyle=5    
   plot,[0,1],[0,1],/nodata,/noerase,pos = [0., 0.,1.,1.],xstyle=5,ystyle=5
-  xyouts,/norm,0.02,0.01,'created by mms_slice_comparison_crib_l2.pro'
+  xyouts,/norm,0.02,0.01,'created by mms_slice_comparison_crib_l2.pro data_rate='+data_rate
 
   ;place title
   xyouts, x0[0],y1[0]+0.025, align=0.0, charsize=1.5, /normal, $
@@ -238,7 +250,7 @@ for i=0, n_elements(*dist)-1 do begin
     strcompress(string(vel_z.Y[closest_idx_z]),/rem) + ' [km/s]'
 
   ;write png
-  makepng, folder+'mms'+probe+'_'+species+'_'+rotation+'_'+ $
+  makepng, folder+'mms'+probe+'_'+species+'_'+data_rate+'_'+rotation+'_'+ $
            time_string(time, tformat='YYYYMMDD_hhmmss.fff'), $
            /mkdir
 
