@@ -17,16 +17,22 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedDate: 2016-02-26 18:33:58 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20235 $
+;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
+;$LastChangedRevision: 20511 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 
 pro mms_part_products, $
                      in_tvarname, $ ;the tplot variable name for the MMS being processed
-                     energy=energy,$ ;energy range
-                     trange=trange,$
-                     probe=probe,$ ;needed for some field aligned transforms
+                                    ;specify this or use probe, instr, rate, level, species
+
+                     probe=probe, $ ;can be specified if not in tplot variable name
+                                    ;needed for some FAC
+                     instrument=instrument, $ ;can be specified if not in tplot variable name 
+                     species=species, $ ;can be specified if not in tplot variable name
+
+                     energy=energy,$ ;two element energy range [min,max]
+                     trange=trange,$ ;two element time range [min,max]
                                           
                      phi=phi_in,$ ;angle limist 2-element array [min,max], in degrees, spacecraft spin plane
                      theta=theta,$ ;angle limits 2-element array [min,max], in degrees, normal to spacecraft spin plane
@@ -183,10 +189,10 @@ pro mms_part_products, $
   ;Get array of sample times and initialize indices for loop
   ;--------------------------------------------------------
   
-  times = mms_get_dist(in_tvarname, /times)
+  times = mms_get_dist(in_tvarname, /times, probe=probe, species=species, instrument=instrument)
 
   if size(times,/type) ne 5 then begin
-    dprint,dlevel=1, 'No ',in_tvarname,' data has been loaded.
+    dprint,dlevel=1, 'No ',in_tvarname,' data has been loaded.'
     return
   endif
 
@@ -245,7 +251,7 @@ pro mms_part_products, $
     ;Get the data structure for this samgple
     ;only FPI, atm
 
-    dist = mms_get_dist(in_tvarname,time_idx[i],/structure)
+    dist = mms_get_dist(in_tvarname, time_idx[i], /structure, probe=probe, species=species, instrument=instrument)
 
     ;Sanitize Data.
     ;#1 removes uneeded fields from struct to increase efficiency

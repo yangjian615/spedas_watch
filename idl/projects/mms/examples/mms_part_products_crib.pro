@@ -6,70 +6,158 @@
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate pitch angle and gyrophase distributions
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 15:54:03 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20298 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
+;$LastChangedRevision: 20511 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_part_products_crib.pro $
 ;
 ;-
 
-;===================================
-; FPI
-;===================================
+
+;==========================================================
+; FPI - L2
+;==========================================================
 
   ;clear data
   del_data,'*'
-  ;set time interval
+
+  ;setup
   probe='1'
   species='e'
   rate='brst'
   level = 'l2'
 
-  ;use short time range due to high data resolution
-  trange = ['2016-01-20/19:50:00', '2016-01-20/19:50:15']
-  timespan,trange
-  
-  level = 'def'     ; 'pred'
+  ;use short time range for data due to high resolution
+  ;use longer time range for support data to ensure we have enough to work with
+  timespan, '2016-01-20/19:50:00', 15, /sec
+  trange = timerange()
+  support_trange = trange + [-60,60]
  
-  ;load state data.(needed for coordinate transforms and field aligned coordinates)
-  ; note on trange: loading a larger trange on state data for the transformations
-  mms_load_state, probes=probe, level=level, trange=['2016-01-20/19:49:00', '2016-01-20/19:52:00']
-
   ;load particle data
-  mms_load_fpi, data_rate=rate, level='l2', datatype='d'+species+'s-dist', $
-    probe=probe, trange=trange
-    
+  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-dist'
+                
+  ;load state data (needed for coordinate transforms and field aligned coordinates)
+  mms_load_state, probes=probe, trange=support_trange, /ephemeris
+
   ;load magnetic field data
-  mms_load_fgm, probe=probe, trange=trange, level='l2', /no_attitude
+  mms_load_fgm, probe=probe, trange=support_trange, level=level, /no_attitude
  
-  ;Until coordinate systems are properly labeled in mms metadata, this variable must be dmpa
+  ;magnetic field vector
   bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
   
-  ;Not all mms position data have coordinate systems labeled in metadata, this one does
+  ;spacecraft position
+  ; -currently wrong, FAC spectrograms will be skipped
   pos_name = 'mms' + probe+ '_defeph_pos'
   
-  ; the following name is valid in the L1b files:
-  ;name =  'mms'+probe+'_d'+species+'s_'+rate+'SkyMap_dist'
-  ; and this one is valid for L2 data:
+  ;L2 particle data
   name = 'mms'+probe+'_d'+species+'s_dist_'+rate
  
-  mms_part_products, name, probe=probe, trange=trange, $
-                     mag_name=bname, pos_name=pos_name, $
+  ;generate products
+  mms_part_products, name, trange=trange, $
+                     mag_name=bname, pos_name=pos_name, $ ;required for field aligned spectra
                      outputs=['phi','theta','energy','moments','pa','gyro']
 
+  ;plot spectrograms
   tplot,name+'_'+['energy','theta','phi','pa','gyro']
   tlimit,trange
   
   stop
  
-  ; plot the moments
-  window, 1
-  tplot, name+'_'+['density', 'avgtemp'], window=1
+  ;plot moments
+  tplot, name+'_'+['density', 'avgtemp']
   
   stop
 
+
+
+;==========================================================
+; HPCA - L2
+;==========================================================
+
+  ;clear data
+  del_data,'*'
+
+  ;setup
+  probe = '1'
+  species = 'hplus'
+  data_rate = 'srvy'
+  level = 'l2'
+  
+  timespan, '2015-10-20/05:56:30', 5, /min
+  trange = timerange()
+  
+  ;load particle data
+  mms_load_hpca, probe=probe, trange=trange, data_rate=data_rate, level=level, datatype='ion'
+
+  ;load state data (needed for coordinate transforms and field aligned coordinates)
+  mms_load_state, probes=probe, trange=trange, /ephemeris
+
+  ;load magnetic field data (for field aligned coordinates)
+  mms_load_fgm, probe=probe, trange=trange, level=level, /no_attitude
+ 
+  ;magnetic field vector
+  bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
+  
+  ;spacecraft position
+  ; -currently wrong, FAC spectrograms will be skipped
+  pos_name = 'mms' + probe+ '_defeph_pos'
+  
+  ;L2 particle data
+  name =  'mms'+probe+'_hpca_'+species+'_phase_space_density'
+ 
+  ;generate products
+  mms_part_products, name, trange=trange,$
+                     mag_name=bname, pos_name=pos_name, $ ;required for field aligned spectra
+                     outputs=['energy','phi','theta','pa','gyro','moments']
+
+  tplot,name+'_'+['energy','theta','phi','pa','gyro']
+
+  stop
+
+  ; plot the moments
+  tplot, name+'_'+['density', 'avgtemp']
+  
+  stop
+
+
+
+;==========================================================
+; FPI - L1  (non-public data)
+;==========================================================
+
+  del_data,'*'
+
+  ;setup
+  probe='1'
+  species='i'
+  level ='l1b'
+  rate='brst'
+
+  timespan, '2015-10-20/05:56:30', 5, /min
+  trange = timerange()
+
+  ;load particle data
+  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-dist'
+   
+  ;convert particle data to 3D structures
+  name =  'mms'+probe+'_d'+species+'s_'+rate+'SkyMap_dist'
+
+  mms_part_products, name, mag_name=bname, pos_name=pos_name, trange=trange,$
+                    outputs=['energy','phi','theta','moments']
+
+  tplot, name+'_'+['energy','theta','phi']
+  tlimit, trange
+
+  stop
+
+  tplot, name+'_'+['density','avgtemp']
+
+  stop
+
+
+
 ;===================================
-; HPCA
+; HPCA - L1  (non-public data)
 ;===================================
 
   ;clear data
@@ -79,6 +167,7 @@
   probe='1'
   species='hplus'
   data_rate = 'brst'
+  level = 'l1b'
   ;data_rate = 'srvy'
 
   timespan, '2015-10-20/05:56:30', 5, /min  ;brst
@@ -86,38 +175,28 @@
   trange = timerange()
   
   ;load particle data
-  mms_load_hpca, data_rate=data_rate, level='l1b', datatype='vel_dist', $
+  mms_load_hpca, data_rate=data_rate, level=level, datatype='vel_dist', $
                  probe=probe, trange=trange
 
   ;load azimuth data
+  ;this requires a second step for l1 data
   mms_load_hpca, probe=probe, trange=trange, $
                  data_rate=data_rate, level='l1a', datatype='spinangles', $
                  varformat='*_angles_per_ev_degrees'
 
-  ;load state data (needed for coordinate transforms and field aligned coordinates)
-  mms_load_state, probes=probe, trange=trange
-
-  ;load magnetic field data (for field aligned coordinates)
-  mms_load_fgm, probe=probe, trange=trange, /no_att, level='l2'
- 
-  ;until coordinate systems are properly labeled in mms metadata, this variable must be dmpa
-  bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
-  
-  ;not all mms position data have coordinate systems labeled in metadata, this one does
-  pos_name = 'mms' + probe+ '_defeph_pos'
-  
   ;name of tplot variable containing the particle data
   name =  'mms'+probe+'_hpca_'+species+'_vel_dist_fn'
  
   mms_part_products, name, mag_name=bname, pos_name=pos_name, trange=trange,$
-                    outputs=['phi','theta','pa','gyro','energy', 'moments'],probe=probe
+                     outputs=['energy','phi','theta','moments']
 
-  tplot,name+'_'+['energy','theta','phi','pa','gyro']
+  tplot,name+'_'+['energy','theta','phi']
 
-  ; plot the moments
-  window, 1
-  tplot, name+'_'+['density', 'avgtemp'], window=1
+  stop
+
+  tplot, name+'_'+['density', 'avgtemp']
   
   stop
+
 
 end

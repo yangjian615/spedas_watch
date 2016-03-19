@@ -8,9 +8,9 @@
 ;
 ;  *** This is a work in progress ***
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-10 14:23:48 -0800 (Thu, 10 Mar 2016) $
-;$LastChangedRevision: 20395 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-03-18 18:06:04 -0700 (Fri, 18 Mar 2016) $
+;$LastChangedRevision: 20513 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_slice2d_hpca_crib.pro $
 ;-
 
@@ -55,7 +55,7 @@ tname = 'mms'+probe[0]+'_hpca_hplus_vel_dist_fn'
 ;reformat data from tplot variables into compatible 3D structures
 ;  -this will return a pointer to the structure array in order to save memory 
 ;---------------------------------------------
-dist = mms_get_hpca_dist(tname)
+dist = mms_get_dist(tname)
 
 
 ;generate and plot 2D slice
@@ -101,7 +101,7 @@ mms_load_hpca, probe=probe, trange=trange, $
                varformat='*_angles_per_ev_degrees'
 
 ;reformat data
-dist = mms_get_hpca_dist('mms'+probe[0]+'_hpca_hplus_vel_dist_fn')
+dist = mms_get_dist('mms'+probe[0]+'_hpca_hplus_vel_dist_fn')
 
 ;get center time for each full distribution
 times = ( (*dist).time + (*dist).end_time ) / 2.

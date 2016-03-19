@@ -8,7 +8,7 @@
 ;
 ;end
 
-function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+;function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   ;; From Tony's e-mail, the buffer should
   ;; be...

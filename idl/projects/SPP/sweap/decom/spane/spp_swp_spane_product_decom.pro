@@ -1,6 +1,6 @@
 ; $LastChangedBy: phyllisw $
-; $LastChangedDate: 2016-03-14 10:14:48 -0700 (Mon, 14 Mar 2016) $
-; $LastChangedRevision: 20432 $
+; $LastChangedDate: 2016-03-18 10:53:47 -0700 (Fri, 18 Mar 2016) $
+; $LastChangedRevision: 20493 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
 
 
@@ -67,7 +67,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 
   status_flag = header[18]
 
-  f_counter = swap_endian(ulong(header,16,1), /swap_if_little_endian)
+  f0 = swap_endian(ulong(header,16,1), /swap_if_little_endian)
 
   ;;--------------
   ;; Peaks
@@ -94,9 +94,8 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;     end
 
 
-
      ;;------------------------------------------
-     ;;Product Full Sweep: Archive - 08D - '360'x
+     ;;SPAN-eA Full Sweep: Archive - 16A - '360'x
      
      (apid_name eq '60') : begin
         str = { $
@@ -107,16 +106,12 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               peak_bin:    peak_bin, $
               log_flag:    log_flag, $
               status_flag: status_flag,$
-              f0:   f0,$
+              f0:           f0,$
               cnts:        float(cnts[*])};[remap])}
      end
-     
-     
-   
-
 
      ;;----------------------------------------------
-     ;;Product Full Sweep: Archive - 16Ax256S - '361'x
+     ;;SPAN-eA Full Sweep: Archive - 16Ax256S - '361'x
      (apid_name eq '61') : begin
         cnts = reform(cnts,16,256)
         str = { $
@@ -162,13 +157,10 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
               cnts_a14_total:  total(reform(cnts[14,*])), $
               cnts_a15_total:  total(reform(cnts[15,*])), $
               cnts_total:total(cnts)}
-;              printdat, varname = 'cnts_total', str.cnts_total
-;              printdat, varname= 'F0', str.f0
-;              printdat, varname = 'MET', ulong(ccsds.met)
      end
 
 ;     ;;----------------------------------------------
-;     ;;Product Full Sweep: Archive - 32Ex16A - '361'x
+;     ;;SPAN-eA Full Sweep: Archive - 32Ex16A - '361'x
 ;     (apid_name eq '61') : begin
 ;       cnts = reform(cnts,16,32)
 ;       str = { $
@@ -200,7 +192,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;     end
 
      ;;----------------------------------------------
-     ;;Product Targeted Sweep: Archive - 16A - '362'x
+     ;;SPAN-eA Targeted Sweep: Archive - 16A - '362'x
      (apid_name eq '62') : begin
         str = { $
               time:      ccsds.time, $
@@ -217,7 +209,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 
 
 ;     ;;--------------------------------------------------
-;     ;;Product Targeted Sweep: Archive - 32Ex16A - '363'x
+;     ;;SPAN-eA Targeted Sweep: Archive - 32Ex16A - '363'x
 ;     (apid_name eq '63') : begin
 ;       cnts = reform(cnts,16,32)
 ;       str = { $
@@ -249,7 +241,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 ;     end
 
      ;;--------------------------------------------------
-     ;;Product Targeted Sweep: Archive - 16Ax256S - '363'x
+     ;;SPAN-eA Targeted Sweep: Archive - 16Ax256S - '363'x
      (apid_name eq '63') : begin
         cnts = reform(cnts,16,256)
         str = { $
@@ -300,10 +292,8 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
      
      
      ;;-----------------------------------------
-     ;;Product Full Sweep: Survey - 16A - '364'x
+     ;;SPAN-eA Full Sweep: Survey - 16A - '364'x
      (apid_name eq '64') : begin
-     ;dprint, ccsds.data[12]
-     ;dprint, ccsds.smples_sumd
         str = { $
               time:        ccsds.time, $
               seq_cntr:    ccsds.seq_cntr,  $
@@ -320,7 +310,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
     
      
 ;     ;;---------------------------------------------
-;     ;;Product Full Sweep: Survey - 32Ex16A - '365'x
+;     ;;SPAN-eA Full Sweep: Survey - 32Ex16A - '365'x
 ;     (apid_name eq '65') : begin
 ;       cnts = reform(cnts,16,32)
 ;       str = { $
@@ -370,7 +360,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 
 
      ;;---------------------------------------------
-     ;;Product Full Sweep: Survey - 16Ax256S - '365'x
+     ;;SPAN-eA Full Sweep: Survey - 16Ax256S - '365'x
      (apid_name eq '65') : begin
        cnts = reform(cnts,16,256)
        str = { $
@@ -436,7 +426,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
      end
 
      ;;---------------------------------------------
-     ;;Product Targeted Sweep: Survey - 16A - '366'x
+     ;;SPAN-eA Targeted Sweep: Survey - 16A - '366'x
      (apid_name eq '66') : begin
        str = { $
          time:      ccsds.time, $
@@ -453,7 +443,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
      
 
      ;-------------------------------------------------
-     ;Product Targeted Sweep: Survey - 16Ax256S - '367'x
+     ;SPAN-eA Targeted Sweep: Survey - 16Ax256S - '367'x
           (apid_name eq '67') : begin
             cnts = reform(cnts,16,256)
             str = { $
@@ -520,8 +510,494 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
 
 
      ;;-------------------------------------------------
-     ;;Product Targeted Sweep: Survey - 32Ex16A - '367'x
+     ;;SPAN-eA Targeted Sweep: Survey - 32Ex16A - '367'x
 ;     (apid_name eq '67') : begin
+;       cnts = reform(cnts,16,32)
+;       str = { $
+;         time:ccsds.time, $
+;         seq_cntr:ccsds.seq_cntr,  $
+;         seq_group: ccsds.seq_group,  $
+;         ndat: n_elements(cnts), $
+;         peak_bin: peak_bin, $
+;         log_flag: log_flag, $
+;         status_flag: status_flag,$
+;         f0:        f0,$
+;         cnts_a00:  float(reform(cnts[ 0,*])), $
+;         cnts_a01:  float(reform(cnts[ 1,*])), $
+;         cnts_a02:  float(reform(cnts[ 2,*])), $
+;         cnts_a03:  float(reform(cnts[ 3,*])), $
+;         cnts_a04:  float(reform(cnts[ 4,*])), $
+;         cnts_a05:  float(reform(cnts[ 5,*])), $
+;         cnts_a06:  float(reform(cnts[ 6,*])), $
+;         cnts_a07:  float(reform(cnts[ 7,*])), $
+;         cnts_a08:  float(reform(cnts[ 8,*])), $
+;         cnts_a09:  float(reform(cnts[ 9,*])), $
+;         cnts_a10:  float(reform(cnts[10,*])), $
+;         cnts_a11:  float(reform(cnts[11,*])), $
+;         cnts_a12:  float(reform(cnts[12,*])), $
+;         cnts_a13:  float(reform(cnts[13,*])), $
+;         cnts_a14:  float(reform(cnts[14,*])), $
+;         cnts_a15:  float(reform(cnts[15,*])), $
+;         cnts:      float(cnts[*]),$
+;         rates_a00: float(reform(cnts[ 0,*])) / float(ccsds.smples_sumd), $
+;         rates_a01: float(reform(cnts[ 1,*])) / float(ccsds.smples_sumd), $
+;         rates_a02: float(reform(cnts[ 2,*])) / float(ccsds.smples_sumd), $
+;         rates_a03: float(reform(cnts[ 3,*])) / float(ccsds.smples_sumd), $
+;         rates_a04: float(reform(cnts[ 4,*])) / float(ccsds.smples_sumd), $
+;         rates_a05: float(reform(cnts[ 5,*])) / float(ccsds.smples_sumd), $
+;         rates_a06: float(reform(cnts[ 6,*])) / float(ccsds.smples_sumd), $
+;         rates_a07: float(reform(cnts[ 7,*])) / float(ccsds.smples_sumd), $
+;         rates_a08: float(reform(cnts[ 8,*])) / float(ccsds.smples_sumd), $
+;         rates_a09: float(reform(cnts[ 9,*])) / float(ccsds.smples_sumd), $
+;         rates_a10: float(reform(cnts[10,*])) / float(ccsds.smples_sumd), $
+;         rates_a11: float(reform(cnts[11,*])) / float(ccsds.smples_sumd), $
+;         rates_a12: float(reform(cnts[12,*])) / float(ccsds.smples_sumd), $
+;         rates_a13: float(reform(cnts[13,*])) / float(ccsds.smples_sumd), $
+;         rates_a14: float(reform(cnts[14,*])) / float(ccsds.smples_sumd), $
+;         rates_a15: float(reform(cnts[15,*])) / float(ccsds.smples_sumd), $
+;         rates:     float(cnts) / float(ccsds.smples_sumd)}
+;     end
+
+
+;;-------------------------------------;;
+;;----------BEGIN SPAN-eB--------------;;
+;;-------------------------------------;;
+
+
+  ;;-----------------------------------------
+  ;;SPAN-eB Full Sweep - 16A - '360'x
+  ;     (apid_name eq '70') and () : begin
+  ;        str = { $
+  ;              title:'[16A]',$
+  ;              time:ccsds.time, $
+  ;              seq_cntr:ccsds.seq_cntr,  $
+  ;              seq_group: ccsds.seq_group,  $
+  ;              ndat: n_elements(cnts), $
+  ;              peak_bin: peak_bin, $
+  ;              log_flag: log_flag, $
+  ;              status_flag: status_flag,$
+  ;              f0:          f0,$
+  ;              cnts: float(cnts)}
+  ;     end
+  
+  
+  ;;------------------------------------------
+  ;;SPAN-eB Full Sweep: Archive - 16A - '360'x
+  
+  (apid_name eq '70') : begin
+    str = { $
+      time:        ccsds.time, $
+      seq_cntr:    ccsds.seq_cntr,  $
+      seq_group:   ccsds.seq_group,  $
+      ndat:        n_elements(cnts), $
+      peak_bin:    peak_bin, $
+      log_flag:    log_flag, $
+      status_flag: status_flag,$
+      f0:           f0,$
+      cnts:        float(cnts[*])};[remap])}
+  end
+    
+    ;;----------------------------------------------
+    ;;SPAN-eB Full Sweep: Archive - 16Ax256S - '361'x
+    (apid_name eq '71') : begin
+      cnts = reform(cnts,16,256)
+      str = { $
+        time:      ccsds.time, $
+        seq_cntr:  ccsds.seq_cntr,  $
+        seq_group: ccsds.seq_group,  $
+        ndat:      n_elements(cnts), $
+        peak_bin:  peak_bin, $
+        log_flag:  log_flag, $
+        status_flag: status_flag,$
+        f0:        f0,$
+        cnts_a00:  float(reform(cnts[ 0,*])), $
+        cnts_a01:  float(reform(cnts[ 1,*])), $
+        cnts_a02:  float(reform(cnts[ 2,*])), $
+        cnts_a03:  float(reform(cnts[ 3,*])), $
+        cnts_a04:  float(reform(cnts[ 4,*])), $
+        cnts_a05:  float(reform(cnts[ 5,*])), $
+        cnts_a06:  float(reform(cnts[ 6,*])), $
+        cnts_a07:  float(reform(cnts[ 7,*])), $
+        cnts_a08:  float(reform(cnts[ 8,*])), $
+        cnts_a09:  float(reform(cnts[ 9,*])), $
+        cnts_a10:  float(reform(cnts[10,*])), $
+        cnts_a11:  float(reform(cnts[11,*])), $
+        cnts_a12:  float(reform(cnts[12,*])), $
+        cnts_a13:  float(reform(cnts[13,*])), $
+        cnts_a14:  float(reform(cnts[14,*])), $
+        cnts_a15:  float(reform(cnts[15,*])), $
+        cnts:      float(cnts[*]), $
+        cnts_a00_total:  total(reform(cnts[ 0,*])), $
+        cnts_a01_total:  total(reform(cnts[ 1,*])), $
+        cnts_a02_total:  total(reform(cnts[ 2,*])), $
+        cnts_a03_total:  total(reform(cnts[ 3,*])), $
+        cnts_a04_total:  total(reform(cnts[ 4,*])), $
+        cnts_a05_total:  total(reform(cnts[ 5,*])), $
+        cnts_a06_total:  total(reform(cnts[ 6,*])), $
+        cnts_a07_total:  total(reform(cnts[ 7,*])), $
+        cnts_a08_total:  total(reform(cnts[ 8,*])), $
+        cnts_a09_total:  total(reform(cnts[ 9,*])), $
+        cnts_a10_total:  total(reform(cnts[10,*])), $
+        cnts_a11_total:  total(reform(cnts[11,*])), $
+        cnts_a12_total:  total(reform(cnts[12,*])), $
+        cnts_a13_total:  total(reform(cnts[13,*])), $
+        cnts_a14_total:  total(reform(cnts[14,*])), $
+        cnts_a15_total:  total(reform(cnts[15,*])), $
+        cnts_total:total(cnts)}
+    end
+
+;     ;;----------------------------------------------
+;     ;;SPAN-eB Full Sweep: Archive - 32Ex16A - '361'x
+;     (apid_name eq '71') : begin
+;       cnts = reform(cnts,16,32)
+;       str = { $
+;         time:      ccsds.time, $
+;         seq_cntr:  ccsds.seq_cntr,  $
+;         seq_group: ccsds.seq_group,  $
+;         ndat:      n_elements(cnts), $
+;         peak_bin:  peak_bin, $
+;         log_flag:  log_flag, $
+;         status_flag: status_flag,$
+;         f0: f0,$
+;         cnts_a00:  float(reform(cnts[ 0,*])), $
+;         cnts_a01:  float(reform(cnts[ 1,*])), $
+;         cnts_a02:  float(reform(cnts[ 2,*])), $
+;         cnts_a03:  float(reform(cnts[ 3,*])), $
+;         cnts_a04:  float(reform(cnts[ 4,*])), $
+;         cnts_a05:  float(reform(cnts[ 5,*])), $
+;         cnts_a06:  float(reform(cnts[ 6,*])), $
+;         cnts_a07:  float(reform(cnts[ 7,*])), $
+;         cnts_a08:  float(reform(cnts[ 8,*])), $
+;         cnts_a09:  float(reform(cnts[ 9,*])), $
+;         cnts_a10:  float(reform(cnts[10,*])), $
+;         cnts_a11:  float(reform(cnts[11,*])), $
+;         cnts_a12:  float(reform(cnts[12,*])), $
+;         cnts_a13:  float(reform(cnts[13,*])), $
+;         cnts_a14:  float(reform(cnts[14,*])), $
+;         cnts_a15:  float(reform(cnts[15,*])), $
+;         cnts:      float(cnts[*])}
+;     end
+      
+      ;;----------------------------------------------
+      ;;SPAN-eB Targeted Sweep: Archive - 16A - '362'x
+      (apid_name eq '72') : begin
+        str = { $
+          time:      ccsds.time, $
+          seq_cntr:  ccsds.seq_cntr,  $
+          seq_group: ccsds.seq_group,  $
+          ndat:      n_elements(cnts), $
+          peak_bin:  peak_bin, $
+          log_flag:  log_flag, $
+          status_flag: status_flag,$
+          f0:        f0,$
+          cnts:      float(cnts[*])}
+      end
+
+
+
+;     ;;--------------------------------------------------
+;     ;;SPAN-eB Targeted Sweep: Archive - 32Ex16A - '363'x
+;     (apid_name eq '73') : begin
+;       cnts = reform(cnts,16,32)
+;       str = { $
+;         time:ccsds.time, $
+;         seq_cntr:ccsds.seq_cntr,  $
+;         seq_group: ccsds.seq_group,  $
+;         ndat: n_elements(cnts), $
+;         peak_bin: peak_bin, $
+;         log_flag: log_flag, $
+;         status_flag: status_flag,$
+;         f0:        f0,$
+;         cnts:      float(reform(cnts,32*16)), $
+;         cnts_a00:  float(reform(cnts[ 0,*])), $
+;         cnts_a01:  float(reform(cnts[ 1,*])), $
+;         cnts_a02:  float(reform(cnts[ 2,*])), $
+;         cnts_a03:  float(reform(cnts[ 3,*])), $
+;         cnts_a04:  float(reform(cnts[ 4,*])), $
+;         cnts_a05:  float(reform(cnts[ 5,*])), $
+;         cnts_a06:  float(reform(cnts[ 6,*])), $
+;         cnts_a07:  float(reform(cnts[ 7,*])), $
+;         cnts_a08:  float(reform(cnts[ 8,*])), $
+;         cnts_a09:  float(reform(cnts[ 9,*])), $
+;         cnts_a10:  float(reform(cnts[10,*])), $
+;         cnts_a11:  float(reform(cnts[11,*])), $
+;         cnts_a12:  float(reform(cnts[12,*])), $
+;         cnts_a13:  float(reform(cnts[13,*])), $
+;         cnts_a14:  float(reform(cnts[14,*])), $
+;         cnts_a15:  float(reform(cnts[15,*]))}
+;     end
+
+      ;;--------------------------------------------------
+      ;;SPAN-eB Targeted Sweep: Archive - 16Ax256S - '363'x
+      (apid_name eq '73') : begin
+        cnts = reform(cnts,16,256)
+        str = { $
+          time:ccsds.time, $
+          seq_cntr:ccsds.seq_cntr,  $
+          seq_group: ccsds.seq_group,  $
+          ndat: n_elements(cnts), $
+          peak_bin: peak_bin, $
+          log_flag: log_flag, $
+          status_flag: status_flag,$
+          f0:        f0,$
+          cnts:      float(cnts[*]), $
+          cnts_a00:  float(reform(cnts[ 0,*])), $
+          cnts_a01:  float(reform(cnts[ 1,*])), $
+          cnts_a02:  float(reform(cnts[ 2,*])), $
+          cnts_a03:  float(reform(cnts[ 3,*])), $
+          cnts_a04:  float(reform(cnts[ 4,*])), $
+          cnts_a05:  float(reform(cnts[ 5,*])), $
+          cnts_a06:  float(reform(cnts[ 6,*])), $
+          cnts_a07:  float(reform(cnts[ 7,*])), $
+          cnts_a08:  float(reform(cnts[ 8,*])), $
+          cnts_a09:  float(reform(cnts[ 9,*])), $
+          cnts_a10:  float(reform(cnts[10,*])), $
+          cnts_a11:  float(reform(cnts[11,*])), $
+          cnts_a12:  float(reform(cnts[12,*])), $
+          cnts_a13:  float(reform(cnts[13,*])), $
+          cnts_a14:  float(reform(cnts[14,*])), $
+          cnts_a15:  float(reform(cnts[15,*])), $
+          cnts_a00_total:  total(reform(cnts[ 0,*])), $
+          cnts_a01_total:  total(reform(cnts[ 1,*])), $
+          cnts_a02_total:  total(reform(cnts[ 2,*])), $
+          cnts_a03_total:  total(reform(cnts[ 3,*])), $
+          cnts_a04_total:  total(reform(cnts[ 4,*])), $
+          cnts_a05_total:  total(reform(cnts[ 5,*])), $
+          cnts_a06_total:  total(reform(cnts[ 6,*])), $
+          cnts_a07_total:  total(reform(cnts[ 7,*])), $
+          cnts_a08_total:  total(reform(cnts[ 8,*])), $
+          cnts_a09_total:  total(reform(cnts[ 9,*])), $
+          cnts_a10_total:  total(reform(cnts[10,*])), $
+          cnts_a11_total:  total(reform(cnts[11,*])), $
+          cnts_a12_total:  total(reform(cnts[12,*])), $
+          cnts_a13_total:  total(reform(cnts[13,*])), $
+          cnts_a14_total:  total(reform(cnts[14,*])), $
+          cnts_a15_total:  total(reform(cnts[15,*])), $
+          cnts_total:      total(cnts)}
+      end
+
+
+      ;;-----------------------------------------
+      ;;SPAN-eB Full Sweep: Survey - 16A - '364'x
+      (apid_name eq '74') : begin
+        str = { $
+          time:        ccsds.time, $
+          seq_cntr:    ccsds.seq_cntr,  $
+          seq_group:   ccsds.seq_group,  $
+          ndat:        n_elements(cnts), $
+          peak_bin:    peak_bin, $
+          log_flag:    log_flag, $
+          status_flag: status_flag,$
+          f0:          f0,$
+          cnts:        float(cnts[*]),$
+          rates:       float(cnts[*]) / float(ccsds.smples_sumd)}
+      end
+
+
+
+;     ;;---------------------------------------------
+;     ;;SPAN-eB Full Sweep: Survey - 32Ex16A - '365'x
+;     (apid_name eq '75') : begin
+;       cnts = reform(cnts,16,32)
+;       str = { $
+;              time:      ccsds.time, $
+;              seq_cntr:  ccsds.seq_cntr,  $
+;              seq_group: ccsds.seq_group,  $
+;              ndat:      n_elements(cnts), $
+;              peak_bin:  peak_bin, $
+;              log_flag:  log_flag, $
+;              status_flag: status_flag,$
+;              f0:        f0,$
+;              cnts_a00:  float(reform(cnts[ 0,*])), $
+;              cnts_a01:  float(reform(cnts[ 1,*])), $
+;              cnts_a02:  float(reform(cnts[ 2,*])), $
+;              cnts_a03:  float(reform(cnts[ 3,*])), $
+;              cnts_a04:  float(reform(cnts[ 4,*])), $
+;              cnts_a05:  float(reform(cnts[ 5,*])), $
+;              cnts_a06:  float(reform(cnts[ 6,*])), $
+;              cnts_a07:  float(reform(cnts[ 7,*])), $
+;              cnts_a08:  float(reform(cnts[ 8,*])), $
+;              cnts_a09:  float(reform(cnts[ 9,*])), $
+;              cnts_a10:  float(reform(cnts[10,*])), $
+;              cnts_a11:  float(reform(cnts[11,*])), $
+;              cnts_a12:  float(reform(cnts[12,*])), $
+;              cnts_a13:  float(reform(cnts[13,*])), $
+;              cnts_a14:  float(reform(cnts[14,*])), $
+;              cnts_a15:  float(reform(cnts[15,*])), $
+;              cnts:      float(reform(cnts,16*32)), $
+;              rates_a00: float(reform(cnts[ 0,*])) / float(ccsds.smples_sumd), $
+;              rates_a01: float(reform(cnts[ 1,*])) / float(ccsds.smples_sumd), $
+;              rates_a02: float(reform(cnts[ 2,*])) / float(ccsds.smples_sumd), $
+;              rates_a03: float(reform(cnts[ 3,*])) / float(ccsds.smples_sumd), $
+;              rates_a04: float(reform(cnts[ 4,*])) / float(ccsds.smples_sumd), $
+;              rates_a05: float(reform(cnts[ 5,*])) / float(ccsds.smples_sumd), $
+;              rates_a06: float(reform(cnts[ 6,*])) / float(ccsds.smples_sumd), $
+;              rates_a07: float(reform(cnts[ 7,*])) / float(ccsds.smples_sumd), $
+;              rates_a08: float(reform(cnts[ 8,*])) / float(ccsds.smples_sumd), $
+;              rates_a09: float(reform(cnts[ 9,*])) / float(ccsds.smples_sumd), $
+;              rates_a10: float(reform(cnts[10,*])) / float(ccsds.smples_sumd), $
+;              rates_a11: float(reform(cnts[11,*])) / float(ccsds.smples_sumd), $
+;              rates_a12: float(reform(cnts[12,*])) / float(ccsds.smples_sumd), $
+;              rates_a13: float(reform(cnts[13,*])) / float(ccsds.smples_sumd), $
+;              rates_a14: float(reform(cnts[14,*])) / float(ccsds.smples_sumd), $
+;              rates_a15: float(reform(cnts[15,*])) / float(ccsds.smples_sumd), $
+;              rates:     float(cnts) / float(ccsds.smples_sumd)}
+;     end
+
+
+      ;;---------------------------------------------
+      ;;SPAN-eB Full Sweep: Survey - 16Ax256S - '365'x
+      (apid_name eq '75') : begin
+        cnts = reform(cnts,16,256)
+        str = { $
+          time:      ccsds.time, $
+          seq_cntr:  ccsds.seq_cntr,  $
+          seq_group: ccsds.seq_group,  $
+          ndat:      n_elements(cnts), $
+          peak_bin:  peak_bin, $
+          log_flag:  log_flag, $
+          status_flag: status_flag,$
+          f0:        f0,$
+          cnts_a00:  float(reform(cnts[ 0,*])), $
+          cnts_a01:  float(reform(cnts[ 1,*])), $
+          cnts_a02:  float(reform(cnts[ 2,*])), $
+          cnts_a03:  float(reform(cnts[ 3,*])), $
+          cnts_a04:  float(reform(cnts[ 4,*])), $
+          cnts_a05:  float(reform(cnts[ 5,*])), $
+          cnts_a06:  float(reform(cnts[ 6,*])), $
+          cnts_a07:  float(reform(cnts[ 7,*])), $
+          cnts_a08:  float(reform(cnts[ 8,*])), $
+          cnts_a09:  float(reform(cnts[ 9,*])), $
+          cnts_a10:  float(reform(cnts[10,*])), $
+          cnts_a11:  float(reform(cnts[11,*])), $
+          cnts_a12:  float(reform(cnts[12,*])), $
+          cnts_a13:  float(reform(cnts[13,*])), $
+          cnts_a14:  float(reform(cnts[14,*])), $
+          cnts_a15:  float(reform(cnts[15,*])), $
+          cnts:      float(cnts[*]), $
+          cnts_a00_total:  total(reform(cnts[ 0,*])), $
+          cnts_a01_total:  total(reform(cnts[ 1,*])), $
+          cnts_a02_total:  total(reform(cnts[ 2,*])), $
+          cnts_a03_total:  total(reform(cnts[ 3,*])), $
+          cnts_a04_total:  total(reform(cnts[ 4,*])), $
+          cnts_a05_total:  total(reform(cnts[ 5,*])), $
+          cnts_a06_total:  total(reform(cnts[ 6,*])), $
+          cnts_a07_total:  total(reform(cnts[ 7,*])), $
+          cnts_a08_total:  total(reform(cnts[ 8,*])), $
+          cnts_a09_total:  total(reform(cnts[ 9,*])), $
+          cnts_a10_total:  total(reform(cnts[10,*])), $
+          cnts_a11_total:  total(reform(cnts[11,*])), $
+          cnts_a12_total:  total(reform(cnts[12,*])), $
+          cnts_a13_total:  total(reform(cnts[13,*])), $
+          cnts_a14_total:  total(reform(cnts[14,*])), $
+          cnts_a15_total:  total(reform(cnts[15,*])), $
+          cnts_total:      total(cnts), $
+          rates_a00: float(reform(cnts[ 0,*])) / float(ccsds.smples_sumd), $
+          rates_a01: float(reform(cnts[ 1,*])) / float(ccsds.smples_sumd), $
+          rates_a02: float(reform(cnts[ 2,*])) / float(ccsds.smples_sumd), $
+          rates_a03: float(reform(cnts[ 3,*])) / float(ccsds.smples_sumd), $
+          rates_a04: float(reform(cnts[ 4,*])) / float(ccsds.smples_sumd), $
+          rates_a05: float(reform(cnts[ 5,*])) / float(ccsds.smples_sumd), $
+          rates_a06: float(reform(cnts[ 6,*])) / float(ccsds.smples_sumd), $
+          rates_a07: float(reform(cnts[ 7,*])) / float(ccsds.smples_sumd), $
+          rates_a08: float(reform(cnts[ 8,*])) / float(ccsds.smples_sumd), $
+          rates_a09: float(reform(cnts[ 9,*])) / float(ccsds.smples_sumd), $
+          rates_a10: float(reform(cnts[10,*])) / float(ccsds.smples_sumd), $
+          rates_a11: float(reform(cnts[11,*])) / float(ccsds.smples_sumd), $
+          rates_a12: float(reform(cnts[12,*])) / float(ccsds.smples_sumd), $
+          rates_a13: float(reform(cnts[13,*])) / float(ccsds.smples_sumd), $
+          rates_a14: float(reform(cnts[14,*])) / float(ccsds.smples_sumd), $
+          rates_a15: float(reform(cnts[15,*])) / float(ccsds.smples_sumd), $
+          rates:     float(cnts[*]) / float(ccsds.smples_sumd)}
+      end
+
+      ;;---------------------------------------------
+      ;;SPAN-eB Targeted Sweep: Survey - 16A - '366'x
+      (apid_name eq '76') : begin
+        str = { $
+          time:      ccsds.time, $
+          seq_cntr:  ccsds.seq_cntr,  $
+          seq_group: ccsds.seq_group,  $
+          ndat:      n_elements(cnts), $
+          peak_bin:  peak_bin, $
+          log_flag:  log_flag, $
+          status_flag: status_flag,$
+          f0:        f0,$
+          cnts:      float(cnts[*]),$
+          rates:     float(cnts[*]) / float(ccsds.smples_sumd)}
+      end
+
+
+      ;-------------------------------------------------
+      ;SPAN-eB Targeted Sweep: Survey - 16Ax256S - '367'x
+      (apid_name eq '77') : begin
+        cnts = reform(cnts,16,256)
+        str = { $
+          time:ccsds.time, $
+          seq_cntr:ccsds.seq_cntr,  $
+          seq_group: ccsds.seq_group,  $
+          ndat: n_elements(cnts), $
+          peak_bin: peak_bin, $
+          log_flag: log_flag, $
+          status_flag: status_flag,$
+          f0:        f0,$
+          cnts_a00:  float(reform(cnts[ 0,*])), $
+          cnts_a01:  float(reform(cnts[ 1,*])), $
+          cnts_a02:  float(reform(cnts[ 2,*])), $
+          cnts_a03:  float(reform(cnts[ 3,*])), $
+          cnts_a04:  float(reform(cnts[ 4,*])), $
+          cnts_a05:  float(reform(cnts[ 5,*])), $
+          cnts_a06:  float(reform(cnts[ 6,*])), $
+          cnts_a07:  float(reform(cnts[ 7,*])), $
+          cnts_a08:  float(reform(cnts[ 8,*])), $
+          cnts_a09:  float(reform(cnts[ 9,*])), $
+          cnts_a10:  float(reform(cnts[10,*])), $
+          cnts_a11:  float(reform(cnts[11,*])), $
+          cnts_a12:  float(reform(cnts[12,*])), $
+          cnts_a13:  float(reform(cnts[13,*])), $
+          cnts_a14:  float(reform(cnts[14,*])), $
+          cnts_a15:  float(reform(cnts[15,*])), $
+          cnts:      float(cnts[*]),$
+          cnts_a00_total:  total(reform(cnts[ 0,*])), $
+          cnts_a01_total:  total(reform(cnts[ 1,*])), $
+          cnts_a02_total:  total(reform(cnts[ 2,*])), $
+          cnts_a03_total:  total(reform(cnts[ 3,*])), $
+          cnts_a04_total:  total(reform(cnts[ 4,*])), $
+          cnts_a05_total:  total(reform(cnts[ 5,*])), $
+          cnts_a06_total:  total(reform(cnts[ 6,*])), $
+          cnts_a07_total:  total(reform(cnts[ 7,*])), $
+          cnts_a08_total:  total(reform(cnts[ 8,*])), $
+          cnts_a09_total:  total(reform(cnts[ 9,*])), $
+          cnts_a10_total:  total(reform(cnts[10,*])), $
+          cnts_a11_total:  total(reform(cnts[11,*])), $
+          cnts_a12_total:  total(reform(cnts[12,*])), $
+          cnts_a13_total:  total(reform(cnts[13,*])), $
+          cnts_a14_total:  total(reform(cnts[14,*])), $
+          cnts_a15_total:  total(reform(cnts[15,*])), $
+          cnts_total:      total(cnts), $
+          rates_a00: float(reform(cnts[ 0,*])) / float(ccsds.smples_sumd), $
+          rates_a01: float(reform(cnts[ 1,*])) / float(ccsds.smples_sumd), $
+          rates_a02: float(reform(cnts[ 2,*])) / float(ccsds.smples_sumd), $
+          rates_a03: float(reform(cnts[ 3,*])) / float(ccsds.smples_sumd), $
+          rates_a04: float(reform(cnts[ 4,*])) / float(ccsds.smples_sumd), $
+          rates_a05: float(reform(cnts[ 5,*])) / float(ccsds.smples_sumd), $
+          rates_a06: float(reform(cnts[ 6,*])) / float(ccsds.smples_sumd), $
+          rates_a07: float(reform(cnts[ 7,*])) / float(ccsds.smples_sumd), $
+          rates_a08: float(reform(cnts[ 8,*])) / float(ccsds.smples_sumd), $
+          rates_a09: float(reform(cnts[ 9,*])) / float(ccsds.smples_sumd), $
+          rates_a10: float(reform(cnts[10,*])) / float(ccsds.smples_sumd), $
+          rates_a11: float(reform(cnts[11,*])) / float(ccsds.smples_sumd), $
+          rates_a12: float(reform(cnts[12,*])) / float(ccsds.smples_sumd), $
+          rates_a13: float(reform(cnts[13,*])) / float(ccsds.smples_sumd), $
+          rates_a14: float(reform(cnts[14,*])) / float(ccsds.smples_sumd), $
+          rates_a15: float(reform(cnts[15,*])) / float(ccsds.smples_sumd), $
+          rates:     float(cnts[*]) / float(ccsds.smples_sumd)}
+      end
+
+
+;;-------------------------------------------------
+;;SPAN-eB Targeted Sweep: Survey - 32Ex16A - '367'x
+;     (apid_name eq '77') : begin
 ;       cnts = reform(cnts,16,32)
 ;       str = { $
 ;         time:ccsds.time, $

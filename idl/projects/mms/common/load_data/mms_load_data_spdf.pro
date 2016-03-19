@@ -4,6 +4,9 @@
 ;         
 ; PURPOSE:
 ;         Load MMS data from NASA/SPDF (backup to loading from SDC)
+;         
+;         This routine is not meant to be called directly - please use 
+;         mms_load_xxx with the /spdf keyword set. 
 ; 
 ; KEYWORDS:
 ; 
@@ -21,8 +24,8 @@
 ;       SPDF doesn't. 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-10 10:05:31 -0800 (Thu, 10 Mar 2016) $
-;$LastChangedRevision: 20384 $
+;$LastChangedDate: 2016-03-18 07:05:05 -0700 (Fri, 18 Mar 2016) $
+;$LastChangedRevision: 20492 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 

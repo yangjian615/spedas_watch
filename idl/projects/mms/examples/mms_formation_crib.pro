@@ -9,20 +9,27 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-23 20:01:21 -0800 (Tue, 23 Feb 2016) $
-; $LastChangedRevision: 20129 $
+; $LastChangedDate: 2016-03-18 13:48:43 -0700 (Fri, 18 Mar 2016) $
+; $LastChangedRevision: 20504 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_formation_crib.pro $
 ;-
 
-time = '2016-01-20/13:05'
+; https://lasp.colorado.edu/mms/sdc/public/data/sdc/mms_formation_plots/mms_formation_plot_20160108023624.png
+time = '2016-1-08/2:36'
 
-timespan, time, 1, /min
+; without XY-plane projections
+mms_mec_formation_plot, time
 
-; load the position data, only one data point
-mms_load_mec, probes=[1, 2, 3, 4], varformat='*_r_gsm', cdf_records=1
+stop
 
-tplot3d, 'mms1_mec_r_gsm', SYM_INDEX=3, SYM_THICK=10, SYM_COLOR=[255, 0, 0], sym_size=1
-tplot3d, 'mms2_mec_r_gsm', SYM_INDEX=3, SYM_THICK=10, SYM_COLOR=[0, 255, 0], /over, sym_size=1
-tplot3d, 'mms3_mec_r_gsm', SYM_INDEX=3, SYM_THICK=10, SYM_COLOR=[0, 0, 255], /over, sym_size=1
-tplot3d, 'mms4_mec_r_gsm', SYM_INDEX=3, SYM_THICK=10, SYM_COLOR=[255, 255, 0], /over, sym_size=1
+; with the projections
+mms_mec_formation_plot, time, /projection
+
+stop
+
+; with projections and the tetrahedron quality factor
+mms_mec_formation_plot, time, /projection, /quality
+
 end
+
+

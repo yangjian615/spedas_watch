@@ -32,6 +32,8 @@
 ;; 04/15/14 L. Andersson included L1
 ;04/18/14 L. Andersson major changes to meet the CDF requirement and allow time to come from spice, added verson number in dlimit, changed version number
 ;140718 clean up for check out L. Andersson
+; 2016-03-18, temp version that will not crash, and will allow pfpl2
+;             plot to work, jmm, jimm@ssl.berkeley.edu
 ;-
 
 pro mvn_lpw_pkt_swp, output,lpw_const,swpn,tplot_var=tplot_var,spice=spice
@@ -216,8 +218,14 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 ;-------------- derive  time/variable ----------------                          
                 data.x       = time                                                                                                                
                 for i=0L,nn_pktnum-1 do begin
-                  data.y[i]  = bias_arr[2048-output_swp_dyn_offset[i],swpn]    ; Volt 
-                  data.dy[i] = (bias_arr[(output_swp_dyn_offset[i]-1)>0,1]-bias_arr[(output_swp_dyn_offset[i]+1)<4095,1])*0.5  
+                  index_i = ((2048-output_swp_dyn_offset[i]) > 0) < 4095 ; jmm, 2016-03-18
+                  data.y[i] = bias_arr[index_i, swpn]
+;                  data.y[i]  =
+;                  bias_arr[2048-output_swp_dyn_offset[i],swpn]    ;
+;                  Volt 
+                  index_im1 = ((output_swp_dyn_offset[i]-1)>0) < 4095
+                  index_ip1 = ((output_swp_dyn_offset[i]+1)>0) < 4095
+                  data.dy[i] = (bias_arr[index_im1,1]-bias_arr[index_ip1,1])*0.5  
                                                                          ; the derived error is the dV/2 of the two next to each other bins              
                  endfor  
                 ;-------------------------------------------
@@ -540,12 +548,14 @@ IF (swpn EQ 1 AND output.p10 GT 0) OR $
                 ;-------------- derive  time/variable ----------------       
                 ;---------------- Use one value for all sweeps in one file, used multiple places below ---------
                   if tmp2[0] EQ 1 then begin              ;    PAS data exist to correct of voltage when i_zero was measured
-                  ;use LADFIT insted 
-                    x      = data2.x(1:*)-data2.x(0)           ; ignore first point in the file
-                    y      = data2.y(1:*,1)                    ;<---- this is i_zero corrected for potential.....
-                    result = LADFIT(x,y)     
-                    value  = x*result(1)+result(0)             
-                    I_ZERO = [value(0),value]                 ; this is alows a linear fit over a file, later we might do this as function of orbit...
+                  ;use LADFIT insted
+                     if(n_elements(data2.x) Gt 1) then begin ; jmm, 2016-03-18
+                        x      = data2.x(1:*)-data2.x(0) ; ignore first point in the file
+                        y      = data2.y(1:*,1)          ;<---- this is i_zero corrected for potential.....
+                        result = LADFIT(x,y)     
+                        value  = x*result(1)+result(0)             
+                        I_ZERO = [value(0),value] ; this is alows a linear fit over a file, later we might do this as function of orbit...
+                     endif else i_zero = fltarr(nn_pktnum)
 ;this needs to be verified if it works over the file or if we need to look over an orbit 
                   endif else begin                            ;    i_zero is the only information that exsits, one number for a full file          
 ;                      tmp2=sort(output_I_ZERO)

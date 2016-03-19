@@ -12,9 +12,9 @@
 ;  *** This is a work in progress ***
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 13:25:05 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20375 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-03-18 18:06:04 -0700 (Fri, 18 Mar 2016) $
+;$LastChangedRevision: 20513 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_slice2d_fpi_crib.pro $
 ;-
 
@@ -53,7 +53,7 @@ name =  'mms'+probe+'_d'+species+'s_dist_'+data_rate
 ;reformat data from tplot variable into compatible 3D structures
 ;  -this will return a pointer to the structure array in order to save memory 
 ;---------------------------------------------
-dist = mms_get_fpi_dist(name, trange=trange, probe=probe, species=species, data_rate=data_rate, level=level)
+dist = mms_get_dist(name, trange=trange)
 
 ;basic slice
 ;  -some plot annotations will need to be set manually for now
@@ -171,7 +171,7 @@ mms_load_fpi, data_rate='fast', level=level, datatype='d'+species+'s-dist', $
 
 ;reformat data
 name = 'mms'+probe+'_d'+species+'s_dist_fast'
-dist_fast = mms_get_fpi_dist(name, trange=trange, probe=probe, species=species, data_rate=data_rate, level=level)
+dist_fast = mms_get_dist(name, trange=trange)
 
 time = '2015-8-15/12:50' ;start time of slice
 

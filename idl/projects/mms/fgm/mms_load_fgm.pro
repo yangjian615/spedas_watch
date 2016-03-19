@@ -65,9 +65,8 @@
 ;     2) Ephemeris variables stored in the FGM CDFs have various issues 
 ;        that make them incompatible with SPEDAS, including:
 ;     
-;        a) L2 FGM burst mode CDFs are not produced to be monotonically 
-;        increasing across mutliple CDF files due to an issue in the
-;        FGM processing software. 
+;        a) Ephemeris variables in the FGM CDFs are not produced to be monotonically 
+;        increasing across mutliple CDF files 
 ;        
 ;        b) position "vectors" are stored in a single variable containing
 ;        the vector components + the magnitude; this leads to errors while
@@ -80,14 +79,15 @@
 ;               mms#_pos_gsm
 ;       
 ;        They're deleted on load for L2 and L2pre data by default. 
+;        
 ;        Please use the ephemeris data from the official source (LANL) 
 ;        using mms_load_mec instead
 ;        
 ;     
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
-;$LastChangedRevision: 20468 $
+;$LastChangedDate: 2016-03-18 06:56:48 -0700 (Fri, 18 Mar 2016) $
+;$LastChangedRevision: 20491 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -161,7 +161,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate
         endif 
         
-        ; delete the bad ephemeris variables
+        ; delete the non-monotonic ephemeris variables
         ; please use ephemeris data in the MEC data (mms_load_mec)
         if level eq 'l2' || level eq 'l2pre' then begin
             del_data, this_probe+'_fgm_r_gse_'+data_rate+'_'+level+suffix

@@ -217,7 +217,7 @@ pro spp_swp_startup, spanai = spanai,$
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Slow Housekeeping
      ;;----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'37e'x ,routine='spp_swp_spane_slow_hkp_v3d_decom',tname='spp_spanb_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'37e'x ,routine='spp_swp_spane_slow_hkp_v43x_decom',tname='spp_spanb_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; Fast Housekeeping
@@ -235,7 +235,7 @@ pro spp_swp_startup, spanai = spanai,$
   spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',       tfields='*',     save=save,rt_tags='*_?',   rt_flag=1
   spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='unwrap_',   tfields='UNWRAP',save=save,rt_tags='unwrap',rt_flag=1
   spp_apid_data,'7c0'x,routine='spp_log_msg_decom',     tname='log_',      tfields='MSG',   save=save,rt_tags='MSG',   rt_flag=1
-  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',   tname='spp_manip_',tfields='*',     save=save,rt_tags='MANIP', rt_flag=1
+  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='SWEAP SPAN-I Manip',rt_tags='M???POS',save=1,/rt_flag
 
 
   spp_apid_data,apdata=ap

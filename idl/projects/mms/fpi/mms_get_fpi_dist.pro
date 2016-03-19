@@ -24,20 +24,16 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-01 16:45:13 -0800 (Tue, 01 Mar 2016) $
-;$LastChangedRevision: 20280 $
+;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
+;$LastChangedRevision: 20511 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
 function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure, $
-    level = level, data_rate = data_rate, species = species, probe = probe
+                           species = species, probe = probe
 
-    compile_opt idl2
+    compile_opt idl2, hidden
 
-if undefined(level) then level = ''
-if undefined(data_rate) then data_rate = ''
-if undefined(species) then species = 'e'
-if undefined(probe) then probe = '1'
 
 name = (tnames(tname))[0]
 if name eq '' then begin
@@ -58,11 +54,27 @@ if size(*p.y,/n_dim) ne 4 then begin
   return, 0
 endif
 
+;get info from tplot variable name
+var_info = stregex(tname, 'mms([1-4])_d([ei])s_', /subexpr, /extract)
+
+;use info from the variable name if not explicitly set
+if var_info[0] ne '' then begin
+  if ~is_string(probe) then probe = var_info[1]
+  if ~is_string(species) then species = var_info[2]
+endif
+
+;double check that required info is defined
+if ~is_string(probe) || ~is_string(species) then begin
+  dprint, 'Cannot determine probe/species from variable name, please specify by kewword'
+  return, 0
+endif
+
 ;return times
 ;calling code could use get_data but this allows for consistency with other code
 if keyword_set(times) then begin
   return, *p.x
 endif
+
 
 ; Allow calling code to request a time range and/or specify index
 ; to specific sample.  This allows calling code to extract 
@@ -85,15 +97,6 @@ if undefined(index) then begin
 endif else begin
   n_times = n_elements(index)
 endelse
-
-
-;get info from tplot variable name
-var_regex = level eq 'l2' ? '(mms([1-4])_d([ei])s)_dist_'+data_rate : '(mms([1-4])_d([ei])s_)(.*)SkyMap_dist'
-var_info = stregex(name, var_regex, /subexpr, /extract)
-; the following is for backwards compatibility - grab the info from the variable name if level isn't set
-if level eq '' then probe = var_info[2]
-if level eq '' then species = var_info[3]
-if level eq '' then rate = var_info[4] else rate = data_rate
 
 
 ; Initialize angles, and support data

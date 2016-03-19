@@ -983,7 +983,7 @@ if 0 then  begin
   spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_64x',           tname='spp_spanai_rates_', tfields='*',save=save
   spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',               tname='spp_spanai_events_',tfields='*',save=save  
   ;; Livi added manipulator decom
-  ;;spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',                      tname='spp_manip_',        tfields='*',save=save
+  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',                      tname='spp_manip_',        tfields='*',save=1
 endif
 if 0 then begin
   spp_apid_data,'3be'x,routine='spp_swp_spanai_slow_hkp_decom_version_70x',tname='spp_spanai_hkp_',tfields='*',save=save

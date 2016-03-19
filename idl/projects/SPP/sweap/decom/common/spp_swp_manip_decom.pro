@@ -16,14 +16,14 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ;; NO, first 10 bytes are PTP header
   ;;
   b = ccsds.data
+  ;print, b
   
-;  dprint,'hello'
-  manip = { $
-          time:       ptp_header.ptp_time, $
+  ;dprint,spp_swp_word_decom(b, 17)
+
+  manip = {time:       ptp_header.ptp_time, $
           met:        ccsds.met,  $
           delay_time: ptp_header.ptp_time - ccsds.time, $
           seq_cntr:   ccsds.seq_cntr, $
-
           sync:       spp_swp_word_decom(b,10), $      ;; ,,, 16
           length:     spp_swp_word_decom(b,12), $      ;; ,,, 16
           mlinmove:   b[14],$                          ;; ,,,  8

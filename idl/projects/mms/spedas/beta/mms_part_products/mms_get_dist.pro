@@ -29,38 +29,32 @@
 ;
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-25 09:48:42 -0800 (Thu, 25 Feb 2016) $
-;$LastChangedRevision: 20175 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
+;$LastChangedRevision: 20511 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_get_dist.pro $
 ;-
 
-function mms_get_dist, tname, index, trange=trange, times=times, structure=structure
+function mms_get_dist, tname, index, trange=trange, times=times, structure=structure, $
+                       probe=probe, species=species, instrument=instrument
 
     compile_opt idl2, hidden
 
 
+if undefined(instrument) then begin
+  instrument = 'null'
+  if stregex(tname, '^mms[1-4]_hpca_', /bool) then instrument = 'hpca'
+  if stregex(tname, '^mms[1-4]_d[ei]s_', /bool) then instrument = 'fpi'
+endif
 
-if stregex(tname, 'mms[1-4]_.*_.{4}SkyMap_dist', /bool, /fold) then begin
-  
-  ;fpi-l1b
-  return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure)
 
-endif else if stregex(tname, 'mms[1-4]_.*_dist_.{4}', /bool, /fold) then begin
+case strlowcase(instrument) of
+  'hpca': return, mms_get_hpca_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species)
+  'fpi': return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species)
+  'null': dprint, dlevel=1, 'Cannot determine instrument from variable name; please specify with INSTRUMENT keyword'
+  else: dprint, dlevel=1, 'Unknown instrument: "'+instrument+'"'
+endcase
 
-    ;fpi-l2
-    return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure , level='l2', data_rate=strmid(tname,14,4), species=strmid(tname,6,1), probe=strmid(tname,3,1))
-
-endif else if stregex(tname, 'mms[1-4]_.*_vel_dist_fn', /bool, /fold) then begin
-
-  ;hpca
-  return, mms_get_hpca_dist(tname, index, trange=trange, times=times, structure=structure)
-
-endif else begin
-
-  dprint, dlevel=1, 'Instrument not recognized from intput name: '+tname
-  return, 0
-
-endelse
+return, 0
 
 end
