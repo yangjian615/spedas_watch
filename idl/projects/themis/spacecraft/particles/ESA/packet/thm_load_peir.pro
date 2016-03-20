@@ -113,16 +113,19 @@ pro thm_load_peir,file=file,sc=sc,themishome=themishome, $
 	mode_decode[5,3]=6			; 50A x 24E, snapshot, 1 spin
 	mode_decode[6,1]=7			;  6A x 32E, snapshot, 1 spin
 	mode_decode[7,2]=8			;  6A x 16E, snapshot, 1 spin
+  ;magnetospheric slow/fast modes, low E - added 2016-03-18
+  mode_decode[1,4]=9      ;  1A x 32E, snapshot, 1 spin
+  mode_decode[2,4]=10     ; 50A x 24E, snapshot, 1 spin
 
 ; define mode variables for different modes
-	nspins = [1,1,1,1,1,1,1,1,1]					; # of spins between measurements in mode
-	nenergy = [16,32,24,16,16,32,24,32,16]				; # of energies in mode
-	nangle = [1,1,50,1,72,1,50,6,6]					; # of angles in mode
+	nspins = [1,1,1,1,1,1,1,1,1,1,1]					; # of spins between measurements in mode
+	nenergy = [16,32,24,16,16,32,24,32,16,32,24]				; # of energies in mode
+	nangle = [1,1,50,1,72,1,50,6,6,1,50]					; # of angles in mode
 	dat_len = nenergy*nangle					; size data arrays
-	spin_decode  = [160,96,3,192,3,96,3,20,38]			; # measurements in packet
-	case_decode  = [0,1,5,0,4,1,5,3,2]				; datl[16,32,96,192,1152,1200]==>size[0,1,2,3,4,5]
-	angle_decode = [0,1,2,3,5,1,4,6,7]				; angle mode index
-	energy_decode = [0,1,2,3,3,4,5,1,3]				; energy mode index
+	spin_decode  = [160,96,3,192,3,96,3,20,38,96,3]			; # measurements in packet
+	case_decode  = [0,1,5,0,4,1,5,3,2,1,5]				; datl[16,32,96,192,1152,1200]==>size[0,1,2,3,4,5]
+	angle_decode = [0,1,2,3,5,1,4,6,7,1,2]				; angle mode index
+	energy_decode = [0,1,2,3,3,4,5,1,3,6,6]				; energy mode index
 	
 ; initialize arrays
 	ndays=n_elements(file)

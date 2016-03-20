@@ -119,17 +119,20 @@ pro thm_load_peef,file=file,sc=sc,themishome=themishome, $
   ; Revised magnetospheric mode JWL 2014-03-26
   mode_decode[1,5]=9      ;  88A x 32 E, snapshot, 128 spin
   mode_decode[2,5]=10     ;  88A x 32 E, snapshot, 1 spin
-  
+  ;magnetospheric slow/fast modes, low E - added 2016-03-18
+  mode_decode[1,6]=11     ;  88A x 32E, snapshot, 128 spin
+  mode_decode[2,6]=12     ;  88A x 32E, snapshot, 32 spin
+
 
 ; define mode variables for different modes
-	nspins = [3,128,32,128,32,1,128,32,1,128,1]  ; # of spins between measurements in mode
-	nenergy = [32,32,32,32,32,15,32,32,15,32,32]  ; # of energies in mode
-	nangle = [88,88,88,88,88,88,88,88,88,88,88]   ; # of angles in mode
+	nspins = [3,128,32,128,32,1,128,32,1,128,1,128,32]  ; # of spins between measurements in mode
+	nenergy = [32,32,32,32,32,15,32,32,15,32,32,32,32]  ; # of energies in mode
+	nangle = [88,88,88,88,88,88,88,88,88,88,88,88,88]   ; # of angles in mode
 	dat_len = nenergy*nangle             ; size data arrays
-	spin_decode  = [1,1,1,1,1,3,1,1,3,1,1]     ; # measurements in packet
-	case_decode  = [0,0,0,0,0,1,0,0,1,0,0]     ; datl[2816,2816,2816,2816,2816,1320]==>size[0,0,0,0,0,1]
-	angle_decode = [0,0,0,0,0,1,0,0,1,0,0]     ; angle mode index, last element should be 1, jmm, 2013-10-11
-	energy_decode = [0,1,1,2,2,3,4,4,5,6,6]    ; energy mode index
+	spin_decode  = [1,1,1,1,1,3,1,1,3,1,1,1,1]     ; # measurements in packet
+	case_decode  = [0,0,0,0,0,1,0,0,1,0,0,0,0]     ; datl[2816,2816,2816,2816,2816,1320]==>size[0,0,0,0,0,1]
+	angle_decode = [0,0,0,0,0,1,0,0,1,0,0,0,0]     ; angle mode index, last element should be 1, jmm, 2013-10-11
+	energy_decode = [0,1,1,2,2,3,4,4,5,6,6,7,7]    ; energy mode index
 	
 	
 ; initialize arrays

@@ -19,9 +19,9 @@ function thm_read_esa_sweep_reduced_mode,fm
 
 ; Ion Energy modes, 0-5
 
-i_energy=fltarr(32,6)
-i_denergy=fltarr(32,6)
-i_nenergy=intarr(6)
+i_energy=fltarr(32,7)
+i_denergy=fltarr(32,7)
+i_nenergy=intarr(7)
 i_cal=[1.539,1.501,1.497,1.501,1.519,1.5]
 
 ; Ion mode 0 - sweep mode 0, ~1/2 sweep, no linear, I&T mode
@@ -85,12 +85,19 @@ i_cal=[1.539,1.501,1.497,1.501,1.519,1.5]
 	i_denergy(20:23,5)=(tmp(2*indgen(4)+24)+tmp(2*indgen(4)+25))
 	i_nenergy(5)=24
 
+; Ion mode 6 - sweep mode 1, Full sweep, no linear, Msph mode, low E
+  dac=thm_esa_energy_steps(xstart=16000,xslope=38,cstart=124,cslope=4,number=128,retrace=2,dblsweep=0)  
+  i_energy(*,6)=i_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4.
+  i_denergy(1:30,6)=i_cal(fm-1)*(1.*dac(3,0:29)+dac(0,1:30)-dac(3,1:30)-dac(0,2:31))/2.
+  i_denergy(31,6)=i_cal(fm-1)*(1.*dac(3,30)+dac(0,31)-2.*dac(3,31))/2.
+  i_nenergy(6)=32
+
 
 ; Electron Energy modes
 
-e_energy=fltarr(32,5)
-e_denergy=fltarr(32,5)
-e_nenergy=intarr(5)
+e_energy=fltarr(32,6)
+e_denergy=fltarr(32,6)
+e_nenergy=intarr(6)
 
 e_cal=[1.939,1.905,1.907,1.905,1.927,1.9]
 
@@ -138,6 +145,14 @@ e_cal=[1.939,1.905,1.907,1.905,1.927,1.9]
 	e_denergy(31,4)=e_cal(fm-1)*(1.*dac(3,30)+dac(0,31)-2.*dac(3,31))/2.
 	e_nenergy(4)=32
 	
+; Electron mode 5 - Full sweep, no linear, Msph mode, low E
+  dac=thm_esa_energy_steps(xstart=16000,xslope=38,cstart=124,cslope=4,number=128,retrace=2,dblsweep=0)  
+  e_energy(*,5)=e_cal(fm-1)*(1.*dac(0,*)+dac(1,*)+dac(2,*)+dac(3,*))/4.
+  e_denergy(1:30,5)=e_cal(fm-1)*(1.*dac(3,0:29)+dac(0,1:30)-dac(3,1:30)-dac(0,2:31))/2.
+  e_denergy(31,5)=e_cal(fm-1)*(1.*dac(3,30)+dac(0,31)-2.*dac(3,31))/2.
+  e_nenergy(5)=32
+  
+
 mode={i_energy:i_energy,i_denergy:i_denergy,i_nenergy:i_nenergy,$
 	e_energy:e_energy,e_denergy:e_denergy,e_nenergy:e_nenergy}
 
