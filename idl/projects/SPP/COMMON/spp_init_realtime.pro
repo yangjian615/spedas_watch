@@ -1,16 +1,15 @@
+
+
 pro spp_init_realtime,filename=filename,base=base
 
-  common spp_crib_com2, recorder_base,exec_base
+  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
   exec,exec_base, exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*300'
   host = 'localhost'
   host = '128.32.98.101'
-  host = 'ABIAD-SW'
-  recorder,recorder_base,title='GSEOS PTP',$
-           port=2028,$
-           host=host,$
-           exec_proc='spp_ptp_stream_read',$
-           destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+  host = 'ABIAD-SW.ssl.berkeley.edu'
+  recorder,recorder_base1,title='GSEOS PTP ion', port=2028, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read',  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+  recorder,recorder_base2,title='GSEOS PTP elec',port=2128, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read',  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
   
   printdat,recorder_base,filename,exec_base,/value
   
@@ -36,6 +35,6 @@ pro spp_init_realtime,filename=filename,base=base
      spp_ptp_file_read,f1[-1]
      spp_apid_data,rt_flag=1
   endif
-  base = recorder_base
+;  base = recorder_base
 
 end

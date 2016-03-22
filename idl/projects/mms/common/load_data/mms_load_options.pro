@@ -272,6 +272,9 @@ s = { $
                      'ion-bottom', $
                      'ion-top' $
                    ], $
+              sitl: [ $
+                   'electron' $
+                   ], $
               l1b: [ $
                      'electron', $
                      'ion' $
@@ -540,8 +543,8 @@ end
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 20:13:31 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20381 $
+;$LastChangedDate: 2016-03-21 09:12:03 -0700 (Mon, 21 Mar 2016) $
+;$LastChangedRevision: 20530 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_options.pro $
 ;-
 pro mms_load_options, $

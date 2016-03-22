@@ -3,7 +3,7 @@ function spp_swp_spani_tof_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   ;; IMPLEMENT DECOMPRESSION
 
-  str = create_struct(ptp_header,ccsds)
+;  str = create_struct(ptp_header,ccsds)
                                 ;  dprint,format="('Generic routine
                                 ;  for
                                 ;  ',Z04)",ccsds.apid                                                                                            
@@ -12,6 +12,17 @@ function spp_swp_spani_tof_decom,ccsds,ptp_header=ptp_header,apdat=apdat
      hexprint,ccsds.data
   endif
 
-  return,str
+
+cnts = ccsds.data[24:*]  
+;printdat,ccsds
+;hexprint,cnts
+;print
+  
+  str2 = {time: ccsds.time, $
+;     seqcntr : ccsds.seq_cnt, $
+     tof: cnts  $ 
+  }
+  return,str2
 
 end
+

@@ -25,8 +25,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
-; $LastChangedRevision: 20296 $
+; $LastChangedDate: 2016-03-21 15:03:15 -0700 (Mon, 21 Mar 2016) $
+; $LastChangedRevision: 20543 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
@@ -38,7 +38,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   if undefined(data_units) then data_units = 'cps'
   if (data_units eq 'flux') then data_units = 'intensity'
   if (data_units eq 'cps') then data_units = 'count_rate'
-  units_label = data_units eq 'intensity' ? '#/(cm!U2!N-sr-s-keV)' : 'Counts/s'
+  units_label = data_units eq 'intensity' ? '1/(cm!U2!N-sr-s-keV)' : 'Counts/s'
 
   ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
   if datatype eq 'electron' then sensors = ['3', '4', '5', '11', '12'] else sensors = ['6', '7', '8']

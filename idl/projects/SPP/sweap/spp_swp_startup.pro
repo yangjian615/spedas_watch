@@ -24,6 +24,52 @@ pro spp_swp_startup, spanai = spanai,$
 
 
 
+
+  ;;############################################
+  ;; SETUP SWEM APIDs
+  ;;############################################
+  
+  ;;############################################
+  ;; SETUP SWEM APID
+  ;;############################################
+  ;  spp_apid_data,'340'x,routine='spp_swp_swem_decom',tname='spp_swem_hkp_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+  ;  spp_apid_data,'341'x,routine='spp_swp_swem_decom',tname='spp_swem_hkp_crit_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+  ;  spp_apid_data,'342'x,routine='spp_swp_swem_decom',tname='spp_swem_memdump_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+  ;  spp_apid_data,'343'x,routine='spp_swp_swem_decom',tname='spp_swem_hkp_analog_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+  ;  spp_apid_data,'344'x,routine='spp_swp_swem_decom',tname='spp_swem_events_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+  ;  spp_apid_data,'345'x,routine='spp_swp_swem_decom',tname='spp_swem_cmdecho_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+  ;  spp_apid_data,'346'x,routine='spp_swp_swem_decom',tname='spp_swem_timing_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+  ;  spp_apid_data,'347'x,routine='spp_swp_swem_decom',tname='spp_swem_memdwell',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+  
+  
+  spp_apid_data,'340'x,routine='spp_generic_decom',tname='spp_swem_hkp_',   tfields='none',save=save,rt_tags='none',rt_flag=1
+  spp_apid_data,'341'x,routine='spp_generic_decom',tname='spp_swem_hkp_crit_',   tfields='none',save=save,rt_tags='none',rt_flag=1
+  spp_apid_data,'343'x,routine='spp_generic_decom',tname='spp_swem_hkp_analog_',   tfields='none',save=save,rt_tags='none',rt_flag=1
+  spp_apid_data,'344'x,routine='spp_generic_decom',tname='spp_swem_events_',   tfields='none',save=save,rt_tags='none',rt_flag=1
+  spp_apid_data,'346'x,routine='spp_generic_decom',tname='spp_swem_timing_',   tfields='none',save=save,rt_tags='none',rt_flag=1
+
+  spp_apid_data,'347'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_priority1',   tfields='UNWRAP',save=save,rt_tags='unwrap',rt_flag=1
+
+  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_priority9',   tfields='UNWRAP',save=save,rt_tags='unwrap',rt_flag=1
+
+
+  ;;############################################
+  ;; SETUP SWEM APIDs
+  ;;############################################
+
+  SPC = 1
+  IF SPC THEN  BEGIN
+    spp_apid_data,'353'x,routine='spp_swp_spc_decom',    tname='spp_spc_353_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+    spp_apid_data,'35E'x,routine='spp_swp_spc_decom',    tname='spp_spc_35E_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+    spp_apid_data,'35F'x,routine='spp_swp_spc_decom',    tname='spp_spc_hkp_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+
+  endif
+
+
+
+
+
+
   ;;############################################
   ;; SETUP SPAN-Ai APID
   ;;############################################
@@ -49,6 +95,7 @@ pro spp_swp_startup, spanai = spanai,$
         spp_apid_data,'3bb'x,routine='spp_swp_spanai_rates_decom_64x',           tname='spp_spanai_rates_',  tfields='*',save=save
         spp_apid_data,'3b9'x,routine='spp_swp_spanai_event_decom',               tname='spp_spanai_events_', tfields='*',save=save
      endif  
+     
 
      if 1 then begin
         spp_apid_data,'3b8'x,routine='spp_generic_decom',                tname='spp_spanai_mem_dump_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
@@ -157,30 +204,30 @@ pro spp_swp_startup, spanai = spanai,$
      ;;----------------------------------------------------------------------------------------------------------------------------------
      ;; Product Decommutators
      ;;----------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'360'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_full_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'361'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_full_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'362'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_targ_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'363'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_ar_targ_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'360'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_a_ar_full_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'361'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_a_ar_full_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'362'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_a_ar_targ_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'363'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_a_ar_targ_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
 
-     spp_apid_data,'364'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_full_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'365'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_full_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'366'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_targ_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'367'x ,routine='spp_swp_spane_product_decom',tname='spp_spanae_sr_targ_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'364'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_a_sr_full_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'365'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_a_sr_full_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'366'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_a_sr_targ_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'367'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_a_sr_targ_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
   
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Memory Dump
      ;;----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'36d'x ,routine='spp_generic_decom',tname='spp_spane_dump_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'36d'x ,routine='spp_generic_decom',tname='spp_spane_a_dump_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Slow Housekeeping
      ;;----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v46x_decom',tname='spp_spanae_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v46x_decom',tname='spp_spane_a_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; Fast Housekeeping
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'36f'x ,routine='spp_swp_spane_fast_hkp_decom',tname='spp_spanae_fast_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'36f'x ,routine='spp_swp_spane_fast_hkp_decom',tname='spp_spane_a_fast_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
 
   endif
@@ -198,42 +245,43 @@ pro spp_swp_startup, spanai = spanai,$
      ;;----------------------------------------------------------------------------------------------------------------------------------
      ;; Product Decommutators
      ;;----------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'370'x ,routine='spp_swp_spane_product_decom',tname='spp_spanb_ar_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'371'x ,routine='spp_swp_spane_product_decom',tname='spp_spanb_ar_p2_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'372'x ,routine='spp_swp_spane_product_decom',tname='spp_spanb_ar_p3_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'373'x ,routine='spp_swp_spane_product_decom',tname='spp_spanb_ar_p4_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'370'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_b_ar_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'371'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_b_ar_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'372'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_b_ar_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'373'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_b_ar_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
 
-     spp_apid_data,'374'x ,routine='spp_swp_spane_product_decom',tname='spp_spanb_sr_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'375'x ,routine='spp_swp_spane_product_decom',tname='spp_spanb_sr_p2_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'376'x ,routine='spp_swp_spane_product_decom',tname='spp_spanb_sr_p3_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
-     spp_apid_data,'377'x ,routine='spp_swp_spane_product_decom',tname='spp_spanb_sr_p4_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'374'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_b_sr_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'375'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_b_sr_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'376'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_b_sr_p0_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'377'x ,routine='spp_swp_spane_product_decom',tname='spp_spane_b_sr_p1_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
 
 
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Memory Dump
      ;;----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'37d'x ,routine='spp_generic_decom',tname='spp_spanb_dump_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'37d'x ,routine='spp_generic_decom',tname='spp_spane_b_dump_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Slow Housekeeping
      ;;----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'37e'x ,routine='spp_swp_spane_slow_hkp_v43x_decom',tname='spp_spanb_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'37e'x ,routine='spp_swp_spane_slow_hkp_v43x_decom',tname='spp_spane_b_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; Fast Housekeeping
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'37f'x ,routine='spp_swp_spane_fast_hkp_decom',tname='spp_spanb_fast_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'37f'x ,routine='spp_swp_spane_fast_hkp_decom',tname='spp_spane_b_fast_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
   endif
 
 
 
 
+
+
   ;;############################################
-  ;; SETUP Generic APID
+  ;; SETUP GSE APID
   ;;############################################
   spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',       tfields='*',     save=save,rt_tags='*_?',   rt_flag=1
-  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='unwrap_',   tfields='UNWRAP',save=save,rt_tags='unwrap',rt_flag=1
   spp_apid_data,'7c0'x,routine='spp_log_msg_decom',     tname='log_',      tfields='MSG',   save=save,rt_tags='MSG',   rt_flag=1
   spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='SWEAP SPAN-I Manip',rt_tags='M???POS',save=1,/rt_flag
 
@@ -244,5 +292,9 @@ pro spp_swp_startup, spanai = spanai,$
   ;;------------------------------
   ;; Connect to GSEOS
   spp_init_realtime
+  
+  store_data,'APID',data='APIDS_*'
+  tplot_options,'wshow',0
+  
 
 end

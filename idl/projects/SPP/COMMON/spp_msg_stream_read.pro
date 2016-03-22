@@ -83,10 +83,15 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
       'c1'x :begin
           time_status = spp_swemulator_time_status(buffer[ptr:ptr+6+psize-1])
           store_data,/append,'swemulator_',data=time_status,tagnames='*'
+;          hexprint,buffer[ptr:ptr+6+psize-1]
         end
       'c2'x : dprint,dlevel=2,"Can't deal with C2 messages now'
       'c3'x :begin
         spp_msg_pkt_handler,buffer[ptr+6:ptr+6+psize-1],time=time
+        if debug(3) then begin
+          dprint,dlevel=2
+          hexprint,        buffer[ptr+6:ptr+6+psize-1]
+        endif
         end
       else:  dprint,dlevel=1,'Unknown code'
     endcase

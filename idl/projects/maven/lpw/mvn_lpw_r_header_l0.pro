@@ -898,7 +898,8 @@ pro mvn_lpw_r_header_l0, filename,output,packet=packet
                                   p18                 = p18 + 1
                                 ENDFOR                                                             ;loop over the packets
 
-                                mvn_lpw_r_clock_check, 'PAS_MF', pkt_PAS_MF, SC, sc_clk1, sc_clk2  ;look for and correct and clock jitter (~0.5s)
+                                if n_elements(pkt_PAS_MF) GT 1 then $
+                                  mvn_lpw_r_clock_check, 'PAS_MF', pkt_PAS_MF, SC, sc_clk1, sc_clk2  ;look for and correct and clock jitter (~0.5s)
 
                                 t2=SYSTIME(1,/seconds)                                          ;to check on speed
                                 ;      print,'#### PAS_MF ',ni,i,' time ', t2-t1 ,' seconds'

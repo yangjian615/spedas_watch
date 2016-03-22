@@ -18,6 +18,7 @@ read, 'for FPI data rate input 0 for brst, 1 for fast:', irate ;SAB
 if irate eq 0 then begin ;SAB
 	data_rate = 'brst'
 	fgm_data_rate = 'brst'
+	trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:00.02']
 endif else BEGIN ;SAB
 	data_rate = 'fast'
 	fgm_data_rate = 'srvy'
@@ -75,9 +76,9 @@ join_vec, level eq 'l2' ? vname + ['x','y','z'] + '_' + coord_sys + '_' + data_r
 
 ;---------------------------------------------
 name =  'mms'+probe+'_d'+species+'s_dist_'+data_rate
-dist = mms_get_fpi_dist(name, trange=time_double(trange), data_rate = data_rate, level = level, probe = probe, species = species)
+dist = mms_get_fpi_dist(name, trange=time_double(trange), probe = probe, species = species)
 errname =  'mms'+probe+'_d'+species+'s_disterr_'+data_rate
-distErr = mms_get_fpi_dist(errname, trange=time_double(trange), data_rate = data_rate, level = level, probe = probe, species = species)
+distErr = mms_get_fpi_dist(errname, trange=time_double(trange), probe = probe, species = species)
 
 get_data, 'mms'+probe+'_d'+species+'s_numberdensity_'+coord_sys+'_'+data_rate, data=density_struct
 get_data, 'mms'+probe+'_d'+species+'s_bulkx_'+coord_sys+'_'+data_rate, data=vel_x

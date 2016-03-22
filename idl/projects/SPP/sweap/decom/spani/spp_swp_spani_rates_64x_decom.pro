@@ -32,6 +32,14 @@ function spp_swp_spani_rates_64x_decom,ccsds, ptp_header=ptp_header, apdat=apdat
     stops_cnts:         rates2[stopbins] , $
     gap:                0 }
 
+
+;anode =0
+  if n_elements(anode) ne 0 then begin
+    dprint,dlevel=2,rates_str.starts_cnts[anode],rates_str.stops_cnts[anode],rates_str.valid_cnts[anode],rates_str.multi_cnts[anode]
+    
+  endif
+
+
   return,rates_str
 
 end

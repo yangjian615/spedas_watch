@@ -29,7 +29,7 @@ join_vec, vname + ['X','Y','Z'], vname
 
 ;convert particle data to 3D structures
 name =  'mms'+probe+'_d'+species+'s_brstSkyMap_dist'
-dist = mms_get_fpi_dist(name, trange=time_double(trange), probe=probe, species=species, data_rate='brst', level=level)
+dist = mms_get_fpi_dist(name, trange=time_double(trange), probe=probe, species=species)
 
 
 ;set slice orientation

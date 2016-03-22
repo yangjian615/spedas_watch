@@ -45,7 +45,7 @@ pro mvn_lpw_pkt_spectra,output,lpw_const,subcycle,type,tplot_var=tplot_var,spice
     (output.p17 GT 0 AND subcycle EQ 'pas' AND type EQ 'lf') OR $  ;check for data, for keywords 'pas' and 'lf'
     (output.p18 GT 0 AND subcycle EQ 'pas' AND type EQ 'mf') OR $  ;check for data, for keywords 'pas' and 'mf'
     (output.p19 GT 0 AND subcycle EQ 'pas' AND type EQ 'hf') $     ;check for data, for keywords 'pas' and 'hf'
-    THEN BEGIN
+    THEN     BEGIN
 
 
 
@@ -144,8 +144,8 @@ pro mvn_lpw_pkt_spectra,output,lpw_const,subcycle,type,tplot_var=tplot_var,spice
       pktarr=output.pas_LF_pktarr
       f_zero_freq    =lpw_const.f_zero_freq_lf
     endif
-    if total(data_Spec) EQ 0 OR nn_pktnum EQ 0 then begin
-      Print,'(mvn_lpw_spectra) Either no data or wrong cycle/type ',subcycle,type
+    if total(data_Spec) EQ 0 OR nn_pktnum LE 1 then begin
+      Print,'(mvn_lpw_spectra) Either no data or wrong cycle/type ',nn_pktnum,subcycle,type
       return;
     endif
     ;------------------

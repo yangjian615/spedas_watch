@@ -1,7 +1,7 @@
 ; buffer should contain bytes for a single ccsds packet, header is
 ; contained in first 3 words (6 bytes)
 
-function spp_swp_ccsds_decom,buffer             
+function spp_swp_ccsds_decom,buffer          ,subsec=subsec   
 
   ;;--------------------------------
   ;; Error Checking
@@ -12,13 +12,19 @@ function spp_swp_ccsds_decom,buffer
   endif
 
   header = swap_endian(uint(buffer[0:11],0,6) ,/swap_if_little_endian )
-  MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) + $
-        ( (header[5] ) mod 4) * 2d^15/150000
   
+  apid = header[0] and '7FF'x 
+  subsec= apid ge '350'x
+  if keyword_set(subsec) then begin
+    MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) +   ( (header[5] ) mod 4) * 2d^15/150000
+  endif else begin
+    MET = double( header[3]*2UL^16 + header[4] ) 
+  endelse
+
   utime = spp_spc_met_to_unixtime(MET)
   ccsds = { $
           version_flag: byte(ishft(header[0],-8) ), $
-          apid:         header[0] and '7FF'x , $
+          apid:         apid , $
           seq_group:    ishft(header[1] ,-14) , $
           seq_cntr:     header[1] and '3FFF'x , $
           size:         header[2]   , $

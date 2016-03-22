@@ -10,9 +10,9 @@
 ; 
 ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; ; 
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-04 13:54:29 -0800 (Fri, 04 Mar 2016) $
-;$LastChangedRevision: 20326 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-03-21 11:19:44 -0700 (Mon, 21 Mar 2016) $
+;$LastChangedRevision: 20536 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_crib_stel3d_l2.pro $
 
 
@@ -31,7 +31,7 @@ mms_load_fpi,trange=trange,probe=probe,data_rate=data_rate,level=level,datatype=
 
 ; load data into standard structures 
 name = 'mms'+probe+'_d'+species+'s_dist_'+data_rate 
-dist = mms_get_fpi_dist(name, trange=trange, level=level, data_rate=data_rate, species=species, probe=probe)
+dist = mms_get_fpi_dist(name, trange=trange, species=species, probe=probe)
 
 ;convert structures to stel3d data model
 data = spd_dist_to_hash(dist)

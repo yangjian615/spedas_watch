@@ -10,9 +10,9 @@
 ;      /spedas_gui/stel_3d/stel_3d_pro_20150811/pro
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-18 17:49:32 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20512 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-03-21 11:25:41 -0700 (Mon, 21 Mar 2016) $
+;$LastChangedRevision: 20538 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_crib_stel3d.pro $
 ;-
 
@@ -56,11 +56,11 @@ data = spd_dist_to_hash(dist)
 
 
 ;load bfield (cyan vector) and velocity (yellow vector) support data
-mms_load_dfg, probe=probe, trange=support_trange, level='ql'
+mms_load_fgm, probe=probe, trange=support_trange, level='l2'
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $
               probe=probe, trange=support_trange
 
-bfield = 'mms'+probe+'_dfg_srvy_gse_bvec'
+bfield = 'mms'+probe+'_fgm_b_gse_srvy_l2_bvec'
 velocity = 'mms'+probe+'_d'+species+'s_bulk'
 
 ;combine separate velocity components
@@ -101,11 +101,11 @@ dist = mms_get_hpca_dist(tname)
 data = spd_dist_to_hash(dist)
 
 ;load bfield (cyan vector) and velocity (yellow vector) support data
-mms_load_dfg, probe=probe, trange=trange, level='ql'
+mms_load_fgm, probe=probe, trange=trange, level='l2'
 mms_load_hpca, probes=probe, trange=trange, data_rate=data_rate, level=level, $
                datatype='moments', varformat='*_hplus_ion_bulk_velocity'
 
-bfield = 'mms'+probe+'_dfg_srvy_gse_bvec'
+bfield = 'mms'+probe+'_fgm_b_gse_srvy_l2_bvec'
 velocity = 'mms'+probe+'_hpca_hplus_ion_bulk_velocity'
 
 
@@ -144,7 +144,7 @@ data = spd_dist_to_hash(dist)
 
 
 ;load bfield (cyan vector) and velocity (yellow vector) support data
-mms_load_dfg, probe=probe, trange=trange, level='ql'
+mms_load_fgm, instrument='dfg', probe=probe, trange=trange, level='ql'
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $
               probe=probe, trange=trange
 
@@ -192,7 +192,7 @@ data = spd_dist_to_hash(dist)
 
 
 ;load bfield (cyan vector) and velocity (yellow vector) support data
-mms_load_dfg, probe=probe, trange=trange, level='ql'
+mms_load_fgm, instrument='dfg', probe=probe, trange=trange, level='ql'
 mms_load_hpca, probes=probe, trange=trange, data_rate=data_rate, level=level, $
                datatype='moments', varformat='*_hplus_ion_bulk_velocity'
 
