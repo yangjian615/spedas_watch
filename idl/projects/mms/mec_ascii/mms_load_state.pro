@@ -87,9 +87,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-17 10:07:55 -0700 (Thu, 17 Mar 2016) $
-;$LastChangedRevision: 20484 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2016-03-22 13:06:54 -0700 (Tue, 22 Mar 2016) $
+;$LastChangedRevision: 20552 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -200,7 +200,7 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     ; get state data for each probe and data type (def or pred) 
     for i = 0, n_elements(probes)-1 do begin      
        for j = 0, n_elements(level)-1 do begin
-            if mec_flag EQ 1 then begin
+            if mec_flag EQ 1 && level[j] NE 'pred' then begin
                  mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files, varformat=mec_varformat
                  copy_data, 'mms'+probes[i]+'_mec_r_eci', 'mms'+probes[i]+'_defeph_pos'
             endif else begin

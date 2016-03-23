@@ -70,8 +70,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-16 15:13:03 -0700 (Wed, 16 Mar 2016) $
-;$LastChangedRevision: 20480 $
+;$LastChangedDate: 2016-03-22 09:37:45 -0700 (Tue, 22 Mar 2016) $
+;$LastChangedRevision: 20551 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -119,6 +119,7 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
       dprint, dlevel = 0, 'Error, cannot specify both the varformat keyword and center measurement keyword in the same call (measurements won''t be centered).'
       return
     endif
+    if ~undefined(varformat) && varformat ne '*' then varformat = varformat + ' *_ion_energy'
     
     mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'hpca', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

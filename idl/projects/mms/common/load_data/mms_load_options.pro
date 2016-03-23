@@ -1,3 +1,48 @@
+;+
+;Procedure:
+;  mms_load_options
+;
+;Purpose:
+;  Provides information on valid data rates, levels, and datatypes
+;  for MMS science instruments.
+;
+;  Valid load options for a specified instrument will be returned
+;  via a corresponding keyword.
+
+;  Each output keyword may be used as an input to narrow the results
+;  the the contingent options.
+;
+;Calling Sequence:
+;  mms_load_options, instrument=instrument
+;                    [,rate=rate] [,level=level], [,datatype=datatype]
+;                    [valid=valid]
+;
+;Example Usage:
+;
+;
+;Input:
+;  instrument:  (string) Instrument designation, e.g. 'afg'
+;  rate:  (string)(array) Data rate e.g. 'fast', 'srvy'
+;  level:  (string)(array) Data processing level e.g. 'l1b', 'ql'
+;  datatype:  (string)(array) Data type, e.g. 'moments'
+;
+;Output:
+;  rate:  If not used as an input this will contain all valid
+;         rates for the instrument.
+;  level:  If not used as an input this will contain all valid
+;          levels, given any specified rate.
+;  datatype:  If not used as an input this will contain all valid
+;             datatypes, given any specified rate and level.
+;  valid:  1 if valid outputs were found, 0 otherwise
+;
+;Notes:
+;
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-03-22 09:29:37 -0700 (Tue, 22 Mar 2016) $
+;$LastChangedRevision: 20548 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_options.pro $
+;-
 
 ;+
 ;Purpose:
@@ -337,7 +382,11 @@ s = { $
                      'rf_corr', $
                      'bkgd_corr', $
                      'moments' $
-                   ] $
+                   ], $
+              l2:  [ $
+                     'ion', $
+                     'moments' $
+                     ] $
             }, $
       srvy: { $
               l1a: [ $
@@ -350,6 +399,10 @@ s = { $
                      'rf_corr', $
                      'bkgd_corr', $
                      'moments' $
+                   ], $
+              l2:  [ $
+                   'ion', $
+                   'moments' $
                    ], $
               sitl:[ $
                      'count_rate', $
@@ -500,53 +553,6 @@ endfor
 
 end
 
-
-
-;+
-;Procedure:
-;  mms_load_options
-;
-;Purpose:
-;  Provides information on valid data rates, levels, and datatypes
-;  for MMS science instruments.
-;
-;  Valid load options for a specified instrument will be returned 
-;  via a corresponding keyword.
-
-;  Each output keyword may be used as an input to narrow the results
-;  the the contingent options.
-;
-;Calling Sequence:
-;  mms_load_options, instrument=instrument
-;                    [,rate=rate] [,level=level], [,datatype=datatype]
-;                    [valid=valid]
-;
-;Example Usage:
-;
-;
-;Input:
-;  instrument:  (string) Instrument designation, e.g. 'afg'
-;  rate:  (string)(array) Data rate e.g. 'fast', 'srvy'
-;  level:  (string)(array) Data processing level e.g. 'l1b', 'ql' 
-;  datatype:  (string)(array) Data type, e.g. 'moments'
-;
-;Output:
-;  rate:  If not used as an input this will contain all valid 
-;         rates for the instrument.
-;  level:  If not used as an input this will contain all valid
-;          levels, given any specified rate.
-;  datatype:  If not used as an input this will contain all valid
-;             datatypes, given any specified rate and level. 
-;  valid:  1 if valid outputs were found, 0 otherwise
-;
-;Notes:
-;  
-;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-21 09:12:03 -0700 (Mon, 21 Mar 2016) $
-;$LastChangedRevision: 20530 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_options.pro $
-;-
 pro mms_load_options, $
              instrument, $
              

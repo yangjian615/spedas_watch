@@ -86,8 +86,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-16 15:19:09 -0700 (Wed, 16 Mar 2016) $
-;$LastChangedRevision: 20481 $
+;$LastChangedDate: 2016-03-22 09:14:01 -0700 (Tue, 22 Mar 2016) $
+;$LastChangedRevision: 20546 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -161,6 +161,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         if status ne 1 then no_download = 1
         if username eq '' || username eq 'public' then public=1
     endif
+    
+    if undefined(username) then username = 'none'
+    current_user = username eq '' || username eq 'public' ? 'public' : username
 
     ;clear so new names are not appended to existing array
     undefine, tplotnames
@@ -272,7 +275,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 append_array, files, local_files
             endif else begin
                 dprint, dlevel = 0, 'Error, no local or remote data files found: '+$
-                         probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
+                         probe+' '+instrument+' '+data_rate+' '+level+' '+datatype+' (user: '+current_user+')'
                 continue
             endelse
         endelse       

@@ -61,13 +61,16 @@ stop
 
 ; requesting predicted this time (result should be the same
 ; as above)
-mms_load_state, probes= ['2'], level='pred', datatypes='pos'
+mms_load_state, probes= ['1','2'], level='pred', datatypes='pos'
 tplot, ['mms*_predeph_*']
 stop
 
 ; you can turn off automatic definitive or predicted data behavior
 ; (note that no data will be found since user requested definitive data
 ; and turned off default behavior 
+; pick some date unlikely to occur
+date = '2040-11-31/00:00:00'
+timespan,date,1,/day
 mms_load_state, probes= ['3'], level='def', datatypes='pos', pred_or_def=0
 
 stop

@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-27 12:46:35 -0800 (Wed, 27 Jan 2016) $
-;$LastChangedRevision: 19821 $
+;$LastChangedDate: 2016-03-22 09:33:54 -0700 (Tue, 22 Mar 2016) $
+;$LastChangedRevision: 20550 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_calc_anodes.pro $
 ;-
 function mms_hpca_elevations
@@ -87,7 +87,12 @@ function mms_hpca_avg_fov, data_struct, fov = fov, anodes = anodes
     times = data_struct.X
 
     ;anode_elevation = mms_hpca_elevations()
-    energies = mms_hpca_energies()
+    
+    str_element, data_struct, 'v2', energy_table, success=success
+    if ~success then begin
+        dprint, dlevel = 0, 'Couldn''t load the HPCA energy table from the tplot variable, using hard-coded energy table instead'
+        energies = mms_hpca_energies()
+    endif else energies = energy_table
 
     data_within_fov = data_struct.Y[*,*,anodes_in_fov]
     
@@ -129,8 +134,12 @@ function mms_hpca_sum_fov, data_struct, fov = fov, anodes = anodes
     times = data_struct.X
 
     ;anode_elevation = mms_hpca_elevations()
-    energies = mms_hpca_energies()
-
+    str_element, data_struct, 'v2', energy_table, success=success
+    if ~success then begin
+        dprint, dlevel = 0, 'Couldn''t load the HPCA energy table from the tplot variable, using hard-coded energy table instead'
+        energies = mms_hpca_energies()
+    endif else energies = energy_table
+    
     data_within_fov = data_struct.Y[*,*,anodes_in_fov]
 
     data_total = dblarr(n_elements(times), n_elements(energies))
