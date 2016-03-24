@@ -67,16 +67,23 @@
 ;                 a single version of the plot.  This overrides the interactive
 ;                 entry of times with the cursor.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 09:09:13 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19386 $
+;       BDIR:     Set keyword to show magnetic field direction in three planes,
+;                 In each plane, the same two components of B in MSO coordinates 
+;                 are shown, i.e. in XY plane, plotting Bx-By. The color shows 
+;                 if the third component (would be Bz in XY plane) is positive 
+;                 (red) or negative (blue).
+;       SCALE:    To change the scale/length of field lines, the default value is
+;                 set to 0.05
+; $LastChangedBy: xussui_lap $
+; $LastChangedDate: 2016-03-23 11:21:44 -0700 (Wed, 23 Mar 2016) $
+; $LastChangedRevision: 20558 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
-    nodot=nodot, terminator=terminator, thick=thick
+    nodot=nodot, terminator=terminator, thick=thick, Bdir=Bdir, scale=scale
 
   @maven_orbit_common
 
@@ -93,7 +100,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
   tplot_options, get_opt=topt
   delta_t = abs(topt.trange[1] - topt.trange[0])
-  if ((size(prec,/type) eq 0) and (delta_t lt 86400D)) then prec = 1
+  if ((size(prec,/type) eq 0) and (delta_t lt (7D*86400D))) then prec = 1
 
   if keyword_set(prec) then pflg = 1 else pflg = 0
   if (size(color,/type) gt 0) then cflg = 1 else cflg = 0  
@@ -101,6 +108,8 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   if keyword_set(reset) then reset = 1 else reset = 0
   if keyword_set(nodot) then dodot = 0 else dodot = 1
   if keyword_set(terminator) then doterm = 1 else doterm = 0
+
+  if keyword_set(Bdir) then dob = 1 else dob = 0
 
   if keyword_set(times) then begin
     times = time_double(times)
@@ -281,6 +290,20 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
     xrange = [-rmax,rmax]
     yrange = xrange
+    
+    if (dob eq 1) then begin
+        get_data,'mvn_B_1sec_maven_mso',data=bmso
+        bb0=bmso.y
+        bt=bmso.x
+        bdt=60 ;smooth over seconds
+        for i=0,2 do bb0[*,i]=smooth(bb0[*,i],bdt)
+        bb=fltarr(n_elements(rndx),3)
+        bb[*,0]=interpol(bb0[*,0],bt,time[rndx])
+        bb[*,1]=interpol(bb0[*,1],bt,time[rndx])
+        bb[*,2]=interpol(bb0[*,2],bt,time[rndx])
+        if ~(keyword_set(scale)) then scale=0.05
+        nskp=5
+    endif
 
 ; X-Y Projection
 
@@ -310,6 +333,20 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       oplot,x,y,thick=thick
 
       if (dodot) then oplot,[x[i]],[y[i]],psym=8,color=5
+
+      if (dob) then begin
+        cts = n_elements(rndx)
+          for i=0,cts-1,nskp do begin
+              x1=x[i]
+              y1=y[i]
+              x2=scale*bb[i,0]+x1
+              y2=scale*bb[i,1]+y1
+              if bb[i,2] le 0 then clr=64 $
+              else clr=254
+              oplot,[x1,x2],[y1,y2],color=clr
+          endfor
+      endif
+      
 
       x = xs
       y = ys
@@ -414,6 +451,19 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     if (pflg) then i = imid else i = imin
     if (dodot) then oplot,[x[i]],[z[i]],psym=8,color=5,thick=thick
 
+    if (dob) then begin
+        cts = n_elements(rndx)
+        for i=0,cts-1,nskp do begin
+            x1=x[i]
+            y1=z[i]
+            x2=scale*bb[i,0]+x1
+            y2=scale*bb[i,2]+y1
+            if bb[i,1] le 0 then clr=64 $
+            else clr=254
+            oplot,[x1,x2],[y1,y2],color=clr
+        endfor
+    endif
+
     x = xs
     y = ys
     z = zs
@@ -513,6 +563,19 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
       if (pflg) then i = imid else i = imin
       if (dodot) then oplot,[y[i]],[z[i]],psym=8,color=5,thick=thick
+
+      if (dob) then begin
+          cts = n_elements(rndx)
+          for i=0,cts-1,nskp do begin
+              x1=y[i]
+              y1=z[i]
+              x2=scale*bb[i,1]+x1
+              y2=scale*bb[i,2]+y1
+              if bb[i,0] le 0 then clr=64 $
+              else clr=254
+              oplot,[x1,x2],[y1,y2],color=clr
+          endfor
+      endif
 
       x = xs
       y = ys

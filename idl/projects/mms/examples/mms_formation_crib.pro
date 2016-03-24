@@ -9,8 +9,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-18 13:48:43 -0700 (Fri, 18 Mar 2016) $
-; $LastChangedRevision: 20504 $
+; $LastChangedDate: 2016-03-23 15:39:31 -0700 (Wed, 23 Mar 2016) $
+; $LastChangedRevision: 20567 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_formation_crib.pro $
 ;-
 
@@ -22,13 +22,13 @@ mms_mec_formation_plot, time
 
 stop
 
-; with the projections
-mms_mec_formation_plot, time, /projection
+; with the XY projections
+mms_mec_formation_plot, time, /xy_projection
 
 stop
 
-; with projections and the tetrahedron quality factor
-mms_mec_formation_plot, time, /projection, /quality
+; with XY projections and the tetrahedron quality factor
+mms_mec_formation_plot, time, /xy_projection, /quality
 
 end
 

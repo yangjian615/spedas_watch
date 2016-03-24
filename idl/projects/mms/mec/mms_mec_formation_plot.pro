@@ -12,12 +12,16 @@
 ; 
 ; KEYWORDS:
 ;       projection:   project the spacecraft positions 
-;               onto the X-Y plane
+;               onto all planes
+;       
+;       xy_projection: project the S/C positions onto the XY plane
+;       xz_projection: project the S/C positions onto the XZ plane
+;       yz_projection: project the S/C positions onto the YZ plane
 ;               
 ;       quality_factor: include the tetrahedron quality factor
 ;               
 ; EXAMPLES:
-;       mms_mec_formation_plot, '2016-1-08/2:36', /projection
+;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection
 ;       
 ;       should create something like:
 ;       
@@ -29,12 +33,13 @@
 ;       and Kim Kokkonen at LASP
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-18 13:47:04 -0700 (Fri, 18 Mar 2016) $
-; $LastChangedRevision: 20503 $
+; $LastChangedDate: 2016-03-23 15:40:10 -0700 (Wed, 23 Mar 2016) $
+; $LastChangedRevision: 20568 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_mec_formation_plot.pro $
 ;-
 
-pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_factor
+pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_factor, $
+  xy_projection=xy_projection, xz_projection=xz_projection, yz_projection=yz_projection
   
   ; load one minute of position data
   current_time = [time_double(time), time_double(time)+60.]
@@ -92,16 +97,30 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   plot2 = plot3d(xes, yes, zes, linestyle='none', color='black', sym_object = orb(), $
     sym_size=3, /sym_filled, vert_colors=spacecraft_colors, perspective=1, $
     margin=margin, /overplot)
-
-  if keyword_set(projection) then begin
-      ; draw spacecraft projections
-      sym_transparency = 60
+    
+  ; draw spacecraft projections
+  sym_transparency = 60
+  
+  if keyword_set(xy_projection) || keyword_set(projection) then begin
       z_projection = make_array(4, value=zrange[0])
-      plot3 = plot3d(xes, yes, z_projection, 'o', linestyle='none', $
+      plot3z = plot3d(xes, yes, z_projection, 'o', linestyle='none', $
         sym_size=2, /sym_filled, sym_transparency=sym_transparency, vert_colors=spacecraft_colors, $
         /overplot, perspective=perspective, margin=margin)
   endif
 
+  if keyword_set(xz_projection) || keyword_set(projection) then begin
+      y_projection = make_array(4, value=yrange[1])
+      plot3y = plot3d(xes, y_projection, zes, 'o', linestyle='none', $
+        sym_size=2, /sym_filled, sym_transparency=sym_transparency, vert_colors=spacecraft_colors, $
+        /overplot, perspective=perspective, margin=margin)
+  endif
+  
+  if keyword_set(yz_projection) || keyword_set(projection) then begin
+      x_projection = make_array(4, value=xrange[1])
+      plot3x = plot3d(x_projection, yes, zes, 'o', linestyle='none', $
+        sym_size=3, /sym_filled, sym_transparency=sym_transparency, vert_colors=spacecraft_colors, $
+        /overplot, perspective=perspective, margin=margin)
+  endif
 
   ; mark origin on xy plane
   w = min(abs([xrange, yrange]))/10

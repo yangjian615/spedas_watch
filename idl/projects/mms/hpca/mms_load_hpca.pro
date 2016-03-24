@@ -70,8 +70,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-22 09:37:45 -0700 (Tue, 22 Mar 2016) $
-;$LastChangedRevision: 20551 $
+;$LastChangedDate: 2016-03-23 13:19:41 -0700 (Wed, 23 Mar 2016) $
+;$LastChangedRevision: 20563 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -90,7 +90,7 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
     if undefined(level) then level = 'l2' 
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix=''
-    if level ne 'l2' then begin
+    if level ne 'l2' || ~undefined(datatype) then begin
         ; old stuff for L1b/sitl files
         if undefined(varformat) then begin
           ;convert "datatypes" to actual datatype and varformat
@@ -119,7 +119,8 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
       dprint, dlevel = 0, 'Error, cannot specify both the varformat keyword and center measurement keyword in the same call (measurements won''t be centered).'
       return
     endif
-    if ~undefined(varformat) && varformat ne '*' then varformat = varformat + ' *_ion_energy'
+    if ~undefined(varformat) && varformat ne '*' then varformat = varformat + ' *_ion_energy *_start_azimuth'
+    if ~undefined(varformat) && ~undefined(get_support_data) then undefine, get_support_data
     
     mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'hpca', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

@@ -18,8 +18,8 @@
 ;     
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-03 14:39:41 -0800 (Wed, 03 Feb 2016) $
-;$LastChangedRevision: 19894 $
+;$LastChangedDate: 2016-03-23 12:30:53 -0700 (Wed, 23 Mar 2016) $
+;$LastChangedRevision: 20560 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_spin_sum.pro $
 ;-
 
@@ -30,7 +30,7 @@ pro mms_hpca_spin_sum, probe = probe, datatype=datatype, species=species, fov=fo
     endif else begin
         probe = strcompress(string(probe), /rem)
     endelse
-    if undefined(datatype) then datatype =['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts', '*_flux']
+    if undefined(datatype) then datatype =['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts', '*_flux'] else datatype = '*_'+datatype
     if undefined(species) then species = ['hplus', 'oplus', 'oplusplus', 'heplus', 'heplusplus']
     if undefined(fov) then fov = ['0', '360'] else fov = strcompress(string(fov),/rem)
     if undefined(tplotnames) then tplotnames = tnames()

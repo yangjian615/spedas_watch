@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-18 15:12:05 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20507 $
+;$LastChangedDate: 2016-03-23 07:27:29 -0700 (Wed, 23 Mar 2016) $
+;$LastChangedRevision: 20554 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_tetrahedron_qf.pro $
 ;-
 
@@ -35,6 +35,10 @@ pro mms_load_tetrahedron_qf, trange = trange
     prod = 'defq'
     public = 1
     file_dir = !mms.local_data_dir + 'ancillary/tetrahedron_qf/'
+    
+    ; make sure the directory exists
+    dir_search = file_search(file_dir, /test_directory)
+    if dir_search eq '' then file_mkdir2, file_dir
     
     qf_template = { VERSION: 1.00000, $
       DATASTART: 11, $
