@@ -70,8 +70,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-23 13:19:41 -0700 (Wed, 23 Mar 2016) $
-;$LastChangedRevision: 20563 $
+;$LastChangedDate: 2016-03-24 16:27:51 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20585 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -90,7 +90,7 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
     if undefined(level) then level = 'l2' 
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix=''
-    if level ne 'l2' || ~undefined(datatype) then begin
+    if level ne 'l2' then begin
         ; old stuff for L1b/sitl files
         if undefined(varformat) then begin
           ;convert "datatypes" to actual datatype and varformat

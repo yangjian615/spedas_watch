@@ -6,9 +6,9 @@
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate pitch angle and gyrophase distributions
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20511 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-03-24 16:14:51 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20584 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/mms_part_products_crib.pro $
 ;
 ;-
@@ -37,10 +37,10 @@
   mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-dist'
                 
   ;load state data (needed for coordinate transforms and field aligned coordinates)
-  mms_load_state, probes=probe, trange=support_trange, /ephemeris
+  mms_load_state, probes=probe, trange=support_trange
 
   ;load magnetic field data
-  mms_load_fgm, probe=probe, trange=support_trange, level=level, /no_attitude
+  mms_load_fgm, probe=probe, trange=support_trange, level=level
  
   ;magnetic field vector
   bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
@@ -90,10 +90,10 @@
   mms_load_hpca, probe=probe, trange=trange, data_rate=data_rate, level=level, datatype='ion'
 
   ;load state data (needed for coordinate transforms and field aligned coordinates)
-  mms_load_state, probes=probe, trange=trange, /ephemeris
+  mms_load_state, probes=probe, trange=trange
 
   ;load magnetic field data (for field aligned coordinates)
-  mms_load_fgm, probe=probe, trange=trange, level=level, /no_attitude
+  mms_load_fgm, probe=probe, trange=trange, level=level
  
   ;magnetic field vector
   bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'

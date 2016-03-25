@@ -15,8 +15,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-14 14:38:31 -0700 (Thu, 14 May 2015) $
-;$LastChangedRevision: 17616 $
+;$LastChangedDate: 2016-03-24 16:48:06 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20586 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_slice2d_plot.pro $
 ;-
 
@@ -37,16 +37,19 @@
 
 ;zlog = 1 ; use log scaling on z axis (defalt=1)
 
+;title = 'New Title'            ;Set custom title for plot
 ;[xyz]ticks = 8  ; change # of tick marks
 ;[xyz]minor = 2  ; change # of minor tick marks
 ;[xyz]style = 0  ; change numerical format
                  ; (0=automatic, 1=decimal, 2=scientific)
 ;[xyz]precision  ; specify number of siginificant digits to display
 
-;title = 'New Title'            ;Set custom title for plot
 ;[xyz]title = 'New Axis Title'  ;Set custom title for specified axis
 
+;[b,v,sun]_color = 0 ; specify the color of the corresponding support vector [0-255]
+
 ;charsize = 1.20 ; set text to 120% size (default=1.00)
+;clabels = 1     ; annotate contour lines (if displayed)
 
 ;sundir = 1    ; plot projection of sun direction (default=0)
 ;plotaxes = 1  ; plot dashed lines along x=0 and y=0 (default=1)
@@ -72,12 +75,15 @@
 probe = 'b'
 trange = time_double( '2008-02-26/' + ['04:52:30','04:53:00'])
 
+thm_load_fit, probe=probe, level=2, trange=trange
+
 ; Get array of ESA particle distributions
 ;  - use GET_SUN_DIRECTION keyword to load sun direction vector (used in example below)
 peib_arr = thm_part_dist_array(probe=probe, type='peib', trange=trange, /get_sun_direction)
 
 ; Get a basic x-y plane ESA slice in DSL 
 thm_part_slice2d, peib_arr, slice_time=trange[0], timewin=30, $
+                  mag_data='th'+probe+'_fgs_dsl', $
                   /three_d_interp, part_slice=part_slice
 
 ; Plot the slice
@@ -127,22 +133,33 @@ thm_part_slice2d_plot, part_slice, $
 stop
 
 
-; Change other options
-;  -x/y = 0 is shown with dashed lines by default
-;  -instrument or current energy limits are plotted by default
-;  -bulk velocity projection plotted by default with red line 
-;  -sun direction denoted by solid black line, the length is 
-;   proportional to the projection's magnitude (if the vector is
-;   in the slice plane it will be drawn to the instrument's limit)
-;  **sun direction requires keyword to thm_part_dist_array
-;    (called above) to load state data
+; Remove supplementary annotations
 ; -----------------
 thm_part_slice2d_plot, part_slice, $
-;                       plotbulk = 0, $  ;turn off bulk velocity projection
+                       plotbulk = 0, $  ;turn off bulk velocity projection
                        plotaxes = 0, $  ;turn off x/y=0
-                       ecircle = 0,  $  ;turn off drawing of energy limits
-                       sundir = 1       ;plot sun direction
-                   
+                       ecircle = 0    ;turn off drawing of energy limits
+
+
+stop
+
+
+; Display B field and sun direction
+;  -Sun direction is plotted as a black line.
+;   Plotting the sun vector requires /get_sun_direction
+;   keyword to be present when data is loaded (see above).
+;  -B field direction is plotted as a dotted cyan line.
+;   The projection of the full vector on the slice plane
+;   is plotted as a solid line.
+; -----------------
+thm_part_slice2d_plot, part_slice, $
+;                       b_color = 150, $    ;plot B as green
+;                       v_color = 0, $      ;plot velocity as black
+;                       sun_color = 200, $  ;plot sun direction as orange
+                       plotaxes = 0, $   ;remove axes to make vectors more visible
+;                       plotbulk = 1, $  ;on by default
+                       plotbfield = 1, $ ;plot B field
+                       sundir = 1        ;plot sun direction
 
 
 stop

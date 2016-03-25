@@ -31,6 +31,7 @@
 ;            
 ;  CLABELS: Boolean to annotate contour lines.
 ;  CHARSIZE: Specifies character size of annotations (1 is normal)
+;  TITLE: String specifying the title of the plot.
 ;  [XYZ]RANGE: Two-element array specifying x/y/z axis range.
 ;  [XYZ]TICKS: Integer(s) specifying the number of ticks for each axis 
 ;  [XYZ]PRECISION: Integer specifying annotation precision (sig. figs.).
@@ -39,6 +40,8 @@
 ;             Set to 0 (default) for style to be chosen automatically. 
 ;             Set to 1 for decimal annotations only ('0.0123') 
 ;             Set to 2 for scientific notation only ('1.23e-2')
+;  [B,V,SUN]_COLOR: Specify the color of the corresponding support vector.
+;                   (e.g. "b_color=0", see IDL graphics documentation for options)
 ;
 ;  WINDOW:  Index of plotting window to be used.
 ;  PLOTSIZE: The size of the plot in device units (usually pixels)
@@ -52,8 +55,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-04 18:06:22 -0800 (Fri, 04 Mar 2016) $
-;$LastChangedRevision: 20332 $
+;$LastChangedDate: 2016-03-24 16:48:06 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20586 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d_plot.pro $
 ;
 ;-

@@ -39,6 +39,8 @@
 ;             Set to 0 (default) for style to be chosen automatically. 
 ;             Set to 1 for decimal annotations only ('0.0123') 
 ;             Set to 2 for scientific notation only ('1.23e-2')
+;  [B,V,SUN]_COLOR: Specify the color of the corresponding support vector.
+;                   (e.g. "b_color=0", see IDL graphics documentation for options)
 ;
 ;  WINDOW:  Index of plotting window to be used.
 ;  PLOTSIZE: The size of the plot in device units (usually pixels)
@@ -59,8 +61,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-13 16:13:29 -0800 (Wed, 13 Jan 2016) $
-;$LastChangedRevision: 19726 $
+;$LastChangedDate: 2016-03-24 16:48:06 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20586 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -86,6 +88,7 @@ pro spd_slice2d_plot, slice, $
                      ; Other plotting options
                        plotaxes=plotaxes, ecircle=ecircle, sundir=sundir, $ 
                        plotbulk=plotbulk, plotbfield=plotbfield, $
+                       b_color=b_color, v_color=v_color, sun_color=sun_color, $
                        custom=custom, $
                      ; Eport
                        export=export, eps=eps, $
@@ -127,7 +130,11 @@ pro spd_slice2d_plot, slice, $
   
   ;large charsize values cause draw_color_scale to corrupt "data coordinate system"
   if ~undefined(charsize_in) then charsize = charsize_in < 4
-  
+
+  ;supplementary vector colors (asumes standard rainbow table)
+  if undefined(b_color) then b_color = !d.table_size-165  ;cyan
+  if undefined(v_color) then v_color = !d.table_size-9  ;red
+  if undefined(sun_color) then sun_color = 0  ;black
 
   ; X,Y,Z ranges
   if keyword_set(xrange) && ~keyword_set(slice.rlog) then begin
@@ -303,6 +310,10 @@ pro spd_slice2d_plot, slice, $
   ;Other Plotting Options
   ;----------------------
 
+  ;length of direction vectors
+  ;use max energy if possible, otherwise use shortest axis
+  vector_length = slice.rrange[1] gt 0 ? slice.rrange[1] : min( abs( [xrange,yrange] ) )
+
   ; Plot contour lines
   if keyword_set(olines) && slice.type ne 0 then begin
 
@@ -349,7 +360,7 @@ pro spd_slice2d_plot, slice, $
   if keyword_set(plotbulk) and ~keyword_set(slice.shift) then begin
     if n_elements(slice.bulk) eq 3 and finite(total(slice.bulk))  then begin
       ; bulk velocity should already be in the coords defined for the slice plane
-      oplot, [0,slice.bulk[0]], [0,slice.bulk[1]], color=!d.table_size-9
+      oplot, [0,slice.bulk[0]], [0,slice.bulk[1]], color=v_color
     endif
   endif
 
@@ -359,8 +370,8 @@ pro spd_slice2d_plot, slice, $
     if n_elements(slice.sunvec) eq 3 and finite(total(slice.sunvec)) then begin
       ;sun vector is normalized & in slice plane's coords
       ;make total length equal to the smallest axis limit and plot projection
-      sunvec = slice.sunvec * min( abs( [xrange,yrange] ) )
-      oplot, [0,sunvec[0]],[0,sunvec[1]]
+      sunvec = slice.sunvec * vector_length
+      oplot, [0,sunvec[0]],[0,sunvec[1]], color=sun_color
     endif else begin
       dprint, dlevel=1, 'No valid sun direction to plot.' 
     endelse
@@ -371,10 +382,12 @@ pro spd_slice2d_plot, slice, $
   if keyword_set(plotbfield) then begin
     if n_elements(slice.bfield) eq 3 and finite(total(slice.bfield)) then begin
       ;bfield is in nT in the slice plane's coords
-      ;make total length equal to the smallest axis limit and plot projection
-      bfield = slice.bfield / sqrt(total(slice.bfield^2))
-      bfield = bfield * min( abs( [xrange,yrange] ) )
-      oplot, [0,bfield[0]],[0,bfield[1]], color=!d.table_size-165
+      ;plot direction as dotted line ending at max energy circle 
+      ;and in-plane component as proportional solid line
+      bfield = slice.bfield / sqrt(total(slice.bfield^2)) * vector_length
+      bdir = slice.bfield[0:1] / sqrt(total(slice.bfield[0:1]^2)) * vector_length
+      oplot, [0,bdir[0]],[0,bdir[1]], color=b_color, linestyle=1
+      oplot, [0,bfield[0]],[0,bfield[1]], color=b_color
     endif else begin
       dprint, dlevel=1, 'To plot the B field vector the mag_data keyword must'+ $ 
                         ' be specified in call to spd_slice2d.' 

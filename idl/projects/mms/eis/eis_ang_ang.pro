@@ -45,11 +45,14 @@
 ;       + 2016-03-23, E. Grimes     : removed dependencies on cgtext, cgimage, cgconlevels, cgcontour, cgcolorbar
 ;                                   : updated the date/time format to prevent overlap with the next plot
 ;                                   : added png keyword, for saving output to a PNG file
+;       + 2016-03-24, E. Grimes     : fixed issues with postscript output caused by my changes yesterday
+;                                   : set the default data_rate to 'srvy' (if not specified); request the time range (if not specified)
+;                                   : commented out !p.multi call in postscript output, so that all energy channels are included in the PS file
 ;       
 ;                        
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-23 14:54:44 -0700 (Wed, 23 Mar 2016) $
-;$LastChangedRevision: 20566 $
+;$LastChangedDate: 2016-03-24 15:56:38 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20583 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/eis_ang_ang.pro $
 ;-
 
@@ -61,10 +64,14 @@ if not KEYWORD_SET(probe) then probe = '1'
 if not KEYWORD_SET(species) then species = 'proton'
 if not KEYWORD_SET(datatype) then datatype = 'extof'
 if not KEYWORD_SET(data_units) then data_units = 'flux'
+if not KEYWORD_SET(data_rate) then data_rate = 'srvy'
 if not KEYWORD_SET(level) then level = 'l2'
 if not KEYWORD_SET(energy_chan) then energy_chan = [1,2,3,4]
 if not KEYWORD_SET(i_print) then i_print = 0
 if not KEYWORD_SET(avgdata) then avgdata = 0
+if not KEYWORD_SET(trange) && n_elements(trange) eq 2 $
+  then trange = timerange(trange) $
+  else trange = timerange()
 
 date_dir = strmid(trange(0),0,10)
 date_filename = strmid(trange(0),0,4)+strmid(trange(0),5,2)+strmid(trange(0),8,2)
@@ -201,7 +208,7 @@ for j=0,nenergies-1 do begin
     ; add the data
     tvimage, thisangangdata, /axes, margin=0.33,xrange=[-180,180],yrange=[-80,80],$
       background=255,Position= [0.1, 0.2, 0.98, 0.88] , title=timedata[thisind],charsize=1.5,$
-      AXKEYWORDS=axis_format, xstyle=1, ystyle=1, /overplot, /nointerp
+      AXKEYWORDS=axis_format, xstyle=1, ystyle=1, /overplot, /nointerpolation
     
     ; draw the contours
     contour, padata[*,*,thisind], min_azi_edges + 180./n_azi, min_pol_edges + 90./n_pol, $
@@ -221,15 +228,19 @@ if (i_print eq 1) then begin
   if species eq 'alpha' then loadct,8
   if species eq 'oxygen' then loadct,3
   if species eq 'electron' then loadct,7
-  !p.multi=[0,16,4]
+; !p.multi=[0,16,4]
   for j=0,nenergies-1 do begin
+    angangdata_bytscl = bytscl(alog10(angangdata[*,*,*,j]),min=0.01)
     for i=0,nplots-1 do begin
+      if i eq nplots-1 then xyouts, 0.025, 1.-(float(j)/nenergies)+0.004*j, species+', Energy Bin Number: '+strcompress(string(energy_chan(j))),/normal, color=0
       thisind = i*res ;800 + i*res
+      if (res gt 1) and (avgdata eq 1) and (i gt 0) then thisangangdata = total(angangdata_bytscl[*,*,(thisind-res):thisind],3)/res $
+      else thisangangdata = angangdata_bytscl[*,*,thisind]
 
       ; setup the plot with margins and axes
       contour, padata[*,*,thisind], min_azi_edges + 180./n_azi, min_pol_edges + 90./n_pol,$
           YSTYLE=1, xstyle=1, XRANGE=[-180, 180], YRANGE=[-80, 80], xmargin=2, ymargin=[7, 2], $
-          title=timedata[thisind], yticks=4, xticks=3
+          title=timedata[thisind], yticks=4, xticks=3, c_charsize=0.4
       
       ; setup the contour levels
       num_levels = 6
@@ -237,13 +248,16 @@ if (i_print eq 1) then begin
       c_levels_str = strcompress(string(contourLevels), /rem)
       
       ; add the data
-      tvimage, alog10(angangdata[*,*,thisind,j]+.1), /axes, margin=0.33,xrange=[-180,180],yrange=[-80,80],$
+      tvimage, thisangangdata, /axes, margin=0.33,xrange=[-180,180],yrange=[-80,80],$
         background=255,Position= [0.1, 0.2, 0.98, 0.88] , title=timedata[thisind],$
-        AXKEYWORDS=axis_format, xstyle=1, ystyle=1, /overplot, /nointerp
+        AXKEYWORDS=axis_format, xstyle=1, ystyle=1, /overplot, /nointerpolation
       
       ; draw the contours
       contour, padata[*,*,thisind], min_azi_edges + 180./n_azi, min_pol_edges + 90./n_pol, $
-        Levels=contourLevels,C_Colors=255, /overplot, c_labels=c_levels_str
+        Levels=contourLevels,C_Colors=255, /overplot, c_labels=c_levels_str, c_charsize=0.4
+      
+      ; draw the colorbar
+      if i eq nplots-1 then draw_color_scale, range=[0.01, max(angangdata[*,*,*,j])], charsize=1.2, /log
     endfor
   endfor
   pclose

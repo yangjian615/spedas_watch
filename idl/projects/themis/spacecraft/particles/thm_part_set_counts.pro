@@ -22,8 +22,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-10 19:01:20 -0700 (Thu, 10 Sep 2015) $
-;$LastChangedRevision: 18768 $
+;$LastChangedDate: 2016-03-24 11:08:03 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20582 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_set_counts.pro $
 ;
 ;-
@@ -33,7 +33,7 @@ pro thm_part_set_counts, data, counts, set_units=set_units
     compile_opt idl2, hidden
 
 
-if ~ptr_valid(data) then begin
+if in_set(ptr_valid(data),0) then begin
   dprint, dlevel=1, 'Invalid input data; must be pointer array from thm_part_dist_array'
   return
 endif

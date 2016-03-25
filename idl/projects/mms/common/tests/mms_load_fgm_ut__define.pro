@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-16 12:16:42 -0700 (Wed, 16 Mar 2016) $
-; $LastChangedRevision: 20477 $
+; $LastChangedDate: 2016-03-24 08:23:02 -0700 (Thu, 24 Mar 2016) $
+; $LastChangedRevision: 20574 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
 
@@ -89,6 +89,19 @@ end
 function mms_load_fgm_ut::test_trange
     mms_load_fgm, trange=['2015-12-10', '2015-12-20'], level='l2', probe=1
     assert, spd_data_exists('mms1_fgm_b_dmpa_srvy_l2_bvec', '2015-12-11', '2015-12-20'), 'Problem with trange keyword while loading FGM data'
+    return, 1
+end
+
+function mms_load_fgm_ut::test_load_brst_spdf_suffix
+    mms_load_fgm, probe=1, level='l2', data_rate='brst', /spdf, suffix='brstdata'
+    assert, spd_data_exists('mms1_fgm_b_dmpa_brst_l2_bvecbrstdata mms1_fgm_b_gse_brst_l2_bvecbrstdata mms1_fgm_b_gsm_brst_l2_bvecbrstdata', '2015-12-15', '2015-12-16'), 'Problem loading L2 FGM data from SPDF with suffix keyword'
+    return, 1
+end
+
+function mms_load_fgm_ut::test_load_fgm_cdf_filenames
+    mms_load_fgm, probe=1, level='l2', /spdf, suffix='_fromspdf', cdf_filenames=spdf_filenames
+    mms_load_fgm, probe=1, level='l2', suffix='_fromsdc', cdf_filenames=sdc_filenames
+    assert, array_equal(spdf_filenames, sdc_filenames), 'Problem with cdf_filenames keyword (SDC vs. SPDF)'
     return, 1
 end
 

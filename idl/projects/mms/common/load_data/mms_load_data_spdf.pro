@@ -9,10 +9,8 @@
 ;         mms_load_xxx with the /spdf keyword set. 
 ; 
 ; KEYWORDS:
-; 
-; OUTPUT:
-; 
-; 
+;         See mms_load_data for keyword definitions
+;         
 ; EXAMPLE:
 ;    mms_load_data_spdf, probe=1, instrument='fgm', level='l2', trange=['2016-01-10', '2016-01-11']
 ; 
@@ -24,8 +22,8 @@
 ;       SPDF doesn't. 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-18 07:05:05 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20492 $
+;$LastChangedDate: 2016-03-24 07:54:44 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20572 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -35,7 +33,10 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
                    attitude_data = attitude_data, no_download = no_download, $
                    no_server = no_server, data_rate = data_rate, tplotnames = tplotnames, $
                    get_support_data = get_support_data, varformat = varformat, $
-                   center_measurement=center_measurement
+                   center_measurement=center_measurement, cdf_filenames = cdf_filenames, $
+                   cdf_records = cdf_records, min_version = min_version, $
+                   cdf_version = cdf_version, latest_version = latest_version, $
+                   time_clip = time_clip, suffix = suffix
 
     if not keyword_set(datatype) then datatype = '*'
     if not keyword_set(level) then level = 'l2'
@@ -166,14 +167,22 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
             relpathnames[path_idx] = real_path
         endfor
 
-        ;files = file_retrieve(relpathnames, /last_version, REMOTE_DATA_DIR=!mms.remote_data_dir)
         files = spd_download(remote_file=relpathnames, remote_path=remote_data_dir, $
           local_path = local_data_dir, $
           SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0) ; these keywords ignore certificate warnings
 
-        mms_cdf2tplot, files, tplotnames = new_tplotnames, get_support_data = get_support_data, $
-            varformat = varformat, center_measurement=center_measurement
+        mms_cdf2tplot, files, tplotnames = new_tplotnames, varformat=varformat, $
+                suffix = suffix, get_support_data = get_support_data, /load_labels, $
+                min_version=min_version,version=cdf_version,latest_version=latest_version, $
+                number_records=cdf_records, center_measurement=center_measurement
         append_array, tplotnames, new_tplotnames
+        
+        ; add the loaded files to the cdf_filenames keyword
+        append_array, cdf_filenames, files
+        
+        ; forget about the daily files for this probe
+        undefine, files
+        undefine, new_tplotnames
         
         data_count += 1
       endfor
@@ -181,7 +190,7 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
     
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin
-        if (n_elements(tr) eq 2) and (tplotnames[0] ne '') then begin
+        if (n_elements(tr) eq 2) and (tplotnames[0] ne '') and ~undefined(time_clip) then begin
             time_clip, tplotnames, tr[0], tr[1], replace=1, error=error
         endif
     endif

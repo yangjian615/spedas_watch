@@ -86,8 +86,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-22 09:14:01 -0700 (Tue, 22 Mar 2016) $
-;$LastChangedRevision: 20546 $
+;$LastChangedDate: 2016-03-24 08:20:01 -0700 (Thu, 24 Mar 2016) $
+;$LastChangedRevision: 20573 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -176,7 +176,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
           remote_data_dir = remote_data_dir, local_data_dir = local_data_dir, $
           attitude_data = attitude_data, no_download = no_download, $
           no_server = no_server, data_rate = data_rates, get_support_data = get_support_data, $
-          varformat = varformat, center_measurement=center_measurement
+          varformat = varformat, center_measurement=center_measurement, cdf_filenames = cdf_filenames, $
+          cdf_records = cdf_records, min_version = min_version, cdf_version = cdf_version, $
+          latest_version = latest_version, time_clip = time_clip, suffix = suffix
         return
     endif
 
@@ -243,6 +245,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 sdc_path = datatype ne '' ? sdc_path + '/' + datatype + daily_names : sdc_path + daily_names
                 file_dir = local_data_dir + strlowcase(probe + '/' + sdc_path)
                 
+                ; correct the path separator for this OS
+                file_dir = strjoin(strsplit(file_dir, '/', /extract), path_sep())
+                
                 same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)
 
                 if same_file eq 0 then begin
@@ -251,10 +256,10 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                     status = get_mms_science_file(filename=filename[file_idx], local_dir=file_dir, public=public)
 
                     dt_download += systime(/sec) - td0 ;temporary
-                    if status eq 0 then append_array, files, file_dir + '/' + filename[file_idx]
+                    if status eq 0 then append_array, files, file_dir + path_sep() + filename[file_idx]
                 endif else begin
-                    dprint, dlevel = 0, 'Loading local file ' + file_dir + '/' + filename[file_idx]
-                    append_array, files, file_dir + '/' + filename[file_idx]
+                    dprint, dlevel = 0, 'Loading local file ' + file_dir + path_sep() + filename[file_idx]
+                    append_array, files, file_dir + path_sep() + filename[file_idx]
                 endelse
             endfor
         
