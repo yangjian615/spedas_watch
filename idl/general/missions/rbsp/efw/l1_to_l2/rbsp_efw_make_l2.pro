@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-03-07 11:51:47 -0800 (Mon, 07 Mar 2016) $
-; $LastChangedRevision: 20345 $
+; $LastChangedDate: 2016-03-25 11:41:33 -0700 (Fri, 25 Mar 2016) $
+; $LastChangedRevision: 20588 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -588,8 +588,8 @@ pro rbsp_efw_make_l2,sc,date,$
      get_data,'rbsp'+sc+'_state_mlt',data=mlt
      get_data,'rbsp'+sc+'_state_mlat',data=mlat
      get_data,'rbsp'+sc+'_state_lshell',data=lshell
-     if keyword_set(orbit_num) then get_data,'rbsp'+sc+'_ME_orbitnumber',data=orbit_num else $
-        orbit_num = replicate(-1.e31,n_elements(times))
+     get_data,'rbsp'+sc+'_ME_orbitnumber',data=orbit_num
+     if is_struct(orbit_num) then orbit_num = orbit_num.y else orbit_num = replicate(-1.e31,n_elements(times))
      get_data,'rbsp'+sc+'_ME_lstar',data=lstar
      if is_struct(lstar) then lstar = lstar.y[*,0]
 
@@ -696,7 +696,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
 
@@ -779,7 +779,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
 
@@ -874,7 +874,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
      ;; cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
@@ -943,7 +943,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
 ;     cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
@@ -1021,7 +1021,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
 ;     cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
@@ -1105,7 +1105,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
@@ -1169,7 +1169,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
@@ -1250,7 +1250,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)

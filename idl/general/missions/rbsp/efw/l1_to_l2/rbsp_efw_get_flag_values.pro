@@ -10,8 +10,8 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-03-07 13:38:31 -0800 (Mon, 07 Mar 2016) $
-;   $LastChangedRevision: 20346 $
+;   $LastChangedDate: 2016-03-25 12:13:56 -0700 (Fri, 25 Mar 2016) $
+;   $LastChangedRevision: 20589 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
