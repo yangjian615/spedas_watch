@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-03-25 11:41:33 -0700 (Fri, 25 Mar 2016) $
-; $LastChangedRevision: 20588 $
+; $LastChangedDate: 2016-03-26 08:54:12 -0700 (Sat, 26 Mar 2016) $
+; $LastChangedRevision: 20590 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -670,7 +670,6 @@ pro rbsp_efw_make_l2,sc,date,$
 
      cdf_varput,cdfid,'epoch',epoch
 
-;     cdf_varrename,cdfid,'efw_qual','flags_all'
      cdf_varrename,cdfid,'e12_vxb_coro_spinfit_mgse','efield_spinfit_vxb_coro_e12'
      cdf_varrename,cdfid,'e34_vxb_coro_spinfit_mgse','efield_spinfit_vxb_coro_e34'
      
@@ -1014,7 +1013,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
 ;spinfit resolution
      cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
-     cdf_varput,cdfid,'flags_all',transpose(flag_arr)
+     cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
      cdf_varput,cdfid,'mlt',transpose(mlt.y)
      cdf_varput,cdfid,'mlat',transpose(mlat.y)
      cdf_varput,cdfid,'lshell',transpose(lshell.y)
