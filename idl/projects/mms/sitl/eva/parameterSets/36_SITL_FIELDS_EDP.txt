@@ -1,8 +1,8 @@
 
 mms*_dfg_srvy_dmpa; Bx, By, Bz (DMPA is similar to DSL)
 mms*_dfg_srvy_dmpa_m; |B|
-mms*_edp_fast_dce_dsl_xy; Ex, Ey, Ez (DSL)
-mms*_edp_fast_dce_dsl_z
+mms*_edp_fast_dce_sitl_xy; Ex, Ey, Ez (DSL)
+mms*_edp_fast_dce_sitl_z
 mms*_edp_fast_scpot; SC-potential
 mms*_fpi_DISnumberDensity; FPI Ni
 ;mms*_exb_dsl   ; (ExB)

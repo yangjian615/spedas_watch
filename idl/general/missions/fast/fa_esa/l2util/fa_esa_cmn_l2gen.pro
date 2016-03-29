@@ -45,8 +45,12 @@
 ;   SC_POT          FLOAT     Array[59832]
 ;   BKG_ARR         FLOAT     Array[96, 64]
 ;   HEADER_BYTES    BYTE      Array[44, 59832]
-;   DATA            BYTE      Array[96, 64, 59832] ;save this and not data0,1,2
-;   EFLUX           FLOAT     Array[96, 64, 59832]
+;   DATA            BYTE      Array[59832, 96, 64]
+;   EFLUX           FLOAT     Array[59832, 96, 64]
+;   ENERGY_FULL     FLOAT     Array[59832, 96, 64]
+;   DENERGY_FULL    FLOAT     Array[59832, 96, 64]
+;   PITCH_ANGLE     FLOAT     Array[59832, 96, 64]
+;   DOMEGA          FLOAT     Array[59832, 96, 64]
 ;KEYWORDS:
 ; otp_struct = this is the structure that is passed into
 ;              cdf_save_vars to create the file
@@ -56,8 +60,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-11 10:23:53 -0800 (Fri, 11 Mar 2016) $
-; $LastChangedRevision: 20411 $
+; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
+; $LastChangedRevision: 20609 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -195,12 +199,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      Have_tag = where(cvars Eq vj, nhave_tag)
      If(nhave_tag Gt 0) Then Begin
         dvar = cmn_dat.(have_tag)
-;cdf_save_vars2 expects the ntimes to be first for 2, 3-d variables
-        If(vj Eq 'data' Or vj Eq 'eflux' Or $
-           vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
-           vj Eq 'denergy_full' Or vj Eq 'domega') Then Begin
-           dvar = transpose(dvar, [2, 0, 1])
-        Endif Else If(vj Eq 'header_bytes') Then dvar = transpose(dvar)
+        If(vj Eq 'header_bytes') Then dvar = transpose(dvar)
      Endif Else Begin
 ;Case by case basis
         Case vj of
@@ -569,12 +568,10 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
   otp_struct.g_attributes.logical_source = 'fa_esa_l2_'+ext
 
 ;save the file -- full database management
-  If(keyword_set(no_compression)) Then Begin
-     dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)
-  Endif Else Begin
-     dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update, $
-                           /set_compression)
-  Endelse
+  dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)
+  If(~keyword_set(no_compression)) Then Begin
+      spawn, '/usr/local/pkg/cdf-3.6.1_CentOS-6.6/bin/cdfconvert '+fullfile0+' '+fullfile0+' -compression vars:gzip.5 -delete'
+  Endif
 
   Return
 End

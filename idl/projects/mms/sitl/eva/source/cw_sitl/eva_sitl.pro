@@ -275,7 +275,7 @@ PRO eva_sitl_seg_edit, t, state=state, var=var, delete=delete, split=split
         if ct eq 1 then begin
           m = idx[0] 
           segSelect = {ts:s.START[m],te:s.STOP[m]+10.d0,fom:s.FOM[m],$
-            BAK:BAK,discussion:' ', var:var, $
+            BAK:BAK,discussion:s.DISCUSSION[m], var:var, $
             createtime:s.CREATETIME[m],datasegmentid:s.DATASEGMENTID[m],finishtime:s.FINISHTIME[m],$
             inplaylist:s.INPLAYLIST[m],ispending:s.ISPENDING[m],numevalcycles:s.NUMEVALCYCLES[m],$
             parametersetid:s.PARAMETERSETID[m],seglengths:s.SEGLENGTHS[m],sourceid:s.SOURCEID[m],$

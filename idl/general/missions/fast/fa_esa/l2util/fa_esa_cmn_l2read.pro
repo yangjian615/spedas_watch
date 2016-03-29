@@ -45,12 +45,12 @@
 ;   SC_POT          FLOAT     Array[59832]
 ;   BKG_ARR         FLOAT     Array[96, 64]
 ;   HEADER_BYTES    BYTE      Array[44, 59832]
-;   DATA            BYTE      Array[96, 64, 59832]
-;   EFLUX           FLOAT     Array[96, 64, 59832]
-;   ENERGY_FULL     FLOAT     Array[96, 64, 59832]
-;   DENERGY_FULL    FLOAT     Array[96, 64, 59832]
-;   PITCH_ANGLE     FLOAT     Array[96, 64, 59832]
-;   DOMEGA          FLOAT     Array[96, 64, 59832]
+;   DATA            BYTE      Array[59832, 96, 64]
+;   EFLUX           FLOAT     Array[59832, 96, 64]
+;   ENERGY_FULL     FLOAT     Array[59832, 96, 64]
+;   DENERGY_FULL    FLOAT     Array[59832, 96, 64]
+;   PITCH_ANGLE     FLOAT     Array[59832, 96, 64]
+;   DOMEGA          FLOAT     Array[59832, 96, 64]
 ;   ORBIT_START     LONG
 ;   ORBIT_END       LONG
 ;KEYWORDS:
@@ -62,8 +62,8 @@
 ;HISTORY:
 ; 2014-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-08 14:31:52 -0800 (Tue, 08 Mar 2016) $
-; $LastChangedRevision: 20352 $
+; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
+; $LastChangedRevision: 20609 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2read.pro $
 ;-
 Function fa_esa_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra = _extra
@@ -137,6 +137,7 @@ Function fa_esa_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra =
         count = count+1
      Endelse
   Endfor
+
 ;Done, cmn_dat is only defined if count > 0
   If(count Gt 0) Then Return, cmn_dat Else Return, otp
 

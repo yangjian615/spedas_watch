@@ -42,9 +42,12 @@
 ;   SC_POT          FLOAT     Array[59832]
 ;   BKG_ARR         FLOAT     Array[96, 64]
 ;   HEADER_BYTES    BYTE      Array[44, 59832]
-;data, eflux and orbit are filled here, all else is input
-;   DATA            BYTE      Array[96, 64, 59832]
-;   EFLUX           FLOAT     Array[96, 64, 59832]
+;   DATA            BYTE      Array[59832, 96, 64]
+;   EFLUX           FLOAT     Array[59832, 96, 64]
+;   ENERGY_FULL     FLOAT     Array[59832, 96, 64]
+;   DENERGY_FULL    FLOAT     Array[59832, 96, 64]
+;   PITCH_ANGLE     FLOAT     Array[59832, 96, 64]
+;   DOMEGA          FLOAT     Array[59832, 96, 64]
 ;   ORBIT_START     LONG
 ;   ORBIT_END       LONG
 ;;OUTPUT:
@@ -52,8 +55,8 @@
 ;HISTORY:
 ; 19-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-08 09:15:11 -0700 (Tue, 08 Sep 2015) $
-; $LastChangedRevision: 18724 $
+; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
+; $LastChangedRevision: 20609 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_concat.pro $
 ;-
 Function fa_esa_cmn_concat, dat1, dat2

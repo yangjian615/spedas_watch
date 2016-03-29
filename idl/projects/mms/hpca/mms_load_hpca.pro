@@ -70,8 +70,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-24 16:27:51 -0700 (Thu, 24 Mar 2016) $
-;$LastChangedRevision: 20585 $
+;$LastChangedDate: 2016-03-28 08:54:18 -0700 (Mon, 28 Mar 2016) $
+;$LastChangedRevision: 20591 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -114,6 +114,10 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
     endif else begin
         ; required to center the measurements
         if undefined(get_support_data) then get_support_data = 1
+        if ~undefined(datatype) && (datatype ne 'ion' && datatype ne 'moments') then begin
+            dprint, dlevel = 0, "Unknown datatype: " + datatype + " for L2 HPCA data; expected 'ion' or 'moments', loading 'ion'"
+            datatype='ion'
+        endif
     endelse
     if ~undefined(center_measurement) && ~undefined(varformat) && varformat ne '*' then begin
       dprint, dlevel = 0, 'Error, cannot specify both the varformat keyword and center measurement keyword in the same call (measurements won''t be centered).'

@@ -1,6 +1,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; neutral_sheet - this routine will calculate the distance to the neutral sheet. 
+; neutral_sheet - This routine calculates the NS position along the zaxis 
+;                 at a specific x and y location, Z of the NS in gsm coordinates. 
+;                 The value is positive if the NS is above Z=0 gsm plane, negative if below
+;                 All input,output in re.
 ;                 Models include 'sm','themis', 'aen', 'den', 'fairfield',  
 ;                 'den-fairfield', 'lopez'. Default is 'themis'. 
 ;
@@ -23,20 +26,24 @@
 ;           'lopez'. Default is 'themis'.
 ;   kp - kp value used by the lopez model. Default value is 0.
 ;   mlt - magnetic latitude in degrees used by the lopez model. Default is 0.0
-;   in_coord - set this keyword to the input coordinate system if the data
-;              is not in gsm coordiantes. Valid coordinate systems are: 
+;   in_coord - set this keyword equal to the input coordinate system of the data
+;              if it's not in gsm coordiantes. Valid coordinate systems are: 
 ;              [gei, gsm, sm, gse, geo]
-;   sc2NS - if set, wrapper returns distance to the neutral sheet from the spacecraft 
-;           position
+;   sc2NS - if set, the routine returns distance to the neutral sheet from the spacecraft 
+;           position 
 ;   
 ; Output Keywords:
 ;    
-;   distance2NS - distance to the neutral sheet from XY plane (default) or
-;                 distance to the neutral sheet from the spacecraft position (if sc2NS is set)
+;   distance2NS - Z of the NS in gsm coordinates. The value is positive if the NS is above Z=0 gsm plane, 
+;                 negative if below 
+;                 If /sc2NS is set the value is positive if the NS is northward of the SC location, 
+;                 and negative if below 
 ;
 ; Example:
 ;   neutral_sheet, time, gsm_pos, model='themis', distance2NS=distance2NS
-;
+;   neutral_sheet, time, gsm_pos, model='lopez', kp=kp, mlt=mlt
+;   neutral_sheet, time, gsm_ops, model='sm', /sc2NS
+;   
 ;  Modification History:
 ;    Initial Release - clrussell, 03-26-12
 ;
@@ -44,8 +51,7 @@
 ;  1. The THM model returns the closest results at larger distances and 
 ;     the LM model - for smaller distances.
 ;  2. While the model scripts work, there is no such thing as the best 
-;     or most accurate model.
-;  3. 
+;     or most accurate model. 
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -55,13 +61,12 @@
 ; sm_ns_model
 ;
 ;PURPOSE:
-; This routine calculates the position along the zaxis at a specific
-; x and y location. The distance to the neutral sheet is the z
-; component of the position data where gsm has been converted to sm, 
-; dz2ns=sm[*,2].
+; This routine calculates the NS position along the zaxis at a specific x and y location. 
 ;
 ;CALLING SEQUENCE:
-; zthemis=neutral_sheet(time, position)
+; zNS=sm_ns_model(time, position)
+; or
+; dz2NS=sm_ns_model(time, position, /sc2ns)
 ;
 ;INPUT:
 ; time - string or double format
@@ -69,12 +74,12 @@
 ;        string(s)  format:  YYYY-MM-DD/hh:mm:ss
 ; gsm_pos - position vector in GSM coordinates in re (pos[*,3])
 ;
-;OUTPUT:
-;   (default) - displacement of the neutral sheet above or below the XY plane, Re
-;   if 'sc2NS' is set - returns distance to the neutral sheet from the S/C position, Re
+;OUTPUT: returns Z displacement of the neutral sheet above or below the XY plane in Re (zgsm of the NS) 
+;        Value is positive if NS is above z=0 gsm plane, negative if below
 ;    
 ;KEYWORDS
-;    sc2NS - if set, returns distance from the spacecraft location to the neutral sheet
+;    sc2NS - if set returns Z displacement from the spacecraft to the neutral sheet 
+;            Value is positive if the NS is northward of the SC location, and negative if below
 ;    
 ;    
 ;NOTES:
@@ -88,12 +93,12 @@ FUNCTION sm_ns_model, time, gsm_pos, sc2NS=sc2NS
 
 ; convert gsm to sm coordinates
 cotrans,gsm_pos,sm_pos,time,/GSM2SM
-dz2ns = -sm_pos[*,2]
+zns = gsm_pos[*,2] - sm_pos[*,2]
 
 IF undefined(sc2NS) THEN BEGIN
-  RETURN, dz2ns
+  RETURN, zns
 ENDIF ELSE BEGIN
-  sc2NS = gsm_pos[*,2] - dz2ns
+  sc2NS = gsm_pos[*,2] - zns
   RETURN, sc2NS
 ENDELSE
 
@@ -110,22 +115,19 @@ END
 ; The themis model uses z-sm (converted from z-gsm) for the inner probes
 ; and the Hammond model for the outer probes.
 ;
-;CALLING SEQUENCE:
-; dz2ns=neutral_sheet(time, position)
-;
 ;INPUT:
 ; time - string or double format
 ;        double(s)  seconds since 1970
 ;        string(s)  format:  YYYY-MM-DD/hh:mm:ss
 ; gsm_pos - position vector in GSM coordinates in re (pos[*,3])
 ;
-;OUTPUT:
-;   (default) - displacement of the neutral sheet above or below the XY plane, Re
-;   if 'sc2NS' is set - returns distance to the neutral sheet from the S/C position, Re
-;    
+;OUTPUT: returns Z displacement of the neutral sheet above or below the XY plane in Re (zgsm of the NS)
+;        Value is positive if NS is above z=0 gsm plane, negative if below
+;
 ;KEYWORDS
-;    sc2NS - if set, returns distance from the spacecraft location to the neutral sheet
-;    
+;    sc2NS - if set returns Z displacement from the spacecraft to the neutral sheet
+;            Value is positive if the NS is northward of the SC location, and negative if below
+;
 ;NOTES;
 ; Reference:
 ; The themis model uses z-sm (converted from z-gsm) for the inner probes
@@ -194,10 +196,9 @@ IF ncnt GT 0 THEN BEGIN
 ENDIF
 
 IF undefined(sc2NS) THEN BEGIN
-  RETURN, dz2ns
+  RETURN, gsm_pos[*,2] - (-dz2ns)
 ENDIF ELSE BEGIN
-  sc2NS = gsm_pos[*,2] - dz2ns
-  RETURN, sc2NS
+  RETURN, -dz2ns
 ENDELSE
 
 END
@@ -210,22 +211,18 @@ END
 ;PURPOSE:  This program is to find the AEN(Analytical Equatorial Neutral) sheet in the 
 ;          magnetopause in different time and position
 ;
-;CALLING SEQUENCE:
-; zaen=neutral_sheet(time, position)
-;
 ;INPUT:
 ; time - string or double format
 ;        double(s)  seconds since 1970
 ;        string(s)  format:  YYYY-MM-DD/hh:mm:ss
-; gsm_pos - position vector in GSM coordinates in re (pos[*,3]
+; gsm_pos - position vector in GSM coordinates in re (pos[*,3])
 ;
-;OUTPUT:
-;   (default) - displacement of the neutral sheet above or below the XY plane, Re
-;   if 'sc2NS' is set - returns distance to the neutral sheet from the S/C position, Re
-;    
+;OUTPUT: returns Z displacement of the neutral sheet above or below the XY plane in Re (zgsm of the NS)
+;        Value is positive if NS is above z=0 gsm plane, negative if below
+;
 ;KEYWORDS
-;    sc2NS - if set, returns distance from the spacecraft location to the neutral sheet
-;
+;    sc2NS - if set returns Z displacement from the spacecraft to the neutral sheet
+;            Value is positive if the NS is northward of the SC location, and negative if below
 ; 
 ;NOTES:
 ;
@@ -278,8 +275,7 @@ ENDFOR
 IF undefined(sc2NS) THEN BEGIN
   RETURN, dz2ns
 ENDIF ELSE BEGIN
-  sc2NS = gsm_pos[*,2] - dz2ns
-  RETURN, sc2NS
+  RETURN, gsm_pos[*,2]-dz2ns
 ENDELSE
 
 END
@@ -294,23 +290,19 @@ END
 ;  the magnetopause in different tine and positions. The routine calculates 
 ;  the position along the zaxis at a specific location. 
 ;
-;CALLING SEQUENCE:
-; dz2ns=neutral_sheet(time, position)
-;
 ;INPUT:
 ; time - string or double format
 ;        double(s)  seconds since 1970
 ;        string(s)  format:  YYYY-MM-DD/hh:mm:ss
 ; gsm_pos - position vector in GSM coordinates in re (pos[*,3])
 ;
-;OUTPUT:
-;   (default) - displacement of the neutral sheet above or below the XY plane, Re
-;   if 'sc2NS' is set - returns distance to the neutral sheet from the S/C position, Re
+;OUTPUT: returns Z displacement of the neutral sheet above or below the XY plane in Re (zgsm of the NS) 
+;        Value is positive if NS is above z=0 gsm plane, negative if below
 ;    
 ;KEYWORDS
-;    sc2NS - if set, returns distance from the spacecraft location to the neutral sheet
-;
-;
+;    sc2NS - if set returns Z displacement from the spacecraft to the neutral sheet 
+;            Value is positive if the NS is northward of the SC location, and negative if below
+;    
 ;NOTES: 
 ;References:
 ;(1) DEN(Displaced Equatorial Neutral):
@@ -487,23 +479,19 @@ END
 ; This routine calculates the position along the zaxis at a specific
 ; x and y location. The Fairfield model is used to this calculation.
 ;
-;CALLING SEQUENCE:
-; zaen=neutral_sheet(time, position, [rmp=rmp], [ie=ie]
-;
 ;INPUT:
 ; time - string or double format
 ;        double(s)  seconds since 1970
 ;        string(s)  format:  YYYY-MM-DD/hh:mm:ss
 ; gsm_pos - position vector in GSM coordinates in re (pos[*,3])
 ;
-;OUTPUT:
-;   (default) - displacement of the neutral sheet above or below the XY plane, Re
-;   if 'sc2NS' is set - returns distance to the neutral sheet from the S/C position, Re
+;OUTPUT: returns Z displacement of the neutral sheet above or below the XY plane in Re (zgsm of the NS) 
+;        Value is positive if NS is above z=0 gsm plane, negative if below
 ;    
 ;KEYWORDS
-;    sc2NS - if set, returns distance from the spacecraft location to the neutral sheet
-;
-;
+;    sc2NS - if set returns Z displacement from the spacecraft to the neutral sheet 
+;            Value is positive if the NS is northward of the SC location, and negative if below
+;    
 ;NOTES:
 ;Reference:
 ; A statistical determination of the shape and position of the 
@@ -575,21 +563,19 @@ END
 ; This routine calculates the position along the zaxis at a specific
 ; x and y location. 
 ;
-;CALLING SEQUENCE:
-; dz2ns=den_fairfield_ns_model(time, position)
-;
 ;INPUT:
 ; time - string or double format
 ;        double(s)  seconds since 1970
 ;        string(s)  format:  YYYY-MM-DD/hh:mm:ss
-; gsm_pos - position vector in GSM coordinates in re (pos[*,3]
+; gsm_pos - position vector in GSM coordinates in re (pos[*,3])
 ;
-;OUTPUT:
-;   (default) - displacement of the neutral sheet above or below the XY plane, Re
-;   if 'sc2NS' is set - returns distance to the neutral sheet from the S/C position, Re
+;OUTPUT: returns Z displacement of the neutral sheet above or below the XY plane in Re (zgsm of the NS) 
+;        Value is positive if NS is above z=0 gsm plane, negative if below
 ;    
 ;KEYWORDS
-;    sc2NS - if set, returns distance from the spacecraft location to the neutral sheet
+;    sc2NS - if set returns Z displacement from the spacecraft to the neutral sheet 
+;            Value is positive if the NS is northward of the SC location, and negative if below
+;    
 ; 
 ;HISTORY:
 ;
@@ -628,23 +614,20 @@ END
 ; This routine calculates the position along the zaxis at a specific
 ; x and y location. The Lopez model is used for this calculation. 
 ;
-;CALLING SEQUENCE:
-; dz2NS=lopez_NS_model(time, position, kp, mlt)
-;
 ;INPUT:
 ; time - string or double format
 ;        double(s)  seconds since 1970
 ;        string(s)  format:  YYYY-MM-DD/hh:mm:ss
-; gsm_pos - position vector in re, GSM Coordinates (pos[*,3]) 
+; gsm_pos - position vector in GSM coordinates in re (pos[*,3])
 ; kp - kp index value
 ; mlt - magnetic local time in degrees (0=midnight)
 ;
-;OUTPUT:
-;   (default) - displacement of the neutral sheet above or below the XY plane, Re
-;   if 'sc2NS' is set - returns distance to the neutral sheet from the S/C position, Re
-;    
+;OUTPUT: returns Z displacement of the neutral sheet above or below the XY plane in Re (zgsm of the NS)
+;        Value is positive if NS is above z=0 gsm plane, negative if below
+;
 ;KEYWORDS
-;    sc2NS - if set, returns distance from the spacecraft location to the neutral sheet
+;    sc2NS - if set returns Z displacement from the spacecraft to the neutral sheet
+;            Value is positive if the NS is northward of the SC location, and negative if below
 ;
 ;NOTES:
 ;Reference:

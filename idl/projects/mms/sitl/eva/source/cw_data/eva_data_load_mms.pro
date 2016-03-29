@@ -259,9 +259,9 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
         pcode=36
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_edp_fast_dce_*') and (cp eq 0)) then begin
-          mms_sitl_get_edp,sc=sc
+          mms_sitl_get_edp,sc=sc, level = 'sitl'
           
-          tn = tnames(sc+'_edp_fast_dce_dsl',cnt)
+          tn = tnames(sc+'_edp_fast_dce_sitl',cnt)
           if (strlen(tn[0]) gt 0) and (cnt eq 1) then begin
             options,tn,labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
               colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
@@ -269,7 +269,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
             get_data,tn,data=D,dl=dl,lim=lim
             str_element,/add,'lim','labels',['X','Y']
             str_element,/add,'lim','colors',[2,4]
-            store_data,sc+'_edp_fast_dce_dsl_xy',data={x:D.x,y:D.y[*,0:1]},dl=dl,lim=lim
+            store_data,sc+'_edp_fast_dce_sitl_xy',data={x:D.x,y:D.y[*,0:1]},dl=dl,lim=lim
             
           endif
           answer = 'Yes'
@@ -432,6 +432,16 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_exbql_*') and (cp eq 0)) then begin
           eva_data_load_mms_exb,sc=sc,vthres=500.,/ql
+          answer = 'Yes'
+        endif
+        
+        ;------------
+        ; SW
+        ;------------
+        pcode=83
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_sw_*') and (cp eq 0)) then begin
+          eva_data_load_mms_sw,sc=sc
           answer = 'Yes'
         endif
         

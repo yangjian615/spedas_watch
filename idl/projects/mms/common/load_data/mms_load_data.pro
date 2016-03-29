@@ -86,8 +86,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-24 08:20:01 -0700 (Thu, 24 Mar 2016) $
-;$LastChangedRevision: 20573 $
+;$LastChangedDate: 2016-03-28 09:27:03 -0700 (Mon, 28 Mar 2016) $
+;$LastChangedRevision: 20594 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -246,7 +246,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 file_dir = local_data_dir + strlowcase(probe + '/' + sdc_path)
                 
                 ; correct the path separator for this OS
-                file_dir = strjoin(strsplit(file_dir, '/', /extract), path_sep())
+                if strlowcase(!version.os_family) eq 'windows' then file_dir = strjoin(strsplit(file_dir, '/', /extract), path_sep())
                 
                 same_file = mms_check_file_exists(remote_file_info[file_idx], file_dir = file_dir)
 

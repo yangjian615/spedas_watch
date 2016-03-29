@@ -119,9 +119,9 @@
 ;
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
-; $LastChangedBy: hara $
-; $LastChangedDate: 2015-11-09 15:59:08 -0800 (Mon, 09 Nov 2015) $
-; $LastChangedRevision: 19325 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-03-28 17:09:22 -0700 (Mon, 28 Mar 2016) $
+; $LastChangedRevision: 20611 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -494,11 +494,19 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
   FOR i=0L, ndat-1L DO BEGIN
      IF keyword_set(dtype) THEN BEGIN
         ddd = mvn_swe_get3d(dat_time[idx[i]], units=units, archive=archive)
+        if keyword_set(sc_pot) then begin
+          pot = swe_sc_pot[nn(swe_sc_pot.time, ddd.time)].potential
+          if (finite(pot)) then begin
+            mvn_swe_convert_units, ddd, 'df'
+            ddd.energy -= pot
+            mvn_swe_convert_units, ddd, units
+          endif
+        endif
         dtime = ddd.time
         tabok = ddd.chksum eq 'CC'X
         energy = average(ddd.energy, 2)
 
-        IF keyword_set(swia) OR keyword_set(sc_pot) THEN $
+        IF keyword_set(swia) THEN $
            ddd = mvn_swe_pad_resample_swia(ddd, archive=archive, interpolate=interpolate, $
                                            silent=silent, sc_pot=sc_pot)
         
@@ -516,6 +524,14 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
      ENDIF ELSE BEGIN
         pad = mvn_swe_getpad(dat_time[idx[i]], units=units, archive=archive)
         IF (hflg) THEN pad = mvn_swe_padmap_32hz(pad, fbdata=fbdata, verbose=verbose)
+        if keyword_set(sc_pot) then begin
+          pot = swe_sc_pot[nn(swe_sc_pot.time, pad.time)].potential
+          if (finite(pot)) then begin
+            mvn_swe_convert_units, pad, 'df'
+            pad.energy -= pot
+            mvn_swe_convert_units, pad, units
+          endif
+        endif
         dtime = pad.time
         tabok = pad.chksum eq 'CC'X
         dname = pad.data_name

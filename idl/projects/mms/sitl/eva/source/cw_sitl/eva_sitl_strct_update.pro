@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-10-19 07:10:19 -0700 (Mon, 19 Oct 2015) $
-; $LastChangedRevision: 19105 $
+; $LastChangedDate: 2016-03-28 15:31:36 -0700 (Mon, 28 Mar 2016) $
+; $LastChangedRevision: 20606 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVERRIDE
@@ -193,6 +193,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
             s.STATUS[N] = 'MODIFIED'
             s.CHANGESTATUS[N] = 1L; REQUIRED BY RICK (signifies the segment was modified)
             s.SOURCEID[N] = defSourceID
+            s.DICUSSION[n] = segSelect.DISCUSSION
           endif else begin;............................ DELETE
             s.STATUS[N] = 'DELETED'
             s.CHANGESTATUS[N] = 2L; REQUIRED BY RICK (signifies the segment was deleted) 
@@ -219,6 +220,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
         str_element,/add,s,'SOURCEID',[s.SOURCEID,defSourceID]; the SITL responsible for defining the segment
         str_element,/add,s,'CREATETIME',[s.CREATETIME,'']; the UTC time the segment was defined and entered into BDM
         str_element,/add,s,'FINISHTIME',[s.FINISHTIME,'']; the UTC time when the segment was no longer pending any more processing.
+        str_element,/add,s,'DISCUSSION',segSelect.DISCUSSION
       endif
 
       ;update 'mms_sitl_bakstr'

@@ -23,7 +23,7 @@ mms*_hpca_hplus_RF_corrected
 mms*_hpca_heplusplus_RF_corrected
 mms*_hpca_oplus_RF_corrected
 
-mms*_edp_fast_dce_dsl
+mms*_edp_fast_dce_sitl
 
 mms*_edp_srvy_EPSD_x
 mms*_dsp_bpsd_omni

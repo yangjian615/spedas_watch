@@ -75,13 +75,38 @@ FUNCTION eva_data_load_reformat, paramlist, probelist, FOURTH=fourth
             Dnew = DD.y[*,2]
             newlabel = lim.labels[2]
           endif
-          ;if ct eq 1 then begin
-            if strlen(newlabel) gt 0 then str_element,lim,'labels',newlabel,/add
-            str_element,lim,'colors',[pcolor],/add
-            if strlen(ysubtitle) gt 0 then str_element,lim,'ysubtitle',ysubtitle,/add
-            ;str_element,lim,'labels',/delete
-          ;endif
+          
+          if (strpos(paramlist[i],'_p') ge 0) then begin
+            sfx = '_p'
+            pcolor = 0
+            ysubtitle = '(phi)'
+            xyz_to_polar,tname,phi=phi
+            get_data,phi,data=DDD
+            Dnew = DDD.y
+            newlabel = ' '
+          endif
+          if (strpos(paramlist[i],'_t') ge 0) then begin
+            sfx = '_t'
+            pcolor = 0
+            ysubtitle = '(theta)'
+            xyz_to_polar,tname,theta=theta
+            get_data,theta,data=DDD
+            Dnew = DDD.y
+            newlabel = ' '
+          endif
+          
+          if strlen(newlabel) gt 0 then str_element,lim,'labels',newlabel,/add
+          str_element,lim,'colors',[pcolor],/add
+          if strlen(ysubtitle) gt 0 then str_element,lim,'ysubtitle',ysubtitle,/add
           store_data, tname+sfx, data={x:DD.x,y:Dnew},lim=lim,dl=dl
+          if (strpos(paramlist[i],'_p') ge 0) then begin
+            ylim, tname+sfx, -180, 180, 0
+            options, tname+sfx, ystyle=1, constant=[-90,0,90]
+          endif
+          if (strpos(paramlist[i],'_t') ge 0) then begin
+            ylim, tname+sfx, -90, 90, 0
+            options, tname+sfx, ystyle=1, constant=[-45,0,45]
+          endif
         endif; if size(DD.y
       endfor; for each probe
     endif ; if match (i.e. sfx found)

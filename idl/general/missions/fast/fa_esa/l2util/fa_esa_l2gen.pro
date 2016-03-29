@@ -14,8 +14,8 @@
 ;HISTORY:
 ; 2015-09-02, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-13 16:13:25 -0800 (Fri, 13 Nov 2015) $
-; $LastChangedRevision: 19371 $
+; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
+; $LastChangedRevision: 20609 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2gen.pro $
 ;-
 Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
@@ -28,7 +28,6 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
   catch, error_status
   
   If(error_status ne 0) Then Begin
-     print, '%FA_ESA_L2GEN: Got Error Message'
      help, /last_message, output = err_msg
      For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
      If(load_position Eq 'init') Then Begin

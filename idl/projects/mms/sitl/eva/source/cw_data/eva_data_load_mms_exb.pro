@@ -17,10 +17,10 @@ PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql
   
   ; E
   ;------------
-  tn = tnames(sc+'_edp_fast_dce_dsl',ct)
+  tn = tnames(sc+'_edp_fast_dce_sitl',ct)
   if ct ne 1 then begin
-    mms_sitl_get_edp,sc=sc
-    options,sc+'_edp_fast_dce_dsl', $
+    mms_sitl_get_edp,sc=sc, level = 'sitl'
+    options,sc+'_edp_fast_dce_sitl', $
       labels=['X','Y','Z'],ytitle=sc+'!CEDP!Cfast',ysubtitle='[mV/m]',$
       colors=[2,4,6],labflag=-1,yrange=[-20,20],constant=0
   endif
@@ -28,9 +28,9 @@ PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql
   ; ExB
   ;------------
   get_data,sc+'_dfg_srvy_dmpa',data=B
-  get_data,sc+'_edp_fast_dce_dsl',data=E,dl=dl,lim=lim
+  get_data,sc+'_edp_fast_dce_sitl',data=E,dl=dl,lim=lim
   tnB = tnames(sc+'_dfg_srvy_dmpa',ctB)
-  tnE = tnames(sc+'_edp_fast_dce_dsl',ctE)
+  tnE = tnames(sc+'_edp_fast_dce_sitl',ctE)
   if ctB eq 1 and ctE eq 1 then begin
     ; E has a higher time resolution than B
     ; Here, we interpolate B so that its timestamps will match with those of E.

@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-15 11:09:28 -0700 (Tue, 15 Mar 2016) $
-;$LastChangedRevision: 20466 $
+;$LastChangedDate: 2016-03-28 15:57:01 -0700 (Mon, 28 Mar 2016) $
+;$LastChangedRevision: 20610 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_login_lasp.pro $
 ;-
 
@@ -53,7 +53,19 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
         endif else begin
             dprint, dlevel=1, 'No valid credentials found in '+file_expand_path(login_info)
         endelse
-    endif 
+    endif else begin
+        ; look for the SITL login info
+        save_file = getenv('HOME') + '/.mms_sitl_login.sav'
+        if file_test(save_file) then begin 
+          restore, save_file
+          ; user/pass stored in a struct named 'login'
+          if is_struct(login) then begin
+            username = login.username
+            password = login.password
+            dprint, dlevel = 1, 'Using login info from SITL file'
+          endif
+        endif
+    endelse
     
     
     ; prompt the user for their SDC username/password none was found in file

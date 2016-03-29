@@ -37,6 +37,9 @@
 ;       SCP:           Override any other estimates of the spacecraft potential and
 ;                      force it to be this value.
 ;
+;       SHIFTPOT:      Correct for the spacecraft potential.  Spectra are shifted from
+;                      the spacecraft frame to the plasma frame.
+;
 ;       LABEL:         If set, label the anode and deflection bin numbers.
 ;
 ;       KEEPWINS:      If set, then don't close the snapshot window(s) on exit.
@@ -105,8 +108,8 @@
 ;                      one gyroradius.  Only works when HIRES is set.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-06 15:05:53 -0800 (Sun, 06 Mar 2016) $
-; $LastChangedRevision: 20336 $
+; $LastChangedDate: 2016-03-28 17:21:35 -0700 (Mon, 28 Mar 2016) $
+; $LastChangedRevision: 20614 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -118,7 +121,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   pot=pot, scp=scp, spec=spec, plotlims=plotlims, norm=norm, $
                   center=center, pep=pep, resample=resample, hires=hires, $
                   fbdata=fbdata, window=window, adiabatic=adiabatic, $
-                  nomid=nomid, uncertainty=uncertainty, nospec90=nospec90
+                  nomid=nomid, uncertainty=uncertainty, nospec90=nospec90, $
+                  shiftpot=shiftpot
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -155,6 +159,13 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if keyword_set(norm) then nflg = 1 else nflg = 0
   if keyword_set(pot) then dopot = 1 else dopot = 0
   if (size(scp,/type) eq 0) then scp = !values.f_nan else scp = float(scp[0])
+  if keyword_set(shiftpot) then begin
+    spflg = 1
+    xrange = [1.,5000.]
+  endif else begin
+    spflg = 0
+    xrange = [3.,5000.]
+  endelse
   if keyword_set(label) then begin
     dolab = 1
     abin = string(indgen(16),format='(i2.2)')
@@ -277,7 +288,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
 ; Set plot options
 
-  limits = {no_interp:1, xlog:1, xrange:[3,5000], xstyle:1, xtitle:'Energy (eV)', $
+  limits = {no_interp:1, xlog:1, xrange:xrange, xstyle:1, xtitle:'Energy (eV)', $
             yrange:[0,180], ystyle:1, yticks:6, yminor:3, ytitle:'Pitch Angle (deg)', $
             zlog:1, ztitle:strupcase(units), xmargin:[15,15], charsize:1.4}
 
@@ -338,6 +349,16 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     endif
     
     if (size(pad,/type) eq 8) then begin
+  
+      if (spflg) then begin
+        if (finite(scp)) then pot = scp else begin
+          pot = swe_sc_pot[nn(swe_sc_pot.time, pad.time)].potential
+          if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
+        endelse
+        mvn_swe_convert_units, pad, 'df'
+        pad.energy -= pot
+        mvn_swe_convert_units, pad, units
+      endif
     
       case strupcase(pad.units_name) of
         'COUNTS' : zlo = 1
@@ -418,7 +439,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
       !p.multi = [0,1,2]
       specplot,x,y1,z1,limits=limits
-      if (dopot) then begin
+      if (dopot and not spflg) then begin
         if (finite(scp)) then pot = scp $
                          else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
         oplot,[pot,pot],[0,180],line=2
@@ -429,7 +450,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       endif
       limits.title = ''
       specplot,x,y2,z2,limits=limits
-      if (dopot) then begin
+      if (dopot and not spflg) then begin
         if (finite(scp)) then pot = scp $
                          else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
         oplot,[pot,pot],[0,180],line=2
@@ -453,14 +474,15 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             endif 
             rtime = minmax(trange)
             if rtime[0] eq rtime[1] then rtime = rtime[0]
-            mvn_swe_pad_resample, rtime, snap=0, tplot=0, result=rpad, silent=3, hires=hflg, fbdata=fbdata
+            mvn_swe_pad_resample, rtime, snap=0, tplot=0, result=rpad, silent=3, hires=hflg, $
+                                  fbdata=fbdata, sc_pot=spflg
             arpad = rpad.avg
             if size(arpad, /n_dimension) eq 3 then arpad = average(arpad, 3)
             if (nflg) then arpad /= rebin(average(arpad, 2, /nan), n_elements(arpad[*, 0]), n_elements(arpad[0, *]), /sample)
             str_element, rlim, 'title', time_string(mean(rpad.time)) + ' (Resampled)', /add_replace
             specplot, average(pad.energy, 2), rpad[0].xax, arpad, lim=rlim
 
-            if (dopot) then begin
+            if (dopot and not spflg) then begin
               if (finite(scp)) then pot = scp $
                                else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
               oplot,[pot,pot],[0,180],line=2
@@ -473,7 +495,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                str_element, rlim, 'zrange', [1.d-2, 1.], /add_replace
                str_element, rlim, 'title', 'Resampled PAD Relative Uncertainty', /add_replace
                specplot, average(pad.energy, 2), rpad[0].xax, urpad/arpad, lim=rlim
-               if (dopot) then begin
+               if (dopot and not spflg) then begin
                  if (finite(scp)) then pot = scp $
                                   else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
                  oplot,[pot,pot],[0,180],line=2
@@ -690,7 +712,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         oplot, x, Fp, psym=10, color=6
         oplot, x, Fm, psym=10, color=2
         if (domid) then oplot, x, Fz, psym=10, color=4
-        if (dopot) then begin
+        if (dopot and not spflg) then begin
           if (finite(scp)) then pot = scp $
                            else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
           oplot,[pot,pot],drange,line=2

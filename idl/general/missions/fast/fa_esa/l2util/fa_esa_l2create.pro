@@ -52,13 +52,13 @@
 ;   SC_POT          FLOAT     Array[59832]
 ;   BKG_ARR         FLOAT     Array[96, 64]
 ;   HEADER_BYTES    BYTE      Array[44, 59832]
-;data, eflux and orbit are filled here, all else is input
-;   DATA            BYTE      Array[96, 64, 59832]
-;   EFLUX           FLOAT     Array[96, 64, 59832]
-;   ENERGY_FULL     FLOAT     Array[96, 64, 59832]
-;   DENERGY_FULL    FLOAT     Array[96, 64, 59832]
-;   PITCH_ANGLE     FLOAT     Array[96, 64, 59832]
-;   DOMEGA          FLOAT     Array[96, 64, 59832]
+;THe following outputs are added here
+;   DATA            BYTE      Array[59832, 96, 64]
+;   EFLUX           FLOAT     Array[59832, 96, 64]
+;   ENERGY_FULL     FLOAT     Array[59832, 96, 64]
+;   DENERGY_FULL    FLOAT     Array[59832, 96, 64]
+;   PITCH_ANGLE     FLOAT     Array[59832, 96, 64]
+;   DOMEGA          FLOAT     Array[59832, 96, 64]
 ;   ORBIT_START     LONG
 ;   ORBIT_END       LONG
 ;;
@@ -68,8 +68,8 @@
 ; added orbit stat and end tags, 2015-08-24, jmm
 ; added energy_full, denergy_full, pitch_angle arrays 2016-02-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-21 12:33:16 -0700 (Mon, 21 Mar 2016) $
-; $LastChangedRevision: 20541 $
+; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
+; $LastChangedRevision: 20609 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2create.pro $
 ;-
 pro fa_esa_l2create,type=type, $
@@ -193,6 +193,9 @@ pro fa_esa_l2create,type=type, $
      endcase
   endfor
 
+;cdf_save_vars2 expects the ntimes to be first for 2, 3-d variables
+  eflux = transpose(eflux, [2, 0, 1])
+  data = transpose(data, [2, 0, 1])
   str_element, all_dat, 'eflux', eflux, /add_replace
   str_element, all_dat, 'data', data, /add_replace
   str_element, all_dat, 'orbit_start', min(orbit), /add_replace
@@ -221,10 +224,10 @@ pro fa_esa_l2create,type=type, $
      all_dat.dtheta[xxx] = !values.f_nan
   Endif
 
-  energy_full = fa_esa_energy(all_dat.energy, all_dat.mode_ind)
-  denergy_full = fa_esa_energy(all_dat.denergy, all_dat.mode_ind)
-  pitch_angle = fa_esa_pa(all_dat.theta, all_dat.theta_shift, all_dat.mode_ind)
-  domega = fa_esa_domega(all_dat.theta, all_dat.dtheta, all_dat.mode_ind)
+  energy_full = transpose(fa_esa_energy(all_dat.energy, all_dat.mode_ind), [2, 0, 1])
+  denergy_full = transpose(fa_esa_energy(all_dat.denergy, all_dat.mode_ind), [2, 0, 1])
+  pitch_angle = transpose(fa_esa_pa(all_dat.theta, all_dat.theta_shift, all_dat.mode_ind), [2, 0, 1])
+  domega = transpose(fa_esa_domega(all_dat.theta, all_dat.dtheta, all_dat.mode_ind), [2, 0, 1])
 
 ;reset fill values here
 ;This will be needed to process energy_full, etc.. properly
