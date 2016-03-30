@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-11-13 07:45:34 -0800 (Fri, 13 Nov 2015) $
-; $LastChangedRevision: 19359 $
+; $LastChangedDate: 2016-03-29 17:39:50 -0700 (Tue, 29 Mar 2016) $
+; $LastChangedRevision: 20629 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -207,11 +207,15 @@ FUNCTION eva_data_login, state, evTop
   ; Establish Connection
   ;---------------------
   user_flag = state.USER_FLAG  
-  ;lgn = eva_login_widget(title='Login as '+state.userType[user_flag], group_leader=evTop)
-  r = get_mms_sitl_connection(group_leader=evTop);, username=lgn.username, password=lgn.username)
-  ; establish connection with login-widget 
-  type = size(r, /type) ;will be 11 if object has been created
-  connected = (type eq 11)
+;  ;lgn = eva_login_widget(title='Login as '+state.userType[user_flag], group_leader=evTop)
+;  r = get_mms_sitl_connection(group_leader=evTop);, username=lgn.username, password=lgn.username)
+;  ; establish connection with login-widget 
+;  type = size(r, /type) ;will be 11 if object has been created
+;  connected = (type eq 11)
+  
+  widget_note = 'You must have a valid MMS/SITL account in order to use EVA.'
+  connected = mms_login_lasp(username = username, widget_note = widget_note)
+    
   msg2 = ''
   FAILED=1
 

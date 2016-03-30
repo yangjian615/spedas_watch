@@ -7,8 +7,8 @@
 ;     test_auth_info_pub.sav - sav file containing an empty username and password
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-15 11:06:41 -0700 (Tue, 15 Mar 2016) $
-; $LastChangedRevision: 20465 $
+; $LastChangedDate: 2016-03-29 08:29:38 -0700 (Tue, 29 Mar 2016) $
+; $LastChangedRevision: 20618 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_data_ut__define.pro $
 ;-
 
@@ -23,28 +23,27 @@ end
 ; after downloading some L2 data
 ; regression test for bug in mms_login_lasp, 3/15/2016
 function mms_load_data_ut::test_team_access_after_l2
-  del_data, '*'
   mms_load_data, login_info='test_auth_info_team.sav', trange=['2016-01-04', '2016-01-05'], $
     instrument='fgm', level='l2', data_rate='srvy', probe=1
   assert, tnames('*_fgm_r_gsm_srvy_l2') ne '', 'Problem loading L2 FGM data'
   mms_load_data, trange=['2016-01-05', '2016-01-06'], instrument='dfg', level='l2pre', data_rate='srvy', probe=1
   assert, tnames('*_dfg_srvy_l2pre_gsm') ne '', 'Problem loading L2pre FGM data after loading L2 FGM data'
+  mms_sitl_logout
   return, 1
 end
 
 ; test MMS team member access 
 function mms_load_data_ut::test_team_access
-  del_data, '*'
   mms_load_data, login_info='test_auth_info_team.sav', trange=['2016-01-21', '2016-01-22'], $
       instrument='dfg', level='l2pre', data_rate='srvy', probe=1
   get_data, 'mms1_dfg_srvy_l2pre_dmpa', data=d
   assert, is_struct(d), 'Problem accessing the SDC with an MMS username/password'
+  mms_sitl_logout
   return, 1
 end
 
 ; test MMS team member access with multiple calls
 function mms_load_data_ut::test_team_access_multi
-  del_data, '*'
   mms_load_data, login_info='test_auth_info_team.sav', trange=['2016-01-21', '2016-01-22'], $
     instrument='dfg', level='l2pre', data_rate='srvy', probe=1
   mms_load_data, login_info='test_auth_info_team.sav', trange=['2016-01-21', '2016-01-22'], $
@@ -54,20 +53,20 @@ function mms_load_data_ut::test_team_access_multi
   assert, tnames('mms1_dfg_srvy_l2pre_dmpa') ne '', 'Problem loading L2pre DFG data (team, multi-call test)'
   assert, tnames('mms1_hpca_hplus_number_density') ne '', 'Problem loading L1b HPCA data (team, multi-call test)'
   assert, tnames('mms1_fpi_eEnergySpectr_pX') ne '', 'Problem loading SITL FPI data (team, multi-call test)'
+  mms_sitl_logout
   return, 1
 end
 
 ; test public access to the SDC
 function mms_load_data_ut::test_public_access_sdc
-  del_data, '*'
   mms_load_data, login_info='test_auth_info_pub.sav', trange=['2016-01-21', '2016-01-22'], $
     instrument='fgm', level='l2', data_rate='srvy', probe=1
+    mms_sitl_logout
   return, 1
 end
 
 ; test public access to the SDC with multiple calls
 function mms_load_data_ut::test_public_access_sdc_multi
-  del_data, '*'
   mms_load_data, login_info='test_auth_info_pub.sav', trange=['2016-01-21', '2016-01-22'], $
     instrument='fgm', level='l2', data_rate='srvy', probe=1
   mms_load_data, login_info='test_auth_info_pub.sav', trange=['2016-01-21', '2016-01-22'], $
@@ -78,11 +77,20 @@ function mms_load_data_ut::test_public_access_sdc_multi
   assert, tnames('mms1_fgm_b_gsm_srvy_l2') ne '', 'Problem loading L2 FGM data (public, multi-call test)'
   assert, tnames('mms1_des_numberdensity_dbcs_fast') ne '', 'Problem loading L2 FPI data (public, multi-call test)'
   assert, tnames('mms1_edi_e_gsm_srvy_l2') ne '', 'Problem loading L2 EDI data (public, multi-call test)'
+  mms_sitl_logout
   return, 1
 end
 
 pro mms_load_data_ut::setup
   ; do some setup for the tests
+  del_data, '*'
+end
+
+function mms_load_data_ut::init, _extra=e
+  if (~self->MGutTestCase::init(_extra=e)) then return, 0
+  ; the following adds code coverage % to the output
+  self->addTestingRoutine, 'mms_load_data'
+  return, 1
 end
 
 pro mms_load_data_ut__define

@@ -407,7 +407,6 @@ END
 
 FUNCTION eva_sitl_event, ev
   compile_opt idl2
-  @eva_sitl_com
   @xtplot_com.pro
   @tplot_com
   
@@ -725,9 +724,10 @@ FUNCTION eva_sitl, parent, $
   pref = mms_config_push(cfg,pref); push the values into preferences
   pref.EVA_BAKSTRUCT = 0
   pref.EVA_TESTMODE_SUBMIT = 1
+  pref.EVA_SPLIT_SIZE=0 ; Added on 2016-03-26 (in response to Barbara's request of forcing into the default size)
   str_element,/add,state,'pref',pref
-
   
+
   ; ----- WIDGET LAYOUT -----
   geo = widget_info(parent,/geometry)
   if n_elements(xsize) eq 0 then xsize = geo.xsize

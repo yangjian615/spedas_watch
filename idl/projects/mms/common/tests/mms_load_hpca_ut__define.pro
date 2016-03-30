@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-23 13:36:34 -0700 (Wed, 23 Mar 2016) $
-; $LastChangedRevision: 20564 $
+; $LastChangedDate: 2016-03-29 08:29:38 -0700 (Tue, 29 Mar 2016) $
+; $LastChangedRevision: 20618 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_hpca_ut__define.pro $
 ;-
 
@@ -43,6 +43,15 @@ pro mms_load_hpca_ut::setup
     del_data, '*'
     timespan, '2015-10-22/06:00', 10., /minutes 
 end
+
+function mms_load_hpca_ut::init, _extra=e
+  if (~self->MGutTestCase::init(_extra=e)) then return, 0
+  ; the following adds code coverage % to the output
+  self->addTestingRoutine, ['mms_load_hpca', 'mms_hpca_calc_anodes', 'mms_hpca_set_metadata']
+  self->addTestingRoutine, ['mms_hpca_sum_fov', 'mms_hpca_avg_fov', 'mms_hpca_anodes', 'mms_hpca_energies', 'mms_hpca_elevations'], /is_function
+  return, 1
+end
+
 pro mms_load_hpca_ut__define
 
     define = { mms_load_hpca_ut, inherits MGutTestCase }

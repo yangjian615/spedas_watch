@@ -34,7 +34,9 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
     catch, /cancel; Disable the catch system
     eva_error_message, error_status
     msg = [!Error_State.MSG,' ','...EVA will igonore this error.']
-    ok = dialog_message(msg,/center,/error)
+    if ~keyword_set(no_gui) then begin 
+      ok = dialog_message(msg,/center,/error)
+    endif
     progressbar -> Destroy
     message, /reset; Clear !ERROR_STATE
     perror = [perror,pcode]

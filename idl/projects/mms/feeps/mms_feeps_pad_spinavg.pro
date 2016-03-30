@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20296 $
+;$LastChangedDate: 2016-03-29 11:24:57 -0700 (Tue, 29 Mar 2016) $
+;$LastChangedRevision: 20622 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -65,7 +65,7 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
   for spin_idx = 0, n_elements(spin_starts)-1 do begin
     ; loop over energies
     ;spin_sum_flux[spin_idx, *] = total(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
-    spin_sum_flux[spin_idx, *] = average(pad_data.Y[current_start:spin_starts[spin_idx], *], 1)
+    spin_sum_flux[spin_idx, *] = average(pad_data.Y[current_start:spin_starts[spin_idx], *], 1, /nan)
     spin_times[spin_idx] = pad_data.X[current_start]
     current_start = spin_starts[spin_idx]+1
   endfor

@@ -1,3 +1,7 @@
+; This program controls the history of all the changes made to the FOMstr/BAKstr.
+; Usually called immediately after 'eva_sitl_strct_update' (After the "Edit"
+; button is pressed.)
+;
 PRO eva_sitl_stack
   @eva_sitl_com
 

@@ -92,7 +92,6 @@ FUNCTION eva_data_load_sitl, state
       options,   'mms_stlm_bakstr','constant',[50,100,150,200]
       dgrand = [dgrand,'mms_stlm_bakstr']
     endif
-    
 
     ; 'mms_stlm_input_fom'
     get_data,'mms_'+stlm.input+'_fom',data=S,lim=lim,dl=dl
@@ -111,6 +110,9 @@ FUNCTION eva_data_load_sitl, state
     options,'mms_stlm_output_fom','constant',[50,100,150,200]
     eva_sitl_strct_yrange,'mms_stlm_output_fom'
     eva_sitl_strct_yrange,'mms_stlm_fomstr'
+    
+    ; Update the history
+    eva_sitl_stack
   endif
 
   eva_toc,clock,str=str,report=report

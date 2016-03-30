@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-24 08:23:02 -0700 (Thu, 24 Mar 2016) $
-; $LastChangedRevision: 20574 $
+; $LastChangedDate: 2016-03-29 08:29:38 -0700 (Tue, 29 Mar 2016) $
+; $LastChangedRevision: 20618 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
 
@@ -109,6 +109,14 @@ pro mms_load_fgm_ut::setup
     del_data, '*'
     timespan, '2015-12-15', 1, /day
 end
+
+function mms_load_fgm_ut::init, _extra=e
+  if (~self->MGutTestCase::init(_extra=e)) then return, 0
+  ; the following adds code coverage % to the output
+  self->addTestingRoutine, ['mms_load_fgm', 'mms_split_fgm_data', 'mms_fgm_fix_metadata']
+  return, 1
+end
+
 pro mms_load_fgm_ut__define
 
     define = { mms_load_fgm_ut, inherits MGutTestCase }

@@ -26,8 +26,8 @@
 ;     Based on the EIS pitch angle code by Brian Walsh
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-02 15:15:59 -0800 (Wed, 02 Mar 2016) $
-;$LastChangedRevision: 20296 $
+;$LastChangedDate: 2016-03-29 11:24:57 -0700 (Tue, 29 Mar 2016) $
+;$LastChangedRevision: 20622 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -35,7 +35,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     suffix = suffix, datatype = datatype, data_units = data_units
     
     if undefined(datatype) then datatype='electron'
-    if undefined(probe) then probe = '1'
+    if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
     if undefined(suffix) then suffix = ''
     prefix = 'mms'+strcompress(string(probe), /rem)
     if undefined(bin_size) then bin_size = 15 ;deg
@@ -92,7 +92,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
               for j=0, n_pabins-1 do begin ; loop through pa bins
                   if (particle_pa[i,t] gt pa_bins[j]) and (particle_pa[i,t] lt pa_bins[j+1]) then begin
                       pa_flux[i,j] = pa_flux[i,j] + flux_file[i,t]
-  
+                      
                       ; we track the number of data points we put in each bin
                       ; so that we can average later
                       pa_num_in_bin[i,j] += 1.0
@@ -111,7 +111,11 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     for i=0, n_elements(pa_flux[*,0])-1 do begin
         ; loop over bins
         for bin_idx = 0, n_elements(pa_flux[i,*])-1 do begin
-            if pa_num_in_bin[i,bin_idx] ne 0.0  then new_pa_flux[i,bin_idx] = pa_flux[i,bin_idx]/pa_num_in_bin[i,bin_idx]
+            if pa_num_in_bin[i,bin_idx] ne 0.0  then begin
+              new_pa_flux[i,bin_idx] = pa_flux[i,bin_idx]/pa_num_in_bin[i,bin_idx]
+            endif else begin
+              new_pa_flux[i,bin_idx] = !values.d_nan
+            endelse
         endfor
     endfor
     

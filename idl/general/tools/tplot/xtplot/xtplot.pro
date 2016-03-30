@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-11-13 07:44:34 -0800 (Fri, 13 Nov 2015) $
-; $LastChangedRevision: 19358 $
+; $LastChangedDate: 2016-03-29 11:56:41 -0700 (Tue, 29 Mar 2016) $
+; $LastChangedRevision: 20626 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -400,7 +400,9 @@ PRO xtplot_event, event
     widf.mnO_AutoExec: xtplot_options
     widf.mnO_PanelOptions: begin
       ctime,prompt='Click on desired panels. (button 3 to quit)',panel=mix,/silent,npoints=1
-      tn = tplot_vars.options.def_datanames[mix]
+      ;tn = tplot_vars.options.def_datanames[mix]
+      tn_tmp = strsplit(tplot_vars.OPTIONS.DATANAMES,' ',/extract)
+      tn = tn_tmp[mix]
       xtplot_options_panel, group_leader=widf.baseTL, target=tn
       end
     widf.mnO_TplotOptions: xtplot_options_tplot, group_leader=widf.baseTL

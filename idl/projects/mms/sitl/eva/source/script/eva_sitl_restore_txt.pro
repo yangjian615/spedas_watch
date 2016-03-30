@@ -1,3 +1,38 @@
+;+
+; NAME:
+;   EVA_SITL_RESTORE_TXT
+;
+; PURPOSE:
+;   This is a command-line script to be used when the SITL has a long list of
+;   burst-selections requested from non-SITL scientists. This script was developed
+;   during the commissioning phase when various instrument teams were requesting 
+;   certain burst time periods for calibration purposes ("Extended ROI").
+;   By using this script, the SITL could easily add those requested segments
+;   into EVA without the hassle of adding segments manually one-by-one.  
+;
+; USAGE:
+;   
+;   1. Launch EVA and display automated FOM, as usual.
+;   2. From the IDL console, type in the command:  MMS> eva_sitl_restore_txt
+;   3. A dialog appears for you to select a text file. There is a sample file at
+;      [YOUR_SPEDAS_DIRECTORY]/projects/mms/sitl/eva/source/script/eva_sitl_restore_txt_sample.txt
+;   4. Once you select a file, then the FOM-structure gets updated in EVA.
+;   
+;   The key point here is that we need to have the input file in a certain format. 
+;   Please see the sample file above. No need to put a date for end-time (3rd column); 
+;   If a segment was crossing mid-night, then the script will assume the day after 
+;   the input date (See the 3rd line of the sample file).
+;   
+;   I still suggest checking each selection carefully after importing with this script.
+;   If you encounter an error, please check if there is any overlap in the selections.
+;
+; CREATED BY: Mitsuo Oka   August 2015
+;
+; $LastChangedBy: moka $
+; $LastChangedDate: 2016-03-29 11:07:18 -0700 (Tue, 29 Mar 2016) $
+; $LastChangedRevision: 20619 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/script/eva_sitl_restore_txt.pro $
+;-
 Function eva_sitl_restore_template
   anan = fltarr(1) & anan[0] = 'NaN'
   ppp = {VERSION:1.00000, $

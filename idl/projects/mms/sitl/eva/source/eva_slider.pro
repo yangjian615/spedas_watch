@@ -23,8 +23,8 @@
 ;   Value is the modified time-value (double)
 ;   
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-02 12:48:50 -0700 (Thu, 02 Apr 2015) $
-; $LastChangedRevision: 17225 $
+; $LastChangedDate: 2016-03-29 17:03:45 -0700 (Tue, 29 Mar 2016) $
+; $LastChangedRevision: 20628 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/eva_slider.pro $
 ;
 PRO eva_slider_set_value, id, value 
@@ -40,6 +40,31 @@ PRO eva_slider_set_value, id, value
   vnew = long(100*(return_value-state.min_value)/(state.max_value-state.min_value))
   widget_control, state.slider, SET_VALUE=vnew
   WIDGET_CONTROL, stash, SET_UVALUE=state, /NO_COPY
+END
+
+FUNCTION eva_slider_time_validate, s
+  compile_opt idl2
+  
+  ;---------
+  ; length
+  ;---------
+  len = strlen(s)
+  msg = ''
+  if (len lt 8) then msg += 'Too short;'
+  if (len gt 26) then msg += ' Too long;'
+  
+  ;----------------------------------
+  ; first character must be a number
+  ;----------------------------------
+  c = strmid(s,0,1)
+  if is_numeric(c) eq 0 then msg += ' Not starting from a number;'
+  
+  ;---------------------
+  ; Must contain a colon
+  ;---------------------
+  if strpos(s,':') lt 0 then msg += ' Not containing a colon;'
+  
+  return, msg
 END
 
 FUNCTION eva_slider_event, ev
@@ -75,10 +100,14 @@ FUNCTION eva_slider_event, ev
       widget_control, state.field, SET_VALUE=str_value
       end;state.slider
     state.field: begin
-      this_value = (keyword_set(state.time)) ? str2time(ev.value) : double(ev.value)
-      return_value = (this_value < state.max_value) > state.min_value
-      vnew = long(100*(return_value-state.min_value)/(state.max_value-state.min_value))
-      widget_control, state.slider, SET_VALUE=vnew
+      strv = ev.value[0]
+      err_msg = eva_slider_time_validate(strv) 
+      if strlen(err_msg) eq 0 then begin
+        this_value = (keyword_set(state.time)) ? time_double(ev.value) : double(ev.value)
+        return_value = (this_value < state.max_value) > state.min_value
+        vnew = long(100*(return_value-state.min_value)/(state.max_value-state.min_value))
+        widget_control, state.slider, SET_VALUE=vnew
+      endif
       end;state.field
     else:
   endcase

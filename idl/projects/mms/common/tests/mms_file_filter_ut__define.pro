@@ -5,8 +5,8 @@
 ; Requires mgunit in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-16 14:09:36 -0700 (Wed, 16 Mar 2016) $
-; $LastChangedRevision: 20479 $
+; $LastChangedDate: 2016-03-29 08:29:38 -0700 (Tue, 29 Mar 2016) $
+; $LastChangedRevision: 20618 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_file_filter_ut__define.pro $
 ;-
 
@@ -36,6 +36,12 @@ function mms_file_filter_ut::test_version_eq
     return, 1
 end
 
+function mms_file_filter_ut::test_time_filter
+    this_day = ['C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160116_v2.13.2.cdf']
+    tfiltered_files = unh_mms_file_filter(self.testdata, trange=time_double(['2016-01-16', '2016-01-16']))
+    assert, array_equal(this_day, tfiltered_files), 'Problem with the time filter on a single day'
+    return, 1
+end
 pro mms_file_filter_ut::setup
     self.testdata = ['C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160115_v2.13.2.cdf',$
     'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160116_v2.13.2.cdf',$
@@ -43,6 +49,13 @@ pro mms_file_filter_ut::setup
     'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160118_v2.13.2.cdf',$
     'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160119_v2.14.1.cdf',$
     'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160120_v2.14.1.cdf']
+end
+
+function mms_file_filter_ut::init, _extra=e
+  if (~self->MGutTestCase::init(_extra=e)) then return, 0
+  ; the following adds code coverage % to the output
+  self->addTestingRoutine, 'unh_mms_file_filter', /is_function
+  return, 1
 end
 
 pro mms_file_filter_ut__define
