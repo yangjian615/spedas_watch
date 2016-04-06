@@ -72,8 +72,8 @@
 ;                  mms_eis_omni to address burst variable name changes
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
-;$LastChangedRevision: 20468 $
+;$LastChangedDate: 2016-04-01 10:50:32 -0700 (Fri, 01 Apr 2016) $
+;$LastChangedRevision: 20688 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 
@@ -111,25 +111,28 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
     
     ; calculate the omni-directional quantities
     for probe_idx = 0, n_elements(probes)-1 do begin
-        ;try both ions and electrons in case multiple datatypes were loaded
-        if (datatype eq 'electronenergy') then begin
-          mms_eis_spin_avg, probe=probes[probe_idx], datatype=datatype, species='electron', data_units = data_units, suffix=suffix, data_rate = data_rate
-          mms_eis_omni, probes[probe_idx], species='electron', datatype='electronenergy', tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
-        endif
-        if (datatype eq 'extof') then begin
-          mms_eis_spin_avg, probe=probes[probe_idx], datatype=datatype, species='proton', data_units = data_units, suffix=suffix, data_rate = data_rate
-          mms_eis_spin_avg, probe=probes[probe_idx], datatype=datatype, species='oxygen', data_units = data_units, suffix=suffix, data_rate = data_rate
-          mms_eis_spin_avg, probe=probes[probe_idx], datatype=datatype, species='alpha', data_units = data_units, suffix=suffix, data_rate = data_rate
-          mms_eis_omni, probes[probe_idx], species='proton', datatype='extof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
-          mms_eis_omni, probes[probe_idx], species='alpha', datatype='extof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
-          mms_eis_omni, probes[probe_idx], species='oxygen', datatype='extof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
-        endif
-        if (datatype eq 'phxtof') then begin
-          mms_eis_spin_avg, probe=probes[probe_idx], datatype=datatype, species='proton', data_units = data_units, suffix=suffix, data_rate = data_rate
-          mms_eis_spin_avg, probe=probes[probe_idx], datatype=datatype, species='oxygen', data_units = data_units, suffix=suffix, data_rate = data_rate
-          mms_eis_omni, probes[probe_idx], species='proton', datatype='phxtof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
-          mms_eis_omni, probes[probe_idx], species='oxygen', datatype='phxtof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
-        endif  
+        for datatype_idx = 0, n_elements(datatype)-1 do begin
+            ;try both ions and electrons in case multiple datatypes were loaded
+            this_datatype = datatype[datatype_idx]
+            if (this_datatype eq 'electronenergy') then begin
+              mms_eis_spin_avg, probe=probes[probe_idx], datatype='electronenergy', species='electron', data_units = data_units, suffix=suffix, data_rate = data_rate
+              mms_eis_omni, probes[probe_idx], species='electron', datatype='electronenergy', tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
+            endif
+            if (this_datatype eq 'extof') then begin
+              mms_eis_spin_avg, probe=probes[probe_idx], datatype='extof', species='proton', data_units = data_units, suffix=suffix, data_rate = data_rate
+              mms_eis_spin_avg, probe=probes[probe_idx], datatype='extof', species='oxygen', data_units = data_units, suffix=suffix, data_rate = data_rate
+              mms_eis_spin_avg, probe=probes[probe_idx], datatype='extof', species='alpha', data_units = data_units, suffix=suffix, data_rate = data_rate
+              mms_eis_omni, probes[probe_idx], species='proton', datatype='extof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
+              mms_eis_omni, probes[probe_idx], species='alpha', datatype='extof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
+              mms_eis_omni, probes[probe_idx], species='oxygen', datatype='extof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
+            endif
+            if (this_datatype eq 'phxtof') then begin
+              mms_eis_spin_avg, probe=probes[probe_idx], datatype='phxtof', species='proton', data_units = data_units, suffix=suffix, data_rate = data_rate
+              mms_eis_spin_avg, probe=probes[probe_idx], datatype='phxtof', species='oxygen', data_units = data_units, suffix=suffix, data_rate = data_rate
+              mms_eis_omni, probes[probe_idx], species='proton', datatype='phxtof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
+              mms_eis_omni, probes[probe_idx], species='oxygen', datatype='phxtof',tplotnames = tplotnames, suffix = '_spin'+suffix, data_units = data_units, data_rate = data_rate
+            endif
+        endfor
     endfor
     if undefined(no_interp) && data_rate eq 'srvy' then options, '*_omni_spin*', no_interp=0, y_no_interp=0
 end

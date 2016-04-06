@@ -128,7 +128,6 @@ endif
 
 mom.valid = 0
 
-
 if n_params() eq 0 then goto,skipsums
 if size(/type,data) ne 8 then return,mom
 
@@ -154,7 +153,6 @@ endelse
 
 charge = data3d.charge
 
-
 mom.time = data3d.time
 mom.magf = data3d.magf
 
@@ -166,7 +164,10 @@ if data.valid eq 0 then return,mom
 if not keyword_set(domega_weight) then $
     domega_weight = moments_3d_omega_weights(data3d.theta,data3d.phi,data3d.dtheta,data3d.dphi)
 
-e = data3d.energy
+zero_e = where(data3d.energy Le 0.0, nzero)
+If(nzero Gt 0) Then e = data3d.energy > 0.1 $     ;lower limit suggested by Jim McFadden, 2016-04-04
+Else e = data3d.energy
+
 nn = data3d.nenergy
 
 if keyword_set(er) then begin
@@ -177,7 +178,7 @@ if keyword_set(er) then begin
    data3d.data= data3d.data * s
 endif else err = [0,nn-1]
 
-mom.erange=data3d.energy[err,0]
+mom.erange=e[err,0]             ;jmm, 2016-04-04
 
 ;if keyword_set(bins) then begin
 ;   if ndimen(bins) eq 2 then w = where(bins eq 0,c)   $
@@ -234,8 +235,8 @@ if not keyword_set(denergy) then begin
    de_e[nn-1,*] = de_e[nn-2,*]
    de = de_e * e
 endif else begin
-   de_e= denergy/data3d.energy
    de = denergy
+   de_e = de/e ;jmm, 2016-04-04
 endelse
 
 ;double e, de, de_e, this should double everything
@@ -272,7 +273,6 @@ if arg_present(dmom) then begin
 endif
 
 ;Density calculation:
-
 dweight = sqrt(e_inf)/e
 pardens = sqrt(mass/2.)* 1e-5 * data_dv * dweight
 mom.density = total(pardens)   ; 1/cm^3

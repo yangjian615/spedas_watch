@@ -69,9 +69,9 @@
 ; 
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-28 08:54:18 -0700 (Mon, 28 Mar 2016) $
-;$LastChangedRevision: 20591 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-04-01 18:22:39 -0700 (Fri, 01 Apr 2016) $
+;$LastChangedRevision: 20714 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -87,7 +87,7 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
                 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'moments'
-    if undefined(level) then level = 'l2' 
+    if undefined(level) then level = 'l2' else level = strlowcase(level)
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix=''
     if level ne 'l2' then begin
@@ -98,11 +98,11 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
             ; allow for the following datatypes:
             ; count_rate, flux, vel_dist, rf_corr, bkgd_corr
             case datatype of
-              'ion': varformat = '*_RF_corrected'
+              'ion': varformat = '*'
               'rf_corr': varformat = '*_RF_corrected'
               'count_rate': varformat = '*_count_rate'
               'flux': varformat = '*_flux'
-              'vel_dist': varformat = '*_vel_dist_fn'
+              'vel_dist': varformat = '*_vel_dist_fn' ;naming no longer used 2016-04-01
               'bkgd_corr': varformat = '*_bkgd_corrected'
               'moments': varformat = '*'
               else: varformat = '*_RF_corrected'
@@ -135,7 +135,11 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
         spdf = spdf, center_measurement = center_measurement
     
     if undefined(tplotnames) then return
-    
+
+    ;copy ancillary data from support vars into 3D dist vars
+    ;once CDFs are fully populated this should be removed
+    mms_load_hpca_fix_dist, tplotnames, suffix = suffix
+
     ; if the user requested HPCA ion data, need to:
     ; 1) sum over anodes for normalized counts, count rate, 
     ;    RF and background corrected count rates

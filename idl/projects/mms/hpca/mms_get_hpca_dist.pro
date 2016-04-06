@@ -25,8 +25,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20511 $
+;$LastChangedDate: 2016-04-01 18:22:39 -0700 (Fri, 01 Apr 2016) $
+;$LastChangedRevision: 20714 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
@@ -73,10 +73,7 @@ endif
 ; Match particle data to azimuth data
 ;-----------------------------------------------------------------
 
-s = mms_get_hpca_info()
-
-;get azimuth data from ancillary file
-;  -contains azimuth & temporal data
+;get azimuths and full dist sample times from ancillary variable
 get_data, 'mms'+probe+'_hpca_azimuth_angles_per_ev_degrees', ptr=azimuth
 
 if ~is_struct(azimuth) then begin
@@ -164,9 +161,8 @@ endcase
 energy = rebin(*p.v2, dim)
 
 ;elevations bins are constant
-;  -index by anode number in case order is inconsistent
 ;  -convert to from colat to lat
-theta = rebin( reform((90 - s.elevation[*p.v1]),[1,1,dim[2]]), dim)
+theta = rebin( reform( float(90 - *p.v1),[1,1,dim[2]] ), dim)
 dtheta = replicate(22.5, dim)
 
 ;azimuths are be populated below

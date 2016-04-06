@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-03-28 15:31:36 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20606 $
+; $LastChangedDate: 2016-04-01 08:26:48 -0700 (Fri, 01 Apr 2016) $
+; $LastChangedRevision: 20675 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVERRIDE
@@ -150,27 +150,9 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
       eva_sitl_strct_yrange,'mms_stlm_fomstr'
       
     endif else begin; No segment
-      if user_flag ne 4 then begin; if not FPI-cal
-        if ~keyword_set(override) then begin
-          r = dialog_message("You can't delete all segments.",/center)
-        endif
-      endif else begin
-        str_element,/add,s,'FOM',[0.]; FOM value = 0
-        str_element,/add,s,'START',[0L]; start of the 1st cycle
-        str_element,/add,s,'STOP',[1L]; end fo the 1st cycle
-        str_element,/add,s,'NSEGS',1L
-        str_element,/add,s,'NBUFFS',1L
-        str_element,/add,s,'FPICAL',1L
-        str_element,/add,s,'SOURCEID',defSourceID
-        str_element,/add,s,'DISCUSSION',segSelect.DISCUSSION
-        s = eva_sitl_strct_sort(s)
-        ;str_element,/add,lim,'UNIX_FOMstr_org',s; put the hacked FOMstr into 'lim'
-        D_hacked = eva_sitl_strct_read(s,tfom[0]); change the tplot-data accordingly
-        store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl; here is the faked 'mms_stlm_fomstr'
-        options,'mms_stlm_fomstr','unix_FOMStr_mod',s ; update structure
-        eva_sitl_strct_yrange,'mms_stlm_output_fom'
-        eva_sitl_strct_yrange,'mms_stlm_fomstr'
-      endelse
+      if ~keyword_set(override) then begin
+        r = dialog_message("You can't delete all segments.",/center)
+      endif
     endelse
   endif else begin;if (r eq 0) or (r eq 3) then begin
     ;----------------------

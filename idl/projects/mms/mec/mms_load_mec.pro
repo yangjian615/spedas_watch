@@ -53,9 +53,9 @@
 ;          Send me an email --> egrimes@igpp.ucla.edu
 ;          
 ;          
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-14 07:39:46 -0700 (Mon, 14 Mar 2016) $
-;$LastChangedRevision: 20421 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2016-03-30 09:41:24 -0700 (Wed, 30 Mar 2016) $
+;$LastChangedRevision: 20632 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 
@@ -83,18 +83,18 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
         cdf_records = cdf_records, spdf = spdf
-
+    
     ; turn the right ascension and declination of the L vector into separate tplot variables
-    ; this is for passing to dmpa2gse
+    ; this is for passing to dmpa2gse.
     for probe_idx = 0, n_elements(probes)-1 do begin
         if tnames('mms'+strcompress(string(probes[probe_idx]), /rem)+'_mec_L_vec'+suffix) ne '' then begin
             split_vec, 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_mec_L_vec'+suffix, $
-                names_out=ras_dec_vars
-            copy_data, ras_dec_vars[0], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spinras'
-            copy_data, ras_dec_vars[1], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spindec'
+                names_out=ras_dec_vars     
+            copy_data, ras_dec_vars[0], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spinras'+suffix
+            copy_data, ras_dec_vars[1], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spindec'+suffix
         endif else dprint, dlevel = 1, 'No right ascension/declination of the L-vector found.'
-    
         ; fix the metadata
         mms_mec_fix_metadata, probes[probe_idx]
     endfor
+
 end

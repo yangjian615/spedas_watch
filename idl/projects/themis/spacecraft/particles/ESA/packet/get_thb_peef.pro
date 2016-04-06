@@ -90,7 +90,7 @@ endif else begin
 		map = reform(replicate(1.,8)#reform(all_dat.an_map[*,0:nbins-1,an_ind],8*nbins),8,8,nbins)
 		an_en_tmp=total(an_en*map,2)
 		an_en_all = fltarr(32,nbins) & an_en_all[*,*]=1. & an_en_all[24:31,*]=an_en_tmp
-		en_lnk = interp(findgen(32),reform(all_dat.energy[*,1]),reform(energy[*,0]),/no_extrapolate) <31.
+		en_lnk = (interp(findgen(32),reform(all_dat.energy[*,1]),reform(energy[*,0])) <31.)>0 ;removed no_extrapolate, jmm, 2016-03-30
 		en_int = fix(en_lnk) & en_plu = en_lnk-en_int & en_min = 1.-en_plu 
 		en_map1 = fltarr(nenergy,32) & en_map2 = fltarr(nenergy,32) 
 		en_map1[indgen(nenergy),(en_int+1)<31]=en_plu

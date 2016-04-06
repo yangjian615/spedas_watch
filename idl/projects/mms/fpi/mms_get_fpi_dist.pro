@@ -24,8 +24,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20511 $
+;$LastChangedDate: 2016-04-01 11:26:04 -0700 (Fri, 01 Apr 2016) $
+;$LastChangedRevision: 20693 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -102,9 +102,6 @@ endelse
 ; Initialize angles, and support data
 ;-----------------------------------------------------------------
 
-;get azimuth and elevation (energies retrieved separately)
-s = mms_get_fpi_info()
-
 ;dimensions
 ;data is stored as azimuth x elevation x energy x time
 ;time must be last for fields to be added to time varying structure array
@@ -112,7 +109,6 @@ s = mms_get_fpi_info()
 dim = (size(*p.y,/dim))[1:*]
 dim = dim[[2,0,1] ]
 base_arr = fltarr(dim)
-
 
 ;support data
 ;  -slice routines assume mass in eV/(km/s)^2
@@ -135,11 +131,9 @@ case strlowcase(species) of
   endelse
 endcase
 
-;elevations are constant
-theta = rebin( reform(s.elevation,[1,1,dim[2]]), dim )
-
-;phi grid is constant, offsets will be added later
-phi = rebin( reform(s.azimuth,[1,dim[1]]), dim )
+;elevations are constant across time
+;convert colat -> lat
+theta = rebin( reform(90-*p.v2,[1,1,dim[2]]), dim )
 
 dphi = replicate(11.25, dim)
 dtheta = replicate(11.25, dim)
@@ -169,7 +163,7 @@ template = {  $
 
   energy: base_arr, $
   denergy: base_arr, $ ;placeholder
-  phi: phi, $
+  phi: base_arr, $
   dphi: dphi, $
   theta: theta, $
   dtheta: dtheta $
@@ -194,6 +188,15 @@ endif else begin
   e0 = reform( transpose((*p.v1)[index,*]), [dim[0],1,1,n_times])
 endelse
 dist.energy = rebin( e0, [dim,n_times] )
+
+;get azimuth values for each time sample and copy into
+;structure array with the correct dimensions
+if size(/n_dim, *p.v3) eq 1 then begin
+  phi0 = transpose(*p.v3) ;fast data uses constant table
+endif else begin
+  phi0 = reform( transpose((*p.v3)[index,*]), [1,dim[1],1,n_times])
+endelse
+dist.phi = rebin( phi0, [dim,n_times] )
 
 ;phi must be in [0,360)
 dist.phi = dist.phi mod 360

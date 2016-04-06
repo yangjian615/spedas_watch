@@ -23,8 +23,8 @@
 ;   Value is the modified time-value (double)
 ;   
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-03-29 17:03:45 -0700 (Tue, 29 Mar 2016) $
-; $LastChangedRevision: 20628 $
+; $LastChangedDate: 2016-03-30 20:26:47 -0700 (Wed, 30 Mar 2016) $
+; $LastChangedRevision: 20652 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/eva_slider.pro $
 ;
 PRO eva_slider_set_value, id, value 
@@ -100,8 +100,12 @@ FUNCTION eva_slider_event, ev
       widget_control, state.field, SET_VALUE=str_value
       end;state.slider
     state.field: begin
-      strv = ev.value[0]
-      err_msg = eva_slider_time_validate(strv) 
+      if keyword_set(state.time) then begin
+        strv = ev.value[0]
+        err_msg = eva_slider_time_validate(strv)
+      endif else begin
+        err_msg = ''
+      endelse
       if strlen(err_msg) eq 0 then begin
         this_value = (keyword_set(state.time)) ? time_double(ev.value) : double(ev.value)
         return_value = (this_value < state.max_value) > state.min_value

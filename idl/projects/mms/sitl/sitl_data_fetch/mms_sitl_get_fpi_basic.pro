@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-01-22 08:56:40 -0800 (Fri, 22 Jan 2016) $
-;  $LastChangedRevision: 19788 $
+;  $LastChangedDate: 2016-03-30 10:18:16 -0700 (Wed, 30 Mar 2016) $
+;  $LastChangedRevision: 20635 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_fpi_basic.pro $
 
 
@@ -126,6 +126,11 @@ for j = 0, n_elements(sc_id)-1 do begin
     epadmname = fpi_struct.epadmname
     epadhname = fpi_struct.epadhname
     vname = fpi_struct.vname
+    
+    if vzscore ge 1 then begin
+      bentb = fpi_struct.bentb
+      bentmag = fpi_struct.bentmag
+    endif
 
 
     ; Concatenate data if more than one file
@@ -149,6 +154,12 @@ for j = 0, n_elements(sc_id)-1 do begin
         epadh = [epadh, temp_struct.epadh]
         ndens = [ndens, temp_struct.ndens]
         vdsc = [vdsc, temp_struct.vdsc]
+        
+        if vzscore ge 1 then begin
+          bentb = [bentb, temp_struct.bentb]
+          bentmag = [bentmag, temp_struct.bentmag]
+        endif
+        
       endfor
     endif
 
@@ -158,8 +169,12 @@ for j = 0, n_elements(sc_id)-1 do begin
     store_data, epadhname, data = {x:times, y:epadh, v:padval}
     store_data, densname, data = {x:times, y:ndens}
     store_data, vname, data = {x:times, y:vdsc}
-
-
+    
+    if vzscore ge 1 then begin
+      store_data, sc_id(j) + '_fpi_bentPipeB_DSC', data={x:times, y:bentb}
+      store_data, sc_id(j) + '_fpi_bentPipeB_MAG', data = {x:times, y:bentmag}
+    endif
+    
   endif else begin
     print, 'No FPI data available locally or at SDC or invalid query!'
   endelse

@@ -3,18 +3,17 @@
 ;         mms_load_fpi_fix_dist
 ;
 ; PURPOSE:
-;         Helper routine for setting the hard coded energies in the FPI load routine
-;         This will swap the indices stored in the skymap v1 field for the actual
-;         energy values.
+;         Replace supplementary fields in 3D distribution variables with actual
+;         values from supplementary tplot variables (E,phi,theta).
 ;
 ; NOTE:
-;         Expect this routine to be made obsolete after adding the energies to the CDF
+;         Expect this routine to be made obsolete after the CDFs are updated
 ;
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-01 16:45:13 -0800 (Tue, 01 Mar 2016) $
-;$LastChangedRevision: 20280 $
+;$LastChangedDate: 2016-04-01 11:26:04 -0700 (Fri, 01 Apr 2016) $
+;$LastChangedRevision: 20693 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_dist.pro $
 ;-
 pro mms_load_fpi_fix_dist, tplotnames, probe = probe, level = level, data_rate = data_rate, $
@@ -51,9 +50,6 @@ pro mms_load_fpi_fix_dist, tplotnames, probe = probe, level = level, data_rate =
 
     if ~is_struct(data) then continue
 
-    ;attempt to only do this once
-    if n_elements(*data.v1) gt 32 then continue 
-
     ;load before loop if this needs to be done more than once or twice (it shouldn't)
     if data_rate eq 'brst' then begin
       energies = mms_fpi_burst_energies(species[idx[i]], probe, level=level, suffix=suffix)
@@ -61,10 +57,23 @@ pro mms_load_fpi_fix_dist, tplotnames, probe = probe, level = level, data_rate =
       energies = mms_fpi_energies(species[idx[i]], probe=probe, level=level, suffix=suffix)
     endelse
     
-    if n_elements(energies) le 1 then continue
+    mms_fpi_dist_angles, probe=probe, level=level, data_rate=data_rate, species=species[idx[i]], suffix=suffix, $
+                         phi=phi, theta=theta
+    
+    ;replace energies
+    if n_elements(energies) gt 1 then begin
+      *data.v1 = energies
+    endif
 
-    ;replace field with energies
-    *data.v1 = energies
+    ;replace azimuths
+    if ~undefined(phi) then begin
+      *data.v3 = phi
+    endif
+
+    ;replace elevations (colat)
+    if ~undefined(theta) then begin
+      *data.v2 = theta
+    endif
 
   endfor  
 

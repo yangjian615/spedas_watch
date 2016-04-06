@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-03-29 11:56:41 -0700 (Tue, 29 Mar 2016) $
-; $LastChangedRevision: 20626 $
+; $LastChangedDate: 2016-03-31 12:08:56 -0700 (Thu, 31 Mar 2016) $
+; $LastChangedRevision: 20661 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -136,7 +136,21 @@ PRO xtplot_event, event
   ; initialize
   widget_control, event.top, GET_UVALUE=widf
 
-  tplot_vars = widf.tplot_vars
+  ;-------- 2016-03-31 Temporary Fix ---------------
+  widf_tplot_vars = widf.tplot_vars
+  c_tvars = tplot_vars
+  vname = c_tvars.SETTINGS.varnames
+  jmax = n_elements(vname)
+  for j=0,jmax-1 do begin; for each current varname
+    idx = where(widf.tplot_vars.SETTINGS.varnames eq vname[j], ct)
+    if ct eq 1 then begin
+      widf_tplot_vars.SETTINGS.Y[idx[0]].CRANGE = c_tvars.SETTINGS.Y[j].CRANGE
+    endif
+  endfor
+  tplot_vars = widf_tplot_vars
+  ;-------------------------------------------------
+  ;tplot_vars = widf.tplot_vars
+  
   code_exit=0
 
   ; main

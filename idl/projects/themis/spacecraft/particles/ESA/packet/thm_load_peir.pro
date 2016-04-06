@@ -125,7 +125,7 @@ pro thm_load_peir,file=file,sc=sc,themishome=themishome, $
 	spin_decode  = [160,96,3,192,3,96,3,20,38,96,3]			; # measurements in packet
 	case_decode  = [0,1,5,0,4,1,5,3,2,1,5]				; datl[16,32,96,192,1152,1200]==>size[0,1,2,3,4,5]
 	angle_decode = [0,1,2,3,5,1,4,6,7,1,2]				; angle mode index
-	energy_decode = [0,1,2,3,3,4,5,1,3,6,6]				; energy mode index
+	energy_decode = [0,1,2,3,3,4,5,1,3,6,7]				; energy mode index
 	
 ; initialize arrays
 	ndays=n_elements(file)
@@ -481,10 +481,13 @@ en_eff=(1.+0.3*((energy+2000.)/30000.)^.5)/1.075
 ;  corr=.91*(1.+.41*((1.-alog(energy)/7.)>0.))		;due to leakage fields into ESA
   lf=2./3.
 ;  lf=1.
-  corr=.91*(1.+.32*(1.-alog(lf*energy)/8.9)*exp(-lf*energy/350.) + .05*(1.-alog(lf*energy)/12.))	;due to leakage fields into ESA
-  corr1=   (1.+.10*((1.-alog(energy/.25)/7.8)>0.))	;due to ESA exit grid 
-  corr2=   (1.+.05*((1.-alog(energy/1.5)/7.8)>0.))	;due to MCP grid 
 
+;guard against 0 energy, jmm, 2016-03-30, chaned lower limit to 0.1
+;ev, on advice from J.McFadden, 2016-04-01
+  energy_n0 = energy > 0.1
+  corr=.91*(1.+.32*(1.-alog(lf*energy_n0)/8.9)*exp(-lf*energy_n0/350.) + .05*(1.-alog(lf*energy_n0)/12.))	;due to leakage fields into ESA
+  corr1=   (1.+.10*((1.-alog(energy_n0/.25)/7.8)>0.))	;due to ESA exit grid 
+  corr2=   (1.+.05*((1.-alog(energy_n0/1.5)/7.8)>0.))	;due to MCP grid 
 
 en_eff=en_eff*corr*corr1*corr2
 

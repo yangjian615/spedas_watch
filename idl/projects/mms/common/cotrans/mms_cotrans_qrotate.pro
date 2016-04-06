@@ -13,6 +13,7 @@
 ;  quaternion_name:  Tplot variable containing MMS rotation quaternion
 ;  name_out:  New name for output variable, if not specified the original is overwritten
 ;  inverse:  Flag to apply inverse rotation
+;  out_coord:  String specifing output coord for upating dlimits
 ;  
 ;Output:
 ;  none, may alter or create new tplot variable
@@ -24,12 +25,12 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-12 19:27:23 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19988 $
+;$LastChangedDate: 2016-04-02 18:51:03 -0700 (Sat, 02 Apr 2016) $
+;$LastChangedRevision: 20715 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qrotate.pro $
 ;-
 
-pro mms_cotrans_qrotate, name_in, q_name, name_out, inverse=inverse
+pro mms_cotrans_qrotate, name_in, q_name, name_out, inverse=inverse, out_coord=out_coord
 
     compile_opt idl2, hidden
 
@@ -52,6 +53,11 @@ endif
 ;  -MMS quaternions are stored <x,y,z,w> but general routines assume <w,x,y,z>
 q = qslerp( shift(*q_ptr.y,0,1), *q_ptr.x, *data_ptr.x )
 
+if n_elements(q) eq 1 then begin
+  dprint, dlevel=0, 'Cannot interpolate quaternion "'+q_name+'"'
+  return
+endif
+
 ;pad vectors with extra element
 data = [  [replicate(0.,n_elements(*data_ptr.x))], [*data_ptr.y]  ]
 
@@ -63,6 +69,18 @@ if keyword_set(inverse) then begin
 endif else begin
   data_out = qham( q, qham(data,qconj(q)) )
 endelse
+
+if n_elements(data_out) eq 1 then begin
+  dprint, dlevel=0, 'Uknown error transformting "'+name_in+'" with "'+q_name+'"'
+  return
+endif
+
+;update dlimits
+if undefined(out_coord) then begin
+  coords = stregex(q_name,'.*_([^_]+)_to_([^_]+)_?.*', /subexpr, /extract)
+  out_coord = keyword_set(inverse) ? coords[2] : coords[1]
+endif
+cotrans_set_coord, dl, out_coord
 
 ;store output
 if undefined(name_out) then name_out = name_in

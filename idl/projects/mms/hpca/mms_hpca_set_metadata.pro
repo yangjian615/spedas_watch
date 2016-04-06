@@ -11,8 +11,8 @@
 ; 
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-12-10 14:14:24 -0800 (Thu, 10 Dec 2015) $
-; $LastChangedRevision: 19585 $
+; $LastChangedDate: 2016-04-01 14:17:49 -0700 (Fri, 01 Apr 2016) $
+; $LastChangedRevision: 20709 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_set_metadata.pro $
 ;-
 
@@ -109,7 +109,7 @@ pro mms_hpca_set_metadata, tplotnames, prefix = prefix, fov = fov, anodes = anod
         endif
     endfor
 
-    valid_vel = '*_ion_bulk_velocity'+suffix
+    valid_vel = '*_ion_bulk_velocity*'+suffix
 
     vars_to_fix = strmatch(tplotnames, valid_vel)
     for vars_idx = 0, n_elements(vars_to_fix)-1 do begin
@@ -120,6 +120,15 @@ pro mms_hpca_set_metadata, tplotnames, prefix = prefix, fov = fov, anodes = anod
                 prefix + '_hpca_heplusplus_ion_bulk_velocity'+suffix: options, tplotnames[vars_idx], labels=['Vx (He!U++!N)', 'Vy (He!U++!N)', 'Vz (He!U++!N)'], labflag=-1, colors=[2,4,6], ytitle=strupcase(prefix+'!CHPCA!C')+'He!U++!N velocity'
                 prefix + '_hpca_oplus_ion_bulk_velocity'+suffix: options, tplotnames[vars_idx], labels=['Vx (O!U+!N)', 'Vy (O!U+!N)', 'Vz (O!U+!N)'], labflag=-1, colors=[2,4,6], ytitle=strupcase(prefix+'!CHPCA!C')+'O!U+!N velocity'
                 prefix + '_hpca_oplusplus_ion_bulk_velocity'+suffix: options, tplotnames[vars_idx], labels=['Vx (O!U++!N)', 'Vy (O!U++!N)', 'Vz (O!U++!N)'], labflag=-1, colors=[2,4,6], ytitle=strupcase(prefix+'!CHPCA!C')+'O!U++!N velocity'
+                
+                ; GSM velocity vars
+                prefix + '_hpca_hplus_ion_bulk_velocity_GSM'+suffix: options, tplotnames[vars_idx], labels=['Vx (H!U+!N)', 'Vy (H!U+!N)', 'Vz (H!U+!N)'], labflag=-1, colors=[2,4,6], ytitle=strupcase(prefix+'!CHPCA!C')+'H!U+!N velocity!CGSM'
+                prefix + '_hpca_heplus_ion_bulk_velocity_GSM'+suffix: options, tplotnames[vars_idx], labels=['Vx (He!U+!N)', 'Vy (He!U+!N)', 'Vz (He!U+!N)'], labflag=-1, colors=[2,4,6], ytitle=strupcase(prefix+'!CHPCA!C')+'He!U+!N velocity!CGSM'
+                prefix + '_hpca_heplusplus_ion_bulk_velocity_GSM'+suffix: options, tplotnames[vars_idx], labels=['Vx (He!U++!N)', 'Vy (He!U++!N)', 'Vz (He!U++!N)'], labflag=-1, colors=[2,4,6], ytitle=strupcase(prefix+'!CHPCA!C')+'He!U++!N velocity!CGSM'
+                prefix + '_hpca_oplus_ion_bulk_velocity_GSM'+suffix: options, tplotnames[vars_idx], labels=['Vx (O!U+!N)', 'Vy (O!U+!N)', 'Vz (O!U+!N)'], labflag=-1, colors=[2,4,6], ytitle=strupcase(prefix+'!CHPCA!C')+'O!U+!N velocity!CGSM'
+                prefix + '_hpca_oplusplus_ion_bulk_velocity_GSM'+suffix: options, tplotnames[vars_idx], labels=['Vx (O!U++!N)', 'Vy (O!U++!N)', 'Vz (O!U++!N)'], labflag=-1, colors=[2,4,6], ytitle=strupcase(prefix+'!CHPCA!C')+'O!U++!N velocity!CGSM'
+
+                
                 else:
             endcase
         endif

@@ -2,8 +2,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2015-11-17 07:32:27 -0800 (Tue, 17 Nov 2015) $
-;  $LastChangedRevision: 19383 $
+;  $LastChangedDate: 2016-03-30 10:18:16 -0700 (Wed, 30 Mar 2016) $
+;  $LastChangedRevision: 20635 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_open_fpi_new_cdf.pro $
 
 
@@ -21,7 +21,17 @@ function mms_sitl_open_fpi_new_cdf, filename
 ;  endfor
 ;  
 ;  stop
+
+  bentnorm = *cdf_str.vars(57).dataptr
+
+  Bentz = *cdf_str.vars(56).dataptr
+  Bentx = *cdf_str.vars(54).dataptr
+  Benty = *cdf_str.vars(55).dataptr
+    
+  bentb = [[bentnorm*bentx],[bentnorm*benty],[bentnorm*bentz]]
   
+  bentmag = bentnorm
+    
   time_tt2000 = *cdf_str.vars(0).dataptr
   time_unix = time_double(time_tt2000, /tt2000)
 
@@ -164,7 +174,9 @@ nrg02 = [12.409379356009200, $
 	       epadmname: epadmname, $
 	       epadhname: epadhname, $
 	       vdsc: v_dsc, $
-	       vname: vname}
+	       vname: vname, $
+	       bentb: bentb, $
+	       bentmag:bentmag}
 
   return, outstruct
 

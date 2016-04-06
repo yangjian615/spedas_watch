@@ -10,12 +10,7 @@
 ;  step in the chain.  This makes it so only neighboring coordinate transforms
 ;  need be specified.
 ;
-;  The set of possible transformations forms the following graph:
-;         GSE<->ECI<->GSE2000
-;                |
-;         GSM<->ECI<->SM
-;                |
-;         BCS<->ECI<->GEO
+;  All possible transformations currently go through ECI coordinates 
 ;
 ;Input:
 ;  in_name:  name ofvariable to be transformed
@@ -32,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-12 19:27:23 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19988 $
+;$LastChangedDate: 2016-04-02 18:51:03 -0700 (Sat, 02 Apr 2016) $
+;$LastChangedRevision: 20715 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qtransformer.pro $
 ;-
 
@@ -73,7 +68,7 @@ pro mms_cotrans_qtransformer, $
     ; ECI
     ;----------
     'eci': begin
-      if in_set(out_coord[0],['bcs','gse','gse2000','gsm','sm','geo']) then begin
+      if in_set(out_coord[0],['bcs','dbcs','dmpa','smpa','dsl','ssl','gse','gse2000','gsm','sm','geo']) then begin
         q_name = 'mms'+probe+'_mec_quat_eci_to_'+out_coord
         spd_cotrans_validate_transform, in_name, in_coord, out_coord
         mms_cotrans_qrotate, in_name, q_name, out_name, /inverse
@@ -88,7 +83,7 @@ pro mms_cotrans_qtransformer, $
     ; Other
     ;---------------------------
     else: begin
-      if in_set(in_coord[0],['bcs','gse','gse2000','gsm','sm','geo']) then begin
+      if in_set(in_coord[0],['bcs','dbcs','dmpa','smpa','dsl','ssl','gse','gse2000','gsm','sm','geo']) then begin
         q_name = 'mms'+probe+'_mec_quat_eci_to_'+in_coord
         spd_cotrans_validate_transform, in_name, in_coord, out_coord
         mms_cotrans_qrotate, in_name, q_name, out_name

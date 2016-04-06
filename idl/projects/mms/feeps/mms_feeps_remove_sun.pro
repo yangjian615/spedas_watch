@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-21 15:00:16 -0700 (Mon, 21 Mar 2016) $
-; $LastChangedRevision: 20542 $
+; $LastChangedDate: 2016-03-30 12:44:06 -0700 (Wed, 30 Mar 2016) $
+; $LastChangedRevision: 20644 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -72,7 +72,7 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
           store_data, var_name+'_sun_removed'+suffix, data=top_data, dlimits=top_dlimits
           zlim, var_name+'_sun_removed'+suffix, 0, 0, 1
           ylim, var_name+'_sun_removed'+suffix, 0, 0, 1
-          options, var_name+'_sun_removed'+suffix, ztitle=units_label, ysubtitle='', ytitle='MMS FEEPS!CTop Sensor '+sensors[sensor_idx]
+          options, var_name+'_sun_removed'+suffix, ztitle=units_label, ysubtitle='[keV]', ytitle='mms'+probe+'!CFEEPS!CTop!CSensor '+sensors[sensor_idx]
         endfor
     
         ; bottom sensors
@@ -96,7 +96,7 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
             store_data, var_name+'_sun_removed'+suffix, data=bottom_data, dlimits=bottom_dlimits
             zlim, var_name+'_sun_removed'+suffix, 0, 0, 1
             ylim, var_name+'_sun_removed'+suffix, 0, 0, 1
-            options, var_name+'_sun_removed'+suffix, ztitle=units_label, ysubtitle='', ytitle='MMS FEEPS!Bottom Sensor '+sensors[sensor_idx]
+            options, var_name+'_sun_removed'+suffix, ztitle=units_label, ysubtitle='[keV]', ytitle='mms'+probe+'!CFEEPS!CBottom!CSensor '+sensors[sensor_idx]
           endfor
         endif
     endfor

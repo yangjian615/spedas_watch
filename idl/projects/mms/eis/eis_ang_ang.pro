@@ -48,11 +48,11 @@
 ;       + 2016-03-24, E. Grimes     : fixed issues with postscript output caused by my changes yesterday
 ;                                   : set the default data_rate to 'srvy' (if not specified); request the time range (if not specified)
 ;                                   : commented out !p.multi call in postscript output, so that all energy channels are included in the PS file
-;       
+;       + 2016-03-31, E. Grimes     : removed flat fielding 
 ;                        
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-24 15:56:38 -0700 (Thu, 24 Mar 2016) $
-;$LastChangedRevision: 20583 $
+;$LastChangedDate: 2016-03-31 09:31:40 -0700 (Thu, 31 Mar 2016) $
+;$LastChangedRevision: 20658 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/eis_ang_ang.pro $
 ;-
 
@@ -90,7 +90,6 @@ azi = dblarr(6,n_elements(d.x))
 pol = dblarr(6,n_elements(d.x))
 pa = dblarr(6,n_elements(d.x))
 cps = dblarr(6,nenergies,n_elements(d.x))
-flat = [1500./1890., 1890./1890., 1809./1890., 900./1890., 1500./1890., 1800./1890.] ; from Jordi source (Joe)
 
 ; use wild cards to figure out what this variable name should be for telescope 0
 this_variable = tnames(prefix + datatype + '_' + species + '*_' + data_units + '_t0')
@@ -110,7 +109,7 @@ for t=0, 5 do begin
   get_data, prefix+datatype+'_pitch_angle_t'+STRTRIM(t, 1), data = d
   pa[t,*] = d.y
   get_data, prefix+datatype+'_'+species+'_'+pvalue+data_units+'_t'+STRTRIM(t, 1), data = d
-  for i=0, nenergies-1 do cps[t,i,*] = d.y[*,energy_chan(i)-1] / flat[t]
+  for i=0, nenergies-1 do cps[t,i,*] = d.y[*,energy_chan(i)-1]
 endfor
 
 get_data, prefix+datatype+'_b', data = magfield

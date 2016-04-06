@@ -1,3 +1,22 @@
+;+
+;NAME:
+;      mms_ui_load_data
+;
+;PURPOSE:
+;      The SPEDAS Load Data plugin for the MMS mission
+;
+; NOTES:
+;      Need to add multiple select capabilities to probes and types
+;      mms_load_state can handle '*' for probes rates and types
+;      mms_load_data may not yet have this implemented
+;
+;HISTORY:
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-04-01 11:35:24 -0700 (Fri, 01 Apr 2016) $
+;$LastChangedRevision: 20694 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data.pro $
+;
+;--------------------------------------------------------------------------------
 
 ;+
 ;Purpose:
@@ -38,12 +57,14 @@ pro mms_ui_load_data_update_science, state, $
     widget_control, level_id, get_uvalue=current_levels
     level = current_levels[level_idx]
   endif
-  
+
   ;retrieve valid types based on selections
-  mms_load_options, instrument, rate=rate, level=level, datatype=datatype, valid=valid
+  datatypes = mms_gui_datatypes(instrument, rate, level)
+
+;  mms_load_options, instrument, rate=rate, level=level, datatype=datatype, valid=valid
   
   ;just in case
-  if ~valid then begin
+  if size(datatypes[0], /type) eq 2 then begin
     spd_ui_message, 'WARNING: Invalid input selected, please report to SPEDAS development team', $
                     sb=state.statusbar, hw=state.historywin
     return
@@ -51,15 +72,16 @@ pro mms_ui_load_data_update_science, state, $
   
   ;update rate/level fields as needed/requested
   if keyword_set(get_rate) || rate_idx eq -1 then begin
-    widget_control, rate_id, set_value=rate, set_uvalue=rate
+    rates = mms_gui_datarates(instrument)
+    widget_control, rate_id, set_value=rates, set_uvalue=rates
   endif
   
   if keyword_set(get_level) || level_idx eq -1 then begin
-    widget_control, level_id, set_value=level, set_uvalue=level
+    levels = mms_gui_levels(instrument)
+    widget_control, level_id, set_value=levels, set_uvalue=levels
   endif
   
-  ;always update datatype
-  widget_control, datatype_id, set_value=datatype, set_uvalue=datatype
+  widget_control, datatype_id, set_value=datatypes, set_uvalue=datatypes
 
 end
 
@@ -392,25 +414,6 @@ pro mms_ui_load_data_event,event
 end
 
 
-;+ 
-;NAME:
-;      mms_ui_load_data
-;
-;PURPOSE:
-;      This is the start of a SPEDAS Load Data plugin for the MMS mission
-;
-; NOTES:
-;      Need to add multiple select capabilities to probes and types
-;      mms_load_state can handle '*' for probes rates and types
-;      mms_load_data may not yet have this implemented
-;      
-;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-09 19:08:33 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20380 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data.pro $
-;
-;--------------------------------------------------------------------------------
 pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRangeObj,callSequence,loadTree=loadTree,timeWidget=timeWidget
   compile_opt idl2,hidden
   
@@ -465,21 +468,19 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
     
   probeArrayValues = ['1', '2', '3', '4']
   probeArrayDisplayed = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
-  instrumentArray = ['FGM', 'EIS', 'FEEPS', 'FPI', 'HPCA', 'SCM', 'EDI', 'EDP', 'DSP', 'ASPOC', 'STATE', 'MEC']
-  ;science fields now populated dynamically
-;  sciRateArray = ['srvy', 'slow', 'fast', 'brst']
-;  sciLevelArray = ['ql', 'l1a', 'l1b', 'l2', 'sitl']
-;  sciDataTypeArray = [''] ;not implemented
+ ; instrumentArray = ['FGM', 'EIS', 'FEEPS', 'FPI', 'HPCA', 'SCM', 'EDI', 'EDP', 'DSP', 'ASPOC', 'STATE', 'MEC']
+ ; egrimes, disabled state, 4/1/16
+  instrumentArray = ['FGM', 'EIS', 'FEEPS', 'FPI', 'HPCA', 'SCM', 'EDI', 'EDP', 'DSP', 'ASPOC', 'MEC']
+
+  ; these are only for FGM, as it's the first instrument in the list
+  currentRateArray = ['srvy', 'brst']
+  currentLevelArray = ['L2']
+  currentDatatypeArray = [''] ; none for FGM
+  
   stateRateArray = [''] ;placeholder, no data rate for state
   stateLevelArray = ['def', 'pred']
   stateDataTypeArray = ['*','pos', 'vel', 'spinras', 'spindec']
 
-  ;default to science data 
-  currentInstrument = instrumentArray[0]
-  mms_load_options, instrumentArray[0], $
-                    rate=currentRateArray, $
-                    level=currentLevelArray, $
-                    datatype=currentDatatypeArray
 
   ;create the dropdown menu that lists the various instrument types for MMS
   instrumentBase = widget_base(selectionBase,/row) 
@@ -494,7 +495,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   probeLabel = widget_label(probeBase,value='Probe: ')
   probeList = widget_list(probeBase,$
                           value=probeArrayDisplayed,$
-                          /multiple,$
+                        ;  /multiple,$ ; not actually allowed by loadedData->add()?
                           uvalue=probeArrayValues, $
                           uname='probelist',$
                           xsize=12,$
@@ -556,7 +557,7 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
            callSequence:callSequence,$
            probeArray:probeArrayValues,$
            instrumentArray:instrumentArray,$
-           currentInstrument:currentInstrument,$
+           currentInstrument:instrumentArray[0],$
 ;now stored as uvalue so array size can change
 ;           sciRateArray:sciRateArray, $
 ;           sciLevelArray:sciLevelArray, $

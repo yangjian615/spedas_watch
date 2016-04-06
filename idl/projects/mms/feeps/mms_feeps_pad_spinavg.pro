@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-29 11:24:57 -0700 (Tue, 29 Mar 2016) $
-;$LastChangedRevision: 20622 $
+;$LastChangedDate: 2016-04-04 15:43:15 -0700 (Mon, 04 Apr 2016) $
+;$LastChangedRevision: 20720 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -47,7 +47,7 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
   
   spin_starts = where(spin_sectors.Y[0:n_elements(spin_sectors.Y)-2] ge spin_sectors.Y[1:n_elements(spin_sectors.Y)-1])+1
 
-  pad_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'
+  pad_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'+suffix
 
   get_data, pad_name, data=pad_data, dlimits=pad_dl
 

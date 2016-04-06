@@ -21,6 +21,8 @@
 ;              ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss'] 
 ;    TIMESPAN: Set this keyword if you would like to use the 'timespan' command
 ;              before calling this program.
+;    PARAMLIST: A named variable that, if supplied, contains the list of 
+;               loaded tplot-variables.
 ;
 ; EXAMPLES:
 ;
@@ -41,14 +43,18 @@
 ; CREATED BY: Mitsuo Oka   Jan 2016
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-01-27 12:54:50 -0800 (Wed, 27 Jan 2016) $
-; $LastChangedRevision: 19823 $
+; $LastChangedDate: 2016-04-01 15:05:30 -0700 (Fri, 01 Apr 2016) $
+; $LastChangedRevision: 20713 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/script/eva_cmd_load.pro $
 ;-
-PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan,login_info=login_info
+PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan,$
+  login_info=login_info,paramlist=paramlist,force=force
   compile_opt idl2
   mms_init
   t0 = systime(/sec) ;temporary
+  widget_note = 'You must have a valid MMS/SITL account in order to use EVA.'
+  connected = mms_login_lasp(username = username, widget_note = widget_note)
+  if (connected eq 0) then return 
   
   ;----------------
   ; ParameterSet
@@ -128,11 +134,11 @@ PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan
            probelist_mms: 'mms'+probes, $
            start_time   : start_time,$
            end_time     : end_time }
-  
+
   ;---------------------------------
   ; Main Program
   ;---------------------------------
-  result = eva_data_load_mms(state,/no_gui)  
+  result = eva_data_load_mms(state,/no_gui,force=force)  
 
   dt = systime(/sec)-t0
   strdt = strtrim(dt)+' sec'

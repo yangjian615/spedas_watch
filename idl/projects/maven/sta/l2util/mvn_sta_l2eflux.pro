@@ -11,8 +11,8 @@
 ; hacked from mvn_sta_cmn_l2gen, 2016-02-26, jmm,
 ; jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-02-26 08:57:08 -0800 (Fri, 26 Feb 2016) $
-; $LastChangedRevision: 20209 $
+; $LastChangedDate: 2016-03-30 10:43:40 -0700 (Wed, 30 Mar 2016) $
+; $LastChangedRevision: 20637 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2eflux.pro $
 ;-
 
@@ -60,6 +60,7 @@ Pro mvn_sta_l2eflux, cmn_dat
      dt = cmn_dat.integ_t#replicate(1.,nenergy*nbins*nmass)
      eflux = (cmn_dat.data-cmn_dat.bkg)*cmn_dat.dead/(gf*eff*dt)
   Endelse
+  eflux = float(eflux)
   str_element, cmn_dat, 'eflux', eflux, /add_replace
   Return
 End

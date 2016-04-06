@@ -51,8 +51,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-12 19:27:23 -0800 (Fri, 12 Feb 2016) $
-;$LastChangedRevision: 19988 $
+;$LastChangedDate: 2016-04-02 18:51:03 -0700 (Sat, 02 Apr 2016) $
+;$LastChangedRevision: 20715 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_qcotrans.pro $
 ;-
 
@@ -94,7 +94,8 @@ vb = undefined(verbose) ? !mms.verbose :  verbose
 
 ;valid values
 valid_probes = ['1','2','3','4']
-valid_coords = ['bcs','gse','gse2000','gsm','sm','geo','eci']
+;valid_coords = ['bcs','gse','gse2000','gsm','sm','geo','eci']
+valid_coords = ['bcs','dbcs','dmpa','smpa','dsl','ssl','gse','gse2000','gsm','sm','geo','eci']
 
 ;print and return valid inputs if requested
 if keyword_set(valid_names) then begin
@@ -206,22 +207,35 @@ endif
 ;   -this code also helps resolve discrepancies between in_coord keyword and data_att.coord_sys
 ;----------------------------------------------------------
 
-in_coords = strarr(n_elements(in_names))
-for i = 0,n_elements(in_names)-1 do begin
+if keyword_set(ignore_dlimits) then begin
 
-  data_in_coord = cotrans_get_coord(in_names[i])
-  
-  if ~is_string(in_coord) then begin
-    in_coords[i] = data_in_coord
-  endif else if data_in_coord eq '' || strmatch(data_in_coord,'unknown') then begin
-    in_coords[i] = in_coord
-  endif else if data_in_coord ne in_coord then begin
-    in_coords[i] = 'conflict'
+  if is_string(in_coord) then begin
+    in_coords = replicate(in_coord,n_elements(in_names))
   endif else begin
-    in_coords[i] = in_coord
+    dprint, 'Must specify input coordinates if /ignore_dlimits is set'
+    return
   endelse
 
-endfor
+endif else begin
+
+  in_coords = strarr(n_elements(in_names))
+  for i = 0,n_elements(in_names)-1 do begin
+  
+    data_in_coord = cotrans_get_coord(in_names[i])
+    
+    if ~is_string(in_coord) then begin
+      in_coords[i] = data_in_coord
+    endif else if data_in_coord eq '' || strmatch(data_in_coord,'unknown') then begin
+      in_coords[i] = in_coord
+    endif else if data_in_coord ne in_coord then begin
+      in_coords[i] = 'conflict'
+    endif else begin
+      in_coords[i] = in_coord
+    endelse
+  
+  endfor
+
+endelse
 
 
 

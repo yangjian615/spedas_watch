@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-03-29 17:39:50 -0700 (Tue, 29 Mar 2016) $
-; $LastChangedRevision: 20629 $
+; $LastChangedDate: 2016-04-01 08:25:45 -0700 (Fri, 01 Apr 2016) $
+; $LastChangedRevision: 20674 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -282,7 +282,6 @@ FUNCTION eva_data_login, state, evTop
     endelse
   endif; if connected
 
-;  msg = (FAILED) ? 'Log-in Failed' : 'Logged in as a '+state.userType[user_flag]+'!'
   if FAILED then begin
     str_element,/add,state,'user_flag',0
     widget_control, state.drpUserType, SET_DROPLIST_SELECT=0
@@ -293,10 +292,6 @@ FUNCTION eva_data_login, state, evTop
       ut = state.userType[user_flag]
       nl = ssl_newline()
       msg = 'Logged-in as a '+ut
-;      msg = 'Logged-in with <'+ut+'> features enabled.'+nl+nl+$
-;        'If you are not an active member of '+ut+', you can still play'+nl+$
-;        'around with the features, but your submission will be rejected'+nl+$
-;        'by the SDC.'
     endif 
   endelse
   answer = dialog_message(msg,/info,title='EVA',/center)
@@ -366,7 +361,7 @@ FUNCTION eva_data_event, ev
       if state.USER_FLAG ne 0 then begin
         state = eva_data_login(state,ev.TOP)
       endif
-      if state.USER_FLAG eq 0 then begin;userType = ['Guest','MMS member','SITL','Super SITL','FPI cal']
+      if state.USER_FLAG eq 0 then begin;userType = ['Guest','MMS member','SITL','Super SITL']
         print,'EVA: resetting cw_data start and end times'
         start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
         end_time   = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/24:00:00'
@@ -467,7 +462,7 @@ FUNCTION eva_data, parent, $
   ProbeNamesMMS = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
   SetTimeList = ['Default','SITL Current Target Time', 'SITL Back-Structure Time']
   user_flag = 0
-  userType = ['Guest','MMS member','SITL','Super SITL','FPI cal']
+  userType = ['Guest','MMS member','SITL','Super SITL']
   
   ;----- PREFERENCES -----
   

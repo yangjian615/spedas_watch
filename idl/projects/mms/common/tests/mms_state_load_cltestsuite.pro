@@ -55,7 +55,7 @@ endif
 catch,/cancel
 spd_handle_error,err,t_name,++t_num
 del_data,'*'
-
+stop
 
 
 ;2 single probe

@@ -134,6 +134,14 @@ for i=0,n_elements(nm)-1 do begin
        if s then str_element, d2, 'V1', d.v1, /add
        str_element, d, 'V2', success = s
        if s then str_element, d2, 'V2', d.v2, /add 
+     endif else if(size(d.y, /n_dim) eq 4) then begin
+       d2 = {x:d.x[idx], y:d.y[idx, *, *, *]}
+       str_element, d, 'V1', success = s
+       if s then str_element, d2, 'V1', d.v1, /add
+       str_element, d, 'V2', success = s
+       if s then str_element, d2, 'V2', d.v2, /add
+       str_element, d, 'V3', success = s
+       if s then str_element, d2, 'V3', d.v3, /add
      endif else begin
        error = 1
        dprint, 'tvar_name: ' + nm[i] + ' too many dimensions'

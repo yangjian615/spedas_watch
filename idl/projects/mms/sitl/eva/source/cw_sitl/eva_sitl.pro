@@ -717,7 +717,7 @@ FUNCTION eva_sitl, parent, $
     rehighlight: 0,$
     launchtime: systime(1,/utc),$
     user_flag: 0, $
-    userType: ['Guest','MMS member','SITL','Super SITL','FPI cal']}
+    userType: ['Guest','MMS member','SITL','Super SITL']};,'FPI cal']}
 
   ; ----- CONFIG (READ) -----
   cfg = mms_config_read()         ; Read config file and

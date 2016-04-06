@@ -42,6 +42,8 @@
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load 
 ;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         num_smooth:   set this keyword to create a smoothed omni-directional spectra variable
+;                      num_smooth=1.0, ~3 data points for 1 sec; use num_smooth=19.0 for smoothing over a full spin
 ;
 ; OUTPUT:
 ;  
@@ -69,8 +71,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-11 15:25:08 -0800 (Fri, 11 Mar 2016) $
-;$LastChangedRevision: 20419 $
+;$LastChangedDate: 2016-04-04 15:49:06 -0700 (Mon, 04 Apr 2016) $
+;$LastChangedRevision: 20721 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -81,7 +83,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   varformat = varformat, cdf_filenames = cdf_filenames, $
                   cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version, spdf = spdf
+                  min_version = min_version, spdf = spdf, num_smooth = num_smooth
 
     if undefined(probes) then probes_in = ['1'] else probes_in = probes
     if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
@@ -93,7 +95,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
       
     mms_load_data, trange = trange, probes = probes_in, level = level_in, instrument = 'feeps', $
         data_rate = data_rate_in, local_data_dir = local_data_dir, source = source, $
-        datatype = datatype_in, /get_support_data, $ ; support data is needed for spin averaging, etc.
+        datatype = datatype_in, get_support_data=get_support_data, $ ; support data is needed for spin averaging, etc.
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
@@ -103,20 +105,27 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     
     for probe_idx = 0, n_elements(probes_in)-1 do begin
       this_probe = string(probes_in[probe_idx])
-      ; split the extra integral channel from all of the spectrograms
-      mms_feeps_split_integral_ch, ['count_rate', 'intensity'], datatype_in, this_probe, $
-        suffix = suffix, data_rate = data_rate_in, level = level_in
+      for datatype_idx = 0, n_elements(datatype_in)-1 do begin
+        this_datatype = datatype_in[datatype_idx]
+        ; split the extra integral channel from all of the spectrograms
+        mms_feeps_split_integral_ch, ['count_rate', 'intensity'], this_datatype, this_probe, $
+          suffix = suffix, data_rate = data_rate_in, level = level_in
+          
+        ; remove the sunlight contamination
+        mms_feeps_remove_sun, probe = this_probe, datatype = this_datatype, level = level_in, $
+            data_rate = data_rate_in, suffix = suffix, data_units = ['count_rate', 'intensity']
+  
+        ; calculate the omni-directional spectra
+        mms_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units, $
+            data_rate = data_rate_in, suffix=suffix
+  
+        ; calculate the spin averages
+        mms_feeps_spin_avg, probe=this_probe, datatype=this_datatype, suffix = suffix, data_units = data_units
         
-      ; remove the sunlight contamination
-      mms_feeps_remove_sun, probe = this_probe, datatype = datatype_in, level = level_in, $
-          data_rate = data_rate_in, suffix = suffix, data_units = ['count_rate', 'intensity']
-
-      ; calculate the omni-directional spectra
-      mms_feeps_omni, this_probe, datatype = datatype_in, tplotnames = tplotnames, data_units = data_units, $
-          data_rate = data_rate_in, suffix=suffix
-
-      ; calculate the spin averages
-      mms_feeps_spin_avg, probe=this_probe, datatype=datatype_in, suffix = suffix, data_units = data_units
+        ; calculate the smoothed products
+        if ~undefined(num_smooth) then mms_feeps_smooth, probe=this_probe, datatype=this_datatype, $
+          suffix=suffix, data_units=data_units, data_rate=data_rate_in, num_smooth=num_smooth
+      endfor
     endfor
     
     ; interpolate to account for gaps in data near perigee for srvy data

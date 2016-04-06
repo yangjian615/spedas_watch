@@ -56,8 +56,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-15 14:29:09 -0700 (Tue, 15 Mar 2016) $
-;$LastChangedRevision: 20468 $
+;$LastChangedDate: 2016-04-01 11:36:53 -0700 (Fri, 01 Apr 2016) $
+;$LastChangedRevision: 20695 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
 
@@ -72,7 +72,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
 
     if undefined(probes) then probes = [1, 2, 3, 4] ; default to MMS 1
     if undefined(datatype) then datatype = ['epsd', 'bpsd','tdn', 'swd']
-    if undefined(level) then level = ['l1a', 'l1b', 'l2']
+    if undefined(level) then level = ['l1a', 'l1b', 'l2'] else level = strlowcase(level)
     if undefined(suffix) then suffix = ''
     if undefined(data_rate) then data_rate = 'srvy'
     
@@ -85,10 +85,11 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                 mms_load_data, trange = trange, probes = probes, level = level, instrument = 'dsp', $
                     data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
                     datatype = datatype_l1[datatype_idx], get_support_data = get_support_data, $
-                    tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+                    tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
                     cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                     latest_version = latest_version, min_version = min_version, spdf = spdf
+                append_array, tplot_names_full, tplotnames_out
             endfor
         endif
         if array_contains(datatype, 'epsd') then begin
@@ -102,10 +103,11 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                 mms_load_data, trange = trange, probes = probes, level = level, instrument = 'dsp', $
                     data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
                     datatype = datatype_l1[datatype_idx], get_support_data = get_support_data, $
-                    tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+                    tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
                     cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                     latest_version = latest_version, min_version = min_version, spdf = spdf
+                append_array, tplot_names_full, tplotnames_out
             endfor
         endif
     endif
@@ -114,12 +116,13 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
             mms_load_data, trange = trange, probes = probes, level = level, instrument = 'dsp', $
                 data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
                 datatype = datatype[datatype_idx], get_support_data = get_support_data, $
-                tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+                tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                 no_update = no_update, suffix = suffix, varformat = varformat, $
                 cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                 latest_version = latest_version, min_version = min_version, spdf = spdf
+            append_array, tplot_names_full, tplotnames_out
         endfor
         
     endif
-    
+    if ~undefined(tplot_names_full) then tplotnames = tplot_names_full
 end

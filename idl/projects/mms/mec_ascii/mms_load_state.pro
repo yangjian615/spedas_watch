@@ -4,6 +4,8 @@
 ;
 ; PURPOSE:
 ;         Load MMS state (position, attitude) data
+;         NOTE: MEC data may also be loaded if the date is current date-4days
+;               AND the level is not set to 'pred'
 ;
 ; KEYWORDS:
 ;         trange:     time range of interest [starttime, endtime] with the format 
@@ -18,6 +20,7 @@
 ;                     pred_or_def (see below)
 ;         datatypes:  ephemeris and attitude data types include ['*','pos', 'vel', 'spinras', 'spindec'].
 ;                     If no value is given the default is '*' where all types will be loaded
+;                     (all MEC values might also be loaded - see NOTE in 'PURPOSE' (above))
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;                     you're on *nix or OSX, the default currently assumes Windows 
 ;                     (c:\data\mms\)
@@ -29,8 +32,9 @@
 ;                     the software will attempt to download the file from REMOTE_DATA_DIR, place it 
 ;                     in LOCAL_DATA_DIR with the same relative pathname, and then continue 
 ;                     processing.the remote directory the data is downloaded from.
-;         attitude_data: flag to only load L-right ascension and L-declination attitude data 
-;         ephemeris_data: flag to only load position and velocity data
+;         attitude_only: flag to only load L-right ascension and L-declination attitude data, this
+;                     is only true for predicted data
+;         ephemeris_only: flag to only load position and velocity data, this is only true for predicted data
 ;         no_download: set flag to use local data only (no download)
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;                     with "username" and "password" tags that inclue your API login information
@@ -88,8 +92,8 @@
 ;        
 ;         
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2016-03-22 13:06:54 -0700 (Tue, 22 Mar 2016) $
-;$LastChangedRevision: 20552 $
+;$LastChangedDate: 2016-03-30 09:41:24 -0700 (Wed, 30 Mar 2016) $
+;$LastChangedRevision: 20632 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -133,7 +137,6 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     ; define cutoff date for retrieving attitude files from mec
     mec_cutoff_date = systime(/seconds)-60.*60.*24.*4.
     
-
     ; initialize undefined values
     if undefined(trange_in) then trange = timerange() else trange = timerange(trange_in)
     if undefined(probes) then probes = p_names else probes = strcompress(string(probes), /rem)
@@ -153,7 +156,7 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     endif
     if keyword_set(attitude_only) then begin 
       datatypes = ['spinras', 'spindec']
-      mec_varformat = '*_ang_mom_*'
+      mec_varformat = '*_ang_mom_* *_mec_L_vec'
     endif
     if keyword_set(attitude_only) && keyword_set(ephemeris_only) then begin
        dprint, 'mms_load_state error, cannot set both attitude_only and ephemeris_only keywords'
@@ -196,13 +199,16 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
        eph_idx = where(strpos(datatypes, 'spin') EQ -1, neph)
      endif
 
-
     ; get state data for each probe and data type (def or pred) 
     for i = 0, n_elements(probes)-1 do begin      
        for j = 0, n_elements(level)-1 do begin
             if mec_flag EQ 1 && level[j] NE 'pred' then begin
-                 mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files, varformat=mec_varformat
-                 copy_data, 'mms'+probes[i]+'_mec_r_eci', 'mms'+probes[i]+'_defeph_pos'
+                 mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files, $
+                  varformat=mec_varformat, suffix=suffix
+                 if ~keyword_set(attitude_only) then begin
+                    copy_data, 'mms'+probes[i]+'_mec_r_eci'+suffix, 'mms'+probes[i]+'_defeph_pos'+suffix
+                    copy_data, 'mms'+probes[i]+'_mec_v_eci'+suffix, 'mms'+probes[i]+'_defeph_vel'+suffix
+                 endif 
             endif else begin
                  mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $

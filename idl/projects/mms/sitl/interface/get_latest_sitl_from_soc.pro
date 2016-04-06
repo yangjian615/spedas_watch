@@ -16,7 +16,7 @@ pro get_latest_sitl_from_soc, fom_file, error_flag, error_message
   
   temp_dir = !MMS.LOCAL_DATA_DIR
   spawnstring = 'echo ' + temp_dir
-  spawn, spawnstring, data_dir
+  spawn, spawnstring, dir_path;data_dir
   
   temptime = systime(/utc)
 
@@ -42,12 +42,12 @@ pro get_latest_sitl_from_soc, fom_file, error_flag, error_message
     
     for i = 0, n_elements(flist)-1 do begin
       last_slash = strpos(flist(i), path_sep(), /reverse_search)
-      fyear = fix(strmid(flist(i), dir_length+15, 4))
-      fmonth = fix(strmid(flist(i), dir_length+20, 2))
-      fday = fix(strmid(flist(i), dir_length+23, 2))
-      fhour = fix(strmid(flist(i), dir_length+26, 2))
-      fmin = fix(strmid(flist(i), dir_length+29, 2))
-      fsec = fix(strmid(flist(i), dir_length+32, 2))
+      fyear = fix(strmid(flist(i), dir_length+16, 4))
+      fmonth = fix(strmid(flist(i), dir_length+21, 2))
+      fday = fix(strmid(flist(i), dir_length+24, 2))
+      fhour = fix(strmid(flist(i), dir_length+27, 2))
+      fmin = fix(strmid(flist(i), dir_length+30, 2))
+      fsec = fix(strmid(flist(i), dir_length+33, 2))
       fjul(i) = julday(fmonth, fday, fyear, fhour, fmin, fsec)
     endfor
     

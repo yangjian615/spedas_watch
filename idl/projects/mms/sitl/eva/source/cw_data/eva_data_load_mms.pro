@@ -1,4 +1,4 @@
-FUNCTION eva_data_load_mms, state, no_gui=no_gui
+FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
   compile_opt idl2
 
   ;-------------
@@ -46,8 +46,10 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
   ;-------------
   ; LOAD
   ;-------------
-  progressbar = Obj_New('progressbar', background='white', Text='Loading MMS data ..... 0 %')
-  progressbar -> Start
+  if ~keyword_set(no_gui) then begin
+    progressbar = Obj_New('progressbar', background='white', Text='Loading MMS data ..... 0 %')
+    progressbar -> Start
+  endif
   c = 0
   answer = 'No'
   for p=0,pmax-1 do begin; for each requested probe
@@ -55,14 +57,16 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
     prb = strmid(sc,3,1)
     for i=0,imax-1 do begin; for each requested parameter
       
-      if progressbar->CheckCancel() then begin
-        ok = Dialog_Message('User cancelled operation.',/center) ; Other cleanup, etc. here.
-        break
+      if ~keyword_set(no_gui) then begin
+        if progressbar->CheckCancel() then begin
+          ok = Dialog_Message('User cancelled operation.',/center) ; Other cleanup, etc. here.
+          break
+        endif
       endif
       
       prg = 100.0*float(c)/float(cparam)
       sprg = 'Loading MMS data ....... '+string(prg,format='(I2)')+' %'
-      progressbar -> Update, prg, Text=sprg
+      if ~keyword_set(no_gui) then progressbar -> Update, prg, Text=sprg
       
       ; Check pre-loaded tplot variables. 
       ; Avoid reloading if already exists.
@@ -73,7 +77,9 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
       endif else begin; if pre-loaded variable exists...
         idx = where(strmatch(tn,param),ct); check if param is one of the preloaded variables.
       endelse
- 
+      
+      if keyword_set(force) then ct = 0
+      
       if ct eq 0 then begin; if not loaded
         ;-----------
         ; ASPOC
@@ -488,6 +494,6 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui
     
   endfor; for each requested probe
   
-  progressbar -> Destroy
+  if ~keyword_set(no_gui) then progressbar -> Destroy
   return, answer
 END
