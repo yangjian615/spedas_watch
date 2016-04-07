@@ -33,8 +33,8 @@
 ;                       Updated to use all telescopes for burst mode data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-04 15:42:42 -0700 (Mon, 04 Apr 2016) $
-;$LastChangedRevision: 20719 $
+;$LastChangedDate: 2016-04-06 09:28:45 -0700 (Wed, 06 Apr 2016) $
+;$LastChangedRevision: 20731 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -43,7 +43,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     num_smooth = num_smooth
     
     if undefined(datatype) then datatype='electron'
-    if undefined(data_rate) then data_rate = 'srvy'
+    if undefined(data_rate) then data_rate = 'srvy' else data_rate=strlowcase(data_rate)
     if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
     if undefined(suffix) then suffix = ''
     prefix = 'mms'+strcompress(string(probe), /rem)
@@ -108,7 +108,6 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
 
           if energy_count eq 0 then begin
               dprint, dlevel = 0, 'Energy range selected is not covered by the detector for FEEPS ' + datatype + ' data'
-              stop
               continue
           endif
           for i=0l, n_elements(d.x)-1 do begin ; loop through time

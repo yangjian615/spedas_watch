@@ -29,8 +29,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp and Ian Cohen (APL)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 08:07:18 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20246 $
+;$LastChangedDate: 2016-04-06 09:12:28 -0700 (Wed, 06 Apr 2016) $
+;$LastChangedRevision: 20730 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -55,7 +55,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
     if not KEYWORD_SET(energy) then energy = [0,1000] ; set default energy as lowest energy channel in keV
     if not KEYWORD_SET(bin_size) then bin_size = 15 ; set default energy as lowest energy channel in keV
     if not KEYWORD_SET(data_units) then data_units = 'flux'
-    if undefined(data_rate) then data_rate = 'srvy'
+    if undefined(data_rate) then data_rate = 'srvy' else data_rate = strlowcase(data_rate)
     if not KEYWORD_SET(scopes) then scopes = ['0','1','2','3','4','5']
     if not KEYWORD_SET(datatype) then datatype = 'extof'
     if undefined(level) then level = 'l2'

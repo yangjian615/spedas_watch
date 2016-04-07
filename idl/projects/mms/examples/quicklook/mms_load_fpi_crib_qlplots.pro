@@ -21,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 11:51:41 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20698 $
+; $LastChangedDate: 2016-04-06 14:56:25 -0700 (Wed, 06 Apr 2016) $
+; $LastChangedRevision: 20736 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -131,9 +131,9 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     
     store_data, prefix+'_dfg_dmpa_srvy_clipped', data=prefix+[b_variable+'_'+suffix_kludge, b_variable+'_btot']
     options, prefix+'_dfg_dmpa_srvy_clipped', labflag=-1
-    options, prefix+'_dfg_dmpa_srvy_clipped', labels=['Bx', 'By', 'Bz', 'Bmag']
+    options, prefix+'_dfg_dmpa_srvy_clipped', labels=['Bx DMPA', 'By DMPA', 'Bz DMPA', 'Bmag']
     options, prefix+'_dfg_dmpa_srvy_clipped', colors=[2, 4, 6, 0]
-    options, prefix+'_dfg_dmpa_srvy_clipped', ytitle=prefix+'!CDFG!CDMPA'
+    options, prefix+'_dfg_dmpa_srvy_clipped', ytitle=prefix+'!CFGM QL'
 
     ; combine the densities into one tplot variable
     ;join_vec, [obsstr+'DESnumberDensity', obsstr+'DISnumberDensity'], obsstr+'numberDensity'

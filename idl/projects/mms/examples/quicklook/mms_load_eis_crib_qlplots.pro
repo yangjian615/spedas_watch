@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 11:51:41 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20698 $
+; $LastChangedDate: 2016-04-06 14:56:25 -0700 (Wed, 06 Apr 2016) $
+; $LastChangedRevision: 20736 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -89,6 +89,9 @@ tplot_options, 'xmargin', [15, 15]
 
 ; clip the DFG data to -150nT to 150nT
 tclip, 'mms'+probe+'_dfg_srvy_dmpa_bvec', -150., 150., /overwrite
+options, 'mms'+probe+'_dfg_srvy_dmpa_bvec', ytitle='MMS'+probe+'!CFGM QL'
+options, 'mms'+probe+'_dfg_srvy_dmpa_bvec', labflag=-1
+options, 'mms'+probe+'_dfg_srvy_dmpa_bvec', labels=['Bx DMPA', 'By DMPA', 'Bz DMPA']
 
 spd_mms_load_bss, trange=trange, /include_labels 
 

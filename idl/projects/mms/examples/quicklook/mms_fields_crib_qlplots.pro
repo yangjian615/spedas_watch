@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 11:51:41 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20698 $
+; $LastChangedDate: 2016-04-06 13:56:55 -0700 (Wed, 06 Apr 2016) $
+; $LastChangedRevision: 20734 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_fields_crib_qlplots.pro $
 ;-
 
@@ -54,7 +54,7 @@ store_data, 'mms_dfg_srvy_dmpa_btot', data = ['mms1_dfg_srvy_dmpa_btot', $
                                        'mms2_dfg_srvy_dmpa_btot', $
                                        'mms3_dfg_srvy_dmpa_btot', $
                                        'mms4_dfg_srvy_dmpa_btot']
-options, 'mms_*_btot',ytitle='DFG Btot'
+options, 'mms_*_btot',ytitle='FGM Btot'
 options, 'mms_*_btot',ysubtitle='QL [nT]'
 
 ; Bvec - set colors, psuedo variables and titles
@@ -78,9 +78,9 @@ store_data, 'mms_dfg_srvy_dmpa_bvec_z', data = ['mms1_dfg_srvy_dmpa_bvec_z', $
     'mms3_dfg_srvy_dmpa_bvec_z', $
     'mms4_dfg_srvy_dmpa_bvec_z']
 ; set titles
-options, 'mms_*_bvec_x', ytitle='DFG Bx'
-options, 'mms_*_bvec_y', ytitle='DFG By'
-options, 'mms_*_bvec_z', ytitle='DFG Bz'
+options, 'mms_*_bvec_x', ytitle='FGM Bx'
+options, 'mms_*_bvec_y', ytitle='FGM By'
+options, 'mms_*_bvec_z', ytitle='FGM Bz'
 options, 'mms_*_bvec_*', ysubtitle='DMPA [nT]' 
 
 ; GSM-DMPA - do the same for gsm_dmpa data, note gsm_dmpa data is not separated into btot and bvec
@@ -101,9 +101,9 @@ store_data, 'mms_dfg_srvy_gsm_dmpa_z', data = ['mms1_dfg_srvy_gsm_dmpa_2', $
   'mms2_dfg_srvy_gsm_dmpa_2', $
   'mms3_dfg_srvy_gsm_dmpa_2', $
   'mms4_dfg_srvy_gsm_dmpa_2']
-options, 'mms_*_gsm_dmpa_x', ytitle='DFG Bx'
-options, 'mms_*_gsm_dmpa_y', ytitle='DFG By'
-options, 'mms_*_gsm_dmpa_z', ytitle='DFG Bz'
+options, 'mms_*_gsm_dmpa_x', ytitle='FGM Bx'
+options, 'mms_*_gsm_dmpa_y', ytitle='FGM By'
+options, 'mms_*_gsm_dmpa_z', ytitle='FGM Bz'
 options, 'mms_*_gsm_dmpa_*', ysubtitle='GSM-DMPA [nT]'
 
 mms_load_dsp, data_rate='fast', probes=[1, 2, 3, 4], datatype='epsd', level='l2'
@@ -120,7 +120,6 @@ tplot_options, 'xmargin', [20, 15]
 tplot_options, 'ymargin', [5, 5]
 tplot_options, 'charsize', 1.
 tplot_options, 'panel_size', 0.2
-options, 'mms_bss_burst', charsize=2.5
 
 if ~postscript then window, iw, xsize=width, ysize=height
 tplot, ['mms_bss_burst', 'mms_bss_fast', $

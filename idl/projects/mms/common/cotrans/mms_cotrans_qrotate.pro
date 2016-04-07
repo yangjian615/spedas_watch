@@ -25,8 +25,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-02 18:51:03 -0700 (Sat, 02 Apr 2016) $
-;$LastChangedRevision: 20715 $
+;$LastChangedDate: 2016-04-05 12:37:11 -0700 (Tue, 05 Apr 2016) $
+;$LastChangedRevision: 20725 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qrotate.pro $
 ;-
 
@@ -51,7 +51,8 @@ endif
 
 ;interpolate quaternions to data resolution
 ;  -MMS quaternions are stored <x,y,z,w> but general routines assume <w,x,y,z>
-q = qslerp( shift(*q_ptr.y,0,1), *q_ptr.x, *data_ptr.x )
+;  -most MMS quaternions will work with default tolerance but norms can stray by ~1e-9
+q = qslerp( shift(*q_ptr.y,0,1), *q_ptr.x, *data_ptr.x, eq_tolerance=1d-8)
 
 if n_elements(q) eq 1 then begin
   dprint, dlevel=0, 'Cannot interpolate quaternion "'+q_name+'"'

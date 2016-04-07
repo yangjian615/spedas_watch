@@ -23,8 +23,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 12:14:17 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20703 $
+; $LastChangedDate: 2016-04-06 15:29:03 -0700 (Wed, 06 Apr 2016) $
+; $LastChangedRevision: 20738 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
 ;-
 
@@ -136,11 +136,11 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     tclip, prefix+b_variable+'_bvec_?', -150, 150, /overwrite
     tclip, prefix+b_variable+'_btot', -150, 150, /overwrite
     
-    store_data, prefix+'_dfg_dmpa_srvy_clipped', data=prefix+[b_variable+'_'+['0', '1', '2'], b_variable+'_btot']
-    options, prefix+'_dfg_dmpa_srvy_clipped', labflag=-1
-    options, prefix+'_dfg_dmpa_srvy_clipped', labels=['Bx', 'By', 'Bz', 'Bmag']
-    options, prefix+'_dfg_dmpa_srvy_clipped', colors=[2, 4, 6, 0]
-    options, prefix+'_dfg_dmpa_srvy_clipped', ytitle=prefix+'!CDFG!CDMPA'
+    store_data, prefix+'_fgm_dmpa_srvy_clipped', data=prefix+[b_variable+'_'+['0', '1', '2'], b_variable+'_btot']
+    options, prefix+'_fgm_dmpa_srvy_clipped', labflag=-1
+    options, prefix+'_fgm_dmpa_srvy_clipped', labels=['Bx DMPA', 'By DMPA', 'Bz DMPA', 'Bmag']
+    options, prefix+'_fgm_dmpa_srvy_clipped', colors=[2, 4, 6, 0]
+    options, prefix+'_fgm_dmpa_srvy_clipped', ytitle=prefix+'!CFGM'
 
     ; combine the densities into one tplot variable
     ;join_vec, [obsstr+'desnumberdensity', obsstr+'disnumberdensity'], obsstr+'numberdensity'
@@ -209,7 +209,7 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     tdegap, electron_espec, /overwrite
     tdegap, electron_espec_omni, /overwrite
     panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
-            prefix+'_dfg_dmpa_srvy_clipped', electron_espec, electron_espec_omni]
+            prefix+'_fgm_dmpa_srvy_clipped', electron_espec, electron_espec_omni]
    ; window_caption="MMS FPI Electron energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
@@ -232,7 +232,7 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     tdegap, ion_espec_omni, /overwrite
     
     panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
-             prefix+'_dfg_dmpa_srvy_clipped',ion_espec, ion_espec_omni]
+             prefix+'_fgm_dmpa_srvy_clipped',ion_espec, ion_espec_omni]
    ; window_caption="MMS FPI Ion energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
 ;    tplot_options,'title', window_caption
@@ -254,7 +254,7 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     tdegap, e_pad_allE, /overwrite
     
     panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
-             prefix+'_dfg_dmpa_srvy_clipped',e_pad, e_pad_allE]
+             prefix+'_fgm_dmpa_srvy_clipped',e_pad, e_pad_allE]
     window_caption="MMS FPI Electron PAD"
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
@@ -264,12 +264,12 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     iw=iw+1 
        
     ;-----------ONE SPACECRAFT FPI SUMMARY PLOT--------------------
-   ; fpi_moments = [prefix+'_dfg_dmpa_srvy_clipped', [obsstr+'des_numberdensity', obsstr+'dis_numberdensity'], obsstr+'ebulkv_dbcs',  $
+   ; fpi_moments = [prefix+'_fgm_dmpa_srvy_clipped', [obsstr+'des_numberdensity', obsstr+'dis_numberdensity'], obsstr+'ebulkv_dbcs',  $
    ;                obsstr+'ibulkv_dbcs', obsstr+'temp']
    ; fpi_espects = [obsstr+'dis_EnergySpectr_omni_avg', obsstr+'des_EnergySpectr_omni_avg']
-    fpi_moments = [prefix+'_dfg_dmpa_srvy_clipped', [obsstr+'des_numberdensity', obsstr+'dis_numberdensity']+'_dbcs_'+data_rate, obsstr+'ebulkv_dbcs',  $
+    fpi_moments = [prefix+'_fgm_dmpa_srvy_clipped', [obsstr+'des_numberdensity', obsstr+'dis_numberdensity']+'_dbcs_'+data_rate, obsstr+'ebulkv_dbcs',  $
                    obsstr+'ibulkv_dbcs', obsstr+'temp']
-    fpi_espects = [obsstr+'dis_ energyspectr_omni_avg', obsstr+'des_energyspectr_omni_avg']
+    fpi_espects = [obsstr+'dis_energyspectr_omni_avg', obsstr+'des_energyspectr_omni_avg']
     panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
             fpi_moments, obsstr+'des_pitchangdist_avg', fpi_espects]                    
     window_caption="MMS FPI Observatory Summary:"+"MMS"+STRING(probes[i],FORMAT='(I1)')
@@ -289,7 +289,7 @@ ENDFOR
 panels=['mms_bss_burst', 'mms_bss_fast', quality_bar]
 FOR i=1,4 DO BEGIN
    obsstr = 'mms'+STRING(i,FORMAT='(I1)')
-   panels=[panels,obsstr+'_dfg_dmpa_srvy_clipped',obsstr+'_des_energyspectr_omni_avg',obsstr+'_dis_energyspectr_omni_sum'] 
+   panels=[panels,obsstr+'_fgm_dmpa_srvy_clipped',obsstr+'_des_energyspectr_omni_avg',obsstr+'_dis_energyspectr_omni_avg'] 
 ENDFOR
 window_caption="MMS FPI Observatory Summary: MMS1, MMS2, MMS3, MMS4"
 if ~postscript then window, iw, xsize=width, ysize=height

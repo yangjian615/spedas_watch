@@ -13,19 +13,19 @@
 ;-
 
 function mms_load_fpi_ut::test_load
-  mms_load_fpi, probe=4, level='l2'
+  mms_load_fpi, probe=4, level='l2', datatype='des-moms'
   assert, spd_data_exists('mms4_des_energyspectr_omni_avg mms4_des_pitchangdist_avg mms4_des_energyspectr_px_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data'
   return, 1
 end
 
 function mms_load_fpi_ut::test_load_multi_probes
-  mms_load_fpi, probe=['1', '4'], level='l2'
+  mms_load_fpi, probe=['1', '4'], level='l2', datatype='des-moms'
   assert, spd_data_exists('mms1_des_energyspectr_omni_avg mms4_des_pitchangdist_avg mms1_des_energyspectr_pz_fast', '2015-12-15', '2015-12-16'), 'Problem loading multiple probe fpi data'
   return, 1
 end
 
 function mms_load_fpi_ut::test_load_mixed_probe_type
-  mms_load_fpi, probes=['1', 4], level='l2'
+  mms_load_fpi, probes=['1', 4], level='l2', datatype='des-moms'
   assert, spd_data_exists('mms1_des_energyspectr_omni_avg mms4_des_pitchangdist_avg mms1_des_energyspectr_pz_fast', '2015-12-15', '2015-12-16'), 'Problem loading mixed probe type fpi data'
   return, 1
 end
@@ -44,13 +44,13 @@ function mms_load_fpi_ut::test_load_level_sitl
 end
 
 function mms_load_fpi_ut::test_load_data_rate
-  mms_load_fpi, probes=1, data_rate='fast'
+  mms_load_fpi, probes=1, data_rate='fast', datatype='des-moms'
   assert, spd_data_exists('mms1_des_energyspectr_mz_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data rate'
   return, 1
 end
 
 function mms_load_fpi_ut::test_load_data_rate_caps
-  mms_load_fpi, probes='1', data_rate='FAST'
+  mms_load_fpi, probes='1', data_rate='FAST', datatype='des-moms'
   assert, spd_data_exists('mms1_des_energyspectr_mz_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data rate with CAPS'
   return, 1
 end
@@ -75,15 +75,15 @@ end
 
 function mms_load_fpi_ut::test_load_dtypes_caps
   mms_load_fpi, probe=1, datatype='DIS', level='ql'
-  assert, spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS'
-  assert, ~spd_data_exists('mms1_des_startDelPhi_angle', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS'
+  assert, spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS (1)'
+  assert, ~spd_data_exists('mms1_des_startDelPhi_angle', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS (2)'
   return, 1
 end
 
 function mms_load_fpi_ut::test_load_dtypes_star
   mms_load_fpi, probe=1, datatype='*'
-  assert, spd_data_exists('mms1_des_pitchangdist_avg', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS'
-  assert, ~spd_data_exists('mms3_des_pitchangdist_avg', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS'
+  assert, spd_data_exists('mms1_des_pitchangdist_avg', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types with star (1)'
+  assert, ~spd_data_exists('mms3_des_pitchangdist_avg', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types with star (2)'
   return, 1
 end
 

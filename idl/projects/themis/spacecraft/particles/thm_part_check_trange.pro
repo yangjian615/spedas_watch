@@ -26,9 +26,9 @@
 ;NOTES: 
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-05 18:12:35 -0700 (Mon, 05 May 2014) $
-;$LastChangedRevision: 15053 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-04-05 14:14:33 -0700 (Tue, 05 Apr 2016) $
+;$LastChangedRevision: 20726 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_check_trange.pro $
 ;-
 function thm_part_check_trange, probe0, datatype0, trange, sst_cal=sst_cal, use_eclipse_corrections=use_eclipse_corrections
@@ -81,7 +81,7 @@ function thm_part_check_trange, probe0, datatype0, trange, sst_cal=sst_cal, use_
       thm_part_trange, probe[j], datatype[i], get=loaded, sst_cal=sst_cal
       
       if undefined(loaded) then begin
-        dprint, dlevel=0, 'Cannot determined state of loaded th'+probe+'_'+datatype+' data.'
+        dprint, dlevel=0, 'Cannot determine state of loaded th'+probe+'_'+datatype+' data.'
         return, 0
       endif
       

@@ -36,8 +36,8 @@
 ; CREATED BY: Mitsuo Oka   Oct 2015
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 15:05:42 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19848 $
+;$LastChangedDate: 2016-04-06 09:01:11 -0700 (Wed, 06 Apr 2016) $
+;$LastChangedRevision: 20729 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/spd_mms_load_bss.pro $
 ;-
 
@@ -59,4 +59,20 @@ PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_l
     endcase
   endfor
 
+  burst_label = keyword_set(include_labels) ? 'Burst' : ''
+  fast_label = keyword_set(include_labels) ? 'Fast' : ''
+  status_label = keyword_set(include_labels) ? 'Status' : ''
+  fom_label = keyword_set(include_labels) ? 'FoM' : ''
+ 
+  panel_size = keyword_set(include_labels) ? 0.09 : 0.01
+  
+  ; set some options so the labels sizes are set properly
+  options,'mms_bss_burst',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
+    ticklen=0,panel_size=panel_size,colors=2, labels=[burst_label], labsize=1, charsize=1.
+  options,'mms_bss_fast',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
+    ticklen=0,panel_size=panel_size,colors=6, labels=[fast_label], labsize=1, charsize=1.
+  options,'mms_bss_status',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
+    ticklen=0,panel_size=panel_size,colors=4, labels=[status_label], labsize=1, charsize=1.
+  options,'mms_bss_fom',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
+    ticklen=0,panel_size=panel_size,colors=0, labels=[fom_label], labsize=1, charsize=1.
 END

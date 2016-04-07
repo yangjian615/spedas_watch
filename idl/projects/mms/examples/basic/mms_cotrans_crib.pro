@@ -6,11 +6,12 @@
 ;  Demonstrate usage of mms_cotrans and mms_qcotrans.
 ;
 ;Notes:
+;  See also: mms_qcotrans_crib
 ;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-02 18:51:03 -0700 (Sat, 02 Apr 2016) $
-;$LastChangedRevision: 20715 $
+;$LastChangedDate: 2016-04-05 17:32:52 -0700 (Tue, 05 Apr 2016) $
+;$LastChangedRevision: 20728 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_cotrans_crib.pro $
 ;-
 
@@ -29,20 +30,18 @@
 ;    -MAG
 ;
 ;  MMS_QCOTRANS Supported coordinate systems:
-;    -BCS **
+;    -BCS
 ;    -DBCS
 ;    -DMPA
-;    -SMPA **
+;    -SMPA
 ;    -DSL
-;    -SSL **
+;    -SSL
 ;    -GSE
 ;    -GSE2000
 ;    -GSM
 ;    -SM
-;    -GEO **
+;    -GEO
 ;    -ECI
-;
-;         ** Coming soon
 ;
 ;  To use quaternion transformations replace MMS_COTRANS with MMS_QCOTRANS.
 ;    -the required quaternions varaibles are loded with 

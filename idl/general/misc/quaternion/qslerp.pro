@@ -22,6 +22,12 @@
 ;        the interpolated quaternions strays easily from unit length,
 ;        when it renormalizes results may be destabilized
 ;
+;        eq_tolerance: Set to specify the tolerance used when determining
+;        whether two numbers are equal (default: 1e-12). This tolerance
+;        will be used in checking equivalence of:
+;                -quaternion lengths
+;                -input vs. output abscissae
+;                -quaternion direction (inner product)  
 ;       
 ;
 ;Returns: an Mx4 element array of interpolated quaternions or -1L on
@@ -45,19 +51,23 @@
 ;
 ;Written by: Patrick Cruce(pcruce@igpp.ucla.edu)
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-03-03 09:16:32 -0800 (Mon, 03 Mar 2014) $
-; $LastChangedRevision: 14474 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2016-04-05 12:33:56 -0700 (Tue, 05 Apr 2016) $
+; $LastChangedRevision: 20724 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/quaternion/qslerp.pro $
 ;-
 
-function qslerp,q,x1, x2,geometric=geometric
+function qslerp,q,x1, x2,geometric=geometric, eq_tolerance=eq_tolerance_in
 
 compile_opt idl2
 
 EQ_TOLERANCE = 1e-12 ;how close two numbers have to be to be considered equal
                      ;error in calculations can be assumed
                      ;to be at least as high as this number
+
+if n_elements(eq_tolerance_in) eq 1 && is_num(eq_tolerance_in,/floating) then begin
+  eq_tolerance = eq_tolerance_in
+endif
 
 ;this is to avoid mutating the input variables
 qi = q

@@ -6,13 +6,13 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 11:51:41 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20698 $
+; $LastChangedDate: 2016-04-06 14:56:25 -0700 (Wed, 06 Apr 2016) $
+; $LastChangedRevision: 20736 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps_crib_qlplots.pro $
 ;-
 
 probe = '1'
-date = '2015-12-15'
+date = '2016-2-15'
 timespan, date, 1
 width = 950
 height = 1000
@@ -42,8 +42,9 @@ if errstats ne 0 then begin
   catch, /cancel
 endif
 
-mms_load_feeps, probe=probe, data_rate=data_rate, datatype='electron', suffix='_electrons', data_units = type
-mms_load_feeps, probe=probe, data_rate=data_rate, datatype='ion', suffix='_ions', data_units = type
+mms_load_feeps, probe=probe, data_rate=data_rate, datatype='electron', suffix='_electrons', data_units = type, varformat='*spinsectnum* *top* *bottom* *pitch_angle*'
+mms_load_feeps, probe=probe, data_rate=data_rate, datatype='ion', suffix='_ions', data_units = type, varformat='*spinsectnum* *top* *bottom* *pitch_angle*'
+
 mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[70, 71], data_units = type
 mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[200, 201], data_units = type
 mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[76, 77], data_units = type
@@ -62,9 +63,9 @@ tclip, prefix+b_variable+'_?', -150, 150, /overwrite
 tclip, prefix+b_variable+'_btot', -150, 150, /overwrite
 store_data, prefix+b_variable+'_clipped', data=prefix+[b_variable+'_'+suffix_kludge, b_variable+'_btot']
 options, prefix+b_variable+'_clipped', labflag=-1
-options, prefix+b_variable+'_clipped', labels=['Bx', 'By', 'Bz', 'Bmag']
+options, prefix+b_variable+'_clipped', labels=['Bx DMPA', 'By DMPA', 'Bz DMPA', 'Bmag']
 options, prefix+b_variable+'_clipped', colors=[2, 4, 6, 0]
-options, prefix+b_variable+'_clipped', ytitle=prefix+'!CDFG!CDMPA'
+options, prefix+b_variable+'_clipped', ytitle=prefix+'!CFGM QL'
 
 ; ephemeris data - set the label to show along the bottom of the tplot
 eph_gsm = 'mms'+probe+'_ql_pos_gsm'
