@@ -10,15 +10,14 @@
 ;     
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-07 10:33:56 -0700 (Thu, 07 Apr 2016) $
-; $LastChangedRevision: 20742 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
+; $LastChangedBy: rickwilder $
+; $LastChangedDate: 2016-04-07 09:08:39 -0700 (Thu, 07 Apr 2016) $
+; $LastChangedRevision: 20741 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_feeps_remove_sun.pro $
 ;-
 
-pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_units, $
-    data_rate = data_rate, level = level, suffix = suffix, tplotnames = tplotnames
-    
+pro mms_sitl_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_units, $
+    data_rate = data_rate, level = level, suffix = suffix
     if undefined(data_units) then data_units = 'flux'
     if undefined(suffix) then suffix = ''
     if undefined(data_rate) then data_rate = 'srvy'
@@ -42,7 +41,7 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         return
     endif
     ; get the sector masks
-    mask_sectors = mms_feeps_sector_masks()
+    mask_sectors = mms_sitl_feeps_sector_masks()
     
     for data_units_idx = 0, n_elements(data_units)-1 do begin
         these_units = data_units[data_units_idx]
@@ -73,8 +72,7 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
           store_data, var_name+'_sun_removed'+suffix, data=top_data, dlimits=top_dlimits
           zlim, var_name+'_sun_removed'+suffix, 0, 0, 1
           ylim, var_name+'_sun_removed'+suffix, 0, 0, 1
-          options, var_name+'_sun_removed'+suffix, ztitle=units_label, ysubtitle='[keV]', ytitle='mms'+probe+'!CFEEPS!CTop!CSensor '+sensors[sensor_idx]
-          append_array, tplotnames, var_name+'_sun_removed'+suffix
+          options, var_name+'_sun_removed'+suffix, ztitle=units_label, ysubtitle='', ytitle='MMS FEEPS!CTop Sensor '+sensors[sensor_idx]
         endfor
     
         ; bottom sensors
@@ -98,8 +96,7 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
             store_data, var_name+'_sun_removed'+suffix, data=bottom_data, dlimits=bottom_dlimits
             zlim, var_name+'_sun_removed'+suffix, 0, 0, 1
             ylim, var_name+'_sun_removed'+suffix, 0, 0, 1
-            options, var_name+'_sun_removed'+suffix, ztitle=units_label, ysubtitle='[keV]', ytitle='mms'+probe+'!CFEEPS!CBottom!CSensor '+sensors[sensor_idx]
-            append_array, tplotnames, var_name+'_sun_removed'+suffix
+            options, var_name+'_sun_removed'+suffix, ztitle=units_label, ysubtitle='', ytitle='MMS FEEPS!Bottom Sensor '+sensors[sensor_idx]
           endfor
         endif
     endfor

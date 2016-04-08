@@ -36,8 +36,8 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
     msg = [!Error_State.MSG,' ','...EVA will igonore this error.']
     if ~keyword_set(no_gui) then begin 
       ok = dialog_message(msg,/center,/error)
+      progressbar -> Destroy
     endif
-    progressbar -> Destroy
     message, /reset; Clear !ERROR_STATE
     perror = [perror,pcode]
     ;return, answer; 'answer' will be 'Yes', if at least some of the data were succesfully loaded.
@@ -103,7 +103,18 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=21
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_feeps_*') and (cp eq 0)) then begin
-          mms_load_epd_feeps, sc=sc
+          mms_sitl_get_feeps, probes=prb, datatype='electron', level='sitl'
+          tn=tnames(sc+'_epd_feeps_*',jmax)
+          if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
+            idx = where(strmatch(tn,'*feeps*_sun_removed'),kmax,complement=cidx, ncomp=nc)
+            store_data, tn[cidx], /delete; delete most of the variables
+            tn = tn[idx]
+            for k=0,kmax-1 do begin
+              tarr = strsplit(tn[k],'_',/extract)
+              options, tn[k],ytitle=sc+'!CFEEPS!CTop '+tarr[7],ysubtitle='[keV]'
+              ylim, tn[k], 30,500
+            endfor
+          endif
           answer = 'Yes'
         endif
         
@@ -113,11 +124,23 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=22
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_epd_eis_*') and (cp eq 0)) then begin
-          mms_load_epd_eis, sc=sc
-          tn=tnames(sc+'_epd_eis_electronenergy_electron_cps_t1',jmax)
+          varformat = sc + ['_epd_eis_*_spin', '_epd_eis_*_pitch_angle_t*', '_epd_eis_*_*_cps_t*']
+          mms_load_eis, probes=prb, datatype='extof', level='l1b', data_units = 'cps', varformat=varformat
+          tn=tnames(sc+'_epd_eis_*',jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
-            options,tn[0],ytitle='electrons',ylog=1,yrange=[0.8,1e+5]
-            answer = 'Yes'
+            idx = where(strmatch(tn,'*cps_omni_spin'),c,complement=cidx, ncomp=nc)
+            store_data, tn[cidx], /delete; delete most of the variables
+            tn = tnames(sc+'_epd_eis_*_cps_omni_spin',kmax)
+            for k=0,kmax-1 do begin
+              tarr = strsplit(tn[k],'_',/extract)
+              options, tn[k],ytitle=sc+'!CEIS!C'+tarr[4],ysubtitle='[keV]'
+              case tarr[4] of
+                'proton': yrange = [50, 1000]
+                'alpha': yrange = [70, 700]
+                'oxygen': yrange = [130,1000]
+              endcase
+              ylim, tn[k], yrange
+            endfor
           endif
         endif
         

@@ -1,14 +1,31 @@
+; Crib for EIS.
+; 
 
-mms_init, local_data_dir='/Volumes/MMS/data/mms/'
 
-timespan, '2015-05-13/00:00:00', 24, /hour
+timespan, '2016-03-15/00:00:00', 24, /hour
 
-mms_load_epd_eis, sc='mms1'
+probe = '2'
+sc_id = 'mms'+probe
+data_units = 'cps'
 
-options, 'mms1_epd_eis_electronenergy_electron_cps_t1', 'ytitle', 'electrons'
-options, 'mms1_epd_eis_electronenergy_electron_cps_t1', 'ylog', 1
-ylim, 'mms1_epd_eis_electronenergy_electron_cps_t1', 0.8, 1e5
+varformat = ['mms'+probe+'_epd_eis_*_spin', $
+  'mms'+probe+'_epd_eis_*_pitch_angle_t*', $
+  'mms'+probe+'_epd_eis_*_*_cps_t*']
 
-tplot, ['mms1_epd_eis_electronenergy_electron_cps_t1']
+;mms_load_eis, probes=probe, datatype='extof', level='l1b', data_units = data_units, varformat=varformat
+mms_load_eis, probes=probe, trange=trange, datatype='extof', level='l1b', data_units = data_units, varformat=varformat
+
+name = sc_id + '_epd_eis_extof_proton_cps_omni_spin'
+newname = sc_id + 'epd_eis_extof_proton_omni_spin'
+
+tplot_rename, name, newname
+
+ylim, newname, 50, 1000
+
+store_data, ['*cps*'], /delete
+
+
+
+tplot, newname
 
 end

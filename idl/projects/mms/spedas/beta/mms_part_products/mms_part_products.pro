@@ -14,11 +14,18 @@
 ; Argument description inline below
 ;
 ;Notes: 
+;       !!!!!! words of caution <------ by egrimes, 4/7/2016:
+;        While you can use mms_part_products to generate particle moments for FPI from
+;        the distributions, these calculations are currently missing several important
+;        components, including photoelectron removal and S/C potential corrections.
+;        The official moments released by the team include these, and are the scientific
+;        products you should use in your analysis; see mms_load_fpi_crib to see how to load
+;        the FPI moments released by the team (des-moms, dis-moms datatypes)
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20511 $
+;$LastChangedDate: 2016-04-07 15:49:00 -0700 (Thu, 07 Apr 2016) $
+;$LastChangedRevision: 20748 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 

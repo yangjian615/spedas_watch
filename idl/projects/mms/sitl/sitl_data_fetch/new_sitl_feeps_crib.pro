@@ -1,14 +1,21 @@
-pro new_sitl_feeps_crib
+; SITL FEEPS CRIB
+; 
 
-mms_init, local_data_dir='/Volumes/MMS/data/mms/'
+timespan, '2016-03-15/00:00:00', 24, /hour
 
-timespan, '2015-05-05/00:00:00', 24, /hour
+probe = '1'
+sc_id = 'mms'+probe
 
-mms_load_epd_feeps, sc='mms3'
+mms_sitl_get_feeps, probes=probe, datatype='electron', level='sitl'
 
-options, 'mms3_epd_feeps_TOP_counts_per_accumulation_sensorID_4', 'ytitle', 'electrons'
-options, 'mms3_epd_feeps_TOP_counts_per_accumulation_sensorID_4', 'ylog', 1
+feeps_name = sc_id + '_epd_feeps_top_electron_intensity_sensorid_11_clean_sun_removed'
+new_name = sc_id + '_epd_feeps_electron_intensity_sensorid_11_clean_sun_removed'
+tplot_rename, feeps_name, new_name
 
-tplot, ['mms3_epd_feeps_TOP_counts_per_accumulation_sensorID_4']
+store_data, ['*top*'], /delete
+
+ylim, new_name, 30, 500
+
+tplot, new_name
 
 end

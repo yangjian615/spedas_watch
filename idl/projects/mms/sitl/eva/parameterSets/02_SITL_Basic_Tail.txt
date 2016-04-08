@@ -19,9 +19,13 @@ mms*_edp_fast_scpot_sitl; SC-potential
 mms*_hpca_hplus_number_density
 mms*_hpca_hplus_ion_bulk_velocity
 
+mms*_epd_eis_extof_proton_cps_omni_spin
 mms*_hpca_hplus_RF_corrected
 mms*_hpca_heplusplus_RF_corrected
 mms*_hpca_oplus_RF_corrected
+
+
+mms*_epd_feeps_top_electron_intensity_sensorid_5_clean_sun_removed
 
 mms*_edp_fast_dce_sitl
 

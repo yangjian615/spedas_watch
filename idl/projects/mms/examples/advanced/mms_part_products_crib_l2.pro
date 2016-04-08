@@ -8,8 +8,8 @@
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-01 12:14:17 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20703 $
+;$LastChangedDate: 2016-04-07 15:45:54 -0700 (Thu, 07 Apr 2016) $
+;$LastChangedRevision: 20747 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib_l2.pro $
 ;
 ;-
@@ -53,21 +53,28 @@
   ;L2 particle data
   name = 'mms'+probe+'_d'+species+'s_dist_'+rate
  
+  
   ;generate products
   mms_part_products, name, trange=trange, $
                      mag_name=bname, pos_name=pos_name, $ ;required for field aligned spectra
-                     outputs=['phi','theta','energy','moments','pa','gyro']
+                     outputs=['phi','theta','energy','pa','gyro']
 
   ;plot spectrograms
   tplot,name+'_'+['energy','theta','phi','pa','gyro']
   tlimit,trange
   
   stop
- 
-  ;plot moments
-  tplot, name+'_'+['density', 'avgtemp']
   
-  stop
+  ; !!!!!! words of caution <------ by egrimes, 4/7/2016:
+  ; While you can use mms_part_products to generate particle moments for FPI from
+  ; the distributions, these calculations are currently missing several important
+  ; components, including photoelectron removal and S/C potential corrections.
+  ; The official moments released by the team include these, and are the scientific
+  ; products you should use in your analysis; see mms_load_fpi_crib to see how to load
+  ; the FPI moments released by the team (des-moms, dis-moms datatypes)
+  ;plot moments
+ ; tplot, name+'_'+['density', 'avgtemp']
+ ; stop
 
 
 

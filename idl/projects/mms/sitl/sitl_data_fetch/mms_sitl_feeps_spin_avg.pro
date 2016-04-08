@@ -7,14 +7,13 @@
 ;       variable (variable containing spin sector #s associated 
 ;       with each measurement)
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-07 10:33:56 -0700 (Thu, 07 Apr 2016) $
-;$LastChangedRevision: 20742 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_spin_avg.pro $
+;$LastChangedBy: rickwilder $
+;$LastChangedDate: 2016-04-07 09:08:39 -0700 (Thu, 07 Apr 2016) $
+;$LastChangedRevision: 20741 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_feeps_spin_avg.pro $
 ;-
-pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
-  suffix = suffix, tplotnames = tplotnames
-  
+pro mms_sitl_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
+  suffix = suffix
   if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
   if undefined(datatype) then datatype = 'electron'
   if undefined(data_units) then data_units = 'intensity'
@@ -60,7 +59,5 @@ pro mms_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatyp
   
   ylim, var_name+'_spin'+suffix, lower_en, 600., 1
   zlim, var_name+'_spin'+suffix, 0, 0, 1
-  
-  append_array, tplotnames, var_name+'_spin'+suffix
 
 end
