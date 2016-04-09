@@ -9,8 +9,8 @@
 ; 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-03-31 12:08:56 -0700 (Thu, 31 Mar 2016) $
-; $LastChangedRevision: 20661 $
+; $LastChangedDate: 2016-04-08 11:22:32 -0700 (Fri, 08 Apr 2016) $
+; $LastChangedRevision: 20762 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/xtplot/xtplot.pro $
 PRO xtplot_change_tlimit, strcmd
   compile_opt idl2
@@ -574,7 +574,7 @@ pro xtplot,datanames,     $
   ; xtp_opts
   xtp_opts={base:-1}; this '-1' remains if tplot_vars was undefined
   extract_tags,xtp_opts,tplot_vars.options  ; overriden by tplot_vars.option
-  tplot_options, 'xmargin', [15,9]
+  ;tplot_options, 'xmargin', [15,9]
 
   ; postscript printer
   ps_config = cmps_form(/Initialize)

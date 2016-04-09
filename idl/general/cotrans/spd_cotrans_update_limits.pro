@@ -9,8 +9,8 @@
 ;Notes:
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-08 21:21:58 -0800 (Tue, 08 Dec 2015) $
-;$LastChangedRevision: 19549 $
+;$LastChangedDate: 2016-04-08 10:03:05 -0700 (Fri, 08 Apr 2016) $
+;$LastChangedRevision: 20759 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/spd_cotrans_update_limits.pro $
 ;-
 
@@ -37,11 +37,10 @@ if in_set(strlowcase(tag_names(al)),'labels') then begin
       al.labels[k] = strmid(al.labels[k], 0, type3+1) + out_coord
     endif else if type4 ne -1 then begin
       al.labels[k] = out_coord
-    endif else begin
-      return
-    endelse
-    store_data, out_name, limit = al
+    endif
   endfor
 endif
+
+store_data, out_name, limit = al
 
 end

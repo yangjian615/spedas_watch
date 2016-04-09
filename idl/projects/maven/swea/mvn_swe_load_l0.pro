@@ -77,9 +77,11 @@
 ;
 ;       NODUPE:        Filter out identical packets.  Default = 1 (yes).
 ;
+;       REALTIME:      Use realtime file naming convention: YYYYMMDD_HHMMSS_*_l0.dat
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-06 15:10:43 -0800 (Sun, 06 Mar 2016) $
-; $LastChangedRevision: 20339 $
+; $LastChangedDate: 2016-04-08 16:58:31 -0700 (Fri, 08 Apr 2016) $
+; $LastChangedRevision: 20768 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -87,7 +89,8 @@
 ;-
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
                              cdrift=cdrift, sumplot=sumplot, status=status, orbit=orbit, $
-                             loadonly=loadonly, spiceinit=spiceinit, nodupe=nodupe
+                             loadonly=loadonly, spiceinit=spiceinit, nodupe=nodupe, $
+                             realtime=realtime
 
   @mvn_swe_com
 
@@ -131,6 +134,8 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   if ((size(trange,/type) eq 0) and tspan_exists) then trange = topt.trange_full
   
   if (size(cdrift, /type) eq 0) then dflg = 1 else dflg = keyword_set(cdrift)
+  
+  if keyword_set(realtime) then rflg = 1 else rflg = 0
 
 ; Get file names associated with trange or from one or more named
 ; file(s).  If you specify a time range and are working off-site, 
@@ -168,14 +173,25 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 
   if (size(trange,/type) eq 0) then begin
     trange = [0D]
-    for i=0,(nfiles-1) do begin
-      fbase = file_basename(file[i])
-      yyyy = strmid(fbase,16,4,/reverse)
-      mm = strmid(fbase,12,2,/reverse)
-      dd = strmid(fbase,10,2,/reverse)
-      t0 = time_double(yyyy + '-' + mm + '-' + dd)
-      trange = [trange, t0, (t0 + oneday)]
-    endfor
+    if (rflg) then begin
+      for i=0,(nfiles-1) do begin
+        fbase = file_basename(file[i])
+        yyyy = strmid(fbase,0,4)
+        mm = strmid(fbase,4,2)
+        dd = strmid(fbase,6,2)
+        t0 = time_double(yyyy + '-' + mm + '-' + dd)
+        trange = [trange, t0, (t0 + oneday)]
+      endfor
+    endif else begin
+      for i=0,(nfiles-1) do begin
+        fbase = file_basename(file[i])
+        yyyy = strmid(fbase,16,4,/reverse)
+        mm = strmid(fbase,12,2,/reverse)
+        dd = strmid(fbase,10,2,/reverse)
+        t0 = time_double(yyyy + '-' + mm + '-' + dd)
+        trange = [trange, t0, (t0 + oneday)]
+      endfor
+    endelse
     trange = minmax(trange[1:*])
   endif
   

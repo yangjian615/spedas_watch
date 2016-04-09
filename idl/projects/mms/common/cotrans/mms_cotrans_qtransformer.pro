@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-02 18:51:03 -0700 (Sat, 02 Apr 2016) $
-;$LastChangedRevision: 20715 $
+;$LastChangedDate: 2016-04-08 10:00:34 -0700 (Fri, 08 Apr 2016) $
+;$LastChangedRevision: 20758 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qtransformer.pro $
 ;-
 
@@ -60,8 +60,6 @@ pro mms_cotrans_qtransformer, $
 
   ; Execute next step in transformation tree
   ;   -everything goes through ECI at the moment, so this is very simple
-  ;   -MMS quaternion naming convention reflects an INVERSE (left handed) rotation
-  ;      e.g.  a default (right handed) rotation using "...eci_to_gse" is a GSE->ECI rotation
   ;------------------------------------------------
   case in_coord of
 
@@ -71,7 +69,7 @@ pro mms_cotrans_qtransformer, $
       if in_set(out_coord[0],['bcs','dbcs','dmpa','smpa','dsl','ssl','gse','gse2000','gsm','sm','geo']) then begin
         q_name = 'mms'+probe+'_mec_quat_eci_to_'+out_coord
         spd_cotrans_validate_transform, in_name, in_coord, out_coord
-        mms_cotrans_qrotate, in_name, q_name, out_name, /inverse
+        mms_cotrans_qrotate, in_name, q_name, out_name
         recursive_in_coord = out_coord
       endif else begin
         dprint, dlevel=0, sublevel=1, 'Unknown transformation: "'+ in_coord+'" to "'+out_coord+'"'
@@ -86,7 +84,7 @@ pro mms_cotrans_qtransformer, $
       if in_set(in_coord[0],['bcs','dbcs','dmpa','smpa','dsl','ssl','gse','gse2000','gsm','sm','geo']) then begin
         q_name = 'mms'+probe+'_mec_quat_eci_to_'+in_coord
         spd_cotrans_validate_transform, in_name, in_coord, out_coord
-        mms_cotrans_qrotate, in_name, q_name, out_name
+        mms_cotrans_qrotate, in_name, q_name, out_name, /inverse
         recursive_in_coord = 'eci'
       endif else begin
         dprint, dlevel=0, sublevel=1, 'Unknown transformation: "'+ in_coord+'" to "'+out_coord+'"'

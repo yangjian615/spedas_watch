@@ -16,9 +16,10 @@ function spp_swp_spane_slow_hkp_v43x_decom,ccsds , ptp_header=ptp_header, apdat=
   psize = 133                   ; rev 3d
   psize = 141                   ; rev 43
   
+dprint,dlevel=2,'deprecated
   if n_elements(b) ne psize+7 then begin
     dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
-    stop
+;    stop
     return,0
   endif
 

@@ -25,7 +25,7 @@ mms*_hpca_heplusplus_RF_corrected
 mms*_hpca_oplus_RF_corrected
 
 
-mms*_epd_feeps_top_electron_intensity_sensorid_5_clean_sun_removed
+mms*_epd_feeps_top_electron_intensity_sensorid_11_clean_sun_removed
 
 mms*_edp_fast_dce_sitl
 

@@ -130,6 +130,8 @@ pro thm_load_esa_post, sname=probe, datatype=dt, level=lvl, $
      endcase
      
      store_data, tplot_var, data=d_str, limit=l_str, dlimit=dl_str
+     If(isit_eflux) Then ylim, tplot_var, 0.1, max(d_str.v, /nan), 1
+
 ;ylims for data quality flag
      isit_dq = total(strmatch(strsplit(tplot_var,'_',/extract), 'quality'))
      If(isit_dq) Then Begin

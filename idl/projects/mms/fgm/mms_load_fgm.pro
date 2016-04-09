@@ -83,11 +83,12 @@
 ;        Please use the ephemeris data from the official source (LANL) 
 ;        using mms_load_mec instead
 ;        
-;     
+;    3) This routine automatically repairs non-monotonic FGM data;
+;       non-monotonic data points are removed
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-18 06:56:48 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20491 $
+;$LastChangedDate: 2016-04-08 13:42:14 -0700 (Fri, 08 Apr 2016) $
+;$LastChangedRevision: 20765 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -156,6 +157,9 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             endif
         endif
         
+        ; force the FGM data to be monotonic
+        tplot_force_monotonic, 'mms?_fgm_b_*_'+data_rate+'_'+level+suffix, /forward
+        
         if ~keyword_set(no_split_vars) then begin
             ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
             mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate
@@ -169,6 +173,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             del_data, this_probe+'_pos_gse'+suffix
             del_data, this_probe+'_pos_gsm'+suffix
         endif 
+        
     endfor
 
     ; set some of the metadata

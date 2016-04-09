@@ -19,14 +19,12 @@
 ;  none, may alter or create new tplot variable
 ;
 ;Notes:
-;  -MMS quaternion naming convention reflects an INVERSE (left handed) rotation
-;     e.g.  a default (right handed) rotation using "...eci_to_gse" is a GSE->ECI rotation
 ;  -This routine does not alter metadata
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-05 12:37:11 -0700 (Tue, 05 Apr 2016) $
-;$LastChangedRevision: 20725 $
+;$LastChangedDate: 2016-04-08 10:00:34 -0700 (Fri, 08 Apr 2016) $
+;$LastChangedRevision: 20758 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qrotate.pro $
 ;-
 
@@ -79,7 +77,7 @@ endif
 ;update dlimits
 if undefined(out_coord) then begin
   coords = stregex(q_name,'.*_([^_]+)_to_([^_]+)_?.*', /subexpr, /extract)
-  out_coord = keyword_set(inverse) ? coords[2] : coords[1]
+  out_coord = keyword_set(inverse) ? coords[1] : coords[2]
 endif
 cotrans_set_coord, dl, out_coord
 

@@ -196,7 +196,7 @@ for i=0,nv-1 do begin
      
      ; coordinate system support; loads from the COORDINATE_SYSTEM variable attribute (CDF_CHAR)
      coord_sys =  struct_value(attr,'coordinate_system',default='')
-     if ~undefined(coord_sys) then coord_sys = (strsplit(coord_sys, '>', /extract))[0]
+     if ~undefined(coord_sys) then coord_sys = strlowcase((strsplit(coord_sys, '>', /extract))[0])
 
      dlimit = {cdf:cdfstuff,spec:spec,log:log,data_att:{coord_sys:coord_sys}}
      if keyword_set(units) then str_element,/add,dlimit,'ysubtitle','['+units+']'

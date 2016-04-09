@@ -20,10 +20,11 @@
 ;   Created by Matt Fillingim (with code stolen from JH and RL)
 ;   Added directory keyword, and deletion of old files, jmm, 2014-11-14
 ;   Read version number from common block; MOF: 2015-01-30
+;   ISTP compliance scrub; DLM: 2016-04-08
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2015-11-17 09:19:41 -0800 (Tue, 17 Nov 2015) $
-;   $LastChangedRevision: 19393 $
+;   $LastChangedDate: 2016-04-08 17:11:44 -0700 (Fri, 08 Apr 2016) $
+;   $LastChangedRevision: 20769 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -287,6 +288,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   dummy = cdf_attcreate(fileid, 'VALIDMAX',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'SCALEMIN',     /variable_scope)
   dummy = cdf_attcreate(fileid, 'SCALEMAX',     /variable_scope)
+  dummy = cdf_attcreate(fileid, 'TIME_BASE',    /variable_scope)
   dummy = cdf_attcreate(fileid, 'UNITS',        /variable_scope)
   dummy = cdf_attcreate(fileid, 'CATDESC',      /variable_scope)
 
@@ -294,20 +296,21 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   varid = cdf_varcreate(fileid, varlist[0], /CDF_TIME_TT2000, /REC_VARY, /ZVARIABLE)
 
-  cdf_attput, fileid, 'FIELDNAM',     varid, varlist[1],           /ZVARIABLE
-  cdf_attput, fileid, 'FORMAT',       varid, 'I22',                /ZVARIABLE
-  cdf_attput, fileid, 'LABLAXIS',     varid, varlist[1],           /ZVARIABLE
-  cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data',       /ZVARIABLE
-  cdf_attput, fileid, 'FILLVAL',      varid, -9223372036854775808, /ZVARIABLE, /CDF_EPOCH
-  cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',        /ZVARIABLE
+  cdf_attput, fileid, 'FIELDNAM',     varid, varlist[1],                   /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',       varid, 'I22',                        /ZVARIABLE
+  cdf_attput, fileid, 'LABLAXIS',     varid, varlist[1],                   /ZVARIABLE
+  cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data',               /ZVARIABLE
+  cdf_attput, fileid, 'FILLVAL',      varid, long64(-9223372036854775808), /ZVARIABLE, /CDF_EPOCH
+  cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',                /ZVARIABLE
 
-  cdf_attput, fileid, 'VALIDMIN', 'epoch', tt2000_range[0], /ZVARIABLE, /CDF_EPOCH
-  cdf_attput, fileid, 'VALIDMAX', 'epoch', tt2000_range[1], /ZVARIABLE, /CDF_EPOCH
-  cdf_attput, fileid, 'SCALEMIN', 'epoch', tt2000[0],       /ZVARIABLE, /CDF_EPOCH
-  cdf_attput, fileid, 'SCALEMAX', 'epoch', tt2000[nrec-1],  /ZVARIABLE, /CDF_EPOCH
-  cdf_attput, fileid, 'UNITS',    'epoch', 'ns',            /ZVARIABLE
-  cdf_attput, fileid, 'MONOTON',  'epoch', 'INCREASE',      /ZVARIABLE
-  cdf_attput, fileid, 'CATDESC',  'epoch', $
+  cdf_attput, fileid, 'VALIDMIN',  'epoch', tt2000_range[0], /ZVARIABLE, /CDF_EPOCH
+  cdf_attput, fileid, 'VALIDMAX',  'epoch', tt2000_range[1], /ZVARIABLE, /CDF_EPOCH
+  cdf_attput, fileid, 'SCALEMIN',  'epoch', tt2000[0],       /ZVARIABLE, /CDF_EPOCH
+  cdf_attput, fileid, 'SCALEMAX',  'epoch', tt2000[nrec-1],  /ZVARIABLE, /CDF_EPOCH
+  cdf_attput, fileid, 'TIME_BASE', 'epoch', 'J2000',         /ZVARIABLE
+  cdf_attput, fileid, 'UNITS',     'epoch', 'ns',            /ZVARIABLE
+  cdf_attput, fileid, 'MONOTON',   'epoch', 'INCREASE',      /ZVARIABLE
+  cdf_attput, fileid, 'CATDESC',   'epoch', $
     'Time, center of sample, in TT2000 time base', /ZVARIABLE
 
   cdf_varput, fileid, 'epoch', tt2000
@@ -360,13 +363,13 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
 ; *** binning ***
 
-  varid = cdf_varcreate(fileid, varlist[4], /CDF_INT1, /REC_VARY, /ZVARIABLE)
+  varid = cdf_varcreate(fileid, varlist[4], /CDF_UINT1, /REC_VARY, /ZVARIABLE)
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[4],     /ZVARIABLE
   cdf_attput, fileid, 'FORMAT',       varid, 'I7',           /ZVARIABLE
   cdf_attput, fileid, 'LABLAXIS',     varid, varlist[4],     /ZVARIABLE
   cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data', /ZVARIABLE
-  cdf_attput, fileid, 'FILLVAL',      varid, -128,           /ZVARIABLE
+  cdf_attput, fileid, 'FILLVAL',      varid, 255B,           /ZVARIABLE
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
   cdf_attput, fileid, 'VALIDMIN', 'binning', 1B,       /ZVARIABLE
@@ -378,7 +381,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
     /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'binning', 'epoch', /ZVARIABLE
 
-  cdf_varput, fileid, 'binning', 2.^data.group
+  cdf_varput, fileid, 'binning', byte(2.^data.group)
 
 ; *** counts ***
 
@@ -387,7 +390,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   varid = cdf_varcreate(fileid, varlist[5], /CDF_FLOAT, dim_vary, DIM = dim, /REC_VARY, /ZVARIABLE) 
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[5],     /ZVARIABLE
-  cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',        /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',       varid, 'F15.1',        /ZVARIABLE
   cdf_attput, fileid, 'LABLAXIS',     varid, varlist[5],     /ZVARIABLE
   cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data', /ZVARIABLE
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,         /ZVARIABLE
@@ -396,7 +399,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'VALIDMIN', 'counts', 0.,                      /ZVARIABLE
   cdf_attput, fileid, 'VALIDMAX', 'counts', 1.e10,                   /ZVARIABLE
   cdf_attput, fileid, 'SCALEMIN', 'counts', 0.,                      /ZVARIABLE
-  cdf_attput, fileid, 'SCALEMAX', 'counts', 1.e5,                    /ZVARIABLE
+  cdf_attput, fileid, 'SCALEMAX', 'counts', 1.e6,                    /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'counts', 'counts',                /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'counts', 'Raw Instrument Counts', /ZVARIABLE
   cdf_attput, fileid, 'DEPEND_0', 'counts', 'epoch',                 /ZVARIABLE
@@ -438,7 +441,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
     /ZVARIABLE) 
 
   cdf_attput, fileid, 'FIELDNAM',     varid, varlist[6],    /ZVARIABLE
-  cdf_attput, fileid, 'FORMAT',       varid, 'F15.7',       /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',       varid, 'E15.7',       /ZVARIABLE
   cdf_attput, fileid, 'LABLAXIS',     varid, varlist[6],    /ZVARIABLE
   cdf_attput, fileid, 'VAR_TYPE',     varid, 'data',        /ZVARIABLE
   cdf_attput, fileid, 'FILLVAL',      varid, -1.e31,        /ZVARIABLE
@@ -512,7 +515,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
 
   cdf_attput, fileid, 'VALIDMIN', 'g_engy', 0.0,             /ZVARIABLE
-  cdf_attput, fileid, 'VALIDMAX', 'g_engy', 1.0,             /ZVARIABLE
+  cdf_attput, fileid, 'VALIDMAX', 'g_engy', 2.0,             /ZVARIABLE
   cdf_attput, fileid, 'SCALEMIN', 'g_engy', 0.0,             /ZVARIABLE
   cdf_attput, fileid, 'SCALEMAX', 'g_engy', 0.2,             /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_engy', $
@@ -681,7 +684,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'dindex', 5B,             /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'dindex', 'Deflection Index for CDF compatibility',/ZVARIABLE
 
-  cdf_varput,fileid,'dindex',indgen(6)
+  cdf_varput,fileid,'dindex',bindgen(6)
 
 ; *** azim -- Azimuth Angles ***
 
@@ -791,12 +794,12 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 
   varid = cdf_varcreate(fileid, varlist[16], /CDF_INT4, /REC_NOVARY, /ZVARIABLE)
 
-  cdf_attput, fileid, 'FIELDNAM',     varid, varlist[16],    /ZVARIABLE
-  cdf_attput, fileid, 'FORMAT',       varid, 'I12',          /ZVARIABLE
-  cdf_attput, fileid, 'LABLAXIS',     varid, varlist[16],    /ZVARIABLE
-  cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data', /ZVARIABLE
-  cdf_attput, fileid, 'FILLVAL',      varid, -2147483648,    /ZVARIABLE
-  cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',  /ZVARIABLE
+  cdf_attput, fileid, 'FIELDNAM',     varid, varlist[16],       /ZVARIABLE
+  cdf_attput, fileid, 'FORMAT',       varid, 'I12',             /ZVARIABLE
+  cdf_attput, fileid, 'LABLAXIS',     varid, varlist[16],       /ZVARIABLE
+  cdf_attput, fileid, 'VAR_TYPE',     varid, 'support_data',    /ZVARIABLE
+  cdf_attput, fileid, 'FILLVAL',      varid, long(-2147483648), /ZVARIABLE
+  cdf_attput, fileid, 'DISPLAY_TYPE', varid, 'time_series',     /ZVARIABLE
 
   cdf_attput, fileid, 'VALIDMIN', 'num_dists', 0L,     /ZVARIABLE
   cdf_attput, fileid, 'VALIDMAX', 'num_dists', 43200L, /ZVARIABLE
@@ -805,7 +808,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'CATDESC',  'num_dists', $
     'Number of distributions in file', /ZVARIABLE
 
-  cdf_varput, fileid, 'num_dists', nrec
+  cdf_varput, fileid, 'num_dists', long(nrec)
 
   cdf_close,fileid
  
