@@ -45,9 +45,9 @@
 ;
 ;OUTPUTS:
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-08 14:44:15 -0700 (Tue, 08 Sep 2015) $
-; $LastChangedRevision: 18730 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-04-09 08:16:18 -0700 (Sat, 09 Apr 2016) $
+; $LastChangedRevision: 20770 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
@@ -311,16 +311,29 @@ pro mvn_swe_kp, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
 
   path = kp_path + '/' + yyyy
   finfo = file_info(path)
-  if (not finfo.exists) then file_mkdir2, path, mode = '0775'o
+  if (~finfo.exists) then file_mkdir2, path, mode = '0775'o
 
   path = path + '/' + mm
   finfo = file_info(path)
-  if (not finfo.exists) then file_mkdir2, path, mode = '0775'o
+  if (~finfo.exists) then file_mkdir2, path, mode = '0775'o
 
-  fname = path + '/' + froot + yyyy + mm + dd
+  tname = path + '/' + froot + yyyy + mm + dd
+  fname = tname + '.tplot'
+  finfo = file_info(fname)
 
-  tplot_save, pans, file=fname
-  file_chmod, fname + '.tplot', '0664'o
+; If the file already exists, then try to overwrite it;
+; otherwise, create the file and make it group writable.
+
+  if (finfo.exists) then begin
+    if (~file_test(fname,/write)) then begin
+      print,"Error: no write permission for: ",fname
+      return
+    endif
+    tplot_save, pans, file=tname
+  endif else begin
+    tplot_save, pans, file=tname
+    file_chmod, fname, '0664'o
+  endelse
 
   return
 

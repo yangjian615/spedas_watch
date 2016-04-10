@@ -23,8 +23,8 @@
 ;   ISTP compliance scrub; DLM: 2016-04-08
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2016-04-08 17:11:44 -0700 (Fri, 08 Apr 2016) $
-;   $LastChangedRevision: 20769 $
+;   $LastChangedDate: 2016-04-09 09:44:56 -0700 (Sat, 09 Apr 2016) $
+;   $LastChangedRevision: 20771 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -622,7 +622,6 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'elev', 90.,                       /ZVARIABLE
   cdf_attput, fileid, 'UNITS',    'elev', 'degrees',                 /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'elev', 'Elevation angle (theta)', /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'elev', 'energy',                  /ZVARIABLE
 
 ; reform arrays: [64, 96] --> [64, 16, 6] --> just want [64, 6]
 
@@ -651,8 +650,6 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'g_elev', 2., /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_elev', $
     'Relative sensitivity as a function of elevation',       /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'g_elev', 'energy',        /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_2', 'g_elev', 'elev',          /ZVARIABLE
 
 ; Decompose relative angular sensitivity into azimuth and elevation terms
 
@@ -733,7 +730,6 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
   cdf_attput, fileid, 'SCALEMAX', 'g_azim', 2., /ZVARIABLE
   cdf_attput, fileid, 'CATDESC',  'g_azim', $
     'Relative sensitivity as a function of azimuth', /ZVARIABLE
-  cdf_attput, fileid, 'DEPEND_1', 'g_azim', 'azim',  /ZVARIABLE
 
   cdf_varput, fileid, 'g_azim', g_azim
 
