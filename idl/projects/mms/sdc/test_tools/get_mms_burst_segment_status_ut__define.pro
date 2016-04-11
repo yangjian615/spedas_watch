@@ -90,10 +90,10 @@ end
 ;-
 function get_mms_burst_segment_status_ut::test_end_time_equals_start_time
   compile_opt strictarr
-  print, 'Note: Error expected...'
+  print, 'Warning expected'
   ;end_time is 2015-05-06T01:45:25 (start time for segment 900)
   ;start times are inclusive, end times are exclusive
-  data = get_mms_burst_segment_status(end_time=1809567960)
+  data = get_mms_burst_segment_status(start_time=1809567960, end_time=1809567960)
   assert, data eq -1, 'Segment should not match if end_time equals taiStartTime'
 
   return, 1

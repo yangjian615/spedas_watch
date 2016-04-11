@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-04-01 08:26:48 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20675 $
+; $LastChangedDate: 2016-04-09 21:38:49 -0700 (Sat, 09 Apr 2016) $
+; $LastChangedRevision: 20772 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVERRIDE
@@ -175,7 +175,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
             s.STATUS[N] = 'MODIFIED'
             s.CHANGESTATUS[N] = 1L; REQUIRED BY RICK (signifies the segment was modified)
             s.SOURCEID[N] = defSourceID
-            s.DICUSSION[n] = segSelect.DISCUSSION
+            s.DISCUSSION[n] = segSelect.DISCUSSION
           endif else begin;............................ DELETE
             s.STATUS[N] = 'DELETED'
             s.CHANGESTATUS[N] = 2L; REQUIRED BY RICK (signifies the segment was deleted) 

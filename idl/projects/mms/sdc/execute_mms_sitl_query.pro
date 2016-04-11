@@ -20,7 +20,7 @@ function execute_mms_sitl_query, netURL, url_path, query, filename=filename
       200: begin
         ; false error, one known case is an empty file
         catch, /cancel
-        return, 0
+        return, 0L
       end
       204: printf, -2, "WARNING in execute_mms_sitl_query: No results found."
       206: printf, -2, "WARNING in execute_mms_sitl_query: Only partial results were returned."
