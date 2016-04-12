@@ -58,6 +58,10 @@ endif else begin
   yw = pos[[1,3]]
 endelse
 
+;keep x/y start positions inside plot,
+;otherwise data coords will not be established and AXIS will throw error later
+pos[0:1] = pos[0:1] < 1.
+
 ;color scale is generated using a plot
 ;thus plot parameters for this sub-plot could change the overall plot
 xt = !x    ; save previous plot parameters
@@ -85,28 +89,33 @@ image = replicate(1b,npx) # y
 tv,image,xposition,yposition,xsize=npx,ysize=npy
 
 
-;set proper tick marks on axes.
-;if set by user, use user param
-;if small plot, don't use tick marks
-;if normal plot, autogenerate
-if keyword_set(yticks) then begin
-  axis, yaxis = 1, ystyle = 1, yrange = range, ylog = log, ytitle = title, charsize = charsize, yticks = yticks, ytickname=ytickname,_extra=ex
-endif else if(npy lt 50) then begin	
+;if start/end positions are equal then data coords 
+;will not be established and AXIS will throw error
+if pos[2]-pos[0] ne 0 and pos[3]-pos[1] ne 0 then begin
 
-  if not keyword_set(title) then begin
-    if keyword_set(log) then begin
-      title = 'Log'
-    endif else begin
-      title = 'Lin'
-    endelse
-  endif
+  ;set proper tick marks on axes.
+  ;if set by user, use user param
+  ;if small plot, don't use tick marks
+  ;if normal plot, autogenerate
+  if keyword_set(yticks) then begin
+    axis, yaxis = 1, ystyle = 1, yrange = range, ylog = log, ytitle = title, charsize = charsize, yticks = yticks, ytickname=ytickname,_extra=ex
+  endif else if(npy lt 50) then begin	
+  
+    if not keyword_set(title) then begin
+      if keyword_set(log) then begin
+        title = 'Log'
+      endif else begin
+        title = 'Lin'
+      endelse
+    endif
+  
+    axis, yaxis = 1, ystyle = 1, yrange = range, ylog = log, ytitle = title, charsize = charsize, yticks = 1,_extra=ex
+  
+  endif else begin
+    axis, yaxis = 1, ystyle = 1, yrange = range, ylog = log, ytitle = title, charsize = charsize,_extra=ex
+  endelse  
 
-  axis, yaxis = 1, ystyle = 1, yrange = range, ylog = log, ytitle = title, charsize = charsize, yticks = 1,_extra=ex
-
-endif else begin
-  axis, yaxis = 1, ystyle = 1, yrange = range, ylog = log, ytitle = title, charsize = charsize,_extra=ex
-endelse  
-
+endif
 
 
 xbox = [xw[0],xw[1],xw[1],xw[0],xw[0]]

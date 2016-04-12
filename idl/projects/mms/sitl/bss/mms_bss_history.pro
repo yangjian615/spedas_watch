@@ -20,8 +20,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-03-28 15:51:57 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20608 $
+; $LastChangedDate: 2016-04-11 10:10:46 -0700 (Mon, 11 Apr 2016) $
+; $LastChangedRevision: 20774 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
 ;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
@@ -84,6 +84,11 @@ FUNCTION mms_bss_history_threshold, wt
   m=4 & change_date[m] = '2016-02-08/17:45' & change_val[m] = 11000L
   m=5 & change_date[m] = '2016-02-21/16:06' & change_val[m] = 10000L
   m=6 & change_date[m] = '2016-03-14/17:00' & change_val[m] = 11500L
+  m=7 & change_date[m] = '2016-03-25/20:25' & change_val[m] = 12500L
+  m=8 & change_date[m] = '2016-03-28/15:16' & change_val[m] = 13000L
+  m=9 & change_date[m] = '2016-04-04/16:40' & change_val[m] = 14000L
+  m=10 & change_date[m] = '2016-04-11/17:30' & change_val[m] = 15000L
+  
   idx=where(change_val gt 0,ct)
   mmax = ct
   
