@@ -6,11 +6,16 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-29 08:29:38 -0700 (Tue, 29 Mar 2016) $
-; $LastChangedRevision: 20618 $
+; $LastChangedDate: 2016-04-12 09:38:26 -0700 (Tue, 12 Apr 2016) $
+; $LastChangedRevision: 20783 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
 
+function mms_load_fgm_ut::test_load_ql
+    mms_load_fgm, probe=1, level='ql', instrument='dfg'
+    assert, spd_data_exists('mms1_dfg_srvy_dmpa', '2015-12-15', '2015-12-16'), 'Problem loading QL DFG data'
+    return, 1
+end
 
 function mms_load_fgm_ut::test_load
     mms_load_fgm, probe=1, level='l2'
@@ -108,6 +113,8 @@ end
 pro mms_load_fgm_ut::setup
     del_data, '*'
     timespan, '2015-12-15', 1, /day
+    ; create a connection to the LASP SDC with team member access
+    mms_load_data, login_info='test_auth_info_team.sav', instrument='fgm'
 end
 
 function mms_load_fgm_ut::init, _extra=e

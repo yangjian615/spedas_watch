@@ -110,9 +110,11 @@ for j=0L,n_elements(tplot_vars)-1L do begin
   ;;; Identify consecutive repeats and boundaries of piece-wise monotonic segments "negative jumps"
   i_non_monotonic = where((time_array[1:n_time_array-1]-time_array[0:n_time_array-2]) lt 0d, c_non_monotonic) +1L
   i_repeat = where((time_array[1:n_time_array-1]-time_array[0:n_time_array-2]) eq 0d, c_repeat) +1L
-  
+
   ;;; If time_array is monotonic (i.e. has no negative jumps) and has no repeats, then it PASSES
   if ((c_non_monotonic eq 0) and (c_repeat eq 0)) then begin 
+    ; the following fixes a crash when the tplot variable name is the same length as max_var_len
+    if strlen(tplot_var) ge max_var_len then max_var_len = strlen(tplot_var) + 1
     dprint,tplot_var,':'+strjoin(strarr(max_var_len-strlen(tplot_var))+' ')+'PASS'
     continue
   endif else begin

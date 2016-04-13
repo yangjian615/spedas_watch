@@ -15,8 +15,8 @@
 ;HISTORY:
 ; 2015-08-28, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-02-09 13:24:52 -0800 (Tue, 09 Feb 2016) $
-; $LastChangedRevision: 19916 $
+; $LastChangedDate: 2016-04-12 10:54:43 -0700 (Tue, 12 Apr 2016) $
+; $LastChangedRevision: 20786 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_pa.pro $
 ;-
 Function fa_esa_pa, theta, theta_shift, mode_ind
@@ -27,16 +27,23 @@ Function fa_esa_pa, theta, theta_shift, mode_ind
   
   mode0 = where(mode_ind Eq 0, nmode0)
   If(nmode0 Gt 0) Then Begin
-     For j = 0, nmode0-1 Do theta_out[0, 0, mode0[j]] = (theta[*, *, 0]+theta_shift[mode0[j]]) mod 360.0
+     For j = 0, nmode0-1 Do theta_out[0, 0, mode0[j]] = theta[*, *, 0]+theta_shift[mode0[j]]
   Endif
   mode1 = where(mode_ind Eq 1, nmode1)
   If(nmode1 Gt 0) Then Begin
-     For j = 0, nmode1-1 Do theta_out[0, 0, mode1[j]] = (theta[*, *, 1]+theta_shift[mode1[j]]) mod 360.0
+     For j = 0, nmode1-1 Do theta_out[0, 0, mode1[j]] = theta[*, *, 1]+theta_shift[mode1[j]]
   Endif
   mode2 = where(mode_ind Eq 2, nmode2)
   If(nmode2 Gt 0) Then Begin
-     For j = 0, nmode2-1 Do theta_out[0, 0, mode2[j]] = (theta[*, *, 2]+theta_shift[mode2[j]]) mod 360.0
+     For j = 0, nmode2-1 Do theta_out[0, 0, mode2[j]] = theta[*, *, 2]+theta_shift[mode2[j]]
   Endif
+
+;oops, pitch angle can be both Gt 360 and negative too
+  xxx = where(theta_out Gt 360.0, nxxx)
+  If(nxxx gt 0) Then theta_out[xxx] = theta_out[xxx] Mod 360.0
+
+  yyy = where(theta_out Lt 0.0, nyyy)
+  If(nyyy Gt 0) Then theta_out[yyy] = theta_out[yyy]+360.0
 
   Return, theta_out
 End

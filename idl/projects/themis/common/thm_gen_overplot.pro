@@ -741,7 +741,7 @@ load_position='plot'
 get_data,  thx+'_peif_en_eflux', data = dion
 get_data,  thx+'_peef_en_eflux', data = dele
 If(is_struct(dion) && is_struct(dele)) Then Begin
-   mineval = min([min(dion.v), min(dele.v)])
+   mineval = min([min(dion.v), min(dele.v)]) > 0.10
 Endif Else mineval = 0
 thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
 thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
@@ -749,7 +749,7 @@ thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, /overwrite, ymi
 get_data,  thx+'_peir_en_eflux', data = dion
 get_data,  thx+'_peer_en_eflux', data = dele
 If(is_struct(dion) && is_struct(dele)) Then Begin
-   mineval = min([min(dion.v), min(dele.v)])
+   mineval = min([min(dion.v), min(dele.v)]) > 0.10
 Endif Else mineval = 0
 thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
 thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
@@ -769,7 +769,7 @@ thm_spec_lim4overplot, sste_name, zlog = 1, ylog = 1, /overwrite
 
 ;thm_spec_lim4overplot will override any z-axis min/max with
 ;the min/max of the data if any zeros are found, therefore
-;the z-range must be set again here for consistant plots
+;the z-range must be set again here for consistent plots
 zlim, thx+'_peif_en_eflux', 1d3, 7.5d8, 1
 zlim, thx+'_peef_en_eflux', 1d4, 7.5d8, 1
 zlim, thx+'_peir_en_eflux', 1d3, 7.5d8, 1

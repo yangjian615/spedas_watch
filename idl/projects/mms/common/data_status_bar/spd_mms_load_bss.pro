@@ -6,7 +6,7 @@
 ; KEYWORDS: 
 ; 
 ;   trange:          time frame for bss
-;   datatype:        type of BSS data ['fast','burst','status','fom']. default includes all
+;   datatype:        type of BSS data ['fast','burst','status','fom']. default includes 'fast' and 'burst'
 ;   include_labels:  set this flag to have the horizontal bars labeled
 ; 
 ; NOTES: 
@@ -16,17 +16,13 @@
 ;   1. mms_bss_fast  (red bar) 
 ;      the time periods of fast-survey mode (more precisely, the time periods of ROIs)
 ;      
-;   2. mms_bss_burst (green bar) 
+;   2. mms_bss_burst (blue bar) 
 ;      the time periods (segments) selected by SITLs for burst data
 ;      
-;   3. mms_bss_status (usually black or yellow bars) 
-;      Representing segment statuses. 
-;      Black if transmission was successful. 
-;      Yellow if pending (i.e., the SDC is still trying to downlink the data). 
-;      Red if transmission failed (i.e., overwritten). 
-;      Blue if partially downlinked (and not pending anymore).
+;   3. mms_bss_status (green bar) 
+;      Represents segment statuses. 
 ;
-;   4. mms_bss_fom (histogram) 
+;   4. mms_bss_fom (histogram, black) 
 ;      The height represents the FOM values (i.e., priority level defined by SITLs)
 ;
 ;   See also "spd_load_bss_crib" and "mms_load_bss_crib" for examples.
@@ -36,8 +32,8 @@
 ; CREATED BY: Mitsuo Oka   Oct 2015
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-06 09:01:11 -0700 (Wed, 06 Apr 2016) $
-;$LastChangedRevision: 20729 $
+;$LastChangedDate: 2016-04-12 09:17:43 -0700 (Tue, 12 Apr 2016) $
+;$LastChangedRevision: 20779 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/spd_mms_load_bss.pro $
 ;-
 
@@ -45,7 +41,7 @@ PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_l
   compile_opt idl2
 
   if undefined(trange) then trange = timerange() else trange = timerange(trange)
-  if undefined(datatype) then datatype = ['fast','burst','status','fom']
+  if undefined(datatype) then datatype = ['fast','burst']
   datatype = strlowcase(datatype)
   
   nmax = n_elements(datatype)

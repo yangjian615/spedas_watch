@@ -4,12 +4,11 @@
 ;CALLING SEQUENCE:
 ;pdist = fa_esa_l2_pad(type)
 ;PURPOSE:
-;Create FAST ESA pitch angle spectrum, from L2 input, callable from
-;get_pa_spec.pro
+;Create FAST ESA pitch angle spectrum, from L2 input
 ;INPUT:
 ;type = one of ['ies', 'ees', 'ieb', 'eeb']
 ;OUTPUT:
-;spec = tplot variable name for pitch angle spectra in the given energy range
+;pdist = tplot variable name for pitch angle spectra in the given energy range
 ;KEYWORDS: (all from get_pa_spec.pro, but the interpretation may be
 ;           different because there are no 'counts')
 ;       trange: A time range, if set takes precedence over t1 and t2
@@ -27,8 +26,8 @@
 ;HISTORY:
 ; 2016-03-21, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20609 $
+; $LastChangedDate: 2016-04-12 14:57:14 -0700 (Tue, 12 Apr 2016) $
+; $LastChangedRevision: 20787 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_pad.pro $
 ;-
 Function fa_esa_l2_pad, type, $
@@ -113,7 +112,7 @@ Function fa_esa_l2_pad, type, $
   Endif
 
 ;Use a loop
-  eflux_out = fltarr(nss, na)
+  eflux_out = fltarr(nss, nab)
   pad_out = eflux_out
   For j = 0, nss-1 Do Begin
      efullj = all_dat.energy_full[ss[j], *, 0] > 0

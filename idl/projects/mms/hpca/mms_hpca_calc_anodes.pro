@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-22 09:33:54 -0700 (Tue, 22 Mar 2016) $
-;$LastChangedRevision: 20550 $
+;$LastChangedDate: 2016-04-12 15:23:03 -0700 (Tue, 12 Apr 2016) $
+;$LastChangedRevision: 20791 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_calc_anodes.pro $
 ;-
 function mms_hpca_elevations
@@ -89,6 +89,11 @@ function mms_hpca_avg_fov, data_struct, fov = fov, anodes = anodes
     ;anode_elevation = mms_hpca_elevations()
     
     str_element, data_struct, 'v2', energy_table, success=success
+    
+    ; check if the energy table is all 0s, if so, default to the hard-coded table
+    wherezeros = where(energy_table eq 0, zerocount)
+    if zerocount eq 63 then success = 0
+    
     if ~success then begin
         dprint, dlevel = 0, 'Couldn''t load the HPCA energy table from the tplot variable, using hard-coded energy table instead'
         energies = mms_hpca_energies()
@@ -135,6 +140,11 @@ function mms_hpca_sum_fov, data_struct, fov = fov, anodes = anodes
 
     ;anode_elevation = mms_hpca_elevations()
     str_element, data_struct, 'v2', energy_table, success=success
+    
+    ; check if the energy table is all 0s, if so, default to the hard-coded table
+    wherezeros = where(energy_table eq 0, zerocount)
+    if zerocount eq 63 then success = 0
+
     if ~success then begin
         dprint, dlevel = 0, 'Couldn''t load the HPCA energy table from the tplot variable, using hard-coded energy table instead'
         energies = mms_hpca_energies()
