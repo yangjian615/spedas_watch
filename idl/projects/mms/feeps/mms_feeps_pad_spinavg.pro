@@ -20,25 +20,26 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-04 15:43:15 -0700 (Mon, 04 Apr 2016) $
-;$LastChangedRevision: 20720 $
+;$LastChangedDate: 2016-04-13 14:13:25 -0700 (Wed, 13 Apr 2016) $
+;$LastChangedRevision: 20807 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
-  datatype = datatype, energy = energy, bin_size = bin_size, suffix = suffix
+  datatype = datatype, energy = energy, bin_size = bin_size, suffix = suffix_in
   if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
   if undefined(datatype) then datatype = 'electron'
   if undefined(data_units) then data_units = 'cps'
-  if undefined(suffix) then suffix = ''
+  if undefined(suffix_in) then suffix_in = ''
   if undefined(energy) then energy = [0, 1000]
   if undefined(bin_size) then bin_size = 15
+  units_label = data_units
 
   en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV'
  ; units_label = data_units eq 'Counts' ? 'Counts': '[(cm!E2!N s sr KeV)!E-1!N]'
 
   prefix = 'mms'+probe+'_epd_feeps_'
   ; get the spin sectors
-  get_data, prefix + datatype + '_spinsectnum'+suffix, data=spin_sectors
+  get_data, prefix + datatype + '_spinsectnum'+suffix_in, data=spin_sectors
   
   if ~is_struct(spin_sectors) then begin
     dprint, dlevel = 0, 'Error, couldn''t find the tplot variable containing the spin sectors for calculating the spin averages.'
@@ -47,7 +48,7 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
   
   spin_starts = where(spin_sectors.Y[0:n_elements(spin_sectors.Y)-2] ge spin_sectors.Y[1:n_elements(spin_sectors.Y)-1])+1
 
-  pad_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'+suffix
+  pad_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'+suffix_in
 
   get_data, pad_name, data=pad_data, dlimits=pad_dl
 
@@ -70,8 +71,8 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
     current_start = spin_starts[spin_idx]+1
   endfor
 
-  suffix = suffix + '_spin'
-  newname = prefix+en_range_string+'_pad'+suffix
+  suffix_in = suffix_in + '_spin'
+  newname = prefix+en_range_string+'_pad'+suffix_in
 
   ; rebin the data before storing it
   ; the idea here is, for bin_size = 15 deg, rebin the data from center points to:

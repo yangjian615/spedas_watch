@@ -86,8 +86,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-28 09:27:03 -0700 (Mon, 28 Mar 2016) $
-;$LastChangedRevision: 20594 $
+;$LastChangedDate: 2016-04-13 12:19:32 -0700 (Wed, 13 Apr 2016) $
+;$LastChangedRevision: 20803 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -117,6 +117,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     if undefined(levels) then levels = 'l2' else levels = strlowcase(levels)
     if undefined(instrument) then instrument = 'fgm' else instrument = strlowcase(instrument)
     if undefined(data_rates) then data_rates = 'srvy' else data_rates = strlowcase(data_rates)
+    if ~undefined(datatypes_in) then datatypes_in = strlowcase(datatypes_in)
 
     ;ensure datatypes are explicitly set for simplicity 
     if undefined(datatypes_in) || in_set('*',datatypes_in) then begin

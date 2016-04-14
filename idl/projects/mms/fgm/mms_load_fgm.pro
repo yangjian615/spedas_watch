@@ -87,8 +87,8 @@
 ;       non-monotonic data points are removed
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-08 13:42:14 -0700 (Fri, 08 Apr 2016) $
-;$LastChangedRevision: 20765 $
+;$LastChangedDate: 2016-04-13 08:22:26 -0700 (Wed, 13 Apr 2016) $
+;$LastChangedRevision: 20793 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -131,49 +131,52 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
 
     for probe_idx = 0, n_elements(probes)-1 do begin
         this_probe = 'mms'+strcompress(string(probes[probe_idx]), /rem)
-
-        if ~keyword_set(keep_flagged) then begin
-            ; B-field data
-            get_data, this_probe+'_fgm_b_gse_'+data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
-            get_data, this_probe+'_fgm_b_gsm_'+data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
-            get_data, this_probe+'_fgm_b_dmpa_'+data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
-            get_data, this_probe+'_fgm_b_bcs_'+data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
-            ; flags
-            get_data, this_probe+'_fgm_flag_'+data_rate+'_'+level+suffix, data=flags
-            if is_struct(flags) then begin
-              bad_data = where(flags.Y ne 0, flag_count) 
-              if flag_count ne 0 then begin
-                  if is_struct(b_data_gse) then b_data_gse.Y[bad_data, *] = !values.d_nan
-                  if is_struct(b_data_gsm) then b_data_gsm.Y[bad_data, *] = !values.d_nan
-                  if is_struct(b_data_dmpa) then b_data_dmpa.Y[bad_data, *] = !values.d_nan
-                  if is_struct(b_data_bcs) then b_data_bcs.Y[bad_data, *] = !values.d_nan
-                  
-                  ; resave them
-                  if is_struct(b_data_gse) then store_data, this_probe+'_fgm_b_gse_'+data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
-                  if is_struct(b_data_gsm) then store_data, this_probe+'_fgm_b_gsm_'+data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
-                  if is_struct(b_data_dmpa) then store_data, this_probe+'_fgm_b_dmpa_'+data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
-                  if is_struct(b_data_bcs) then store_data, this_probe+'_fgm_b_bcs_'+data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
-              endif
+        
+        for data_rate_idx = 0, n_elements(data_rate)-1 do begin
+            this_data_rate = data_rate[data_rate_idx]
+            if ~keyword_set(keep_flagged) then begin
+                ; B-field data
+                get_data, this_probe+'_fgm_b_gse_'+this_data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
+                get_data, this_probe+'_fgm_b_gsm_'+this_data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
+                get_data, this_probe+'_fgm_b_dmpa_'+this_data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
+                get_data, this_probe+'_fgm_b_bcs_'+this_data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
+                ; flags
+                get_data, this_probe+'_fgm_flag_'+this_data_rate+'_'+level+suffix, data=flags
+                if is_struct(flags) then begin
+                  bad_data = where(flags.Y ne 0, flag_count) 
+                  if flag_count ne 0 then begin
+                      if is_struct(b_data_gse) then b_data_gse.Y[bad_data, *] = !values.d_nan
+                      if is_struct(b_data_gsm) then b_data_gsm.Y[bad_data, *] = !values.d_nan
+                      if is_struct(b_data_dmpa) then b_data_dmpa.Y[bad_data, *] = !values.d_nan
+                      if is_struct(b_data_bcs) then b_data_bcs.Y[bad_data, *] = !values.d_nan
+                      
+                      ; resave them
+                      if is_struct(b_data_gse) then store_data, this_probe+'_fgm_b_gse_'+this_data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
+                      if is_struct(b_data_gsm) then store_data, this_probe+'_fgm_b_gsm_'+this_data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
+                      if is_struct(b_data_dmpa) then store_data, this_probe+'_fgm_b_dmpa_'+this_data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
+                      if is_struct(b_data_bcs) then store_data, this_probe+'_fgm_b_bcs_'+this_data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
+                  endif
+                endif
             endif
-        endif
-        
-        ; force the FGM data to be monotonic
-        tplot_force_monotonic, 'mms?_fgm_b_*_'+data_rate+'_'+level+suffix, /forward
-        
-        if ~keyword_set(no_split_vars) then begin
-            ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
-            mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate
-        endif 
-        
-        ; delete the non-monotonic ephemeris variables
-        ; please use ephemeris data in the MEC data (mms_load_mec)
-        if level eq 'l2' || level eq 'l2pre' then begin
-            del_data, this_probe+'_fgm_r_gse_'+data_rate+'_'+level+suffix
-            del_data, this_probe+'_fgm_r_gsm_'+data_rate+'_'+level+suffix
-            del_data, this_probe+'_pos_gse'+suffix
-            del_data, this_probe+'_pos_gsm'+suffix
-        endif 
-        
+            
+            ; force the FGM data to be monotonic
+            tplot_force_monotonic, 'mms?_fgm_b_*_'+this_data_rate+'_'+level+suffix, /forward
+            
+            if ~keyword_set(no_split_vars) then begin
+                ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
+                mms_split_fgm_data, this_probe, instrument=instrument, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = this_data_rate
+            endif 
+            
+            ; delete the non-monotonic ephemeris variables
+            ; please use ephemeris data in the MEC data (mms_load_mec)
+            if level eq 'l2' || level eq 'l2pre' then begin
+                del_data, this_probe+'_fgm_r_gse_'+this_data_rate+'_'+level+suffix
+                del_data, this_probe+'_fgm_r_gsm_'+this_data_rate+'_'+level+suffix
+                del_data, this_probe+'_pos_gse'+suffix
+                del_data, this_probe+'_pos_gsm'+suffix
+            endif 
+            
+        endfor
     endfor
 
     ; set some of the metadata

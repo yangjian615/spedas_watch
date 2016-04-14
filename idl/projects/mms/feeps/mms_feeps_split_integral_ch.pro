@@ -6,8 +6,8 @@
 ;    this function splits the last integral channel from the FEEPS spectra
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-14 14:19:57 -0700 (Mon, 14 Mar 2016) $
-;$LastChangedRevision: 20443 $
+;$LastChangedDate: 2016-04-13 13:58:09 -0700 (Wed, 13 Apr 2016) $
+;$LastChangedRevision: 20805 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
@@ -48,12 +48,12 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
       if level ne 'sitl' then store_data, bottom_name_out+suffix, data={x: bottom_data.X, y: bottom_data.Y[*, 0:n_elements(bottom_data.V)-2], v: bottom_data.V[0:n_elements(bottom_data.V)-2]}, dlimits=bottom_dl
      
       ; limit the lower energy plotted
-      options, top_name_out, ystyle=1
-      options, bottom_name_out, ystyle=1
-      ylim, top_name_out, bottom_en, 510., 1
-      ylim, bottom_name_out, bottom_en, 510., 1
-      zlim, top_name_out, 0, 0, 1
-      zlim, bottom_name_out, 0, 0, 1
+      options, top_name_out+suffix, ystyle=1
+      options, bottom_name_out+suffix, ystyle=1
+      ylim, top_name_out+suffix, bottom_en, 510., 1
+      ylim, bottom_name_out+suffix, bottom_en, 510., 1
+      zlim, top_name_out+suffix, 0, 0, 1
+      zlim, bottom_name_out+suffix, 0, 0, 1
   
       ; store the integral channel
       store_data, top_name+'_500keV_int'+suffix, data={x: top_data.X, y: top_data.Y[*, n_elements(top_data.V)-1]}

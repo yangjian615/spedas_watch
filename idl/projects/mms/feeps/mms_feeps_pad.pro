@@ -33,19 +33,19 @@
 ;                       Updated to use all telescopes for burst mode data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-06 09:28:45 -0700 (Wed, 06 Apr 2016) $
-;$LastChangedRevision: 20731 $
+;$LastChangedDate: 2016-04-13 13:57:36 -0700 (Wed, 13 Apr 2016) $
+;$LastChangedRevision: 20804 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
 pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
-    suffix = suffix, datatype = datatype, data_units = data_units, data_rate = data_rate, $
+    suffix = suffix_in, datatype = datatype, data_units = data_units, data_rate = data_rate, $
     num_smooth = num_smooth
     
     if undefined(datatype) then datatype='electron'
     if undefined(data_rate) then data_rate = 'srvy' else data_rate=strlowcase(data_rate)
     if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
-    if undefined(suffix) then suffix = ''
+    if undefined(suffix_in) then suffix_in = '' 
     prefix = 'mms'+strcompress(string(probe), /rem)
     if undefined(bin_size) then bin_size = 15 ;deg
     if undefined(energy) then energy = [0,1000]
@@ -61,8 +61,8 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     pa_label = 180.*indgen(n_pabins)/n_pabins+bin_size/2.
     
     ; get the pitch angles
-   ; tdeflag, prefix+'_epd_feeps_pitch_angle'+suffix, 'linear', /overwrite
-    get_data, prefix+'_epd_feeps_'+datatype+'_pitch_angle'+suffix, data=pa_data, dlimits=pa_dlimits
+   ; tdeflag, prefix+'_epd_feeps_pitch_angle'+suffix_in, 'linear', /overwrite
+    get_data, prefix+'_epd_feeps_'+datatype+'_pitch_angle'+suffix_in, data=pa_data, dlimits=pa_dlimits
     
     pa_data_map = hash()
     if data_rate eq 'srvy' then begin
@@ -100,7 +100,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
       particle_pa = pa_data.Y[*, pa_data_map[s_type+'-'+datatype]]
 
       for t=0, n_elements(particle_idxs)-1 do begin
-          var_name = prefix+'_epd_feeps_' + s_type + '_' + datatype + '_'+data_units+'_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+'_clean_sun_removed'+suffix
+          var_name = prefix+'_epd_feeps_' + s_type + '_' + datatype + '_'+data_units+'_sensorID_'+strcompress(string(particle_idxs[t]+1), /rem)+'_clean_sun_removed'+suffix_in
           var_name = strlowcase(var_name)
           get_data, var_name, data = d
 
@@ -145,7 +145,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
    ; feeps_bin_info, pa_bins, new_pa_flux, pa_num_in_bin, particle_pa, flux_file, 0
 
     en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV'
-    new_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'+suffix
+    new_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'+suffix_in
 
     store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_label}
     options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1 , $
@@ -155,7 +155,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     if ~undefined(num_smooth) then tsmooth_in_time, new_name, newname=new_name+'_smth', num_smooth, /double
     
     ; calculate the spin averages
-    mms_feeps_pad_spinavg, probe=probe, datatype=datatype, energy=energy, bin_size=bin_size, data_units=out_units, suffix = suffix
+    mms_feeps_pad_spinavg, probe=probe, datatype=datatype, energy=energy, bin_size=bin_size, data_units=out_units, suffix = suffix_in
 
 
 end

@@ -17,9 +17,9 @@
 ;
 ;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-02-26 18:33:58 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20235 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-04-13 10:56:39 -0700 (Wed, 13 Apr 2016) $
+;$LastChangedRevision: 20797 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -139,7 +139,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     dprint,"Warning, new SST calibrations do not work with reduced distribution data",dlevel=1 
   endif
   
-  if esa && undefined(esa_bgnd_remove) then begin
+  if esa && undefined(esa_bgnd_remove) && size(dist_array,/type) ne 10 then begin
     esa_bgnd_remove = 1
     dprint,'ESA background removal being enabled by default(disable with esa_bgnd_remove=0)',dlevel=1
   endif

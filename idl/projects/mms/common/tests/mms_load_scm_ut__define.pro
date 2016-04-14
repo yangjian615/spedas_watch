@@ -24,13 +24,6 @@ function mms_load_scm_ut::test_load_multi_probes
   return, 1
 end
 
-function mms_load_scm_ut::test_load_invalid_probe
-  mms_load_scm, probe=[1,'a'], level='l2'
-  assert, spd_data_exists('mms1_scm_acb_gse_scsrvy_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading invalid probe type'
-  assert, ~spd_data_exists('mmsa_scm_acb_gse_scsrvy_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading invalid probe type'
-  return, 1
-end
-
 function mms_load_scm_ut::test_load_mixed_probe_type
   mms_load_scm, probes=['1', 3], level='l2'
   assert, spd_data_exists('mms1_scm_acb_gse_scsrvy_srvy_l2 mms3_scm_acb_gse_scsrvy_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading using mixed probe types'
@@ -57,8 +50,8 @@ function mms_load_scm_ut::test_load_brst
 end
 
 function mms_load_scm_ut::test_load_slow_data_caps
-  mms_load_scm, probes='1', data_rate='SLOW'
-  assert, spd_data_exists('mms1_scm_acb_gse_scsrvy_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading scm SLOW data rate with CAPS'
+  mms_load_scm, probes='1', data_rate='SLOW', trange=['2015-8-15', '2015-8-16']
+  assert, spd_data_exists('mms1_scm_scs_gse', '2015-8-15', '2015-8-16'), 'Problem loading scm SLOW data rate with CAPS'
   return, 1
 end
 
@@ -93,7 +86,7 @@ function mms_load_scm_ut::test_load_dtypes_caps
 end
 
 function mms_load_scm_ut::test_load_dtypes_asterick
-  mms_load_scm, probe=1, datatype='*'
+  mms_load_scm, probe=1, datatype='*', data_rate=['srvy', 'brst']
   assert, spd_data_exists('mms1_scm_acb_gse_scb_brst_l2 mms1_scm_acb_gse_scsrvy_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading scm data with datatype=*'
   return, 1
 end

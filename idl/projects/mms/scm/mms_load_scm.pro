@@ -65,8 +65,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-01 11:07:23 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20691 $
+;$LastChangedDate: 2016-04-13 12:19:06 -0700 (Wed, 13 Apr 2016) $
+;$LastChangedRevision: 20802 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 
@@ -81,11 +81,14 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
                   spdf = spdf
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
-    ;if undefined(datatype) then datatype = 'scsrvy'
+    if undefined(datatype) then datatype = ''
+    if datatype[0] eq '*' then datatype = ['scsrvy', 'scb', 'schb']
     if undefined(level) then level = 'l2'
     if undefined(data_rate) then data_rate = 'srvy'
-    if data_rate eq 'srvy' then datatype = 'scsrvy'
-    if undefined(datatype) && data_rate eq 'brst' then datatype = 'scb'
+    ;if data_rate eq 'srvy' then datatype = 'scsrvy'
+    if array_contains(data_rate, 'srvy') && ~array_contains(datatype, 'scsrvy') then append_array, datatype, 'scsrvy'
+    if array_contains(data_rate, 'brst') && (~array_contains(datatype, 'scb') && ~array_contains(datatype, 'schb')) then append_array, datatype, ['scb', 'schb']
+   ; if undefined(datatype) && data_rate eq 'brst' then datatype = 'scb'
     if undefined(time_clip) then time_clip = 1  ;to account for tt2000 timerange set in meta data
     
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'scm', $

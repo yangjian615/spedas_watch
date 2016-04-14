@@ -7,8 +7,8 @@
 ; See also "spd_mms_load_bss", "mms_load_bss", and "mms_load_bss_crib".
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-12 09:20:42 -0700 (Tue, 12 Apr 2016) $
-; $LastChangedRevision: 20780 $
+; $LastChangedDate: 2016-04-13 08:23:26 -0700 (Wed, 13 Apr 2016) $
+; $LastChangedRevision: 20794 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/spd_mms_load_bss_crib.pro $
 ;-
 
@@ -21,14 +21,14 @@ timespan, '2015-10-01', 1, /day
 spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
 
 ; now plot bars with some data 
-mms_load_fgm, probe=3, data_rate='brst', level='l2'
+mms_load_fgm, probe=3, data_rate=['srvy', 'brst'], level='l2'
 
 ; degap the mag data to avoid tplot connecting the lines between
 ; burst segments
 tdegap, 'mms3_fgm_b_gse_brst_l2_bvec', /overwrite
 
 
-tplot,['mms_bss_fast','mms_bss_burst', 'mms3_fgm_b_gse_brst_l2_bvec']
+tplot,['mms_bss_fast','mms_bss_burst', 'mms3_fgm_b_gse_srvy_l2_bvec', 'mms3_fgm_b_gse_brst_l2_bvec']
 stop
 
 ; Get all BSS data types (Fast, Burst, Status, and FOM)
@@ -36,7 +36,7 @@ spd_mms_load_bss, /include_labels, datatype=['fast', 'burst', 'fom', 'status']
 
 ; plot bss bars and fom at top of plot
 tplot,['mms_bss_fast','mms_bss_burst','mms_bss_status', 'mms_bss_fom', $
-       'mms3_fgm_b_gse_brst_l2_bvec']
+       'mms3_fgm_b_gse_srvy_l2_bvec', 'mms3_fgm_b_gse_brst_l2_bvec']
 stop
 
 end

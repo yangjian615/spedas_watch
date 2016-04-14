@@ -69,9 +69,9 @@
 ; 
 ;     Please see the notes in mms_load_data for more information 
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-01 18:22:39 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20714 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-04-13 15:52:02 -0700 (Wed, 13 Apr 2016) $
+;$LastChangedRevision: 20810 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -139,6 +139,32 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
     ;copy ancillary data from support vars into 3D dist vars
     ;once CDFs are fully populated this should be removed
     mms_load_hpca_fix_dist, tplotnames, suffix = suffix
+    
+    ; check if the energy table for the flux/psd variables are all 0s
+    ; if they are, use the hard coded table instead
+    if datatype eq 'ion' && level eq 'l2' then begin
+        vars_to_check = tnames('mms?_hpca_*plus_phase_space_density'+suffix)
+
+        flux_vars_to_check = tnames('mms?_hpca_*plus_flux'+suffix)
+        append_array, vars_to_check, flux_vars_to_check
+        
+        for psd_idx = 0, n_elements(vars_to_check)-1 do begin
+            get_data, vars_to_check[psd_idx], data=d, dlimits=psd_dl
+            
+            str_element, d, 'v2', energy_table, success=success
+            
+            ; check if the energy table is all 0s, if so, default to the hard-coded table
+            wherezeros = where(energy_table eq 0, zerocount)
+            if zerocount eq 63 then success = 0
+            if ~success then begin
+                ; energy table is all 0s, using hard coded table
+                dprint, dlevel = 0, 'Found energy table with all 0s: ' + vars_to_check[psd_idx] + '; using hard-coded energy table instead'
+                energy_table = mms_hpca_energies()
+                store_data, vars_to_check[psd_idx], data={x: d.X, y: d.Y, v1: d.v1, v2: energy_table}, dlimits=psd_dl
+            endif
+        endfor
+        
+    endif
 
     ; if the user requested HPCA ion data, need to:
     ; 1) sum over anodes for normalized counts, count rate, 
