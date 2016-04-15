@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-04-09 21:38:49 -0700 (Sat, 09 Apr 2016) $
-; $LastChangedRevision: 20772 $
+; $LastChangedDate: 2016-04-14 13:51:34 -0700 (Thu, 14 Apr 2016) $
+; $LastChangedRevision: 20818 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVERRIDE
@@ -202,7 +202,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
         str_element,/add,s,'SOURCEID',[s.SOURCEID,defSourceID]; the SITL responsible for defining the segment
         str_element,/add,s,'CREATETIME',[s.CREATETIME,'']; the UTC time the segment was defined and entered into BDM
         str_element,/add,s,'FINISHTIME',[s.FINISHTIME,'']; the UTC time when the segment was no longer pending any more processing.
-        str_element,/add,s,'DISCUSSION',segSelect.DISCUSSION
+        str_element,/add,s,'DISCUSSION',[s.DISCUSSION,segSelect.DISCUSSION]
       endif
 
       ;update 'mms_sitl_bakstr'

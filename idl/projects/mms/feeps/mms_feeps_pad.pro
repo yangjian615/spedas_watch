@@ -33,8 +33,8 @@
 ;                       Updated to use all telescopes for burst mode data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-13 13:57:36 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20804 $
+;$LastChangedDate: 2016-04-14 13:29:50 -0700 (Thu, 14 Apr 2016) $
+;$LastChangedRevision: 20817 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -64,6 +64,11 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
    ; tdeflag, prefix+'_epd_feeps_pitch_angle'+suffix_in, 'linear', /overwrite
     get_data, prefix+'_epd_feeps_'+datatype+'_pitch_angle'+suffix_in, data=pa_data, dlimits=pa_dlimits
     
+    if ~is_struct(pa_data) then begin
+        dprint, dlevel = 0, 'Error, couldn''t find the PA variable: ' + prefix+'_epd_feeps_'+datatype+'_pitch_angle'+suffix_in
+        return
+    endif
+
     pa_data_map = hash()
     if data_rate eq 'srvy' then begin
         ; From Allison Jaynes @ LASP: The 6,7,8 sensors (out of 12) are ions,
@@ -111,7 +116,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
               continue
           endif
           for i=0l, n_elements(d.x)-1 do begin ; loop through time
-              flux_file[i,t] = total(reform(d.y[i,indx]), /nan)  ; start with lowest energy
+              flux_file[i,t] = total(reform(d.y[i,indx]), /nan, /double)  ; start with lowest energy
               for j=0, n_pabins-1 do begin ; loop through pa bins
                   if (particle_pa[i,t] gt pa_bins[j]) and (particle_pa[i,t] lt pa_bins[j+1]) then begin
                       pa_flux[i,j] = pa_flux[i,j] + flux_file[i,t]
@@ -147,15 +152,14 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, $
     en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV'
     new_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'+suffix_in
 
-    store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_label}
-    options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1 , $
+    store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_bins}
+    options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1, minzlog = 0.01, $
         zlog = 1, ytitle = 'MMS'+probe+'!CFEEPS ' + datatype, ysubtitle=en_range_string+'!CPA [Deg]', ztitle=out_units
 
     ; calculate the smoothed pad
-    if ~undefined(num_smooth) then tsmooth_in_time, new_name, newname=new_name+'_smth', num_smooth, /double
-    
+    if ~undefined(num_smooth) then tsmooth_in_time, new_name, newname=new_name+'_smth', num_smooth, /double, /smooth_nans
+
     ; calculate the spin averages
     mms_feeps_pad_spinavg, probe=probe, datatype=datatype, energy=energy, bin_size=bin_size, data_units=out_units, suffix = suffix_in
-
 
 end

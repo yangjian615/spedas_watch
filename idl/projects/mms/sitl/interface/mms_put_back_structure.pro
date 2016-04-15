@@ -58,7 +58,8 @@ if count_mod_errors eq 0 and count_new_errors eq 0 then begin
                       fom: 0.1, $
                       status: ' ', $
                       source: ' ', $
-                      observatoryid: ' '}
+                      observatoryid: ' ', $
+                      discussion: ' '}
                 
 
       sub_segments = REPLICATE(seed_segment, count_altered)
@@ -86,6 +87,7 @@ if count_mod_errors eq 0 and count_new_errors eq 0 then begin
         sub_segments(i).status = status(i)
         sub_segments(i).source = new_backstr.sourceid(loc_altered(i))
         sub_segments(i).observatoryid = "ALL"
+        sub_segments(i).discussion = new_backstr.discussion(loc_altered(i))
       endfor
 
 ;Get the time of sitl submission
