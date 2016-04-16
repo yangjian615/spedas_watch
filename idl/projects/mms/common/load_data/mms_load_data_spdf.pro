@@ -12,7 +12,7 @@
 ;         See mms_load_data for keyword definitions
 ;         
 ; EXAMPLE:
-;    mms_load_data_spdf, probe=1, instrument='fgm', level='l2', trange=['2016-01-10', '2016-01-11']
+;    mms_load_fgm, /spdf, probe=1, level='l2', trange=['2016-01-10', '2016-01-11']
 ; 
 ; NOTES:
 ;       *** IMPORTANT NOTE ON BURST DATA *** 
@@ -20,10 +20,15 @@
 ;       directory structure as the burst files downloaded with mms_load_data using
 ;       the SDC. This is because the SDC puts burst files in daily folders, while
 ;       SPDF doesn't. 
+;       
+;       *** Did you download the data using FTP? ***
+;       If you download burst data from SPDF using FTP, be sure to use
+;       the /spdf keyword when calling the mms_load_xxx routines. This
+;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-24 07:54:44 -0700 (Thu, 24 Mar 2016) $
-;$LastChangedRevision: 20572 $
+;$LastChangedDate: 2016-04-15 09:41:28 -0700 (Fri, 15 Apr 2016) $
+;$LastChangedRevision: 20825 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -145,6 +150,26 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
                         instrument + '/'+data_rate+'/'+level+'/'+datatype[datatype_idx]+'/YYYY/MM/PROBE' + strcompress(string(probes[probe_idx]), /rem) + $
                         '_' + instrument + '_'+data_rate+'_'+level+'_'+datatype[datatype_idx]+'_'+time_format+'_v*.cdf'
                     path_count += 1
+                endfor
+              end
+              'dsp': begin
+                 ; DSP
+                 ; mms1/dsp/fast/l2/swd/2016/04/
+                 for datatype_idx = 0, n_elements(datatype)-1 do begin
+                   pathformat[path_count] = 'PROBE' + strcompress(string(probes[probe_idx]), /rem) + '/' + $
+                     instrument + '/'+data_rate+'/'+level+'/'+datatype[datatype_idx]+'/YYYY/MM/PROBE' + strcompress(string(probes[probe_idx]), /rem) + $
+                     '_' + instrument + '_'+data_rate+'_'+level+'_'+datatype[datatype_idx]+'_'+time_format+'_v*.cdf'
+                   path_count += 1
+                 endfor
+              end
+              'edp': begin
+                ; EDP
+                ; mms1/edp/fast/l2/dce/2016/03/
+                for datatype_idx = 0, n_elements(datatype)-1 do begin
+                  pathformat[path_count] = 'PROBE' + strcompress(string(probes[probe_idx]), /rem) + '/' + $
+                    instrument + '/'+data_rate+'/'+level+'/'+datatype[datatype_idx]+'/YYYY/MM/PROBE' + strcompress(string(probes[probe_idx]), /rem) + $
+                    '_' + instrument + '_'+data_rate+'_'+level+'_'+datatype[datatype_idx]+'_'+time_format+'_v*.cdf'
+                  path_count += 1
                 endfor
               end
         endcase

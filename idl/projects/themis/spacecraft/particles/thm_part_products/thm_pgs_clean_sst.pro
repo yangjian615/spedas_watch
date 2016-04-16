@@ -36,8 +36,8 @@
 ;  sst_method_clean: how to decontaminate the sst data.  Right now the only option is 'manual', but selects a good set of default sst_sun_bins, if not user specified.
 ;  sst_min_energy: Set to minimum energy to toss bins that are having problems from instrument degradation. 
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2015-05-13 15:54:49 -0700 (Wed, 13 May 2015) $
-;$LastChangedRevision: 17597 $
+;$LastChangedDate: 2016-04-15 11:37:22 -0700 (Fri, 15 Apr 2016) $
+;$LastChangedRevision: 20838 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_sst.pro $
 ;-
 
@@ -143,30 +143,29 @@ pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_met
     }
   endelse
 
-  ;doesn't work if energy is varying across phi...
   if ~undefined(sst_min_energy) then begin
 
-    idx = where(output.energy[*,0] ge sst_min_energy,c)
+    idx = where(max(output.energy,dimension=2) ge sst_min_energy,c)
     
     if c eq 0 then begin
       message,'ERROR: sst_min_energy identifies zero valid bins' 
     endif
     
-    output = {data:udata.data[idx,*], $ ;particle data 2-d array, energy by angle. (Float or double)
-      scaling:scale[idx,*], $ ;scaling coefficient corresponding to 1 count/bin, used for error calculation (float or double)
-      time:udata.time, $ ;sample start time(1-element double precision scalar)
-      end_time:udata.end_time, $ ;sample end time(1-element double precision scalar)
-      phi:udata.phi[idx,*], $ ;Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
-      dphi:udata.dphi[idx,*], $ ;Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
-      theta:udata.theta[idx,*], $ ;Measurment angle in plane perpendicular to spacecraft spin.(2-d array matching data array.) (Float or double)
-      dtheta:udata.dtheta[idx,*], $ ;Width of measurement angle in plane perpendicular to spacecraft spin. (2-d array matching data array.) (Float or double)
-      energy:udata.energy[idx,*], $ ;Contains measurment energy for each component of data array. (2-d array matching data array.) (Float or double)
-      denergy:udata.denergy[idx,*], $ ;Width of measurment energy for each component of data array. (2-d array matching data array.)
-      bins:udata.bins[idx,*], $ ; 0-1 array, indicating which bins are enabled for subsequent calculations. (2-d array matching data array.)  (Integer type.)
-      charge:udata.charge, $ ;expected particle charge (1-element float scalar)
-      mass:udata.mass, $ ;expected particle mass (1-element float scalar)
-      magf:udata.magf, $ ;placeholder for magnetic field vector(3-element float array)
-      sc_pot:udata.sc_pot $ ;placeholder for spacecraft potential (1-element float scalar)
+    output = {data:output.data[idx,*], $ ;particle data 2-d array, energy by angle. (Float or double)
+      scaling:output.scaling[idx,*], $ ;scaling coefficient corresponding to 1 count/bin, used for error calculation (float or double)
+      time:output.time, $ ;sample start time(1-element double precision scalar)
+      end_time:output.end_time, $ ;sample end time(1-element double precision scalar)
+      phi:output.phi[idx,*], $ ;Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
+      dphi:output.dphi[idx,*], $ ;Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
+      theta:output.theta[idx,*], $ ;Measurment angle in plane perpendicular to spacecraft spin.(2-d array matching data array.) (Float or double)
+      dtheta:output.dtheta[idx,*], $ ;Width of measurement angle in plane perpendicular to spacecraft spin. (2-d array matching data array.) (Float or double)
+      energy:output.energy[idx,*], $ ;Contains measurment energy for each component of data array. (2-d array matching data array.) (Float or double)
+      denergy:output.denergy[idx,*], $ ;Width of measurment energy for each component of data array. (2-d array matching data array.)
+      bins:output.bins[idx,*], $ ; 0-1 array, indicating which bins are enabled for subsequent calculations. (2-d array matching data array.)  (Integer type.)
+      charge:output.charge, $ ;expected particle charge (1-element float scalar)
+      mass:output.mass, $ ;expected particle mass (1-element float scalar)
+      magf:output.magf, $ ;placeholder for magnetic field vector(3-element float array)
+      sc_pot:output.sc_pot $ ;placeholder for spacecraft potential (1-element float scalar)
     }
 
   endif

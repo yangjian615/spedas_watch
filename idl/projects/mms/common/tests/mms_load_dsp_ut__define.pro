@@ -109,7 +109,7 @@ function mms_load_dsp_ut::test_load_srvy
 end
 
 function mms_load_dsp_ut::test_load_suffix
-  mms_load_dsp, probe=3, datatype='epsd', suffix='_suffixtest'
+  mms_load_dsp, probe=3, datatype='epsd', suffix='_suffixtest', data_rate='fast', level='l2'
   assert, spd_data_exists('mms3_dsp_epsd_y_suffixtest', '2015-12-15', '2015-12-16'), 'Problem with dsp suffix test'
   return, 1
 end
@@ -146,15 +146,14 @@ function mms_load_dsp_ut::test_timeclip
 end
 
 function mms_load_dsp_ut::test_load_spdf
-  mms_load_dsp, probe=1, /spdf, datatype='epsd'
-  assert, spd_data_exists('', '2015-12-15', '2015-12-16'), 'Problem loading dsp data from SPDF'
+  mms_load_dsp, probe=1, /spdf, datatype='epsd', data_rate='fast', level='l2'
+  assert, spd_data_exists('mms1_dsp_epsd_x mms1_dsp_epsd_y mms1_dsp_epsd_z mms1_dsp_epsd_omni', '2015-12-15', '2015-12-16'), 'Problem loading dsp data from SPDF'
   return, 1
 end
 
 function mms_load_dsp_ut::test_load_dsp_cdf_filenames
-  mms_load_dsp, probe=3, datatype='epsd', /spdf, suffix='_fromspdf', cdf_filenames=spdf_filenames
-  mms_load_dsp, probe=3, datatype='epsd', suffix='_fromsdc', cdf_filenames=sdc_filenames
-  assert, spd_data_exists('mms3_dsp_lfb_x mms3_dsp_lfb_y mms3_dsp_lfb_z', '2015-12-15', '2015-12-16'), 'Problem loading bpsd dsp data with cdf filenames'
+  mms_load_dsp, probe=3, datatype='epsd', /spdf, suffix='_fromspdf', data_rate='fast', level='l2', cdf_filenames=spdf_filenames
+  mms_load_dsp, probe=3, datatype='epsd', suffix='_fromsdc', data_rate='fast', level='l2', cdf_filenames=sdc_filenames
   assert, array_equal(spdf_filenames, sdc_filenames), 'Problem with cdf_filenames keyword (SDC vs. SPDF) for dsp data'
   return, 1
 end

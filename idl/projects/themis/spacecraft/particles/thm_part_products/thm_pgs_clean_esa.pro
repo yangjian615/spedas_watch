@@ -31,14 +31,16 @@
 ;
 ;Keywords:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-19 17:18:03 -0700 (Thu, 19 Mar 2015) $
-;$LastChangedRevision: 17151 $
+;  esa_max_energy: Set to maximum energy to toss bins that are having problems from instrument contamination. 
+;
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-04-15 11:37:22 -0700 (Fri, 15 Apr 2016) $
+;$LastChangedRevision: 20838 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_esa.pro $
 ;-
 
 ;Note: Keep options for vectorizing open
-pro thm_pgs_clean_esa,data,units,output=output,_extra=ex
+pro thm_pgs_clean_esa,data,units,output=output,_extra=ex,esa_max_energy=esa_max_energy
 
   compile_opt idl2,hidden
   
@@ -88,5 +90,32 @@ pro thm_pgs_clean_esa,data,units,output=output,_extra=ex
              sc_pot:udata.sc_pot $
             } 
 
+
+  if ~undefined(esa_max_energy) then begin
+ 
+    idx = where(min(output.energy,dimension=2) le esa_max_energy,c)
+
+    if c eq 0 then begin
+      message,'ERROR:esa_max_energy identifies zero valid bins'
+    endif
+
+    output = {data:output.data[idx,*], $ ;particle data 2-d array, energy by angle. (Float or double)
+      scaling:output.scaling[idx,*], $ ;scaling coefficient corresponding to 1 count/bin, used for error calculation (float or double)
+      time:output.time, $ ;sample start time(1-element double precision scalar)
+      end_time:output.end_time, $ ;sample end time(1-element double precision scalar)
+      phi:output.phi[idx,*], $ ;Measurment angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
+      dphi:output.dphi[idx,*], $ ;Width of measurement angle in plane parallel to spacecraft spin.(2-d array matching data array.) (Float or double)
+      theta:output.theta[idx,*], $ ;Measurment angle in plane perpendicular to spacecraft spin.(2-d array matching data array.) (Float or double)
+      dtheta:output.dtheta[idx,*], $ ;Width of measurement angle in plane perpendicular to spacecraft spin. (2-d array matching data array.) (Float or double)
+      energy:output.energy[idx,*], $ ;Contains measurment energy for each component of data array. (2-d array matching data array.) (Float or double)
+      denergy:output.denergy[idx,*], $ ;Width of measurment energy for each component of data array. (2-d array matching data array.)
+      bins:output.bins[idx,*], $ ; 0-1 array, indicating which bins are enabled for subsequent calculations. (2-d array matching data array.)  (Integer type.)
+      charge:output.charge, $ ;expected particle charge (1-element float scalar)
+      mass:output.mass, $ ;expected particle mass (1-element float scalar)
+      magf:output.magf, $ ;placeholder for magnetic field vector(3-element float array)
+      sc_pot:output.sc_pot $ ;placeholder for spacecraft potential (1-element float scalar)
+    }
+
+  endif
 
 end

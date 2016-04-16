@@ -10,13 +10,16 @@
 ;  thm_crib_part_products
 ;  thm_crib_part_slice2d
 ;  thm_crib_sst_load_calibrate
+;  thm_crib_sst.pro
+;  thm_crib_esa.pro
 ;
 ;Notes:
 ;  If you see any useful examples missing from these cribs, please let us know.
+;  A lot of instrument specific options(e.g. decontamination, are found in the other cribs)
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-09 17:50:27 -0800 (Wed, 09 Mar 2016) $
-;$LastChangedRevision: 20379 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-04-15 11:23:58 -0700 (Fri, 15 Apr 2016) $
+;$LastChangedRevision: 20837 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
 ;-
 
@@ -44,7 +47,7 @@ trange = '2011-07-29/' + ['13:00','14:00']
 
 ;specify which datatype to use from each instrument
 ;only full and burst data are valid for sst_datatype
-esa_datatype = 'peif'
+esa_datatype = 'peir'
 sst_datatype = 'psif'
 
 ;This will automatically load the required particle data and interpolate 
@@ -53,6 +56,10 @@ sst_datatype = 'psif'
 combined = thm_part_combine(probe=probe, trange=trange, $
                             esa_datatype=esa_datatype, sst_datatype=sst_datatype, $
                             orig_esa=esa, orig_sst=sst) 
+                            
+;Default midpoint energies for interpolation above ESA energies are(in eV):
+;Ions: [25000,26000.,28000.,30000.0,34000.0,41000.0,53000.0,67400.0,95400.0,142600.,207400.,297000.,421800.,654600.,1.13460e+06,2.32980e+06,4.00500e+06]
+;Electrons: [27000,28000.,29000.,30000.0, 31000.0,41000.0,52000.0,65500.0,93000.0,139000.,203500.,293000.,408000.,561500.,719500.]
 
 
 print, ' ','The "combined" variable now contains pointers to the combined particle distribution.'
@@ -76,7 +83,7 @@ window, ysize=800
 ;i=ions
 ;f=full distribution esa
 ;f=full distribution sst
-tplot, 'thd_ptiff_eflux_energy'
+tplot, 'thd_ptirf_eflux_energy'
 
 print, ' ','Pass the combined data to thm_part_products to produce spectrograms.'
 print, 'This is an example of a combined energy spectrogram.'
@@ -96,11 +103,11 @@ window, 0, ysize=800
 window, 1, ysize=800
 
 ;set all plots to the same scale
-options, ['thd_ptiff_eflux_energy','thd_psif_eflux_energy','thd_peif_eflux_energy'], $
-          zrange = [1e3,1e7]
-
-tplot, ['thd_psif_eflux_energy','thd_peif_eflux_energy'], window=1
-tplot, 'thd_ptiff_eflux_energy', window=0
+store_data,'thd_ptirf_eflux_energy_pseudo',data='thd_peir_eflux_energy thd_psif_eflux_energy'
+zlim, ['thd_ptirf_eflux_energy','thd_ptirf_eflux_energy_pseudo','thd_psif_eflux_energy','thd_peir_eflux_energy'],1e3,1e7,1
+ylim, 'thd_ptirf_eflux_energy_pseudo thd_ptirf_eflux_energy',5.,1.e6,1
+tplot, ['thd_ptirf_eflux_energy_pseudo'], window=1
+tplot, 'thd_ptirf_eflux_energy', window=0
 
 print, ' ','This compares the combined energy spectrogram to plots made from the original data.', ' '
 
@@ -115,7 +122,7 @@ stop
 thm_part_products, dist_array=combined, outputs='moments'
 
 ;moments to plot
-mom_names = 'thd_ptiff_'+['density','velocity','eflux']
+mom_names = 'thd_ptirf_'+['density','velocity','eflux']
 
 tplot, mom_names
 
@@ -132,7 +139,7 @@ stop
 thm_load_mom, probe=probe, trange=trange, datatype='ptim'
 
 ;density
-mom_names = 'thd_'+['ptim','ptiff']+'_density'
+mom_names = 'thd_'+['ptim','ptirf']+'_density'
 
 options, mom_names, yrange=[1e-2,1e2], ylog=1
 
@@ -143,7 +150,7 @@ print, ' ','Density comparison (on board vs. ground).', ' '
 stop
 
 ;velocity
-mom_names = 'thd_'+['ptim','ptiff']+'_velocity'
+mom_names = 'thd_'+['ptim','ptirf']+'_velocity'
 
 options, mom_names, yrange=[-200,200] 
 
@@ -154,7 +161,7 @@ print, ' ','Velocity comparison (on board vs. ground).', ' '
 stop
 
 ;eflux
-mom_names = 'thd_'+['ptim','ptiff']+'_eflux'
+mom_names = 'thd_'+['ptim','ptirf']+'_eflux'
 
 options, mom_names, yrange=[-1e11,1e11]
 
@@ -165,7 +172,7 @@ print, ' ','Flux comparison (on board vs. ground).', ' '
 stop
 
 ;pressure tensor
-mom_names = 'thd_'+['ptim','ptiff']+'_ptens'
+mom_names = 'thd_'+['ptim','ptirf']+'_ptens'
 
 options, mom_names, yrange=[-1e3,8e3]
 
@@ -187,7 +194,10 @@ thm_load_fgm, probe=probe, trange=trange, datatype='fgl', level=2, coord='dsl'
 
 ;get velocity slice
 thm_part_slice2d, combined, slice_time=trange[0], timewin=30, part_slice=comb_slice, $
-   rotation='BV', mag_data='thd_fgl_dsl', vel_data='thd_ptim_velocity', /three_d_interp
+  rotation='BV', mag_data='thd_fgl_dsl', vel_data='thd_ptirf_velocity', /three_d_interp
+
+;thm_part_slice2d, combined, slice_time=trange[0], timewin=30, part_slice=comb_slice, $
+;   rotation='BV', mag_data='thd_fgl_dsl', vel_data='thd_ptim_velocity', /three_d_interp
 
 thm_part_slice2d_plot, comb_slice
 
@@ -204,6 +214,9 @@ stop
 ;-use gsm coordinates for sst
 ;-limit energy range to exclude top SST energies
 ; (tenuous data at high energies/makes it easier to see instrument energy gap)
+
+
+
 thm_part_slice2d, combined, slice_time=trange[0], timewin=30, part_slice=comb_slice, $
                   erange=[0,8e5], coord='gsm'
 thm_part_slice2d, esa, sst, slice_time=trange[0], timewin=30, part_slice=sep_slice, $
@@ -245,7 +258,7 @@ stop
 ;----------------------------------------------------------------------------------------
 combined = thm_part_combine(probe=probe, trange=trange, $
   esa_datatype=esa_datatype, sst_datatype=sst_datatype, $
-  orig_esa=esa, orig_sst=sst,sst_min_energy=50000.)
+  orig_esa=esa, orig_sst=sst,sst_min_energy=60000.,esa_max_energy=10000.)
 
 
 ;Pass the combined data into processing routines the same way you
@@ -272,9 +285,9 @@ trange = '2011-07-29/' + ['13:00','14:00']
 esa_dist = thm_part_dist_array(probe=probe, trange=trange, datatype = 'peif')
 sst_dist = thm_part_dist_array(probe=probe, trange=trange, datatype = 'psif')
 
-;Pass the pre-loaded data through the ESA_DIST and SST_DIST keywords 
+;Pass the pre-loaded data through the ESA_DIST and SST_DIST keywords
 combined = thm_part_combine(probe=probe, trange=trange, $
-                            esa_dist=esa_dist, sst_dist=sst_dist)
+  esa_dist=esa_dist, sst_dist=sst_dist)
 
 
 thm_part_products, dist_array=combined, outputs='energy'
@@ -289,8 +302,6 @@ stop
 ;--------------------------------------------------------------------------------------
 ;End
 ;--------------------------------------------------------------------------------------
-
-
 
 print, 'End of crib.'
 

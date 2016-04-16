@@ -11,12 +11,13 @@
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4'].
 ;                       if no probe is specified the default is probe '1'
-;         level:        indicates level of data processing. Current level is ['ql','l1a']. 
-;                       if no level is specified the routine defaults to 'ql' (for survey mode).
-;         datatype:     ['epsd', 'bpsd','tdn', 'swd']
-
-;         data_rate:    instrument data rates include ['brst', 'fast', 'slow', 'srvy']. 
-;                       the default is 'srvy'
+;         level:        indicates level of data processing. Current levels are ['l1b', 'l2']. 
+;                       l2 data is available for 'slow' and 'fast' data rates
+;                       l1b is available for 'srvy' data                       
+;         datatype:     ['epsd', 'bpsd', 'swd']
+;         data_rate:    instrument data rates include ['fast', 'slow', 'srvy']. 
+;                       the default is 'srvy'. See level description above to determine which
+;                       level data is available for a given data_rate.
 ;         local_data_dir: local directory to store the CDF files; should be set if you're on
 ;                       *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         source:       specifies a different system variable. By default the MMS mission 
@@ -56,8 +57,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-01 11:36:53 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20695 $
+;$LastChangedDate: 2016-04-15 11:17:55 -0700 (Fri, 15 Apr 2016) $
+;$LastChangedRevision: 20835 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
 
@@ -79,7 +80,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
     if array_contains(level, 'l1a') || array_contains(level, 'l1b') then begin
         if array_contains(datatype, 'bpsd') then begin
             datatype_l1 = ['179', '17a', '17b']
-            suffixes = '_'+['x', 'y', 'z']
+            suffixes = '_'+['x', 'y', 'z']+suffix
 
             for datatype_idx = 0, n_elements(datatype_l1)-1 do begin
                 mms_load_data, trange = trange, probes = probes, level = level, instrument = 'dsp', $
@@ -87,14 +88,15 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                     datatype = datatype_l1[datatype_idx], get_support_data = get_support_data, $
                     tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
-                    cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                    cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
                     latest_version = latest_version, min_version = min_version, spdf = spdf
                 append_array, tplot_names_full, tplotnames_out
+                append_array, cdf_filenames_full, cdf_filenames_out
             endfor
         endif
         if array_contains(datatype, 'epsd') then begin
             datatype_l1 = ['173', '174', '175', '176', '177', '178']
-            suffixes = '_'+['x', 'y', 'z', 'x', 'y', 'z']
+            suffixes = '_'+['x', 'y', 'z', 'x', 'y', 'z']+suffix
             ; only grab l1b if the user requested both l1a and l1b
             if array_contains(level, 'l1a') and array_contains(level, 'l1b') then $
                 level = ssl_set_complement(['l1a'], level) 
@@ -105,9 +107,10 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                     datatype = datatype_l1[datatype_idx], get_support_data = get_support_data, $
                     tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
-                    cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                    cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
                     latest_version = latest_version, min_version = min_version, spdf = spdf
                 append_array, tplot_names_full, tplotnames_out
+                append_array, cdf_filenames_full, cdf_filenames_out
             endfor
         endif
     endif
@@ -118,11 +121,13 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                 datatype = datatype[datatype_idx], get_support_data = get_support_data, $
                 tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                 no_update = no_update, suffix = suffix, varformat = varformat, $
-                cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
+                cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
                 latest_version = latest_version, min_version = min_version, spdf = spdf
             append_array, tplot_names_full, tplotnames_out
+            append_array, cdf_filenames_full, cdf_filenames_out
         endfor
         
     endif
     if ~undefined(tplot_names_full) then tplotnames = tplot_names_full
+    if ~undefined(cdf_filenames_full) then cdf_filenames = cdf_filenames_full
 end

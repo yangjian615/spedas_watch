@@ -1,4 +1,7 @@
 ;+
+;
+;THIS CRIB IS DEPRECATED: see thm_crib_sst.pro instead
+;
 ;PROCEDURE: thm_crib_sst_contamination
 ;Purpose: 1. Demonstrate the basic procedure for removal of sun contamination,
 ;            electronic noise, and masking.
@@ -17,8 +20,8 @@
 ; To run this crib either copy and paste text into command line or use .run thm_crib_sst_contamination
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-16 18:09:31 -0800 (Mon, 16 Dec 2013) $
-; $LastChangedRevision: 13694 $
+; $LastChangedDate: 2016-04-15 11:02:08 -0700 (Fri, 15 Apr 2016) $
+; $LastChangedRevision: 20831 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/deprecated/thm_crib_sst_contamination.pro $
 ;-
 

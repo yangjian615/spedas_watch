@@ -33,10 +33,11 @@
 ;             Must be used with ESA_DIST
 ;  regrid:  Two element array specifying the number of points used to regrid
 ;           the data in phi and theta respectively (int or float). 
-;  energies:  Array specifying the energies used to replace the default SST energies
-;             and cover the ESA-SST energy gap (in ascending order) (float).
+;  energies:  Array specifying the energy interpolation mid-point targets for all output bins above the ESA.(gap & SST)
+;             If unspecified, a hardcoded set of defaults is used. 
 ;  sst_sun_bins:  Array list of SST bins to mask (bin indices) (int).
 ;  sst_min_energy: Set to minimum energy to toss bins that are having problems from instrument degradation. (float)
+;  esa_max_energy: Set to maximum energy to toss bins that are having problems from instrument contamination.(float) 
 ;  set_counts:  Set all data to this # of counts before interpolation (for comparison).
 ;  only_sst: Interpolates ESA to match SST and returns SST(only) with interpolated bins.(Backwards compatibility: functionality of thm_sst_load_calibrate)
 ;  interp_to_esa: Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
@@ -68,8 +69,8 @@
 ;  
 ;
 ;  SST:  This routine automatically uses the /sst_cal option when loading sst full
-;        or burst data and sets default contamination removal options.  Reduced data
-;        will no calibrations or contamination removal applied.  Other contamination
+;        or burst data and sets default contamination removal options.  No calibrations or contamination
+;        removal are applied for reduced data.  Other contamination
 ;        options may be passed through to override the defaults, see SST contamination 
 ;        removal crib for options.
 ;
@@ -88,9 +89,9 @@
 ;  uniformity will be assumed as data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-10 13:42:44 -0800 (Thu, 10 Mar 2016) $
-;$LastChangedRevision: 20394 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-04-15 11:23:58 -0700 (Fri, 15 Apr 2016) $
+;$LastChangedRevision: 20837 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -106,6 +107,7 @@ function thm_part_combine, probe=probe, $
                       energies=energies, $
                       sst_sun_bins=sst_sun_bins, $
                       sst_min_energy=sst_min_energy,$
+                      esa_max_energy=esa_max_energy,$
                       set_counts=set_counts, $
                       orig_esa=orig_esa, $
                       orig_sst=orig_sst, $
@@ -223,7 +225,7 @@ function thm_part_combine, probe=probe, $
   ;convert to flux and remove unnecessary fields from structures
   ;(energy interpolation should be perfomed in flux)
   thm_cmb_clean_sst, sst, units='flux', sst_sun_bins=sst_sun_bins,sst_min_energy=sst_min_energy,method_clean=method_clean ;<-unused keyword
-  thm_cmb_clean_esa, esa, units='flux'
+  thm_cmb_clean_esa, esa, units='flux', esa_max_energy=esa_max_energy
   
   
   ;-------------------------------------------------------------------------------------------
