@@ -65,8 +65,8 @@
 ;                 from L0 file, jmm, jimm@ssl.berkeley.edu
 ;LAST MODIFICATION:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-16 12:39:31 -0700 (Wed, 16 Mar 2016) $
-; $LastChangedRevision: 20478 $
+; $LastChangedDate: 2016-04-18 14:29:52 -0700 (Mon, 18 Apr 2016) $
+; $LastChangedRevision: 20852 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot2.pro $
 ;
 ;-
@@ -436,18 +436,19 @@ PRO mvn_ql_pfp_tplot2, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         extract_tags, nlim, lim, tags=['yrange', 'ylog', 'zlog', 'spec', 'no_interp', 'ystyle']
         nz = where(d.y ne 0, nnz) ;here, guard against no non-zero data
         If(nnz gt 0) Then Begin
-           mndy = min(d.y[nz])
+           mndy = abs(min(d.y[nz]))
            gz = where(d.y Gt 0, ngz)
            lz = where(d.y lt 0, nlz)
            zz = where(d.y Eq 0, nzz)
-           If(ngz gt 0) Then d.y[gz] = alog10(d.y[gz]*100) ;scale positive values
+           If(ngz gt 0) Then d.y[gz] = alog10(d.y[gz])
            If(nlz gt 0) Then d.y[lz] = alog10(abs(d.y[lz]))
            If(nzz gt 0) Then d.y[zz] = alog10(mndy)
         Endif
         store_data, 'mvn_lpw_iv', data=d, dl=dl, lim=nlim
         undefine, d, dl, lim, nlim
-        options, 'mvn_lpw_iv', ytitle='LPW (IV)', ysubtitle='[V]', ztitle='Arbitrary.Log', $
-              xsubtitle='', zsubtitle='', no_color_scale=1
+        options, 'mvn_lpw_iv', 'zrange', [-10, -4]
+        options, 'mvn_lpw_iv', ytitle='LPW (IV)', ysubtitle='[V]', ztitle='Log(abs(IV))', $
+              xsubtitle='', zsubtitle=''
      ENDIF ELSE BEGIN
 ;Try L0
         date_str = time_string(mean(time_double(trange)), precision = -3)
@@ -459,8 +460,9 @@ PRO mvn_ql_pfp_tplot2, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
            del_data, 'mvn_lpw_*'
            store_data, 'mvn_lpw_iv', data=d, dl=dl, lim=nlim
            undefine, d, dl, lim, nlim
-           options, 'mvn_lpw_iv', ytitle='LPW-L0 (IV)', ysubtitle='[V]', ztitle='Current', $
-              xsubtitle='', zsubtitle='', no_color_scale=1
+           options, 'mvn_lpw_iv', 'zrange', [-10, -4]
+           options, 'mvn_lpw_iv', ytitle='LPW-L0 (IV)', ysubtitle='[V]', ztitle='Log(IV)', $
+              xsubtitle='', zsubtitle=''
         Endif Else Begin ;no data -- blank plot
            store_data, 'mvn_lpw_iv', data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [1., 2.d6]}, $
                        dlim={yrange: [1, 2.d6], ystyle: 1, ylog: 1, zrange: [1.e-14, 1.e-5], zstyle: 1, zlog: 1, spec: 1}  

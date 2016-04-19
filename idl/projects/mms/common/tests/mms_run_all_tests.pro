@@ -9,8 +9,8 @@
 ;     
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-06 16:11:23 -0700 (Wed, 06 Apr 2016) $
-; $LastChangedRevision: 20739 $
+; $LastChangedDate: 2016-04-18 11:18:22 -0700 (Mon, 18 Apr 2016) $
+; $LastChangedRevision: 20846 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_run_all_tests.pro $
 ;-
 
@@ -23,12 +23,15 @@ pro mms_run_all_tests
                    'mms_load_fpi_ut', $
                    'mms_load_scm_ut', $
                    'mms_load_eis_ut', $
+                   'mms_load_edp_ut', $
+                   'mms_load_dsp_ut', $
+                   'mms_load_mec_ut', $
                    'mms_load_feeps_ut', $
                    'mms_file_filter_ut']
     
     file_out =   'mms_tests_output_'+time_string(systime(/sec), tformat='YYYYMMDD_hhmm')+'.txt'
     
-    mgunit, test_suites, filename=file_out, nfail=nfail, npass=npass, nskip=nskip, /failures_only
+    mgunit, test_suites, filename=file_out, nfail=nfail, npass=npass, nskip=nskip
     
     console_out = '('+strcompress(string(npass), /rem)+' passed, '+strcompress(string(nfail), /rem)+$
       ' failed, '+strcompress(string(nskip), /rem)+ ' skipped)'

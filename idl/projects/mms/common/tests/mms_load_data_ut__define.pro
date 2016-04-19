@@ -7,17 +7,11 @@
 ;     test_auth_info_pub.sav - sav file containing an empty username and password
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-29 08:29:38 -0700 (Tue, 29 Mar 2016) $
-; $LastChangedRevision: 20618 $
+; $LastChangedDate: 2016-04-18 11:17:28 -0700 (Mon, 18 Apr 2016) $
+; $LastChangedRevision: 20844 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_data_ut__define.pro $
 ;-
 
-; test that we can handle both the new L2pre variable names and the old ones
-function mms_load_data_ut::test_fgm_l2pre_vars
-  del_data, '*'
-  ;; placeholder to remind me to add this test when the data are at the SDC
-  ;; fails for now
-end
 
 ; test MMS team member access
 ; after downloading some L2 data

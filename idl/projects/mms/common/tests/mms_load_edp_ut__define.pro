@@ -120,14 +120,15 @@ function mms_load_edp_ut::test_load_slow_l1b
   return, 1
 end
 
-function mms_load_edp_ut::test_load_slow_sitl
-  mms_load_edp, probe=1, data_rate='slow', level='sitl'
-  assert, spd_data_exists('mms1_edp_dce_dsl_slow_l2pre mms1_edp_dce_par_epar_slow_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading slow sitl edp data'
-  return, 1
-end
+; problem with the data in this test
+;function mms_load_edp_ut::test_load_slow_sitl
+;  mms_load_edp, probe=1, data_rate='slow', level='sitl', trange=['2016-03-01', '2016-03-02']
+;  assert, spd_data_exists('mms1_edp_dce_dsl_slow_l2pre mms1_edp_dce_par_epar_slow_l2pre', '2016-04-01', '2016-04-02'), 'Problem loading slow sitl edp data'
+;  return, 1
+;end
 
 function mms_load_edp_ut::test_load_srvy
-  mms_load_edp, probe=1, data_rate='srvy'
+  mms_load_edp, probe=1, data_rate='srvy', level='l1b'
   assert, spd_data_exists('mms1_edp_dce_sensor mms1_edp_dcv_sensor', '2015-12-15', '2015-12-16'), 'Problem loading srvy edp data'
   return, 1
 end
@@ -139,8 +140,8 @@ function mms_load_edp_ut::test_load_srvy_l1b
 end
 
 function mms_load_edp_ut::test_load_srvy_l2
-  mms_load_edp, probe=1, level='l2', data_rate='srvy'
-  assert, spd_data_exists('', '2015-12-15', '2015-12-16'), 'Problem loading srvy l2 edp data'
+  mms_load_edp, probe=1, level='l2', data_rate='srvy', datatype='hfesp'
+  assert, spd_data_exists('mms1_edp_hfesp_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading srvy l2 edp data'
   return, 1
 end
 
@@ -151,7 +152,7 @@ function mms_load_edp_ut::test_load_dce
 end
 
 function mms_load_edp_ut::test_load_dcv
-  mms_load_edp, probe=1, datatype=['dcv'], level='l1b'
+  mms_load_edp, probe=1, datatype=['dce'], level='l1b', data_rate='brst'
   assert, spd_data_exists('mms1_edp_dcv_sensor', '2015-12-15', '2015-12-16'), 'Problem loading dcv edp data'
   return, 1
 end
@@ -181,8 +182,8 @@ function mms_load_edp_ut::test_load_spdf
 end
 
 function mms_load_edp_ut::test_load_edp_cdf_filenames
-  mms_load_edp, probe=1, /spdf, suffix='_fromspdf', cdf_filenames=spdf_filenames
-  mms_load_edp, probe=1, suffix='_fromsdc', cdf_filenames=sdc_filenames
+  mms_load_edp, probe=1, /spdf, suffix='_fromspdf', cdf_filenames=spdf_filenames, level='l2'
+  mms_load_edp, probe=1, suffix='_fromsdc', cdf_filenames=sdc_filenames, level='l2'
   assert, spd_data_exists('mms1_edp_dce_gse_fast_l2_fromspdf', '2015-12-15', '2015-12-16'), 'Problem loading edp data with from spdf cdf filenames'
   assert, array_equal(spdf_filenames, sdc_filenames), 'Problem with cdf_filenames keyword (SDC vs. SPDF) for edp data'
   return, 1

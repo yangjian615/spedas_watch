@@ -37,7 +37,7 @@
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/themis/spacecraft/particles/thm_part_energy_interpolate.pro $
 ;-
 
-pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error;,dist_sst_counts=dist_sst_counts,dist_esa_counts=dist_esa_counts,emin=emin
+pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_esa=extrapolate_esa;,dist_sst_counts=dist_sst_counts,dist_esa_counts=dist_esa_counts,emin=emin
 
    compile_opt idl2
    
@@ -58,6 +58,7 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error;,dist_sst_coun
    blankarr = (fltarr(n_elements(energies))+1)
   
    for i = 0,n_elements(dist_sst)-1 do begin
+     extrap_num = 0 ;keep track of how many angles were extrapolated
    
      ;Note that most of the calculations below assume that variables
      ;are not changing along one dimension or another.  If that assumption
@@ -115,6 +116,22 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error;,dist_sst_coun
        
          ;generate bins data for new bins(not needed...I think?)
          ;sst_mode_out[j].bins[*,l] = round(interpol(sample_sst.bins[*,l],sample_sst.energy[*,l],energies)) > 0 < 1
+
+         sst_idx = where(sample_sst.bins[*,l],c)
+         if c eq 0 then begin
+           ;extrapolate from ESA data if requested and no valid SST data exists
+           ;set highest SST energy bin to zero to ensure interpolation doesn't go wild
+           if keyword_set(extrapolate_esa) then begin
+             extrap_num++
+             combined_bins[-1,l] = 1
+             combined_data[-1,l] = 0
+;             combined_energy[-1,l] = energies[-1]
+             sst_mode_out[j].bins[*,l] = 1
+           endif else begin
+             dprint,dlevel=1,'ERROR: No SST bins enabled for angle:'+strtrim(l,2)
+             return
+           endelse
+         endif
          
          ;need to use proper bins so that disabled bins aren't included in interpolation calculations
          combined_idx = where(combined_bins[*,l],c)
@@ -123,12 +140,6 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error;,dist_sst_coun
            return
          endif
 
-         sst_idx = where(sample_sst.bins[*,l],c)
-         if c eq 0 then begin
-           dprint,dlevel=1,'ERROR: No SST bins enabled for angle:'+strtrim(l,2)
-           return
-         endif 
-         
          ;The +min_flux -min_flux, turns alog(0) to alog(min_flux) preventing lots of -infinities in our interpolation 
          sst_mode_out[j].data[*,l] = exp(interpol(alog(combined_data[combined_idx,l]+min_flux),alog(combined_energy[combined_idx,l]),alog(energies)))-min_flux 
 ;         sst_mode_out[j].data[*,l] = interpol(combined_data[combined_idx,l],combined_energy[combined_idx,l],energies) 
@@ -146,6 +157,11 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error;,dist_sst_coun
        
      endfor
      
+     ;notify user of how many angles were extrapolated
+     if keyword_set(extrapolate_esa) then begin
+       dprint, dlevel=2, 'Extrapolated '+strtrim(extrap_num,2)+' angles over '+strtrim(j,2)+' samples in mode'
+     endif
+
      ;temporary routine bombs on some machines if out_dist is undefined, but not others
      if ~undefined(dist_out) then begin
        dist_out=array_concat(ptr_new(sst_mode_out,/no_copy),temporary(dist_out))

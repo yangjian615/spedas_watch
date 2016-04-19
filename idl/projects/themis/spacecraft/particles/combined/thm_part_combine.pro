@@ -43,6 +43,8 @@
 ;  interp_to_esa: Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
 ;  interp_to_sst: Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
 ;  get_sun_direction: Load sun direction with particle data (for 2D slices)
+;  extrapolate_esa: Flag to extrapolate from ESA data where no valid SST data exists
+;                   instead of throwing error.  Not recommended - use with caution!
 ;
 ;
 ;Outputs:
@@ -89,9 +91,9 @@
 ;  uniformity will be assumed as data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-04-15 11:23:58 -0700 (Fri, 15 Apr 2016) $
-;$LastChangedRevision: 20837 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-04-18 11:38:28 -0700 (Mon, 18 Apr 2016) $
+;$LastChangedRevision: 20847 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -115,6 +117,7 @@ function thm_part_combine, probe=probe, $
                       interp_to_esa=interp_to_esa,$ ;Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
                       interp_to_sst=interp_to_sst,$ ;Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
                       get_sun_direction=get_sun_direction, $
+                      extrapolate_esa=extrapolate_esa, $
                       _extra=_extra
 
     compile_opt idl2
@@ -272,7 +275,7 @@ function thm_part_combine, probe=probe, $
   ;-------------------------------------------------------------------------------------------
   
   ;do this as normal for now
-  thm_part_energy_interp,sst,esa,energies,error=energy_interp_error
+  thm_part_energy_interp,sst,esa,energies,error=energy_interp_error,extrapolate_esa=extrapolate_esa
   
   if keyword_set(energy_interp_error) then message, 'energy interp error'
 
