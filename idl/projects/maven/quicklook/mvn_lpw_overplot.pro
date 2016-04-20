@@ -31,8 +31,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-03-19 13:42:44 -0700 (Thu, 19 Mar 2015) $
-; $LastChangedRevision: 17150 $
+; $LastChangedDate: 2016-04-19 13:17:12 -0700 (Tue, 19 Apr 2016) $
+; $LastChangedRevision: 20859 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_lpw_overplot.pro $
 Pro mvn_lpw_overplot, date = date, time_range = time_range, $
                       makepng=makepng, device = device, directory = directory, $
@@ -71,11 +71,10 @@ If(~keyword_set(noload_data)) Then Begin
    store_data,'mvn_orbnum',orbdata.peri_time,orbdata.num,dlimit={ytitle:'Orbit'}
 Endif
 
-
 varlist = ['mvn_lpw_euv','mvn_lpw_euv_temp_C','mvn_lpw_hsk_temp',$
            'modes','mvn_lpw_spec_hf_pas','mvn_lpw_spec_mf_pas',$
-           'mvn_lpw_spec_lf_pas', 'E12','SC_pot','mvn_lpw_swp1_IV',$
-           'mvn_lpw_swp2_IV','htime']
+           'mvn_lpw_spec_lf_pas', 'E12','SC_pot','mvn_lpw_swp1_IV_log',$
+           'mvn_lpw_swp2_IV_log','htime']
 
 varlist0 = varlist
 ;You need a time range for the data, Assuming that everything comes
@@ -105,6 +104,23 @@ If(keyword_set(makepng)) Then Begin
     If(keyword_set(multipngplot)) Then mvn_gen_multipngplot, fname, directory = pdir $
     Else makepng, fname
 Endif
+
+;store LPW tplot variable for PFP L2 plotting
+get_data, 'mvn_lpw_swp1_IV_log', data=d, dl=dl, lim=lim
+If(is_struct(d)) Then Begin
+   extract_tags, nlim, lim, tags=['yrange', 'ylog', 'zlog', 'spec', 'no_interp', 'ystyle']
+   store_data, 'mvn_lpw_iv', data=d, dl=dl, lim=nlim
+   undefine, d, dl, lim, nlim
+   options, 'mvn_lpw_iv', 'zrange', [-10, -4]
+   options, 'mvn_lpw_iv', ytitle='LPW-L0 (IV)', ysubtitle='[V]', ztitle='Log(IV)', $
+            xsubtitle='', zsubtitle=''
+   lpw_vars = 'mvn_lpw_iv'
+;This needs hard-coding, because the L0 script uses a different
+;directory keyword...
+   pdir1 = '/disks/data/maven/data/sci/lpw/tplot/'+yyyy+'/'
+   If(~is_string(file_search(pdir1))) Then file_mkdir, pdir1
+   tplot_save, lpw_vars, filename = pdir1+'mvn_lpw_iv_'+yyyy+mm+dd
+Endif 
 
 Return
 End

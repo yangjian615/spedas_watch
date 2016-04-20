@@ -36,9 +36,11 @@
 
 ;filex = '/disks/data/maven/ITF/CruisePhase_SOCRealtime_LevelZero/20140205_212729_cruise_l0.dat'
 
-filex = '/disks/data/maven/data/sci/pfp/l0/mvn_pfp_all_l0_20140310_v002.dat'
+;filex = '/disks/data/maven/data/sci/pfp/l0/mvn_pfp_all_l0_20140310_v002.dat'
+filex = '/disks/data/maven/data/sci/pfp/l0/mvn_pfp_all_l0_20160405_v003.dat'
 
 mvn_over_shell, l0_input_file = filex, $
   directory = '~/public_html/maven/test_overplot/', $
   instr_to_process = ['over', 'lpw','mag','sep', 'sta','swe','swia'], /date_only
+
 End

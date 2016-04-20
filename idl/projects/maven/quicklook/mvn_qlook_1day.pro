@@ -12,7 +12,7 @@
 ;mvn_qlook_1day_start_time.txt and
 ;mvn_qlook_1day_end_time.txt.
 ;OUTPUT:
-; Maven SWE L2 files
+; Maven PFP plots
 ;HISTORY:
 ; 2014-11-05, jmm, jimm@ssl.berkeley.edu
 ;-

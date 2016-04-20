@@ -60,8 +60,8 @@
 ;HISTORY:
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-04-08 16:52:37 -0700 (Wed, 08 Apr 2015) $
-; $LastChangedRevision: 17256 $
+; $LastChangedDate: 2016-04-19 13:00:28 -0700 (Tue, 19 Apr 2016) $
+; $LastChangedRevision: 20858 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_gen_overplot.pro $
 ;-
 Pro mvn_gen_overplot, date = date, time_range = time_range, $
@@ -125,7 +125,7 @@ store_data,'mvn_SEPS_QL' , data='mvn_sep?_?_?????_tot mvn_sep?_svy_ATT',dlim={yr
 varlist=[swe_v1, 'swe_pad', swi_v, 'mvn_sta_C0_P1A_E',$
          'mvn_sta_C6_P1D_M', $
          'mvn_SEPS_QL', 'mvn_lpw_euv_ql','mvn_lpw_wave_spec_ql', $
-         'mvn_lpw_IV1_pasV2_ql','htime', 'mvn_ql_mag1', 'mvn_ngi_csn', $
+         'mvn_lpw_swp1_IV_log','htime', 'mvn_ql_mag1', 'mvn_ngi_csn', $
          'mvn_ngi_osnt', 'mvn_ngi_osnb', 'mvn_ngi_osi', mvn_bb]
 
 ;Set ytitle options here for each variable
