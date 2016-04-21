@@ -124,13 +124,13 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=22
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_epd_eis_*') and (cp eq 0)) then begin
-          varformat = sc + ['_epd_eis_*_spin', '_epd_eis_*_pitch_angle_t*', '_epd_eis_*_*_cps_t*']
-          mms_load_eis, probes=prb, datatype='extof', level='l1b', data_units = 'cps', varformat=varformat
+          varformat = sc + ['_epd_eis_*_spin', '_epd_eis_*_pitch_angle_t*', '_epd_eis_*_*_flux_t*']
+          mms_load_eis, probes=prb, datatype='extof', level='l1b', data_units = 'flux', varformat=varformat
           tn=tnames(sc+'_epd_eis_*',jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
-            idx = where(strmatch(tn,'*cps_omni_spin'),c,complement=cidx, ncomp=nc)
+            idx = where(strmatch(tn,'*flux_omni_spin'),c,complement=cidx, ncomp=nc)
             store_data, tn[cidx], /delete; delete most of the variables
-            tn = tnames(sc+'_epd_eis_*_cps_omni_spin',kmax)
+            tn = tnames(sc+'_epd_eis_*_flux_omni_spin',kmax)
             for k=0,kmax-1 do begin
               tarr = strsplit(tn[k],'_',/extract)
               options, tn[k],ytitle=sc+'!CEIS!C'+tarr[4],ysubtitle='[keV]'

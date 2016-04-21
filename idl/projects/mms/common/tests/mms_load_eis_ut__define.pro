@@ -6,10 +6,31 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-06 09:33:06 -0700 (Wed, 06 Apr 2016) $
-; $LastChangedRevision: 20732 $
+; $LastChangedDate: 2016-04-20 09:51:17 -0700 (Wed, 20 Apr 2016) $
+; $LastChangedRevision: 20862 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_eis_ut__define.pro $
 ;-
+
+function mms_load_eis_ut::test_phxtof_omni_spec_load
+  mms_load_eis, datatype='phxtof', level='l2', probe=1
+  assert, spd_data_exists('mms1_epd_eis_phxtof_proton_flux_omni mms1_epd_eis_phxtof_oxygen_flux_omni', '2015-12-15', '2015-12-16'), $
+    'Problem loading non-spin averaged omni-directional spectra (phxtof)'
+  return, 1
+end
+
+function mms_load_eis_ut::test_electron_omni_spec_load
+  mms_load_eis, datatype='electronenergy', level='l2', probe=1
+  assert, spd_data_exists('mms1_epd_eis_electronenergy_electron_flux_omni', '2015-12-15', '2015-12-16'), $
+    'Problem loading non-spin averaged omni-directional spectra (electronenergy)'
+  return, 1
+end
+
+function mms_load_eis_ut::test_extof_omni_spec_load
+  mms_load_eis, datatype='extof', level='l2', probe=1
+  assert, spd_data_exists('mms1_epd_eis_extof_proton_flux_omni mms1_epd_eis_extof_alpha_flux_omni mms1_epd_eis_extof_oxygen_flux_omni', '2015-12-15', '2015-12-16'), $
+    'Problem loading non-spin averaged omni-directional spectra (extof)'
+  return, 1
+end
 
 function mms_load_eis_ut::test_load_wrong_en
   mms_load_eis, datatype='phxtof', level='l2'
