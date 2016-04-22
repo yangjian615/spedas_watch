@@ -25,13 +25,13 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-01 18:22:39 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20714 $
+;$LastChangedDate: 2016-04-21 14:15:55 -0700 (Thu, 21 Apr 2016) $
+;$LastChangedRevision: 20874 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
 function mms_get_hpca_dist, tname, index, trange=trange, times=times, structure=structure, $
-                            probe=probe, species=species
+                            probe=probe, species=species, units=units
 
     compile_opt idl2, hidden
 
@@ -56,19 +56,26 @@ if size(*p.y,/n_dim) ne 3 then begin
 endif
 
 ;get some basic info from name
-var_info = stregex(name, 'mms([1-4])_hpca_([^_]+)_.+', /subexpr, /extract)
+var_info = stregex(name, 'mms([1-4])_hpca_([^_]+)_(.+)', /subexpr, /extract)
 
 if var_info[0] ne '' then begin
   if undefined(probe)then probe = var_info[1]
   if undefined(species) then species = var_info[2]
+  if undefined(units) then units = var_info[3]
 endif
 
 ;double check that required info is defined
-if undefined(probe) || undefined(species) then begin
-  dprint, 'Cannot determine probe/species from variable name, please specify by keyword'
+if undefined(probe) || undefined(species) || undefined(units) then begin
+  dprint, 'Cannot determine probe/species/units from variable name, please specify by keyword'
   return, 0
 endif
 
+;make sure units are recognizable to transform routine
+units_name = units eq 'phase_space_density' ? 'df_cm' : units
+if ~stregex(units_name,'^((e?flux)|(df(_[ck]m)?)|(psd))$',/bool,/fold) then begin
+  dprint, 'Units not recognized: "'+units+'"  Please verify variable name or keyword input'
+  return, 0
+endif
 
 ; Match particle data to azimuth data
 ;-----------------------------------------------------------------
@@ -176,7 +183,7 @@ template = {  $
   project_name: 'MMS', $
   spacecraft: probe, $
   data_name: 'HPCA '+species, $
-  units_name: 'df_cm', $
+  units_name: units_name, $
   units_procedure: '', $ ;placeholder
   species:species, $
   valid: 1b, $

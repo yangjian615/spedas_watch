@@ -27,8 +27,8 @@
 ;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-15 09:41:28 -0700 (Fri, 15 Apr 2016) $
-;$LastChangedRevision: 20825 $
+;$LastChangedDate: 2016-04-21 14:52:18 -0700 (Thu, 21 Apr 2016) $
+;$LastChangedRevision: 20876 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -129,8 +129,14 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
               end
              'hpca': begin
                 ; HPCA
-                ; mms1/hpca/srvy/l2/ion/2016/01/   (???)
-                ; no L2 data at the SPDF yet (3/2/2016)
+                ; mms1/hpca/srvy/l2/ion/2016/01/ 
+                if data_rate eq 'brst' then time_format = 'YYYYMMDDhhmm00' else time_format = 'YYYYMMDD??????'
+                for datatype_idx = 0, n_elements(datatype)-1 do begin
+                    pathformat[path_count] = 'PROBE' + strcompress(string(probes[probe_idx]), /rem) + '/' + $
+                        instrument + '/'+data_rate+'/'+level+'/'+datatype[datatype_idx]+'/YYYY/MM/PROBE' + strcompress(string(probes[probe_idx]), /rem) + $
+                        '_' + instrument + '_'+data_rate+'_'+level+'_'+datatype[datatype_idx]+'_'+time_format+'_v*.cdf'
+                    path_count += 1
+                endfor
               end
              'mec': begin
                 ; MEC
