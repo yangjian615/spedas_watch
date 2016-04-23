@@ -12,6 +12,43 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
+; regression tests ---------->
+
+; user requests a few seconds after file start time
+function mms_load_fpi_ut::test_seconds_after_file_start
+  mms_load_fpi, trange=['2015-10-15/6:45:21', '2015-10-15/6:51:21'], data_rate='brst', level='l1b'
+  assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-15/06:47:23','2015-10-15/06:54:59'), $
+    'Error! Not grabbing the correct data from the SDC???'
+  return, 1
+end
+
+; user requests a few seconds after file end time
+function mms_load_fpi_ut::test_seconds_after_file_end
+  mms_load_fpi, trange=['2015-10-15/6:49:21', '2015-10-15/6:54:01'], data_rate='brst', level='l1b'
+  assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-15/06:47:23','2015-10-15/06:54:59'), $
+    'Error! Not grabbing the correct data from the SDC???'
+  return, 1
+end
+
+; user requests a time interval without any CDF files inside
+function mms_load_fpi_ut::test_empty_interval
+  mms_load_fpi, trange=['2015-10-15/6:46:21', '2015-10-15/6:49:01'], data_rate='brst', level='l1b'
+  assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-15/06:47:23','2015-10-15/06:49:59'), $
+    'Error! Not grabbing the correct data from the SDC???'
+  return, 1
+end
+
+; user requests a time interval just beyond start time (but inside the interval)
+; of last burst-mode file for the day
+function mms_load_fpi_ut::test_weird_fpi_case
+  mms_load_fpi, trange=['2015-10-16/13:07', '2015-10-16/13:09'], data_rate='brst', level='l1b'
+  assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-16/13:07','2015-10-16/13:09'), $
+    'Error! Not grabbing the correct data from the SDC???'
+  return, 1
+end
+
+; end of regression tests <------
+
 function mms_load_fpi_ut::test_load
   mms_load_fpi, probe=4, level='l2', datatype='des-moms'
   assert, spd_data_exists('mms4_des_energyspectr_omni_avg mms4_des_pitchangdist_avg mms4_des_energyspectr_px_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data'

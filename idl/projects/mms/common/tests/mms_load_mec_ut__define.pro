@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-18 11:16:52 -0700 (Mon, 18 Apr 2016) $
-; $LastChangedRevision: 20843 $
+; $LastChangedDate: 2016-04-22 08:37:33 -0700 (Fri, 22 Apr 2016) $
+; $LastChangedRevision: 20885 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_mec_ut__define.pro $
 ;-
 
@@ -28,14 +28,14 @@ end
 
 function mms_load_mec_ut::test_load_brst_caps
   mms_load_mec, probe=1, level='L2', data_rate='BrST'
-  assert, spd_data_exists('mms1_mec_r_gsm mms1_mec_r_sm', '2016-2-10', '2016-2-11') ne '', $
+  assert, spd_data_exists('mms1_mec_r_gsm mms1_mec_r_sm', '2016-2-10', '2016-2-11') , $
     'Problem loading MEC brst data with caps'
   return, 1
 end
 
 function mms_load_mec_ut::test_load_brst
   mms_load_mec, probe=1, level='l2', data_rate='brst', suffix='_brst'
-  assert, spd_data_exists('mms1_mec_r_gsm_brst', '2016-2-10', '2016-2-11') ne '', $
+  assert, spd_data_exists('mms1_mec_r_gsm_brst', '2016-2-10', '2016-2-11'), $
     'Problem loading MEC brst data'
   return, 1
 end
@@ -44,6 +44,12 @@ function mms_load_mec_ut::test_load_mec_cdf_filenames
   mms_load_mec, probe=1, level='l2', /spdf, suffix='_fromspdf', cdf_filenames=spdf_filenames
   mms_load_mec, probe=1, level='l2', suffix='_fromsdc', cdf_filenames=sdc_filenames
   assert, array_equal(spdf_filenames, sdc_filenames), 'Problem with cdf_filenames keyword (SDC vs. SPDF)'
+  return, 1
+end
+
+function mms_load_mec_ut::test_load_spdf
+  mms_load_mec, probes=[1, 4], /spdf
+  assert, spd_data_exists('mms4_mec_r_gsm mms1_mec_r_gsm mms1_defatt_spinras mms4_defatt_spinras', '2016-2-10', '2016-2-11')
   return, 1
 end
 

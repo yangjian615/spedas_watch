@@ -15,7 +15,7 @@
 ;               below, defaults to timerange()
 ;	T1:		start time, seconds since 1970, defaults to timerange()[0]
 ;	T2:		end time, seconds since 1970, defaults to timerange()[1]
-;	ENERGY:		fltarr(2)		energy range to sum over
+;	ENERGY:		fltarr(2)		energy range to sum over, eV
 ;	EBINRANGE:	intarr(2)		energy bin range to sum over
 ;	EBINS:		bytarr(dat.nenergy)	energy bins to sum over
 ;	gap_time: 	time gap big enough to signify a data gap 
@@ -26,11 +26,12 @@
 ;HISTORY:
 ; 2016-03-21, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-04-12 14:57:14 -0700 (Tue, 12 Apr 2016) $
-; $LastChangedRevision: 20787 $
+; $LastChangedDate: 2016-04-22 11:30:10 -0700 (Fri, 22 Apr 2016) $
+; $LastChangedRevision: 20892 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_pad.pro $
 ;-
 Function fa_esa_l2_pad, type, $
+                        trange = trange, $
                         T1=t1, $
                         T2=t2, $
                         ENERGY=energy, $
@@ -112,10 +113,12 @@ Function fa_esa_l2_pad, type, $
   Endif
 
 ;Use a loop
-  eflux_out = fltarr(nss, nab)
+  eflux_out = fltarr(nss, nab)+!values.f_nan
   pad_out = eflux_out
   For j = 0, nss-1 Do Begin
      efullj = all_dat.energy_full[ss[j], *, 0] > 0
+     nbj = all_dat.nenergy[ss[j]]
+     nabj = all_dat.nbins[ss[j]]
      If(~keyword_set(energy)) Then Begin
         sbins = where(wt[*, 0] Gt 0, nsbins)
         dej = max(efullj[sbins])-min(efullj[sbins])
@@ -141,7 +144,7 @@ Function fa_esa_l2_pad, type, $
                  wt0 = [wt1, wt0]
               Endif
            Endif
-           If(sbins0[n0-1] Lt nj-1) Then Begin
+           If(sbins0[n0-1] Lt nbj-1) Then Begin
               If(energy[0] Lt etmp1) Then begin
                  s1 = sbins0[n0-1]+1
                  wt1 = (etmp1-energy[0])/ $
@@ -150,36 +153,39 @@ Function fa_esa_l2_pad, type, $
                  wt0 = [wt0, wt1]
               Endif
            Endif
-           For k = 0, nab-1 Do wt[sbins1, k] = wt0
+           For k = 0, nabj-1 Do wt[sbins1, k] = wt0
 ;Reset sbins variable
            sbins = where(wt[*, 0] Gt 0, nsbins)
-;need the de for the given energy range
-           dej = energy[1]-energy[0]
         Endif Else Begin
 ;Energy may be out of range
-           If((erange[0] Gt efullj[0] And erange[1] Gt efullj[0]) Or $
-              (erange[0] Lt efullj[nbins-1] And erange[1] Lt efullj[nbins-1])) Then Begin
+           If((energy[0] Gt efullj[0] And energy[1] Gt efullj[0]) Or $
+              (energy[0] Lt efullj[nbins-1] And energy[1] Lt efullj[nbins-1])) Then Begin
               dprint, 'Energy range out of range: '
-              print, erange
+              print, energy
               Return, ''
            Endif Else Begin
-              sbins = (min(where(erange[0] Gt efullj)) > 0) < nbins-1
+              sbins = (min(where(energy[0] Gt efullj)) > 0) < nbins-1
               sbins = sbins[0]
-              wt[sbins] = 1.0
-              dej = all_dat.denergy_full[ss[j], sbins, 0]              
+              wt[sbins, *] = 1.0
            Endelse
         Endelse
      Endelse
-;contract eflux variable
+;contract eflux variable, reset fill values in data arrays to 0
+; get the nubmer of bins
+     etmp = reform(all_dat.eflux[ss[j], 0:nbj-1, 0:nabj-1]) > 0
+     detmp = reform(all_dat.denergy_full[ss[j], 0:nbj-1, 0:nabj-1]) > 0
+     patmp = reform(all_dat.pitch_angle[ss[j], 0:nbj-1, 0:nabj-1]) > 0
+     wttmp = wt[0:nbj-1, 0:nabj-1]
      If(n_elements(sbins) Eq 1) Then Begin
-        eflux_out[j, *] = reform(all_dat.eflux[ss[j], sbins[0], *])
-        pad_out[j, *] = reform(all_dat.pitch_angle[ss[j], sbins[0], *])
+        eflux_otmp = reform(etmp[sbins[0], *])
+        pad_otmp = reform(patmp[sbins[0], *])
      Endif Else Begin
-        eflux_out[j, *] = total(reform(all_dat.eflux[ss[j], *, *]* $
-                                       all_dat.denergy_full[ss[j], *, *])*wt)/dej
-        pad_out[j, *] = total(reform(all_dat.pitch_angle[ss[j], *, *]* $
-                                     all_dat.denergy_full[ss[j], *, *])*wt)/dej
+        eflux_otmp = total(etmp*detmp*wttmp, 1)/total(detmp*wttmp, 1)
+        pad_otmp = total(patmp*detmp*wttmp, 1)/total(detmp*wttmp, 1)
      Endelse
+     ssk = sort(pad_otmp)
+     eflux_out[j, 0:nabj-1] = eflux_otmp[ssk]
+     pad_out[j, 0:nabj-1] = pad_otmp[ssk]
   Endfor
 
 ;setup tplot variable

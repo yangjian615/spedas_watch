@@ -25,9 +25,9 @@
 ;    spacecraft potential - will be 0
 ;    
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-02-26 18:33:58 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20235 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-04-22 16:04:36 -0700 (Fri, 22 Apr 2016) $
+;$LastChangedRevision: 20903 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_clean_support.pro $
 ;-
 
@@ -74,24 +74,24 @@ pro mms_pgs_clean_support, times, $
   ;   -Interpolate potential data if present
   ;   -Ignore if tplot variable is not specified
   ; ----------------------------------------------------------
-;  if ~undefined(sc_pot_tvar_in) then begin
-;    if (tnames(sc_pot_tvar_in))[0] ne '' then begin
-;      ;Sanitize spacecraft potential
-;      sc_pot_temp = sc_pot_tvar_in + '_pgs_temp'
-;      tinterpol_mxn,sc_pot_tvar_in,times,newname=sc_pot_temp,/nan_extrapolate 
-;    
-;      ;Pass out potential data
-;      get_data, sc_pot_temp, 0, sc_pot_out
-;      
-;      ;Remove temp variable
-;      del_data, sc_pot_temp
-;      dprint,'Using "' + sc_pot_tvar_in + '" as spacecraft potential for particle calculations.',dlevel=1 
-;    endif else begin
-;      dprint, dlevel=1, 'Spacecraft potential tplot variable not found: '+sc_pot_tvar_in + '. No spacecraft potential will be used in calibrations.
-;    endelse
-;  endif else begin
-;    dprint, dlevel=1, 'No spacecraft potential specified.  No spacecraft potential will be used in calibrations.'
-;  endelse
+  if ~undefined(sc_pot_tvar_in) then begin
+    if (tnames(sc_pot_tvar_in))[0] ne '' then begin
+      ;Sanitize spacecraft potential
+      sc_pot_temp = sc_pot_tvar_in + '_pgs_temp'
+      tinterpol_mxn,sc_pot_tvar_in,times,newname=sc_pot_temp,/nan_extrapolate 
+    
+      ;Pass out potential data
+      get_data, sc_pot_temp, 0, sc_pot_out
+      
+      ;Remove temp variable
+      del_data, sc_pot_temp
+      dprint,'Using "' + sc_pot_tvar_in + '" as spacecraft potential for particle calculations.',dlevel=1 
+    endif else begin
+      dprint, dlevel=1, 'Spacecraft potential tplot variable not found: '+sc_pot_tvar_in + '. No spacecraft potential will be used in calibrations.
+    endelse
+  endif else begin
+    dprint, dlevel=1, 'No spacecraft potential specified.  No spacecraft potential will be used in calibrations.'
+  endelse
   
 
   return

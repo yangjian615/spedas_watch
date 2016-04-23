@@ -1,34 +1,103 @@
 ;+
-;PROCEDURE: mms_part_products
-;PURPOSE:
-;  Generate spectra from particle data 
-;  Provides different angular view and angle restriction options in spacecraft and fac coords
+;Procedure:
+;  mms_part_products
 ;
-;Inputs:
-; Argument descriptions inline below.
+;Purpose:
+;  Generate spectra and moments from 3D MMS particle data.
 ;
-;Outputs:
-; Argument descriptions inline below
+;   -----------------------------------------------------------------------------------------
+;   |  !!!!!! words of caution <------ by egrimes, 4/7/2016:                                |
+;   |   While you can use mms_part_products to generate particle moments for FPI from       |
+;   |   the distributions, these calculations are currently missing several important       |
+;   |   components, including photoelectron removal and S/C potential corrections.          |
+;   |   The official moments released by the team include these, and are the scientific     |
+;   |   products you should use in your analysis; see mms_load_fpi_crib to see how to load  |
+;   |   the FPI moments released by the team (des-moms, dis-moms datatypes)                 |
+;   -----------------------------------------------------------------------------------------
 ;
-;Keywords:
-; Argument description inline below
+;Data Products:
+;  'energy' - energy spectrogram
+;  'phi' - azimuthal spectrogram 
+;  'theta' - latitudinal spectrogram
+;  'gyro' - gyrophase spectrogram
+;  'pa' - pitch angle spectrogram
+;  'moments' - distribution moments (density, velocity, etc.)
+;
+;
+;Calling Sequence:
+;  mms_part_products, tplot_name [,trange=trange] [outputs=outputs] ...
+;
+;
+;Example Usage:
+;  -energy, phi, and theta spectrograms
+;    mms_part_products, 'mms2_des_dist_brst', outputs='phi theta energy'
+;
+;  -field aligned spectrograms, limited time range
+;    mms_part_products, 'mms2_des_dist_brst', output='pa gyro', $
+;                       pos_name = 'mms2_defeph_pos', $
+;                       mag_name = 'mms2_fgm_bvec'
+;
+;  -limit range of input data (gyro and pa limits do not affect phi/theta spectra)
+;    mms_part_products, 'mms2_des_dist_brst', output = 'energy pitch', $
+;                       energy = [15,1e5], $  ;eV
+;                       pitch = [45,135]
+;
+;Arguments:
+;  tplot_name:  Name of the tplot variable containing MMS 3D particle distribution data
+;
+;
+;Input Keywords:
+;  trange:  Two element time range [start,end]
+;  outputs:  List of requested outputs, array or space separated list, default='energy'
+;
+;  energy:  Two element energy range [min,max], in eV
+;  phi:  Two element phi range [min,max], in degrees, spacecraft spin plane
+;  theta:  Two element theta range [min,max], in degrees, latitude from spacecraft spin plane
+;  pitch:  Two element pitch angle range [min,max], in degrees, magnetic field pitch angle
+;  gyro:  Two element gyrophase range [min,max], in degrees, gyrophase  
+;
+;  mag_name:  Tplot variable containing magnetic field data for moments and FAC transformations 
+;  pos_name:  Tplot variable containing spacecraft position for FAC transformations
+;  sc_pot_name:  Tplot variable containing spacecraft potential data for moments corrections
+;    
+;  units:  Secify units of output variables.  Must be 'eflux' to calculate moments.
+;            'flux'   -   # / (cm^2 * s * sr * eV)
+;            'eflux'  -  eV / (cm^2 * s * sr * eV)  <default>
+;            'df_cm'  -  s^3 / cm^6
+;            'df'     -  s^3 / km^6
+;
+;  fac_type:  Select the field aligned coordinate system variant.
+;             Existing options: "phigeo,mphigeo, xgse"
+;  regrid:  Two element array specifying the resolution of the field-aligned data.
+;           [n_gyro,n_pitch], default is [32,16]
+;  
+;  suffix:  Suffix to append to output tplot variable names 
+;
+;  instrument:  Specify instrument when it cannot be parsed from tplot_name
+;  species:  Specify species when it cannot be parsed from tplot_name
+;  probe:  Specify probe designation when it cannot be parsed from tplot_name
+;
+;  start_angle:  Set a start angle for azimuthal spectrogram y axis
+;    
+;  datagap:  Setting for tplot variables, controls how long a gap must be before it is drawn. 
+;            (can also manually degap)
+;
+;  display_object:  Object allowing dprint to export output messages
+;
+;  
+;Output Keywords:
+;  tplotnames:  List of tplot variables that were created
+;  error:  Error status flag for calling routine, 1=error 0=success
+;
 ;
 ;Notes: 
-;       !!!!!! words of caution <------ by egrimes, 4/7/2016:
-;        While you can use mms_part_products to generate particle moments for FPI from
-;        the distributions, these calculations are currently missing several important
-;        components, including photoelectron removal and S/C potential corrections.
-;        The official moments released by the team include these, and are the scientific
-;        products you should use in your analysis; see mms_load_fpi_crib to see how to load
-;        the FPI moments released by the team (des-moms, dis-moms datatypes)
+;  -See warning above in purpose description!
 ;
-;  TODO: Accept multiple arguments, loop
 ;
-;$LastChangedDate: 2016-04-07 15:49:00 -0700 (Thu, 07 Apr 2016) $
-;$LastChangedRevision: 20748 $
+;$LastChangedDate: 2016-04-22 16:42:39 -0700 (Fri, 22 Apr 2016) $
+;$LastChangedRevision: 20904 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
-
 pro mms_part_products, $
                      in_tvarname, $ ;the tplot variable name for the MMS being processed
                                     ;specify this or use probe, instr, rate, level, species
@@ -96,15 +165,11 @@ pro mms_part_products, $
   if n_elements(outputs_lc) eq 1 then begin 
     outputs_lc = strsplit(outputs_lc,' ',/extract)
   endif
-
-
+  
   if undefined(suffix) then begin
     suffix = ''
   endif
-  
-  
-  ;units_lc = 'f (s!U3!N/cm!U6!N)'
-  
+    
   if undefined(units) then begin
     units_lc = 'eflux'
   endif else begin
@@ -158,6 +223,10 @@ pro mms_part_products, $
     if nidx gt 0 then begin
       outputs_lc[idx] = 'fac_energy'
     endif
+    idx = where(outputs_lc eq 'moments', nidx)
+    if nidx gt 0 then begin
+      outputs_lc[idx] = 'fac_moments'
+    endif
   endif
   
 ;  if undefined(mag_name) then begin
@@ -167,17 +236,7 @@ pro mms_part_products, $
 ;  if undefined(pos_name) then begin
 ;    pos_name = 'th'+probe_lc+'_state_pos'
 ;  endif
-  
-  if is_struct(ex) then begin
-    if in_set(strlowcase(tag_names(ex)),'scpot') then begin
-      dprint,'ERROR: scpot keyword is deprecated.  Please use sc_pot_name'
-      return
-    endif else if in_set(strlowcase(tag_names(ex)),'scpot_suffix') then begin
-      dprint,'ERROR: scpot_suffix keyword is deprecated.  Please use sc_pot_name'
-      return
-    endif
-  endif
-  
+;  
 ;  if undefined(sc_pot_name) then begin
 ;    sc_pot_name = 'th'+probe_lc+'_pxxm_pot' 
 ;  endif
@@ -225,22 +284,24 @@ pro mms_part_products, $
   ;--------------------------------------------------------
   
   ;create rotation matrix to field aligned coordinates if needed
-  if in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy') then begin
+  fac_outputs = ['pa','gyro','fac_energy','fac_moments']
+  fac_requested = is_string(ssl_set_intersection(outputs_lc,fac_outputs))
+  if fac_requested then begin
     mms_pgs_make_fac,times,mag_name,pos_name,fac_output=fac_matrix,fac_type=fac_type_lc,display_object=display_object,probe=probe
     ;remove FAC outputs if there was an error, return if no outputs remain
     if undefined(fac_matrix) then begin
-      outputs_lc = ssl_set_complement(['pa','gyro','fac_energy'],outputs_lc)
+      outputs_lc = ssl_set_complement(fac_outputs,outputs_lc)
       if ~is_string(outputs_lc) then begin
         return
       endif
     endif
   endif
-;  
-;  ;get support data for moments calculation
-  if in_set(outputs_lc,'moments') then begin
+  
+  ;get support data for moments calculation
+  if in_set(outputs_lc,'moments') || in_set(outputs_lc,'fac_moments') then begin
     if units_lc ne 'eflux' then begin
       dprint,dlevel=1,'Warning: Moments can only be calculated if data is in eflux.  Skipping product.'
-      outputs_lc[where(outputs_lc eq 'moments')] = ''
+      outputs_lc[where(strmatch(outputs_lc,'*moments'))] = ''
     endif else begin
       mms_pgs_clean_support, times, probe, mag_name, sc_pot_name, mag_out=mag_data, sc_pot_out=sc_pot_data
     endelse
@@ -256,7 +317,6 @@ pro mms_part_products, $
     spd_pgs_progress_update,last_tm,i,n_elements(time_idx)-1,display_object=display_object,type_string=in_tvarname
   
     ;Get the data structure for this samgple
-    ;only FPI, atm
 
     dist = mms_get_dist(in_tvarname, time_idx[i], /structure, probe=probe, species=species, instrument=instrument)
 
@@ -268,8 +328,8 @@ pro mms_part_products, $
     
     ;Copy bin status prior to application of angle/energy limits.
     ;Phi limits will need to be re-applied later after phi bins
-    ;have been aligned across energy (only necessary for ESA). 
-    if (in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy')) then begin
+    ;have been aligned across energy (in case of irregularl grid). 
+    if fac_requested then begin
       pre_limit_bins = clean_data.bins 
     endif
     
@@ -279,7 +339,7 @@ pro mms_part_products, $
     ;Calculate moments
     ;  -data must be in 'eflux' units 
     if in_set(outputs_lc, 'moments') then begin
-      spd_pgs_moments, clean_data, moments=moments, delta_times=delta_times, get_error=get_error, mag_data=mag_data, sc_pot_data=sc_pot_data, index=i , _extra = ex
+      spd_pgs_moments, clean_data, moments=moments, delta_times=delta_times, mag_data=mag_data, sc_pot_data=sc_pot_data, index=i , _extra = ex
     endif 
 
     ;Build theta spectrogram
@@ -298,7 +358,7 @@ pro mms_part_products, $
     endif
     
     ;Perform transformation to FAC, regrid data, and apply limits in new coords
-    if (in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy')) then begin
+    if fac_requested then begin
       
       ;limits will be applied to energy-aligned bins
       clean_data.bins = temporary(pre_limit_bins)
@@ -322,7 +382,6 @@ pro mms_part_products, $
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
-      ;convert from latitude to co-latitude
       spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y
     endif
     
@@ -336,6 +395,15 @@ pro mms_part_products, $
       spd_pgs_make_e_spec, clean_data, spec=fac_en_spec,  yaxis=fac_en_y
     endif
     
+    ;Calculate FAC moments
+    ;  -data must be in 'eflux' units 
+    if in_set(outputs_lc, 'fac_moments') then begin
+      clean_data.theta = 90-clean_data.theta ;convert back to latitude for moments calc
+      ;re-add required fields stripped by FAC transform (should fix there if feature becomes standard)
+      clean_data = create_struct('mass',dist.mass,'charge',dist.charge,'magf',[0,0,0.],'sc_pot',0.,clean_data)
+      spd_pgs_moments, clean_data, moments=fac_moments, sc_pot_data=sc_pot_data, index=i, _extra=ex
+    endif 
+    
   endfor
  
  
@@ -345,7 +413,7 @@ pro mms_part_products, $
   ;  To obtain a complete spectrogram for the limited range all intersecting
   ;  bins must be used.  This means that many bins that intersect the 
   ;  limited range but may extend far past it are left active.
-  ; -Currently, phi for ESA is the only non-regular case.
+  ; -e.g: phi for HPCA is irregular
   spd_pgs_clip_spec, y=phi_y, z=phi_spec, range=phi
  
  
@@ -399,6 +467,14 @@ pro mms_part_products, $
     moments.time = times
     spd_pgs_moments_tplot, moments, prefix=tplot_prefix, suffix=suffix, tplotnames=tplotnames
   endif
+
+  ;FAC Moments Variables
+  if ~undefined(fac_moments) then begin
+    fac_moments.time = times
+    fac_mom_suffix = '_mag' + (undefined(suffix) ? '' : suffix)
+    spd_pgs_moments_tplot, fac_moments, /no_mag, prefix=tplot_prefix, suffix=fac_mom_suffix, tplotnames=tplotnames
+  endif
+
 ;  
 ;  ;Moments Error Esitmates
 ;  if ~undefined(mom_sigma) then begin

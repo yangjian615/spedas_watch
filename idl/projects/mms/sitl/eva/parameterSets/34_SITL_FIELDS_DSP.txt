@@ -1,4 +1,4 @@
-mms*_edp_srvy_EPSD_x 
+mms*_edp_srvy_hfesp_l2
 mms*_dsp_bpsd_scm1_fast_l2   
 mms*_dsp_bpsd_scm2_fast_l2
 mms*_dsp_bpsd_scm3_fast_l2

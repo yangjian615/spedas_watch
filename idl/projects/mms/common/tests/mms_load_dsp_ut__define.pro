@@ -128,8 +128,8 @@ function mms_load_dsp_ut::test_load_bpsd
 end
 
 function mms_load_dsp_ut::test_load_swd
-  mms_load_dsp, probe=3, datatype='swd'
-  assert, spd_data_exists('mms3_dsp_lfb_x mms3_dsp_lfb_y mms3_dsp_lfb_z', '2015-12-15', '2015-12-16'), 'Problem loading swd dsp data'
+  mms_load_dsp, probe=3, datatype='swd', data_rate='fast', level='l2'
+  assert, spd_data_exists('mms3_dsp_swd_E12_Counts', '2015-12-15', '2015-12-16'), 'Problem loading swd dsp data'
   return, 1
 end
 

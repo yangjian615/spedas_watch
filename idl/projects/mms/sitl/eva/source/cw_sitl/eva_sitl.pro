@@ -504,8 +504,8 @@ FUNCTION eva_sitl_event, ev
           msg = [msg, 'structure mode.']
           rst = dialog_message(msg,/error,/center,title=title)
         endif else begin
-          get_data,'mms_stlm_bakstr',data=Dmod, lim=lmod,dl=dmod
-          get_data,'mms_soca_bakstr',data=Dorg, lim=lorg,dl=dorg
+          get_data,'mms_stlm_bakstr',data=Dmod, lim=lmod,dl=dlmod
+          get_data,'mms_soca_bakstr',data=Dorg, lim=lorg,dl=dlorg
           tai_BAKStr_org = lorg.unix_BAKStr_org
           str_element,/add,tai_BAKStr_org,'START', mms_unix2tai(lorg.unix_BAKStr_org.START); LONG
           str_element,/add,tai_BAKStr_org,'STOP',  mms_unix2tai(lorg.unix_BAKStr_org.STOP) ; LONG
@@ -519,8 +519,8 @@ FUNCTION eva_sitl_event, ev
           r2 = eva_sitl_validate(tai_BAKStr_mod, tai_BAKStr_org, vcase=2, header=header, valstruct=state.val); Validate Modified Seg
         endelse; if ct eq 0
       endif else begin
-        get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
-        get_data,'mms_soca_fomstr',data=Dorg, lim=lorg,dl=dorg
+        get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dlmod
+        get_data,'mms_soca_fomstr',data=Dorg, lim=lorg,dl=dlorg
         mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
         mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
         header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
@@ -618,15 +618,42 @@ FUNCTION eva_sitl_event, ev
       if state.PREF.EVA_BAKSTRUCT then begin 
         eva_sitl_submit_bakstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT
       endif else begin
-        vcase = (state.USER_FLAG eq 4) ? 3 : 0
-        ; Special submission, if FPI-cal (vcase=3 and USER_FLAG=4) 
-        eva_sitl_submit_fomstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT, vcase, user_flag=state.USER_FLAG
+        
+        ; Look for pre-existing note
+        get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dlmod
+        tn = tag_names(lmod.unix_FOMstr_mod)
+        idx = where(strmatch(tn,'NOTE'),ct)
+        if ct gt 0 then begin
+          varname = lmod.unix_FOMstr_mod.NOTE
+        endif else varname = ''
+        
+        ; Textbox for NOTE
+        varname = mms_TextBox(Title='EVA TEXTBOX', Group_Leader=ev.top, $
+          Label='Please add/edit your comment on this ROI: ', $
+          SecondLabel='(The text will wrap automatically. A carriage',$
+          ThirdLabel='return is same as hitting the Save button.)',$
+          Cancel=cancelled, Continue_Submission=contin, $
+          XSize=300, Value=varname)
+        
+        ; Submission
+        if not cancelled then begin
+          print,'EVA: Saving the following string:', varname
+          get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dlmod
+          str_element,/add,lmod,'unix_FOMstr_mod.NOTE', varname
+          store_data,'mms_stlm_fomstr',data=Dmod, lim=lmod, dl=dlmod
+          if contin then begin
+            print,'EVA: Continue Submission....'
+            vcase = (state.USER_FLAG eq 4) ? 3 : 0
+            eva_sitl_submit_fomstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT, vcase, user_flag=state.USER_FLAG
+          endif else print,'EVA:  but just saved...'
+        endif else begin
+          print,'EVA: Submission cancelled...'
+        endelse
+        
       endelse
       end
     state.drDash: begin
       save=0
-      ;print,'EVA: ***** EVENT: drDash *****'
-      ;widget_control,state.drDash,TIMER=1; from /expose keyword of drDash
       sanitize_fpi=0
       refresh_dash = 1
       end

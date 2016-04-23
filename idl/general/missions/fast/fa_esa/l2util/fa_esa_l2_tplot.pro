@@ -21,8 +21,8 @@
 ;2015-09-14, jmm, jimm@ssl.berkeley.edu, hacked from fa_load_esa_l1
 ;and mvn_sta_l2_tplot.
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-14 15:48:59 -0700 (Mon, 14 Sep 2015) $
-; $LastChangedRevision: 18793 $
+; $LastChangedDate: 2016-04-22 12:57:38 -0700 (Fri, 22 Apr 2016) $
+; $LastChangedRevision: 20894 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_tplot.pro $
 ;-
 Pro fa_esa_l2_tplot, all = all, type = type, counts = counts
@@ -96,34 +96,37 @@ Pro fa_esa_l2_tplot, all = all, type = type, counts = counts
 ;This part is hacked from load_esa_l1
   ntimes = n_elements(all_dat.time)
 ;data_tplot will be the total of all angles' eflux values at each time
-  data_tplot = fltarr(ntimes, 96)
-  energy_tplot = fltarr(ntimes, 96)
+  data_tplot = fltarr(ntimes, 96)+!values.f_nan
+  energy_tplot = fltarr(ntimes, 96)+!values.f_nan
   For i = 0, ntimes-1 Do Begin
+     nbj = all_dat.nenergy[i]
+     nabj = all_dat.nbins[i]
      If(all_dat.mode_ind[i] EQ 0) Then Begin
         If(keyword_set(counts)) Then Begin
-           data_tplot[i,0:47]=total(ccvt[all_dat.data[i, 0:47, *]], 3)/(all_dat.integ_t[i]*all_dat.nbins[i])
-        Endif Else data_tplot[i, 0:47] = total(all_dat.eflux[i, 0:47, *], 3)/all_dat.nbins[i]
+           data_tplot[i,0:nbj-1]=total(ccvt[all_dat.data[i, 0:nbj-1, 0:nabj-1]], 3)/(all_dat.integ_t[i]*nabj)
+        Endif Else data_tplot[i, 0:nbj-1] = total(all_dat.eflux[i, 0:nbj-1, 0:nabj-1], 3)/nabj 
         energy_tplot[i, *] = all_dat.energy[*, 0, 0]
      Endif
      If(all_dat.mode_ind[i] EQ 1) Then Begin
         If(keyword_set(counts)) Then Begin
-           data_tplot[i,0:47]=total(ccvt[all_dat.data[i, 0:47, *]], 3)/(all_dat.integ_t[i]*all_dat.nbins[i])
-        Endif Else data_tplot[i, 0:47] = total(all_dat.eflux[i, 0:47, *], 3)/all_dat.nbins[i]
+           data_tplot[i,0:nbj-1]=total(ccvt[all_dat.data[i, 0:nbj-1, 0:nabj-1]], 3)/(all_dat.integ_t[i]*nabj)
+        Endif Else data_tplot[i, 0:nbj-1] = total(all_dat.eflux[i, 0:nbj-1, 0:nabj-1], 3)/nabj
         energy_tplot[i, *] = all_dat.energy[*, 0, 1]
      Endif
      If(all_dat.mode_ind[i] EQ 2) Then Begin
         If(keyword_set(counts)) Then Begin
-           data_tplot[i,0:47]=total(ccvt[all_dat.data[i, 0:95, *]], 3)/(all_dat.integ_t[i]*all_dat.nbins[i])
-        Endif Else data_tplot[i, 0:95] = total(all_dat.eflux[i, 0:95, *], 3)/all_dat.nbins[i]
+           data_tplot[i,0:nbj-1]=total(ccvt[all_dat.data[i, 0:nbj-1, 0:nabj-1]], 3)/(all_dat.integ_t[i]*nabj)
+        Endif Else data_tplot[i, 0:nbj-1] = total(all_dat.eflux[i, 0:nbj-1, nabj-1], 3)/nabj
         energy_tplot[i, *] = all_dat.energy[*, 0, 2]
      Endif
   Endfor
-  data_tplot = data_tplot > 1.e-10
+stop
+;  data_tplot = data_tplot > 1.e-10
 ;Counts should have l1 in the name:
   If(keyword_set(counts)) Then name_o_tplot = 'fa_'+typex+'_l1_en_quick' $
   Else name_o_tplot = 'fa_'+typex+'_l2_en_quick'
   store_data, name_o_tplot, data = {x:(all_dat.time+all_dat.end_time)/2,y:data_tplot,v:energy_tplot}
-  zlim,name_o_tplot, 1.e1, 1.e6, 1
+;  zlim,name_o_tplot, 1.e1, 1.e6, 1
   ylim,name_o_tplot, 5., 40000., 1
   options, name_o_tplot, 'ztitle', 'Rate'
   options, name_o_tplot, 'ytitle',type+': eV'
@@ -131,6 +134,7 @@ Pro fa_esa_l2_tplot, all = all, type = type, counts = counts
   options, name_o_tplot, 'x_no_interp', 1
   options, name_o_tplot, 'y_no_interp', 1
   options, name_o_tplot, datagap = 5
+  options, name_o_tplot, 'zlog', 1
 
 Return
 End

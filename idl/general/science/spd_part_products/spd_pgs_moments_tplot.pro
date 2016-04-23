@@ -14,6 +14,7 @@
 ;Keywords:
 ;  get_error: Flag indicating that the current moment structure
 ;             contains error estimates.
+;  no_mag: Flag to omit outputs associated with b field
 ;  prefix: Tplot variable name prefix (e.g. 'tha_peif_')
 ;  suffix: Tplot variable name suffix
 ;  tplotnames: Array of tplot variable names created by the parent 
@@ -25,13 +26,14 @@
 ;  Much of this code was copied from thm_part_moments.pro
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-02-26 18:33:58 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20235 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-04-21 18:58:54 -0700 (Thu, 21 Apr 2016) $
+;$LastChangedRevision: 20880 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_moments_tplot.pro $
 ;-
 pro spd_pgs_moments_tplot, moments, $
                            get_error=get_error, $
+                           no_mag=no_mag, $
                            prefix=prefix0, $
                            suffix=suffix0, $
                            tplotnames=tplotnames, $
@@ -46,7 +48,7 @@ pro spd_pgs_moments_tplot, moments, $
 
 
   ;Get names of valid moments
-  if keyword_set(get_error) then begin
+  if keyword_set(get_error) || keyword_set(no_mag) then begin
     ;error estimates produced by moments_3d
     valid_moments = ['avgtemp', 'density', 'eflux', 'flux', $
                      'mftens', 'ptens', 'sc_current', $

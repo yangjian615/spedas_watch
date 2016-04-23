@@ -18,7 +18,7 @@
 ;          The start and end times will then be taken from the first
 ;          and last component of the tplot variables listed
 ;          
-;          replace(optional): set this to replace the variable,  rather than create
+;          replace(optional): set this to replace the tplot variable,  rather than create
 ;          a new one
 ;
 ;          error(optional): set this to a named variable to return the
@@ -28,6 +28,9 @@
 ;          to modify many tplot variables it will signal an error if 
 ;          any of the variables failed
 ;
+;          interior_clip(optional): removes data inside the selected region instead of outside the selected region
+;          
+;          nan_replace(optional): instead of clipping replaces data with NaNs
 ;
 ;          examples:
 ;                 time_clip,'thb_fgs_gsm','2007-03-23/10:00:00','2007-03-23/12:00:00',newname='thb_fgs_gsm_10t12clip'
@@ -40,7 +43,7 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/idl_socware/trunk/external/IDL_GEOPACK/trace/ttrace_crib.pro $
 ;-
 
-pro time_clip,tplot_var_name,start_time,end_time,newname=newname,tvar=tvar,replace=replace,error=error
+pro time_clip,tplot_var_name,start_time,end_time,newname=newname,tvar=tvar,replace=replace,error=error,interior_clip=interior_clip,nan_replace=nan_replace
 
 COMPILE_OPT idl2
 
@@ -104,9 +107,19 @@ for i=0,n_elements(nm)-1 do begin
      continue
    endif
    
-   idx = where(d.x ge stime and d.x le etime)
+   idx = where(d.x ge stime and d.x le etime,complement=cidx)
    
-   if idx[0] eq -1 then begin
+   if keyword_set(nan_replace) then begin
+      tmp = idx
+      idx = cidx
+      cidx=tmp
+   endif
+   
+   if keyword_set(interior_clip) then begin
+     idx = cidx
+   endif
+   
+   if idx[0] then begin
       error = 1
       dprint,'tvar_name: ' + nm[i] + ' out of range'
       continue
@@ -119,35 +132,59 @@ for i=0,n_elements(nm)-1 do begin
      dprint, 'No time clip done for: '+ nm[i], dlevel = 3
      d2 = temporary(d) 
    endif else begin
-     if(size(d.y, /n_dim) eq 1) then $
-       d2 = {x:d.x[idx], y:d.y[idx]} $
-     else if(size(d.y, /n_dim) eq 2) then begin
-       d2 = {x:d.x[idx], y:d.y[idx, *]}
+    
+     if keyword_set(nan_replace) then begin
+   
        str_element, d, 'V', success = s
-       if s then begin
-         if (size(d.v, /n_dim) eq 1) then str_element, d2, 'V', d.v, /add
-         if (size(d.v, /n_dim) eq 2) then str_element, d2, 'V', d.v[idx, *], /add
-       endif
-     endif else if(size(d.y, /n_dim) eq 3) then begin
-       d2 = {x:d.x[idx], y:d.y[idx, *, *]}
-       str_element, d, 'V1', success = s
-       if s then str_element, d2, 'V1', d.v1, /add
-       str_element, d, 'V2', success = s
-       if s then str_element, d2, 'V2', d.v2, /add 
-     endif else if(size(d.y, /n_dim) eq 4) then begin
-       d2 = {x:d.x[idx], y:d.y[idx, *, *, *]}
-       str_element, d, 'V1', success = s
-       if s then str_element, d2, 'V1', d.v1, /add
-       str_element, d, 'V2', success = s
-       if s then str_element, d2, 'V2', d.v2, /add
-       str_element, d, 'V3', success = s
-       if s then str_element, d2, 'V3', d.v3, /add
+
+       d2=temporary(d)
+       if ndimen(d2.y) eq 1 then begin
+         d2.y[idx] = !VALUES.D_NAN
+       endif else if ndimen(d2.y) eq 2 then begin
+         d2.y[idx,*] = !VALUES.D_NAN
+       endif else if ndimen(d2.y) eq 3 then begin
+         d2.y[idx,*,*] = !VALUES.D_NAN
+       endif else if ndimen(d2.y) eq 4 then begin
+         d2.y[idx,*,*,*] = !VALUES.D_NAN
+       endif else begin
+         dprint, 'tvar_name: ' + nm[i] + ' too many dimensions'
+         continue
+       endelse
+
      endif else begin
-       error = 1
-       dprint, 'tvar_name: ' + nm[i] + ' too many dimensions'
-       continue
+   
+       if(ndimen(d.y) eq 1) then begin 
+         d2 = {x:d.x[idx], y:d.y[idx]} 
+       endif else if(ndimen(d.y) eq 2) then begin
+         d2 = {x:d.x[idx], y:d.y[idx, *]}
+         str_element, d, 'V', success = s
+         if s then begin
+           if (ndimen(d.v) eq 1) then str_element, d2, 'V', d.v, /add
+           if (ndimen(d.v) eq 2) then str_element, d2, 'V', d.v[idx, *], /add
+         endif
+       endif else if(ndimen(d.y) eq 3) then begin
+         d2 = {x:d.x[idx], y:d.y[idx, *, *]}
+         str_element, d, 'V1', success = s
+         if s then str_element, d2, 'V1', d.v1, /add
+         str_element, d, 'V2', success = s
+         if s then str_element, d2, 'V2', d.v2, /add 
+       endif else if(ndimen(d.y) eq 4) then begin
+         d2 = {x:d.x[idx], y:d.y[idx, *, *, *]}
+         str_element, d, 'V1', success = s
+         if s then str_element, d2, 'V1', d.v1, /add
+         str_element, d, 'V2', success = s
+         if s then str_element, d2, 'V2', d.v2, /add
+         str_element, d, 'V3', success = s
+         if s then str_element, d2, 'V3', d.v3, /add
+       endif else begin
+         error = 1
+         dprint, 'tvar_name: ' + nm[i] + ' too many dimensions'
+         continue
+       endelse
+       
      endelse
    endelse
+   
    if keyword_set(replace) then begin
      store_data,nm[i],data=d2, dlimits = dl
    endif else if (n_elements(nm) eq 1) && keyword_set(newname) then begin

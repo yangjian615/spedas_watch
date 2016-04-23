@@ -10,6 +10,17 @@ PRO sitl_report_latest, dir=dir
   ;////////////////////////////////////////////////
   mms_init
   
+  ;-------------
+  ; CATCH ERROR
+  ;-------------
+  catch, error_status; !ERROR_STATE is set
+  if error_status ne 0 then begin
+    catch, /cancel; Disable the catch system
+    eva_error_message, error_status
+    message, /reset; Clear !ERROR_STATE
+    return
+  endif
+  
   ;--------------------
   ; LOAD FOMstr (AUTO)
   ;--------------------
@@ -33,12 +44,14 @@ PRO sitl_report_latest, dir=dir
   mms_convert_fom_tai2unix, FOMstr, s, start_string
   tfom = eva_sitl_tfom(s)
   Dnew=eva_sitl_strct_read(s,tfom[0])
-
+  
   get_data,'mms_soca_fomstr',data=D,lim=lim,dl=dl; skelton
   store_data,'mms_stlm_fomstr',data=Dnew,lim=lim,dl=dl
   options,   'mms_stlm_fomstr',ytitle='FOM', ysubtitle='(SITL)', constant=[50,100,150,200]
   options,   'mms_stlm_fomstr','unix_FOMStr_mod', s; add unixFOMStr_mod
   options,   'mms_stlm_fomstr','unix_FOMStr_org'; remove unixFOMStr_org
+  
+  ylim, 'mms_stlm_fomstr',0,1.1*max(Dnew.y,/nan)
 
   ;--------------------------------------
   ; CHECK Submission of SITL_selections
@@ -95,7 +108,11 @@ PRO sitl_report_latest, dir=dir
   
   ; notes
   if SUBMITTED then begin
-    str_notes = ''
+    tn = tag_names(s)
+    idx = where(strmatch(tn,'NOTE'),ct)
+    if ct gt 0 then begin
+      str_notes = s.NOTE
+    endif else str_notes = ''
   endif else str_notes = ''
   
   ; sav file

@@ -6,10 +6,21 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-12 09:38:26 -0700 (Tue, 12 Apr 2016) $
-; $LastChangedRevision: 20783 $
+; $LastChangedDate: 2016-04-22 15:03:04 -0700 (Fri, 22 Apr 2016) $
+; $LastChangedRevision: 20899 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
+
+function mms_load_fgm_ut::test_load_time_clip
+    mms_load_fgm, probe=1, level='l2', trange=['2015-12-15/04:00', '2015-12-15/05:00'], /time_clip, suffix='_clipped'
+    assert, spd_data_exists('mms1_fgm_b_dmpa_srvy_l2_bvec_clipped', '2015-12-15/04:00', '2015-12-15/05:00'), $
+      'Problem with time clipping FGM data'
+    assert, ~spd_data_exists('mms1_fgm_b_dmpa_srvy_l2_bvec_clipped', '2015-12-15/03:00', '2015-12-15/04:00'), $
+      'Problem with time clipping FGM data'
+      assert, ~spd_data_exists('mms1_fgm_b_dmpa_srvy_l2_bvec_clipped', '2015-12-15/05:00', '2015-12-15/06:00'), $
+      'Problem with time clipping FGM data'
+    return, 1
+end
 
 function mms_load_fgm_ut::test_load_ql
     mms_load_fgm, probe=1, level='ql', instrument='dfg'

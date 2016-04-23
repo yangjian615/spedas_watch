@@ -255,7 +255,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           mms_sitl_get_dsp, sc = sc, datatype = 'bpsd', level = 'l2', data_rate='fast'
           tn = tnames(sc+'_dsp_bpsd_*',cnt)
           if (strlen(tn[0]) gt 0) and (cnt gt 1) then begin
-            options,sc+'_dsp_bpsd_omni_fast_l2', spec=1,zlog=1,ytitle=sc+'!CDSP!Cfast!Cbpsd_omni',ysubtitle='[Hz]',ztitle='[(nT)!U2!N/Hz]'
+            options,sc+'_dsp_bpsd_omni_fast_l2', spec=1,zlog=1,ytitle=sc+'!CDSP!Cbpsd',ysubtitle='[Hz]',ztitle='[(nT)!U2!N/Hz]'
             ylim, tn, 32, 4000, 1
             for m=1,3 do begin
               strm = strtrim(string(m),2)
@@ -323,10 +323,10 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=38
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_edp_srvy_*') and (cp eq 0)) then begin
-          mms_sitl_get_edp, sc = sc, datatype='hfesp', level = 'l1b', data_rate='srvy'
-          tn = tnames(sc+'_edp_srvy_EPSD_x',cnt)
+          mms_sitl_get_edp, sc = sc, datatype='hfesp', level = 'l2', data_rate='srvy'
+          tn = tnames(sc+'_edp_srvy_hfesp_l2',cnt)
           if (strlen(tn[0]) gt 0) and (cnt eq 1) then begin
-            options,tn,ytitle=sc+'!CEDP!Csrvy!Cepsd_x',ysubtitle='[Hz]',ztitle='[(V/m)!U2!N/Hz]'
+            options,tn,ytitle=sc+'!CEDP!Chfesp',ysubtitle='[Hz]',ztitle='[(V/m)!U2!N/Hz]'
             options,tn,spec=1,zlog=1
             ylim,tn,600,65536,1 
           endif

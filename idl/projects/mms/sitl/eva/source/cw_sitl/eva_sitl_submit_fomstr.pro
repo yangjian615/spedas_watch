@@ -5,8 +5,8 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
   title = 'FOM Submission'
     
   ; FOM structures
-  get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dmod
-  get_data,'mms_soca_fomstr',data=Dorg, lim=lorg,dl=dorg
+  get_data,'mms_stlm_fomstr',data=Dmod, lim=lmod,dl=dlmod
+  get_data,'mms_soca_fomstr',data=Dorg, lim=lorg,dl=dlorg
   mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
   mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
   header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
@@ -53,12 +53,10 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
   ;------------------
   ; Submit
   ;------------------
-  widget_control, widget_info(tlb,find='eva_data'), GET_VALUE=module_state
-  ;local_dir = module_state.PREF.EVA_CACHE_DIR+'sitl_data/'
   local_dir = !MMS.LOCAL_DATA_DIR
   found = file_test(local_dir); check if the directory exists
   if not found then file_mkdir, local_dir
-  
+
   if TESTING then begin
     problem_status = 0
     msg='File submission disabled. The modified structure was not sent to SDC.'

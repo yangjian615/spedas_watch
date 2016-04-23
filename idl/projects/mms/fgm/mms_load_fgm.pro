@@ -43,6 +43,7 @@
 ;                        vector transformations won't work on the FGM tplot variables. 
 ;         keep_flagged: don't remove flagged data (flagged data are set to NaNs by default, this keyword
 ;                       turns this off)
+;         get_fgm_ephemeris: keep the "FGM" ephemeris variables; see (2) in the notes below
 ;             
 ; OUTPUT:
 ; 
@@ -87,8 +88,8 @@
 ;       non-monotonic data points are removed
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-13 08:22:26 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20793 $
+;$LastChangedDate: 2016-04-22 13:48:20 -0700 (Fri, 22 Apr 2016) $
+;$LastChangedRevision: 20895 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -102,7 +103,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   no_attitude_data = no_attitude_data, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
-                  spdf = spdf, no_split_vars=no_split_vars, keep_flagged = keep_flagged
+                  spdf = spdf, no_split_vars=no_split_vars, keep_flagged = keep_flagged, $
+                  get_fgm_ephemeris = get_fgm_ephemeris
 
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
@@ -169,12 +171,14 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             
             ; delete the non-monotonic ephemeris variables
             ; please use ephemeris data in the MEC data (mms_load_mec)
-            if level eq 'l2' || level eq 'l2pre' then begin
+            if ~keyword_set(get_fgm_ephemeris) then begin
                 del_data, this_probe+'_fgm_r_gse_'+this_data_rate+'_'+level+suffix
                 del_data, this_probe+'_fgm_r_gsm_'+this_data_rate+'_'+level+suffix
                 del_data, this_probe+'_pos_gse'+suffix
                 del_data, this_probe+'_pos_gsm'+suffix
-            endif 
+            endif else begin
+                dprint, dlevel = 0, 'Keeping non-monotonic ephemeris variables from FGM data files; note that these variables contain an "extra" component (the magnitude), and can not be used in routines that expect a vector.'
+            endelse
             
         endfor
     endfor

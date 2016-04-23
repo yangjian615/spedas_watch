@@ -9,15 +9,15 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-03 08:06:46 -0800 (Thu, 03 Mar 2016) $
-;$LastChangedRevision: 20302 $
+;$LastChangedDate: 2016-04-22 14:35:06 -0700 (Fri, 22 Apr 2016) $
+;$LastChangedRevision: 20896 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_split_fgm_data.pro $
 ;-
 pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate, instrument = instrument
     if undefined(level) then level = ''
     if undefined(suffix) then suffix = ''
     if level eq 'l2pre' then data_rate_mod = data_rate + '_l2pre' else data_rate_mod = data_rate
-    coords = ['dmpa', 'gse', 'gsm']
+    coords = ['dmpa', 'gse', 'gsm', 'bcs']
 
     for c_idx = 0, n_elements(coords)-1 do begin
         ; assumption here: tplot names loaded from FGM CDFs are in lower case
