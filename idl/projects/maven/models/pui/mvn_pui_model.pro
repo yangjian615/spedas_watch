@@ -42,7 +42,7 @@ simtime=systime(1) ;simulation start time, let's do this!
 
 ;modeling pickup oxygen
 mamu=16; %mass of [H=1 C=12 N=14 O=16] (amu)
-mvn_pui_solver,mamu=mamu,np=np ;solve pickup ion trajectories
+mvn_pui_solver,mamu=mamu,np=np,ntg=0.999 ;solve pickup ion trajectories
 ntot=drxyz/((rxyz-2400e3)^2.1); %for Mars oxygen exosphere (m-1.1) fit to Rahmati et al., 2014
 mvn_pui_binner,mamu=mamu,np=np ;bin the results
 
@@ -77,7 +77,7 @@ dprint,dlevel=2,'Pickup O+ done, now simulating pickup H+'
 
 ;Now let's model pickup hydrogen
 mamu=1; %mass of [H=1 C=12 N=14 O=16] (amu)
-mvn_pui_solver,mamu=mamu,np=np ;solve pickup ion trajectories
+mvn_pui_solver,mamu=mamu,np=np,ntg=2.999 ;solve pickup ion trajectories
 ntot=drxyz/((rxyz-2700e3)^2.7); %for Mars hydrogen exosphere (m-1.7) fit to Feldman et al., 2011
 mvn_pui_binner,mamu=mamu,np=np ;bin the results
 

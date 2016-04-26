@@ -119,7 +119,7 @@ for i=0,n_elements(nm)-1 do begin
      idx = cidx
    endif
    
-   if idx[0] then begin
+   if idx[0] eq -1 then begin
       error = 1
       dprint,'tvar_name: ' + nm[i] + ' out of range'
       continue

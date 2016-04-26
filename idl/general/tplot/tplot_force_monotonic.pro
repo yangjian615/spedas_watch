@@ -43,10 +43,10 @@
 ;      
 ; ToDo: nothing yet
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-04-25 12:07:51 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20911 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_force_monotonic.pro $
 ;-
 
 function keep_overlap, i_keep, i_new, time_array, REVERSE=REVERSE, KEEP_REPEATS=KEEP_REPEATS
@@ -92,6 +92,10 @@ max_var_len = 32
 ;;; Loop over requested tplot variables
 for j=0L,n_elements(tplot_vars)-1L do begin
   tplot_var = tplot_vars[j]
+  
+  ; the following fixes a crash when the tplot variable name is the same length as max_var_len
+  if strlen(tplot_var) ge max_var_len then max_var_len = strlen(tplot_var) + 1
+  
   get_data,tplot_var,data=data,dlimits=dlimits,limits=limits
   
   ;;; Check if data is a structure
@@ -113,8 +117,6 @@ for j=0L,n_elements(tplot_vars)-1L do begin
 
   ;;; If time_array is monotonic (i.e. has no negative jumps) and has no repeats, then it PASSES
   if ((c_non_monotonic eq 0) and (c_repeat eq 0)) then begin 
-    ; the following fixes a crash when the tplot variable name is the same length as max_var_len
-    if strlen(tplot_var) ge max_var_len then max_var_len = strlen(tplot_var) + 1
     dprint,tplot_var,':'+strjoin(strarr(max_var_len-strlen(tplot_var))+' ')+'PASS'
     continue
   endif else begin

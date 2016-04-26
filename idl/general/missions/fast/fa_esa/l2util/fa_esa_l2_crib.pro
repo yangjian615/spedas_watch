@@ -55,5 +55,30 @@
 
         tplot, 'fa_*_l2_en_quick'
 
+; Get a pitch angle distribution, integrated over a single energy
+; range, the default is to use all energies:
+        get_data, 'fa_ies_l2_en_quick', trange = tr
+        ipa_dist = fa_esa_l2_pad('ies', trange = tr)
+; Vary the energy range:
+        ipa_dist1 = fa_esa_l2_pad('ies', trange = tr, energy = [10.0, 50.0], name = 'fa_ies_1050_pad')
+; Get a single energy:
+        ipa_dist2 = fa_esa_l2_pad('ies', trange = tr, energy = [11.0, 11.0], name = 'fa_ies_11_pad')
+; Or a high energy:
+        ipa_dist3 = fa_esa_l2_pad('ies', trange = tr, energy = [2000.0, 2200.0], name = 'fa_ies_20002200_pad') 
+; tplot, the pitch angle distributsions:
+        tplot, 'fa_ies*pad'
+
+; Energy flux distribution, all pitch angles:
+        p1 = fa_esa_l2_edist('ies', trange=tr)
+
+; set a pa_range, around zero:
+        p2 = fa_esa_l2_edist('ies', trange=tr, parange = [350.0, 10.0], name = 'fa_ies_35010_edist')
+
+; get a small pa_range
+        p3 = fa_esa_l2_edist('ies', trange=tr, parange = [10.0, 12.0], name = 'fa_ies_1012_edist')
+
+; get a small pa at an odd angle
+        p4 = fa_esa_l2_edist('ies', trange=tr, parange = [180.0, 182.0], name = 'fa_ies_180182_edist')
+        
 
 End

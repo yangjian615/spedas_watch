@@ -64,9 +64,9 @@
 ;  potential, and efficiency.
 ;
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-07-02 18:47:11 -0700 (Thu, 02 Jul 2015) $
-; $LastChangedRevision: 18016 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-04-25 11:10:45 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20910 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom.pro $
 ;-
 
@@ -659,7 +659,7 @@ endif
 
 ;get requested datatype(s)
 if is_string(datatype_in) then begin
-  datatype = strsplit(strlowcase(datatype_in),' ',/extract)
+  datatype = spd_str_split(strlowcase(datatype_in),' ',/extract)
   if n_elements(datatype) eq 1 && stregex(datatype,'(all|mom)',/bool) then datatype = '*'
 endif else begin
   datatype = '*'

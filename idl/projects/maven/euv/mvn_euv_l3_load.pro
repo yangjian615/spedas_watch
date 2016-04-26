@@ -14,7 +14,7 @@
 ;  $LastChangedDate: 2016-04-22 18:26:36 -0700 (Fri, 22 Apr 2016) $
 ;-
 
-pro mvn_euv_l3_load,trange=trange,daily=daily,minute=minute
+pro mvn_euv_l3_load,trange=trange,daily=daily,minute=minute,tplot=tplot
   
   if keyword_set(daily) then begin
     L3_fileformat='maven/data/sci/euv/l3/YYYY/MM/mvn_euv_l3_daily_YYYYMMDD_v??_r??.cdf'
@@ -36,6 +36,6 @@ pro mvn_euv_l3_load,trange=trange,daily=daily,minute=minute
   store_data,'mvn_euv_l3',data={x:fismdata.x,y:fismdata.y,v:reform(fismdata.v[0,*])}, $
     dlimits={ylog:0,zlog:1,spec:1,ytitle:'Wavelength (nm)',ztitle:'FISM Irradiance (W/m2/nm)'}
   
-  tplot,'mvn_euv_l3'
+  if keyword_set(tplot) then tplot,'mvn_euv_l3'
 
 end

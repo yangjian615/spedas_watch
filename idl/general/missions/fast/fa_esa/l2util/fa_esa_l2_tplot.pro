@@ -21,8 +21,8 @@
 ;2015-09-14, jmm, jimm@ssl.berkeley.edu, hacked from fa_load_esa_l1
 ;and mvn_sta_l2_tplot.
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-04-22 12:57:38 -0700 (Fri, 22 Apr 2016) $
-; $LastChangedRevision: 20894 $
+; $LastChangedDate: 2016-04-25 12:55:28 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20914 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_tplot.pro $
 ;-
 Pro fa_esa_l2_tplot, all = all, type = type, counts = counts
@@ -120,7 +120,7 @@ Pro fa_esa_l2_tplot, all = all, type = type, counts = counts
         energy_tplot[i, *] = all_dat.energy[*, 0, 2]
      Endif
   Endfor
-stop
+
 ;  data_tplot = data_tplot > 1.e-10
 ;Counts should have l1 in the name:
   If(keyword_set(counts)) Then name_o_tplot = 'fa_'+typex+'_l1_en_quick' $

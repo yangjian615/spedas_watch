@@ -12,7 +12,7 @@ mvn_sep_var_restore ;load SEP data
 mvn_sep_create_subarrays,'mvn_sep1_svy',zval='Rate'
 mvn_sep_create_subarrays,'mvn_sep2_svy',zval='Rate'
 mvn_swe_load_l2,/spec,/sumplot ;load SWEA data
-;mvn_euv_load ;load EUVM data
+mvn_euv_load ;load EUVM data
 mvn_euv_l3_load ;load FISM data
 mvn_sta_l2_load,sta_apid='c0' ;load STATIC data
 mvn_sta_l2_tplot

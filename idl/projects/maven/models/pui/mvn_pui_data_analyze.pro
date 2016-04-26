@@ -20,10 +20,6 @@ dirname = file_dirname(stack[scope_level()-1].filename) + '/'
 ;printdat,dirname
 ;euvcs = read_asc(dirname+'mvn_euv_nm_h_o_pi_sig_mb.txt',format={wavelength:0.,Hphoto_cs:0.,Ox_photo_cs:0.})
 
-;stop
-
-
-
 ;read cross-section files
 openr,lun,dirname+'mvn_euv_nm_h_o_pi_sig_mb.txt',/get_lun
 xsec_pi=replicate(0.,3,190) ;fism bins (nm), H, O photo-ionization cross sections (mb)  

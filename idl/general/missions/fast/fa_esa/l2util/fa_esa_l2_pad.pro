@@ -26,8 +26,8 @@
 ;HISTORY:
 ; 2016-03-21, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-04-22 11:30:10 -0700 (Fri, 22 Apr 2016) $
-; $LastChangedRevision: 20892 $
+; $LastChangedDate: 2016-04-25 12:55:28 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20914 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_pad.pro $
 ;-
 Function fa_esa_l2_pad, type, $
@@ -117,6 +117,7 @@ Function fa_esa_l2_pad, type, $
   pad_out = eflux_out
   For j = 0, nss-1 Do Begin
      efullj = all_dat.energy_full[ss[j], *, 0] > 0
+;get the nubmer of bins
      nbj = all_dat.nenergy[ss[j]]
      nabj = all_dat.nbins[ss[j]]
      If(~keyword_set(energy)) Then Begin
@@ -171,7 +172,6 @@ Function fa_esa_l2_pad, type, $
         Endelse
      Endelse
 ;contract eflux variable, reset fill values in data arrays to 0
-; get the nubmer of bins
      etmp = reform(all_dat.eflux[ss[j], 0:nbj-1, 0:nabj-1]) > 0
      detmp = reform(all_dat.denergy_full[ss[j], 0:nbj-1, 0:nabj-1]) > 0
      patmp = reform(all_dat.pitch_angle[ss[j], 0:nbj-1, 0:nabj-1]) > 0
@@ -192,13 +192,14 @@ Function fa_esa_l2_pad, type, $
   If(is_string(name)) Then name_o_tplot = name $
   Else name_o_tplot = 'fa_'+typex+'_l2_pad'
   store_data, name_o_tplot, data = {x:(all_dat.time[ss]+all_dat.end_time[ss])/2,y:eflux_out,v:pad_out}
-;  zlim,name_o_tplot, 1.e1, 1.e6, 1
-;  ylim,name_o_tplot, 5., 40000., 1
+
+  ylim,name_o_tplot, 0., 360., 0
   options, name_o_tplot, 'ztitle', 'Eflux PAD'
   options, name_o_tplot, 'ytitle',type+': eV'
   options, name_o_tplot, 'spec', 1
   options, name_o_tplot, 'x_no_interp', 1
   options, name_o_tplot, 'y_no_interp', 1
+  options, name_o_tplot, 'zlog', 1
   options, name_o_tplot, datagap = 5
 
   Return, name_o_tplot

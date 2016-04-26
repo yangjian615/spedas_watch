@@ -1,7 +1,7 @@
 ;20160404 Ali
 ;solves pui trajectories
 
-pro mvn_pui_solver,mamu=mamu,np=np
+pro mvn_pui_solver,mamu=mamu,np=np,ntg=ntg
 
 common mvn_pui_common
 
@@ -55,7 +55,7 @@ fg=q*Btot/m; %gyro-frequency (rad/s)
 tg=2.*!pi/fg; %gyro-period (s)
 rg=uswn*sintub/fg; %gyro-radius (m)
 kemax=.5*m*((2.*usw*sintub)^2)/q; %pickup ion maximum energy (eV)
-ntg=0.999; number of gyro-periods to be simulated
+;ntg=0.999; number of gyro-periods to be simulated
 dt=ntg*tg/np; %time increment (s)
 t=dt*(replicate(1.,inn)#dindgen(np)); %time (s)
 

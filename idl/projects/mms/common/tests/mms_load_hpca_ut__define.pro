@@ -6,10 +6,48 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-21 15:14:35 -0700 (Thu, 21 Apr 2016) $
-; $LastChangedRevision: 20879 $
+; $LastChangedDate: 2016-04-25 08:13:52 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20907 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_hpca_ut__define.pro $
 ;-
+
+function mms_load_hpca_ut::test_center_burst_dist_spdf
+  mms_load_hpca, data_rate='brst', level='l2', datatype='ion', /center, suffix='_centered', /SPDF
+  mms_load_hpca, data_rate='brst', level='l2', datatype='ion', /SPDF
+  get_data, 'mms1_hpca_hplus_flux_centered', data=centered
+  get_data, 'mms1_hpca_hplus_flux', data=not_centered
+  assert, centered.X[2]-not_centered.X[2] eq 0.3125, 'Problem centering HPCA burst mode dist data'
+  return, 1
+end
+
+function mms_load_hpca_ut::test_center_burst_spdf
+  mms_load_hpca, data_rate='brst', level='l2', datatype='moments', /center, suffix='_centered', /spdf
+  mms_load_hpca, data_rate='brst', level='l2', datatype='moments', /spdf
+  get_data, 'mms1_hpca_hplus_ion_bulk_velocity', data=not_centered ; not centered
+  get_data, 'mms1_hpca_hplus_ion_bulk_velocity_centered', data=centered ; centered
+  ; centering adjusts by ~5 seconds
+  assert, round(centered.X[2]-not_centered.X[2]) eq 5, 'Problem centering HPCA burst mode moments data (SPDF)'
+  return, 1
+end
+
+function mms_load_hpca_ut::test_center_burst
+  mms_load_hpca, data_rate='brst', level='l2', datatype='moments', /center, suffix='_centered'
+  mms_load_hpca, data_rate='brst', level='l2', datatype='moments'
+  get_data, 'mms1_hpca_hplus_ion_bulk_velocity', data=not_centered ; not centered
+  get_data, 'mms1_hpca_hplus_ion_bulk_velocity_centered', data=centered ; centered
+  ; centering adjusts by ~5 seconds
+  assert, round(centered.X[2]-not_centered.X[2]) eq 5, 'Problem centering HPCA burst mode moments data'
+  return, 1
+end
+
+function mms_load_hpca_ut::test_center_burst_dist
+  mms_load_hpca, data_rate='brst', level='l2', datatype='ion', /center, suffix='_centered'
+  mms_load_hpca, data_rate='brst', level='l2', datatype='ion'
+  get_data, 'mms1_hpca_hplus_flux_centered', data=centered
+  get_data, 'mms1_hpca_hplus_flux', data=not_centered
+  assert, centered.X[2]-not_centered.X[2] eq 0.3125, 'Problem centering HPCA burst mode dist data'
+  return, 1
+end
 
 function mms_load_hpca_ut::test_load_spdf_burst
   mms_load_hpca, /spdf, trange=['2015-12-15', '2015-12-16'], level='l2', datatype='moments', data_rate='brst'
