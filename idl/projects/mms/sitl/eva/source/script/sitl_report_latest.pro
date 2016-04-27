@@ -1,4 +1,4 @@
-PRO sitl_report_latest, dir=dir
+PRO sitl_report_latest, dir=dir, force=force
   compile_opt idl2
   tic
   
@@ -7,6 +7,7 @@ PRO sitl_report_latest, dir=dir
   paramset = 'SITL_Basic_Tail'; SITL_Basic_Dayside
   if undefined(dir) then dir = '/Volumes/moka/public_html/eva/' $
     else dir = thm_addslash(dir)
+  if undefined(force) then force = 1
   ;////////////////////////////////////////////////
   mms_init
   
@@ -136,7 +137,7 @@ PRO sitl_report_latest, dir=dir
   probes = ['1','2','3','4']
   pngsize = fltarr(pmax)  
   for p=0,pmax-1 do begin
-    eva_cmd_load,trange=trange,probes=probes[p],paramset=paramset,paramlist=paramlist, /force
+    eva_cmd_load,trange=trange,probes=probes[p],paramset=paramset,paramlist=paramlist, force=force
     dir_png = thm_addslash(dir)+'img/'+yyyy+'/'
     file_mkdir, dir_png
     imax = n_elements(paramlist)

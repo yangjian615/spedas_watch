@@ -77,9 +77,9 @@
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-02-04 09:54:57 -0800 (Thu, 04 Feb 2016) $
-; $LastChangedRevision: 19900 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-04-25 20:06:03 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20923 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -178,6 +178,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
 ;  Angular distribution correction based on interpolated 3d data
 ;  to emphasize the returning photoelectrons.
 ;  This section was added by Yuki Harada.
+
   if keyword_set(angcorr) and (size(mvn_swe_3d,/type) eq 8) then begin
      ww = finite(mvn_swe_3d.data) * 1.
      wsky = where( mvn_swe_3d.phi gt 112.5 and mvn_swe_3d.phi lt 292.5 $
@@ -192,8 +193,10 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
 
      fr = f * !values.f_nan
      for j=0,63 do fr[j,*] = interp(reform(skyflux[j,*]/aveflux[j,*]),mvn_swe_3d.time,t) < 1.2
+
 ;  A maximum factor of 1.2 is set to avoid too much emphasis on lowest
 ;  energy photoelectrons
+
      f = f * fr
   endif
 
@@ -328,7 +331,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
     endif
   endif
 
-; Apply fudge factor, and store the result
+; Apply fudge factor, and store the result in the SWEA common block.
 
   phi = phi*fudge
   potential[gndx].pot = phi
@@ -337,7 +340,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
     mvn_swe_engy[gndx].sc_pot = phi
     mvn_swe_convert_units, mvn_swe_engy, old_units
   endif else begin
-    mvn_swe_engy[gndx].sc_pot = interpol(phi,t,mvn_swe_engy[gndx].time)
+    mvn_swe_engy.sc_pot = interpol(phi,t,mvn_swe_engy.time)
   endelse
   
   swe_sc_pot = replicate(swe_pot_struct, npts)

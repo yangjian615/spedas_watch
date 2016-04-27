@@ -65,8 +65,8 @@
 ;                 from L0 file, jmm, jimm@ssl.berkeley.edu
 ;LAST MODIFICATION:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-04-18 14:29:52 -0700 (Mon, 18 Apr 2016) $
-; $LastChangedRevision: 20852 $
+; $LastChangedDate: 2016-04-26 11:02:05 -0700 (Tue, 26 Apr 2016) $
+; $LastChangedRevision: 20928 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot2.pro $
 ;
 ;-
@@ -450,23 +450,32 @@ PRO mvn_ql_pfp_tplot2, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         options, 'mvn_lpw_iv', ytitle='LPW (IV)', ysubtitle='[V]', ztitle='Log(abs(IV))', $
               xsubtitle='', zsubtitle=''
      ENDIF ELSE BEGIN
-;Try L0
-        date_str = time_string(mean(time_double(trange)), precision = -3)
-        mvn_lpw_load, date_str, tplot_var='all', packet='nohsbm', $
-                      /notatlasp, /noserver
-        get_data, 'mvn_lpw_swp1_IV_log', data=d, dl=dl, lim=lim
-        If(is_struct(d)) Then Begin
-           extract_tags, nlim, lim, tags=['yrange', 'ylog', 'zlog', 'spec', 'no_interp', 'ystyle']
-           del_data, 'mvn_lpw_*'
-           store_data, 'mvn_lpw_iv', data=d, dl=dl, lim=nlim
-           undefine, d, dl, lim, nlim
-           options, 'mvn_lpw_iv', 'zrange', [-10, -4]
-           options, 'mvn_lpw_iv', ytitle='LPW-L0 (IV)', ysubtitle='[V]', ztitle='Log(IV)', $
-              xsubtitle='', zsubtitle=''
-        Endif Else Begin ;no data -- blank plot
-           store_data, 'mvn_lpw_iv', data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [1., 2.d6]}, $
-                       dlim={yrange: [1, 2.d6], ystyle: 1, ylog: 1, zrange: [1.e-14, 1.e-5], zstyle: 1, zlog: 1, spec: 1}  
-           options, 'mvn_lpw_iv', bottom=7, top=254
+        lpath = 'maven/data/sci/lpw/tplot/'
+        lname = 'YYYY/mvn_lpw_iv_YYYYMMDD.tplot'
+        lfile = mvn_pfp_file_retrieve(lpath+lname, trange=trange, /daily)
+        If(lfile[0] Ne '') Then Begin
+           tplot_restore, filenames=lfile, /append
+           get_data, 'mvn_lpw_iv', data= d
+           If(~is_struct(d)) Then goto, try_l0 Else undefine, d
+        Endif Else Begin
+           try_l0:
+           date_str = time_string(mean(time_double(trange)), precision = -3)
+           mvn_lpw_load, date_str, tplot_var='all', packet='nohsbm', $
+                         /notatlasp, /noserver
+           get_data, 'mvn_lpw_swp1_IV_log', data=d, dl=dl, lim=lim
+           If(is_struct(d)) Then Begin
+              extract_tags, nlim, lim, tags=['yrange', 'ylog', 'zlog', 'spec', 'no_interp', 'ystyle']
+              del_data, 'mvn_lpw_*'
+              store_data, 'mvn_lpw_iv', data=d, dl=dl, lim=nlim
+              undefine, d, dl, lim, nlim
+              options, 'mvn_lpw_iv', 'zrange', [-10, -4]
+              options, 'mvn_lpw_iv', ytitle='LPW-L0 (IV)', ysubtitle='[V]', ztitle='Log(IV)', $
+                       xsubtitle='', zsubtitle=''
+           Endif Else Begin     ;no data -- blank plot
+              store_data, 'mvn_lpw_iv', data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [1., 2.d6]}, $
+                          dlim={yrange: [1, 2.d6], ystyle: 1, ylog: 1, zrange: [1.e-14, 1.e-5], zstyle: 1, zlog: 1, spec: 1}  
+              options, 'mvn_lpw_iv', bottom=7, top=254
+           Endelse
         Endelse
      ENDELSE 
      undefine, lpath, lname, lfile

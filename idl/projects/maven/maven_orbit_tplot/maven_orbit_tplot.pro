@@ -86,8 +86,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 09:08:55 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19385 $
+; $LastChangedDate: 2016-04-25 20:03:24 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20922 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -95,7 +95,7 @@
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
-                       colors=colors, reset_trange=reset_trange, nocrop=nocrop
+                       colors=colors, reset_trange=reset_trange, nocrop=nocrop, em2=em2
 
   @maven_orbit_common
 
@@ -116,19 +116,38 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   if not keyword_set(ialt) then ialt = !values.f_nan
   if keyword_set(ellip) then eflg = 1 else eflg = 0
   if keyword_set(hires) then res = '20sec' else res = '60sec'
+
+  cflg = 1
+  mname = 'maven_spacecraft_mso_??????' + '.sav'
+  gname = 'maven_spacecraft_geo_??????' + '.sav'
+  
   if keyword_set(extended) then begin
     cflg = 0
-    msoext = 'maven_spacecraft_mso_ref_' + res + '.sav'
-    geoext = 'maven_spacecraft_geo_ref_' + res + '.sav'
+    mname = 'maven_spacecraft_mso_ref_' + res + '.sav'
+    gname = 'maven_spacecraft_geo_ref_' + res + '.sav'
     if (size(extended,/type) eq 7) then begin
       i = strpos(extended,'mso')
       j = where(i ge 0, count)
-      if (count gt 0L) then msoext = extended[j[0]]
+      if (count gt 0L) then mname = extended[j[0]]
       i = strpos(extended,'geo')
       j = where(i ge 0, count)
-      if (count gt 0L) then geoext = extended[j[0]]
+      if (count gt 0L) then gname = extended[j[0]]
     endif
-  endif else cflg = 1
+  endif
+
+  if keyword_set(em2) then begin
+    cflg = 0
+    mname = 'maven_spacecraft_mso_em2_' + res + '.sav'
+    gname = 'maven_spacecraft_geo_em2_' + res + '.sav'
+    if (size(em2,/type) eq 7) then begin
+      i = strpos(em2,'mso')
+      j = where(i ge 0, count)
+      if (count gt 0L) then mname = em2[j[0]]
+      i = strpos(em2,'geo')
+      j = where(i ge 0, count)
+      if (count gt 0L) then gname = em2[j[0]]
+    endif
+  endif
 
   if (n_elements(timecrop) gt 1L) then begin
     tspan = minmax(time_double(timecrop))
@@ -203,10 +222,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     eph = {time:time, mso_x:mso_x, mso_v:mso_v, geo_x:geo_x, geo_v:geo_v}
 
   endif else begin
-    if (cflg) then fname = 'maven_spacecraft_mso_??????' + '.sav' $
-              else fname = msoext
-
-    file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0,source=ssrc)
+    file = mvn_pfp_file_retrieve(rootdir+mname,last_version=0,source=ssrc)
     nfiles = n_elements(file)
     
     if (docrop) then begin
@@ -233,6 +249,9 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     time = maven.t
     dt = median(time - shift(time,1))
 
+    print,time_string(minmax(time))
+    help,maven,/str
+
     x = maven.x/R_m
     y = maven.y/R_m
     z = maven.z/R_m
@@ -257,10 +276,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     
     maven = 0
 
-    if (cflg) then fname = 'maven_spacecraft_geo_??????' + '.sav' $
-              else fname = geoext
-
-    file = mvn_pfp_file_retrieve(rootdir+fname,last_version=0,source=ssrc)
+    file = mvn_pfp_file_retrieve(rootdir+gname,last_version=0,source=ssrc)
     nfiles = n_elements(file)
     
     if (docrop) then begin
@@ -504,7 +520,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   alt = (ss[*,3] - 1D)*R_m
   palt = min(alt)
-  gndx = where(alt lt palt*2.)
+  gndx = where(alt lt 500.)
   di = gndx - shift(gndx,1)
   di[0L] = 2L
   gap = where(di gt 1L, norb)
@@ -673,6 +689,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 ; Determine orbit numbers
 
   orbnum = mvn_orbit_num(time=time, verbose=-1)
+  store_data,'orbnum',data={x:time, y:orbnum}
+  tplot_options,'var_label','orbnum'
 
 ; Put up the plot
 

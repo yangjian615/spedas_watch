@@ -57,6 +57,8 @@
 ;       NOERASE:  Don't erase previously plotted positions.  Can be used to build
 ;                 up a visual representation of sampling.
 ;
+;       NODOT:    Do not plot a filled circle at periapsis or spacecraft location.
+;
 ;       RESET:    Initialize all plots.
 ;
 ;       COLOR:    Symbol color index.
@@ -64,19 +66,24 @@
 ;       KEEP:     Do not kill the plot windows on exit.
 ;
 ;       TIMES:    An array of times for snapshots.  Snapshots are overlain onto
-;                 a single version of the plot.  This overrides the interactive
-;                 entry of times with the cursor.
+;                 a single version of the plot.  For evenly spaced times, this
+;                 produces a "spirograph" effect.  This overrides the interactive
+;                 entry of times with the cursor.  Sets KEEP = 1.
 ;
 ;       BDIR:     Set keyword to show magnetic field direction in three planes,
 ;                 In each plane, the same two components of B in MSO coordinates 
 ;                 are shown, i.e. in XY plane, plotting Bx-By. The color shows 
 ;                 if the third component (would be Bz in XY plane) is positive 
 ;                 (red) or negative (blue).
+;
 ;       SCALE:    To change the scale/length of field lines, the default value is
 ;                 set to 0.05
-; $LastChangedBy: xussui_lap $
-; $LastChangedDate: 2016-03-23 11:21:44 -0700 (Wed, 23 Mar 2016) $
-; $LastChangedRevision: 20558 $
+;
+;       THICK:    Line thickness.
+;
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-04-25 19:59:24 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20920 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -97,6 +104,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)
   usersym,a*cos(phi),a*sin(phi),/fill
+  if (size(thick,/type) eq 0) then thick = 1
 
   tplot_options, get_opt=topt
   delta_t = abs(topt.trange[1] - topt.trange[0])
@@ -246,6 +254,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
   while (ok) do begin
     title = string(time_string(tref),oref,format='(a19,2x,"(Orbit ",i4,")")')
+    if (noerase) then title = ''
 
     wset, Owin
     if (first) then erase
@@ -288,8 +297,10 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     imin = imin[0]
     rmax = ceil(max(ro) + 1D)
 
-    xrange = [-rmax,rmax]
-    yrange = xrange
+    if (first) then begin
+      xrange = [-rmax,rmax]
+      yrange = xrange
+    endif
     
     if (dob eq 1) then begin
         get_data,'mvn_B_1sec_maven_mso',data=bmso

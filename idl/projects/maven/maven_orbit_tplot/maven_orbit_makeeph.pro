@@ -75,16 +75,22 @@
 ;       STAT:      Return statistics of ephemeris coverage.  (Useful to determine
 ;                  the boundary between reconstructions and predictions.)
 ;
+;       OBJECT:    By default, this routine uses the name 'MAVEN' (id = -202) for
+;                  the spacecraft, which is the definition used by NAIF.  It is 
+;                  possible for an ephemeris to use a non-standard object name/id.
+;                  Use this keyword to override the default and specify the non-
+;                  standard name or id.  Example: OBJECT='-200000'.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-12-02 11:10:47 -0800 (Wed, 02 Dec 2015) $
-; $LastChangedRevision: 19513 $
+; $LastChangedDate: 2016-04-25 20:00:49 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20921 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_makeeph.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
 ;-
 pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop=tstop, $
                          unload=unload, reset=reset, stat=stat, origin=origin, $
-                         mvn_spk=mvn_spk
+                         mvn_spk=mvn_spk, nomerge=nomerge, object=object
 
   common mvn_orbit_makeeph, kernels, tstart1, tstop1
 
@@ -96,6 +102,8 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
     tstart1 = 0
     tstop1 = 0
   endif
+  
+  if keyword_set(nomerge) then domerge = 0 else domerge = 1
 
   if (size(kernels,/type) ne 7) then begin
   
@@ -111,10 +119,13 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
       for i=0,(nbad-1) do print,"Kernel not found: ",mvn_spk[indx[i]]
       if (nbad gt 0L) then return
       kernels = mvn_spice_kernels(['STD','SCK','FRM'], trange=trange, /valid, verbose=-1)
-      spk = mvn_spice_kernels(['SPK'], trange=trange, /valid, verbose=-1)
-      indx = where(file_basename(spk) ne 'maven_orb.bsp')
-      spk = spk[indx]  ; don't include the short-range predicts
-      kernels = [kernels, mvn_spk, spk]
+      kernels = [kernels, mvn_spk]
+      if (domerge) then begin
+        spk = mvn_spice_kernels(['SPK'], trange=trange, /valid, verbose=-1)
+        indx = where(file_basename(spk) ne 'maven_orb.bsp')
+        spk = spk[indx]  ; don't include the short-range predicts
+        kernels = [kernels, spk]
+      endif
     endif else begin
       kernels = mvn_spice_kernels(['STD','SCK','FRM','SPK'], trange=trange, /valid, verbose=-1)
     endelse
@@ -206,6 +217,10 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
       obj = ids.base[ids.data + i]
       cspice_scard, 0L, cover
       cspice_spkcov, maven_spk[k], obj, cover
+      
+      cspice_bodc2n, obj, name, found
+      if (~found) then name = 'UNKNOWN'
+      print,"Object : ",obj,"  ",name
 
       niv = cspice_wncard(cover)
     
@@ -215,6 +230,7 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
         tr = time_double(timstr[0:1])
         estart = [estart, tr[0]]
         estop = [estop, tr[1]]
+        print,i,j,timstr[0:1],format='(i3,2x,i3,2x,a23,3x,a23)'
         tsp = [tsp, tr]
       endfor
     endfor
@@ -271,7 +287,8 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
 ; Generate the ephemeris centered on Mars (or Phobos or Deimos) without 
 ; aberration correction
 
-  cspice_spkezr, 'MAVEN', et, frame, 'NONE', center, state, ltime
+  if (size(object,/type) eq 0) then object = 'MAVEN'
+  cspice_spkezr, object, et, frame, 'NONE', center, state, ltime
 
 ; Package the result
 

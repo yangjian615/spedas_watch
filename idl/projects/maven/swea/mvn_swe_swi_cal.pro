@@ -11,24 +11,58 @@
 ;  mvn_swe_swi_cal
 ;
 ;INPUTS:
-;       None.  Uses the current value of TRANGE_FULL to define the time range
-;       for analysis.  Calls timespan, if necessary, to set this value.
+;   None.  Uses the current value of TRANGE_FULL to define the time range
+;   for analysis.  Calls timespan, if necessary, to set this value.
 ;
 ;KEYWORDS:
-;       FINE:      Select SWIA 'fine' data for comparison with SWEA.  Default
-;                  is to use 'coarse' data.
+;   FINE:      Select SWIA 'fine' data for comparison with SWEA.  Default
+;              is to use 'coarse' data.
+;
+;   DDD:       Use SWEA 3D data for computing density.  Allows for bin
+;              masking.
+;
+;   ABINS:     When using 3D spectra, specify which anode bins to 
+;              include in the analysis: 0 = no, 1 = yes.
+;              Default = replicate(1,16)
+;
+;   DBINS:     When using 3D spectra, specify which deflection bins to
+;              include in the analysis: 0 = no, 1 = yes.
+;              Default = replicate(1,6)
+;
+;   OBINS:     When using 3D spectra, specify which solid angle bins to
+;              include in the analysis: 0 = no, 1 = yes.
+;              Default = reform(ABINS#DBINS,96).  Takes precedence over
+;              ABINS and OBINS.
+;
+;   MASK_SC:   Mask the spacecraft blockage.  This is in addition to any
+;              masking specified by the above three keywords.
+;              Default = 1 (yes).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 14:44:42 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17642 $
+; $LastChangedDate: 2016-04-25 20:09:15 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20925 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_swi_cal.pro $
 ;
 ;CREATED BY:    David L. Mitchell
 ;-
-pro mvn_swe_swi_cal, fine=fine
+pro mvn_swe_swi_cal, fine=fine, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
+                     mask_sc=mask_sc
+
+  @mvn_swe_com
 
   tplot_options, get=opt
   if (max(opt.trange_full) eq 0D) then timespan
+
+  if keyword_set(ddd) then dflg = 1 else dflg = 0
+  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+  if (n_elements(obins) ne 96) then begin
+    obins = replicate(1B, 96, 2)
+    obins[*,0] = reform(abins # dbins, 96)
+    obins[*,1] = obins[*,0]
+  endif else obins = byte(obins # [1B,1B])
+  if (size(mask_sc,/type) eq 0) then mask_sc = 1
+  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
 
 ; Load SWEA data and create summary plot
 
@@ -43,14 +77,20 @@ pro mvn_swe_swi_cal, fine=fine
 ; Load MAG data
 
   mvn_swe_addmag
-  mvn_mag_load,spice_frame='mso'
-  options,'mvn_B_1sec_mso','ytitle','B!dMSO!n [nT]'
+  if (size(swe_mag1,/type) eq 8) then begin
+    mvn_mag_load,spice_frame='mso'
+    options,'mvn_B_1sec_mso','ytitle','B!dMSO!n [nT]'
+  endif else print,"No MAG data at all!"
 
-; Calculate spacecraft potential from SWEA data
 
-  mvn_swe_sc_pot,/over
-  mvn_swe_n1d,/mom
-  get_data,'mvn_swe_spec_dens',data=den
+; Calculate spacecraft potential and electron density from SWEA data
+
+  dfoo = dflg
+  mvn_swe_sc_pot,/over,ddd=dfoo,obins=obins[*,1],mask_sc=mask_sc,fudge=1.15
+  dfoo = dflg
+  mvn_swe_n1d,/mom,ddd=dfoo,obins=obins[*,1],mask_sc=mask_sc
+  if (dflg) then dname = 'mvn_swe_3d_dens' else dname = 'mvn_swe_spec_dens'
+  get_data,dname,data=den
   store_data,'mvn_swe_n1d_over',data={x:den.x, y:den.y}
   options,'mvn_swe_n1d_over','color',6
   options,'mvn_swe_n1d_over','psym',-3

@@ -115,7 +115,7 @@ pro spp_swp_startup, spanai = spanai,$
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; SPAN-Ai Full Sweep Products
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
-     decom_routine_i = 'spp_swp_spane_product_decom2'
+     decom_routine_i = 'spp_swp_spani_product_decom2'
 
      spp_apid_data,'380'x,routine=decom_routine_i,tname='spp_spanai_ar_full_p0_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      spp_apid_data,'381'x,routine=decom_routine_i,tname='spp_spanai_ar_full_p0_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag

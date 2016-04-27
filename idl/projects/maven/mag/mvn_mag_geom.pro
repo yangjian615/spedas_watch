@@ -57,8 +57,8 @@
 ;                  close for a reasonable chance of intersection.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-12-02 11:33:25 -0800 (Wed, 02 Dec 2015) $
-; $LastChangedRevision: 19514 $
+; $LastChangedDate: 2016-04-25 20:11:20 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20926 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/mag/mvn_mag_geom.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2015-04-02
@@ -94,14 +94,14 @@ pro mvn_mag_geom, alt=alt, var=var, phobos=phobos, deimos=deimos
 
   if keyword_set(phobos) then begin
     print,"Calculating ephemeris w.r.t. Phobos ... "
-    maven_orbit_makeeph, frame='PHO', origin='Phobos', eph=pc, $
+    maven_orbit_makeeph, frame='PHO', origin='Phobos', eph=mpc, $
                          tstart=tmin, tstop=tmax, tstep=20D
-    maven_orbit_makeeph, frame='MSO', origin='Phobos', eph=ss, $
+    maven_orbit_makeeph, frame='MSO', origin='Phobos', eph=mss, $
                          tstart=tmin, tstop=tmax, tstep=20D
-    moon = {pc:pc, ss:ss}
+    moon = {pc:mpc, ss:mss}
     
-    r = sqrt(ss.x^2. + ss.y^2. + ss.z^2.)
-    store_data,'Phobos',data={x:ss.t, y:r}
+    r = sqrt(mss.x^2. + mss.y^2. + mss.z^2.)
+    store_data,'Phobos',data={x:mss.t, y:r}
     options,'Phobos','ytitle','Phobos Range!c(km)'
     ylim,'Phobos',0,0,1
 
@@ -116,14 +116,14 @@ pro mvn_mag_geom, alt=alt, var=var, phobos=phobos, deimos=deimos
 
   if (size(deimos,/type) eq 8) then begin
     print,"Calculating ephemeris w.r.t. Deimos ... "
-    maven_orbit_makeeph, frame='DEI', origin='Deimos', eph=pc, $
+    maven_orbit_makeeph, frame='DEI', origin='Deimos', eph=mpc, $
                          tstart=tmin, tstop=tmax, tstep=20D
-    maven_orbit_makeeph, frame='MSO', origin='Deimos', eph=ss, $
+    maven_orbit_makeeph, frame='MSO', origin='Deimos', eph=mss, $
                          tstart=tmin, tstop=tmax, tstep=20D
-    moon = {pc:pc, ss:ss}
+    moon = {pc:mpc, ss:mss}
     
-    r = sqrt(ss.x^2. + ss.y^2. + ss.z^2.)
-    store_data,'Deimos',data={x:ss.t, y:r}
+    r = sqrt(mss.x^2. + mss.y^2. + mss.z^2.)
+    store_data,'Deimos',data={x:mss.t, y:r}
     options,'Deimos','ytitle','Deimos Range!c(km)'
     ylim,'Deimos',0,0,1
 

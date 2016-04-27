@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2016-04-25 20:07:01 -0700 (Mon, 25 Apr 2016) $
+; $LastChangedRevision: 20924 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_stitch.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -38,6 +38,9 @@ pro swe_3d_stitch
 
     e0 = a0.e0                     ; frame counter
     istart = where(e0 eq 0, n3d)   ; indices of lead frames
+
+    tframe = a0.time               ; time tags of all frames
+    tstart = tframe[istart]        ; time tags of lead frames
   
     swe_3d = replicate(ddd, n3d)
     swe_3d.time = a0[istart].time
@@ -49,17 +52,21 @@ pro swe_3d_stitch
     swe_3d.n_e = swe_ne[swe_3d.group]
 
     nframes = swe_3d.n_e/16        ; number of A0 packets per 3D spectrum
-
+    
     for i=0L,(n3d-1L) do begin
       if ((istart[i]+nframes[i]) le npkt) then begin
-        for j=0,(nframes[i]-1) do begin
-          if (e0[istart[i]+j] eq j) then begin
-            k = j*16
-            swe_3d[i].data[*,k:(k+15)] = a0[istart[i]+j].data
-            swe_3d[i].var[*,k:(k+15)] = a0[istart[i]+j].var
-          endif else print,"A0 frame out of order: ",istart[i] + j
-        endfor
-      endif else print,"A0 not enough frames left: ",istart[i]
+        dt = where(tframe[istart[i]:(istart[i]+nframes[i]-1)] ne tstart[i],count)
+        tmsg = time_string(tstart[i])
+        if (count eq 0L) then begin
+          for j=0,(nframes[i]-1) do begin
+            if (e0[istart[i]+j] eq j) then begin
+              k = j*16
+              swe_3d[i].data[*,k:(k+15)] = a0[istart[i]+j].data
+              swe_3d[i].var[*,k:(k+15)] = a0[istart[i]+j].var
+            endif else print,"A0 frame out of order: ",istart[i] + j,"  ",j,"  ",nframes[i],"  ",tmsg
+          endfor
+        endif else print,"A0 frames have different time tags: ",istart[i],"  ",tmsg
+      endif else print,"A0 not enough frames left: ",istart[i],"  ",tmsg
     endfor
 
   endif
@@ -87,16 +94,17 @@ pro swe_3d_stitch
     for i=0L,(n3d-1L) do begin
       if ((istart[i]+nframes[i]) le npkt) then begin
         dt = where(tframe[istart[i]:(istart[i]+nframes[i]-1)] ne tstart[i],count)
+        tmsg = time_string(tstart[i])
         if (count eq 0L) then begin
           for j=0,(nframes[i]-1) do begin
             if (e0[istart[i]+j] eq j) then begin
               k = j*16
               swe_3d_arc[i].data[*,k:(k+15)] = a1[istart[i]+j].data
               swe_3d_arc[i].var[*,k:(k+15)] = a1[istart[i]+j].var
-            endif else print,"A1 frame out of order: ",istart[i] + j,"  ",j,"  ",nframes[i]
+            endif else print,"A1 frame out of order: ",istart[i] + j,"  ",j,"  ",nframes[i],"  ",tmsg
           endfor
-        endif else print,"A1 frames have different time tags: ",istart[i],"  ",time_string(tstart[i])
-      endif else print,"A1 not enough frames left: ",istart[i]
+        endif else print,"A1 frames have different time tags: ",istart[i],"  ",tmsg
+      endif else print,"A1 not enough frames left: ",istart[i],"  ",tmsg
     endfor
 
   endif
