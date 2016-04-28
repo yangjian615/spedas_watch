@@ -50,10 +50,21 @@
 ;                 uses reconstructed SPK kernels, as available, then predicts.
 ;                 This is the default.  OBSOLETE.
 ;
-;       EXTENDED: Load the long-term predict ephemeris (out to Nov. 2018).
+;       SPK:      String array with an even number of elements >= 2 containing the 
+;                 names of the MSO and GEO save/restore ephemerides to use instead 
+;                 of the standard set.  Multiple MSO and GEO files can be specified,
+;                 but each MSO file must have a corresponding GEO file.  (These are
+;                 made in pairs - see maven_orbit_makeeph).
+;
+;                 Used for long range predict and special events kernels.  Replaces
+;                 keywords EXTENDED and HIRES.
+;
+;       EXTENDED: Load the long-term predict ephemeris (out to 2019-01-01).  Still
+;                 works but might be phased out.
 ;
 ;       HIRES:    Only works when EXTENDED is set.  If set, load the 20-sec ephemeris;
-;                 otherwise, load the 60-sec ephemeris.
+;                 otherwise, load the 60-sec ephemeris.  OBSOLETE - this keyword now
+;                 has no effect at all.
 ;
 ;       LOADONLY: Create the TPLOT variables, but do not plot.
 ;
@@ -86,8 +97,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-04-25 20:03:24 -0700 (Mon, 25 Apr 2016) $
-; $LastChangedRevision: 20922 $
+; $LastChangedDate: 2016-04-26 19:36:47 -0700 (Tue, 26 Apr 2016) $
+; $LastChangedRevision: 20932 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -95,7 +106,7 @@
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
-                       colors=colors, reset_trange=reset_trange, nocrop=nocrop, em2=em2
+                       colors=colors, reset_trange=reset_trange, nocrop=nocrop, spk=spk
 
   @maven_orbit_common
 
@@ -117,36 +128,35 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   if keyword_set(ellip) then eflg = 1 else eflg = 0
   if keyword_set(hires) then res = '20sec' else res = '60sec'
 
-  cflg = 1
   mname = 'maven_spacecraft_mso_??????' + '.sav'
   gname = 'maven_spacecraft_geo_??????' + '.sav'
-  
-  if keyword_set(extended) then begin
-    cflg = 0
-    mname = 'maven_spacecraft_mso_ref_' + res + '.sav'
-    gname = 'maven_spacecraft_geo_ref_' + res + '.sav'
-    if (size(extended,/type) eq 7) then begin
-      i = strpos(extended,'mso')
-      j = where(i ge 0, count)
-      if (count gt 0L) then mname = extended[j[0]]
-      i = strpos(extended,'geo')
-      j = where(i ge 0, count)
-      if (count gt 0L) then gname = extended[j[0]]
+
+; Check for non-standard input ephemerides
+
+  if (size(spk,/type) eq 7) then begin
+    indx = where(strmatch(spk,"*_mso_*") eq 1, mfiles)
+    if (mfiles eq 0) then begin
+      print, "Can't find MSO ephemeris."
+      return
+    endif
+    mname = spk[indx]
+
+    indx = where(strmatch(spk,"*_geo_*") eq 1, gfiles)
+    if (gfiles eq 0) then begin
+      print, "Can't find GEO ephemeris."
+      return
+    endif
+    gname = spk[indx]
+    
+    if (mfiles ne gfiles) then begin
+      print, "MSO and GEO ephemerides do not correspond."
+      return
     endif
   endif
-
-  if keyword_set(em2) then begin
-    cflg = 0
-    mname = 'maven_spacecraft_mso_em2_' + res + '.sav'
-    gname = 'maven_spacecraft_geo_em2_' + res + '.sav'
-    if (size(em2,/type) eq 7) then begin
-      i = strpos(em2,'mso')
-      j = where(i ge 0, count)
-      if (count gt 0L) then mname = em2[j[0]]
-      i = strpos(em2,'geo')
-      j = where(i ge 0, count)
-      if (count gt 0L) then gname = em2[j[0]]
-    endif
+  
+  if keyword_set(extended) then begin
+    mname = 'maven_spacecraft_mso_predict.sav'
+    gname = 'maven_spacecraft_geo_predict.sav'
   endif
 
   if (n_elements(timecrop) gt 1L) then begin

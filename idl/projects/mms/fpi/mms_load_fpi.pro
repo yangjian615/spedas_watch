@@ -11,18 +11,19 @@
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. 
 ;                       If no probe is specified the default is probe '3'
-;         level:        indicates level of data processing. fpi levels currently include 'sitl', 'ql', 'l1b'. 
+;         level:        indicates level of data processing. FPI levels currently include 'l2', 
+;                       'l1b', 'sitl', 'ql'. 
 ;         datatype:     valid datatypes are:
 ;                         Quicklook: ['des', 'dis'] 
 ;                         SITL: '' (none; loads both electron and ion data from single CDF)
-;                         L1b: ['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
-;         data_rate:    instrument data rates for MMS fpi include 'fast'. 
+;                         L1b/L2: ['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
+;         data_rate:    instrument data rates for MMS FPI include 'fast', 'brst'. 
 ;         local_data_dir: local directory to store the CDF files; should be set if
 ;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         source:       specifies a different system variable. By default the MMS mission system 
 ;                       variable is !mms
 ;         get_support_data: load support data (defined by support_data attribute in the CDF)
-;         tplotnames:   names for tplot variables
+;         tplotnames:   returns a list of the names of the tplot variables loaded by the load routine
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
 ;                       using  this load routine from a terminal without an X server runningdo 
 ;                       not set colors
@@ -40,33 +41,32 @@
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
 ;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         center_measurement: set this keyword to shift the data to the center of the measurement interval
+;                       using the DELTA_PLUS_VAR/DELTA_MINUS_VAR attributes
 ; 
 ; 
 ; EXAMPLE:
-;     See mms_load_fpi_crib, mms_load_fpi_burst_crib, and mms_load_fpi_crib_qlplots
-;     for usage examples
-; 
 ;     MMS>  timespan, '2015-09-19', 1, /day
-;     load fpi burst mode data
+;     load FPI burst mode data
 ;     MMS>  mms_load_fpi, probes = ['1'], level='l2', data_rate='brst', datatype='des-moms'
 ;     
-;     load FS data
+;     load FPI FS data
 ;     MMS>  mms_load_fpi, probes='3', level='l2', data_rate='fast', datatype='des-moms'
+;     
+;     See mms_load_fpi_crib, mms_load_fpi_burst_crib, and mms_load_fpi_crib_qlplots
+;     for usage examples
 ;
 ; NOTES:
-;     Have questions regarding this load routine, or its usage?
-;          Send me an email --> egrimes@igpp.ucla.edu
-;          
-;          
 ;     Please see the notes at:
 ;     
 ;        https://lasp.colorado.edu/galaxy/display/mms/FPI+Release+Notes
 ;        
-;     for more information
+;     Have questions regarding this load routine, or its usage?
+;          Send me an email --> egrimes@igpp.ucla.edu
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-16 15:13:03 -0700 (Wed, 16 Mar 2016) $
-;$LastChangedRevision: 20480 $
+;$LastChangedDate: 2016-04-27 15:53:14 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20951 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 

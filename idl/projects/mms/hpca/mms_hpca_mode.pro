@@ -18,9 +18,9 @@
 ;             to be modified to handle that mode as well. 
 ;             
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-09-08 15:07:39 -0700 (Tue, 08 Sep 2015) $
-; $LastChangedRevision: 18731 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/mms_quality_bar.pro $
+; $LastChangedDate: 2016-04-27 12:47:46 -0700 (Wed, 27 Apr 2016) $
+; $LastChangedRevision: 20937 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_mode.pro $
 ;-
 
 

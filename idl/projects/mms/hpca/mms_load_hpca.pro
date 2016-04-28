@@ -11,67 +11,67 @@
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. 
 ;                       If no probe is specified the default is '1'
-;         level:        indicates level of data processing. levels include 'l1b', 'sitl'. 
-;                       the default if no level is specified is 'l1b'.
-;         datatype:     data types include 
-;                       ['bkgd_corr', 'count_rate', 'flux', 'moments', 'rf_corr', 'vel_dist'].
-;                       if no value is given the default is 'rf_corr'.
-;         data_rate:    instrument data rates include 'brst' 'srvy'. the default is 'srvy'.
-;         local_data_dir: local directory to store the CDF files; should be set if
-;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
-;         varformat:    format of the variable names in the CDF to load. the default 
-;                       varformat is '*_RF_corrected'
-;         source:       specifies a different system variable. By default the MMS mission system 
+;         level:        indicates level of data processing. levels include 'l2', 'l1b', 'sitl'. 
+;                       the default if no level is specified is 'L2'.
+;         datatype:     data types include (note that not all levels have all datatypes):
+;                       L2: ['ion', 'moments']
+;                       sitl, l1b: ['bkgd_corr', 'count_rate', 'flux', 'moments', 'rf_corr', 'vel_dist'].
+;                       if no value is given the default is 'moments'.
+;         data_rate:    instrument data rates include 'brst' and 'srvy'; the default is 'srvy'.
+;         local_data_dir: local directory to store the CDF files
+;         varformat:    format of the variable names in the CDF to load
+;         source:       specifies a different system variable. By default the MMS system 
 ;                       variable is !mms
-;         get_support_data: load support data (defined by support_data attribute in the CDF)
-;         tplotnames:   names for tplot variables
-;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this 
-;                       load routine from a terminal without an X server runningdo not set colors
+;         get_support_data: load support data (defined by VAR_TYPE="support_data" in the CDF)
+;         tplotnames:   returns a list of the names of the tplot variables loaded by the load routine
+;         no_color_setup: don't setup graphics configuration; this keyword is required when you're using this 
+;                       load routine from a terminal without an X server running
 ;         time_clip:    clip the data to the requested time range; note that if you do not use this 
 ;                       keyword you may load a longer time range than requested
 ;         no_update:    set this flag to preserve the original data. if not set and newer data is 
-;                       found the existing data will be overwritten
-;         suffix:       appends a suffix to the end of the tplot variable name. this is useful for
-;                       preserving original tplot variable.
+;                       found, the existing data will be overwritten
+;         suffix:       appends a suffix to the end of the tplot variable names
 ;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
 ;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
-;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public data)
+;         center_measurement: set this keyword to shift the data to the center of the measurement interval 
+;                       using the DELTA_PLUS_VAR/DELTA_MINUS_VAR attributes
 ; 
-; OUTPUT:
 ; 
 ; EXAMPLE:
-;     See crib sheet routines mms_load_hpca_crib, mms_load_hpca_brst_crib, and mms_load_hpca_crib_qlplots
-;     for usage examples
-;    
-;     load hpca data examples (burst mode)
-;     MMS>  mms_load_hpca, probes='1',  trange=['2015-09-03', '2015-09-04'], $
-;             datatype='moments', data_rate='brst'
-;     MMS>  mms_load_hpca, probes='1', trange=['2015-09-03', '2015-09-04'], $
-;             datatype='rf_corr', data_rate='brst'
+;     Simple HPCA example:
+;     MMS>  mms_load_hpca, probes='1', trange=['2015-12-15', '2015-12-16'], datatype='ion'
 ;
 ;     MMS>  mms_hpca_calc_anodes, fov=[0, 360] ; sum over the full field of view (FoV)
-;     MMS>  tplot, 'mms1_hpca_hplus_RF_corrected_elev_0-360' ; plot the H+ spectra (full FoV)
-;             
+;     MMS>  tplot, 'mms1_hpca_hplus_flux_elev_0-360' ; plot the H+ spectra (full FoV)
+;     
+;     MMS> mms_hpca_spin_sum, probe='1'
+;     MMS> tplot, ['mms1_hpca_hplus_flux_elev_0-360_spin', 'mms1_hpca_hplus_flux_elev_0-360']
+;     
+;     See crib sheets: mms_load_hpca_crib, mms_load_hpca_burst_crib, and mms_load_hpca_crib_qlplots
+;     for more usage examples
 ;
 ; 
 ; NOTES:
+;     The HPCA Data Products Guide can be found at:
+;     
+;     https://lasp.colorado.edu/galaxy/display/mms/HPCA+Data+Products+Guide
+;     
 ;     Have questions regarding this load routine, or its usage?
 ;          Send me an email --> egrimes@igpp.ucla.edu
 ;          
 ;     When loading HPCA energy spectra with this routine, all of the data are loaded in 
 ;        initially. To plot a meaningful spectra, the user must call mms_hpca_calc_anodes
-;        to sum the data over the look directions for the instrument. This will append
+;        to sum/average the data over the look directions for the instrument. This will append
 ;        the field of view (or anodes) used in the calculation to the name of the tplot variable.
-;        See the example above, or in the crib sheets. 
 ; 
-;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-13 15:52:02 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20810 $
+;$LastChangedDate: 2016-04-27 13:30:07 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20942 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 

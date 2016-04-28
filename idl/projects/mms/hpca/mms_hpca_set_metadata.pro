@@ -7,12 +7,14 @@
 ; 
 ; KEYWORDS:
 ;         prefix: prefix for names of the tplot variables, typically 'mms#' where # is the S/C number
-;         fov: field of view of the instrument, for setting the title in spectra
+;         fov: field of view of the summed/averaged counts/fluxes
+;         anodes: anodes of the summed/averaged counts/fluxes (shouldn't be used with fov keyword)
+;         suffix: suffix of the summed/averaged counts/fluxes
 ; 
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 14:17:49 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20709 $
+; $LastChangedDate: 2016-04-27 12:44:59 -0700 (Wed, 27 Apr 2016) $
+; $LastChangedRevision: 20935 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_set_metadata.pro $
 ;-
 

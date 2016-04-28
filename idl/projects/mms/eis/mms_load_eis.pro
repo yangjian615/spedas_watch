@@ -11,11 +11,11 @@
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4'].
 ;                       if no probe is specified the default is probe '1'
-;         level:        indicates level of data processing. levels include 'l1a', 'l1b'. 
+;         level:        indicates level of data processing. levels include 'l2', 'l1b' and 'l1a'
 ;                       The default if no level is specified is 'l1b'
-;         datatype:     eis data types include ['electronenergy', 'extof', 'partenergy', 'phxtof'].
+;         datatype:     EIS data types include 'extof', 'phxtof', and 'electronenergy'.
 ;                       If no value is given the default is 'extof'.
-;         data_rate:    instrument data rates for eis include 'brst' 'srvy'. The
+;         data_rate:    instrument data rates for EIS include 'brst' 'srvy'. The
 ;                       default is 'srvy'.
 ;         data_units:   desired units for data. for eis units are ['flux', 'cps', 'counts']. 
 ;                       The default is 'flux'.
@@ -23,12 +23,10 @@
 ;                       you're on *nix or OSX, the default currently assumes Windows (c:\data\mms\)
 ;         source:       specifies a different system variable. By default the MMS mission 
 ;                       system variable is !mms
-;         get_support_data: not yet implemented. when set this routine will load any support data
-;                       (support data is specified in the CDF file)
-;         tplotnames:   names for tplot variables
+;         get_support_data: load support data (defined by VAR_TYPE="support_data" in the CDF)
+;         tplotnames:   returns a list of the names of the tplot variables loaded by the load routine
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
-;                       using this load routine from a terminal without an X server runningdo 
-;                       not set colors
+;                       using this load routine from a terminal without an X server running
 ;         time_clip:    clip the data to the requested time range; note that if you do not use 
 ;                       this keyword you may load a longer time range than requested
 ;         no_update:    set this flag to preserve the original data. if not set and newer 
@@ -39,16 +37,14 @@
 ;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
 ;                       that should be loaded into tplot variables
 ;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
-;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
+;         latest_version: only grab the latest CDF version in the requested time interval
+;                       (e.g., /latest_version)
+;         min_version:  specify a minimum CDF version # to load
+;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public data)
 ;
 ; 
-; OUTPUT:
-; 
-; 
 ; EXAMPLE:
-;     See mms_load_eis_crib.pro, mms_load_eis_burst_crib.pro, 
-;         mms_load_eis_crib_qlplots.pro, and mms_load_data_crib.pro for usage examples
-; 
 ;     load ExTOF burst data:
 ;     MMS1> mms_load_eis, probes='1', trange=['2015-12-23', '2015-12-24'],  datatype='extof', data_rate='brst', level='l2'
 ;            
@@ -57,6 +53,10 @@
 ;     calculate the PHxTOF PAD for protons
 ;     MMS1> mms_eis_pad, probe='1', species='ion', datatype='phxtof', ion_type='proton', data_units='flux', energy=[0, 30], level='l2'
 ;
+;     See mms_load_eis_crib.pro, mms_load_eis_burst_crib.pro,
+;         and mms_load_eis_crib_qlplots.pro for usage examples
+;         
+;         
 ; NOTES:
 ;     Please see the notes in mms_load_data for more information 
 ;     
@@ -73,8 +73,8 @@
 ;     4/20/2016  - egrimes added omni-directional spectra (without spin averaging)
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-20 09:24:15 -0700 (Wed, 20 Apr 2016) $
-;$LastChangedRevision: 20861 $
+;$LastChangedDate: 2016-04-27 15:35:07 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20947 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 

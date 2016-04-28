@@ -3,23 +3,32 @@
 ;         mms_hpca_spin_sum
 ;
 ; PURPOSE:
-;         Calculates spin-summed fluxes for the HPCA instrument
+;         Calculates spin-summed fluxes and counts for the HPCA instrument
 ;
 ; KEYWORDS:
-;
+;         probe: observatory # to spin sum the spectra for (e.g., probe='1')
+;         datatype: type of data to spin sum; potential options include:
+;             flux, count_rate, RF_corrected, bkgd_corrected, norm_counts
+;         fov: field of view of the spectra created with mms_hpca_calc_anodes; 
+;             default is [0, 360]
+;         tplotnames: list of tplot variable names already loaded; should
+;             include the HPCA spectra variables you would like to spin-sum;
+;             if not provided, uses tnames() by default. 
+;         
 ; OUTPUT:
-;
+;         Creates tplot variables containing the spin summed fluxes and counts; 
+;         the new variables have the suffix "_spin" appended to their names
 ;
 ; NOTES:
-;     Must have support data loaded with mms_load_hpca, /get_support_data
-;        tplot variable required is: mms#_hpca_start_azimuth
-;     Still under developement, egrimes, 1/29/2016
+;         Must have HPCA data loaded and summed/averaged over the FoV (or anodes); e.g., 
+;         you must have already called mms_load_hpca and mms_hpca_calc_anodes prior to 
+;         calling this routine. 
 ;     
 ;     
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-23 12:30:53 -0700 (Wed, 23 Mar 2016) $
-;$LastChangedRevision: 20560 $
+;$LastChangedDate: 2016-04-27 13:29:43 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20941 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_spin_sum.pro $
 ;-
 
@@ -58,7 +67,7 @@ pro mms_hpca_spin_sum, probe = probe, datatype=datatype, species=species, fov=fo
                   ;varname = 'mms'+probe+'_hpca_'+species[species_idx]+'_'+datatype+'_elev_'+fov[0]+'-'+fov[1]
                   varname = tplotnames[vars_idx]
                   
-                  get_data, varname, data=hpca_data
+                  get_data, varname, data=hpca_data, dlimits=hpca_dl, limits=hpca_l
         
                   if ~is_struct(hpca_data) then begin
                     dprint, dlevel = 0, 'Error, couldn''t load data from the variable: ' + varname
@@ -73,7 +82,7 @@ pro mms_hpca_spin_sum, probe = probe, datatype=datatype, species=species, fov=fo
         
                   new_varname = varname+'_spin'
         
-                  store_data, new_varname, data={x: start_az.X[spin_starts], y: spin_summed, v: hpca_data.V}
+                  store_data, new_varname, data={x: start_az.X[spin_starts], y: spin_summed, v: hpca_data.V}, dlimits=hpca_dl, limits=hpca_l
                   options, new_varname, spec=1
                   ylim, new_varname, 0, 0, 1
                   zlim, new_varname, 0, 0, 1

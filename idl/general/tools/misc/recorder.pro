@@ -8,8 +8,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-02-25 11:49:59 -0800 (Thu, 25 Feb 2016) $
-; $LastChangedRevision: 20183 $
+; $LastChangedDate: 2016-04-27 14:39:44 -0700 (Wed, 27 Apr 2016) $
+; $LastChangedRevision: 20946 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -31,7 +31,7 @@ PRO recorder_event, ev   ; recorder
             for i=0L,n_elements(buffer)-1 do begin                       ; Read from stream one byte (or value) at a time 
                 flag = file_poll_input(info.hfp,timeout=0)
                 if flag eq 0 then break
-                if eof(info.hfp) then begin
+                if eof(info.hfp) then begin            ; This should be fixed so that it does not crash when disconnect by peer.
                     widget_control,wids.host_text,get_value=hostname
                     widget_control,wids.host_port,get_value=hostport
                     dprint,dlevel=dlevel-1,info.title_num+'Connection to Host: '+hostname[0]+':'+hostport[0]+' broken. ',i
@@ -45,7 +45,7 @@ PRO recorder_event, ev   ; recorder
               buffer = buffer[0:i-1]
               if keyword_set(info.dfp) then writeu,info.dfp, buffer  ;swap_endian(buffer,/swap_if_little_endian)
               flush,info.dfp
-              msg = string(/print,i,buffer[0:(i < 64)-1],format='(i5 ," bytes: ", 128(" ",Z02))')
+              msg = string(/print,i,buffer[0:(i < 64)-1],format='(i6 ," bytes: ", 128(" ",Z02))')
               msg = time_string(info.time_received,tformat='hh:mm:ss - ',local=localtime) + msg
             endif else begin
               dummy = temporary(buffer)    ;           buffer=0
@@ -208,7 +208,8 @@ PRO exec_proc_template,buffer,info=info
     if n ne 0 then  begin
     if debug(2) then begin
       dprint,time_string(info.time_received,prec=3) +''+ strtrim(n_elements(buffer))
-      hexprint,buffer    ;,swap_endian(uint(buffer,0,n_elements(buffer)/2))
+      n = n_elements(buffer) < 512
+      hexprint,buffer[0:n-1]    ;,swap_endian(uint(buffer,0,n_elements(buffer)/2))
     endif
     endif else print,format='(".",$)'
 

@@ -48,11 +48,11 @@
 ; OUTPUT:
 ;  
 ; EXAMPLE:
-;     See crib sheet mms_load_feeps_crib.pro for usage examples
-;
 ;     load electron data (srvy mode)
-;     MMS1> mms_load_feeps, probes='1', trange=['2015-08-15', '2015-08-16'], datatype='electron'
-;     MMS1> mms_feeps_pad,  probe='1', datatype='electron'
+;     MMS> mms_load_feeps, probes='1', trange=['2015-12-15', '2015-12-16'], datatype='electron'
+;     MMS> mms_feeps_pad,  probe='1', datatype='electron'
+;     
+;     See crib sheet mms_load_feeps_crib.pro for usage examples
 ;     
 ; NOTES:
 ;     Have questions regarding this load routine, or its usage?
@@ -71,8 +71,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-07 10:33:56 -0700 (Thu, 07 Apr 2016) $
-;$LastChangedRevision: 20742 $
+;$LastChangedDate: 2016-04-27 16:03:31 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20955 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $

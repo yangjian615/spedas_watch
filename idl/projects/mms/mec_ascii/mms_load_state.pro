@@ -46,6 +46,7 @@
 ;                     load routine from a terminal without an X server runningdo not set colors
 ;         suffix:     appends a suffix to the end of the tplot variable name. this is useful for 
 ;                     preserving original tplot variable. 
+;         ascii:      force loading the state data from the ASCII files (will not use the MEC files)
 ;
 ; OUTPUT: tplot variables
 ;
@@ -91,9 +92,9 @@
 ;        what the level keyword is set to. 
 ;        
 ;         
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2016-03-30 09:41:24 -0700 (Wed, 30 Mar 2016) $
-;$LastChangedRevision: 20632 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-04-27 15:54:26 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20952 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -102,7 +103,7 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     remote_data_dir = remote_data_dir, attitude_only=attitude_only, $
     ephemeris_only = ephemeris_only, no_download=no_download, login_info=login_info, $
     tplotnames = tplotnames, pred_or_def=pred_or_def, no_color_setup = no_color_setup, $
-    suffix = suffix
+    suffix = suffix, ascii = ascii
 
     ; define probe, product, type, coordinate, and unit names
     p_names = ['1', '2', '3', '4']
@@ -199,6 +200,8 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
        eph_idx = where(strpos(datatypes, 'spin') EQ -1, neph)
      endif
 
+    if keyword_set(ascii) then mec_flag = 0 ; user requested ASCII files
+    
     ; get state data for each probe and data type (def or pred) 
     for i = 0, n_elements(probes)-1 do begin      
        for j = 0, n_elements(level)-1 do begin

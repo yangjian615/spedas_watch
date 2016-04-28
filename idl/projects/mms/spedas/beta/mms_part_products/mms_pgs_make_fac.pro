@@ -107,8 +107,8 @@ end
 ;  If an error occurs fac_output will be undfined on return
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-10 19:03:17 -0800 (Wed, 10 Feb 2016) $
-;$LastChangedRevision: 19949 $
+;$LastChangedDate: 2016-04-27 14:25:09 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20943 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_make_fac.pro $
 ;-
 pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
@@ -132,6 +132,13 @@ pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
     return
   endif              
   
+  if undefined(mag_tvar_in) || undefined(pos_tvar_in) then begin
+    dprint, 'Magnetic field and/or spacecraft position data not specified.  '+ $
+            'Please use MAG_NAME and POS_NAME keywords.', $
+            dlevel=0, display_object=display_object
+    return
+  endif
+
   ;--------------------------------------------------------------------       
   ;sanitize
   ;--------------------------------------------------------------------

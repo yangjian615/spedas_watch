@@ -8,8 +8,8 @@
 ;  spectrograms and moments from level 1 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-07 15:45:54 -0700 (Thu, 07 Apr 2016) $
-;$LastChangedRevision: 20747 $
+;$LastChangedDate: 2016-04-27 15:45:30 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20948 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib_l1.pro $
 ;
 ;-
@@ -49,12 +49,17 @@
   ; the distributions, these calculations are currently missing several important
   ; components, including photoelectron removal and S/C potential corrections.
   ; The official moments released by the team include these, and are the scientific
-  ; products you should use in your analysis; see mms_load_fpi_crib to see how to load
-  ; the FPI moments released by the team (des-moms, dis-moms datatypes)
-  ; tplot, name+'_'+['density','avgtemp']
+  ; products you should use in your analysis
+  ;
+  ; tplot, name+'_'+['density', 'avgtemp']
   ; stop
+  ;
+  ;  The following example shows how to load the FPI moments
+  ;  released by the team (des-moms, dis-moms datatypes)
+  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-moms'
+  tplot, 'mms' + probe + '_d'+species+'s_numberDensity'
 
-
+  stop
 
 ;===================================
 ; HPCA - L1  (non-public data)

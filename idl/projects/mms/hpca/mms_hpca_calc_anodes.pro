@@ -3,25 +3,30 @@
 ;         mms_hpca_calc_anodes
 ;
 ; PURPOSE:
-;         Sums over anodes (or a given field of view) for HPCA ion data
+;         Sums/averages over anodes (or a given field of view) for HPCA ion data
 ;
 ; KEYWORDS:
 ;         tplotnames: names of tplot variables to pick the HPCA 
 ;             ion spectra out of; will use tnames() if this is not set
-;         fov: field of view to sum over
-;         anodes: anodes to sum over (can not be set at the same time as fov)
+;         fov: field of view to sum/avg over
+;         anodes: anodes to sum/avg over (can not be set at the same time as fov)
 ;         probe: MMS probe # 
-;
-; OUTPUT:
+;         suffix: if a suffix is used in the call to mms_load_hpca, you must specify it here
 ;
 ;
 ; EXAMPLE:
-;
+;         See mms_load_hpca_crib for usage examples
+;         
 ; NOTES:
+;       This routine sums over anodes (or FoV) for products in units of counts, e.g., 
+;           *_count_rate, *_RF_corrected, *_bkgd_corrected, *_norm_counts
+;       
+;       and averages products in units of flux:
+;           *_flux
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-13 15:23:28 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20808 $
+;$LastChangedDate: 2016-04-27 12:44:59 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20935 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_calc_anodes.pro $
 ;-
 function mms_hpca_elevations

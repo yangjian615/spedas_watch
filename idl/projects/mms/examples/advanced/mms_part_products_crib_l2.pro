@@ -8,8 +8,8 @@
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-07 15:45:54 -0700 (Thu, 07 Apr 2016) $
-;$LastChangedRevision: 20747 $
+;$LastChangedDate: 2016-04-27 15:45:30 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20948 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib_l2.pro $
 ;
 ;-
@@ -64,19 +64,23 @@
   tlimit,trange
   
   stop
-  
+
+  ;plot moments
   ; !!!!!! words of caution <------ by egrimes, 4/7/2016:
   ; While you can use mms_part_products to generate particle moments for FPI from
   ; the distributions, these calculations are currently missing several important
   ; components, including photoelectron removal and S/C potential corrections.
   ; The official moments released by the team include these, and are the scientific
-  ; products you should use in your analysis; see mms_load_fpi_crib to see how to load
-  ; the FPI moments released by the team (des-moms, dis-moms datatypes)
-  ;plot moments
- ; tplot, name+'_'+['density', 'avgtemp']
- ; stop
-
-
+  ; products you should use in your analysis
+  ; 
+  ; tplot, name+'_'+['density', 'avgtemp']
+  ; stop
+  ; 
+  ;  The following example shows how to load the FPI moments 
+  ;  released by the team (des-moms, dis-moms datatypes)
+  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-moms'
+  tplot, 'mms' + probe + '_d'+species+'s_numberdensity_dbcs_brst'
+  stop
 
 ;==========================================================
 ; HPCA - L2

@@ -1,13 +1,17 @@
 ;+
-;Procedure:
+; Procedure:
 ;  mms_feeps_split_integral_ch
 ;
-;Purpose:
-;    this function splits the last integral channel from the FEEPS spectra
+; Purpose:
+;    this procedure splits the last integral channel from the FEEPS spectra, 
+;    creating 2 new tplot variables:
+;    
+;       [original variable]_clean - spectra with the integral channel removed
+;       [original variable]_500keV_int - the integral channel that was removed
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-13 13:58:09 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20805 $
+;$LastChangedDate: 2016-04-27 16:10:58 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20956 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 

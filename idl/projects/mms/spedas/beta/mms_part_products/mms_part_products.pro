@@ -94,8 +94,8 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-04-22 16:42:39 -0700 (Fri, 22 Apr 2016) $
-;$LastChangedRevision: 20904 $
+;$LastChangedDate: 2016-04-27 14:25:09 -0700 (Wed, 27 Apr 2016) $
+;$LastChangedRevision: 20943 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -148,6 +148,10 @@ pro mms_part_products, $
   twin = systime(/sec)
   error = 1
   
+  if ~is_string(in_tvarname) then begin
+    dprint, dlevel=0, 'No input data, please specify tplot variable'
+    return
+  endif
   
   if ~undefined(erange) then begin
     dprint,'ERROR: erange= keyword deprecated.  Using "energy=" instead.',dlevel=1

@@ -1,12 +1,22 @@
 ;+
 ; MMS HPCA crib sheet
 ; 
+; This crib sheet shows basic usage of the HPCA routines in SPEDAS; it shows how to 
+;   load the data and creates the following figures:
+;       1) H+, O+, He+ number density
+;       2) H+, O+ and He+ scalar temperature
+;       3) H+, O+ and He+ bulk velocity
+;       4) H+, O+, He+, He++ flux averaged over full FoV (0-360)
+;       5) H+, O+, He+, He++ flux averaged anodes 0 and 15
+;       6) H+, O+, He+, He++ spin summed flux averaged over full FoV 
+; 
+; 
 ; do you have suggestions for this crib sheet? 
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 12:00:15 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20700 $
+; $LastChangedDate: 2016-04-27 14:35:06 -0700 (Wed, 27 Apr 2016) $
+; $LastChangedRevision: 20945 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_hpca_crib.pro $
 ;-
 
@@ -22,24 +32,22 @@ tplot, ['mms1_hpca_hplus_number_density', $
         'mms1_hpca_heplus_number_density']
 stop
 
-window, 1
 ; show H+, O+ and He+ temperature
 tplot, ['mms1_hpca_hplus_scalar_temperature', $
         'mms1_hpca_oplus_scalar_temperature', $
-        'mms1_hpca_heplus_scalar_temperature'], window=1
+        'mms1_hpca_heplus_scalar_temperature']
 stop
 
-window, 2
-tplot_options, 'colors', [2, 4, 6]
 ; show H+, O+ and He+ flow velocity
 tplot, ['mms1_hpca_hplus_ion_bulk_velocity', $
         'mms1_hpca_oplus_ion_bulk_velocity', $
-        'mms1_hpca_heplus_ion_bulk_velocity'], window=2
+        'mms1_hpca_heplus_ion_bulk_velocity']
 stop
+
 ; load the ion data
 mms_load_hpca, probes='1', trange=['2015-09-1', '2015-09-02'], datatype='ion', level='l2', data_rate='srvy'
 
-; sum over anodes for the full field of view (0-360)
+; average the flux over the full field of view (0-360)
 mms_hpca_calc_anodes, fov=[0, 360], probe='1'
 flux_elev = ['mms1_hpca_hplus_flux_elev_0-360', $
              'mms1_hpca_oplus_flux_elev_0-360', $
@@ -47,11 +55,10 @@ flux_elev = ['mms1_hpca_hplus_flux_elev_0-360', $
              'mms1_hpca_heplusplus_flux_elev_0-360']
                 
 ; show spectra for H+, O+ and He+, He++
-window, 3, ysize=600
-tplot, flux_elev, window=3
+tplot, flux_elev
 stop
 
-; repeat above, sum anodes 0 and 15
+; repeat above, average anodes 0 and 15
 mms_hpca_calc_anodes, anodes=[0, 15], probe='1'
 flux_anodes = ['mms1_hpca_hplus_flux_anodes_0_15', $
                        'mms1_hpca_oplus_flux_anodes_0_15', $
@@ -59,7 +66,16 @@ flux_anodes = ['mms1_hpca_hplus_flux_anodes_0_15', $
                        'mms1_hpca_heplusplus_flux_anodes_0_15']
 
 ; show spectra for H+, O+ and He+, He++
-window, 4, ysize=600
-tplot, flux_anodes, window=4
+tplot, flux_anodes
+stop
 
+; now sum the fluxes for each spin
+mms_hpca_spin_sum, probe='1'
+
+tplot, ['mms1_hpca_hplus_flux_elev_0-360_spin', $
+        'mms1_hpca_oplus_flux_elev_0-360_spin', $
+        'mms1_hpca_heplus_flux_elev_0-360_spin', $
+        'mms1_hpca_heplusplus_flux_elev_0-360_spin']
+
+stop
 end

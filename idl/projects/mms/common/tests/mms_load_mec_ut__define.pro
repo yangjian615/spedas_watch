@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-22 08:37:33 -0700 (Fri, 22 Apr 2016) $
-; $LastChangedRevision: 20885 $
+; $LastChangedDate: 2016-04-27 15:54:49 -0700 (Wed, 27 Apr 2016) $
+; $LastChangedRevision: 20953 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_mec_ut__define.pro $
 ;-
 
@@ -37,6 +37,13 @@ function mms_load_mec_ut::test_load_brst
   mms_load_mec, probe=1, level='l2', data_rate='brst', suffix='_brst'
   assert, spd_data_exists('mms1_mec_r_gsm_brst', '2016-2-10', '2016-2-11'), $
     'Problem loading MEC brst data'
+  return, 1
+end
+
+function mms_load_mec_ut::test_load_brst_spdf
+  mms_load_mec, probe=3, level='l2', data_rate='brst', /spdf, suffix='_brst_from_spdf'
+  assert, spd_data_exists('mms3_defatt_spinras_brst_from_spdf mms3_defatt_spindec_brst_from_spdf mms3_mec_r_gsm_brst_from_spdf mms3_mec_v_gsm_brst_from_spdf', '2016-02-10', '2016-02-11'), $
+    'Problem with loading MEC brst data from SPDF'
   return, 1
 end
 
