@@ -71,7 +71,10 @@ PRO sitl_report_latest, dir=dir, force=force
   nmax = unix_FOMstr.NUMCYCLES
   str_ts = strjoin(strsplit(time_string(unix_FOMstr.TIMESTAMPS[0]),'-',/extract),'.')
   str_te = strjoin(strsplit(time_string(unix_FOMstr.TIMESTAMPS[nmax-1]),'-',/extract),'.')
-  str_roi = strmid(str_ts,0,10)+'-'+strmid(str_te,8,2)
+  str_ds = strmid(str_ts,8,2)
+  str_de = strmid(str_te,8,2)
+  str_roi = strmid(str_ts,0,10)
+  if (str_ds ne str_de) then str_roi += '-'+strmid(str_te,8,2)
   pname = strjoin(strsplit(time_string(unix_FOMstr.TIMESTAMPS[0]),':',/extract))
   pname = strjoin(strsplit(pname,'/',/extract),'_')
   yyyy  = strmid(pname,0,4)

@@ -58,7 +58,9 @@
 ;         
 ;         
 ; NOTES:
-;     Please see the notes in mms_load_data for more information 
+;     Please see the EPD Data Products Guide for more information:
+;     
+;     https://lasp.colorado.edu/galaxy/display/mms/EPD+Data+Products+Guide 
 ;     
 ;     
 ;     Have questions regarding this load routine, or its usage?
@@ -71,10 +73,12 @@
 ;     12/15/2015 - icohen: added data_rate keyword and conditional definition of prefix in mms_eis_spin_avg and 
 ;                  mms_eis_omni to address burst variable name changes
 ;     4/20/2016  - egrimes added omni-directional spectra (without spin averaging)
+;     4/28/2016  - egrimes changed no_interp options to include non-spin averaged omni-directional spectra
+;                  changed default level to L2
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-27 15:35:07 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20947 $
+;$LastChangedDate: 2016-04-28 15:03:38 -0700 (Thu, 28 Apr 2016) $
+;$LastChangedRevision: 20962 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 
@@ -90,7 +94,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'extof'
-    if undefined(level) then level = 'l1b' 
+    if undefined(level) then level = 'l2' 
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(data_units) then data_units = 'flux'
     if undefined(suffix) then suffix = ''
@@ -149,5 +153,5 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
             endif
         endfor
     endfor
-    if undefined(no_interp) && data_rate eq 'srvy' then options, '*_omni_spin*', no_interp=0, y_no_interp=0
+    if undefined(no_interp) && data_rate eq 'srvy' then options, '*_omni*', no_interp=0, y_no_interp=0
 end

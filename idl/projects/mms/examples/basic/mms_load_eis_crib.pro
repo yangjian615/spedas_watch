@@ -6,15 +6,14 @@
 ;    ExTOF He spectra
 ;    ExTOF Oxygen spectra
 ;    PHxTOF proton spectra
-;    PHxTOF Oxygen (assumed to be oxygen; not terrifically discriminated)
 ;    
 ;  
 ; do you have suggestions for this crib sheet? 
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 12:00:15 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20700 $
+; $LastChangedDate: 2016-04-28 15:15:48 -0700 (Thu, 28 Apr 2016) $
+; $LastChangedRevision: 20963 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_eis_crib.pro $
 ;-
 probe = '1'
@@ -76,17 +75,6 @@ mms_eis_pad, probe=probe, species='ion', datatype='phxtof', ion_type='proton', d
 
 tplot, ['*_epd_eis_phxtof_proton_flux_omni_spin', $
         '*_epd_eis_phxtof_0-30keV_proton_flux_omni_pad_spin']
-stop
-
-; plot the PHxTOF oxygen spectra (note from Barry Mauk: assumed to be oxygen; not terrifically discriminated)
-ylim, '*_phxtof_oxygen_flux_omni_spin', 60, 180, 1
-zlim, '*_phxtof_oxygen_flux_omni_spin', 0, 0, 1
-options, '*_phxtof_oxygen_flux_omni_spin', ystyle=1
-
-; calculate the PHxTOF PAD for oxygen
-mms_eis_pad, probe=probe, species='ion', datatype='phxtof', ion_type='oxygen', data_units='flux', energy=[0, 175], level = level
-
-tplot, ['*_phxtof_oxygen_flux_omni_spin', '*_epd_eis_phxtof_0-175keV_oxygen_flux_omni_pad_spin']
 stop
 
 ; load some electron data; note that the datatype for electron data is "electronenergy"

@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-13 16:16:11 -0800 (Wed, 13 Jan 2016) $
-;$LastChangedRevision: 19727 $
+;$LastChangedDate: 2016-04-28 11:31:17 -0700 (Thu, 28 Apr 2016) $
+;$LastChangedRevision: 20961 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_custom_rotation.pro $
 ;-
 pro spd_slice2d_custom_rotation, $ 
@@ -60,6 +60,13 @@ pro spd_slice2d_custom_rotation, $
   ; Check that the matrix is valid
   if total( finite(matrix,/nan) ) gt 0 then begin
     fail = 'Invalid custom rotation matrix.'
+    dprint, dlevel=1, fail
+    return
+  endif
+
+  ; Check that determ=1
+  if abs(determ(matrix)-1) gt 1e-6 then begin
+    fail = 'Custom rotation matrix may not be valid right-handed rotation'
     dprint, dlevel=1, fail
     return
   endif

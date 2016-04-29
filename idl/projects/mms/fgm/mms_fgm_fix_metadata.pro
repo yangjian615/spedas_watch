@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-13 08:22:26 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20793 $
+;$LastChangedDate: 2016-04-28 15:29:33 -0700 (Thu, 28 Apr 2016) $
+;$LastChangedRevision: 20964 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_fgm_fix_metadata.pro $
 ;-
 
@@ -34,6 +34,12 @@ pro mms_fgm_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
                 tplot_name = tplotnames[name_idx]
     
                 case tplot_name of
+                    prefix[sc_idx] + '_'+instrument+'_b_bcs_'+data_rate_mod+'_l2_bvec'+suffix: begin
+                      options, /def, tplot_name, 'labflag', 1
+                      options, /def, tplot_name, 'colors', [2,4,6]
+                      options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument_str)
+                      options, /def, tplot_name, 'labels', ['Bx BCS', 'By BCS', 'Bz BCS']
+                    end
                     prefix[sc_idx] + '_'+instrument+'_b_gse_'+data_rate_mod+'_l2_bvec'+suffix: begin
                       options, /def, tplot_name, 'labflag', 1
                       options, /def, tplot_name, 'colors', [2,4,6]
