@@ -28,8 +28,8 @@
 ;            increasing energy
 ;     
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-05-14 09:15:26 -0700 (Wed, 14 May 2014) $
-; $LastChangedRevision: 15131 $
+; $LastChangedDate: 2016-04-29 07:58:21 -0700 (Fri, 29 Apr 2016) $
+; $LastChangedRevision: 20969 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_combine_tdata.pro $
 ;-
 
@@ -177,64 +177,24 @@ pro goes_combine_epead_data, prefix = prefix, suffix = suffix, get_support_data 
     proton_en = ['2.5', '6.5', '11.6', '30.6', '63.1', '165', '433']   
   
     ; Start with the proton detectors 
-    ; this for loop currently assumes the spacing of the time values is the same for the east/west pointing detectors
     ; (note actual pointing direction depends on S/C orientation)
     for pidx = 0, n_elements(wp_detectors_uncor)-1 do begin
         if (n_elements(wp_detectors_uncor) gt pidx) && (n_elements(ep_detectors_uncor) gt pidx) then begin
-            ; try to grab the data and dlimits structures for tplot variables without electron corrections
-            get_data, wp_detectors_uncor[pidx], data=wpuncor_data, dlimits=wpuncor_dlimits
-            get_data, ep_detectors_uncor[pidx], data=epuncor_data, dlimits=epuncor_dlimits
-            ; check that the data was returned in a structure
-            if (is_struct(wpuncor_data) && is_struct(epuncor_data)) then begin
-                combined_p_uncorflux = fltarr(n_elements(wpuncor_data.Y),2)
-                combined_p_uncorflux[*,0] = epuncor_data.Y[*] 
-                combined_p_uncorflux[*,1] = wpuncor_data.Y[*]
-                
-                ; store the data attributes in a structure
-                data_att = {project: 'GOES', observatory: (strsplit(prefix,'_', /extra))[0], instrument: 'epead', units: wpuncor_dlimits.cdf.vatt.units, coord_sys: 'none', st_type: 'none'}
-                
-                ; label the components
-                labels = ['E', 'W']
-                str_element, wpuncor_dlimits, 'data_att', data_att, /add
-                str_element, wpuncor_dlimits, 'labels', labels, /add
-                str_element, wpuncor_dlimits, 'labflag', 2, /add
-
-                ; store the data and the updated dlimit structure
-                newtvar = prefix+'prot_'+proton_en[(pidx)]+'MeV_uncor_flux'+suffix
-                ; update the vname in the CDF structure
-                wpuncor_dlimits.cdf.vname = newtvar
-                store_data, newtvar[0], data={x:wpuncor_data.X , y:combined_p_uncorflux}, dlimits=wpuncor_dlimits
-                tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
-                del_data, [wp_detectors_uncor[pidx], ep_detectors_uncor[pidx]]
+            if tnames(ep_detectors_uncor[pidx]) ne '' && tnames(wp_detectors_uncor[pidx]) ne '' then begin
+              newtvar = prefix+'prot_'+proton_en[(pidx)]+'MeV_uncor_flux'+suffix
+              store_data, newtvar[0], data=[ep_detectors_uncor[pidx], wp_detectors_uncor[pidx]]
+              options, newtvar[0], labels = ['E', 'W'], labflag = 2, colors=[2, 4]
+              tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
             endif
         endif
 
         ; try to grab the data and dlimits structures for data corrected for electron contamination
         if (n_elements(wp_detectors_cor) gt pidx) && (n_elements(ep_detectors_cor) gt pidx) then begin ; make sure these variables exist before trying to access them
-            get_data, wp_detectors_cor[pidx], data=wpcor_data, dlimits=wpcor_dlimits
-            get_data, ep_detectors_cor[pidx], data=epcor_data, dlimits=epcor_dlimits
-            ; check that the data was returned in a structure
-            if (is_struct(wpcor_data) && is_struct(epcor_data)) then begin
-                combined_p_flux = fltarr(n_elements(wpcor_data.Y),2)
-                combined_p_flux[*,0] = epcor_data.Y[*]
-                combined_p_flux[*,1] = wpcor_data.Y[*]
-
-                ; store the data attributes in a structure
-                data_att = {project: 'GOES', observatory: (strsplit(prefix,'_', /extra))[0], instrument: 'epead', units: wpcor_dlimits.cdf.vatt.units, coord_sys: 'none', st_type: 'none'}
-                
-                ; label the components
-                labels = ['E', 'W']
-                str_element, wpcor_dlimits, 'data_att', data_att, /add
-                str_element, wpcor_dlimits, 'labels', labels, /add
-                str_element, wpcor_dlimits, 'labflag', 2, /add
-                
-                ; store the data and updated dlimit structure
-                newtvar = prefix+'prot_'+proton_en[pidx]+'MeV_cor_flux'+suffix
-                ; update the vname in the CDF structure
-                wpcor_dlimits.cdf.vname = newtvar
-                store_data, newtvar[0], data={x: wpcor_data.X, y: combined_p_flux}, dlimits=wpcor_dlimits
-                tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
-                del_data, [wp_detectors_cor[pidx], ep_detectors_cor[pidx]]
+            if tnames(ep_detectors_cor[pidx]) ne '' && tnames(wp_detectors_cor[pidx]) ne '' then begin
+              newtvar = prefix+'prot_'+proton_en[pidx]+'MeV_cor_flux'+suffix
+              store_data, newtvar[0], data=[ep_detectors_cor[pidx], wp_detectors_cor[pidx]]
+              options, newtvar[0], labels = ['E', 'W'], labflag = 2, colors=[2, 4]
+              tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
             endif
         endif
     endfor
@@ -243,61 +203,21 @@ pro goes_combine_epead_data, prefix = prefix, suffix = suffix, get_support_data 
     electron_en = ['0.6', '2', '4']
     for eidx = 0, n_elements(we_detectors_uncor)-1 do begin
         if (n_elements(we_detectors_uncor) gt eidx) && (n_elements(ee_detectors_uncor) gt eidx) then begin
-            ; grab the data
-            get_data, we_detectors_uncor[eidx], data=weuncor_data, dlimits=weuncor_dlimits
-            get_data, ee_detectors_uncor[eidx], data=eeuncor_data, dlimits=eeuncor_dlimits
-            ; check that a valid structure was returned
-            if (is_struct(weuncor_data) && is_struct(eeuncor_data)) then begin
-                combined_e_uncorflux = fltarr(n_elements(weuncor_data.Y), 2)
-                combined_e_uncorflux[*,0] = eeuncor_data.Y[*]
-                combined_e_uncorflux[*,1] = weuncor_data.Y[*]
-                
-                ; store the data attributes in a structure
-                data_att = {project: 'GOES', observatory: (strsplit(prefix,'_', /extra))[0], instrument: 'epead', units: weuncor_dlimits.cdf.vatt.units, coord_sys: 'none', st_type: 'none'}
-                
-                ; label the components
-                labels = ['E', 'W']
-                str_element, weuncor_dlimits, 'data_att', data_att, /add
-                str_element, weuncor_dlimits, 'labels', labels, /add
-                str_element, weuncor_dlimits, 'labflag', 2, /add
-
-                newtvar = prefix+'elec_'+electron_en[eidx]+'MeV_uncor_flux'+suffix
-                ; update the vname in the CDF structure
-                weuncor_dlimits.cdf.vname = newtvar
-                
-                store_data, newtvar[0], data={x: weuncor_data.X, y: combined_e_uncorflux}, dlimits = weuncor_dlimits
-                tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
-                del_data, [we_detectors_uncor[eidx], ee_detectors_uncor[eidx]]
+            if tnames(ee_detectors_uncor[eidx]) ne '' && tnames(we_detectors_uncor[eidx]) ne '' then begin
+              newtvar = prefix+'elec_'+electron_en[eidx]+'MeV_uncor_flux'+suffix
+              store_data, newtvar[0], data=[ee_detectors_uncor[eidx], we_detectors_uncor[eidx]]
+              options, newtvar[0], labels = ['E', 'W'], labflag = 2, colors=[2, 4]
+              tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
             endif
         endif
         
         ; now for the corrected electron data
         if (n_elements(we_detectors_cor) gt eidx) && (n_elements(ee_detectors_cor) gt eidx) then begin
-            ; grab the corrected data
-            get_data, we_detectors_cor[eidx], data=wecor_data, dlimits=wecor_dlimits
-            get_data, ee_detectors_cor[eidx], data=eecor_data, dlimits=eecor_dlimits
-            if (is_struct(wecor_data) && is_struct(eecor_data)) then begin
-                combined_e_flux = fltarr(n_elements(wecor_data.Y), 2)
-                combined_e_flux[*,0] = eecor_data.Y[*]
-                combined_e_flux[*,1] = wecor_data.Y[*]
-                
-                ; store the data attributes in a structure
-                data_att = {project: 'GOES', observatory: (strsplit(prefix,'_', /extra))[0], instrument: 'epead', units: wecor_dlimits.cdf.vatt.units, coord_sys: 'none', st_type: 'none'}
-                
-                ; label the components
-                labels = ['E', 'W']
-                str_element, wecor_dlimits, 'data_att', data_att, /add
-                str_element, wecor_dlimits, 'labels', labels, /add
-                str_element, wecor_dlimits, 'labflag', 2, /add
-
-                ; store the data
-                newtvar = prefix+'elec_'+electron_en[eidx]+'MeV_cor_flux'+suffix
-                ; update the vname in the CDF structure
-                wecor_dlimits.cdf.vname = newtvar
-                
-                store_data, newtvar[0], data={x: wecor_data.X, y: combined_e_flux}, dlimits = wecor_dlimits
-                tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
-                del_data, [we_detectors_cor[eidx], ee_detectors_cor[eidx]]
+            if tnames(ee_detectors_cor[eidx]) ne '' && tnames(we_detectors_cor[eidx]) ne '' then begin
+              newtvar = prefix+'elec_'+electron_en[eidx]+'MeV_cor_flux'+suffix
+              store_data, newtvar[0], data=[ee_detectors_cor[eidx], we_detectors_cor[eidx]]
+              options, newtvar[0], labels = ['E', 'W'], labflag = 2, colors=[2, 4]
+              tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
             endif
         endif
     endfor
@@ -306,29 +226,11 @@ pro goes_combine_epead_data, prefix = prefix, suffix = suffix, get_support_data 
     alpha_en = ['6.8', '15.2', '40.7', '110', '210', '415']
     for aidx = 0, n_elements(wa_detectors)-1 do begin
         if (n_elements(wa_detectors) gt aidx) && (n_elements(ea_detectors) gt aidx) then begin
-            get_data, wa_detectors[aidx], data=walpha_data, dlimits=walpha_dlimits
-            get_data, ea_detectors[aidx], data=ealpha_data, dlimits=ealpha_dlimits
-            if (is_struct(walpha_data) && is_struct(ealpha_data)) then begin
-                combined_a_flux = fltarr(n_elements(walpha_data.Y), 2)
-                combined_a_flux[*,0] = ealpha_data.Y[*]
-                combined_a_flux[*,1] = walpha_data.Y[*]
-                
-                ; store the data attributes in a structure
-                data_att = {project: 'GOES', observatory: (strsplit(prefix,'_', /extra))[0], instrument: 'epead', units: walpha_dlimits.cdf.vatt.units, coord_sys: 'none', st_type: 'none'}
-                
-                ; label the components
-                labels = ['E', 'W']
-                str_element, walpha_dlimits, 'data_att', data_att, /add
-                str_element, walpha_dlimits, 'labels', labels, /add
-                str_element, walpha_dlimits, 'labflag', 2, /add
-
-                newtvar = prefix+'alpha_'+alpha_en[aidx]+'MeV_flux'+suffix
-                ; update the vname in the CDF structure
-                walpha_dlimits.cdf.vname = newtvar
-                
-                store_data, newtvar[0], data={x: walpha_data.X, y: combined_a_flux}, dlimits = walpha_dlimits
-                tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
-                del_data, [wa_detectors[aidx], ea_detectors[aidx]]
+            if tnames(ea_detectors[aidx]) ne '' && tnames(wa_detectors[aidx]) ne '' then begin
+              newtvar = prefix+'alpha_'+alpha_en[aidx]+'MeV_flux'+suffix
+              store_data, newtvar[0], data=[ea_detectors[aidx], wa_detectors[aidx]]
+              options, newtvar[0], labels = ['E', 'W'], labflag = 2, colors=[2, 4]
+              tplotnames = keyword_set(tplotnames) ? [tplotnames,newtvar[0]] : newtvar[0]
             endif
         endif
     endfor

@@ -5,9 +5,9 @@
 ; Helpful functions for dealing with arrays of 3x3 matrixes (Nx3x3)
 ;
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-12-09 11:11:53 -0800 (Wed, 09 Dec 2015) $
-; $LastChangedRevision: 19553 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2016-04-29 17:15:55 -0700 (Fri, 29 Apr 2016) $
+; $LastChangedRevision: 20987 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/matrix_array_lib.pro $
 ;-
 
@@ -56,11 +56,13 @@ end
 
 ;helper function
 ;vectorized multiplication of two lists of 3x3 matrices
-function ctv_mm_mult,m1,m2
+;effectively m1 # m2
+function ctv_mm_mult,m1,m2, second_type=second_type
 
   compile_opt idl2, hidden
 
-  out = make_array(dimen(m1),type=size(m1,/type))
+  type = keyword_set(second_type) ? size(m2,/type) : size(m1,/type)
+  out = make_array(dimen(m1),type=type)
 
   out[*,0,0] = total(m1[*,0,*] * m2[*,*,0],3)
   out[*,1,0] = total(m1[*,1,*] * m2[*,*,0],3)

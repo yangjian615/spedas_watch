@@ -15,8 +15,8 @@
 ;         
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-28 14:10:44 -0800 (Fri, 28 Feb 2014) $
-; $LastChangedRevision: 14467 $
+; $LastChangedDate: 2016-04-29 07:25:04 -0700 (Fri, 29 Apr 2016) $
+; $LastChangedRevision: 20967 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goesstruct_to_cdfstruct.pro $
 ;-
 function GOESstruct_to_cdfstruct, netCDFi
@@ -100,8 +100,11 @@ function GOESstruct_to_cdfstruct, netCDFi
             ; need to check if the time units are in milliseconds
             ; if so, convert to seconds and update the units attribute
             if stregex(netCDFi.vars.(i).units, 'milliseconds') ne -1 then begin
-                time_data = *netCDFi.vars.(i).dataptr/1000. ; convert to seconds
-                netCDFi.vars.(i).units = 'seconds'
+                ; check that the dataptr is a valid pointer
+                if ptr_valid(netCDFi.vars.(i).dataptr) then begin
+                    time_data = *netCDFi.vars.(i).dataptr/1000. ; convert to seconds
+                    netCDFi.vars.(i).units = 'seconds'
+                endif else continue
             endif
             if netCDFi.vars.(i).name eq 'inclination' then begin
                 inclination_data = *netCDFi.vars.(i).dataptr ; in degrees

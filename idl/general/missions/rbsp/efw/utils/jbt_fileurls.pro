@@ -33,8 +33,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2013-02-05 18:56:56 -0800 (Tue, 05 Feb 2013) $
-; $LastChangedRevision: 11532 $
+; $LastChangedDate: 2016-04-29 11:59:00 -0700 (Fri, 29 Apr 2016) $
+; $LastChangedRevision: 20979 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/utils/jbt_fileurls.pro $
 ;
 ;-
@@ -60,6 +60,22 @@ file_http_copy,remote_dir $
   , localdir=localdir $
   , verbose=verbose $
   , links=links 
+
+;I think that there has been a subtle change in file_http_copy, and the
+;first elements of the links output is the null string. Not willing to
+;touch file_http_copy, so strip out null links here, jmm, 2016-04-29
+
+nlinks = n_elements(links)
+ok_links = bytarr(nlinks)+1b
+For j = 0, nlinks-1 Do If(~is_string(links[j])) Then ok_links[j] = 0b
+keep = where(ok_links, nkeep)
+
+If(nkeep Gt 0) Then links = links[keep] $
+Else Begin
+   dprint, 'No good file links: '
+   dprint, 'remote_dir: '+remote_dir
+   links = ''
+Endelse
 
 ; print, time_string(url_info.mtime)
 head = strmid(links[0], 0, 4)

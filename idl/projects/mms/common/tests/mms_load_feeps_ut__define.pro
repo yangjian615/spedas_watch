@@ -6,10 +6,47 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-06 09:33:06 -0700 (Wed, 06 Apr 2016) $
-; $LastChangedRevision: 20732 $
+; $LastChangedDate: 2016-04-29 12:11:19 -0700 (Fri, 29 Apr 2016) $
+; $LastChangedRevision: 20980 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_load_l1a_multi_datatypes
+  mms_load_feeps, probes=4, level='l1a', datatype=['ion-top', 'electron-top']
+  assert, spd_data_exists('mms4_epd_feeps_top_ion_survey_sensor_counts_sensorid_6 mms4_epd_feeps_top_electron_survey_sensor_counts_sensorid_5', '2015-12-15', '2015-12-16'), $
+    'Problem loading FEEPS L1a data with multiple datatypes specified'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_load_l2_multi_datatypes
+  mms_load_feeps, probe=2, level='l2', datatype=['ion', 'electron']
+  assert, spd_data_exists('mms2_epd_feeps_bottom_electron_intensity_sensorid_3_clean_sun_removed mms2_epd_feeps_top_electron_intensity_sensorid_4_clean_sun_removed', '2015-12-15', '2015-12-16'), $
+    'Problem with loading L2 FEEPS data with multiple datatypes'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_load_l1a_set_good_datatype
+  mms_load_feeps, probes=3, level='l1a', datatype='ion-top'
+  assert, spd_data_exists('mms3_epd_feeps_top_ion_survey_sensor_counts_sensorid_7 mms3_epd_feeps_top_ion_survey_sensor_counts_sensorid_8 mms3_epd_feeps_ion_an00m3p6vmon', '2015-12-15', '2015-12-16'), $
+    'Problem loading FEEPS L1a data with valid datatype'
+  assert, ~spd_data_exists('mms3_epd_feeps_bottom_electron_survey_sensor_counts_sensorid_3 mms3_epd_feeps_top_electron_survey_sensor_counts_sensorid_12 mms3_epd_feeps_bottom_ion_survey_sensor_counts_sensorid_8 mms3_epd_feeps_ion_an00m3p6vmon mms3_epd_feeps_electron_an00m3p6vmon', '2015-12-15', '2015-12-16'), $
+    'Problem loading FEEPS L1a data with valid datatype'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_load_l1a_set_bad_datatype
+  mms_load_feeps, probes=3, level='l1a', datatype='ion' ; ion isn't valid for L1a data, should load all
+  assert, spd_data_exists('mms3_epd_feeps_bottom_electron_survey_sensor_counts_sensorid_3 mms3_epd_feeps_top_electron_survey_sensor_counts_sensorid_12 mms3_epd_feeps_top_ion_survey_sensor_counts_sensorid_7 mms3_epd_feeps_bottom_ion_survey_sensor_counts_sensorid_8 mms3_epd_feeps_ion_an00m3p6vmon mms3_epd_feeps_electron_an00m3p6vmon', '2015-12-15', '2015-12-16'), $
+    'Problem loading FEEPS L1a data with invalid datatype'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_load_l1a_data
+  mms_load_feeps, probes=3, level='l1a'
+  assert, spd_data_exists('mms3_epd_feeps_bottom_electron_survey_sensor_counts_sensorid_3 mms3_epd_feeps_top_electron_survey_sensor_counts_sensorid_12 mms3_epd_feeps_top_ion_survey_sensor_counts_sensorid_7 mms3_epd_feeps_bottom_ion_survey_sensor_counts_sensorid_8 mms3_epd_feeps_ion_an00m3p6vmon mms3_epd_feeps_electron_an00m3p6vmon', '2015-12-15', '2015-12-16'), $
+    'Problem loading FEEPS L1a data'
+  return, 1
+end
 
 function mms_load_feeps_ut::test_load_multi_probe
   mms_load_feeps, probes=[1, 2, '3', 4], level='l2'

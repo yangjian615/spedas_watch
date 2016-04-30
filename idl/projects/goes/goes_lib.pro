@@ -11,8 +11,8 @@
 ;   
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-04-22 11:50:45 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17390 $
+; $LastChangedDate: 2016-04-29 08:39:55 -0700 (Fri, 29 Apr 2016) $
+; $LastChangedRevision: 20970 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_lib.pro $
 ;-
 
@@ -390,31 +390,38 @@ end
 ;    Combines the EPEAD electron flux data into a single tplot variable
 ;
 pro goes_epead_comb_electron_flux, prefix, suffix
-    energies = strarr(3)
-    tvarnames = strarr(3)
-    ; MeV
-    energies[0] = '0.6'
-    energies[1] = '2'
-    energies[2] = '4'
+  energies = strarr(3)
+  tvarnames = strarr(3)
+  ; MeV
+  energies[0] = '0.6'
+  energies[1] = '2'
+  energies[2] = '4'
 
-    for i = 0, 2 do begin
-        get_data, prefix+'_elec_'+energies[i]+'MeV_uncor_flux'+suffix, data=elec_data, dlimits=elec_dlimits
-        if (is_struct(elec_data) && is_struct(elec_dlimits)) then begin
-            total_values = (elec_data.Y[*,0]+elec_data.Y[*,1])/2.
-            store_data, prefix+'_elec_'+energies[i]+'MeV_uncor_flux_comb'+suffix, data={x: elec_data.X, y: total_values}, dlimits=elec_dlimits
-            tvarnames[i] = prefix+'_elec_'+energies[i]+'MeV_uncor_flux_comb'+suffix
-        endif else begin
-            dprint, dlevel = 1, 'Error combining EPEAD electron flux - no valid data?'
-            return
-        endelse
-    endfor
-    join_vec, tvarnames, prefix+'_elec_uncor_comb_flux'+suffix
+  for i = 0, 2 do begin
+    get_data, prefix+'_elec_'+energies[i]+'MeV_uncor_flux'+suffix, data=elec_data, dlimits=elec_dlimits
     
-    options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'ylog', 1
-    options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'labflag', 1
-    options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'ytitle', 'Electrons!C [e/(cm!U2!N-s-sr)]'
-    options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'labels', energies+' MeV'
-    options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'ysubtitle', ''
+    if is_array(elec_data) then begin
+      get_data, elec_data[0], data=east_data, dlimits=east_dl ; east
+      get_data, elec_data[1], data=west_data, dlimits=west_dl ; west
+      if array_equal(west_data.X, east_data.X) then begin
+        total_values = (east_data.Y+west_data.Y)/2.
+        store_data, prefix+'_elec_'+energies[i]+'MeV_uncor_flux_comb'+suffix, data={x: east_data.X, y: total_values}
+        tvarnames[i] = prefix+'_elec_'+energies[i]+'MeV_uncor_flux_comb'+suffix
+      endif else begin
+        dprint, dlevel = 0, 'Error combining the EPEAD electron flux into a single variable; time stamps of east/west look directions don''t match ('+energies[i]+'MeV)'
+      endelse
+    endif else begin
+      dprint, dlevel = 1, 'Error combining the EPEAD electron flux - no valid data?'
+      return
+    endelse
+  endfor
+  join_vec, tvarnames, prefix+'_elec_uncor_comb_flux'+suffix
+
+  options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'ylog', 1
+  options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'labflag', 1
+  options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'ytitle', 'Electrons!C [e/(cm!U2!N-s-sr)]'
+  options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'labels', energies+' MeV'
+  options, /def, prefix+'_elec_uncor_comb_flux'+suffix, 'ysubtitle', ''
 end
 ; Procedure: goes_eps_comb_proton_flux
 ;
@@ -474,35 +481,44 @@ end
 ;    Combines the EPEAD proton flux data into a single tplot variable
 ;
 pro goes_epead_comb_proton_flux, prefix, suffix
-    energies = strarr(7)
-    tvarnames = strarr(7)
-    ; MeV
-    energies[0] = '2.5'
-    energies[1] = '6.5'
-    energies[2] = '11.6'
-    energies[3] = '30.6'
-    energies[4] = '63.1'
-    energies[5] = '165'
-    energies[6] = '433'
-    for i = 0, 6 do begin
-        get_data, prefix+'_prot_'+energies[i]+'MeV_uncor_flux'+suffix, data=prot_data, dlimits=prot_dlimits
-        if (is_struct(prot_data) && is_struct(prot_dlimits)) then begin
-            total_values = (prot_data.Y[*,0]+prot_data.Y[*,1])/2.
-            store_data, prefix+'_prot_'+energies[i]+'MeV_uncor_flux_comb'+suffix, data={x: prot_data.X, y: total_values}, dlimits=prot_dlimits
-            tvarnames[i] = prefix+'_prot_'+energies[i]+'MeV_uncor_flux_comb'+suffix
-        endif else begin
-            dprint, dlevel = 1, 'Error combining the EPEAD proton flux - no valid data?'
-            return
-        endelse
-    endfor
-    join_vec, tvarnames, prefix+'_prot_uncor_comb_flux'+suffix
+  energies = strarr(7)
+  tvarnames = strarr(7)
+  ; MeV
+  energies[0] = '2.5'
+  energies[1] = '6.5'
+  energies[2] = '11.6'
+  energies[3] = '30.6'
+  energies[4] = '63.1'
+  energies[5] = '165'
+  energies[6] = '433'
+  for i = 0, 6 do begin
+    get_data, prefix+'_prot_'+energies[i]+'MeV_uncor_flux'+suffix, data=prot_data, dlimits=prot_dlimits
     
-    ; update the plotting options
-    options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'ylog', 1
-    options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'labels', energies+' MeV'
-    options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'labflag', 1
-    options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'ytitle', 'Protons!C [p/(cm!U2!N-s-sr-keV)]'
-    options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'ysubtitle', ''
+    if is_array(prot_data) then begin
+        get_data, prot_data[0], data=east_data, dlimits=east_dl ; east
+        get_data, prot_data[1], data=west_data, dlimits=west_dl ; west
+        if array_equal(west_data.X, east_data.X) then begin
+          total_values = (east_data.Y+west_data.Y)/2.
+          store_data, prefix+'_prot_'+energies[i]+'MeV_uncor_flux_comb'+suffix, data={x: east_data.X, y: total_values}
+          tvarnames[i] = prefix+'_prot_'+energies[i]+'MeV_uncor_flux_comb'+suffix
+        endif else begin
+          dprint, dlevel = 0, 'Error combining the EPEAD proton flux into a single variable; time stamps of east/west look directions don''t match ('+energies[i]+'MeV)'
+        endelse
+    endif else begin
+      dprint, dlevel = 1, 'Error combining the EPEAD proton flux - no valid data?'
+      return
+    endelse
+
+  endfor
+  join_vec, tvarnames, prefix+'_prot_uncor_comb_flux'+suffix
+
+  ; update the plotting options
+  options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'ylog', 1
+  options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'labels', energies+' MeV'
+  options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'labflag', 1
+  options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'ytitle', 'Protons!C [p/(cm!U2!N-s-sr-keV)]'
+  options, /def, prefix+'_prot_uncor_comb_flux'+suffix, 'ysubtitle', ''
+
 end
 
 pro goes_lib

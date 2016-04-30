@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-29 08:07:18 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20246 $
+;$LastChangedDate: 2016-04-29 14:54:18 -0700 (Fri, 29 Apr 2016) $
+;$LastChangedRevision: 20982 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_spin_avg.pro $
 ;-
 
@@ -48,7 +48,7 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, $
   ; find the telescope names
   telescopes = tnames(prefix + species + '_*' + data_units + '_t?'+suffix)
   telescopes = strsplit(telescopes, prefix + species + '_.' + data_units + '_t*'+suffix, /extract, /regex, /fold_case)
-  
+
   if telescopes[0] eq '' || n_elements(telescopes) ne 6 then begin
       dprint, dlevel = 0, 'Error, problem finding the telescopes to calculate the spin averages'
       return
@@ -70,9 +70,19 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, $
       current_start = spin_starts[spin_idx]+1
     endfor
     sp = '_spin'
-    store_data, this_scope+sp+suffix, data={x: spin_nums.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
-    options, this_scope+sp+suffix, spec=1, minzlog = .01
-    ylim, this_scope+sp+suffix, 50., 500., 1
-    zlim, this_scope+sp+suffix, 0, 0, 1
+    store_data, this_scope+sp, data={x: spin_nums.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
+    options, this_scope+sp, spec=1, minzlog = .01, ystyle=1
+    
+    ; changed the energy in late September, when the major file version switched from
+    ; v2.1.0 to v3.0.0; set the y axes limits based on version in variable name
+    if datatype eq 'phxtof' && species eq 'proton' then begin
+      p_num = long(strsplit(telescopes[0], prefix + species + '_P.' + data_units + '_t0'+suffix, /extract))
+      if p_num ge 3 then begin
+        ylim, this_scope+sp, 14, 45, 1 
+      endif else begin
+        ylim, this_scope+sp, 10, 28, 1
+      endelse
+    endif
+    zlim, this_scope+sp, 0, 0, 1
   endfor
 end

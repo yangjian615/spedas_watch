@@ -88,8 +88,8 @@
 ;       non-monotonic data points are removed
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-22 13:48:20 -0700 (Fri, 22 Apr 2016) $
-;$LastChangedRevision: 20895 $
+;$LastChangedDate: 2016-04-29 08:49:38 -0700 (Fri, 29 Apr 2016) $
+;$LastChangedRevision: 20971 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -177,7 +177,11 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                 del_data, this_probe+'_pos_gse'+suffix
                 del_data, this_probe+'_pos_gsm'+suffix
             endif else begin
-                dprint, dlevel = 0, 'Keeping non-monotonic ephemeris variables from FGM data files; note that these variables contain an "extra" component (the magnitude), and can not be used in routines that expect a vector.'
+                dprint, dlevel = 0, 'Keeping ephemeris variables from FGM data files; note that these variables contain an "extra" component (the magnitude), and can not be used in routines that expect a vector.'
+                ; force the ephemeris variables to be monotonic
+                tplot_force_monotonic, this_probe+'_fgm_r_*_'+this_data_rate+'_'+level+suffix, /forward
+                tplot_force_monotonic, this_probe+'_pos_gse'+suffix, /forward
+                tplot_force_monotonic, this_probe+'_pos_gsm'+suffix, /forward
             endelse
             
         endfor

@@ -124,8 +124,8 @@
 ;   which fails for pre IDL 8.
 ; VERSION:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-09-29 13:54:47 -0700 (Tue, 29 Sep 2015) $
-; $LastChangedRevision: 18958 $
+; $LastChangedDate: 2016-04-29 15:42:59 -0700 (Fri, 29 Apr 2016) $
+; $LastChangedRevision: 20985 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/spacecraft/rbsp_load_state.pro $
 ;
 ;-
@@ -292,17 +292,18 @@ for ip = 0, nsc-1 do begin
 ;full mission. For each kernel, this just mirrors the
 ;load_state_*_kernel logic 
     case subdir of
-       'leap_second_kernel': fnames = rbsp_load_state_lsk_kernel(sc, files_in=fnamesk)
-       'operations_sclk_kernel': fnames = rbsp_load_state_sclk_kernel(sc, files_in=fnamesk)
-       'ephemerides':fnames = rbsp_load_state_eph_kernel(sc, files_in=fnamesk)
-       'ephemeris_predict_longterm':fnames = rbsp_load_state_eph_predict_kernel(sc, files_in=fnamesk)
-       'eclipse_predict':Begin
+       'leap_second_kernel/': fnames = rbsp_load_state_lsk_kernel(sc, files_in=fnamesk)
+       'operations_sclk_kernel/': fnames = rbsp_load_state_sclk_kernel(sc, files_in=fnamesk)
+       'ephemerides/':fnames = rbsp_load_state_eph_kernel(sc, files_in=fnamesk)
+       'ephemeris_predict_longterm/':fnames = rbsp_load_state_eph_predict_kernel(sc, files_in=fnamesk)
+       'eclipse_predict/':Begin
           fnames = rbsp_load_state_eclipse_time_files(sc, files_in=fnamesk)
        End
        Else:fnames = fnamesk
     Endcase
     If(~is_string(fnames)) Then continue
     nfile = n_elements(fnames)
+
     for i = 0L, nfile-1 do begin
       fname = fnames[i]
       pathname = mocdir + subdir + fname
@@ -419,6 +420,7 @@ end
 
 ;-------------------------------------------------------------------------------
 ;jmm, 2015-09-22 Added files_in so that URLS can be passed
+;New version, since files no longer contain the full mission, then 
 function rbsp_load_state_eph_kernel, sc, files_in = files_in
 
 compile_opt idl2, HIDDEN
@@ -433,18 +435,38 @@ If(keyword_set(files_in)) Then flist = files_in Else Begin
    flist = file_search(eph_dir, 'rbsp*')
 Endelse
 fnames = file_basename(flist)
+
+years0 = long(strmid(fnames, 6, 4))
+doys0 = long(strmid(fnames, 11, 3))
+jdays0 = julday(1, 1, years0) + doys0 - 1L
+
 years = long(strmid(fnames, 15, 4))
 doys  = long(strmid(fnames, 20, 3))
+jdays = julday(1, 1, years) + doys - 1L
+
 versions = long(strmid(fnames, 24, 2))
 
-jdays = julday(1, 1, years) + doys - 1L
-jday_max = max(jdays)
-ind = where(jdays eq jday_max, nind)
-v = versions[ind]
-f = flist[ind]
-dum = max(v, imax)
-return, f[imax]
+tspan = timerange()
+jday_sta = jbt_date2jday(strmid(time_string(tspan[0]+10),0,10))
+jday_end = jbt_date2jday(strmid(time_string(tspan[1]-10),0,10))
 
+ssjd = where(jday_sta Ge jdays0 And jday_end Le jdays, nind)
+
+If(nind Eq 0) Then Begin
+   dprint, 'No good ephemeris file for input time range: Using last file'
+   dprint, time_string(tspan)
+   jday_max = max(jdays)
+   ind = where(jdays eq jday_max, nind)
+   v = versions[ind]
+   f = flist[ind]
+   dum = max(v, imax)
+   return, f[imax]
+Endif Else Begin
+;use the last file for a given time range, jmm, 2016-04-29
+   ind = max(ssjd)
+   f = flist[ind]
+   return, f
+Endelse
 end
 
 ;-------------------------------------------------------------------------------
@@ -474,6 +496,7 @@ ind = where(jdays eq jday_max, nind)
 v = versions[ind]
 f = flist[ind]
 dum = max(v, imax)
+
 return, f[imax]
 
 end
@@ -647,17 +670,15 @@ end
 function rbsp_load_state_eclipse_time_files, sc, files_in=files_in
 compile_opt idl2, HIDDEN
 ; dprint, 'Hello world.'
+datadir = !rbsp_efw.local_data_dir
+datadir = expand_tilde(datadir)
+sep = path_sep()
+moc = datadir + 'MOC_data_products' + sep
+ecl_dir = moc + strupcase('rbsp' + sc) + sep + 'eclipse_predict' + sep
+
 If(keyword_set(files_in)) Then Begin
    all_ecl_files = file_basename(files_in)
-   ecl_dir = file_dirname(files_in, /mark_directory)
 Endif Else Begin
-   datadir = !rbsp_efw.local_data_dir
-   datadir = expand_tilde(datadir)
-   sep = path_sep()
-
-   moc = datadir + 'MOC_data_products' + sep
-   ecl_dir = moc + strupcase('rbsp' + sc) + sep + 'eclipse_predict' + sep
-
 ; Get all names of eclipse time files.
    all_ecl_files = file_basename(file_search(ecl_dir, 'rbsp*'))
 ; print, 'All eclipse time files (before stregex):'

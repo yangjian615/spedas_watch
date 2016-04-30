@@ -141,6 +141,10 @@ function thm_ui_slice2d_check, tlb, state, previous
   if t1 gt previous.trange[1] then return, 0b
   
   
+  ; Check eclipse corrections
+  id = widget_info(tlb, find_by_uname='eclipse')
+  if 2 * widget_info(id, /button_set) ne previous.eclipse then return, 0b
+  
   ;Check SST calibration
   id = widget_info(tlb, find_by_uname='sstcal')
   if widget_info(id, /button_set) ne previous.sst_cal then return, 0b
@@ -471,6 +475,9 @@ pro thm_ui_slice2d_gen, tlb, state
   rotation = widget_info(id, /combobox_gettext)
 
 
+  ; Get eclipse correction option
+  id = widget_info(tlb, find_by_uname='eclipse')
+  eclipse = 2 * widget_info(id, /button_set)
 
   ; Use new sst calibrations?
   id = widget_info(tlb, find_by_uname='sstcal')
@@ -576,15 +583,12 @@ pro thm_ui_slice2d_gen, tlb, state
         distribution = thm_part_dist_array(type=dtype[i], probe=probe, trange=trange, $
                           suffix=temp_suffix, err_msg=err_msg, $
                           /get_sun_direction, $  ;auto load sun vector
+                          use_eclipse_corrections = eclipse, $
                           ;esa background
                           bgnd_remove=bgnd_remove, bgnd_type=bgnd_type, $
                           bgnd_npoints=bgnd_npoints, bgnd_scale=bgnd_scale, $
                           ;use new sst cal
-                          sst_cal=sst_cal, $
-                          ;sst contamination
-                          mask_remove=mask_remove, fillin_method=fillin_method, $
-                          method_sunpulse_clean=method_sunpulse_clean, $
-                          limit_sunpulse_clean=limit_sunpulse_clean)
+                          sst_cal=sst_cal )
         
         
         ; Check for errors from thm_part_dist_array
@@ -614,6 +618,8 @@ pro thm_ui_slice2d_gen, tlb, state
     str_element, previous, 'didx', didx, /add ;# elements may change
     previous.probeidx = probeidx
     previous.trange = trange
+
+    previous.eclipse = eclipse
 
     previous.sst_cal = sst_cal
     
@@ -1659,8 +1665,8 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-24 18:16:46 -0700 (Thu, 24 Sep 2015) $
-;$LastChangedRevision: 18930 $
+;$LastChangedDate: 2016-04-29 18:14:19 -0700 (Fri, 29 Apr 2016) $
+;$LastChangedRevision: 20988 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
@@ -1671,7 +1677,7 @@ pro thm_ui_slice2d, gui_ID=gui_id, $
 
     compile_opt idl2
 
-  tlb_title = 'Particle Distribution Slices v4.3'
+  tlb_title = 'Particle Distribution Slices v4.4'
 
 if keyword_set(gui_ID) then begin
   tlb = widget_base(title = tlb_title, /col, /base_align_center, $ 
@@ -2039,6 +2045,10 @@ thm_graphics_config
        uname='sstcal', uval='SSTCAL', tooltip='See documentation in <?>.')
 
   ;General Widgets
+  genContToggleBase = widget_base(genContBase, /row, /nonexclusive)
+    eclipseButton = widget_button(genContToggleBase, value='Apply eclipse corrections', $
+      uname='eclipse', tooltip='Apply spin period corrections when spacecraft is eclipsed') 
+    
   countthresholdbase = widget_base(genContBase, /row)
     ctbuttonbase = widget_base(countthresholdbase, /row, xpad=0, ypad=0, /nonexclusive)
       ctbutton = widget_button(ctbuttonbase, value='Mask bins below: (counts) ', $
@@ -2226,9 +2236,6 @@ thm_graphics_config
   plotReplotBase = widget_base(plotoptionsbase3, /row, /base_align_center)
     replot = widget_button(plotReplotBase, value = 'Re-Plot', xsize=buttonsize, $
                          uval='REPLOT', tooltip='Replot current slice')
-;    zoombutton = widget_button(plotbuttonbase, value='Zoom', xsize=buttonsize, sens=0, $
-;                         uval='ZOOM', tooltip='Left click on plot to zoom.')
-
 
 
 
@@ -2353,7 +2360,7 @@ thm_graphics_config
   ;  if changing the following structure:
   previous = {probeidx:-1,didx:-1,mag:'',vtype:'',trange:[-1d,-1d], $
               bgnd_remove:-1, bgnd_type:'', bgnd_npoints:-1d, bgnd_scale:-1d, $
-              esa_remove:-1, sst_cal:-1}
+              esa_remove:-1, sst_cal:-1, eclipse:-1}
               
 
   ;State structure

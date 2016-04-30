@@ -11,11 +11,13 @@
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4']. 
 ;                       If no probe is specified the default is '1'
-;         level:        indicates level of data processing. levels include 'l1a', 'l1b'. 
-;                       The default if no level is specified is 'l1b'
-;         datatype:     feeps data types include ['electron', 'electron-bottom', 'electron-top', 
-;                       'ion', 'ion-bottom', 'ion-top']. 
-;                       If no value is given the default is 'electron'.
+;         level:        indicates level of data processing. levels include 'l2', 'l1b', 'l1a'. 
+;                       The default if no level is specified is 'l2'
+;         datatype:     feeps data types include:
+;                       L2, L1b: ['electron', 'ion']
+;                       L1a: ['electron-bottom', 'electron-top', 'ion-bottom', 'ion-top']
+;                       If no value is given the default is 'electron' for L2/L1b data, and all
+;                       for L1a data.
 ;         data_rate:    instrument data rates for feeps include 'brst' 'srvy'. The
 ;                       default is 'srvy'.
 ;         data_units:   specify units for omni-directional calculation and spin averaging
@@ -71,8 +73,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-27 16:03:31 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20955 $
+;$LastChangedDate: 2016-04-29 11:55:56 -0700 (Fri, 29 Apr 2016) $
+;$LastChangedRevision: 20978 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -85,14 +87,20 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version, spdf = spdf, num_smooth = num_smooth
 
+    if undefined(level) then level_in = 'l2' else level_in = level
     if undefined(probes) then probes_in = ['1'] else probes_in = probes
     if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
-    if undefined(level) then level_in = 'l1b' else level_in = level
     if undefined(data_units) then data_units = 'flux'
     if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
     if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '4.3.0'
     if undefined(get_support_data) then get_support_data = 1 ; support data needed for sun removal and spin averaging
-      
+    l1a_datatypes = ['electron-bottom', 'electron-top', 'ion-top', 'ion-bottom']
+    
+    if level_in eq 'l1a' && ~is_array(ssl_set_intersection(l1a_datatypes, [datatype_in])) then begin
+        dprint, dlevel = 0, 'Couldn''t find the datatype: "' + datatype_in + '" for L1a data; loading all data...'
+        datatype_in = l1a_datatypes
+    endif
+    
     mms_load_data, trange = trange, probes = probes_in, level = level_in, instrument = 'feeps', $
         data_rate = data_rate_in, local_data_dir = local_data_dir, source = source, $
         datatype = datatype_in, get_support_data=get_support_data, $ ; support data is needed for spin averaging, etc.
@@ -102,6 +110,8 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
         spdf = spdf
     
     if undefined(tplotnames) || tplotnames[0] eq '' then return
+    
+    if level_in eq 'l1a' then return ; avoid the following for L1a data
     
     for probe_idx = 0, n_elements(probes_in)-1 do begin
       this_probe = string(probes_in[probe_idx])

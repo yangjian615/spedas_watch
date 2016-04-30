@@ -22,23 +22,24 @@
 ; OUTPUT:
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 11:45:05 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20210 $
+;$LastChangedDate: 2016-04-29 14:54:18 -0700 (Fri, 29 Apr 2016) $
+;$LastChangedRevision: 20982 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad_spinavg.pro $
 ;
 ; REVISION HISTORY:
 ;       + 2016-01-26, I. Cohen      : added scopes keyword and scope_suffix definition to allow for distinction between single telescope PADs (reflects change in mms_eis_pad.pro)
-;                                   
+;       + 2016-04-29 egrimes        : fixed issues with the suffix keyword                 
 ;-
 
 pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units, $
   datatype = datatype, energy = energy, bin_size = bin_size, data_rate = data_rate, $
   suffix = suffix, scopes = scopes
+  
   if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
   if undefined(datatype) then datatype = 'extof'
   if undefined(data_units) then data_units = 'flux'
   if undefined(species) then species = 'proton'
-  if undefined(suffix) then suffix = ''
+  if undefined(suffix) then suffix_in = '' else suffix_in = suffix
   if undefined(energy) then energy = [0, 1000]
   if undefined(bin_size) then bin_size = 15
   if undefined(data_rate) then data_rate = 'srvy'
@@ -48,9 +49,9 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
   units_label = data_units eq 'cps' ? '1/s': '1/(cm!U2!N-sr-s-keV)'
 
   if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_'+datatype+'_' else prefix = 'mms'+probe+'_epd_eis_'+datatype+'_'
-  if (n_elements(scopes) eq 1) then scope_suffix = '_t'+scopes else if (n_elements(scopes) eq 6) then scope_suffix = '_omni'
+  if (n_elements(scopes) eq 1) then scope_suffix = '_t'+scopes+suffix_in else if (n_elements(scopes) eq 6) then scope_suffix = '_omni'+suffix_in
   ; get the spin #s asscoiated with each measurement
-  get_data, prefix + 'spin', data=spin_nums
+  get_data, prefix + 'spin'+suffix_in, data=spin_nums
 
   ; find where the spins start
   spin_starts = uniq(spin_nums.Y)
@@ -77,8 +78,7 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
     current_start = spin_starts[spin_idx]+1
   endfor
 
-  suffix = suffix + '_spin'
-  newname = prefix+en_range_string+'_'+species+'_'+data_units+scope_suffix+'_pad'+suffix
+  newname = prefix+en_range_string+'_'+species+'_'+data_units+scope_suffix+'_pad_spin'
 
   ; rebin the data before storing it
   ; the idea here is, for bin_size = 15 deg, rebin the data from center points to:

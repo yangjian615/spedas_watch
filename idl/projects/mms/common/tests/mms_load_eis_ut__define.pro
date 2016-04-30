@@ -6,10 +6,24 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-20 09:51:17 -0700 (Wed, 20 Apr 2016) $
-; $LastChangedRevision: 20862 $
+; $LastChangedDate: 2016-04-29 14:54:42 -0700 (Fri, 29 Apr 2016) $
+; $LastChangedRevision: 20983 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_eis_ut__define.pro $
 ;-
+function mms_load_eis_ut::test_load_pad_suffix
+  mms_load_eis, datatype='phxtof', level='l2', probe=3, suffix='_p'
+  mms_eis_pad, datatype='phxtof', suffix='_p', probe=3
+  assert, spd_data_exists('mms3_epd_eis_phxtof_0-1000keV_proton_flux_omni_p_pad_spin mms3_epd_eis_phxtof_0-1000keV_proton_flux_omni_p_pad mms3_epd_eis_phxtof_0-1000keV_oxygen_flux_omni_p_pad_spin mms3_epd_eis_phxtof_0-1000keV_oxygen_flux_omni_p_pad', '2015-12-15', '2015-12-16'), $
+    'Problem loading EIS PAD with suffix keyword'
+  return, 1
+end
+
+function mms_load_eis_ut::test_load_with_suffix
+  mms_load_eis, datatype='phxtof', level='l2', probe=4, suffix='_s'
+  assert, spd_data_exists('mms4_epd_eis_phxtof_proton_flux_omni_s_spin mms4_epd_eis_phxtof_oxygen_flux_omni_s_spin mms4_epd_eis_phxtof_proton_flux_omni_s mms4_epd_eis_phxtof_oxygen_flux_omni_s mms4_epd_eis_phxtof_proton_P3_flux_t5_s_spin mms4_epd_eis_phxtof_pitch_angle_t0_s', '2015-12-15', '2015-12-16'), $
+    'Problem loading EIS PHxTOF data with a suffix'
+  return, 1
+end
 
 function mms_load_eis_ut::test_phxtof_omni_spec_load
   mms_load_eis, datatype='phxtof', level='l2', probe=1

@@ -18,6 +18,7 @@
 ;               for PHxTOF data, valid options are 'proton', 'oxygen'
 ;               for ExTOF data, valid options are 'proton', 'oxygen', and/or 'alpha'
 ;         scopes: string array of telescopes to be included in PAD ('0'-'5')
+;         suffix: suffix used when loading the data
 ;
 ; EXAMPLES:
 ;
@@ -29,8 +30,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp and Ian Cohen (APL)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-06 09:12:28 -0700 (Wed, 06 Apr 2016) $
-;$LastChangedRevision: 20730 $
+;$LastChangedDate: 2016-04-29 14:54:18 -0700 (Fri, 29 Apr 2016) $
+;$LastChangedRevision: 20982 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -41,14 +42,17 @@
 ;       + 2016-01-26, I. Cohen      : added scope_suffix definition to allow for distinction between single telescope PADs
 ;                                   : added to call to mms_eis_pad_spinavg.pro
 ;       + 2016-02-26, I. Cohen      : changed 'cps' units_label from 'Counts/s' to '1/s' for compliance with mission standards
+;       + 2016-04-29, egrimes       : implemented suffix keyword, now allowing probe to be passed as an integer
 ;-
 
 pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = data_rate, $
                 energy = energy, bin_size = bin_size, data_units = data_units, $
-                datatype = datatype, ion_type = ion_type, scopes = scopes, level = level
+                datatype = datatype, ion_type = ion_type, scopes = scopes, level = level, $
+                suffix = suffix
+                
     compile_opt idl2
     ;if not KEYWORD_SET(trange) then trange = ['2015-06-28', '2015-06-29']
-    if not KEYWORD_SET(probe) then probe = '1'
+    if not KEYWORD_SET(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
     if not KEYWORD_SET(species) then species = 'all'
     if not KEYWORD_SET(ion_type) then ion_type = ['oxygen', 'proton']
     ;if not KEYWORD_SET(energy) then energy = [35,45] ; set default energy as lowest energy channel in keV
@@ -60,13 +64,13 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
     if not KEYWORD_SET(datatype) then datatype = 'extof'
     if undefined(level) then level = 'l2'
     if datatype eq 'electronenergy' then ion_type = 'electron'
+    if undefined(suffix) then suffix = ''
    
     ; would be good to get this from the metadata eventually
     units_label = data_units eq 'cps' ? '1/s': '1/(cm!U2!N-sr-s-keV)'
     if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_' else prefix = 'mms'+probe+'_epd_eis_'
-    ;suffix = '_spin'
-    suffix = ''
-    if (n_elements(scopes) eq 1) then scope_suffix = '_t'+scopes else if (n_elements(scopes) eq 6) then scope_suffix = '_omni'
+
+    if (n_elements(scopes) eq 1) then scope_suffix = '_t'+scopes+suffix else if (n_elements(scopes) eq 6) then scope_suffix = '_omni'+suffix
 
     if energy[0] gt energy[1] then begin
         print, 'Low energy must be given first, then high energy in "energy" keyword'
@@ -85,7 +89,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
     status = 1
  
     ; check to make sure the data exist
-    get_data, prefix + datatype + '_pitch_angle_t0', data=d, index = index
+    get_data, prefix + datatype + '_pitch_angle_t0'+suffix, data=d, index = index
     if index eq 0 then begin
       print, 'No data is currently loaded for probe '+probe+' for the selected time period'
       status = 0
@@ -183,7 +187,8 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
           zlim, new_name, 0, 0, 1
                
           ; now do the spin average
-          mms_eis_pad_spinavg, probe=probe, species=ion_type[ion_type_idx], datatype=datatype, energy=energy, data_units=data_units, bin_size=bin_size, data_rate = data_rate, scopes=scopes
+          mms_eis_pad_spinavg, probe=probe, species=ion_type[ion_type_idx], datatype=datatype, energy=energy, data_units=data_units, $
+            bin_size=bin_size, data_rate = data_rate, scopes=scopes, suffix = suffix
       endfor
     endif
 end
