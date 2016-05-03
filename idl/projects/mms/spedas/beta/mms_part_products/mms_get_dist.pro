@@ -9,7 +9,9 @@
 ;
 ;
 ;Calling Sequence:
-;  data = mms_get_dist( input_name [,trange=trange] [/times] [/structure]
+;  data = mms_get_dist( input_name [,trange=trange] [/times] [/structure] 
+;                       [,probe=probe] [,species=species] 
+;                       [,instrument=instrument] [,units=units] )
 ;
 ;
 ;Input:
@@ -17,6 +19,14 @@
 ;  trange:  Optional two element time range
 ;  times:  Flag to return array of full distribution sample times
 ;  structure:  Flag to return structures instead of pointer to structures
+;
+;  probe: specify probe if not present or correct in input_name 
+;  species:  specify particle species if not present or correct in input_name
+;                e.g. 'hplus', 'i', 'e'
+;  instrument:  specify instrument if not present or correct in input_name 
+;                  'hpca' or 'fpi'
+;  units:  (HPCA only) specify units of input data if not present or correct in input_name
+;              e.g. 'flux', 'df_cm'  (note: 'df' is in km, 'df_cm' is in cm)
 ;
 ;
 ;Output:
@@ -30,13 +40,13 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-18 17:31:20 -0700 (Fri, 18 Mar 2016) $
-;$LastChangedRevision: 20511 $
+;$LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
+;$LastChangedRevision: 20992 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_get_dist.pro $
 ;-
 
 function mms_get_dist, tname, index, trange=trange, times=times, structure=structure, $
-                       probe=probe, species=species, instrument=instrument
+                       probe=probe, species=species, instrument=instrument, units=units
 
     compile_opt idl2, hidden
 
@@ -49,7 +59,7 @@ endif
 
 
 case strlowcase(instrument) of
-  'hpca': return, mms_get_hpca_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species)
+  'hpca': return, mms_get_hpca_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species, units=units)
   'fpi': return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species)
   'null': dprint, dlevel=1, 'Cannot determine instrument from variable name; please specify with INSTRUMENT keyword'
   else: dprint, dlevel=1, 'Unknown instrument: "'+instrument+'"'

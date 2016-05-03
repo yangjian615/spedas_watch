@@ -17,7 +17,7 @@ i_load=1 ; =1 if data has not been loaded, =0 of data has already been loaded (n
 
 i_print=0 ; = 1 to generate a postscript file of plot (default name is 'plot.ps')
 
-; to zoon in and out, use tlimit (various options in tlimit: 'tlimit,/last', 'tlimit,/full', 'tlimit,time1, time2')
+; to zoom in and out, use tlimit (various options in tlimit: 'tlimit,/last', 'tlimit,/full', 'tlimit,time1, time2')
 
 timespan,'2015-11-15/11:45', 4.2, /hour ; (other often-used options are /day or /min)
 

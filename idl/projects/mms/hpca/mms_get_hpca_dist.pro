@@ -7,7 +7,8 @@
 ;  for use with spd_slice2d.
 ;
 ;Calling Sequence:
-;  data = mms_get_hpca_dist(tname [,index] [,trange=trange] [,/times] [,/structure])
+;  data = mms_get_hpca_dist(tname [,index] [,trange=trange] [,/times] [,/structure]
+;                                 [,probe=probe] [,species=species] [,units=units] )
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
@@ -15,6 +16,11 @@
 ;  trange:  Two element time range to constrain the requested data
 ;  times:  Flag to return full array of time samples
 ;  structure:  Flag to return a structure array instead of a pointer.  
+;
+;  probe: Specify probe if not present or correct in input_name 
+;  species:  Specify species if not present or correct in input_name
+;  units:  Specify units of input data if not present or correct in input_name
+;
 ;
 ;Output:
 ;  return value: pointer to array of pseudo 3D particle distribution structures
@@ -25,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-21 14:15:55 -0700 (Thu, 21 Apr 2016) $
-;$LastChangedRevision: 20874 $
+;$LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
+;$LastChangedRevision: 20992 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 

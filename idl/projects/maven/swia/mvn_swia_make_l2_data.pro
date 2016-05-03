@@ -20,8 +20,8 @@
 ;	OLDCAL: Use old calibration factors appropriate for original table
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2016-01-18 10:26:16 -0800 (Mon, 18 Jan 2016) $
-; $LastChangedRevision: 19752 $
+; $LastChangedDate: 2016-05-02 09:07:26 -0700 (Mon, 02 May 2016) $
+; $LastChangedRevision: 20990 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_make_l2_data.pro $
 ;
 ;-
@@ -127,7 +127,21 @@ for i = 0,days-1 do begin
 		endif else news = 0
 	endif else news = 0
 		
-	if newc then mvn_swia_make_swic_cdf,archive = archive,data_version='v'+version+'r'+revision,file = opath+yyyy+'/'+mmmm+'/mvn_swi_l2_coarse'+type+'3d_'+yyyy+mmmm+dddd+'_v'+version+'_r'+revision+'.cdf'
+
+
+
+
+	if newc then begin
+		if type eq 'svy' then begin
+			wind = where(swics.time_unix ge (time_double(date)-600) and swics.time_unix le (time_double(date)+24.*3600+600),nwind)
+			if nwind gt 0 then swics = swics[wind]	
+		endif else begin
+			wind = where(swica.time_unix ge (time_double(date)-600) and swica.time_unix le (time_double(date)+24.*3600+600),nwind)
+			if nwind gt 0 then swica = swica[wind]
+		endelse		
+	
+		mvn_swia_make_swic_cdf,archive = archive,data_version='v'+version+'r'+revision,file = opath+yyyy+'/'+mmmm+'/mvn_swi_l2_coarse'+type+'3d_'+yyyy+mmmm+dddd+'_v'+version+'_r'+revision+'.cdf'
+	endif
 	if newf then mvn_swia_make_swif_cdf,archive = archive,data_version='v'+version+'r'+revision,file = opath+yyyy+'/'+mmmm+'/mvn_swi_l2_fine'+type+'3d_'+yyyy+mmmm+dddd+'_v'+version+'_r'+revision+'.cdf'
 
 	if type eq 'svy' then begin

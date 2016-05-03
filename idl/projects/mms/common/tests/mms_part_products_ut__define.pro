@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-04-27 14:28:17 -0700 (Wed, 27 Apr 2016) $
-; $LastChangedRevision: 20944 $
+; $LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
+; $LastChangedRevision: 20992 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_products_ut__define.pro $
 ;-
 
@@ -348,7 +348,7 @@ end
 
 
 ;+
-; Test probe, species, and instrument keywords
+; Test probe, species, instrument, and units keywords
 ;-
 function mms_part_products_ut::test_info_keywords
 
@@ -364,7 +364,7 @@ function mms_part_products_ut::test_info_keywords
 
   store_data, self.data, newname='test_var'
 
-  mms_part_products, 'test_var', trange=self.trange, probe='1', species='hplus', instrument='hpca'
+  mms_part_products, 'test_var', trange=self.trange, probe='1', species='hplus', instrument='hpca', input_units='df_cm'
 
   hpca_success = spd_data_exists('test_var_energy',self.trange[0],self.trange[1])   
 
@@ -492,7 +492,8 @@ end
 ;-
 pro mms_part_products_ut::setup
   del_data, '*'
-  window, 0, xs=1000, ys=1000
+  window, 0, xs=1100, ys=1000
+  tplot_options, 'xmargin', [18,10]
 end
 
 

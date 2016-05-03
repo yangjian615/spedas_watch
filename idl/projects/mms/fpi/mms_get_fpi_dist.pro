@@ -7,7 +7,8 @@
 ;  data for use with spd_slice2d. 
 ;
 ;Calling Sequence:
-;  data = mms_get_fpi_dist(tname [,index] [,trange=trange] [,/times] [,/structure])
+;  data = mms_get_fpi_dist(tname [,index] [,trange=trange] [,/times] [,/structure]
+;                                [,probe=probe] [,species=species] )
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
@@ -15,6 +16,9 @@
 ;  trange:  Two element time range to constrain the requested data
 ;  times:  Flag to return full array of time samples
 ;  structure:  Flag to return a structure array instead of a pointer.  
+;
+;  probe: specify probe if not present or correct in input_name 
+;  species:  specify species if not present or correct in input_name
 ;
 ;Output:
 ;  return value: pointer to array of 3D particle distribution structures
@@ -24,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-01 11:26:04 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20693 $
+;$LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
+;$LastChangedRevision: 20992 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 

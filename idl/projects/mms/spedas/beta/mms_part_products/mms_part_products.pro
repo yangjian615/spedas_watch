@@ -73,9 +73,10 @@
 ;  
 ;  suffix:  Suffix to append to output tplot variable names 
 ;
-;  instrument:  Specify instrument when it cannot be parsed from tplot_name
-;  species:  Specify species when it cannot be parsed from tplot_name
 ;  probe:  Specify probe designation when it cannot be parsed from tplot_name
+;  species:  Specify species when it cannot be parsed from tplot_name
+;  instrument:  Specify instrument when it cannot be parsed from tplot_name
+;  input_units:  (HPCA only) Specify units of input data when they cannot be parsed from tplot_name
 ;
 ;  start_angle:  Set a start angle for azimuthal spectrogram y axis
 ;    
@@ -94,8 +95,8 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-04-27 14:25:09 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20943 $
+;$LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
+;$LastChangedRevision: 20992 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -106,6 +107,7 @@ pro mms_part_products, $
                                     ;needed for some FAC
                      instrument=instrument, $ ;can be specified if not in tplot variable name 
                      species=species, $ ;can be specified if not in tplot variable name
+                     input_units=input_units, $ ;specify hpca units if not in varname
 
                      energy=energy,$ ;two element energy range [min,max]
                      trange=trange,$ ;two element time range [min,max]
@@ -259,7 +261,8 @@ pro mms_part_products, $
   ;Get array of sample times and initialize indices for loop
   ;--------------------------------------------------------
   
-  times = mms_get_dist(in_tvarname, /times, probe=probe, species=species, instrument=instrument)
+  times = mms_get_dist(in_tvarname, /times, probe=probe, species=species, $
+                       instrument=instrument, units=input_units)
 
   if size(times,/type) ne 5 then begin
     dprint,dlevel=1, 'No ',in_tvarname,' data has been loaded.'
@@ -322,7 +325,8 @@ pro mms_part_products, $
   
     ;Get the data structure for this samgple
 
-    dist = mms_get_dist(in_tvarname, time_idx[i], /structure, probe=probe, species=species, instrument=instrument)
+    dist = mms_get_dist(in_tvarname, time_idx[i], /structure, probe=probe, $
+                        species=species, instrument=instrument, units=input_units)
 
     ;Sanitize Data.
     ;#1 removes uneeded fields from struct to increase efficiency
