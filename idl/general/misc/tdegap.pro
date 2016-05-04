@@ -116,11 +116,11 @@ Pro tdegap, varnames_in, dt = dt, margin = margin, $
         xdegap, dx, mar, temporary(x), temporary(y), $
           x_out, y_out, iindices = ii, maxgap=maxgap, flag=flag, $
           output_message=xdegap_message, display_object=display_object, $
-          _extra = _extra
+          n_gaps=n_gaps, _extra = _extra
         if arg_present(output_message) && is_string(xdegap_message) then begin
           output_message = array_concat(xdegap_message,output_message)
         endif
-        If(x_out[0] Ne -1) Then Begin
+        If(x_out[0] Ne -1) && n_gaps gt 0 Then Begin
           If(degap_v) Then Begin
             v_out = make_array(dimension = size(y_out, /dim), type = size(v, /type), $
                                value = 'NaN')
@@ -146,7 +146,7 @@ Pro tdegap, varnames_in, dt = dt, margin = margin, $
           Else new_name = nvn[j]
           store_data, new_name, data = d, dlim = dlim, lim = lim
         Endif Else Begin
-          msg = 'No Degapping of: '+varnames[j]
+          msg = (x_out[0] eq -1 ? 'Error Degapping: ' : 'No gaps found: ')+varnames[j]
           dprint,msg, display_object=display_object
           if arg_present(output_message) then begin
             output_message = array_concat([msg],output_message)

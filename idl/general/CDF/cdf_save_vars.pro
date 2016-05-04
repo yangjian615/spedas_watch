@@ -4,6 +4,12 @@
 ;		The structure format is the structure produced by cdf_load_vars.pro
 ; INPUTS:   cdf_structure : IDL structure defined by cdf_load_vars.pro
 ;	    new_cdf_name  : a string to name the new CDF file with
+;	    
+;	    compress_cdf: if this is set, the produced cdf is compressed
+;	    cdfconvert: (optional) location of cdfconvert utility (eg. /usr/local/pkg/cdf-3.6.1_CentOS-6.6/bin/cdfconvert)
+;	    cdfparams: (optional) cdf compression parameters
+;	    cdf_compress_error: (optional) return string for compression errors 
+;	    
 ; OUTPUTS:  CDF file named by the new_cdf_name input
 ; EXAMPLE:  dummy = cdf_save_vars(cdfi,'newcdf.cdf')
 ;
@@ -15,10 +21,12 @@
 
 ;------------------------------------------------------------------------------------------
 
-function cdf_save_vars, cdf_structure, new_cdf_name
+function cdf_save_vars, cdf_structure, new_cdf_name, compress_cdf=compress_cdf, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_compress_error=cdf_compress_error
 
 ;check input
 ;-----------
+if not keyword_set(compress_cdf) then compress_cdf=0 else compress_cdf=1
+
 if not keyword_set(cdf_structure) then begin
   print, "No valid input."
   print, "Example: dummy=cdf_save_vars(idl_structure,'newcdf.cdf')"
@@ -161,5 +169,10 @@ endfor  ; i
 ;close cdf file
 ;--------------
 cdf_close,id
+
+; after the file is produced, we can compress it
+if (compress_cdf eq 1) then begin
+  spd_cdf_compress, new_cdf_name, replace=1, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_compress_error=cdf_compress_error
+endif
 
 end

@@ -53,9 +53,9 @@
 ;          Send me an email --> egrimes@igpp.ucla.edu
 ;          
 ;          
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2016-03-30 09:41:24 -0700 (Wed, 30 Mar 2016) $
-;$LastChangedRevision: 20632 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-03 14:32:57 -0700 (Tue, 03 May 2016) $
+;$LastChangedRevision: 21012 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 
@@ -94,7 +94,7 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
             copy_data, ras_dec_vars[1], 'mms'+strcompress(string(probes[probe_idx]), /rem)+'_defatt_spindec'+suffix
         endif else dprint, dlevel = 1, 'No right ascension/declination of the L-vector found.'
         ; fix the metadata
-        mms_mec_fix_metadata, probes[probe_idx]
+        mms_mec_fix_metadata, probes[probe_idx], suffix = suffix
     endfor
 
 end

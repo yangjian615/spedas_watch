@@ -95,8 +95,8 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
-;$LastChangedRevision: 20992 $
+;$LastChangedDate: 2016-05-02 18:49:36 -0700 (Mon, 02 May 2016) $
+;$LastChangedRevision: 20994 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -312,6 +312,16 @@ pro mms_part_products, $
     endif else begin
       mms_pgs_clean_support, times, probe, mag_name, sc_pot_name, mag_out=mag_data, sc_pot_out=sc_pot_data
     endelse
+  endif
+
+  ;print warning for FAC moments
+  if in_set(outputs_lc,'fac_moments') then begin
+    dprint, dlevel=0, '=========================================================='
+    dprint, dlevel=0, 'WARNING:  '
+    dprint, dlevel=0, 'Field aligned moments should be considered experimental.  '+ $
+                      'All output variables will be in the coordinates defined by '+ $
+                      'the fac_type option (default: ''mphigeo'').'
+    dprint, dlevel=0, '=========================================================='
   endif
 
 

@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
-; $LastChangedRevision: 20992 $
+; $LastChangedDate: 2016-05-02 18:19:10 -0700 (Mon, 02 May 2016) $
+; $LastChangedRevision: 20993 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_products_ut__define.pro $
 ;-
 
@@ -40,13 +40,13 @@ function mms_part_products_ut::test_all_outputs
   
     success[i] = spd_data_exists([basic_spectra,fac_spectra,moments],self.trange[0],self.trange[1])
     
-    tplot, basic_spectra
+    tplot, basic_spectra, title=species[i]+' basic spectra'
     makepng, self.prefix+species[i]+'_basic_spectra'
   
-    tplot, fac_spectra
+    tplot, fac_spectra, title=species[i]+' FAC spectra'
     makepng, self.prefix+species[i]+'_fac_spectra'
   
-    tplot, moments
+    tplot, moments, title=species[i]+' moments'
     makepng, self.prefix+species[i]+'_moments'
 
   endfor
@@ -79,7 +79,7 @@ function mms_part_products_ut::test_energy_limits
 
     assert, spd_data_exists([energy,phi,dens],self.trange[0],self.trange[1]), 'Failed to produce one ore more outputs for: '+species[i] 
 
-    tplot, [energy,phi,dens]
+    tplot, [energy,phi,dens], title='original vs. energy limited outputs'
     makepng, self.prefix+species[i]+'_energy_limits'
 
   endfor
@@ -109,7 +109,7 @@ function mms_part_products_ut::test_phi_limits
 
     assert, spd_data_exists([energy,phi,vel],self.trange[0],self.trange[1]), 'Failed to produce one ore more outputs for: '+species[i] 
 
-    tplot, [energy,phi,vel]
+    tplot, [energy,phi,vel], title='original vs. phi limited outputs'
     makepng, self.prefix+species[i]+'_phi_limits'
 
   endfor
@@ -139,7 +139,7 @@ function mms_part_products_ut::test_theta_limits
 
     assert, spd_data_exists([energy,theta,vel],self.trange[0],self.trange[1]), 'Failed to produce one ore more outputs for: '+species[i] 
 
-    tplot, [energy,theta,vel]
+    tplot, [energy,theta,vel], title='original vs. theta limited outputs'
     makepng, self.prefix+species[i]+'_theta_limits'
 
   endfor
@@ -173,7 +173,7 @@ function mms_part_products_ut::test_unit_transform
 
     assert, spd_data_exists(names,self.trange[0],self.trange[1]), 'Outputs missing for "'+units[i]+'" units'  
 
-    tplot, names
+    tplot, names, title='compare output for different input units (plots should be identical)'
     makepng, self.prefix+units[i] + '_energy_spectra' 
 
   endfor
@@ -208,7 +208,7 @@ function mms_part_products_ut::test_fac_types
     
     assert, spd_data_exists(names,self.trange[0],self.trange[1]), 'Failed to produce FAC variants for '+species[j]
   
-    tplot, [self.pos,self.mag,names]
+    tplot, [self.pos,self.mag,names], title='compare gyro plots for different FAC options'
     makepng, self.prefix+species[j]+'_fac_types'
 
   endfor
@@ -235,10 +235,10 @@ function mms_part_products_ut::test_implicit_fac
   
   assert, spd_data_exists([dens,espec],self.trange[0],self.trange[1]), 'Failed to produce expected outputs'
 
-  tplot, dens
+  tplot, dens, title='compare original outputs to those with limits on gyrophase or pitch angle'
   makepng, self.prefix+'density_with_fac_limits'
   
-  tplot, espec
+  tplot, espec, title='compare original outputs to those with limits on gyrophase or pitch angle'
   makepng, self.prefix+'energy_spec_with_fac_limits'
   
   return, 1
@@ -274,16 +274,16 @@ function mms_part_products_ut::test_hpca_vs_fpi
   assert, spd_data_exists(fpi+'_'+['energy','phi','theta','velocity'],trange[0],trange[1]), 'Failed to produce some FPI outputs'
   assert, spd_data_exists(hpca+'_'+['energy','phi','theta','velocity'],trange[0],trange[1]), 'Failed to produce some HPCA outputs'
 
-  tplot, [fpi,hpca] + '_energy'
+  tplot, [fpi,hpca] + '_energy', title='compare fpi & hpca outputs'
   makepng, self.prefix+'fpi_hpca_energy_comparison'
 
-  tplot, [fpi,hpca] + '_phi'
+  tplot, [fpi,hpca] + '_phi', title='compare fpi & hpca outputs'
   makepng, self.prefix+'fpi_hpca_phi_comparison'
 
-  tplot, [fpi,hpca] + '_theta'
+  tplot, [fpi,hpca] + '_theta', title='compare fpi & hpca outputs'
   makepng, self.prefix+'fpi_hpca_theta_comparison'
 
-  tplot, [fpi,hpca] + '_velocity'
+  tplot, [fpi,hpca] + '_velocity', title='compare fpi & hpca outputs'
   makepng, self.prefix+'fpi_hpca_velocity_comparison'
 
   return, 1
@@ -307,7 +307,7 @@ function mms_part_products_ut::test_hpca_vs_cdf
   options, names[0:1], yrange=[1,100], /ylog
   options, names[2:3], yrange=[-400,400]
 
-  tplot, names
+  tplot, names, title='compare hpca outputs with l2 moments'
   makepng, self.prefix+'hpca_cdf_comparison'
 
   return, 1
@@ -338,7 +338,7 @@ function mms_part_products_ut::test_fpi_vs_cdf
     options, names[0:1], yrange=[1,100], /ylog
     options, names[2:3], yrange=[-400,400]
 
-    tplot, names
+    tplot, names, title='compare fpi outputs with l2 moments'
     makepng, self.prefix+'fpi_'+species[i]+'_cdf_comparison'
 
   endfor

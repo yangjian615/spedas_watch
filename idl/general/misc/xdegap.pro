@@ -45,6 +45,7 @@
 ;                spectrograms. The exeption is if only one NAN fits in
 ;                the gap given the input parameters, then only one is
 ;                used.
+; n_gaps = the number of gaps found
 ; gap_begin = the double-precision start times of the detected gaps.
 ; gap_end = the double-precision end times of the detected gaps.
 ; display_object = Object reference to be passed to dprint for output.
@@ -58,19 +59,21 @@
 ; Added comment to test svn version 4_00, jmm, 28-apr-2008
 ; Added ONENANPERGAP kw, W.M.F., 5 May, 2009.
 ; Added GAP_BEGIN, GAP_END kwd's, 12 June, 2009.
-;Added _extra keyword, 20-oct-2009, jmm
-;Added output_message keyword Feb-02-2011 prc
-;Added twonanpergap, jmm, 14-aug-2012
+; Added _extra keyword, 20-oct-2009, jmm
+; Added output_message keyword Feb-02-2011 prc
+; Added twonanpergap, jmm, 14-aug-2012
+; Return inputs instead of -1 if no gaps found, added n_gaps keyword, af 2016-05-03
+;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-29 12:48:05 -0700 (Thu, 29 May 2014) $
-;$LastChangedRevision: 15260 $
+;$LastChangedDate: 2016-05-03 13:28:56 -0700 (Tue, 03 May 2016) $
+;$LastChangedRevision: 21010 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/xdegap.pro $
 ;-
 pro xdegap, dt, margin, ct0, y, ct_out, y_out, nowarning = nowarning, $
             iindices = iindices, maxgap = maxgap, flag = flag_in, $
             onenanpergap = onenanpergap, output_message=output_message, $
             display_object=display_object, twonanpergap=twonanpergap, $
-            gap_begin = gstart, gap_end = gend, _extra = _extra
+            n_gaps=n_gaps, gap_begin = gstart, gap_end = gend, _extra = _extra
 ;
 ; EXAMPLES:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -87,6 +90,10 @@ pro xdegap, dt, margin, ct0, y, ct_out, y_out, nowarning = nowarning, $
 
   compile_opt idl2, hidden
 
+  ct_out = -1
+  y_out = -1
+  n_gaps = 0
+
   if (where( size(y, /type) eq [9, 6, 5, 4] ))[0] eq -1 then begin
     msg = '*** WARNING: Input data array not floating point: Gaps will be assigned the value "0".'
     dprint, msg, display_object=display_object
@@ -94,7 +101,7 @@ pro xdegap, dt, margin, ct0, y, ct_out, y_out, nowarning = nowarning, $
       output_message = array_concat([msg],output_message)
     endif
   endif
-  ct_out = -1 &  y_out = -1
+  
   if ~undefined(flag_in) && ((where(size(flag_in[0], /type) eq [1,2,3,4,5,6,9,12,13,14,15]))[0] ne -1 ) then flag = flag_in[0] else begin
     if ~undefined(flag_in) then begin
       msg =  "*** WARNING: FLAG keyword value invalid.  Defaulting to floating NaN."
@@ -172,6 +179,7 @@ pro xdegap, dt, margin, ct0, y, ct_out, y_out, nowarning = nowarning, $
   toterror = double(0.)
   iaugment = long(0)
   if (iany gt 0) then begin
+    n_gaps = iany  ;output # of gaps
     gstart = t[i2add]
     gend = t[i2add+1L]
     imore = lonarr(iany)
@@ -301,6 +309,11 @@ pro xdegap, dt, margin, ct0, y, ct_out, y_out, nowarning = nowarning, $
       endif
     endif
   endif else begin
+
+    ;output original data if no gaps were found - af 2016-05-03
+    y_out = y
+    ct_out = ct0
+    iindices = lindgen(n_elements(ct_out))
   
     msg = 'No data gaps detected larger than '+strtrim(dt+margin,2)+$
       ' and less than '+strtrim(mxgp,2)+' seconds'

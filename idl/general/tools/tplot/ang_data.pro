@@ -23,7 +23,7 @@ if size(cdl, /type) ne 0 then begin
     else:
   endcase
 endif
-endify2 = data_cut(d2,d1.x)
+y2 = data_cut(d2,d1.x)
 y1 = d1.y
 dot = total(y1*y2,2)
 y1m = sqrt(total(y1^2,2))

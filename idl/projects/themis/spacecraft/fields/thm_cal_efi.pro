@@ -259,10 +259,10 @@ end
 ;	-- fixed, nominal calibration pars used (gains and
 ;          frequency responses), rather than proper time-dependent parameters.
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2016-05-03 13:38:56 -0700 (Tue, 03 May 2016) $
+; $LastChangedRevision: 21011 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_efi.pro $
 ;-
 pro thm_cal_efi, probe = probe, datatype = datatype, $
                  valid_names = valid_names, verbose = verbose, coord = coord, $
@@ -753,18 +753,19 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
   
 ; Find any gaps in the data (for E12 and E34 separately):
 ;
+                      ;added n_gaps to fully accommodate change to xdegap - af 2016-05-03
                       xdegap, gap_trigger_value, 0., d.x[w], float(d.y[w, 0:1]), x_out, y_out, iindices = ii, $
-                        /onenanpergap, /nowarning, gap_begin = gap_begin, gap_end = gap_end
+                        /onenanpergap, /nowarning, n_gaps=n_gaps, gap_begin = gap_begin, gap_end = gap_end
   
 ; Smooth each chunk of data individually (if there are N gaps, then there are N+1 chunks):
 ; *** Truncate N_SPINS, if chunk is too short, and send warning MESSAGE. ***
 ; ****************************************************************************************
                       for j = 0, 1 do begin ;0 for E12, 1 for E34.
                         dprint, dlevel=2,'Calculating offset estimation for '+(j eq 0 ? 'E12' : 'E34')+'...'
-                        if y_out[0] ne -1 then q = where(finite(y_out[*, j], /nan)) else q = -1
+                        if y_out[0] ne -1 && n_gaps gt 0 then q = where(finite(y_out[*, j], /nan)) else q = -1
                         if q[0] ne -1 then begin
                           imap = lindgen(n_elements(ii)) ;Maps indices in x/y_out into d.y[w,*].
-                          n_gaps = n_elements(q)
+;                          n_gaps = n_elements(q)
                           dprint, dlevel=4,string(n_gaps, format = '(i0)') + ' gaps greater than '+$
                             string(gap_trigger_value, format = '(f0.4)')+ ' [s] found.  Gap begin/end times:'
 ;

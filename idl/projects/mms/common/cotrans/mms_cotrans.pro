@@ -40,7 +40,7 @@
 ;  out_suffix:  Suffix appended to the output name.  If in_suffix is present or
 ;               the input coordinates are part of the input variable's name then
 ;               they will be replaced with out_suffix.
-;  support_suffix:  Suffix appended to standar support data names when looking
+;  support_suffix:  Suffix appended to standard support data names when looking
 ;                   for support data (i.e. RA & Dec)
 ;           
 ;  out_vars: return a list of the names of any transformed variables
@@ -57,9 +57,9 @@
 ;  Based on thm_cotrans
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-24 18:53:52 -0800 (Wed, 24 Feb 2016) $
-;$LastChangedRevision: 20171 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-03 09:20:24 -0700 (Tue, 03 May 2016) $
+;$LastChangedRevision: 21002 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans.pro $
 ;-
 

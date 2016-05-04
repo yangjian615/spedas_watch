@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-27 15:54:49 -0700 (Wed, 27 Apr 2016) $
-; $LastChangedRevision: 20953 $
+; $LastChangedDate: 2016-05-03 14:42:43 -0700 (Tue, 03 May 2016) $
+; $LastChangedRevision: 21013 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_mec_ut__define.pro $
 ;-
 
@@ -57,6 +57,15 @@ end
 function mms_load_mec_ut::test_load_spdf
   mms_load_mec, probes=[1, 4], /spdf
   assert, spd_data_exists('mms4_mec_r_gsm mms1_mec_r_gsm mms1_defatt_spinras mms4_defatt_spinras', '2016-2-10', '2016-2-11')
+  return, 1
+end
+
+function mms_load_mec_ut::test_load_eci_coord_sys
+  mms_load_mec, probes=[2, 3], suffix='_coordstest'
+  assert, cotrans_get_coord('mms3_mec_r_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI position data'
+  assert, cotrans_get_coord('mms3_mec_v_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI velocity data'
+  assert, cotrans_get_coord('mms2_mec_r_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI position data'
+  assert, cotrans_get_coord('mms2_mec_v_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI velocity data'
   return, 1
 end
 

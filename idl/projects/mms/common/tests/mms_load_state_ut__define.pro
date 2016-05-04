@@ -12,6 +12,15 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_state_ut__define.pro $
 ;-
 
+; regression test for bug reported by Tai, 5/3/2016
+function mms_load_state_ut::test_coords_correct_for_eci
+  mms_load_state, probes=[1, 4], suffix='_teststate'
+  assert, cotrans_get_coord('mms1_defeph_pos_teststate') eq 'j2000', 'Problem with the coordinate system of ephemeris data'
+  assert, cotrans_get_coord('mms4_defeph_pos_teststate') eq 'j2000', 'Problem with the coordinate system of ephemeris data'
+  assert, cotrans_get_coord('mms4_defeph_vel_teststate') eq 'j2000', 'Problem with the coordinate system of velocity data'
+  assert, cotrans_get_coord('mms4_defeph_vel_teststate') eq 'j2000', 'Problem with the coordinate system of velocity data'
+  return, 1
+end
 
 function mms_load_state_ut::test_load_def
   mms_load_state, probe=1, level='def'
