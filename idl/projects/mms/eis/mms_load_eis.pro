@@ -77,8 +77,8 @@
 ;                  changed default level to L2
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-29 14:54:18 -0700 (Fri, 29 Apr 2016) $
-;$LastChangedRevision: 20982 $
+;$LastChangedDate: 2016-05-04 09:58:02 -0700 (Wed, 04 May 2016) $
+;$LastChangedRevision: 21019 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 
@@ -152,7 +152,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
               mms_eis_omni, probes[probe_idx], species='oxygen', datatype='phxtof',tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
             endif
         endfor
-         mms_eis_set_metadata, tplotnames, probe = probes[probe_idx], level=level, data_rate = data_rate, suffix = suffix, no_interp=no_interp
+       ;  mms_eis_set_metadata, tplotnames, probe = probes[probe_idx], level=level, data_rate = data_rate, suffix = suffix, no_interp=no_interp
     endfor
-    
+    if undefined(no_interp) && data_rate eq 'srvy' then options, '*_omni*', no_interp=0, y_no_interp=0
 end

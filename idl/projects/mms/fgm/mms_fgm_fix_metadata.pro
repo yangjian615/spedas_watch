@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-28 15:29:33 -0700 (Thu, 28 Apr 2016) $
-;$LastChangedRevision: 20964 $
+;$LastChangedDate: 2016-05-04 07:26:07 -0700 (Wed, 04 May 2016) $
+;$LastChangedRevision: 21015 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_fgm_fix_metadata.pro $
 ;-
 
@@ -34,44 +34,44 @@ pro mms_fgm_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
                 tplot_name = tplotnames[name_idx]
     
                 case tplot_name of
-                    prefix[sc_idx] + '_'+instrument+'_b_bcs_'+data_rate_mod+'_l2_bvec'+suffix: begin
+                    prefix[sc_idx] + '_'+instrument+'_b_bcs_'+data_rate+'_'+level+'_bvec'+suffix: begin
                       options, /def, tplot_name, 'labflag', 1
                       options, /def, tplot_name, 'colors', [2,4,6]
                       options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument_str)
                       options, /def, tplot_name, 'labels', ['Bx BCS', 'By BCS', 'Bz BCS']
                     end
-                    prefix[sc_idx] + '_'+instrument+'_b_gse_'+data_rate_mod+'_l2_bvec'+suffix: begin
+                    prefix[sc_idx] + '_'+instrument+'_b_gse_'+data_rate+'_'+level+'_bvec'+suffix: begin
                       options, /def, tplot_name, 'labflag', 1
                       options, /def, tplot_name, 'colors', [2,4,6]
                       options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument_str)
                       options, /def, tplot_name, 'labels', ['Bx GSE', 'By GSE', 'Bz GSE']
                     end
-                    prefix[sc_idx] + '_'+instrument+'_b_dmpa_'+data_rate_mod+'_l2_bvec'+suffix: begin
+                    prefix[sc_idx] + '_'+instrument+'_b_dmpa_'+data_rate+'_'+level+'_bvec'+suffix: begin
                       options, /def, tplot_name, 'labflag', 1
                       options, /def, tplot_name, 'colors', [2,4,6]
                       options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument_str)
                       options, /def, tplot_name, 'labels', ['Bx DMPA', 'By DMPA', 'Bz DMPA']
                     end
-                    prefix[sc_idx] + '_'+instrument+'_b_gsm_'+data_rate_mod+'_l2_bvec'+suffix: begin
+                    prefix[sc_idx] + '_'+instrument+'_b_gsm_'+data_rate+'_'+level+'_bvec'+suffix: begin
                       options, /def, tplot_name, 'labflag', 1
                       options, /def, tplot_name, 'colors', [2,4,6]
                       options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument_str)
                       options, /def, tplot_name, 'labels', ['Bx GSM', 'By GSM', 'Bz GSM']
                     end
-                    prefix[sc_idx] + '_'+instrument+'_b_gse_'+data_rate_mod+'_l2'+suffix: begin
+                    prefix[sc_idx] + '_'+instrument+'_b_gse_'+data_rate+'_'+level+suffix: begin
                       options, /def, tplot_name, 'labflag', 1
                       options, /def, tplot_name, 'colors', [2,4,6,8]
                       options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument_str)
                       options, /def, tplot_name, 'labels', ['Bx GSE', 'By GSE', 'Bz GSE', 'B_total']
                       ; options, /def, tplot_name, 'data_att.coord_sys', 'gsm'
                     end
-                    prefix[sc_idx] + '_'+instrument+'_b_dmpa_'+data_rate_mod+'_l2'+suffix: begin
+                    prefix[sc_idx] + '_'+instrument+'_b_dmpa_'+data_rate+'_'+level+suffix: begin
                       options, /def, tplot_name, 'labflag', 1
                       options, /def, tplot_name, 'colors', [2,4,6,8]
                       options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument_str)
                       options, /def, tplot_name, 'labels', ['Bx DMPA', 'By DMPA', 'Bz DMPA', 'B_total']
                     end
-                    prefix[sc_idx] + '_'+instrument+'_b_gsm_'+data_rate_mod+'_l2'+suffix: begin
+                    prefix[sc_idx] + '_'+instrument+'_b_gsm_'+data_rate+'_'+level+suffix: begin
                       options, /def, tplot_name, 'labflag', 1
                       options, /def, tplot_name, 'colors', [2,4,6,8]
                       options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument_str)

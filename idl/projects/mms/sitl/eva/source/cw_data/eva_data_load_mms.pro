@@ -125,7 +125,8 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_epd_eis_*') and (cp eq 0)) then begin
           varformat = sc + ['_epd_eis_*_spin', '_epd_eis_*_pitch_angle_t*', '_epd_eis_*_*_flux_t*']
-          mms_load_eis, probes=prb, datatype='extof', level='l1b', data_units = 'flux', varformat=varformat
+          ;mms_load_eis, probes=prb, datatype='extof', level='l1b', data_units = 'flux', varformat=varformat
+          mms_sitl_get_eis, probes=prb, datatype='extof', level='l1b', data_units = 'flux', varformat=varformat
           tn=tnames(sc+'_epd_eis_*',jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
             idx = where(strmatch(tn,'*flux_omni_spin'),c,complement=cidx, ncomp=nc)

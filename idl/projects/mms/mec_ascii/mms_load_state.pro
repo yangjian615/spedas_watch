@@ -62,21 +62,13 @@
 ;   MMS> mms_load_state, probe='*', /ephemeris_only, level='pred', trange=tr
 ;   
 ; NOTES:
-;     1) I expect this routine to change significantly as the MMS data products are
-;         released to the public and feedback comes in from scientists - egrimes@igpp
-;
-;     2) See the following regarding rules for the use of MMS data:
+;     1) See the following regarding rules for the use of MMS data:
 ;         https://lasp.colorado.edu/galaxy/display/mms/MMS+Data+Rights+and+Rules+for+Data+Use
 ;
-;     3) Updated to use the MMS web services API
-;
-;     4) The LASP web services API uses SSL/TLS, which is only supported by IDLnetURL
-;         in IDL 7.1 and later.
-;
-;     5) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
+;     2) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
 ;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
 ;
-;     6) If no level ('pred' or 'def') is specified the routine defaults to 'def'. When 'def' data is 
+;     3) If no level ('pred' or 'def') is specified the routine defaults to 'def'. When 'def' data is 
 ;        retrieved and the start time requested is the same as the time of the last available definitive 
 ;        file or near the current date it's possible that only partial definitive data is available or that 
 ;        no data is available. Partial data is due to the fact that MMS files don't go from 0-24hrs but 
@@ -93,8 +85,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-27 15:54:26 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20952 $
+;$LastChangedDate: 2016-05-04 07:58:58 -0700 (Wed, 04 May 2016) $
+;$LastChangedRevision: 21017 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 

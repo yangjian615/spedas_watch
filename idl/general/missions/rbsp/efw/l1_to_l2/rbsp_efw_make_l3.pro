@@ -16,8 +16,8 @@
 ; HISTORY: Created by Aaron W Breneman, May 2014
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-02-01 08:03:13 -0800 (Mon, 01 Feb 2016) $
-;   $LastChangedRevision: 19863 $
+;   $LastChangedDate: 2016-05-04 11:08:49 -0700 (Wed, 04 May 2016) $
+;   $LastChangedRevision: 21021 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
@@ -31,6 +31,18 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   ;KEEP!!!!!! Necessary when running scripts
   if keyword_set(script) then date = time_string(double(date),prec=-3)
   
+  if ~keyword_set(testing) then begin
+     openw,lun,'output.txt',/get_lun
+     printf,lun,'date = ',date
+     printf,lun,'date type: ',typename(date)
+     printf,lun,'probe = ',sc
+     printf,lun,'probe type: ',typename(sc)
+     printf,lun,'bp = ',bp
+     printf,lun,'bp type: ',typename(bp)
+     close,lun
+     free_lun,lun
+  endif
+
 
   rbsp_efw_init
   if ~keyword_set(type) then type = 'L3'  
@@ -151,7 +163,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 ;--------------------------------------
 
   model = 't89'
-  rbsp_efw_DCfield_removal_crib,sc,/no_spice_load,/noplot,model=model
+  rbsp_efw_dcfield_removal_crib,sc,/no_spice_load,/noplot,model=model
   
 
 
@@ -202,15 +214,18 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   tinterpol_mxn,'rbsp'+sc+'_state_mlt',times,newname='rbsp'+sc+'_state_mlt'
   tinterpol_mxn,'rbsp'+sc+'_state_mlat',times,newname='rbsp'+sc+'_state_mlat'
   tinterpol_mxn,'rbsp'+sc+'_state_lshell',times,newname='rbsp'+sc+'_state_lshell'
-  tinterpol_mxn,'rbsp'+sc+'_ME_lstar',times,newname='rbsp'+sc+'_ME_lstar'
+;  tinterpol_mxn,'rbsp'+sc+'_ME_lstar',times,newname='rbsp'+sc+'_ME_lstar'
   tinterpol_mxn,'rbsp'+sc+'_ME_orbitnumber',times,newname='rbsp'+sc+'_ME_orbitnumber'
 
   get_data,'rbsp'+sc+'_state_mlt',data=mlt
   get_data,'rbsp'+sc+'_state_mlat',data=mlat
   get_data,'rbsp'+sc+'_state_lshell',data=lshell
   get_data,'rbsp'+sc+'_ME_orbitnumber',data=orbit_num
-  get_data,'rbsp'+sc+'_ME_lstar',data=lstar
-  if is_struct(lstar) then lstar = lstar.y[*,0]
+  if is_struct(orbit_num) then orbit_num = orbit_num.y else orbit_num = replicate(-1.e31,n_elements(times))
+  ;get_data,'rbsp'+sc+'_ME_lstar',data=lstar
+  lstar = replicate(-1.e31,n_elements(times))
+
+
 
   tinterpol_mxn,'rbsp'+sc+'_spinaxis_direction_gse',times,newname='rbsp'+sc+'_spinaxis_direction_gse'
   get_data,'rbsp'+sc+'_spinaxis_direction_gse',data=sa
@@ -224,12 +239,11 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   get_data,'rbsp'+sc +'_efw_vsvy_V4',data=v4
   get_data,'rbsp'+sc +'_efw_vsvy_V5',data=v5
   get_data,'rbsp'+sc +'_efw_vsvy_V6',data=v6
- 
-  sum12 = (v1.y + v2.y)/2.	
-  sum34 = (v3.y + v4.y)/2.	
-  sum56 = (v5.y + v6.y)/2.	
 
-  sum56[*] = -1.0E31
+  
+  if bp eq '12' then vavg = (v1.y + v2.y)/2.	
+  if bp eq '34' then vavg = (v3.y + v4.y)/2.	
+  if bp eq '56' then vavg = (v5.y + v6.y)/2.	
  
 ;--------------------------------------------------
   ;These are variables for the L3 survey plots
@@ -237,12 +251,13 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   location = [[mlt.y],[lshell.y],[mlat.y],$
               [pos_gse.y[*,0]],[pos_gse.y[*,1]],[pos_gse.y[*,2]],$
               [vel_gse.y[*,0]],[vel_gse.y[*,1]],[vel_gse.y[*,2]],$
-              [sa.y[*,0]],[sa.y[*,1]],[sa.y[*,2]],[orbit_num.y],[lstar]]
+              [sa.y[*,0]],[sa.y[*,1]],[sa.y[*,2]],[orbit_num],[lstar]]
   bfield_data = [[mag_mgse.y[*,0]],[mag_mgse.y[*,0]],[mag_mgse.y[*,0]],$
                  [mag_model.y[*,0]],[mag_model.y[*,0]],[mag_model.y[*,0]],$
                  [mag_diff.y[*,0]],[mag_diff.y[*,0]],[mag_diff.y[*,0]],$
                  [mag_data_magnitude],[mag_diff_magnitude]]
-  density_potential = [[dens.y],[sum12],[v1.y],[v2.y],[v3.y],[v4.y],[v5.y],[v6.y]]
+  density_potential = [[dens.y],[vavg],[v1.y],[v2.y],[v3.y],[v4.y],[v5.y],[v6.y]]
+
 ;--------------------------------------------------
 
   if type eq 'L3' then filename = 'rbsp'+sc+'_efw-l3_'+strjoin(strsplit(date,'-',/extract))+'_v'+vstr+'.cdf'
@@ -271,14 +286,13 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
      spinfit_vxb[goo,*] = !values.f_nan
      spinfit_vxb_coro[goo,*] = !values.f_nan
      dens.y[goo] = !values.f_nan
-     sum12[goo] = !values.f_nan
+     vavg[goo] = !values.f_nan
   endif
 
  
 ;--------------------------------------------------
 ;Populate CDF file for L3 version
 ;--------------------------------------------------
-
 
   ;;Rename certain variables based on selected boom pair
   if bp eq '12' then begin
@@ -319,7 +333,6 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
 
 
-
   if type eq 'L3' then begin
      
      cdf_varput,cdfid,'efield_inertial_frame_mgse',transpose(spinfit_vxb)
@@ -327,7 +340,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
      cdf_varput,cdfid,'VcoroxB_mgse',transpose(ecoro_mgse.y)
      cdf_varput,cdfid,'VscxB_mgse',transpose(vxb.y)
      cdf_varput,cdfid,'density',dens.y
-     cdf_varput,cdfid,'Vavg',sum12
+     cdf_varput,cdfid,'Vavg',vavg
      cdf_varput,cdfid,'mlt_lshell_mlat',transpose(mlt_lshell_mlat)
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
@@ -406,12 +419,12 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
      cdf_varput,cdfid,'bfield_minus_model_mgse',transpose(mag_diff.y)
      cdf_varput,cdfid,'bfield_magnitude_minus_modelmagnitude',mag_diff_magnitude
      cdf_varput,cdfid,'density',dens.y
-     cdf_varput,cdfid,'Vavg',sum12
+     cdf_varput,cdfid,'Vavg',vavg
      cdf_varput,cdfid,'mlt_lshell_mlat',transpose(mlt_lshell_mlat)
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     cdf_varput,cdfid,'orbit_num',orbit_num.y
+     cdf_varput,cdfid,'orbit_num',orbit_num
      cdf_varput,cdfid,'Lstar',lstar
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      cdf_varput,cdfid,'bias_current',transpose(ibias)

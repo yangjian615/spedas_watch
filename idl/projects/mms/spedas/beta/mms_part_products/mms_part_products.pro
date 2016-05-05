@@ -95,8 +95,8 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-05-02 18:49:36 -0700 (Mon, 02 May 2016) $
-;$LastChangedRevision: 20994 $
+;$LastChangedDate: 2016-05-04 14:36:28 -0700 (Wed, 04 May 2016) $
+;$LastChangedRevision: 21024 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -141,6 +141,8 @@ pro mms_part_products, $
                      tplotnames=tplotnames, $ ;set of tplot variable names that were created
                    
                      display_object=display_object, $ ;object allowing dprint to export output messages
+
+                     silent=silent, $ ;supress pop-up messages
 
                      _extra=ex ;TBD: consider implementing as _strict_extra 
 
@@ -256,7 +258,35 @@ pro mms_part_products, $
   ;If set, this prevents concatenation from previous calls
   undefine,tplotnames
   
+
+  ;--------------------------------------------------------
+  ;Remind user that l2 moments should be used preferentially and FAC moments are experimental
+  ;--------------------------------------------------------
   
+  if in_set(outputs_lc,'moments') || in_set(outputs_lc,'fac_moments') then begin
+
+    msg = 'Moments generated with mms_part_products may be missing several important '+ $
+          'corrections, including photoelectron removal and spacecraft potential.  '+ $
+          'The official moments released by the instrument teams include these and '+ $
+          'are the scientific products that should be used for analysis.'
+    msg += ~in_set(outputs_lc,'fac_moments') ? '' : ssl_newline()+ssl_newline()+ $
+          'Field aligned moments should be considered experimental.  '+ $
+          'All output variables will be in the coordinates defined by '+ $
+          'the fac_type option (default: ''mphigeo'').'
+
+    if ~keyword_set(silent) then begin
+      msg += ssl_newline()+ssl_newline()+'Use /silent to disable this warning.'
+      dummy = dialog_message(msg, /center, title='MMS_PART_PRODUCTS:  Warning')
+    endif else begin
+      dprint, dlevel=2, '=========================================================='
+      dprint, dlevel=2, 'WARNING:  '
+      dprint, dlevel=2, msg 
+      dprint, dlevel=2, '=========================================================='
+    endelse
+
+  endif
+  
+
   ;--------------------------------------------------------
   ;Get array of sample times and initialize indices for loop
   ;--------------------------------------------------------
@@ -314,15 +344,6 @@ pro mms_part_products, $
     endelse
   endif
 
-  ;print warning for FAC moments
-  if in_set(outputs_lc,'fac_moments') then begin
-    dprint, dlevel=0, '=========================================================='
-    dprint, dlevel=0, 'WARNING:  '
-    dprint, dlevel=0, 'Field aligned moments should be considered experimental.  '+ $
-                      'All output variables will be in the coordinates defined by '+ $
-                      'the fac_type option (default: ''mphigeo'').'
-    dprint, dlevel=0, '=========================================================='
-  endif
 
 
   ;--------------------------------------------------------

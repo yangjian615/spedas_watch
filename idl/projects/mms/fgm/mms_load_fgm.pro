@@ -56,8 +56,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-03 11:21:05 -0700 (Tue, 03 May 2016) $
-;$LastChangedRevision: 21008 $
+;$LastChangedDate: 2016-05-04 07:35:33 -0700 (Wed, 04 May 2016) $
+;$LastChangedRevision: 21016 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -106,12 +106,12 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             this_data_rate = data_rate[data_rate_idx]
             if ~keyword_set(keep_flagged) then begin
                 ; B-field data
-                get_data, this_probe+'_fgm_b_gse_'+this_data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
-                get_data, this_probe+'_fgm_b_gsm_'+this_data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
-                get_data, this_probe+'_fgm_b_dmpa_'+this_data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
-                get_data, this_probe+'_fgm_b_bcs_'+this_data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
+                get_data, this_probe+'_'+instrument+'_b_gse_'+this_data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
+                get_data, this_probe+'_'+instrument+'_b_gsm_'+this_data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
+                get_data, this_probe+'_'+instrument+'_b_dmpa_'+this_data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
+                get_data, this_probe+'_'+instrument+'_b_bcs_'+this_data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
                 ; flags
-                get_data, this_probe+'_fgm_flag_'+this_data_rate+'_'+level+suffix, data=flags
+                get_data, this_probe+'_'+instrument+'_flag_'+this_data_rate+'_'+level+suffix, data=flags
                 if is_struct(flags) then begin
                   bad_data = where(flags.Y ne 0, flag_count) 
                   if flag_count ne 0 then begin
@@ -121,16 +121,16 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                       if is_struct(b_data_bcs) then b_data_bcs.Y[bad_data, *] = !values.d_nan
                       
                       ; resave them
-                      if is_struct(b_data_gse) then store_data, this_probe+'_fgm_b_gse_'+this_data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
-                      if is_struct(b_data_gsm) then store_data, this_probe+'_fgm_b_gsm_'+this_data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
-                      if is_struct(b_data_dmpa) then store_data, this_probe+'_fgm_b_dmpa_'+this_data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
-                      if is_struct(b_data_bcs) then store_data, this_probe+'_fgm_b_bcs_'+this_data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
+                      if is_struct(b_data_gse) then store_data, this_probe+'_'+instrument+'_b_gse_'+this_data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
+                      if is_struct(b_data_gsm) then store_data, this_probe+'_'+instrument+'_b_gsm_'+this_data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
+                      if is_struct(b_data_dmpa) then store_data, this_probe+'_'+instrument+'_b_dmpa_'+this_data_rate+'_'+level+suffix, data=b_data_dmpa, dlimits=dmpa_dl
+                      if is_struct(b_data_bcs) then store_data, this_probe+'_'+instrument+'_b_bcs_'+this_data_rate+'_'+level+suffix, data=b_data_bcs, dlimits=bcs_dl
                   endif
                 endif
             endif
             
             ; force the FGM data to be monotonic
-            tplot_force_monotonic, this_probe+'_fgm_b_*_'+this_data_rate+'_'+level+suffix, /forward
+            tplot_force_monotonic, this_probe+'_'+instrument+'_b_*_'+this_data_rate+'_'+level+suffix, /forward
             
             if ~keyword_set(no_split_vars) then begin
                 ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
@@ -139,14 +139,14 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             
             ; delete the ephemeris variables if not requested
             if ~keyword_set(get_fgm_ephemeris) then begin
-                del_data, this_probe+'_fgm_r_gse_'+this_data_rate+'_'+level+suffix
-                del_data, this_probe+'_fgm_r_gsm_'+this_data_rate+'_'+level+suffix
+                del_data, this_probe+'_'+instrument+'_r_gse_'+this_data_rate+'_'+level+suffix
+                del_data, this_probe+'_'+instrument+'_r_gsm_'+this_data_rate+'_'+level+suffix
                 del_data, this_probe+'_pos_gse'+suffix
                 del_data, this_probe+'_pos_gsm'+suffix
             endif else begin
                 dprint, dlevel = 0, 'Keeping ephemeris variables from FGM data files.'
                 ; force the ephemeris variables to be monotonic
-                tplot_force_monotonic, this_probe+'_fgm_r_*_'+this_data_rate+'_'+level+suffix, /forward
+                tplot_force_monotonic, this_probe+'_'+instrument+'_r_*_'+this_data_rate+'_'+level+suffix, /forward
                 tplot_force_monotonic, this_probe+'_pos_gse'+suffix, /forward
                 tplot_force_monotonic, this_probe+'_pos_gsm'+suffix, /forward
                 if ~keyword_set(no_split_vars) then begin

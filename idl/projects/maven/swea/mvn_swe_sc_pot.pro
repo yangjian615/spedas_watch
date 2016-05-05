@@ -77,9 +77,9 @@
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-04-25 20:06:03 -0700 (Mon, 25 Apr 2016) $
-; $LastChangedRevision: 20923 $
+; $LastChangedBy: xussui_lap $
+; $LastChangedDate: 2016-05-04 13:11:55 -0700 (Wed, 04 May 2016) $
+; $LastChangedRevision: 21022 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -110,7 +110,8 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
 
   mvn_swe_engy.sc_pot = badval
   
-  if not keyword_set(erange) then erange = [3.,20.]
+  ;if not keyword_set(erange) then erange = [3.,20.]
+  if not keyword_set(erange) then erange = [3.,30.] ;temporate fix
   erange = minmax(float(erange))
   if not keyword_set(fudge) then fudge = 1.
   if keyword_set(ddd) then dflg = 1 else dflg = 0
