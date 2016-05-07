@@ -15,8 +15,8 @@
 ; thm_esa_overviews,'2007-03-23',dir='~/out',device='z'
 ;
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-04-13 10:36:50 -0700 (Wed, 13 Apr 2016) $
-; $LastChangedRevision: 20796 $
+; $LastChangedDate: 2016-05-06 11:37:28 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21039 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_esa_overviews.pro $
 ;-
 
@@ -95,7 +95,13 @@ for i = 0L,n_elements(probe_list)-1L do begin
       tdegap, name, /overwrite, dt = 600.0
       tdegap, 'th'+sc+'_peeb_sc_pot', /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeeb'
-      yminv = min(d.v) > 0.1    ;account for possible 0 energy
+;change d.v for cases with 0 energy
+      xxx = where(d.v lt 1.0, nxxx)
+      If(nxxx Gt 0) Then Begin
+         d.v[xxx] = 0.01
+         store_data, name, data = d
+      Endif
+      yminv = min(d.v) > 0.1
       thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
       svar = scpot_overlay('th'+sc+'_peeb_sc_pot', name, sc_line_thick = 2.0)
       name = svar               ;name is the variable to plot
@@ -113,7 +119,12 @@ for i = 0L,n_elements(probe_list)-1L do begin
     If(is_struct(d)) Then Begin
       tdegap, name, /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeib'
-      yminv = min(d.v) > 0.1    ;account for possible 0 energy
+      xxx = where(d.v lt 1.0, nxxx)
+      If(nxxx Gt 0) Then Begin
+         d.v[xxx] = 0.01
+         store_data, name, data = d
+      Endif
+      yminv = min(d.v) > 0.1
       thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
     Endif Else Begin
       store_data, name, data = {x:xfiller, y:filler, v:vfiller}
@@ -129,7 +140,12 @@ for i = 0L,n_elements(probe_list)-1L do begin
       tdegap, name, /overwrite, dt = 600.0
       tdegap, 'th'+sc+'_peer_sc_pot', /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeer'
-      yminv = min(d.v) > 0.1    ;account for possible 0 energy
+      xxx = where(d.v lt 1.0, nxxx)
+      If(nxxx Gt 0) Then Begin
+         d.v[xxx] = 0.01
+         store_data, name, data = d
+      Endif
+      yminv = min(d.v) > 0.1
       thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
       svar = scpot_overlay('th'+sc+'_peer_sc_pot', name, sc_line_thick = 2.0)
       name = svar               ;name is the variable to plot
@@ -147,7 +163,12 @@ for i = 0L,n_elements(probe_list)-1L do begin
     If(is_struct(d)) Then Begin
       tdegap, name, /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeir'
-      yminv = min(d.v) > 0.1    ;account for possible 0 energy
+      xxx = where(d.v lt 1.0, nxxx)
+      If(nxxx Gt 0) Then Begin
+         d.v[xxx] = 0.01
+         store_data, name, data = d
+      Endif
+      yminv = min(d.v) > 0.1
       thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
     Endif Else Begin
       store_data, name, data = {x:xfiller, y:filler, v:vfiller}
@@ -163,7 +184,12 @@ for i = 0L,n_elements(probe_list)-1L do begin
       tdegap, name, /overwrite, dt = 600.0
       tdegap, 'th'+sc+'_peef_sc_pot', /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeef'
-      yminv = min(d.v) > 0.1    ;account for possible 0 energy
+      xxx = where(d.v lt 1.0, nxxx)
+      If(nxxx Gt 0) Then Begin
+         d.v[xxx] = 0.01
+         store_data, name, data = d
+      Endif
+      yminv = min(d.v) > 0.1
       thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
       svar = scpot_overlay('th'+sc+'_peef_sc_pot', name, sc_line_thick = 2.0)
       name = svar               ;name is the variable to plot
@@ -181,7 +207,12 @@ for i = 0L,n_elements(probe_list)-1L do begin
     If(is_struct(d)) Then Begin
       tdegap, name, /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeif'
-      yminv = min(d.v) > 0.1    ;account for possible 0 energy
+      xxx = where(d.v lt 1.0, nxxx)
+      If(nxxx Gt 0) Then Begin
+         d.v[xxx] = 0.01
+         store_data, name, data = d
+      Endif
+      yminv = min(d.v) > 0.1
       thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
     Endif Else Begin
       store_data, name, data = {x:xfiller, y:filler, v:vfiller}

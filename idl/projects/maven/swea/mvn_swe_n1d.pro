@@ -39,8 +39,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-17 12:52:38 -0700 (Wed, 17 Jun 2015) $
-; $LastChangedRevision: 17899 $
+; $LastChangedDate: 2016-05-06 10:21:51 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21027 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n1d.pro $
 ;
 ;-
@@ -78,7 +78,7 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
     if (size(mask_sc,/type) eq 0) then mask_sc = 1
     if keyword_set(mask_sc) then obins = swe_sc_mask * obins
    
-    if (size(mvn_swe_3d,/type) ne 8) then t = mvn_swe_3d.time $
+    if (size(mvn_swe_3d,/type) eq 8) then t = mvn_swe_3d.time $
                                      else t = swe_3d.time
 
     npts = n_elements(t)
@@ -86,6 +86,7 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
     temp = dens
     dsig = dens
     tsig = dens
+    bkg = dens
 
     energy = fltarr(64, npts)
     eflux = energy
@@ -176,11 +177,19 @@ pro mvn_swe_n1d, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, mask
     if (mom) then begin
       if (n_e gt 0) then begin
         prat = (pot/E[j]) < 1.
-        dens[i] = c3*total(dE[j]*sqrt(1. - prat)*(E[j]^(-1.5))*F[j])
-        dsig[i] = sqrt(c3*total(dE[j]*sqrt(1. - prat)*(E[j]^(-1.5))*(S[j]*S[j])))
-      
-        pres = (2./3.)*c3*total(dE[j]*((1. - prat)^1.5)*(E[j]^(-0.5))*F[j])
-        psig = sqrt((2./3.)*c3*total(dE[j]*((1. - prat)^1.5)*(E[j]^(-0.5))*(S[j]*S[j])))
+        Enorm = c3*dE[j]*sqrt(1. - prat)*(E[j]^(-1.5))
+        N_j = Enorm*F[j]
+        S_j = Enorm*S[j]
+
+        dens[i] = total(N_j)
+        dsig[i] = sqrt(total(S_j^2.))
+
+        Enorm = (2./3.)*c3*dE[j]*((1. - prat)^1.5)*(E[j]^(-0.5))
+        P_j = Enorm*F[j]
+        S_j = Enorm*S[j]
+
+        pres = total(P_j)
+        psig = sqrt(total(S_j^2.))
         
         temp[i] = pres/dens[i]
         tsig[i] = temp[i]*sqrt((dsig[i]/dens[i])^2. + (psig/pres)^2.)

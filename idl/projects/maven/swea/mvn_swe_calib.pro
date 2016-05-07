@@ -54,8 +54,8 @@
 ;       DFGON:        Turn on the elevation-dependent sensitivity.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-06 15:12:33 -0800 (Sun, 06 Mar 2016) $
-; $LastChangedRevision: 20341 $
+; $LastChangedDate: 2016-05-06 10:23:30 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21033 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -251,23 +251,16 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
   for i=0,31 do swe_gf[(2*i):(2*i+1),1] = (swe_gf[(2*i),0] + swe_gf[(2*i+1),0])/2.
   for i=0,15 do swe_gf[(4*i):(4*i+3),2] = (swe_gf[(4*i),1] + swe_gf[(4*i+3),1])/2.
 
-; Correction factor from cross calibration with SWIA in the solar wind or sheath.
-; This factor changes whenever an MCP bias correction is made.  The times of
-; these corrections are recorded in mvn_swe_config.  These values are derived by
-; comparing electron moments based on the SPEC data product to SWIA ion moments.
-; The SPEC product sums over all 96 solid angle bins, weighted by cos(theta).
-; However, 10 of the 96 bins are blocked by the spacecraft but are still included
-; in the sum.  This produces a ~10% underestimate of the mean differential energy
-; flux.  The cross calibration factors below absorb this underestimate.  A future
-; update should apply the 10% underestimate only to the SPEC spec data.
-;
-;     Factor		Calib. Date                    Note
-;   ---------------------------------------------------------------------------------
-;      2.585        2014-10-14/12:10 to 13:50      S/C in sun point (rare in trans.)
-;      2.275        2014-12-21                     Steady solar wind; S/C sun point
-;
+; Correction factor from cross calibration with SWIA in the solar wind.  This
+; factor changes whenever an MCP bias adjustment is made, and it can also drift
+; with time as the MCP gain changes.  The times of bias adjustments are recorded
+; in mvn_swe_config.  The function mvn_swe_crosscal() now supercedes the variable
+; swe_crosscal.  The variable swe_cc_switch controls whether or not the cross
+; calibration correction is applied.  Default is to apply the correction.
 
-  swe_crosscal = [2.585, 2.275, 2.272, 2.275, 2.275]
+  if (size(swe_cc_switch,/type) eq 0) then cc = mvn_swe_crosscal(/on) $
+    else if (swe_cc_switch) then print, "SWE-SWI cross calibration enabled." $
+                            else print, "SWE-SWI cross calibration disabled."
 
 ; Add a dimension for relative variation among the 16 anodes.  This variation is
 ; dominated by the MCP efficiency, but I include the same dimension here for ease

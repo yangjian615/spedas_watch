@@ -38,15 +38,16 @@
 ;              masking specified by the above three keywords.
 ;              Default = 1 (yes).
 ;
+;   FUDGE:     Fudge factor for determining spacecraft potential.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-04-25 20:09:15 -0700 (Mon, 25 Apr 2016) $
-; $LastChangedRevision: 20925 $
+; $LastChangedDate: 2016-05-06 10:27:33 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21035 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_swi_cal.pro $
 ;
 ;CREATED BY:    David L. Mitchell
 ;-
-pro mvn_swe_swi_cal, fine=fine, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
-                     mask_sc=mask_sc
+pro mvn_swe_swi_cal, fine=fine, ddd=ddd, pans=pans
 
   @mvn_swe_com
 
@@ -54,46 +55,22 @@ pro mvn_swe_swi_cal, fine=fine, ddd=ddd, abins=abins, dbins=dbins, obins=obins, 
   if (max(opt.trange_full) eq 0D) then timespan
 
   if keyword_set(ddd) then dflg = 1 else dflg = 0
-  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
-  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
-  if (n_elements(obins) ne 96) then begin
-    obins = replicate(1B, 96, 2)
-    obins[*,0] = reform(abins # dbins, 96)
-    obins[*,1] = obins[*,0]
-  endif else obins = byte(obins # [1B,1B])
-  if (size(mask_sc,/type) eq 0) then mask_sc = 1
-  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
 
-; Load SWEA data and create summary plot
+; Get electron density from SWEA - create a variable for overplotting
+; with SWIA densities.
 
-  mvn_swe_load_l0
-  mvn_swe_sumplot,/eph,/orb,/loadonly
-
-; Get illumination of SWEA (to evaluate sunlight contamination)
-
-  mvn_swe_sundir
-  pans = ['Sun_The','Sun_Phi','alt2']
-  
-; Load MAG data
-
-  mvn_swe_addmag
-  if (size(swe_mag1,/type) eq 8) then begin
-    mvn_mag_load,spice_frame='mso'
-    options,'mvn_B_1sec_mso','ytitle','B!dMSO!n [nT]'
-  endif else print,"No MAG data at all!"
-
-
-; Calculate spacecraft potential and electron density from SWEA data
-
-  dfoo = dflg
-  mvn_swe_sc_pot,/over,ddd=dfoo,obins=obins[*,1],mask_sc=mask_sc,fudge=1.15
-  dfoo = dflg
-  mvn_swe_n1d,/mom,ddd=dfoo,obins=obins[*,1],mask_sc=mask_sc
   if (dflg) then dname = 'mvn_swe_3d_dens' else dname = 'mvn_swe_spec_dens'
-  get_data,dname,data=den
+  get_data,dname,data=den,index=i
+  if (i eq 0) then begin
+    print,"You must calculate SWEA densities first."
+    return
+  endif
+
   store_data,'mvn_swe_n1d_over',data={x:den.x, y:den.y}
   options,'mvn_swe_n1d_over','color',6
   options,'mvn_swe_n1d_over','psym',-3
+  
+  pans = ['']
 
 ; Load SWIA fine spectra
 
@@ -110,15 +87,12 @@ pro mvn_swe_swi_cal, fine=fine, ddd=ddd, abins=abins, dbins=dbins, obins=obins, 
     options,'ie_density','ynozero',1
     options,'ie_density','ytitle','Ion-Electron!CDensity'
 
-    div_data,'mvn_swe_spec_dens','mvn_swifs_density'
-    divname = 'mvn_swe_spec_dens/mvn_swifs_density'
+    divname = 'swe_swi_crosscal'
+    div_data,'mvn_swifs_density',dname,newname=divname
     options,divname,'ynozero',1
     options,divname,'ytitle','Ratio!CSWE/SWI'
     options,divname,'yticklen',1
     options,divname,'ygridstyle',1
-
-    pans = [pans,'mvn_swe_spec_dens/mvn_swifs_density', $
-            'ie_density','mvn_B_1sec_mso','swe_a4_pot']
   endif else begin
     mvn_swia_load_l2_data, /loadcoarse, /tplot
     mvn_swia_part_moments, type=['cs','ca']
@@ -132,18 +106,15 @@ pro mvn_swe_swi_cal, fine=fine, ddd=ddd, abins=abins, dbins=dbins, obins=obins, 
     options,'ie_density','ynozero',1
     options,'ie_density','ytitle','Ion-Electron!CDensity'
 
-    div_data,'mvn_swe_spec_dens','mvn_swics_density'
-    divname = 'mvn_swe_spec_dens/mvn_swics_density'
+    divname = 'swe_swi_crosscal'
+    div_data,'mvn_swics_density',dname,newname=divname
     options,divname,'ynozero',1
-    options,divname,'ytitle','Ratio!CSWE/SWI'
+    options,divname,'ytitle','Ratio!CSWI/SWE'
     options,divname,'yticklen',1
     options,divname,'ygridstyle',1
-
-    pans = [pans,'mvn_swe_spec_dens/mvn_swics_density', $
-            'ie_density','mvn_B_1sec_mso','swe_a4_pot']
   endelse
 
-  tplot,pans
+  pans = [pans,divname,'ie_density']
 
   return
 

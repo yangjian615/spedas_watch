@@ -16,7 +16,7 @@
 ;   PROBES: spacecraft ('a','b','c','d','e')
 ;   DATE: the date string or seconds since 1970 ('2007-03-23')
 ;   DUR: duration (default units are days)
-;   DAYS: redundant keyword to set  the units of duration (but its comforting to have)
+;   DAYS: redundant keyword to set the units of duration (but its comforting to have)
 ;   HOURS: keyword to make the duration be in units of hours
 ;   DEVICE: sets the device (x or z) (default is x)
 ;   MAKEPNG: keyword to generate 5 png files
@@ -742,6 +742,18 @@ get_data,  thx+'_peif_en_eflux', data = dion
 get_data,  thx+'_peef_en_eflux', data = dele
 If(is_struct(dion) && is_struct(dele)) Then Begin
    mineval = min([min(dion.v), min(dele.v)]) > 0.10
+;0 energy values will not plot correctly, so
+;reset any energy = 0 points to 0.01 eV
+   xxx = where(dion.v lt 1.0, nxxx)
+   If(nxxx Gt 0) Then Begin
+      dion.v[xxx] = 0.01
+      store_data,  thx+'_peif_en_eflux', data = dion
+   Endif
+   xxx = where(dele.v lt 1.0, nxxx)
+   If(nxxx Gt 0) Then Begin
+      dele.v[xxx] = 0.01
+      store_data,  thx+'_peef_en_eflux', data = dele
+   Endif
 Endif Else mineval = 0
 thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
 thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
@@ -750,6 +762,16 @@ get_data,  thx+'_peir_en_eflux', data = dion
 get_data,  thx+'_peer_en_eflux', data = dele
 If(is_struct(dion) && is_struct(dele)) Then Begin
    mineval = min([min(dion.v), min(dele.v)]) > 0.10
+   xxx = where(dion.v lt 1.0, nxxx)
+   If(nxxx Gt 0) Then Begin
+      dion.v[xxx] = 0.01
+      store_data,  thx+'_peir_en_eflux', data = dion
+   Endif
+   xxx = where(dele.v lt 1.0, nxxx)
+   If(nxxx Gt 0) Then Begin
+      dele.v[xxx] = 0.01
+      store_data,  thx+'_peer_en_eflux', data = dele
+   Endif
 Endif Else mineval = 0
 thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
 thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval

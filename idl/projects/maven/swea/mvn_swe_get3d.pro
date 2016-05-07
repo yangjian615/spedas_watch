@@ -26,8 +26,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 12:04:24 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17720 $
+; $LastChangedDate: 2016-05-06 10:22:52 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21030 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -363,15 +363,12 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
   endfor
 
 ; Apply cross calibration factor.  A new factor is calculated after each 
-; MCP bias adjustment. See mvn_swe_config for these times.  See 
-; mvn_swe_calib for the cross calibration factors.
+; MCP bias adjustment. See mvn_swe_config for these times.  Polynomial
+; fits are used to track slow drift of MCP gain between adjustments.  See 
+; mvn_swe_crosscal.
 
-  scale = replicate(swe_crosscal[0], 64, 96, npts)
-
-  for i=1,(n_elements(t_mcp)-1) do begin
-    indx = where(ddd.time gt t_mcp[i], count)
-    if (count gt 0L) then scale[*,*,indx] = swe_crosscal[i]
-  endfor
+  cc = mvn_swe_crosscal(ddd.time)
+  scale = reform((replicate(1., 64*96) # cc), 64, 96, npts)
   
   ddd.gf /= scale
 

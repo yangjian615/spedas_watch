@@ -75,8 +75,8 @@
 ;                      field of view.  FOV masking, if any, will be shown.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:42:30 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18568 $
+; $LastChangedDate: 2016-05-06 10:21:23 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21026 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -388,7 +388,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
       if (sflg) then begin
         wset, Swin
-        spec3d, ddd, units=units, limits={yrange:yrange, ystyle:1, ylog:1, psym:0}
+        bins = where(obins eq 1B, count)
+        spec3d, ddd, units=units, limits={yrange:yrange, ystyle:1, ylog:1, psym:10},bins=bins
         if keyword_set(pot) then oplot, [ddd.sc_pot, ddd.sc_pot], yrange, line=1, color=6
       endif
     endif

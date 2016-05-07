@@ -15,8 +15,8 @@
 ;    LIST:          List all configuration changes.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-06 15:11:44 -0800 (Sun, 06 Mar 2016) $
-; $LastChangedRevision: 20340 $
+; $LastChangedDate: 2016-05-06 10:23:09 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21031 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -70,13 +70,16 @@ pro mvn_swe_config, list=list, timebar=timebar
 
   t_mtx = [t_mtx, time_double('2014-10-10/15:08:40')]  ; deployed boom matrix upload
 
-; MCP bias adjustments.
+; MCP bias adjustment times.  These are used by mvn_swe_crosscal.
 
-  t_mcp = time_double('2013-11-18/18:28')              ; MAVEN launch (bias = 2500 V)
+; 2013-11-18/18:28                                     ; MAVEN launch (bias = 2500 V)
+  t_mcp = time_double('2014-03-22/00:00:00')           ; first cross calibration measurement
   t_mcp = [t_mcp, time_double('2014-10-17/02:26:41')]  ; bias adjustment (2500 -> 2600 V)
+  t_mcp = [t_mcp, time_double('2014-11-12/00:00:00')]  ; bias = 2600 V (beginning of poly fit)
   t_mcp = [t_mcp, time_double('2015-12-18/23:39:09')]  ; bias adjustment (2600 -> 2700 V)
   t_mcp = [t_mcp, time_double('2015-12-22/20:01:45')]  ; revert to 2600 V after HV reset
   t_mcp = [t_mcp, time_double('2015-12-30/02:28:57')]  ; back to correct bias (2700 V)
+  t_mcp = [t_mcp, time_double('2016-04-02/00:00:00')]  ; last cross calibration measurement
 
 ; Gather all the configuration change times into one variable (for timebar).
 
@@ -93,6 +96,9 @@ pro mvn_swe_config, list=list, timebar=timebar
     print,time_string(t_swp[1]),' --> sweep tables 5 and 6 upload'
     print,time_string(t_mtx[2]),' --> boom deploy'
     print,time_string(t_mcp[1]),' --> MCP bias adjustment (2500 -> 2600 V)'
+    print,time_string(t_mcp[3]),' --> MCP bias adjustment (2600 -> 2700 V)'
+    print,time_string(t_mcp[4]),' --> MCP bias revert to 2600 V (unintentional)'
+    print,time_string(t_mcp[5]),' --> MCP bias restore to 2700 V'
   endif
 
 ; Overplot dotted time bars on the current tplot window (assumed to exist)

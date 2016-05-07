@@ -97,8 +97,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-04-26 19:36:47 -0700 (Tue, 26 Apr 2016) $
-; $LastChangedRevision: 20932 $
+; $LastChangedDate: 2016-05-06 10:20:01 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21025 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -258,9 +258,6 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     time = maven.t
     dt = median(time - shift(time,1))
-
-    print,time_string(minmax(time))
-    help,maven,/str
 
     x = maven.x/R_m
     y = maven.y/R_m

@@ -17,14 +17,21 @@
 ;
 ;                   If set, then the priority order is: L2_FULL, L1_FULL.
 ;
+;    USEPADMAG:     If all else fails, then use the PAD angles as calculated 
+;                   onboard.  In the best case, this close to MAG L1, except the
+;                   angular resolution is reduced (256 azimuths, 40 elevations).
+;                   In the worst case, it can be off by 10's of degrees.  Use with
+;                   caution!  Default = 0 (never use PAD angles).  If PAD angles
+;                   are used, the MAG level is set to zero.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-20 10:12:28 -0700 (Mon, 20 Jul 2015) $
-; $LastChangedRevision: 18177 $
+; $LastChangedDate: 2016-05-06 10:24:30 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21034 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_addmag.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
 ;-
-pro mvn_swe_addmag, full=full
+pro mvn_swe_addmag, full=full, usepadmag=usepadmag
 
   @mvn_swe_com
   
@@ -38,31 +45,46 @@ pro mvn_swe_addmag, full=full
 
   if (i eq 0) then begin
     print,"No MAG data found!"
-    return
+    if keyword_set(usepadmag) then begin
+      print,"*****************************************"
+      print,"WARNING: USING PAD MAG ANGLES"
+      print,"For rough estimates only - not for publication"
+      print,"*****************************************"
+
+      y = fltarr(n_elements(a2),3)
+      mvn_swe_magdir, a2.time, a2.Baz, a2.Bel, Baz, Bel
+      y[*,0] = cos(Baz)*cos(Bel)
+      y[*,1] = sin(Baz)*cos(Bel)
+      y[*,2] = sin(Bel)
+      mag1 = {x:(a2.time + 1.5D), y:y}
+      lim = {level:'L0'}
+    endif else return
   endif
 
   str_element, lim, 'level', maglev, success=ok
   case strupcase(maglev) of
+    'L0' : maglev = 0
     'L1' : maglev = 1
     'L2' : maglev = 2
     else : maglev = 0
   endcase
-  
-  if (maglev eq 0) then print, "MAG level unknown!" $
-                   else print, string(maglev,format='("Using MAG L",i1," data.")')
 
 ; Rotate to the SWEA frame using same code as flight software (no SPICE)
+  
+  if (maglev gt 0) then begin
+    print, string(maglev,format='("Using MAG L",i1," data.")')
 
-  indx = where((mag1.x gt t_mtx[0]) and (mag1.x lt t_mtx[2]), nstow, $
-                complement=jndx, ncomplement=ndeploy)
+    indx = where((mag1.x gt t_mtx[0]) and (mag1.x lt t_mtx[2]), nstow, $
+                  complement=jndx, ncomplement=ndeploy)
 
-  if (nstow gt 0L) then begin
-    print,"Using stowed boom rotation matrix for MAG1"
-    mag1.y[indx,*] = rotate_mag_to_swe(mag1.y[indx,*], magu=1, /stow, /payload)
-  endif
-  if (ndeploy gt 0L) then begin
-    print,"Using deployed boom rotation matrix for MAG1"
-    mag1.y[jndx,*] = rotate_mag_to_swe(mag1.y[jndx,*], magu=1, /payload)
+    if (nstow gt 0L) then begin
+      print,"Using stowed boom rotation matrix for MAG1"
+      mag1.y[indx,*] = rotate_mag_to_swe(mag1.y[indx,*], magu=1, /stow, /payload)
+    endif
+    if (ndeploy gt 0L) then begin
+      print,"Using deployed boom rotation matrix for MAG1"
+      mag1.y[jndx,*] = rotate_mag_to_swe(mag1.y[jndx,*], magu=1, /payload)
+    endif
   endif
 
 ; Store the result in the SWEA common block

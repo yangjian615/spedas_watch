@@ -587,7 +587,15 @@ var_string += ' pressure_vars'
 if tnames('th'+probe+'_peir_en_eflux') then begin
 
    get_data, 'th'+probe+'_peir_en_eflux', data = d
-   yminv = min(d.v) > 0.1       ;account for possible 0 energy
+
+;change d.v for cases with 0 energy
+   xxx = where(d.v lt 1.0, nxxx)
+   If(nxxx Gt 0) Then Begin
+      d.v[xxx] = 0.01
+      store_data, 'th'+probe+'_peir_en_eflux', data = d
+   Endif
+   yminv = min(d.v) > 0.1
+
    thm_spec_lim4overplot,'th'+probe+'_peir_en_eflux',zlog=1,ylog=1,/overwrite,ymin=yminv
 
    options,'th' + probe + '_peir_en_eflux','ysubtitle','eV/!C(cm^2-s-!Csr-eV)'
@@ -608,7 +616,15 @@ var_string += ' th' + probe + '_peir_en_eflux'
 if tnames('th'+probe+'_peer_en_eflux') then begin
 
    get_data, 'th'+probe+'_peer_en_eflux', data = d
-   yminv = min(d.v) > 0.1       ;account for possible 0 energy
+
+;change d.v for cases with 0 energy
+   xxx = where(d.v lt 1.0, nxxx)
+   If(nxxx Gt 0) Then Begin
+      d.v[xxx] = 0.01
+      store_data, 'th'+probe+'_peer_en_eflux', data = d
+   Endif
+   yminv = min(d.v) > 0.1
+
    thm_spec_lim4overplot,'th'+probe+'_peer_en_eflux',zlog=1,ylog=1,/overwrite,ymin=yminv
 
    options,'th' + probe + '_peer_en_eflux','ysubtitle','eV/!C(cm^2-s-!Csr-eV)'

@@ -31,6 +31,8 @@
 ;              over which you can estimate the potential, but at the 
 ;              expense of making more errors.
 ;
+;   MINFLUX:   Minimum peak energy flux.  Default = 1e6.
+;
 ;   DEMAX:     The largest allowable energy width of the spacecraft 
 ;              potential feature.  This excludes features not related
 ;              to the spacecraft potential at higher energies (often 
@@ -77,16 +79,16 @@
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: xussui_lap $
-; $LastChangedDate: 2016-05-04 13:11:55 -0700 (Wed, 04 May 2016) $
-; $LastChangedRevision: 21022 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-05-06 10:43:07 -0700 (Fri, 06 May 2016) $
+; $LastChangedRevision: 21037 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
 pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
                     pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
-                    mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr
+                    mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr, minflux=minflux
 
   compile_opt idl2
   
@@ -101,17 +103,32 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
   if (size(setval,/type) ne 0) then begin
     print,"Setting the s/c potential to: ",setval
     mvn_swe_engy.sc_pot = setval
+    swe_sc_pot = replicate(swe_pot_struct, n_elements(mvn_swe_engy))
+    swe_sc_pot[*].time = mvn_swe_engy.time
+    swe_sc_pot[*].potential = setval
+    pot = {x:mvn_swe_engy.time, y:mvn_swe_engy.sc_pot}
+    store_data,'mvn_swe_sc_pot',data=pot
+
+    if keyword_set(overlay) then begin
+      str_element,pot,'thick',2,/add
+      str_element,pot,'color',0,/add
+      str_element,pot,'psym',3,/add
+      store_data,'swe_pot_overlay',data=pot
+      store_data,'swe_a4_pot',data=['swe_a4','swe_pot_overlay']
+      ylim,'swe_a4_pot',3,5000,1
+    endif
+
     return
   endif
   
   if (size(badval,/type) eq 0) then badval = !values.f_nan else badval = float(badval)
+  if (size(minflux,/type) eq 0) then minflux = 1.e6 else minflux = float(minflux[0])
 
 ; Clear any previous potential calculations
 
   mvn_swe_engy.sc_pot = badval
   
-  ;if not keyword_set(erange) then erange = [3.,20.]
-  if not keyword_set(erange) then erange = [3.,30.] ;temporate fix
+  if not keyword_set(erange) then erange = [3.,30.]
   erange = minmax(float(erange))
   if not keyword_set(fudge) then fudge = 1.
   if keyword_set(ddd) then dflg = 1 else dflg = 0
@@ -294,7 +311,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
 ; Filter for low flux
 
   fmax = max(mvn_swe_engy[gndx].data, dim=1)
-  indx = where(fmax lt 1.e7, count)
+  indx = where(fmax lt minflux, count)
   if (count gt 0L) then begin
     phi[indx] = badval
     potential[gndx[indx]].flg = -1
