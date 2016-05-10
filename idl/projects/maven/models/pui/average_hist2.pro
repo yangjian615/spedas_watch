@@ -3,6 +3,7 @@
 ;FUNCTION average_hist2(a,x)
 ;returns the average of "a", binned according to "x"
 ;can handle 2D "a"
+;to be called by mvn_pui_model > mvn_pui_data_res
 
 function average_hist2,a,x,binsize=binsize,trange=trange,centertime=centertime
   tdrange=time_double(trange)

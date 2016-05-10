@@ -55,8 +55,8 @@
 ;HISTORY:
 ; 19-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20609 $
+; $LastChangedDate: 2016-05-09 12:37:23 -0700 (Mon, 09 May 2016) $
+; $LastChangedRevision: 21044 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_concat.pro $
 ;-
 Function fa_esa_cmn_concat, dat1, dat2
@@ -97,11 +97,15 @@ Function fa_esa_cmn_concat, dat1, dat2
               str_element, dat, rv_arr[0, j], max([dat1.(x1), dat2.(x2)]), /add_replace
            Endif Else Begin
               If(Not array_equal(dat1.(x1), dat2.(x2))) Then Begin
-                 dprint, dlev = [0], 'Array mismatch for: '+rv_arr[0, j]+ ' Retaining Initial values'
+                 dprint, dlev = [0], 'Array mismatch for: '+rv_arr[0, j]+ ' Retaining larger arrays'
               Endif
               If(count Eq 0) Then undefine, dat
               count = count+1
-              str_element, dat, rv_arr[0, j], dat1.(x1), /add_replace
+              If(n_elements(dat1.(x1) Gt n_elements(dat2.(x2)))) Then Begin
+                 str_element, dat, rv_arr[0, j], dat1.(x1), /add_replace
+              Endif Else Begin
+                 str_element, dat, rv_arr[0, j], dat2.(x2), /add_replace
+              Endelse                 
            Endelse
         Endif Else Begin ;records vary
            t1 = dat1.(x1)

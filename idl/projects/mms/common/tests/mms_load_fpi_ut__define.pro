@@ -47,6 +47,34 @@ function mms_load_fpi_ut::test_weird_fpi_case
   return, 1
 end
 
+; user downloads data, then tries to load the data using /no_update
+function mms_load_fpi_ut::test_noupdate_actually_works
+  ; load the data from the web
+  mms_load_fpi, trange=['2015-10-15', '2015-10-18'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_sdc
+  del_data, '*'
+  
+  ; load the data locally
+  mms_load_fpi, trange=['2015-10-15', '2015-10-18'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_local, /no_update
+  assert, spd_data_exists('mms1_dis_energyspectr_omni_avg', '2015-10-15', '2015-10-18'), $
+    'Problem loading data from local drive'
+  assert, array_equal(fn_sdc, fn_local), $
+    'Problem loading data from local drive (different CDF filenames)'
+  return, 1
+end
+
+; check that loading from local data doesn't load all data for the day
+function mms_load_fpi_ut::test_noupdate_mem
+  ; load the data from the web
+  mms_load_fpi, trange=['2015-10-16/13:06:00', '2015-10-16/13:08:00'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_sdc
+  del_data, '*'
+  
+  ; load the data locally
+  mms_load_fpi, trange=['2015-10-16/13:06:00', '2015-10-16/13:08:00'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_local, /no_update
+  assert, array_equal(fn_sdc, fn_local), $
+    'Problem loading data from local drive (different CDF filenames)'
+  return, 1
+end
+
 ; end of regression tests <------
 
 function mms_load_fpi_ut::test_load

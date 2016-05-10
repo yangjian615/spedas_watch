@@ -1,11 +1,12 @@
 ;20160404 Ali
-;loads PFP data for MAVEN pickup ion model mvn_pui_model
+;loads PFP data for MAVEN pickup ion model
+;to be called by mvn_pui_model
 
-pro mvn_pui_data_load
+pro mvn_pui_data_load,do3d=do3d
 
 maven_orbit_tplot ;loads the color-coded orbit info
 mvn_spice_load ;load spice kernels
-mvn_swia_load_l2_data,/loadmom,/loadspec,/eflux,/tplot,qlevel=0.1 ;load SWIA data
+mvn_swia_load_l2_data,/loadmom,/loadspec,loadcoarse=do3d,/eflux,/tplot,qlevel=0.1 ;load SWIA data
 mvn_mag_load,'L2_1sec' ;load MAG data
 ;cdf2tplot,mvn_pfp_file_retrieve('maven/data/sci/sep/anc/cdf/YYYY/MM/mvn_sep_l2_anc_YYYYMMDD_v??_r??.cdf',/daily),prefix='SepAnc_'
 mvn_sep_var_restore ;load SEP data

@@ -1,14 +1,16 @@
 
-pro spp_swp_startup, spanai = spanai,$
-                     spanae = spanae,$
-                     spanb  = spanb
+pro spp_swp_startup, spanai   = spanai,$
+                     spanae   = spanae,$
+                     spanb    = spanb,$
+                     optional = optional
 
 
   ;;--------------------------------------------
   ;; Check keywords
   if ~keyword_set(spanai) and $
      ~keyword_set(spanae) and $
-     ~keyword_set(spanb)  then begin
+     ~keyword_set(spanb)  and $
+     ~keyword_set(optional) then begin
      spanai = 1
      spanae = 1
      spanb  = 1
@@ -102,8 +104,8 @@ pro spp_swp_startup, spanai = spanai,$
         spp_apid_data,'3b9'x,routine='spp_swp_spani_event_decom',        tname='spp_spanai_events_',  tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3ba'x,routine='spp_swp_spani_tof_decom',          tname='spp_spanai_tof_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3bb'x,routine='spp_swp_spani_rates_64x_decom',    tname='spp_spanai_rates_',   tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-        spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_96x_decom', tname='spp_spanai_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-        spp_apid_data,'3bf'x,routine='spp_generic_decom',                tname='spp_spanai_fhkp_',    tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+        spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_97x_decom', tname='spp_spanai_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+        spp_apid_data,'3bf'x,routine='spp_swp_spani_fast_hkp_decom',     tname='spp_spanai_fhkp_',    tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      endif
 
 
@@ -115,7 +117,8 @@ pro spp_swp_startup, spanai = spanai,$
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; SPAN-Ai Full Sweep Products
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
-     decom_routine_i = 'spp_swp_spani_product_decom2'
+     ;decom_routine_i = 'spp_swp_spani_product_decom2'
+     decom_routine_i = 'spp_swp_spani_product_decom'
 
      spp_apid_data,'380'x,routine=decom_routine_i,tname='spp_spanai_ar_full_p0_m0_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      spp_apid_data,'381'x,routine=decom_routine_i,tname='spp_spanai_ar_full_p0_m1_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
@@ -288,16 +291,24 @@ pro spp_swp_startup, spanai = spanai,$
   endif
 
 
-
-
-
-
   ;;############################################
   ;; SETUP GSE APID
   ;;############################################
   spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',       tfields='*',     save=save,rt_tags='*_?',   rt_flag=1
   spp_apid_data,'7c0'x,routine='spp_log_msg_decom',     tname='log_',      tfields='MSG',   save=save,rt_tags='MSG',   rt_flag=1
   spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='SWEAP SPAN-I Manip',rt_tags='M???POS',save=1,/rt_flag
+
+
+  ;;############################################
+  ;; OPTIONAL
+  ;;############################################
+  if keyword_set(optional) then begin
+     rt_flag=1
+     spp_apid_data,'3bb'x,routine='spp_swp_spani_rates_64x_decom',    tname='spp_spanai_rates_',   tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_97x_decom', tname='spp_spanai_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     ;spp_apid_data,'3b9'x,routine='spp_swp_spani_event_decom',        tname='spp_spanai_events_',  tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+     ;print, 'Check'
+  endif
 
 
   spp_apid_data,apdata=ap

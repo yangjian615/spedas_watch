@@ -1,5 +1,6 @@
 ;20160404 Ali
-;change data resolution and load instrument pointings
+;change the data resolution and load instrument pointings
+;to be called by mvn_pui_model
 
 pro mvn_pui_data_res,trange=trange,binsize=binsize
 
@@ -47,11 +48,13 @@ magtot=sqrt(mag[*,0]^2+mag[*,1]^2+mag[*,2]^2); magnetic field magnitude (T)
 
 scp=1e3*transpose(spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime)) ;MAVEN position MSO (m)
 inn=n_elements(centertime) ;number of time steps
-SEP_FOV_front=[1.,0,0]#replicate(1.,inn) ;SEP front FOV
-sep1ld=transpose(spice_vector_rotate(SEP_FOV_front,centertime,'MAVEN_SEP1','MSO',check_objects='MAVEN_SPACECRAFT')); sep1 look direction MSO
-sep2ld=transpose(spice_vector_rotate(SEP_FOV_front,centertime,'MAVEN_SEP2','MSO',check_objects='MAVEN_SPACECRAFT')); sep2 look direction MSO
-zdir=[0,0,1.]#replicate(1.,inn) ;Z-direction (axis of symmetry of SWIA and STATIC)
+xdir=[1.,0,0]#replicate(1.,inn) ;SEP front FOV
+ydir=[0,1.,0]#replicate(1.,inn) ;Y-direction
+zdir=[0,0,1.]#replicate(1.,inn) ;Z-direction (symmetry axis of SWIA and STATIC)
+sep1ld=transpose(spice_vector_rotate(xdir,centertime,'MAVEN_SEP1','MSO',check_objects='MAVEN_SPACECRAFT')); sep1 look direction MSO
+sep2ld=transpose(spice_vector_rotate(xdir,centertime,'MAVEN_SEP2','MSO',check_objects='MAVEN_SPACECRAFT')); sep2 look direction MSO
 ;swizld=transpose(spice_vector_rotate(zdir,centertime,'MAVEN_SWIA','MSO',check_objects='MAVEN_SPACECRAFT')); SWIA-Z look direction
+staxld=transpose(spice_vector_rotate(xdir,centertime,'MAVEN_STATIC','MSO',check_objects='MAVEN_SPACECRAFT')); STATIC-X look direction
 stazld=transpose(spice_vector_rotate(zdir,centertime,'MAVEN_STATIC','MSO',check_objects='MAVEN_SPACECRAFT')); STATIC-Z look direction
 
 ;create tplot variables from calculated new cadenses
@@ -73,7 +76,7 @@ options,'redures_swea','spec',1
 ylim,'redures_swea',3,5e3,1
 zlim,'redures_swea',1e4,1e8,1
 ;SWIA
-store_data,'redures_swia',centertime,swiaef,swiaet
+store_data,'mvn_swia_data_redures',centertime,swiaef,swiaet
 ;STATIC
 store_data,'redures_H_sta_c0',centertime,sta_c0H,sta_c0et
 store_data,'redures_L_sta_c0',centertime,sta_c0L,sta_c0et

@@ -12,8 +12,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-28 15:15:48 -0700 (Thu, 28 Apr 2016) $
-; $LastChangedRevision: 20963 $
+; $LastChangedDate: 2016-05-09 14:54:08 -0700 (Mon, 09 May 2016) $
+; $LastChangedRevision: 21050 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_eis_crib.pro $
 ;-
 probe = '1'
@@ -26,13 +26,6 @@ level = 'l2'
 mms_load_eis, probes=probe, trange=trange, datatype='extof', level = level 
 
 ; plot the H+ flux for all channels
-ylim, '*_extof_proton_flux_omni_spin', 50, 300, 1
-zlim, '*_extof_proton_flux_omni_spin', 0, 0, 1
-
-; setting ystyle = 1 forces the max/min of the Y axis to be set
-; to the y limits set above
-options, '*_extof_proton_flux_omni_spin', ystyle=1
-
 tplot, '*_extof_proton_flux_omni_spin'
 stop
 
@@ -47,15 +40,11 @@ tplot, '*_epd_eis_extof_*keV_proton_flux_omni_pad_spin'
 stop
 
 ; plot the He++ flux for all channels
-ylim, '*extof_alpha_flux_omni_spin', 80, 600, 1
-zlim, '*extof_alpha_flux_omni_spin', 0, 0, 1
 tplot, '*extof_alpha_flux_omni_spin'
 
 stop
 
 ; plot the O+ flux for all channels
-ylim, '*_extof_oxygen_flux_omni_spin', 100, 1000, 1
-zlim, '*_extof_oxygen_flux_omni_spin', 0, 0, 1
 tplot, '*_extof_oxygen_flux_omni_spin'
 
 stop
@@ -64,9 +53,6 @@ stop
 mms_load_eis, probes=probe, trange=trange, datatype='phxtof', level = level
 
 ; plot the PHxTOF proton spectra
-ylim, '*_phxtof_proton_flux_omni_spin', 10, 50, 1
-zlim, '*_phxtof_proton_flux_omni_spin', 0, 0, 1
-options, '*_phxtof_proton_flux_omni_spin', ystyle=1
 tplot, '*_phxtof_proton_flux_omni_spin'
 stop
 

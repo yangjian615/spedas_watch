@@ -1,5 +1,6 @@
 ;20160404 Ali
-;solves pui trajectories
+;solves pickup ion trajectories analytically
+;to be called by mvn_pui_model
 
 pro mvn_pui_solver,mamu=mamu,np=np,ntg=ntg
 
@@ -17,21 +18,6 @@ scpx=scp[*,0]#onesnp
 scpy=scp[*,1]#onesnp
 scpz=scp[*,2]#onesnp
 uswn=usw#onesnp
-sep1ldx=sep1ld[*,0]#onesnp
-sep1ldy=sep1ld[*,1]#onesnp
-sep1ldz=sep1ld[*,2]#onesnp
-sep2ldx=sep2ld[*,0]#onesnp
-sep2ldy=sep2ld[*,1]#onesnp
-sep2ldz=sep2ld[*,2]#onesnp
-swixld=(sep1ld+sep2ld)/sqrt(2)
-;swiyld=crossp(sep1ld,sep2ld)
-swizld=(sep1ld-sep2ld)/sqrt(2)
-swizldx=swizld[*,0]#onesnp
-swizldy=swizld[*,1]#onesnp
-swizldz=swizld[*,2]#onesnp
-stazldx=stazld[*,0]#onesnp
-stazldy=stazld[*,1]#onesnp
-stazldz=stazld[*,2]#onesnp
 
 ;rotate coordinates so that Usw becomes anti-sunward (align Usw with -X)
 bx=-[vswx*magx+vswy*magy+vswz*magz]/uswn
@@ -92,10 +78,5 @@ rxyz=sqrt(r3x^2+r3y^2+r3z^2); %radial distance of pickup ions from the center of
 vxyz=sqrt(v3x^2+v3y^2+v3z^2); %velocity of pickup ions (m/s)
 drxyz=vxyz*dt ;pickup ion distance increment (m)
 ke=.5*m*(vxyz^2)/q; %kinetic energy of pickup ions at MAVEN (eV)
-
-cosvsep1=-(sep1ldx*v3x+sep1ldy*v3y+sep1ldz*v3z)/vxyz; cosine of angle between SEP FOV and pickup ion -velocity vector
-cosvsep2=-(sep2ldx*v3x+sep2ldy*v3y+sep2ldz*v3z)/vxyz;
-cosvswiz=-(swizldx*v3x+swizldy*v3y+swizldz*v3z)/vxyz;
-cosvstaz=-(stazldx*v3x+stazldy*v3y+stazldz*v3z)/vxyz;
 
 end

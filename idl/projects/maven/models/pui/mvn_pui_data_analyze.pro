@@ -1,6 +1,7 @@
 ;20160404 Ali
 ;MAVEN data analysis:
 ;SWEA/SWIA solar wind moments, ionization frequencies, etc.
+;to be called by mvn_pui_model
 
 pro mvn_pui_data_analyze
 
@@ -32,7 +33,6 @@ readf,lun,xsec_ei
 free_lun,lun
 
 ;FISM daily irradiance (W/m2/nm)
-fismfile=mvn_pfp_file_retrieve('maven/data/sci/euv/l3/YYYY/MM/mvn_euv_l3_minute_YYYYMMDD_v??_r??.cdf',/daily,/valid)
 if n_elements(fismir) eq 1 then begin
   dprint,dlevel=2,'No EUVM L3 (FISM) files were found, using default photo-ionization frequencies.'
   i_pi_h=1e-7*replicate(1.,inn)
@@ -77,6 +77,7 @@ i_ei_h=total(ifreq_ei_h,2); %H electron impact ionization frequency (s-1)
 i_ei_o=total(ifreq_ei_o,2); %O electron impact ionization frequency (s-1)
 ;%%%%
 
+;ifreq=4.5e-7; O total ionization frequency (s-1) per Rahmati et al., 2014
 ifreq_h=i_pi_h+i_cx_h+i_ei_h; %H total ionization frequency (s-1)
 ifreq_o=i_pi_o+i_cx_o+i_ei_o; %O total ionization frequency (s-1)
 

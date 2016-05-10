@@ -86,8 +86,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-13 12:19:32 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20803 $
+;$LastChangedDate: 2016-05-09 10:51:28 -0700 (Mon, 09 May 2016) $
+;$LastChangedRevision: 21043 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -266,18 +266,20 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         
         ;if no remote list was retrieved then search locally   
         endif else begin
-            ; suppressed redundant error message
-            ;dprint, dlevel = 2, 'No remote files found for: '+ $
-            ;        probe+' '+instrument+' '+data_rate+' '+level+' '+datatype
-            
+            ; get all files from the beginning of the first day
             local_files = mms_get_local_files(probe=probe, instrument=instrument, $
                     data_rate=data_rate, level=level, datatype=datatype, trange=time_double([day_string, end_string]))
 
-;            ;Filter files by time
-;            if is_array(local_files) then local_files = unh_mms_file_filter(local_files, trange=time_double([day_string, end_string]), $
-;                version=cdf_version, min_version = min_version, latest_version = latest_version)
-
             if is_string(local_files) then begin
+                ; prepare the file list as a list of structs, (required input to mms_files_in_interval)
+                local_file_info = replicate({filename: '', timetag: ''}, n_elements(local_files))
+                for local_file_idx = 0, n_elements(local_files)-1 do begin
+                    local_file_info[local_file_idx].filename = local_files[local_file_idx]
+                endfor
+                
+                ; filter to the requested time range
+                local_files_filtered = mms_files_in_interval(local_file_info, tr)
+                local_files = local_files_filtered.filename
                 append_array, files, local_files
             endif else begin
                 dprint, dlevel = 0, 'Error, no local or remote data files found: '+$
