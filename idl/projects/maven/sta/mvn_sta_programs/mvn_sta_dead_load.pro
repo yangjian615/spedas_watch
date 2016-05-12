@@ -27,6 +27,12 @@
 ;		If at some future date we are forced into slower cadence measurements, 
 ;		then code used for apid cc can be adapted to the above apids.
 ;
+;TBDs
+;	change code so that at attenuator transitions where count rates go below efficiency threshold, 
+;		that the code will use the nearest attenuated values, not the higher attenuated efficiency. 
+;		may have to break up the for-loop into 2 for-loops
+;	change code to default to anode efficiency based on anode rejection determination
+;
 ;-
 pro mvn_sta_dead_load,check=check,test=test,dead_droop=dead_droop,dead_rate=dead_rate,make_common=make_common
 
@@ -99,6 +105,8 @@ d3 = mvn_c8_dat.dead3						; 460 ns, stop no start events (and stop then start e
 min_droop = fltarr(npts)
 max_droop = fltarr(npts)
 max_dead = fltarr(npts)
+flag_dead = fltarr(npts)
+
 
 if not keyword_set(dead_droop) then dead_droop=800.		; this was empirically determined from data on 20150107-1520UT, seems good to ~10% 
 if not keyword_set(dead_rate) then dead_rate=1.e5		; this was empirically determined from data on 20150107-1520UT, seems good to ~10% 
@@ -106,14 +114,18 @@ st_def = .70							; default start efficiency at low rates
 sp_def = .47							; default stop efficiency at low rates
 ef3_def = .75							; ef3 accounts for variations in qualified event efficiency including anode losses
 ef_def = st_def*sp_def
+att=mvn_c0_dat.att_ind[0]
 
 for i=0l,npts-1 do begin
+
+	att_last=att						; this is used for corrections when count rate is low
 
 	min_c0 = min(abs(mvn_c0_dat.time-time[i]),ind_c0)
 	min_c8 = min(abs(mvn_c8_dat.time-time[i]),ind_c8)
 	min_ca = min(abs(mvn_ca_dat.time-time[i]),ind_ca)
 	min_d8 = min(abs(mvn_d8_dat.time-time[i]),ind_d8)
 	min_d9 = min(abs(mvn_d9_dat.time-time[i]),ind_d9)
+	att = mvn_c0_dat.att_ind[ind_c0]
 
 	if (min_c0 gt 2. or min_c8 gt 2. or min_ca gt 2. or min_d8 gt 2.) then begin
 		if keyword_set(check) then print,'No matching data at: ',time_string(time[i]),' c0_delta_time= ',min_c0,' c8_delta_time= ',min_c8,' ca_delta_time= ',min_ca,' d8_delta_time= ',min_d8
@@ -169,14 +181,27 @@ for i=0l,npts-1 do begin
 
 ; use running average (4) efficiencies at very low count rates
 	if (fq lt 100.) then begin
+		flag_dead[i]=1
 		if i lt 4 then begin									; use default efficiencies for first 4 points of day
 			ef_sp = sp_def
 			ef_st = st_def
 			ef3 = ef3_def
 		endif else begin
-			ef_sp = total(eff_stop[i-4:i-1])/4.
-			ef_st = total(eff_start[i-4:i-1])/4.
-			ef3 = total(eff_qual[i-4:i-1])/4.
+			if att_last ge att then begin
+				if (fq gt 50.) then begin 
+					ef_sp = (eff_stop[i-1]+ef_sp)/2.
+					ef_st = (eff_start[i-1]+ef_st)/2.
+					ef3 = (eff_qual[i-1]+ef3)/2.
+				endif else begin
+					ef_sp = (total(eff_stop[i-3:i-1])+ef_sp)/4.
+					ef_st = (total(eff_start[i-3:i-1])+ef_st)/4.
+					ef3 = (total(eff_qual[i-3:i-1])+ef3)/4.
+				endelse
+			endif else begin
+				ef_sp = min(eff_stop[(i-30)>0:i-1])
+				ef_st = min(eff_start[(i-30)>0:i-1])
+				ef3 = min(eff_qual[(i-30)>0:i-1])
+			endelse
 		endelse
 	endif
 	
@@ -311,6 +336,7 @@ if keyword_set(test) then begin
 	loadct2,43
 	cols=get_colors()
 
+	store_data,'mvn_sta_flag_dead',data={x:time+2.,y:flag_dead}
 	store_data,'mvn_sta_max_dead',data={x:time+2.,y:max_dead}
 	store_data,'mvn_sta_max_droop',data={x:time+2.,y:max_droop}
 		options,'mvn_sta_max_droop',colors=cols.red
