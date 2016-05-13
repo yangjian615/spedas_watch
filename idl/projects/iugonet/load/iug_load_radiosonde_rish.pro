@@ -33,9 +33,9 @@
 ; A. Shinbori, 24/01/2014.
 ; 
 ;ACKNOWLEDGEMENT:
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21069 $
 ; $URL $
 ;-
   
@@ -59,7 +59,7 @@ datatype_all = strsplit('dawex misc',' ', /extract)
 
 ;--- check datatypes
 if(not keyword_set(datatype)) then datatype='all'
-datatypes = ssl_check_valid_name(datatype, datatype_all, /ignore_case, /include_all)
+datatypes = thm_check_valid_name(datatype, datatype_all, /ignore_case, /include_all)
 
 print, datatypes
 
@@ -67,11 +67,11 @@ print, datatypes
 ;site check:
 ;***********
 ;--- all site codes (default)
-site_all = strsplit('drw gpn ktb ktr sgk srp',' ', /extract)
+site_all = strsplit('bdg drw gpn ktb ktr pon sgk srp uji',' ', /extract)
 
 ;--- check site code
 if (not keyword_set(site)) then site='all'
-site_code = ssl_check_valid_name(site, site_all, /ignore_case, /include_all)
+site_code = thm_check_valid_name(site, site_all, /ignore_case, /include_all)
 
 print, site_code
                  
@@ -89,7 +89,17 @@ print, site_code
      ;load of Shigaraki radiosonde data
       if (datatypes[i] eq 'misc') then begin
          for j=0, n_elements(site_code)-1 do begin
-            iug_load_radiosonde_sgk_csv, downloadonly=downloadonly, trange=trange, verbose=verbose
+            case site_code[j] of
+               'bdg':iug_load_radiosonde_bdg_nc, downloadonly=downloadonly, trange=trange, verbose=verbose 
+               'ktb':iug_load_radiosonde_ktb_nc, downloadonly=downloadonly, trange=trange, verbose=verbose 
+               'pon':iug_load_radiosonde_pon_nc, downloadonly=downloadonly, trange=trange, verbose=verbose
+               'sgk':iug_load_radiosonde_sgk_csv, downloadonly=downloadonly, trange=trange, verbose=verbose
+               'srp':iug_load_radiosonde_srp_nc, downloadonly=downloadonly, trange=trange, verbose=verbose 
+               'uji':iug_load_radiosonde_uji_nc, downloadonly=downloadonly, trange=trange, verbose=verbose
+               else:begin
+                  print,'found no match sites for datatype misc'
+               end
+            endcase
          endfor
       endif 
    endfor  

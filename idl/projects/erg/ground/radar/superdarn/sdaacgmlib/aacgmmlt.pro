@@ -25,9 +25,9 @@
 ; :HISTORY:
 ;   2011/10/04: created and got through the initial bug fixes
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2013-03-21 10:10:35 -0700 (Thu, 21 Mar 2013) $
-; $LastChangedRevision: 11857 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21070 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/sdaacgmlib/aacgmmlt.pro $
 ;-
 
@@ -38,9 +38,17 @@ function aacgmmlt, yr, t0, mlon
 help, name='!sdarn',out=out
 if out eq '' then sd_init
 
-if !sdarn.aacgm_dlm_exists then begin 
+if !map2d.aacgm_dlm_exists then begin 
   ;print, 'using AACGM_DLM'
-  return, aacgm_mlt(yr,t0,mlon)
+  mlt_tmp = aacgm_mlt(yr,t0,mlon)
+  mlt = mlon 
+  if (size(mlt[0]))[1] eq 4 then begin 
+    mlt[*] = float( mlt_tmp[*] )
+  endif else begin
+    mlt[*] = mlt_tmp[*]
+  endelse 
+  return, (mlt+24.) mod 24 
+  
 endif else begin
   mlt=mlon
   mlt[*]=0.
@@ -50,7 +58,7 @@ endif else begin
     ;print, 'cnv_aacgm was executed'
     ;print, glat[i],glon[i],alt[i],'   ',mlat[i],mlon[i],r,err
   endfor
-  return, mlt
+  return, (mlt+24.) mod 24 
 endelse
 
 return, !values.f_nan ;error 

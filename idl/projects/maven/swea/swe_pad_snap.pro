@@ -107,9 +107,16 @@
 ;                      which is the fractional change in the magnetic field over
 ;                      one gyroradius.  Only works when HIRES is set.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-28 17:21:35 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20614 $
+;        POPEN:        Set this to the name of a postscript file for output.
+;        
+;        INDSPEC:      To plot out the energy spectrum for each PA bins
+;        
+;        TWOPOT:       Allow input a two-element array to allow shifting different
+;                      potentials on parallel and anti-parallel directions
+;        
+; $LastChangedBy: xussui_lap $
+; $LastChangedDate: 2016-05-12 16:55:57 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21068 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -122,7 +129,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   center=center, pep=pep, resample=resample, hires=hires, $
                   fbdata=fbdata, window=window, adiabatic=adiabatic, $
                   nomid=nomid, uncertainty=uncertainty, nospec90=nospec90, $
-                  shiftpot=shiftpot
+                  shiftpot=shiftpot,popen=popen, indspec=indspec, twopot=twopot
 
   @mvn_swe_com
   common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
@@ -189,6 +196,19 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif else begin
     dospec = 0
     swidth = 30.*!dtor
+  endelse
+  
+  if keyword_set(indspec) then doind=1 else doind=0
+  
+  if (size(popen,/type) eq 7) then begin
+      psflg = 1
+      psname = popen[0]
+      csize1 = 1.2
+      csize2 = 1.0
+  endif else begin
+      psflg = 0
+      csize1 = 1.2
+      csize2 = 1.4
   endelse
 
   case n_elements(center) of
@@ -286,6 +306,13 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
      wnum += 1
   endif
 
+  if (doind) then begin
+      if ~(free) then wstat = execute("wset, wnum")
+      if wstat eq 0 then window, wnum, free=free, xsize=Fopt.xsize*2, ysize=Fopt.ysize, xpos=Fopt.xpos+1, ypos=Fopt.ypos+1
+      Iwin = !d.window
+      wnum += 1
+  endif
+
 ; Set plot options
 
   limits = {no_interp:1, xlog:1, xrange:xrange, xstyle:1, xtitle:'Energy (eV)', $
@@ -337,12 +364,17 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif
 
   ok = 1
-
+  
+  nplot = 0
+  
   while (ok) do begin
+
+  
+  if (psflg) then popen, psname + string(nplot,format='("_",i2.2)')
 
 ; Put up a PAD spectrogram
  
-    wset, Pwin
+    if ~(psflg) then wset, Pwin
     if (pdflg) then begin
        pad = mvn_swe_getpad(trange,archive=aflg,all=doall,/sum,units=units)
        if (hflg) then pad = mvn_swe_padmap_32hz(pad, fbdata=fbdata, /verbose, maglev=maglev)
@@ -462,7 +494,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       !p.multi = 0
 
       if (rflg or hflg or uflg) then begin
-         wset, Rwin
+         if ~(psflg) then wset, Rwin
          if (rflg + hflg + uflg) gt 1 then !p.multi = [0, 1, rflg+hflg+uflg]
          if (rflg) then begin
             rlim = limits
@@ -551,7 +583,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         y = pad.pa*!radeg
         z = pad.data
 
-        wset, Nwin
+        if ~(psflg) then wset, Nwin
         de = min(abs(energy - x),i)
         energy = x[i]
         ylo = reform(pad.pa_min[i,*])*!radeg
@@ -597,7 +629,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                  if (rflg or hflg) then wdelete, Rwin
               endif
               
-              wset, Twin
+              if ~(psflg) then wset, Twin
               RETURN
            ENDIF
            undefine, et, objects
@@ -680,7 +712,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
           for j=0,15 do oplot,[ylo[j],yhi[j]],[z3d[j],z3d[j]],color=col[j],line=2
 
-          wset, Cwin
+          if ~(psflg) then wset, Cwin
           d_dat = replicate(!values.f_nan,96)
           d_dat[pad.k3d] = reform(z[i,*])       ; PAD mapped into 3D
           ddd.data[ebin+1,*] = d_dat            ; overwrite adjacent energy bin
@@ -693,7 +725,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       endif
             
       if (dospec) then begin
-        wset, Ewin
+        if ~(psflg) then wset, Ewin
         x = pad.energy[*,0]
         pndx = where(reform(pad.pa_max[63,*]) lt swidth, count)
         if (count gt 0L) then Fp = average(pad.data[*,pndx],2,/nan) $
@@ -706,11 +738,26 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         if (count gt 0L) then Fz = average(pad.data[*,zndx],2,/nan) $
                          else Fz = replicate(!values.f_nan,64)
         
+        if keyword_set(twopot) then begin
+            php = Fp/x^2
+            x1 = x-twopot[0]
+            inE=where(x1 ge 0,cts)
+            Fp = php[inE]*x1[inE]^2
+            
+            php = Fm/x^2
+            x2 = x-twopot[1]
+            inE=where(x2 ge 0,cts)
+            Fm = php[inE]*x2[inE]^2
+        endif else begin
+            x1=x
+            x2=x
+        endelse
+        
         plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
           xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
           charsize=1.4
-        oplot, x, Fp, psym=10, color=6
-        oplot, x, Fm, psym=10, color=2
+        oplot, x1, Fp, psym=10, color=6
+        oplot, x2, Fm, psym=10, color=2
         if (domid) then oplot, x, Fz, psym=10, color=4
         if (dopot and not spflg) then begin
           if (finite(scp)) then pot = scp $
@@ -751,7 +798,115 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         endif
       endif
     endif
+    
+    if (doind) then begin
+        if ~(psflg) then wset, Iwin
+        x = pad.energy[*,0]
+        npa = 16;n_elements(pad.energy[0,*])
+        pas = reform(pad.pa[63,*])
+        inm = where(pas eq min(pas))
+        inm = inm[0]
+        !p.multi=[0,2,1,0,0]
+        
+        ;first half of the PAD
+        plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
+            xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
+            charsize=1.4
+                    
+        xs = 0.36
+        ys = 0.90
+        dys = 0.03
+      
+        for ip=0,npa/2-1 do begin
+            ipa=ip+inm
+            if ipa ge npa then ipa=ipa-npa
+            mip=pad.pa_min[63,ipa]*!radeg
+            maap=pad.pa_max[63,ipa]*!radeg
+            if pad.pa[63,ipa]*!radeg ge 90 then lst=2 else lst=0
+            clr=244./(npa/2-1)*ip+10
+            oplot,x,pad.data[*,ipa], color=clr, linestyle=lst
+            xyouts,xs,ys,string(mip, maap, format='(i3," - ",i3)'),charsize=1.2,/norm,color=clr
+            ys -= dys
+        endfor
+        if (dopot) then begin
+            if (finite(scp)) then pot = scp $
+            else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
+            oplot,[pot,pot],drange,line=2
+        endif
+        if (pflg) then begin
+            oplot,[23.,23.],drange,line=2,color=1
+            oplot,[27.,27.],drange,line=2,color=1
+        endif
 
+        if (doalt) then begin
+            dt = min(abs(alt.x - pad.time), aref)
+            xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
+            ys -= dys
+            xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+            ys -= dys
+        endif
+
+        if keyword_set(dir) then begin
+            if (B_azim lt 0.) then B_azim = (B_azim + 360.) mod 360.
+            xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2,/norm
+            ys -= dys
+            xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2,/norm
+            ys -= dys
+        endif
+        
+        
+        ;second half of the PAD
+        plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
+            xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
+            charsize=1.4
+
+        xs = 0.86
+        ys = 0.90
+        dys = 0.03
+
+        for ip=0,npa/2-1 do begin
+            ipa=ip+npa/2+inm
+            if ipa ge npa then ipa=ipa-npa
+            mip=pad.pa_min[63,ipa]*!radeg
+            maap=pad.pa_max[63,ipa]*!radeg
+            if pad.pa[63,ipa]*!radeg ge 90 then lst=2 else lst=0
+            clr=254.-244./(npa/2-1)*ip
+            oplot,x,pad.data[*,ipa], color=clr, linestyle=lst
+            xyouts,xs,ys,string(mip, maap, format='(i3," - ",i3)'),charsize=1.2,/norm,color=clr
+            ys -= dys
+        endfor
+        if (dopot) then begin
+            if (finite(scp)) then pot = scp $
+            else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
+            oplot,[pot,pot],drange,line=2
+        endif
+        if (pflg) then begin
+            oplot,[23.,23.],drange,line=2,color=1
+            oplot,[27.,27.],drange,line=2,color=1
+        endif
+
+        if (doalt) then begin
+            dt = min(abs(alt.x - pad.time), aref)
+            xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
+            ys -= dys
+            xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+            ys -= dys
+        endif
+
+        if keyword_set(dir) then begin
+            if (B_azim lt 0.) then B_azim = (B_azim + 360.) mod 360.
+            xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2,/norm
+            ys -= dys
+            xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2,/norm
+            ys -= dys
+        endif
+        
+        !p.multi=0
+    endif
+
+    if (psflg) then pclose
+    nplot++
+    
 ; Get the next button press
     if (pdflg) then begin
        wset,Twin
@@ -759,6 +914,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
        if (npts gt 1) then cursor,cx,cy,/norm,/up ; make sure mouse button is released
        if (size(trange,/type) eq 5) then ok = 1 else ok = 0
     endif else ok = 0
+    
   endwhile
 
   if (kflg) then begin
@@ -767,6 +923,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     if (dflg) then wdelete, Cwin
     if (dospec) then wdelete, Ewin
     if (rflg or hflg) then wdelete, Rwin
+    if (doind) then wdelete, Iwin
   endif
 
   wset, Twin

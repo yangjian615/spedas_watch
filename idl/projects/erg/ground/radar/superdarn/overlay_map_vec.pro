@@ -27,19 +27,24 @@
 ; :Author:
 ;   Tomo Hori (E-mail: horit at stelab.nagoya-u.ac.jp)
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-02-10 16:54:11 -0800 (Mon, 10 Feb 2014) $
-; $LastChangedRevision: 14265 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21070 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/overlay_map_vec.pro $
 ;-
 
 ;-
 PRO overlay_map_vec, lat0, lon0, dlat, dlon, arclength, $
-  linethick=linethick, color=color
+  linethick=linethick, color=color, $
+  psym=psym, symsize=symsize, $
+  nooriginpoint=nooriginpoint
   
   ;Check the arguments
   npar = n_params()
   if npar ne 5 then return 
+  
+  if ~keyword_set(psym) then psym = 4 
+  if ~keyword_set(symsize) then symsize = 0.8 
   
   ;Calculate the end point of a vector with given arclength
   the0 = 90. - lat0 & dthe = (-1.)*dlat
@@ -49,7 +54,7 @@ PRO overlay_map_vec, lat0, lon0, dlat, dlon, arclength, $
   
   
   ;Plot!
-  plots, lon0,lat0, psym=4, symsize=1.2
+  if ~keyword_set(nooriginpoint) then plots, lon0,lat0, psym=psym, symsize=symsize, color=color
   plots, [lon0,lon1], [lat0,lat1], thick=linethick, color=color
 
 

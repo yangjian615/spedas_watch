@@ -37,9 +37,9 @@
 ; A. Shinbori, 24/01/2014.
 ; 
 ;ACKNOWLEDGEMENT:
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21069 $
 ; $URL $
 ;-
 
@@ -61,7 +61,7 @@ parameter_all = strsplit('uwnd vwnd wwnd pwr1 pwr2 pwr3 pwr4 pwr5 wdt1 wdt2 wdt3
 
 ;--- check site codes
 if(not keyword_set(parameter)) then parameter='all'
-parameters = ssl_check_valid_name(parameter, parameter_all, /ignore_case, /include_all)
+parameters = thm_check_valid_name(parameter, parameter_all, /ignore_case, /include_all)
 
 print, parameters
 

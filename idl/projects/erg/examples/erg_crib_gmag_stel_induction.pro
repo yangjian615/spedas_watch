@@ -15,8 +15,8 @@
 ;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
 ;
 ;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2014-04-08 15:36:11 -0700 (Tue, 08 Apr 2014) $
-;   $LastChangedRevision: 14778 $
+;   $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
+;   $LastChangedRevision: 21070 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/examples/erg_crib_gmag_stel_induction.pro $
 ;-
 
@@ -25,7 +25,7 @@
 thm_init
 
 ; set the date and duration (in hours)
-timespan, '2009-01-03/09:40:00', 30, /minutes
+timespan, '2009-01-03/09:40:00', 30, /minute
 
 ; load the data
 erg_load_gmag_stel_induction, site='ath msr'

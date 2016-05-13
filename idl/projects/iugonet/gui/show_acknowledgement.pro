@@ -43,7 +43,7 @@ function show_acknowledgement, instrument=instrument, datatype=datatype, $
                 'Affiliations:', str.cdf.gatt.pi_affiliation, '', '', $
                 'Rules of the Road:',str.cdf.gatt.text, $
                 '', str.cdf.gatt.LINK_TEXT, str.cdf.gatt.HTTP_LINK ] 
-  endif else if datatype eq 'NIPR_mag#' then begin
+  endif else if datatype eq 'NIPR#' then begin
      theMessage = [ $
                 str.cdf.gatt.LOGICAL_SOURCE_DESCRIPTION, '', $
                 'Information about '+str.cdf.gatt.station_code, '', $
@@ -51,7 +51,8 @@ function show_acknowledgement, instrument=instrument, datatype=datatype, $
                 'Affiliations:', str.cdf.gatt.pi_affiliation, '', $
                 'Rules of the Road: ',str.cdf.gatt.rules_of_use, '', $
                 str.cdf.gatt.LINK_TEXT, str.cdf.gatt.HTTP_LINK]
-  endif else if datatype eq '210mm#' or datatype eq 'STEL#' then begin
+  endif else if (datatype eq '210mm#') or (datatype eq 'STEL#') or $
+     (datatype eq 'magdas#') then begin
      theMessage = [ $
                 str.cdf.gatt.LOGICAL_SOURCE_DESCRIPTION, '', $
                 'Information about '+str.cdf.gatt.station_code, '', $

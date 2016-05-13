@@ -4,16 +4,15 @@ PRO overlay_map_precal_sdfov, site=site, geo_plot=geo_plot, nh=nh, sh=sh, $
   color=color 
   
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;nh_list = strsplit('bks brt cve cvw ekb fhe fhw gbr han hok inv kap kod ksr mge mgw pgr pyk rkn sas sto wal', /ext )
-  nh_list = strsplit('bks cve cvw ekb fhe fhw gbr han hok how inv kap kod ksr pgr pyk rkn sas sto wal ade adw', /ext )
-  sh_list = strsplit('fir hal ker mcm san sye sys tig unw zho', /ext )
+  nh_list = strsplit('bks cve cvw ekb fhe fhw gbr han hok hkw inv kap kod ksr pgr pyk rkn sas sto wal ade adw', /ext )
+  sh_list = strsplit('bpk dce fir hal ker mcm san sps sye sys tig unw zho', /ext )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   
   ;Check the keywords and generate the station list to be plotted
   stns = ''
   if keyword_set(nh) then append_array, stns, nh_list
   if keyword_set(sh) then append_array, stns, sh_list
-  if keyword_set(site) then append_array, stns, site 
+  if keyword_set(site) then append_array, stns, strsplit(site, /ext) 
   if stns[0] eq '' then return
   print, stns 
   
@@ -25,7 +24,7 @@ PRO overlay_map_precal_sdfov, site=site, geo_plot=geo_plot, nh=nh, sh=sh, $
   
   ;Prepare for AACGM conversion
   if ~keyword_set(geo_plot) then begin
-    ts = time_struct( !sdarn.sd_polar.plot_time)
+    ts = time_struct( !map2d.time)
     yrsec = long( (ts.doy-1)*86400L + ts.sod )
     aacgmloadcoef, ts.year 
   endif

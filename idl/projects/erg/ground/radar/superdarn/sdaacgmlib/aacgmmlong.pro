@@ -25,9 +25,9 @@
 ; :HISTORY:
 ;   2011/10/04: created and got through the initial bug fixes
 ;
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2013-03-21 10:10:35 -0700 (Thu, 21 Mar 2013) $
-; $LastChangedRevision: 11857 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21070 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/sdaacgmlib/aacgmmlong.pro $
 ;-
 
@@ -37,11 +37,18 @@ function aacgmmlong, yr, t0, mlt
 help, name='!sdarn',out=out
 if out eq '' then sd_init
 
-if !sdarn.aacgm_dlm_exists then begin 
+if !map2d.aacgm_dlm_exists then begin 
   ;print, 'using AACGM_DLM'
   tmlon = aacgm_mlong(yr,t0,mlt)
   tmlon = ( tmlon + 360. ) mod 360.
-  return, tmlon
+  mlon = mlt 
+  if (size(mlt[0]))[1] eq 4 then begin
+    mlon[*] = float( tmlon[*] ) 
+  endif else begin
+    mlon[*] = tmlon[*] 
+  endelse
+  return, mlon
+  
 endif else begin
   cnv_aacgm,0.0,0.0,0.001,mlat0,mlon0,r,err,/geo
   mlon0 = ( mlon0 + 360. ) mod 360.

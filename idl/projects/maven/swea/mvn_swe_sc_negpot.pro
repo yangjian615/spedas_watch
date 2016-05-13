@@ -30,18 +30,20 @@
 ;
 ;   OVERLAY:   Overlay the result on the energy spectrogram.
 ;
+;   FILL:      If keyword set, store the negative potentials to 
+;              the swe_sc_pot common block
 ;
 ;OUTPUTS:
 ;   None - Result is stored as a TPLOT variable 'neg_pot'.
 ;
 ; $LastChangedBy: xussui_lap $
-; $LastChangedDate: 2016-05-04 13:12:12 -0700 (Wed, 04 May 2016) $
-; $LastChangedRevision: 21023 $
+; $LastChangedDate: 2016-05-12 16:45:14 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21067 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_negpot.pro $
 ;
 ;-
 
-Pro mvn_swe_sc_negpot, overlay=overlay
+Pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
 
     compile_opt idl2
 
@@ -139,6 +141,11 @@ Pro mvn_swe_sc_negpot, overlay=overlay
         store_data,'d2f_pot',data=['d2f','heii_pot']
         ylim,'d2f_pot',0,30
         zlim,'d2f_pot',-0.05,0.05
+    endif
+    
+    if keyword_set(fill) then begin
+        indx=where(pot1 eq pot1,cts)
+        if cts gt 0 then mvn_swe_engy[indx].sc_pot=pot1[indx]
     endif
     ;stop
 end

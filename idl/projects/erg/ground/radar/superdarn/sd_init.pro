@@ -13,27 +13,38 @@
 ;   Tomo Hori (E-mail: horit@stelab.nagoya-u.ac.jp)
 ; :HISTORY: 
 ;   2010/03/10: Created
-; 
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-02-10 16:54:11 -0800 (Mon, 10 Feb 2014) $
-; $LastChangedRevision: 14265 $
+;   2014/08/12: Major changes to move on to the new "map2d" environment 
+;   
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21070 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/sd_init.pro $
 ;-
 pro sd_init, reset=reset
 
+;Initialize the map2d environment 
+map2d_init  ; To set only the AACGM DLM flag for now
+
 defsysv,'!sdarn',exists=exists
 if (not keyword_set(exists)) or (keyword_set(reset)) then begin
 
+  ;Set the AACGM coef. file path and year list
+  aacgmfindcoeffile, prefix, yrlist
+  
   defsysv,'!sdarn', $
     { $
       init: 0 $
-      ,aacgm_dlm_exists: 0 $
       ,sd_polar: { $
-                  plot_time: 0.D, $
                   charsize: 1.0 $
                 } $
       ,remote_data_dir:'http://ergsc.stelab.nagoya-u.ac.jp/data/ergsc/ground/radar/sd/fitacf/' $
+      , aacgm: { $
+                  coefprefix:prefix $
+                  , coefyrlist:yrlist $
+                } $
     }
+    
+    
     
 endif
 
@@ -43,15 +54,6 @@ if !sdarn.init ne 0 then return
 
 
 !sdarn.init = 1
-
-;Check if AACGM DLM is usable?
-help, /dlm, 'AACGM', out=out
-if strmid(out[0],0,8) eq '** AACGM' then begin
-  !sdarn.aacgm_dlm_exists = 1
-  aacgm_load_coef, 2000      ;Load the S-H coefficients for Year 2000
-endif else begin
-  aacgmidl
-endelse
 
 return
 end

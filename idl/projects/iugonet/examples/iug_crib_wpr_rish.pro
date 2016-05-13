@@ -11,7 +11,7 @@
 ;-
 
 ;Initializes system variables for themis:
-;=========================================
+;=========================================
 thm_init
 
 ;Specify timespan:

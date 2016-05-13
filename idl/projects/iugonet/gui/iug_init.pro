@@ -34,6 +34,10 @@ if (not keyword_set(exists)) or (keyword_set(reset)) then begin
     { $
       init: 0 $
       ,data_policy: { $
+                  ask_nipr_syo:          0b, $
+                  ask_nipr_ice:          0b, $ ;HUS, TJO
+                  ask_nipr_nor:          0b, $ ;TRO, LYR
+                  ask_nipr_spa:          0b, $ ;SPA
                   aws_rish_id:           0b, $ ;BIK,MND,PON
                   aws_rish_ktb:          0b, $ ;KTB
                   aws_rish_sgk:          0b, $ ;SGK
@@ -78,9 +82,30 @@ if (not keyword_set(exists)) or (keyword_set(reset)) then begin
                   gmag_mm210_yap:        0b, $
                   gmag_mm210_ymk:        0b, $
                   gmag_mm210_zyk:        0b, $
+                  gmag_stel_msr:         0b, $
+                  gmag_stel_rik:         0b, $
+                  gmag_stel_kag:         0b, $
+                  gmag_stel_ktb:         0b, $
+                  gmag_stel_mdm:         0b, $
+                  gmag_stel_tew:         0b, $
                   gmag_nipr_syo:         0b, $ ;Syowa
                   gmag_nipr_ice:         0b, $ ;Iceland
-                  gmag_magdas:           0b, $
+                  gmag_magdas_ama:       0b, $
+                  gmag_magdas_asb:       0b, $
+                  gmag_magdas_daw:       0b, $
+                  gmag_magdas_her:       0b, $
+                  gmag_magdas_hln:       0b, $
+                  gmag_magdas_hob:       0b, $
+                  gmag_magdas_kuj:       0b, $
+                  gmag_magdas_laq:       0b, $
+                  gmag_magdas_mcq:       0b, $
+                  gmag_magdas_mgd:       0b, $
+                  gmag_magdas_mlb:       0b, $
+                  gmag_magdas_mut:       0b, $
+                  gmag_magdas_onw:       0b, $
+                  gmag_magdas_ptk:       0b, $
+                  gmag_magdas_wad:       0b, $
+                  gmag_magdas_yap:       0b, $
                   imag_nipr_syo:         0b, $
                   imag_nipr_ice:         0b, $
                   imag_stel:             0b, $

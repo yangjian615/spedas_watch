@@ -24,14 +24,14 @@
 ; :HISTORY:
 ; 	2011/07/01: Created
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-02-10 16:54:11 -0800 (Mon, 10 Feb 2014) $
-; $LastChangedRevision: 14265 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21070 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/make_fanplot_pictures.pro $
 ;-
 PRO make_fanplot_pictures, varn, shhmm, ehhmm, prefix=prefix, $
   center_glat=center_glat, center_glon=center_glon, gscatmaskoff=gscatmaskoff, $
-  ,force_scale=force_scale, pixel_scale=pixel_scale
+  force_scale=force_scale, pixel_scale=pixel_scale, clip=clip, coast=coast 
 
   ;Check the arguments
   n_par = n_params()
@@ -58,9 +58,9 @@ PRO make_fanplot_pictures, varn, shhmm, ehhmm, prefix=prefix, $
   
   i = 0L
   for time=stime, etime, 60. do begin
-    sd_time, time
-    plot_map_sdfit, varn, /coast,$
-      /clip, center_gla=center_glat,center_glon=center_glon, $
+    map2d_time, time
+    plot_map_sdfit, varn, coast=coast,$
+      clip=clip, center_glat=center_glat,center_glon=center_glon, $
       /mltlabel, $
       gscatmaskoff=gscatmaskoff, force_scale=force_scale,$
       pixel_scale=pixel_scale

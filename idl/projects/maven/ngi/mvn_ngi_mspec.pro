@@ -13,8 +13,8 @@
 ;       Yuki Harada on 2015-07-13
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-07-13 13:19:37 -0700 (Mon, 13 Jul 2015) $
-; $LastChangedRevision: 18105 $
+; $LastChangedDate: 2016-05-12 13:09:34 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21065 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_mspec.pro $
 ;-
 
@@ -47,7 +47,7 @@ if total(strlen(uniqpref)) gt 0 then begin
       endfor
       time = average(times,2)
       store_data,uniqpref[iu]+'_mspec',data={x:time,y:abund,v:mass}, $
-                 dlim={ytitle:dl0.filetype+' '+dl0.focusmode+'!cmass',spec:1,zlog:1,datagap:600,ztitle:'abundance'}
+                 dlim={spec:1,zlog:1,datagap:600}
       if keyword_set(delete_source) then store_data,mt,/del
    endfor
 endif

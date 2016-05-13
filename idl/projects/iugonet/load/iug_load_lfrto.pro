@@ -39,8 +39,8 @@
 ; Written by: M.Yagi, Oct 2, 2012
 ;             PPARC, Tohoku Univ.
 ;
-;   $LastChangedBy: aaflores $
-;   $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
+;   $LastChangedBy: nikos $
+;   $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
 ;   $URL:
 ;-
 pro iug_load_lfrto, site=site, trans=trans, parameter=parameter, datatype=datatype,$
@@ -49,7 +49,7 @@ pro iug_load_lfrto, site=site, trans=trans, parameter=parameter, datatype=dataty
 ;--- reciever (site)
 site_code_all = strsplit('ath nal', /extract)
 if(n_elements(site) eq 0) then site='all'
-site_code=ssl_check_valid_name(site, site_code_all, /ignore_case, /include_all)
+site_code=thm_check_valid_name(site, site_code_all, /ignore_case, /include_all)
 if(site_code[0] eq '') then return
 print, site_code
 
@@ -57,8 +57,8 @@ print, site_code
 trans_code_ath_all = strsplit('wwvb ndk nlk npm nau nrk nwc', /extract)
 trans_code_nal_all = strsplit('msf dcf nrk gbz', /extract)
 if(n_elements(trans) eq 0) then trans='all'
-trans_code_ath = ssl_check_valid_name(trans, trans_code_ath_all, /ignore_case, /include_all, /no_warning)
-trans_code_nal = ssl_check_valid_name(trans, trans_code_nal_all, /ignore_case, /include_all, /no_warning)
+trans_code_ath = thm_check_valid_name(trans, trans_code_ath_all, /ignore_case, /include_all, /no_warning)
+trans_code_nal = thm_check_valid_name(trans, trans_code_nal_all, /ignore_case, /include_all, /no_warning)
 if(trans_code_ath[0] eq '' and trans_code_nal[0] eq '') then begin
   dprint,'!!! Trans code error !!!'
   dprint,'Valid Trans codes:'
@@ -74,7 +74,7 @@ if(n_elements(datatype) eq 0) then datatype='all'
 datatype=strjoin(datatype, ' ')
 datatype=strsplit(strlowcase(datatype), ' ', /extract)
 if(where(datatype eq '30s')  ne -1) then datatype[where(datatype eq '30s')]='30sec'
-tres = ssl_check_valid_name(datatype, tres_all, /ignore_case, /include_all)
+tres = thm_check_valid_name(datatype, tres_all, /ignore_case, /include_all)
 if (tres[0] eq '') then return
 
 ;--- power & phase (parameter)
@@ -85,7 +85,7 @@ parameter=strjoin(parameter, ' ')
 parameter=strsplit(strlowcase(parameter), ' ', /extract)
 if(where(parameter eq 'pow')  ne -1) then parameter[where(parameter eq 'pow')]='power'
 if(where(parameter eq 'pha')  ne -1) then parameter[where(parameter eq 'pha')]='phase'
-param = ssl_check_valid_name(parameter, param_all, /ignore_case, /include_all)
+param = thm_check_valid_name(parameter, param_all, /ignore_case, /include_all)
 if (param[0] eq '') then return
 
 ;--- other options

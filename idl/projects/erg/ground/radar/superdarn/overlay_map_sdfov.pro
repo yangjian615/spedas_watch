@@ -1,12 +1,13 @@
 PRO overlay_map_sdfov, site=site, force_nhemis=force_nhemis, $
-    geo_plot=geo_plot, linestyle=linestyle, beams=beams, linecolor=linecolor, $
+    geo_plot=geo_plot, coord=coord, linestyle=linestyle, beams=beams, linecolor=linecolor, $
     linethick=linethick, draw_beamnum=draw_beamnum, $
     rgrange=rgrange, pixelonly=pixelonly  
     
   ;Set the list of the available sites
-    valid_sites = [ 'hok','ksr','sye','sys','bks','rkn','unw','tig', $
-    'kod','inv','han','pyk', 'cve', 'cvw', 'fhe', 'fhw', 'sas', 'pgr', $
-    'gbr', 'kap', 'sto', 'wal', 'ade', 'adw' ]
+    valid_sites = [ 'ade', 'adw', 'bks', 'bpk', 'cly', 'cve', 'cvw', 'dce', 'fhe', $
+    'fhw', 'fir', 'gbr', 'hal', 'han', 'hok', 'hkw', 'inv', 'kap', 'ker', 'kod', $
+    'ksr', 'mcm', 'pgr', 'pyk', 'rkn', 'san', 'sas', 'sps', 'sto', 'sye', $
+    'sys', 'tig', 'unw', 'wal', 'zho' ]
   
   ;Check the site name
   IF ~KEYWORD_SET(site) THEN BEGIN
@@ -19,6 +20,11 @@ PRO overlay_map_sdfov, site=site, force_nhemis=force_nhemis, $
     PRINT, 'Data currently available: ',valid_sites
     RETURN
   ENDIF
+  
+  if size(coord, /type) ne 0 then begin
+    map2d_coord, coord 
+  endif
+  if keyword_set(geo_plot) then !map2d.coord = 0
   
   ;The loop to draw fovs of multiple stations
   FOR i=0, N_ELEMENTS(stns)-1 DO BEGIN
@@ -33,10 +39,10 @@ PRO overlay_map_sdfov, site=site, force_nhemis=force_nhemis, $
     glon=REFORM(d.y[0,*,*,0])
     alt = glat & alt[*] = 400 ;km
     
-    IF ~KEYWORD_SET(geo_plot) THEN BEGIN
+    IF ~KEYWORD_SET(geo_plot) and !map2d.coord eq 1 THEN BEGIN
       aacgmconvcoord,glat,glon,alt,mlat,mlon,err,/TO_AACGM
       mlon = (mlon + 360.) MOD 360.
-      ts = time_struct(!sdarn.sd_polar.plot_time)
+      ts = time_struct(!map2d.time)
       yrsec = LONG( alt )
       yrsec[*] = LONG((ts.doy-1)*86400L + ts.sod)
       yr = yrsec & yr[*] = ts.year

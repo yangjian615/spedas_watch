@@ -6,8 +6,8 @@
 ;  Modularized gui iugonet data loader
 ;
 ;HISTORY:
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:52:58 -0800 (Tue, 11 Feb 2014) $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
 ; 
 ;Modifications:
 ;A. Shinbori, 12/05/2010
@@ -59,6 +59,12 @@ pro iug_ui_load_data_load_pro,    $
   ;===== Load the IUGONET data =====
   ;=================================
   case instrument of 
+      ;----- AllSky Imager Keograms -----;
+      'AllSky_Imager_Keograms' : begin       
+          iug_load_ask_nipr, site =site_or_param, wavelength=parameters, trange = timeRange
+          par_names=tnames('nipr_ask_*')
+      end
+
       ;----- Automatic Weather Station -----;
       'Automatic_Weather_Station' : begin       
           iug_load_aws_rish, site =site_or_param, trange = timeRange
@@ -166,13 +172,17 @@ pro iug_ui_load_data_load_pro,    $
       ;----- geomagnetic field fluxgate ----;
       'geomagnetic_field_fluxgate' : begin
           case datatype of
-              'magdas' : begin
-                  iug_load_gmag_serc, trange = timeRange, site = site_or_param
+              'magdas#' : begin
+                  erg_load_gmag_magdas_1sec, range = timeRange, site = site_or_param
                   par_names=tnames('magdas_mag_*') 
               end 
               '210mm#' : begin
                   erg_load_gmag_mm210, trange = timeRange, site = site_or_param, datatype = parameters 
                   par_names=tnames('mm210_mag_*')
+              end
+              'STEL#' : begin
+                  erg_load_gmag_stel_fluxgate, trange = timeRange, site = site_or_param, datatype = parameters 
+                  par_names=tnames('stel_fluxgate_mag_*')
               end
               'WDC_kyoto' : begin
                   if parameters[0] eq '*' then begin
@@ -185,7 +195,7 @@ pro iug_ui_load_data_load_pro,    $
                   endfor
                   par_names=tnames('wdc_mag_*')
               end
-              'NIPR_mag#' : begin
+              'NIPR#' : begin
                   iug_load_gmag_nipr, trange=timeRange, site = site_or_param, datatype = parameters
                   par_names=tnames('nipr_mag_*')
               end
@@ -200,7 +210,7 @@ pro iug_ui_load_data_load_pro,    $
               notryload=1
           endif else begin
               case datatype of
-                  'NIPR_mag#' : begin
+                  'NIPR#' : begin
                       iug_load_gmag_nipr_induction, trange=timeRange, site = site_or_param
                       par_names=tnames('nipr_imag_*')
                   end
@@ -214,6 +224,10 @@ pro iug_ui_load_data_load_pro,    $
 
       ;----- HF_Solar_Jupiter_radio_spectrometer ----;
       'HF_Solar_Jupiter_radio_spectrometer' : begin
+
+print, site_or_param
+print, parameters
+
           iug_load_hf_tohokuu, site=site_or_param, trange = timeRange
           if parameters[0] eq '*' then begin
               par_names=tnames('iug_*_hf_*')
@@ -229,6 +243,17 @@ pro iug_ui_load_data_load_pro,    $
               par_names=tnames('iprt_*')
           endif else begin
               par_names=tnames('iprt_sun_'+strupcase(parameters))
+          endelse
+      end
+
+      ;----- Imaging_Riometer ----;
+      'Imaging_Riometer' : begin
+          freq=strmid(datatype,0,2)
+          iug_load_irio_nipr, site=site_or_param, datatype=freq, /keogram, trange = timeRange
+          if parameters[0] eq '*' then begin
+              par_names=tnames('nipr_irio*_*_cna_*')
+          endif else begin
+              par_names=tnames('nipr_irio*_*_cna_'+parameters)
           endelse
       end
 
@@ -393,6 +418,9 @@ pro iug_ui_load_data_load_pro,    $
               if (instrument eq 'Iitate_Planetary_Radio_Telescope') or (instrument eq 'SuperDARN_radar#') or $
                   (instrument eq 'EISCAT_radar') or (instrument eq 'HF_Solar_Jupiter_radio_spectrometer') then begin
                   site_name2 = site_name[1]
+              endif else if (instrument eq 'geomagnetic_field_fluxgate') and $
+                  (datatype eq 'STEL#') then begin
+                  site_name2 = site_name[3]
               endif else if (instrument eq 'geomagnetic_field_induction') and $
                   (datatype eq 'STEL#') then begin
                   site_name2 = site_name[4]

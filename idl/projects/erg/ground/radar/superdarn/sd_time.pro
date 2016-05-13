@@ -20,9 +20,9 @@
 ; :HISTORY:
 ; 	2011/01/11: Created
 ; 	
-; $LastChangedBy: lphilpott $
-; $LastChangedDate: 2011-10-14 09:20:31 -0700 (Fri, 14 Oct 2011) $
-; $LastChangedRevision: 9113 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21070 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/sd_time.pro $
 ;-
 PRO sd_time, time, quiet=quiet
@@ -33,7 +33,7 @@ sd_init
 ;No argument -> print the current time for plotting
 npar= n_params()
 if npar eq 0 then begin
-  print, 'plot_time: '+time_string(!sdarn.sd_polar.plot_time )
+  print, 'plot_time: '+time_string(!map2d.time )
   return
 endif
 
@@ -43,10 +43,10 @@ t = time[0]
 ;Set the plot time
 CASE (size(t,/type)) OF
   7 : BEGIN  ;string
-    !sdarn.sd_polar.plot_time = time_double(t)
+    !map2d.time = time_double(t)
   END
   5 : BEGIN  ;double-precision floating 
-    !sdarn.sd_polar.plot_time = time_double(t)
+    !map2d.time = time_double(t)
   END
   2 : BEGIN  ;integer, interpreted as 'hhmm'
     if t lt 0 or t gt 2400 then begin
@@ -56,7 +56,7 @@ CASE (size(t,/type)) OF
     get_timespan, tr & ts = time_struct(tr[0])
     hh = t / 100 & mm = t mod 100 
     time = time_string(ts, tfor='YYYY-MM-DD')+'/'+string(hh,mm,'(I2.2,":",I2.2)')
-    !sdarn.sd_polar.plot_time = time_double(time)
+    !map2d.time = time_double(time)
   end
   3 : BEGIN  ;integer, interpreted as 'hhmm'
     if t lt 0 or t gt 2400 then begin
@@ -66,7 +66,7 @@ CASE (size(t,/type)) OF
     get_timespan, tr & ts = time_struct(tr[0])
     hh = t / 100 & mm = t mod 100 
     time = time_string(ts, tfor='YYYY-MM-DD')+'/'+string(hh,mm,'(I2.2,":",I2.2)')
-    !sdarn.sd_polar.plot_time = time_double(time)
+    !map2d.time = time_double(time)
   end
   
   
@@ -76,7 +76,7 @@ CASE (size(t,/type)) OF
   END
 ENDCASE
 
-if ~keyword_set(quiet) then print, 'plot_time: '+time_string(!sdarn.sd_polar.plot_time)
+if ~keyword_set(quiet) then print, 'plot_time: '+time_string(!map2d.time)
 
 
 return

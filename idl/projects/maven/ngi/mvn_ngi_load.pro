@@ -2,28 +2,30 @@
 ; PROCEDURE:
 ;       mvn_ngi_load
 ; PURPOSE:
-;       Loads NGIMS L2 data
+;       Loads NGIMS L2 (or L1b) data
 ;       Each column in csv files will be stored in tplot variables:
 ;          'mvn_ngi_(filetype)_(focusmode)_(tagname)'
 ;       Time-series densities for each mass will be storead in
 ;          'mvn_ngi_(filetype)_(focusmode)_abundance_mass???'
-;       If /mspec is set, mass spectrograms are stored in
-;          'mvn_ngi_(filetype)_(focusmode)_abundance_mspec'
 ; CALLING SEQUENCE:
 ;       mvn_ngi_load
 ; INPUTS:
 ;       None
 ; OPTIONAL KEYWORDS:
-;       mspec: if set, generates mass spectrograms instead of each time series
+;       level: 'l2' or 'l1b' (Def. 'l2')
 ;       trange: time range (if not present then timerange() is called)
-;       filetype: (Def. ['csn','cso','ion'])
+;       filetype: (Def. ['csn','cso','ion'] for l2, ['osion','osnb'] for l1b)
 ;       files: paths to local files to read in
 ;              if set, does not retreive files from server
 ;              if multiple versions are found, the latest version file will be loaded
-;       cps_dt: generates cps_dt tplot variables for each unique mass
+;       version: specifies string of two digit version number (e.g., '04')
+;       revision: specifies string of two digit revision number (e.g., '03')
+;       mass: masses of mass-separated tplot variables (Def. all unique masses)
+;       quant_mass: quantities of mass-separated tplot variables
+;                   (Def. 'abundance' for l2, 'counts' for 'l1b')
+;       mspec: if set, generates mass spectrograms
 ;       nolatest: skip latest version check (not recommended)
-;       version: string of two digit version number (e.g., '04')
-;       revision: string of two digit revision number (e.g., '03')
+;       cps_dt: (obsolete, but still works)
 ;       other keywords are passed to 'mvn_pfp_file_retrieve'
 ; CREATED BY:
 ;       Yuki Harada on 2015-01-29
@@ -32,29 +34,40 @@
 ;       Use 'mvn_ngi_read_csv' to load ql data
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2015-07-13 13:19:37 -0700 (Mon, 13 Jul 2015) $
-; $LastChangedRevision: 18105 $
+; $LastChangedDate: 2016-05-12 13:09:05 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21064 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_load.pro $
 ;-
 
-pro mvn_ngi_load, mspec=mspec, trange=trange, filetype=filetype, verbose=verbose, _extra=_extra, files=files, cps_dt=cps_dt, nolatest=nolatest, version=version, revision=revision
+pro mvn_ngi_load, mspec=mspec, trange=trange, filetype=filetype, verbose=verbose, _extra=_extra, files=files, cps_dt=cps_dt, nolatest=nolatest, version=version, revision=revision, level=level, mass=mass_array, quant_mass=quant_mass
 
-  if ~keyword_set(filetype) then filetype = ['csn','cso','ion']
+  if ~keyword_set(level) then level = 'l2' else level = strlowcase(level)
+  if ~keyword_set(filetype) then begin
+     if level eq 'l2' then filetype = ['csn','cso','ion']
+     if level eq 'l1b' then filetype = ['osion','osnb']
+  endif
+  if ~keyword_set(quant_mass) then begin
+     if level eq 'l2' then quant_mass = ['abundance']
+     if level eq 'l1b' then quant_mass = ['counts']
+  endif
+  if keyword_set(cps_dt) then quant_mass = [quant_mass,'cps_dt']
   if ~keyword_set(nolatest) and ~keyword_set(version) and ~keyword_set(revision) then latest_flg = 1
   if ~keyword_set(version) then version = '??'   ;- to be overwritten by latest version unless /nolatest is set
   if ~keyword_set(revision) then revision = '??' ;- to be overwritten by latest revision unless /nolatest is set
 
-  for i_filetype=0,n_elements(filetype)-1 do begin
+  for i_filetype=0,n_elements(filetype)-1 do begin ;- loop through filetypes
 
-;- retrieve files
+     ;;; retrieve files
      if ~keyword_set(files) then begin
-        if keyword_set(latest_flg) then urls = mvn_ngi_remote_list(trange=trange,filetype=filetype[i_filetype],latestversion=version,latestrevision=revision,_extra=_extra,verbose=verbose)
-        pformat = 'maven/data/sci/ngi/l2/YYYY/MM/mvn_ngi_l2_'+filetype[i_filetype]+'-abund-*_YYYYMMDDThh????_v'+version+'_r'+revision+'.csv'
-        f = mvn_pfp_file_retrieve(pformat,/hourly_names,/last_version,/valid_only,trange=trange,verbose=verbose, _extra=_extra)
-     endif else begin ;- local files
+        if keyword_set(latest_flg) then urls = mvn_ngi_remote_list(trange=trange,filetype=filetype[i_filetype],latestversion=version,latestrevision=revision,_extra=_extra,verbose=verbose,level=level) ;- check latest version and revision numbers
+        if strlen(version) eq 2 then begin
+           pformat = 'maven/data/sci/ngi/'+level+'/YYYY/MM/mvn_ngi_'+level+'_'+filetype[i_filetype]+'-*_YYYYMMDDThh????_v'+version+'_r'+revision+'.csv'
+           f = mvn_pfp_file_retrieve(pformat,/hourly_names,/last_version,/valid_only,trange=trange,verbose=verbose, _extra=_extra)
+        endif else f = ''
+     endif else begin           ;- local files
         w = where( strmatch(files,'*'+filetype[i_filetype]+'*',/fold_case) eq 1, nw )
         if nw gt 0 then begin
-           ftmp = files[w]                     ;- input files that possibly have mixed, case-sensitive names
+           ftmp = files[w] ;- input files that possibly have mixed, case-sensitive names
            ftmp = ftmp[sort(strlowcase(ftmp))] ;- case-insensitively sort in alphabetical order
            prefnames = strmid(ftmp,0,strpos(ftmp[0],'_v')) ;- assuming all files have the same case-insensitive format
            lastidx = uniq(strlowcase(prefnames)) ;- case-insensitively select the latest version
@@ -62,13 +75,13 @@ pro mvn_ngi_load, mspec=mspec, trange=trange, filetype=filetype, verbose=verbose
         endif else f = ''
      endelse
 
-;- check files
+     ;;; check files
      if total(strlen(f)) eq 0 then begin
         dprint,dlevel=2,verbose=verbose,filetype[i_filetype]+' files not found'
         continue
      endif
 
-;- read in files and store data into structures
+     ;;; read in files and store data into structures
      for i_file=0,n_elements(f)-1 do begin
         dprint,dlevel=1,verbose=verbose,'reading in '+f[i_file]
         if i_file eq 0 then d = read_csv(f[i_file],header=dh) else begin
@@ -79,7 +92,7 @@ pro mvn_ngi_load, mspec=mspec, trange=trange, filetype=filetype, verbose=verbose
         endelse
      endfor
 
-;- check time
+     ;;; check time
      idx = where(strmatch(dh,'t_unix'),idx_cnt)
      if idx_cnt ne 1 then begin
         dprint,dlevel=1,verbose=verbose,'No unique t_unix column in csv files: ',f
@@ -87,15 +100,16 @@ pro mvn_ngi_load, mspec=mspec, trange=trange, filetype=filetype, verbose=verbose
      endif
      t_unix = double(d.(idx))
 
-;- check mode
-     idx = where(strmatch(dh,'focusmode'),idx_cnt)
+     ;;; check mode
+     if level eq 'l1b' then modestr = 'focus_mode' else modestr = 'focusmode'
+     idx = where(strmatch(dh,modestr),idx_cnt)
      if idx_cnt ne 1 then begin
         dprint,dlevel=1,verbose=verbose,'No unique focusmode column in csv files: ',f
         continue
      endif
      focusmode = d.(idx)
 
-;- check mass
+     ;;; check mass
      idx = where(strmatch(dh,'*mass'),idx_cnt)
      if idx_cnt ne 1 then begin
         dprint,dlevel=1,verbose=verbose,'No unique mass column in csv files: ',f
@@ -103,42 +117,32 @@ pro mvn_ngi_load, mspec=mspec, trange=trange, filetype=filetype, verbose=verbose
      endif
      mass = double(d.(idx))
 
-;- check abundance
-     idx = where(strmatch(dh,'abundance'),idx_cnt)
-     if idx_cnt ne 1 then begin
-        dprint,dlevel=1,verbose=verbose,'No unique abundance column in csv files: ',f
-        continue
-     endif
-     abundance = double(d.(idx))
-
-;- check cps_dt if /cps_dt is set
-     if keyword_set(cps_dt) then begin
-        idx = where(strmatch(dh,'cps_dt'),idx_cnt)
-        if idx_cnt ne 1 then begin
-           dprint,dlevel=1,verbose=verbose,'No unique cps_dt column in csv files: ',f
-           qcps_dt = !values.f_nan
-        endif else qcps_dt = double(d.(idx))
-     endif
-
      modes = ['csn', 'osnt', 'osnb', 'osion']
 
-;- store tplot variables
+     ;;; store tplot variables
      for i_mode=0,n_elements(modes)-1 do begin
         idx = where(focusmode eq modes[i_mode], idx_cnt)
         if idx_cnt eq 0 then continue
 
-;- store all columns (not necessarily monotonic)
+        ;;; store all columns (not necessarily monotonic)
         for i_c=0,n_elements(dh)-1 do $
            store_data,verbose=verbose,'mvn_ngi_'+filetype[i_filetype]+'_'+modes[i_mode]+'_'+dh[i_c],data={x:t_unix,y:d.(i_c)}
 
-;- store abundance and cps_dt for each unique mass
-        uniqmass = mass[uniq(mass,sort(mass))]
+        ;;; store quantities for each unique mass
+        if keyword_set(mass_array) then uniqmass = mass_array else uniqmass = mass[uniq(mass,sort(mass))]
         for i_mass=0,n_elements(uniqmass)-1 do begin
            idx = where( mass eq uniqmass[i_mass] and focusmode eq modes[i_mode],idx_cnt )
            if idx_cnt eq 0 then continue
+
            if long(uniqmass[i_mass]) eq uniqmass[i_mass] then massstr = string(uniqmass[i_mass],f='(i3.3)') else massstr = string(uniqmass[i_mass],f='(i3.3)')+'_'+string((uniqmass[i_mass]-long(uniqmass[i_mass]))*1000,f='(i3.3)')
-           store_data,verbose=verbose,'mvn_ngi_'+filetype[i_filetype]+'_'+modes[i_mode]+'_abundance_mass'+massstr,data={x:t_unix[idx],y:abundance[idx]},dlim={mass:uniqmass[i_mass],filetype:filetype[i_filetype],focusmode:modes[i_mode]}
-           if keyword_set(cps_dt) then if total(finite(qcps_dt)) gt 0 then store_data,verbose=verbose,'mvn_ngi_'+filetype[i_filetype]+'_'+modes[i_mode]+'_cps_dt_mass'+massstr,data={x:t_unix[idx],y:qcps_dt[idx]},dlim={mass:uniqmass[i_mass],filetype:filetype[i_filetype],focusmode:modes[i_mode]}
+
+           for iq=0,n_elements(quant_mass)-1 do begin
+              wq = where(strmatch(dh,quant_mass[iq]),nwq)
+              if nwq ne 1 then continue
+              quant = double(d.(wq))
+              store_data,verbose=verbose,'mvn_ngi_'+filetype[i_filetype]+'_'+modes[i_mode]+'_'+quant_mass[iq]+'_mass'+massstr,data={x:t_unix[idx],y:quant[idx]},dlim={mass:uniqmass[i_mass],filetype:filetype[i_filetype],focusmode:modes[i_mode],level:level}
+           endfor               ;- iq
+
         endfor                  ;- i_mass
      endfor                     ;- i_mode
 

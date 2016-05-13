@@ -22,7 +22,7 @@
 ;
 ; EXAMPLE:
 ;   erg_load_gmag_magdas_1sec, site='asb onw', datatype='1sec', $
-;                        trange=['2003-11-20/00:00:00','2003-11-21/00:00:00']
+;                        trange=['2010-11-20/00:00:00','2010-11-21/00:00:00']
 ;
 ; NOTE: See the rules of the road.
 ;       For more information, see http://magdas.serc.kyushu-u.ac.jp/
@@ -32,16 +32,19 @@
 ;             ERG-Science Center, STEL, Nagoya Univ.
 ;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
 ;
-;   $LastChangedBy: aaflores $
-;   $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-;   $LastChangedRevision: 17458 $
+;   $LastChangedBy: nikos $
+;   $LastChangedDate: 2016-05-12 17:19:19 -0700 (Thu, 12 May 2016) $
+;   $LastChangedRevision: 21071 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/geomag/erg_load_gmag_magdas_1sec.pro $
 ;-
 
 pro erg_load_gmag_magdas_1sec, site=site, datatype=datatype, $
 	downloadonly=downloadonly, no_server=no_server, $
 	verbose=verbose, $
-	no_download=no_download, range=trange
+	no_download=no_download, trange=trange, range=range
+
+if keyword_set(trange) then trng=trange
+if keyword_set(range) then trng=range
 
 ;*** site codes ***
 ;--- aliases
@@ -103,8 +106,8 @@ IF keyword_set(downloadonly) THEN source.downloadonly = 1
 
 ;--- Generate the file paths by expanding wilecards of date/time 
 ;    (e.g., YYYY, YYYYMMDD) for the time interval set by "timespan"
-relpathnames1 = file_dailynames(file_format='YYYY', trange=trange)
-relpathnames2 = file_dailynames(file_format='YYYYMMDD', trange=trange) 
+relpathnames1 = file_dailynames(file_format='YYYY', trange=trng)
+relpathnames2 = file_dailynames(file_format='YYYYMMDD', trange=trng) 
 
 for i=0, n_elements(site_code)-1 do begin
   for j=nfloads, nfloade do begin

@@ -26,9 +26,9 @@
 ; 	2011/01/11: Created
 ; 	2011/06/15: renamed to overlay_map_sdfit
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-02-10 16:54:11 -0800 (Mon, 10 Feb 2014) $
-; $LastChangedRevision: 14265 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
+; $LastChangedRevision: 21070 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/overlay_map_sdfit.pro $;
 ;-
 PRO get_resized_pixel, lons, lats, ratio, rlons, rlats
@@ -67,9 +67,10 @@ end
 
 ;----------------------------------------------------------
 PRO overlay_map_sdfit, datvn, time=time, position=position, $
-    erase=erase, clip=clip, geo_plot=geo_plot, $
+    erase=erase, clip=clip, geo_plot=geo_plot, coord=coord, $
     nogscat=nogscat, gscatmaskoff=gscatmaskoff, $
     notimelabel=notimelabel, timelabelpos=timelabelpos, $
+    timelabelformat=timelabelformat, $
     nocolorscale=nocolorscale, colorscalepos=colorscalepos, $
     charscale=charscale, force_nhemis=force_nhemis, $
     pixel_scale=pixel_scale
@@ -85,12 +86,17 @@ PRO overlay_map_sdfit, datvn, time=time, position=position, $
   npar=N_PARAMS()
   IF npar LT 1 THEN RETURN
   IF ~KEYWORD_SET(time) THEN BEGIN
-    t0 = !sdarn.sd_polar.plot_time
+    t0 = !map2d.time
     get_timespan, tr
     IF t0 GE tr[0] AND t0 LE tr[1] THEN time = t0 ELSE BEGIN
       time = (tr[0]+tr[1])/2.  ; Take the center of the designated time range
     ENDELSE
   ENDIF
+  
+  if size(coord, /type) ne 0 then begin
+    map2d_coord, coord 
+  endif
+  if keyword_set(geo_plot) then !map2d.coord = 0
   
   ;if datvn is the index number for tplot var
   datvn = tnames(datvn)
@@ -204,7 +210,7 @@ PRO overlay_map_sdfit, datvn, time=time, position=position, $
         pos_plt = pos
         
         ;Convert to AACGM
-        IF ~KEYWORD_SET(geo_plot) THEN BEGIN
+        IF ~KEYWORD_SET(geo_plot) and !map2d.coord eq 1 THEN BEGIN
           ts = time_struct(time)
           year = ts.year & yrsec = LONG((ts.doy-1)*86400. + ts.sod)
           glat = REFORM(pos[*,*,1]) & glon = REFORM((pos[*,*,0]+360.) MOD 360.)
@@ -280,7 +286,8 @@ PRO overlay_map_sdfit, datvn, time=time, position=position, $
       x = !x.window[0]+0.02 & y = !y.window[0]+0.02
     endelse
     
-    tstr = time_string(t, tfor='hh:mm')+' UT'
+    if ~keyword_set(timelabelformat) then timelabelformat = 'hh:mm'
+    tstr = time_string(t, tfor=timelabelformat)+' UT'
     XYOUTS, x, y, tstr, /normal, $
       font=1, charsize=charsz*2.5
   ENDIF
