@@ -9,7 +9,7 @@ function spp_swp_spane_16A, data, header_str=header_str, apdat=apdat
 ;printdat,data,header_str,apdat
 pname = '16A_'
 strct = {time:header_str.time, $
-         SPEC:data,  $
+         SPEC:ulong(data),  $
          gap: 0}
 
 ;if  apdat.save && keyword_set(strct) then begin
@@ -31,7 +31,7 @@ end
 function spp_swp_spane_16Ax32E, data, header_str=header_str, apdat=apdat
   pname = '16Ax32E_'
   strct = {time:header_str.time, $
-    cnts_Anode:data,  $
+    cnts_Anode:ulong(data),  $
     gap: 0}
 
   if apdat.rt_flag && apdat.rt_tags then begin
@@ -77,10 +77,10 @@ function spp_swp_spane_16Ax8Dx32E, data, header_str=header_str, apdat=apdat   ; 
     return,0
   endif
   pname = '16Ax8Dx32E_'
-  spec1 = total(reform(data,16,8*32),2)
-  spec2 = total( total(data,1) ,2 )
-  spec3 = total(reform(data,16*8,32),1)
-  spec23 = total(reform(data,16,8*32),1)
+  spec1 = total(reform(ulong(data),16,8*32),2)
+  spec2 = total( total(ulong(data),1) ,2 )
+  spec3 = total(reform(ulong(data),16*8,32),1)
+  spec23 = total(reform(ulong(data),16,8*32),1)
   
   
   strct = {time:header_str.time, $
@@ -142,7 +142,7 @@ function spp_swp_spane_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
   endif
   
   if pksize ne n_elements(ccsds.data) then begin
-    dprint,dlevel=1,'Product size mismatch'
+    dprint,dlevel=1,'Product size mismatch', n_elements(ccsds.data)
     return,0
   endif
 
@@ -196,9 +196,9 @@ if  ns gt 0 then begin
 
   res = 0
   case ndat  of
-    16:   res = spp_swp_spane_16A(data, header_str=str, apdat=apdat)
-    512:  res = spp_swp_spane_16Ax32E(data, header_str=str, apdat=apdat)
-    4096: res = spp_swp_spane_16Ax8Dx32E(data, header_str=str, apdat=apdat)
+    16:   res = spp_swp_spane_16A(cnts, header_str=str, apdat=apdat)
+    512:  res = spp_swp_spane_16Ax32E(cnts, header_str=str, apdat=apdat)
+    4096: res = spp_swp_spane_16Ax8Dx32E(cnts, header_str=str, apdat=apdat)
     else:  dprint,dlevel=3,'Size not recognized: ',ndat
   endcase
   

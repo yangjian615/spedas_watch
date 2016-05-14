@@ -41,6 +41,7 @@
 ;             Set to 2 for scientific notation only ('1.23e-2')
 ;  [B,V,SUN]_COLOR: Specify the color of the corresponding support vector.
 ;                   (e.g. "b_color=0", see IDL graphics documentation for options)
+;  NOCOLORBAR: Suppress z axis color bar.
 ;
 ;  WINDOW:  Index of plotting window to be used.
 ;  PLOTSIZE: The size of the plot in device units (usually pixels)
@@ -61,8 +62,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-24 16:48:06 -0700 (Thu, 24 Mar 2016) $
-;$LastChangedRevision: 20586 $
+;$LastChangedDate: 2016-05-13 14:39:08 -0700 (Fri, 13 May 2016) $
+;$LastChangedRevision: 21081 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -89,7 +90,7 @@ pro spd_slice2d_plot, slice, $
                        plotaxes=plotaxes, ecircle=ecircle, sundir=sundir, $ 
                        plotbulk=plotbulk, plotbfield=plotbfield, $
                        b_color=b_color, v_color=v_color, sun_color=sun_color, $
-                       custom=custom, $
+                       custom=custom, nocolorbar=nocolorbar, $
                      ; Eport
                        export=export, eps=eps, $
                        _extra=_extra
@@ -302,8 +303,10 @@ pro spd_slice2d_plot, slice, $
   ; Draw z axis color bar
   ;  - both the number of ticks and the tick values must 
   ;    be passed in for them to be placed correctly
-  draw_color_scale,range=zrange, log=zlog,title=ztitle, charsize=charsize, $
-                   yticks=zticks, ytickv=ztickv, ytickname=ztickname
+  if ~keyword_set(nocolorbar) then begin
+    draw_color_scale,range=zrange, log=zlog,title=ztitle, charsize=charsize, $
+                     yticks=zticks, ytickv=ztickv, ytickname=ztickname
+  endif
 
 
 

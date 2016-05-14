@@ -22,9 +22,9 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-09 18:23:40 -0800 (Tue, 09 Feb 2016) $
-;$LastChangedRevision: 19926 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_write_ascii.pro $
+;$LastChangedDate: 2016-05-13 14:40:51 -0700 (Fri, 13 May 2016) $
+;$LastChangedRevision: 21082 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/deprecated/mms_part_write_ascii.pro $
 ;-
 
 pro mms_part_write_ascii, dist, filename=filename

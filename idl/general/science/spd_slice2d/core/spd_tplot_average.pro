@@ -28,12 +28,12 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2016-05-13 17:46:11 -0700 (Fri, 13 May 2016) $
+;$LastChangedRevision: 21085 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_tplot_average.pro $
 ;-
 
-function spd_tplot_average, tvar, trange_in, interpolate=interpolate, _extra=_extra
+function spd_tplot_average, tvar, trange_in, center=center, interpolate=interpolate, _extra=_extra
 
     compile_opt idl2, hidden
 
@@ -71,8 +71,13 @@ index = where(d.x le t1 and d.x ge t0, count)
 ;calc average if data exists in range
 if count ne 0 then begin
 
-  ;allow up to three dimensions in tplot var data
-	average = total(d.y[index,*,*],1)/n_elements(index)
+  if keyword_set(center) then begin
+    ;get sample closest to center of time range
+    dummy = min( d.x - (t0+t1)/2 ,center_idx, /absolute)
+    output = d.y[center_idx,*,*]
+  endif else begin
+  	output = total(d.y[index,*,*],1)/n_elements(index)
+  endelse
 
 ;attempt to interpolate if no data in range  
 endif else if keyword_set(interpolate) then begin
@@ -108,14 +113,14 @@ endif else if keyword_set(interpolate) then begin
     return, !values.d_nan
   endif  
 
-	if ndimen(dout.y) eq 0 then average = dout.y else average = reform(dout.y)
+	if ndimen(dout.y) eq 0 then output = dout.y else output = reform(dout.y)
 
 endif else begin
   dprint, dlevel=1, 'Error: '+tvar+' contains no data within the specified time range'
   return, !values.D_NAN
 endelse
 
-return, average
+return, output
 
 
 end

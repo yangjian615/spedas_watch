@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-28 11:31:17 -0700 (Thu, 28 Apr 2016) $
-;$LastChangedRevision: 20961 $
+;$LastChangedDate: 2016-05-13 17:46:11 -0700 (Fri, 13 May 2016) $
+;$LastChangedRevision: 21085 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_custom_rotation.pro $
 ;-
 pro spd_slice2d_custom_rotation, $ 
@@ -57,9 +57,18 @@ pro spd_slice2d_custom_rotation, $
 
   spd_slice2d_get_support, custom_rotation, trange, /matrix, output=matrix
   
+  ; In case of [1,3,3] array
+  if dimen1(matrix) eq 1 then  matrix = reform(matrix)
+
   ; Check that the matrix is valid
+  if ~array_equal(dimen(matrix),[3,3]) then begin
+    fail = 'Invalid custom rotation matrix'
+    dprint, dlevel=1, fail
+    return
+  endif
+
   if total( finite(matrix,/nan) ) gt 0 then begin
-    fail = 'Invalid custom rotation matrix.'
+    fail = 'Custom rotation matrix contains non-finite values'
     dprint, dlevel=1, fail
     return
   endif

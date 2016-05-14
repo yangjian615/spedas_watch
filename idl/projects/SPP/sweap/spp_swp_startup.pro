@@ -230,7 +230,7 @@ pro spp_swp_startup, spanai   = spanai,$
      ;;----------------------------------------------------------------------------------------------------------------------------------------
      ;; Slow Housekeeping
      ;;----------------------------------------------------------------------------------------------------------------------------------------
-     spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v4dx_decom',tname='spp_spane_a_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
+     spp_apid_data,'36e'x ,routine='spp_swp_spane_slow_hkp_v52x_decom',tname='spp_spane_a_hkp_',tfields='*',rt_tags='*', save=save,rt_flag=rt_flag
      
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; Fast Housekeeping

@@ -13,12 +13,14 @@
 ;Input:
 ;  input: input variable to be checked
 ;  trange: two element time range
-;  matrix: flag specifying that the data in a 3x3 matrix, otherwise a 3-vector is assumed
+;  matrix: Flag specifying that the data is a 3x3 matrix, otherwise a 3-vector is assumed.
+;          If input is a tplot variable and multiple samples exist within the time range
+;          then the sample closest to the center will be returned. 
 ;
 ;Output:
 ;  output: undefined - if input is undefined
 ;          3-vector/3x3 matrix - if input is 3-vector/3x3 matrix
-;                              - if unput is a valid tplot variable that covers the time range
+;                              - if input is a valid tplot variable that covers the time range
 ;          NaN - otherwise 
 ;
 ;Notes:
@@ -27,8 +29,8 @@
 ;   of the time range.  This will not occur for matrices.
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedDate: 2016-05-13 17:46:11 -0700 (Fri, 13 May 2016) $
+;$LastChangedRevision: 21085 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_get_support.pro $
 ;-
 
@@ -47,7 +49,7 @@ if is_num(input) && array_equal( size(input,/dim), dim ) then begin
     
 endif else begin
 
-  output = spd_tplot_average(input, trange, interpolate=~keyword_set(matrix))
+  output = double(spd_tplot_average(input, trange, center=keyword_set(matrix)))
 
 endelse 
 

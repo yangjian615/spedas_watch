@@ -22,9 +22,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:31:13 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19594 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2016-05-13 10:20:28 -0700 (Fri, 13 May 2016) $
+;$LastChangedRevision: 21079 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_get_local_state_files.pro $
 ;-
 
@@ -141,8 +141,10 @@ versions = stregex(files, '.V([0-9]{2})', /subexpr, /extract)
 
 ; Solution to duplicate files
 ;   - Loop over unique file times, not all file times.
-iuniq        = uniq(file_strings[2,*], sort(file_strings[2,*]))
-uniq_strings = file_strings[*,iuniq]
+;iuniq        = uniq(file_strings[2,*], sort(file_strings[2,*]))
+;uniq_strings = file_strings[*,iuniq]
+iuniq        = uniq(file_strings, sort(file_strings))
+uniq_strings = file_strings[iuniq]
 
 ;loop over file names to find files with multiple versions 
 for i=0, n_elements(iuniq)-1 do begin

@@ -148,7 +148,7 @@ for i=0, n_elements(*dist)-1 do begin
     if j eq 0 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='xy', geometric=geometric, resolution=resolution)
     if j eq 1 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='xz', geometric=geometric, resolution=resolution)
     if j eq 2 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='yz', geometric=geometric, resolution=resolution)
-    spd_slice2d_plot1, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
+    spd_slice2d_plot, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
       noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
     xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_PSD'
@@ -163,7 +163,7 @@ for i=0, n_elements(*dist)-1 do begin
     if j eq 0 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='xy', geometric=geometric, resolution=resolution)
     if j eq 1 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='xz', geometric=geometric, resolution=resolution)
     if j eq 2 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='yz', geometric=geometric, resolution=resolution)
-    spd_slice2d_plot1, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
+    spd_slice2d_plot, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
       noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
     xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_Err'
@@ -180,7 +180,7 @@ for i=0, n_elements(*dist)-1 do begin
 ;      rotation=rotation, slice_norm=norms[*,j],  geometric=geometric, $
 ;      resolution=1000,$
 ;      mag_data=bname, vel_data=vname)
-;    spd_slice2d_plot1, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
+;    spd_slice2d_plot, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
 ;      /custom, title='',charsize=1.15, pos = [ x0[ipos], y0[ipos], x1[ipos], y1[ipos] ],$
 ;      noerase = ipos gt 0, nocolorbar=nocolorbar
 ;    mms_draw_circle,0.,0.,r=vmin,/fill  ;SAB, mask out interpolation below 10 eV 
@@ -196,7 +196,7 @@ for i=0, n_elements(*dist)-1 do begin
     if j eq 2 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='perp', geometric=geometric, mag_data=bname, vel_data=vname, resolution=resolution) ;geometric interpolation
     if j eq 3 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='xvel', geometric=geometric, mag_data=bname, vel_data=vname, resolution=resolution) ;geometric interpolation
 
-    spd_slice2d_plot1, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
+    spd_slice2d_plot, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
       noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
     xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_PSD'

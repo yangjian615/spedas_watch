@@ -58,10 +58,10 @@
 ;  Aaron Flores, based on work by Bryan Kerr and Arjun Raj
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-11-30 09:54:19 -0800 (Mon, 30 Nov 2015) $
-;$LastChangedRevision: 19492 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/spd_slice2d_plot1.pro $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-05-13 14:40:51 -0700 (Fri, 13 May 2016) $
+;$LastChangedRevision: 21082 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/deprecated/spd_slice2d_plot1.pro $
 ;
 ;-
 
