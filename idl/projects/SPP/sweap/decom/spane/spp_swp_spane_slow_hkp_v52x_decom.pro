@@ -59,7 +59,7 @@ function spp_swp_spane_slow_hkp_v52x_decom,ccsds , ptp_header=ptp_header, apdat=
   psize = 117                   ; REV 3B
   psize = 133                   ; rev 3d
   psize = 145                   ; rev 49 & 4b  fixed to allow for both EM2 and EM3
-  psize = 149                   ; rev 52
+  psize = 149                   ; rev 52 & 54
 
   if n_elements(b) ne psize+7 then begin
     dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
@@ -214,7 +214,11 @@ function spp_swp_spane_slow_hkp_v52x_decom,ccsds , ptp_header=ptp_header, apdat=
     peak_period_act_cldn: swap_endian(/swap_if_little_endian, uint( b, 144 ) ) and 'ffff'x, $
     sample_sum:     b[146], $
     warm_reset:     b[147], $
-    pkt_csum:       swap_endian(/swap_if_little_endian, uint( b,148 ) ) and 'ffff'x , $
+    mram_wr_addr:   swap_endian(/swap_if_little_endian, uint( b,148 ) ) and 'ffff'x , $
+    mram_wr_addr_hi:b[150], $
+    clks_per_nys:   b[151], $
+    pkt_csum:       swap_endian(/swap_if_little_endian, uint( b,152 ) ) and 'ffff'x , $
+    edba:           swap_endian(/swap_if_little_endian, uint( b,154 ) ) and 'ffff'x , $
     GAP:            ccsds.gap}
 
 
