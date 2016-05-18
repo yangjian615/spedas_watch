@@ -36,9 +36,9 @@
 ;SEE ALSO:    "GET_DATA", "TPLOT_NAMES",  "TPLOT", "OPTIONS"
 ;
 ;CREATED BY:    Davin Larson
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-10-21 12:03:42 -0700 (Wed, 21 Oct 2015) $
-; $LastChangedRevision: 19125 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2016-05-17 14:51:47 -0700 (Tue, 17 May 2016) $
+; $LastChangedRevision: 21100 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/store_data.pro $
 ;-
 pro store_data,name, time,ydata,values, $

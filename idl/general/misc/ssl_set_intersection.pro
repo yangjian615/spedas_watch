@@ -6,6 +6,7 @@
 ;Returns: -1L on empty set, otherwise intersection of the two sets
 ;
 ;Notes: empty set is -1L
+;       Input arrays cannot contain repeated values
 ;       all inputs must be empty set or arrays
 ;       all outputs will be empty set or arrays
 ;       Arrays must be of homogenous type

@@ -23,9 +23,9 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-17 17:49:01 -0800 (Wed, 17 Feb 2016) $
-;$LastChangedRevision: 20058 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_process.pro $
+;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21101 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_process.pro $
 ;-
 pro mms_part_process, in, out, units=units, _extra=_extra
 

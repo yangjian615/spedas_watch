@@ -18,8 +18,8 @@
 ;  TODO: Accept multiple arguments, loop
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-13 10:56:39 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20797 $
+;$LastChangedDate: 2016-05-17 14:43:44 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21099 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -412,7 +412,6 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
-      ;convert from latitude to co-latitude
       spd_pgs_make_theta_spec, clean_data, spec=pa_spec, sigma=pa_sigma, yaxis=pa_y
     endif
     

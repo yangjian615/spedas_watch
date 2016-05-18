@@ -95,6 +95,9 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
   if pair eq '12' then rbsp_spinfit, rbspx + '_efw_esvy', plane_dim = 0 ; V12
   if pair eq '34' then rbsp_spinfit, rbspx + '_efw_esvy', plane_dim = 1 ; V34
 
+  ;;Interpolate the position data to spinfit cadence (it's at 1min by default)
+  tinterpol_mxn,rbspx+'_state_vel_mgse',rbspx+'_efw_esvy_spinfit',newname=rbspx+'_state_vel_mgse'
+
 
   store_data,[rbspx+'_efw_esvy',rbspx+'_efw_esvy_spinfit_e'+pair+'_a',$
               rbspx+'_efw_esvy_spinfit_e'+pair+'_b',rbspx+'_efw_esvy_spinfit_e'+pair+'_c'],/delete

@@ -95,9 +95,9 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-05-04 14:36:28 -0700 (Wed, 04 May 2016) $
-;$LastChangedRevision: 21024 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_part_products.pro $
+;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21101 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $
                      in_tvarname, $ ;the tplot variable name for the MMS being processed

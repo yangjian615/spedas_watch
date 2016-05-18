@@ -107,9 +107,9 @@ end
 ;  If an error occurs fac_output will be undfined on return
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-27 14:25:09 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20943 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_pgs_make_fac.pro $
+;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21101 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_make_fac.pro $
 ;-
 pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
                   mag_tvar_in,$ ;tplot variable containing the mag data

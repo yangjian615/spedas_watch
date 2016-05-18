@@ -1,6 +1,6 @@
 ;+ 
-; MMS FPI crib sheet for Quicklook plots
-; mms_load_fpi_crib_qlplots.pro
+; MMS FPI crib sheet
+; mms_load_fpi_summary_crib.pro
 ; do you have suggestions for this crib sheet?  
 ;   please send them to egrimes@igpp.ucla.edu
 ; 
@@ -23,8 +23,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-06 15:29:03 -0700 (Wed, 06 Apr 2016) $
-; $LastChangedRevision: 20738 $
+; $LastChangedDate: 2016-05-17 11:23:09 -0700 (Tue, 17 May 2016) $
+; $LastChangedRevision: 21095 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
 ;-
 
@@ -40,7 +40,8 @@ start_time = systime(/seconds)
 ;data_rate = 'fast'
 
 ; small interval for burst
-date = '2015-12-06/04:14'
+;date = '2015-12-06/04:14'
+date = '2015-10-16/13:07'
 timespan, date, 15, /min
 
 data_rates = ['brst','fast'] ;SAB

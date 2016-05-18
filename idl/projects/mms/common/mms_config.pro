@@ -28,9 +28,9 @@
 ;HISTORY:
 ; 2015-04-10, moka, Created based on 'thm_config'
 ;
-; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-26 11:08:16 -0700 (Fri, 26 Jun 2015) $
-; $LastChangedRevision: 17977 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2016-05-17 14:43:44 -0700 (Tue, 17 May 2016) $
+; $LastChangedRevision: 21099 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config.pro $
 ;
 ;-

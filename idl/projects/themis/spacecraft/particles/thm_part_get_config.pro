@@ -420,7 +420,7 @@ pro thm_part_get_config_458, u
             angle_mode=2, angle_bins=6, energy_bins=32, nspins=1, sweep_mode=1
 
     '31'xu:thm_part_get_config_setvalue, u, $
-            angle_mode=1, angle_bins=32, energy_bins=32, nspins=1, sweep_mode=1
+            angle_mode=1, angle_bins=1, energy_bins=32, nspins=1, sweep_mode=1
 
     '12'xu:thm_part_get_config_setvalue, u, $
             angle_mode=1, angle_bins=1, energy_bins=32, nspins=1, sweep_mode=2

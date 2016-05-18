@@ -37,8 +37,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-07-24 18:00:36 -0700 (Fri, 24 Jul 2015) $
-;$LastChangedRevision: 18260 $
+;$LastChangedDate: 2016-05-17 14:51:47 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21100 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_text__define.pro $
 ;-----------------------------------------------------------------------------------
 

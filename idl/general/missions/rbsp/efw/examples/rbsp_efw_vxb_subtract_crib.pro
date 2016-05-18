@@ -74,8 +74,6 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
   if keyword_set(qa)  then rbsp_load_efw_esvy_mgse,probe=probe,/no_spice_load,/qa
 
 
-;stop
-
 ;Load EMFISIS data
   if keyword_set(ql) then rbsp_load_emfisis,probe=probe,/quicklook
   if keyword_set(hires) and ~keyword_set(l2) then  rbsp_load_emfisis,probe=probe,coord='gse',cadence='hires',level='l3'
@@ -167,6 +165,10 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
 
 ;Create the vxB subtracted variables   (E - (Vsc + Vcoro)xB)
+;  tinterpol_mxn,rbspx+'_state_vel_mgse',rbspx+'_state_vel_coro_mgse',newname=rbspx+'_state_vel_mgse'
+  tinterpol_mxn,rbspx+'_state_vel_mgse',rbspx+'_efw_esvy_mgse',newname=rbspx+'_state_vel_mgse'
+
+
   dif_data,rbspx+'_state_vel_mgse',rbspx+'_state_vel_coro_mgse',newname='vel_total'
   rbsp_vxb_subtract,'vel_total',rbspx+'_mag_mgse',rbspx+'_efw_esvy_mgse'
   copy_data,'Esvy_mgse_vxb_removed',rbspx+'_efw_esvy_mgse_vxb_removed'

@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-10 18:47:10 -0700 (Tue, 10 May 2016) $
-;$LastChangedRevision: 21057 $
+;$LastChangedDate: 2016-05-17 12:01:25 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21096 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qtransformer.pro $
 ;-
 
@@ -48,12 +48,6 @@ pro mms_cotrans_qtransformer, $
   compile_opt idl2, hidden
 
 
-  ; Do not transform to/from spinning frames if quaternion time resulotion 
-  ; is lower than nyquist rate.  All transforms have a single middle step (ECI)
-  ; so this should catch all cases w/o leaving a partially transformed var.
-  if mms_qcotrans_check_rate(in_coord,out_coord,probe) then return
-
-
   ; Final coordinate system reached
   ;------------------------------------------------
   if in_coord eq out_coord then begin
@@ -62,6 +56,12 @@ pro mms_cotrans_qtransformer, $
     endif
     return
   endif
+
+
+  ; Do not transform to/from spinning frames if quaternion time resulotion 
+  ; is lower than nyquist rate.  All transforms have a single middle step (ECI)
+  ; so this should catch all cases w/o leaving a partially transformed var.
+  if mms_qcotrans_check_rate(in_coord,out_coord,probe) then return
 
 
   ; Execute next step in transformation tree

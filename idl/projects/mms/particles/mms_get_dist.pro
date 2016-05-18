@@ -40,9 +40,9 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
-;$LastChangedRevision: 20992 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_get_dist.pro $
+;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21101 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_get_dist.pro $
 ;-
 
 function mms_get_dist, tname, index, trange=trange, times=times, structure=structure, $

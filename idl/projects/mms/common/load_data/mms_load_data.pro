@@ -85,9 +85,9 @@
 ;           the directory structure at the SDC.
 ;      
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-09 10:51:28 -0700 (Mon, 09 May 2016) $
-;$LastChangedRevision: 21043 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-05-17 14:43:44 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21099 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 

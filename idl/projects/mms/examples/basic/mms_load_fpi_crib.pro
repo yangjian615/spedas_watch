@@ -1,17 +1,17 @@
 ;+
 ; MMS FPI crib sheet
-; 
+; mms_load_fpi_crib.pro
 ; do you have suggestions for this crib sheet?  
 ;   please send them to egrimes@igpp.ucla.edu
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-07 15:53:03 -0700 (Thu, 07 Apr 2016) $
-; $LastChangedRevision: 20750 $
+; $LastChangedDate: 2016-05-17 09:49:10 -0700 (Tue, 17 May 2016) $
+; $LastChangedRevision: 21092 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fpi_crib.pro $
 ;-
 
-timespan, '2015-12-15', 1, /day
+timespan, '2015-10-16', 1, /day
 probe = '4'
 datatype = ['des-moms', 'dis-moms'] ; DES/DIS moments file (contains moments, as well as spectra and pitch angle distributions)
 level = 'l2'

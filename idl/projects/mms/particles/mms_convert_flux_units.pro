@@ -23,9 +23,9 @@
 ;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-21 13:56:59 -0700 (Thu, 21 Apr 2016) $
-;$LastChangedRevision: 20873 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/beta/mms_part_products/mms_convert_flux_units.pro $
+;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21101 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_convert_flux_units.pro $
 ;-
 pro mms_convert_flux_units,dist,units=units,output=output
 
