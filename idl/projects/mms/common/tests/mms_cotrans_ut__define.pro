@@ -6,10 +6,52 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-04 09:20:59 -0700 (Wed, 04 May 2016) $
-; $LastChangedRevision: 21018 $
+; $LastChangedDate: 2016-05-18 16:17:37 -0700 (Wed, 18 May 2016) $
+; $LastChangedRevision: 21123 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_cotrans_ut__define.pro $
 ;-
+
+function mms_cotrans_ut::test_cotrans_eci2gse2000
+  mms_qcotrans, 'mms1_mec_r_eci', in_coord='eci', out_coord='gse2000', out_suffix='_eci2gse2000', /ignore
+  assert, spd_data_exists('mms1_mec_r_eci_eci2gse2000', '2015-12-1', '2015-12-2'), $
+    'Problem qcotrans''ing to GSE2000 from ECI'
+  return, 1
+end
+
+function mms_cotrans_ut::test_cotrans_eci2sm
+  mms_qcotrans, 'mms1_mec_r_eci', in_coord='eci', out_coord='sm', out_suffix='_eci2sm', /ignore
+  assert, spd_data_exists('mms1_mec_r_eci_eci2sm', '2015-12-1', '2015-12-2'), $
+    'Problem qcotrans''ing to SM from ECI'
+  return, 1
+end
+
+function mms_cotrans_ut::test_cotrans_eci2gse
+  mms_qcotrans, 'mms1_mec_r_eci', in_coord='eci', out_coord='gse', out_suffix='_eci2gse', /ignore
+  assert, spd_data_exists('mms1_mec_r_eci_eci2gse', '2015-12-1', '2015-12-2'), $
+    'Problem qcotrans''ing to GSE from ECI'
+  return, 1
+end
+
+function mms_cotrans_ut::test_cotrans_eci2geo
+  mms_qcotrans, 'mms1_mec_r_eci', in_coord='eci', out_coord='geo', out_suffix='_eci2geo', /ignore
+  assert, spd_data_exists('mms1_mec_r_eci_eci2geo', '2015-12-1', '2015-12-2'), $
+    'Problem qcotrans''ing to GEO from ECI'
+  return, 1
+end
+
+function mms_cotrans_ut::test_cotrans_eci2gsm
+  mms_qcotrans, 'mms1_mec_r_eci', in_coord='eci', out_coord='gsm', out_suffix='_eci2gsm', /ignore
+  assert, spd_data_exists('mms1_mec_r_eci_eci2gsm', '2015-12-1', '2015-12-2'), $
+    'Problem qcotrans''ing to GSM from ECI'
+  return, 1
+end
+
+function mms_cotrans_ut::test_cotrans_gsm2geo
+  mms_qcotrans, 'mms1_mec_r_gsm ', in_coord='gsm', out_coord='geo', out_suffix='_gsm2geo', /ignore
+  assert, spd_data_exists('mms1_mec_r_gsm_gsm2geo', '2015-12-1', '2015-12-2'), $
+    'Problem qcotrans''ing to GSM from GEO'
+  return, 1
+end
 
 function mms_cotrans_ut::test_cotrans_dmpa2gse
   mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='gse', out_suffix='_gse'

@@ -19,6 +19,10 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ;print, b
   
   ;dprint,spp_swp_word_decom(b, 17)
+  
+  
+ ; dprint,n_elements(b)
+  if n_elements(b) lt 107 then return,0
 
   manip = {time:       ptp_header.ptp_time, $
           met:        ccsds.met,  $

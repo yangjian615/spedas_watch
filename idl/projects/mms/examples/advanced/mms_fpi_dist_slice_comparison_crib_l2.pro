@@ -1,4 +1,11 @@
+;+
 ; mms_fpi_dist_slice_comparison_crib_l2.pro
+;
+; do you have suggestions for this crib sheet?
+;   please send them to egrimes@igpp.ucla.edu
+;  changed ion burst mode time range   SAB
+;-
+
 pro mms_draw_circle,x0,y0,r=r,fill=fill,_extra=extra
   if n_elements(r) eq 0. then r = 1.
   if n_elements(x0) eq 0. then x0 = 0.
@@ -15,10 +22,18 @@ start_time = systime(/sec)
 ;setup
 ;---------------------------------------------
 read, 'for FPI data rate input 0 for brst, 1 for fast:', irate ;SAB
+probe='1'
+read,'input probe #:',probe
+if probe lt 1 or probe gt 4 then probe=1
+read,'input 0 for FPI electrons, 1 for FPI ions:',ispecies
+if ispecies eq 0 then species='e' else species='i'
+
 if irate eq 0 then begin ;SAB
 	data_rate = 'brst'
 	fgm_data_rate = 'brst'
-	trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:00.02']
+	;trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:00.02']
+	trange = ['2015-10-16/13:07:02.220', '2015-10-16/13:07:02.250']
+	if species eq 'i' then trange = ['2015-10-16/13:06:00', '2015-10-16/13:06:00.2']
 endif else BEGIN ;SAB
 	data_rate = 'fast'
 	fgm_data_rate = 'srvy'
@@ -26,11 +41,11 @@ endif else BEGIN ;SAB
 endelse ;SAB
 help, data_rate, fgm_data_rate
 
-probe='1'
-read,'input probe #:',probe
-if probe lt 1 or probe gt 4 then probe=1
-read,'input 0 for FPI electrons, 1 for FPI ions:',ispecies
-if ispecies eq 0 then species='e' else species='i'
+;probe='1' ;SAB
+;read,'input probe #:',probe
+;if probe lt 1 or probe gt 4 then probe=1
+;read,'input 0 for FPI electrons, 1 for FPI ions:',ispecies
+;if ispecies eq 0 then species='e' else species='i'
 olines=20
 geometric = 0
 read,'input 1 for geometric scaling or 0:', geometric
@@ -117,7 +132,7 @@ vmax = max(vr)
 vmin = min(vr)
 print,'velocity range in km/s:',vr
 read,'input max |velocity| in km/s to plot, input 0. for autoscaling:',vmax
-if vmax le min(vr) then vr=[0.,0.] else vr = [-1,1]*vmax
+if vmax le min(vr) then vr=[-1.,1.]*max(vr) else vr = [-1,1]*vmax
 if species eq 'e' then zrange = [1.0e-29, 1.0e-25]  ;tmp guess for electrons
 if species eq 'i' then zrange = [1.0e-25, 1.0e-21]  ;tmp guess for ions
  

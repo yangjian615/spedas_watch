@@ -16,10 +16,11 @@ mvn_swe_load_l2,/spec,/sumplot ;load SWEA data
 mvn_euv_load ;load EUVM data
 mvn_euv_l3_load ;load FISM data
 mvn_sta_l2_load,sta_apid='c0' ;load STATIC data
-mvn_sta_l2_tplot
+mvn_sta_l2_tplot ;store STATIC data in tplot variables
+if keyword_set(do3d) then mvn_sta_l2_load,sta_apid='d1' ;load STATIC 3d data
 
 ;set tplot limits
-zlim,'swe_a4',1e4,1e8
+zlim,'swe_a4',1e4,1e9
 ylim,'mvn_swim_swi_mode',0,1
 ylim,'mvn_swim_density',.01,100,1
 ylim,'mvn_swim_velocity_mso',100,-800

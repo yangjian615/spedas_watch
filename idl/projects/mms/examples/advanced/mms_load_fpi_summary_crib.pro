@@ -23,8 +23,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-17 11:23:09 -0700 (Tue, 17 May 2016) $
-; $LastChangedRevision: 21095 $
+; $LastChangedDate: 2016-05-18 08:38:23 -0700 (Wed, 18 May 2016) $
+; $LastChangedRevision: 21113 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
 ;-
 
@@ -35,7 +35,7 @@ start_time = systime(/seconds)
 ;date = '15-9-01/00:00:00'
 
 ; full day for FS
-;date = '2016-12-12/00:00:00'
+;date = '2015-10-16/00:00:00'
 ;timespan, date, 1, /day
 ;data_rate = 'fast'
 
@@ -192,11 +192,9 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
 ;    options, obsstr+'temp', 'colors', [2, 4, 6, 8]
 ;    options, obsstr+'temp', 'ytitle', 'MMS'+STRING(probes[i],FORMAT='(I1)')+'!CTemp'
 
-    ; use bss routine to create tplot variables for fast, burst, status, and/or FOM
+    ; use bss routine to create tplot variables for fast, burst bars
     trange = timerange(trange)
-    ; commenting out the fast/brst mode bar, 3/14/2016
-    ; currently requires team member access to the SDC
-   ; spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
+    spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
         
     ;-----------PLOT ELECTRON ENERGY SPECTRA DETAILS -- ONE SPACECRAFT --------------------
     ;PLOT: electron energy spectra for each observatory

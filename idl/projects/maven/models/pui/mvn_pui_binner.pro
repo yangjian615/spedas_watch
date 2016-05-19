@@ -51,8 +51,12 @@ cosvsep2xy=cosvsep2/sqrt(cosvsep2^2+cosvswiy^2); cosine of angle b/w projected -
 cosvsep1xz=cosvsep1/sqrt(cosvsep1^2+cosvsep2^2); cosine of angle b/w projected -v on sep1 xz plane and sep1 fov
 cosvsep2xz=cosvsep2/sqrt(cosvsep1^2+cosvsep2^2); cosine of angle b/w projected -v on sep2 xz plane and sep2 fov
 
-phiswixy=!pi+atan(-cosvswiy,-cosvswix); swia phi angle (radians):between 0 and 2pi
-phistaxy=!pi+atan(-cosvstay,-cosvstax); swia phi angle (radians):between 0 and 2pi
+phiswipm=!dtor*(360+22.50) ;swia binning parameter
+phistapm=!dtor*(360+11.25) ;static binning parameter
+phiswixy=!pi+atan(-cosvswiy,-cosvswix); swia phi angles: between 0 and 2pi rad
+phistaxy=!pi+atan(-cosvstay,-cosvstax); static phi angles: between 0 and 2pi rad
+phiswixy=phiswipm-((phiswipm-phiswixy) mod (2*!pi)); swia phi angles: between 22.5 and 360+22.5 deg
+phistaxy=phistapm-((phistapm-phistaxy) mod (2*!pi)); static phi angles: between 11.25 and 360+11.25 deg
 
 keflux1=replicate(0.,inn,srmd) ;sep1 flux binning
 keflux2=replicate(0.,inn,srmd) ;sep2 flux binning
@@ -63,7 +67,7 @@ kefswi3d=replicate(0.,inn,swieb,swina,swine);swia 3d flux binning
 kefsta3d=replicate(0.,inn,staeb,swina,swine);static 3d flux binning
 
 ke[where(~finite(ke),/null)]=1. ;in case energy is NaN due to bad inputs (eV)
-ke[where(ke ge 700e3)]=1. ;in case energy is too high due to bad inputs (eV)
+ke[where(ke ge 700e3,/null)]=1. ;in case energy is too high due to bad inputs (eV)
 kestep=floor(ke/1e3); %linear energy step binning (keV)
 lnkestep=126-floor(alog(ke)/totdee); %log energy step ln(eV) for all flux (edges: 328 keV to 14.9 eV with 10% resolution)
 lnkeswia=69-floor(alog(ke)/swidee); %log energy step ln(eV) for SWIA (post Nov 2014)
@@ -83,8 +87,9 @@ nrfovac=ntotfac*rfov
 
 cosfovsep=cos(!dtor*30.) ;sep opening angle (assuming conic) needs to be improved...
 sinfovswi=sin(!dtor*45./rfov) ;swia and static +Z opening angle
-phifovswi=!dtor*dindgen(swina+1,increment=22.5) ;swia and static anode phi angles (azimuth bins in radians):between 0 and 2pi
-thefovswi=!dtor*dindgen(swine+1,increment=22.5,start=-45) ;swia and static deflection theta angles (elevation bins in radians):between 0 and 2pi
+phifovswi=!dtor*dindgen(swina+1,increment=22.5,start=22.50) ;swia anode phi angle bins (azimuth):between 22.5 and 360+22.5 deg
+phifovsta=!dtor*dindgen(swina+1,increment=22.5,start=11.25) ;static anode phi angle bins (azimuth):between 11.25 and 360+11.25 deg
+thefovswi=!dtor*dindgen(swine+1,increment=22.5,start=-45.0) ;swia and static deflection theta angles (elevation):between -45 and 45 deg
 
 cosfovsepxy=cos(!dtor*21.0) ;sep opening angle (full angular extent) in sep xy plane
 cosfovsepxz=cos(!dtor*15.5) ;sep opening angle (full angular extent) in sep xz plane
@@ -94,10 +99,10 @@ sdea2xy=(cosvsep2xy-cosfovsepxy)/(1-cosfovsepxy)
 sdea1xz=(cosvsep1xz-cosfovsepxz)/(1-cosfovsepxz)
 sdea2xz=(cosvsep2xz-cosfovsepxz)/(1-cosfovsepxz)
 
-sdea1=sdea1xy*sdea1xz ;sep detector effective area factor
+sdea1=sdea1xy*sdea1xz ;sep detector effective area factor (cm2)
 sdea2=sdea2xy*sdea2xz
 
-sdea1[where(cosvsep1xy lt cosfovsepxy)]=1e-3 ;very small sep detector area within cosfovsep
+sdea1[where(cosvsep1xy lt cosfovsepxy)]=1e-3 ;very small sep detector area within cosfovsep (cm2)
 sdea2[where(cosvsep2xy lt cosfovsepxy)]=1e-3
 sdea1[where(cosvsep1xz lt cosfovsepxz)]=1e-3
 sdea2[where(cosvsep2xz lt cosfovsepxz)]=1e-3
@@ -127,8 +132,8 @@ for it=1,np-1 do begin ;loop over particles
       phistaxynt=phistaxy[in,it]
       for j=0,swina-1 do begin
         for k=0,swine-1 do begin
-    if ((phiswixynt gt phifovswi[j]) && (phiswixynt lt phifovswi[j+1]) && (cosvswiznt gt -sin(thefovswi[k+1]/rfovnt)) && (cosvswiznt lt -sin(thefovswi[k]/rfovnt)) && (lnkeswiant ge 0) && (lnkeswiant le swieb-1)) then kefswi3d[in,lnkeswiant,15-((16-j) mod 16),k]+=nrfovacnt; %energy flux
-    if ((phistaxynt gt phifovswi[j]) && (phistaxynt lt phifovswi[j+1]) && (cosvstaznt gt -sin(thefovswi[k+1]/rfovnt)) && (cosvstaznt lt -sin(thefovswi[k]/rfovnt)) && (lnkestatnt ge 0) && (lnkestatnt le staeb-1)) then kefsta3d[in,lnkestatnt,j,k]+=nrfovacnt; %energy flux
+    if ((phiswixynt gt phifovswi[j]) && (phiswixynt lt phifovswi[j+1]) && (cosvswiznt gt sin(thefovswi[k]/rfovnt)) && (cosvswiznt lt sin(thefovswi[k+1]/rfovnt)) && (lnkeswiant ge 0) && (lnkeswiant le swieb-1)) then kefswi3d[in,lnkeswiant,j,k]+=nrfovacnt; %energy flux
+    if ((phistaxynt gt phifovsta[j]) && (phistaxynt lt phifovsta[j+1]) && (cosvstaznt gt sin(thefovswi[k]/rfovnt)) && (cosvstaznt lt sin(thefovswi[k+1]/rfovnt)) && (lnkestatnt ge 0) && (lnkestatnt le staeb-1)) then kefsta3d[in,lnkestatnt,j,k]+=nrfovacnt; %energy flux
         endfor
       endfor
     endif

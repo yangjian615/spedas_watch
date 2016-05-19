@@ -331,7 +331,9 @@ for i=1l,npts2-2 do begin
 	endif 
 endfor
 
-pot3 = interp(pot2,time2,time)
+pot3 = interp(pot2,time2,time) 
+
+pot3 = pot3 > 0.
 
 ;**********************************************************
 ; estimate sc potential from swea data - this is turned off since it fails too often

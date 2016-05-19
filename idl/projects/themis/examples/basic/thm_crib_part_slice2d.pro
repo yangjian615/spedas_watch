@@ -63,8 +63,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-23 13:31:39 -0700 (Tue, 23 Jun 2015) $
-;$LastChangedRevision: 17943 $
+;$LastChangedDate: 2016-05-17 19:09:51 -0700 (Tue, 17 May 2016) $
+;$LastChangedRevision: 21104 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_slice2d.pro $
 ;
 ;-
@@ -205,7 +205,7 @@ stop
 
 
 ;--------------------------------------------------------------------------------------
-;Units
+;Units / Show N count level
 ;--------------------------------------------------------------------------------------
 
 ;set time range
@@ -214,14 +214,31 @@ trange = '2008-02-26/' + ['04:54','04:55']
 ;esa ion burst data
 dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
 
-;This example uses the UNITS keyword to create an energy flux slice.
-thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
-                  units='eflux', /three_d_interp
+;This example uses the UNITS keyword to create a slice in counts.
+;   valid units are:  'df', 'flux', 'eflux', 'counts', and 'rate'
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice_counts, $
+                  units='counts', /three_d_interp
 
-thm_part_slice2d_plot, slice
+;get default phase space density slice
+thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice_df, $
+                  /three_d_interp
+
+;plot counts slice
+thm_part_slice2d_plot, slice_counts, window=2
+
+;plot DF slice with contour line at 1 count
+thm_part_slice2d_plot, slice_df, window=1
+spd_slice2d_add_line, slice_counts, 1
+
+;plot DF slice with dotted colored contour lines at 1, 5, and 10 count
+;   see IDL documentation for CONTOUR procedure for valid keywords 
+thm_part_slice2d_plot, slice_df, window=0
+spd_slice2d_add_line, slice_counts, [1,5,10], c_colors=[60,170,230], c_linestyle=1
+
 
 print,nl,'Use the UNITS keyword to select what units the data will be presented in.'
-print, ' (e.g. "Counts", "DF", "Rate", "CRate", "Flux", "EFlux")',nl
+print,nl,'Use spd_slice2d_add_line to add annotation in different units'
+print, ' (e.g. "Counts", "DF", "Rate", "Flux", "EFlux")',nl
 
 stop
 

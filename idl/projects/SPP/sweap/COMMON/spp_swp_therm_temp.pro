@@ -1,11 +1,11 @@
-function spp_sweap_therm_temp,dval,parameter=p
+function spp_swp_therm_temp,dval,parameter=p
   if not keyword_set (p) then begin
      ;p = {func:'mvn_sep_therm_temp2',$
      ;     R1:10000d, $
      ;     xmax:1023d, $
      ;     Rv:1d8,$
      ;     thm:thermistor_temp()}
-     p = {func:'spp_sweap_therm_temp',$
+     p = {func:'spp_swp_therm_temp',$
           R1:10000d, $
           xmax:1023d, $
           Rv:1d7, $

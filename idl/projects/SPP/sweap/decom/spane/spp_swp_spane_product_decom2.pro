@@ -77,10 +77,10 @@ function spp_swp_spane_16Ax8Dx32E, data, header_str=header_str, apdat=apdat   ; 
     return,0
   endif
   pname = '16Ax8Dx32E_'
-  spec1 = total(reform(ulong(data),16,8*32),2)
-  spec2 = total( total(ulong(data),1) ,2 )
-  spec3 = total(reform(ulong(data),16*8,32),1)
-  spec23 = total(reform(ulong(data),16,8*32),1)
+  spec1 = total(reform((data),16,8*32),2)
+  spec2 = total( total((data),1) ,2 )
+  spec3 = total(reform((data),16*8,32),1)
+  spec23 = total(reform((data),16,8*32),1)
   
   
   strct = {time:header_str.time, $

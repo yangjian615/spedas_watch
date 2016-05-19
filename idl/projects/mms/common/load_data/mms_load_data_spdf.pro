@@ -27,8 +27,8 @@
 ;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-21 14:52:18 -0700 (Thu, 21 Apr 2016) $
-;$LastChangedRevision: 20876 $
+;$LastChangedDate: 2016-05-18 15:22:55 -0700 (Wed, 18 May 2016) $
+;$LastChangedRevision: 21122 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -187,7 +187,13 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
         if instrument eq 'fpi' then resolution = 7200 ; 2-hour resolution on FS files
         if data_rate eq 'brst' then resolution = 1 ; 1 second resolution for burst files
         
-        relpathnames = file_dailynames(file_format=pathformat[data_count], trange=tr, /unique, resolution=resolution)
+        ; for burst, we need to start ~5 minutes earlier, so we always get the data when requested
+        ; this fixes a bug for FPI, L2, des-dist, MMS3, ['2015-10-16/13:07:00','2015-10-16/13:07:04']
+        ; reported by Steve Martin @ GSFC
+       
+        if data_rate eq 'brst' then tr_for_filenames = [tr[0]-300.0, tr[1]] else tr_for_filenames = tr
+        
+        relpathnames = file_dailynames(file_format=pathformat[data_count], trange=tr_for_filenames, /unique, resolution=resolution)
 
         ; the following is a kludge to deal with the fact that "mm" in "mms" 
         ; is interpreted by file_dailynames as 00 (minute?)

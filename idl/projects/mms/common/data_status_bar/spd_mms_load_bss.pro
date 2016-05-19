@@ -32,8 +32,8 @@
 ; CREATED BY: Mitsuo Oka   Oct 2015
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-12 09:17:43 -0700 (Tue, 12 Apr 2016) $
-;$LastChangedRevision: 20779 $
+;$LastChangedDate: 2016-05-18 12:26:32 -0700 (Wed, 18 May 2016) $
+;$LastChangedRevision: 21115 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/spd_mms_load_bss.pro $
 ;-
 
@@ -47,8 +47,8 @@ PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_l
   nmax = n_elements(datatype)
   for n=0,nmax-1 do begin
     case datatype[n] of
-      'fast':   mms_load_bss_fast, trange=trange, include_labels=include_labels
-      'burst':  spd_mms_load_bss_burst, trange=trange, include_labels=include_labels
+      'fast':   mms_load_fast_segments, trange=trange
+      'burst':  mms_load_brst_segments, trange=trange
       'status': mms_load_bss_status, trange=trange, include_labels=include_labels
       'fom':    mms_load_bss_fom, trange=trange
       else: message,'datatype: '+datatype[n]+' is not allowed.'

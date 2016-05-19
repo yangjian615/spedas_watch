@@ -15,6 +15,67 @@
 ; regression tests ---------->
 
 ; user requests a few seconds after file start time
+function mms_load_fpi_ut::test_seconds_after_file_start_spdf
+  mms_load_fpi, trange=['2015-10-15/6:45:21', '2015-10-15/6:51:21'], data_rate='brst', level='l2', /spdf
+  assert, spd_data_exists('mms3_dis_bulkspeed_dbcs_brst','2015-10-15/06:47:23','2015-10-15/06:54:59'), $
+    'Error! Not grabbing the correct data from the SPDF??? (1)'
+  return, 1
+end
+
+; user requests a few seconds after file end time
+function mms_load_fpi_ut::test_seconds_after_file_end_spdf
+  mms_load_fpi, trange=['2015-10-15/6:49:21', '2015-10-15/6:54:01'], data_rate='brst', level='l2', /spdf
+  assert, spd_data_exists('mms3_dis_bulkspeed_dbcs_brst','2015-10-15/06:47:23','2015-10-15/06:54:59'), $
+    'Error! Not grabbing the correct data from the SPDF??? (2)'
+  return, 1
+end
+
+; user requests a time interval without any CDF files inside
+function mms_load_fpi_ut::test_empty_interval_spdf
+  mms_load_fpi, trange=['2015-10-15/6:46:21', '2015-10-15/6:49:01'], data_rate='brst', level='l2', /spdf
+  assert, spd_data_exists('mms3_dis_bulkspeed_dbcs_brst','2015-10-15/06:47:23','2015-10-15/06:49:59'), $
+    'Error! Not grabbing the correct data from the SPDF??? (3)'
+  return, 1
+end
+
+; user requests a time interval just beyond start time (but inside the interval)
+; of last burst-mode file for the day
+function mms_load_fpi_ut::test_weird_fpi_case_spdf
+  mms_load_fpi, trange=['2015-10-16/13:07', '2015-10-16/13:09'], data_rate='brst', level='l2', /spdf
+  assert, spd_data_exists('mms3_dis_bulkspeed_dbcs_brst','2015-10-16/13:07','2015-10-16/13:09'), $
+    'Error! Not grabbing the correct data from the SPDF??? (4)'
+  return, 1
+end
+
+; user downloads data, then tries to load the data using /no_update
+function mms_load_fpi_ut::test_noupdate_actually_works_spdf
+  ; load the data from the web
+  mms_load_fpi, trange=['2015-10-15', '2015-10-18'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_sdc, /spdf
+  del_data, '*'
+
+  ; load the data locally
+  mms_load_fpi, trange=['2015-10-15', '2015-10-18'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_local, /no_update, /spdf
+  assert, spd_data_exists('mms1_dis_energyspectr_omni_avg', '2015-10-15', '2015-10-18'), $
+    'Problem loading data from local drive'
+  assert, array_equal(fn_sdc, fn_local), $
+    'Problem loading data from local drive (different CDF filenames)'
+  return, 1
+end
+
+; check that loading from local data doesn't load all data for the day
+function mms_load_fpi_ut::test_noupdate_mem_spdf
+  ; load the data from the web
+  mms_load_fpi, trange=['2015-10-16/13:06:00', '2015-10-16/13:08:00'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_sdc, /spdf
+  del_data, '*'
+
+  ; load the data locally
+  mms_load_fpi, trange=['2015-10-16/13:06:00', '2015-10-16/13:08:00'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_local, /no_update, /spdf
+  assert, array_equal(fn_sdc, fn_local), $
+    'Problem loading data from local drive (different CDF filenames)'
+  return, 1
+end
+
+; user requests a few seconds after file start time
 function mms_load_fpi_ut::test_seconds_after_file_start
   mms_load_fpi, trange=['2015-10-15/6:45:21', '2015-10-15/6:51:21'], data_rate='brst', level='l1b'
   assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-15/06:47:23','2015-10-15/06:54:59'), $

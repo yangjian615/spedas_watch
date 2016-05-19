@@ -74,9 +74,12 @@ store_data,'sep2_FOV',centertime,sep2ld
 store_data,'redures_swea',centertime,sweaef,sweaet
 options,'redures_swea','spec',1
 ylim,'redures_swea',3,5e3,1
-zlim,'redures_swea',1e4,1e8,1
+zlim,'redures_swea',1e4,1e9,1
 ;SWIA
-store_data,'mvn_swia_data_redures',centertime,swiaef,swiaet
+store_data,'redures_swia',centertime,swiaef,swiaet
+options,'redures_swia','spec',1
+ylim,'redures_swia',25,25e3,1
+zlim,'redures_swia',1e3,1e8,1
 ;STATIC
 store_data,'redures_H_sta_c0',centertime,sta_c0H,sta_c0et
 store_data,'redures_L_sta_c0',centertime,sta_c0L,sta_c0et

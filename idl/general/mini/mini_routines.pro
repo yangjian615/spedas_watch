@@ -28,8 +28,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-17 20:51:36 -0700 (Thu, 17 Sep 2015) $
-; $LastChangedRevision: 18834 $
+; $LastChangedDate: 2016-05-18 12:54:25 -0700 (Wed, 18 May 2016) $
+; $LastChangedRevision: 21117 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/mini_routines.pro $
 ;- 
 
@@ -189,6 +189,25 @@ function mini_sinh,arg_list
   
 end 
 
+function mini_asinh,arg_list
+
+  compile_opt hidden,strictarr
+
+  evaluator_routines
+
+  keyword_list = ''
+
+  validate_mini_func_args,1,0,keyword_list,arg_list
+
+  out = get_positional_arg(arg_list,0)
+
+  out.data = alog(out.data + sqrt(out.data*out.data+1.))
+
+  return,out
+
+end
+
+
 function mini_cos,arg_list
 
   compile_opt hidden,strictarr
@@ -244,6 +263,24 @@ function mini_cosh,arg_list
   
 end 
 
+function mini_acosh,arg_list
+
+  compile_opt hidden,strictarr
+
+  evaluator_routines
+
+  keyword_list = ''
+
+  validate_mini_func_args,1,0,keyword_list,arg_list
+
+  out = get_positional_arg(arg_list,0)
+
+  out.data = alog(out.data + sqrt(out.data*out.data-1.))
+
+  return,out
+
+end
+
 function mini_tan,arg_list
 
   compile_opt hidden,strictarr
@@ -297,6 +334,24 @@ function mini_tanh,arg_list
   return,out
   
 end 
+
+function mini_atanh,arg_list
+
+  compile_opt hidden,strictarr
+
+  evaluator_routines
+
+  keyword_list = ''
+
+  validate_mini_func_args,1,0,keyword_list,arg_list
+
+  out = get_positional_arg(arg_list,0)
+
+  out.data = alog((1.+out.data)/(1.-out.data))/2.
+
+  return,out
+
+end
 
 function mini_cosecant,arg_list
 
@@ -352,6 +407,24 @@ function mini_cosecanthyp,arg_list
   
 end
 
+function mini_arccosecanthyp,arg_list
+
+  compile_opt hidden,strictarr
+
+  evaluator_routines
+
+  keyword_list = ''
+
+  validate_mini_func_args,1,0,keyword_list,arg_list
+
+  out = get_positional_arg(arg_list,0)
+
+  out.data = alog((1.+sqrt(out.data*out.data+1.))/out.data)
+
+  return,out
+
+end
+
 function mini_secant,arg_list
 
   compile_opt hidden,strictarr
@@ -404,6 +477,24 @@ function mini_secanthyp,arg_list
   
   return,out
   
+end
+
+function mini_arcsecanthyp,arg_list
+
+  compile_opt hidden,strictarr
+
+  evaluator_routines
+
+  keyword_list = ''
+
+  validate_mini_func_args,1,0,keyword_list,arg_list
+
+  out = get_positional_arg(arg_list,0)
+
+  out.data = alog((1.+sqrt(1.-out.data*out.data))/out.data)
+  
+  return,out
+
 end
 
 function mini_cotangent,arg_list
@@ -482,6 +573,24 @@ function mini_cotangenthyp,arg_list
   
   return,out
   
+end
+
+function mini_arccotangenthyp,arg_list
+
+  compile_opt hidden,strictarr
+
+  evaluator_routines
+
+  keyword_list = ''
+
+  validate_mini_func_args,1,0,keyword_list,arg_list
+
+  out = get_positional_arg(arg_list,0)
+
+  out.data = alog((out.data+1.)/(out.data-1))/2.
+
+  return,out
+
 end
 
 function mini_min,arg_list
@@ -1063,7 +1172,7 @@ function function_list
 
   fun = {type:'function',name:'name',value:'idlname',index:0,syntax:'helpsyntax'} 
 
-  f_list = replicate(fun,29)
+  f_list = replicate(fun,35)
   
   i=0
   f_list[i].name = 'log'
@@ -1135,6 +1244,11 @@ function function_list
   f_list[i].value = 'mini_sinh'
   f_list[i].syntax= '(x)'
   i++
+  
+  f_list[i].name = 'arcsinh'
+  f_list[i].value = 'mini_asinh'
+  f_list[i].syntax= '(x)'
+  i++
  
   f_list[i].name = 'cos'
   f_list[i].value = 'mini_cos'
@@ -1148,6 +1262,11 @@ function function_list
   
   f_list[i].name = 'cosh'
   f_list[i].value = 'mini_cosh'
+  f_list[i].syntax= '(x)'
+  i++
+  
+  f_list[i].name = 'arccosh'
+  f_list[i].value = 'mini_acosh'
   f_list[i].syntax= '(x)'
   i++
  
@@ -1166,6 +1285,11 @@ function function_list
   f_list[i].syntax= '(x)'
   i++
   
+  f_list[i].name = 'arctanh'
+  f_list[i].value = 'mini_atanh'
+  f_list[i].syntax= '(x)'
+  i++
+  
   f_list[i].name = 'csc'
   f_list[i].value = 'mini_cosecant'
   f_list[i].syntax= '(x)'
@@ -1178,6 +1302,11 @@ function function_list
  
   f_list[i].name = 'csch'
   f_list[i].value = 'mini_cosecanthyp'
+  f_list[i].syntax= '(x)'
+  i++
+ 
+  f_list[i].name = 'arccsch'
+  f_list[i].value = 'mini_arccosecanthyp'
   f_list[i].syntax= '(x)'
   i++
  
@@ -1195,6 +1324,11 @@ function function_list
   f_list[i].value = 'mini_secanthyp'
   f_list[i].syntax= '(x)'
   i++
+  
+  f_list[i].name = 'arcsech'
+  f_list[i].value = 'mini_arcsecanthyp'
+  f_list[i].syntax= '(x)'
+  i++
  
   f_list[i].name = 'cot'
   f_list[i].value = 'mini_cotangent'
@@ -1210,6 +1344,11 @@ function function_list
   f_list[i].value = 'mini_cotangenthyp'
   f_list[i].syntax= '(x)'
   i++  
+  
+  f_list[i].name = 'arccoth'
+  f_list[i].value = 'mini_arccotangenthyp'
+  f_list[i].syntax= '(x)'
+  i++
   
   f_list.index=lindgen(n_elements(f_list))
   

@@ -2,7 +2,7 @@
 ; MMS FPI crib sheet for Quicklook plots
 ; do you have suggestions for this crib sheet?  
 ;   please send them to egrimes@igpp.ucla.edu
-; 
+; mms_load_fpi_crib_qlplots.pro
 ; Note:
 ; Quicklook plots are NOT intended for science analysis
 ;     but rather, are useful for identifing data gaps,
@@ -21,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-06 14:56:25 -0700 (Wed, 06 Apr 2016) $
-; $LastChangedRevision: 20736 $
+; $LastChangedDate: 2016-05-18 13:55:49 -0700 (Wed, 18 May 2016) $
+; $LastChangedRevision: 21118 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -33,8 +33,9 @@ start_time = systime(/seconds)
 ;date = '15-9-01/00:00:00'
 
 ; full day for FS
-date = '2015-11-13/00:00:00'
+;date = '2015-11-13/00:00:00'
 ;date = '2015-10-11/00:00:00'
+date = '2015-10-16/00:00:00'
 timespan, date, 1, /day
 data_rate = 'fast'
 
