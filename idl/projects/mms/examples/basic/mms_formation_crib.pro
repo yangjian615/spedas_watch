@@ -9,13 +9,13 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 12:00:15 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20700 $
+; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_formation_crib.pro $
 ;-
 
 ; https://lasp.colorado.edu/mms/sdc/public/data/sdc/mms_formation_plots/mms_formation_plot_20160108023624.png
-time = '2016-1-08/2:36'
+time = '2015-10-16/13:07'
 
 ; without XY-plane projections
 mms_mec_formation_plot, time

@@ -15,9 +15,9 @@
 ;   thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stations, selected_network=['gima', 'autumnx']
 ;
 ;HISTORY:
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-11-09 11:05:59 -0800 (Mon, 09 Nov 2015) $
-; $LastChangedRevision: 19314 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2016-05-19 10:55:58 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21139 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag_networks.pro $
 ;-
 
@@ -76,8 +76,8 @@ pro thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stat
     gmag_stations=['abk','akul','amd','amer','amk','and','arct','atha','atu','benn','bett','bfe','bjn','blc','bmls','bou','brw','bsl','cbb','ccnv','cdrt','chbg', $
       'cigo','cmo','crvr','ded','dik','dmh','dnb','dob','don','drby','eagl','ekat','fcc','fhb','frd','frn','fsim','fsj','fsmi','ftn','fykn','fyts','gako','gbay', $
       'gdh','ghb','gill','gjoa','glyn','gua','hlms','homr','hon','hop','hots','hrp','iglo','inuk','inuv','iqa','jck','kako','kapu','kar','kian','kjpk','kuuj','kuv', $
-      'larg','lcl','leth','loys','lres','lrg','lrv','lyfd','lyr','mcgr','mea','nain','nal','naq','new','nor','nrd','nrsq','ott','pang','pbk','pcel','pg1','pg2','pg3', $
-      'pg4','pgeo','pina','pine','pks','pokr','ptrs','puvr','radi','rank','rbay','redr','rich','rmus','roe','roth','rvk','salu','satx','schf','sco','sept','shu','sit', $
+      'larg','lcl','leth','loys','lres','lrg','lrv','lyfd','lyr','mcgr','mea','nain','nal','naq','new','nor','nrd','nrsq','ott','pang','pbk','pcel','pg0','pg1','pg2','pg3', $
+      'pg4','pg5''pgeo','pina','pine','pks','pokr','ptrs','puvr','radi','rank','rbay','redr','rich','rmus','roe','roth','rvk','salu','satx','schf','sco','sept','shu','sit', $
       'sjg','skt','snap','snkq','sol','sor','stf','stfl','stj','svs','swno','talo','tdc','thl','tik','tool','tpas','trap','tro','tuc','ukia','umq','upn','vic','vldr','whit','whs','wrth','ykc','yknf']
     selected_network=''
   endelse

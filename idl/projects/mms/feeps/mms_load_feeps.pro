@@ -57,6 +57,8 @@
 ;     See crib sheet mms_load_feeps_crib.pro for usage examples
 ;     
 ; NOTES:
+;     Due to a change in variable names, this routine currently only supports v5.4+ of the FEEPS CDFs
+;   
 ;     Have questions regarding this load routine, or its usage?
 ;          Send me an email --> egrimes@igpp.ucla.edu
 ;          
@@ -73,8 +75,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-29 11:55:56 -0700 (Fri, 29 Apr 2016) $
-;$LastChangedRevision: 20978 $
+;$LastChangedDate: 2016-05-19 15:09:36 -0700 (Thu, 19 May 2016) $
+;$LastChangedRevision: 21145 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $

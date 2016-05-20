@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 12:00:15 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20700 $
+; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_state_crib.pro $
 ;-
 
@@ -15,7 +15,7 @@
 ;; 1) Select date and time interval
 ;;    ============================
 ; download data for 8/2/2015
-date = '2015-12-22/00:00:00'
+date = '2015-10-16/00:00:00'
 timespan,date,1,/day
 
 ;;    ===================================
@@ -49,7 +49,7 @@ stop
 del_data, 'mms*_def*'
 
 ; set to future date
-date = '2015-11-31/00:00:00'
+date = '2017-11-31/00:00:00'
 timespan,date,1,/day
 
 ; request definitive data (because date is in the future definitive

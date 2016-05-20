@@ -54,8 +54,8 @@
 ;       DFGON:        Turn on the elevation-dependent sensitivity.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:23:30 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21033 $
+; $LastChangedDate: 2016-05-19 09:00:51 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21131 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -258,9 +258,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
 ; swe_crosscal.  The variable swe_cc_switch controls whether or not the cross
 ; calibration correction is applied.  Default is to apply the correction.
 
-  if (size(swe_cc_switch,/type) eq 0) then cc = mvn_swe_crosscal(/on) $
-    else if (swe_cc_switch) then print, "SWE-SWI cross calibration enabled." $
-                            else print, "SWE-SWI cross calibration disabled."
+  if (size(swe_cc_switch,/type) eq 0) then swe_cc_switch = 1
 
 ; Add a dimension for relative variation among the 16 anodes.  This variation is
 ; dominated by the MCP efficiency, but I include the same dimension here for ease
@@ -369,7 +367,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
   swe_sc_mask = replicate(1B, 96, 2)  ; 96 solid angle bins, 2 boom states
   
   swe_sc_mask[0:31,0] = 0B                                    ; stowed boom
-;  swe_sc_mask[[0,1,2,3,4,14,15,16,17,18,19,20,30,31],1] = 0B ; deployed boom
+;  swe_sc_mask[[0,1,2,3,4,14,15,16,17,18,19,20,30,31],1] = 0B ; deployed boom, aggressive
   swe_sc_mask[[0,1,2,3,14,15,16,17,18,31],1] = 0B             ; deployed boom
 
 ; Dead time (from IRAP calibration: MCP-Anode-Preamp chain)

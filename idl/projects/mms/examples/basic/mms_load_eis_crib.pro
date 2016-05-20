@@ -12,13 +12,13 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-09 14:54:08 -0700 (Mon, 09 May 2016) $
-; $LastChangedRevision: 21050 $
+; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_eis_crib.pro $
 ;-
 probe = '1'
 prefix = 'mms'+probe
-trange = ['2015-12-15', '2015-12-16']
+trange = ['2015-10-16', '2015-10-17']
 tplot_options, 'xmargin', [20, 15]
 level = 'l2'
 

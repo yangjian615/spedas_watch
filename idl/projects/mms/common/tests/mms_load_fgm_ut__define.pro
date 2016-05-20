@@ -6,10 +6,31 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-22 15:03:04 -0700 (Fri, 22 Apr 2016) $
-; $LastChangedRevision: 20899 $
+; $LastChangedDate: 2016-05-19 11:15:49 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21140 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
+
+function mms_load_fgm_ut::test_small_brst_interval
+    mms_load_fgm, probe=2, level='l2', data_rate='brst', trange=['2015-12-15/10:49', '2015-12-15/10:50']
+    assert, spd_data_exists('mms2_fgm_b_gse_brst_l2_bvec mms2_fgm_b_gsm_brst_l2_bvec mms2_fgm_b_bcs_brst_l2_bvec', '2015-12-15/10:49', '2015-12-15/10:50'), $
+      'Problem loading FGM data for a small burst interval'
+    return, 1
+end
+
+function mms_load_fgm_ut::test_get_ephemeris
+    mms_load_fgm, probe=2, level='l2', /get_fgm_ephemeris
+    assert, spd_data_exists('mms2_fgm_r_gsm_srvy_l2_vec mms2_fgm_r_gse_srvy_l2 mms2_fgm_r_gsm_srvy_l2 mms2_fgm_r_gse_srvy_l2_mag', '2015-12-15', '2015-12-16'), $
+      'Problem getting the ephemeris vars from the FGM CDFs'
+    return, 1
+end
+
+function mms_load_fgm_ut::test_multi_data_rates
+    mms_load_fgm, probe=1, level='l2', data_rate=['srvy', 'brst']
+    assert, spd_data_exists('mms1_fgm_b_dmpa_brst_l2_bvec mms1_fgm_b_dmpa_srvy_l2_bvec', '2015-12-15', '2015-12-16'), $
+      'Problem loading FGM data using an array of data rates'
+    return, 1
+end
 
 function mms_load_fgm_ut::test_load_time_clip
     mms_load_fgm, probe=1, level='l2', trange=['2015-12-15/04:00', '2015-12-15/05:00'], /time_clip, suffix='_clipped'
@@ -131,7 +152,7 @@ end
 function mms_load_fgm_ut::init, _extra=e
   if (~self->MGutTestCase::init(_extra=e)) then return, 0
   ; the following adds code coverage % to the output
-  self->addTestingRoutine, ['mms_load_fgm', 'mms_split_fgm_data', 'mms_fgm_fix_metadata']
+  self->addTestingRoutine, ['mms_load_fgm', 'mms_split_fgm_data', 'mms_fgm_fix_metadata', 'mms_split_fgm_eph_data']
   return, 1
 end
 

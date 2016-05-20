@@ -9,8 +9,8 @@
 ; 2) In srvy mode, onboard SCM calibration sequences have been removed from L2 SCM srvy data and appear as data gap    
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 12:00:15 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20700 $
+; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_scm_crib.pro $
 ;-
 
@@ -19,7 +19,7 @@
 ;;    ============================
 
 
-date = '2016-01-16/00:00:00'
+date = '2015-10-16/00:00:00'
 
 timespan,date,1,/day
 
@@ -45,8 +45,8 @@ starting_date =strmid(date,0,10)
 ;starting_time='00:00:00.0'
 ;ending_time  ='24:00:00.0'
 ;scb
-starting_time='00:13:00.0'
-ending_time  ='00:20:00.0'
+starting_time='13:00:00.0'
+ending_time  ='13:10:00.0'
 
 trange = [starting_date+'/'+starting_time, $
     starting_date+'/'+ending_time]

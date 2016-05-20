@@ -5,15 +5,15 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 12:00:15 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20700 $
+; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_feeps_crib.pro $
 ;-
 
 xsize=600
 ysize=850
 
-mms_load_feeps, probes='1', trange=['2015-12-15', '2015-12-16'], datatype='electron', level='l2'
+mms_load_feeps, probes='1', trange=['2015-10-16', '2015-10-17'], datatype='electron', level='l2'
 mms_feeps_pad,  probe='1', datatype='electron'
 
 ; log scaling on y axis and colorbar

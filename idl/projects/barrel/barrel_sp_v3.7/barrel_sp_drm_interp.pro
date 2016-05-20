@@ -1,8 +1,13 @@
 ;Modified 8/12/14 (version 3.5): switch to version 4 response matrix
 ;(_sphere_) and divide by 1.d8 for correct normalization.
 
+;Modified 4/5/16 (version 3.7): switch to version 6 response matrix
+;(_v6_)
+
 function barrel_sp_drm_interp,altitude,ein,loginterpolate=loginterpolate,$
          pitch=pitch,show=show,verbose=verbose
+
+v4=0
 
 ; loginterpolate = 1 : logarithmic interpolation
 
@@ -23,7 +28,11 @@ if keyword_set(show) then  loadct,13
 altstr=strtrim(floor(altitude),2)
 
 ; 27 electron energy input curve fitting parms a[0-5]
-filename=barrel_find_file(pitch+'_sphere_'+altstr+'k_fit_parms','barrel_sp_v3.6')
+if v4 then $
+ filename=barrel_find_file(pitch+'_sphere_'+altstr+'k_fit_parms','barrel_sp_v3.7')$
+else $
+ filename=barrel_find_file(pitch+'_v6c_'+altstr+'k_fit_parms','barrel_sp_v3.7')
+
 n1=datin(filename,8,d)
 es=reform(d[0,*])
 if (ein lt es[0])||(ein gt 4000.) then begin

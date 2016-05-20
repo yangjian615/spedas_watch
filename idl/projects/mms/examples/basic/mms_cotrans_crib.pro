@@ -9,9 +9,9 @@
 ;  See also: mms_qcotrans_crib
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-05 17:32:52 -0700 (Tue, 05 Apr 2016) $
-;$LastChangedRevision: 20728 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+;$LastChangedRevision: 21138 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_cotrans_crib.pro $
 ;-
 
@@ -53,7 +53,7 @@
 probe = '1'
 level = 'l2'
 
-timespan, '2015-12-01/01', 2, /hour
+timespan, '2015-10-16/12', 2, /hour
 trange = timerange()
 
 ; load data

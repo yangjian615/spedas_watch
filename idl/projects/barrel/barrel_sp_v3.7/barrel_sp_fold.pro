@@ -75,6 +75,9 @@
 ;                           represents, e.g., systematic uncertainties
 ;                           in the response matrix.
 ;          3.6 2/12/15      pass altitude to _m1 for initial param. guess
+;          9/23/15          Change x-axes for plots to [10,1000] always
+;                           broadened range of default ratio plot
+;                           residuals=2 counts only pts in fit range.
 ;-
 
 
@@ -143,7 +146,7 @@ if not keyword_set(quiet) then begin
     loadct2,13
     !p.multi=[0,1,3]
 
-    plot,ctmean,srcspec,/xlog,/ylog,xrange=[max([10.,min(ctmean)/1.5]),max(ctmean)*1.5],$
+    plot,ctmean,srcspec,/xlog,/ylog,xrange=[10,10000],$
          yrange=[max([1.d-2,min(srcspec)/1.5]),max(srcspec)*1.5],$
          xtitle='Energy, keV',ytitle='counts/keV/s',psym=3,$
          position=[0.12,0.65,0.97,0.98],charsize=2
@@ -220,7 +223,7 @@ if not keyword_set(quiet) then begin
 
     yrangemin = max([1.d-6,min(subspec)/1.5])
 
-    plot,ctmean,subspec,/xlog,/ylog,xrange=[max([10.,min(ctmean)/1.5]),max(ctmean)*1.5],$
+    plot,ctmean,subspec,/xlog,/ylog,xrange=[10,10000],$
          yrange=[yrangemin,max(subspec)*1.5],$
          xtitle='Energy, keV',ytitle='counts/keV/s',psym=3,$
          position=[0.12,0.3,0.97,0.6],charsize=2    
@@ -244,8 +247,8 @@ if not keyword_set(quiet) then begin
     ;Show the residuals in difference format:
 
     case residuals of
-    2: begin  ;Plot ratio with full scale visible
-       plot,ctmean,subspec/modv,psym=3,/xlog,xrange=[max([10.,min(ctmean)/1.5]),max(ctmean)*1.5],$
+    2: begin  ;Plot ratio with large scale visible
+       plot,ctmean,subspec/modv,psym=3,/xlog,xrange=[10,10000],yrange=[.01,100.],/ylog,$
           xtitle='Energy, keV',ytitle='data/model',position=[0.12,0.05,0.97,0.20],charsize=2
 
        for i=0, n_elements(subspec)-1 do begin
@@ -256,7 +259,7 @@ if not keyword_set(quiet) then begin
     end
 
     3: begin  ;Plot differences on linear scale (usually favors low-energy points)
-       plot,ctmean,subspec-modv,psym=3,/xlog,xrange=[min(ctmean)/1.5,max(ctmean)*1.5],$
+       plot,ctmean,subspec-modv,psym=3,/xlog,xrange=[10,10000],$
            xtitle='Energy, keV',ytitle='data-model',position=[0.12,0.05,0.97,0.23],charsize=2    
 
        for i=0, n_elements(subspec)-1 do begin
@@ -270,7 +273,7 @@ if not keyword_set(quiet) then begin
     end
 
     4: begin  ;Plot ratio on a large scale for bad situations
-       plot,ctmean,subspec/modv,psym=3,/xlog,xrange=[min(ctmean)/1.5,max(ctmean)*1.5],charsize=2,$
+       plot,ctmean,subspec/modv,psym=3,/xlog,xrange=[10,10000],charsize=2,$
            xtitle='Energy, keV',ytitle='data/model',position=[0.12,0.05,0.97,0.23],yrange=[0.33333,3.]
 
        for i=0, n_elements(subspec)-1 do begin
@@ -281,7 +284,7 @@ if not keyword_set(quiet) then begin
     end
 
     5: begin  ;Plot ratio of subtracted to total (where smallish)
-       plot,ctmean,subspec/srcspec,psym=3,/xlog,xrange=[min(ctmean)/1.5,max(ctmean)*1.5],charsize=2,$
+       plot,ctmean,subspec/srcspec,psym=3,/xlog,xrange=[10,10000],charsize=2,$
            xtitle='Energy, keV',ytitle='subtracted/total',position=[0.12,0.05,0.97,0.23],yrange=[-.5,.5]
 
        for i=0, n_elements(subspec)-1 do begin
@@ -292,8 +295,8 @@ if not keyword_set(quiet) then begin
     end
 
     else: begin  ;default is ratio with a limited scale
-       plot,ctmean,subspec/modv,psym=3,/xlog,xrange=[min(ctmean)/1.5,max(ctmean)*1.5],charsize=2,$
-           xtitle='Energy, keV',ytitle='data/model',position=[0.12,0.05,0.97,0.23],yrange=[0.8,1.25]
+       plot,ctmean,subspec/modv,psym=3,/xlog,xrange=[10,10000],charsize=2,/ylog,$
+           xtitle='Energy, keV',ytitle='data/model',position=[0.12,0.05,0.97,0.23],yrange=[0.5/1.1, 2.0*1.1]
 
        for i=0, n_elements(subspec)-1 do begin
           if ctmean[i] GE fitrange[0] and ctmean[i] LE fitrange[1] then col=0 else col=6

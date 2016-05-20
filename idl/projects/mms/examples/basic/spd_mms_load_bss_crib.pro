@@ -7,14 +7,14 @@
 ; See also "spd_mms_load_bss", "mms_load_bss", and "mms_load_bss_crib".
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-13 08:23:26 -0700 (Wed, 13 Apr 2016) $
-; $LastChangedRevision: 20794 $
+; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/spd_mms_load_bss_crib.pro $
 ;-
 
 
 ; set time range 
-timespan, '2015-10-01', 1, /day
+timespan, '2015-10-16', 1, /day
 
 ; get data availability for burst and survey data (note that the labels flag
 ; is set so that the display bars will be labeled)

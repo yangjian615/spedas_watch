@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-03 07:39:54 -0700 (Tue, 03 May 2016) $
-; $LastChangedRevision: 20995 $
+; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_aspoc_crib.pro $
 ;-
 
@@ -14,7 +14,7 @@
 scid='1'
 
 ;; load l2  data for MMS 1    (merged data for aspoc1 and aspoc2)
-mms_load_aspoc, trange=['2015-07-15', '2015-07-16'], probe=scid, level='l2'
+mms_load_aspoc, trange=['2015-10-16', '2015-10-17'], probe=scid, level='l2'
 
 ;; Make tplot parameter for combined aspoc ioncurrent using l2 data
 ;;
@@ -28,7 +28,7 @@ stop
 ;; example for L1b data (note: SDC password required)
 
 ;; load l1b  data for MMS 1    (datatype can be set either asp1 or  asp2)
-mms_load_aspoc, trange=['2015-07-15', '2015-07-16'], probe=scid, datatype='asp1', level='l1b'
+mms_load_aspoc, trange=['2015-10-16', '2015-10-17'], probe=scid, datatype='asp1', level='l1b'
 
 tplot, 'mms'+scid+['_asp1_ionc_l1b', '_asp1_spot_l1b']
 

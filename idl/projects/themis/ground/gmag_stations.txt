@@ -38,7 +38,7 @@ dtu|DTU|atu|Attu, Greenland
 mcmac|McMAC|benn|Bennington, NE
 gima|GIMA|bett|Bettles, AK
 dtu|DTU|bfe|Brorfelde, Denmark
-tgo|TGO|bjn|Bjørnøya, Norway
+tgo|TGO|bjn|Bjï¿½rnï¿½ya, Norway
 nrcan|NRCan|blc|Baker Lake, NU
 epo|Themis EPO|bmls|Bay Mills, MI
 usgs|USGS|bou|Boulder, CO
@@ -67,7 +67,7 @@ dtu|DTU|dmh|Danmarkshavn, Greenland
 dtu|DTU|dnb|Daneborg, Greenland
 ae|Themis AE|dob|Dombas, Norway
 tgo|TGO|dob|Dombas, Norway
-tgo|TGO|don|Dønna, Norway
+tgo|TGO|don|Dï¿½nna, Norway
 epo|Themis EPO|drby|Derby, VT
 gima|GIMA|eagl|Eagle, AK
 aeold|Themis AE (pre 2015)|ekat|Ekati, NT
@@ -134,7 +134,7 @@ gima|GIMA|kako|Kaktovik, AK
 aeold|Themis AE (pre 2015)|kapu|Kapuskasing, ON
 gbo|Themis GBO|kapu|Kapuskasing, ON
 asi|ASI|kapu|Kapuskasing, ON
-tgo|TGO|kar|Karmøy, Norway
+tgo|TGO|kar|Karmï¿½y, Norway
 ae|Themis AE|kian|Kiana, AK
 aeold|Themis AE (pre 2015)|kian|Kiana, AK
 gbo|Themis GBO|kian|Kiana, AK
@@ -163,8 +163,8 @@ asi|ASI|mcgr|Mcgrath, AK
 nrcan|NRCan|mea|Meanook, AB
 ae|Themis AE|nain|Nain, NL
 maccs|MACCS|nain|Nain, NL
-ae|Themis AE|nal|Ny Ålesund, Norway
-tgo|TGO|nal|Ny Ålesund, Norway
+ae|Themis AE|nal|Ny ï¿½lesund, Norway
+tgo|TGO|nal|Ny ï¿½lesund, Norway
 ae|Themis AE|naq|Narsarsuaq, Greenland
 asi|ASI|naq|Narsarsuaq, Greenland
 dtu|DTU|naq|Narsarsuaq, Greenland
@@ -181,10 +181,12 @@ ae|Themis AE|pbk|Pevek, Russia
 aari|AARI|pbk|Pevek, Russia
 kyoto|KYOTO|pbk|Pevek, Russia
 mcmac|McMAC|pcel|Purcell, OK
+pen|PENGUIn|pg0|Antarctica
 pen|PENGUIn|pg1|Antarctica
 pen|PENGUIn|pg2|Antarctica
 pen|PENGUIn|pg3|Antarctica
 pen|PENGUIn|pg4|Antarctica
+pen|PENGUIn|pg5|Antarctica
 aeold|Themis AE (pre 2015)|pgeo|Prince George, BC
 epo|Themis EPO|pgeo|Prince George, BC
 asi|ASI|pgeo|Prince George, BC
@@ -208,10 +210,10 @@ maccs|MACCS|rbay|Repulse Bay, NU
 autu|AUTUMN|redr|Red Deer, AB
 mcmac|McMAC|rich|Richardson, TX
 epo|Themis EPO|rmus|Remus, MI
-ae|Themis AE|roe|Rømø, Denmark
-dtu|DTU|roe|Rømø, Denmark
+ae|Themis AE|roe|Rï¿½mï¿½, Denmark
+dtu|DTU|roe|Rï¿½mï¿½, Denmark
 autu|AUTUMN|roth|Priddis, AB
-tgo|TGO|rvk|Rørvik, Norway
+tgo|TGO|rvk|Rï¿½rvik, Norway
 ae|Themis AE|salu|Salluit, QC
 autx|AUTUMNX|salu|Salluit, QC
 mcmac|McMAC|satx|San Antonio, TX
@@ -235,7 +237,7 @@ kyoto|KYOTO|snkq|Sanikiluaq, NU
 carisma|CARISMA|snkq|Sanikiluaq, NU
 ae|Themis AE|sol|Solund, Norway
 tgo|TGO|sol|Solund, Norway
-tgo|TGO|sor|Sørøya, Norway
+tgo|TGO|sor|Sï¿½rï¿½ya, Norway
 ae|Themis AE|stf|Kangerlussuaq, Greenland
 dtu|DTU|stf|Kangerlussuaq, Greenland
 autx|AUTUMNX|stfl|Saint-Felicien, QC
@@ -256,7 +258,7 @@ gbo|Themis GBO|tpas|The Pas, MB
 asi|ASI|tpas|The Pas, MB
 ae|Themis AE|trap|Trapper Creek, AK
 gima|GIMA|trap|Trapper Creek, AK
-tgo|TGO|tro|Tromsø, Norway
+tgo|TGO|tro|Tromsï¿½, Norway
 usgs|USGS|tuc|Tucson, AZ
 epo|Themis EPO|ukia|Ukiah, OR
 dtu|DTU|umq|Uummannaq, Greenland

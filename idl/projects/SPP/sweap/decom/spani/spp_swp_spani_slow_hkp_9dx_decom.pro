@@ -5,6 +5,18 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
    apdat=apdat
 
   b = ccsds.data
+  
+ ; printdat,apdat
+ ppp = apdat.last_ccsds
+ if ptr_valid(ppp) then begin
+  last_ccsds = *ppp
+  dseq_cntr = ccsds.seq_cntr - last_ccsds.seq_cntr
+  dtime = ccsds.time - last_ccsds.time
+ endif else begin
+   dseq_cntr = 0 * ccsds.seq_cntr + 1
+   dtime = 0d
+ endelse
+ 
 
   ;;------------------
   ;; Housekeeping Size
@@ -40,9 +52,11 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
   spai = { $
 
          time:            ccsds.time, $
+         dtime:           dtime/dseq_cntr, $
          met:             ccsds.met,  $
          delay_time:      ptp_header.ptp_time - ccsds.time, $
          seq_cntr:        ccsds.seq_cntr, $
+         dseq_cntr:       dseq_cntr, $
  
          REVN:            b[12],  $
          CMDS_REC:        spp_swp_word_decom(b,13),  $
@@ -185,7 +199,7 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
          TIMEOUT_ATN:     b[114],$
          TIMEOUT_RELAX:   b[115],$
          TABLE_CHKSUM:    b[116],$
-         RATES_CYCLES:    ishft(b[117],-5)
+         RATES_CYCLES:    ishft(b[117],-5), $
          MRAM_ADDR:       spp_swp_word_decom(b,117), $ ;;;!!!!! CHANGE TO LSB 21 bits !!!!!
          HEMI_CDI:        spp_swp_word_decom(b,120), $
          SPOILER_CDI:     spp_swp_word_decom(b,122), $

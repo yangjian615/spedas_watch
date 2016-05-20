@@ -21,8 +21,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-28 15:57:01 -0700 (Mon, 28 Mar 2016) $
-;$LastChangedRevision: 20610 $
+;$LastChangedDate: 2016-05-19 15:08:53 -0700 (Thu, 19 May 2016) $
+;$LastChangedRevision: 21144 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_login_lasp.pro $
 ;-
 
@@ -37,6 +37,15 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
     if double(!version.release) lt 7.1d then begin
         dprint, dlevel = 0, 'Error, IDL 7.1 or later is required to use mms_load_data.'
         return, 0
+    endif
+
+    expire_duration = 86400 ;24 hours
+
+    ; Test if login has expired. If so, destroy the IDLnetURL object and replace it with -1
+    ; so the login will be triggered below.
+    if (n_elements(connection_time) eq 1) then begin
+      duration = systime(/seconds) - connection_time
+      if (duration gt expire_duration) then mms_sitl_logout
     endif
 
     ; restore the login info

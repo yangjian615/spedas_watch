@@ -60,9 +60,8 @@
 ;8/20/15 DMS - fix bug wherein 3/5 fix only applied to
 ;              screen-selected, not predetermined time intervals.
 ;              This reorders operations somewhat 
-;2/26/16 DMS removed extra line "altitude = altsum/altnorm" just
-;            before the end of the procedure (bug found by Brett Anderson)
-
+;4/5/16 DMS - fixed erroneous "numspec" to "numbkg" when looping to
+;             set multiple background intervals by hand.
 ;-
 
 pro barrel_sp_pick_datatime,ss,startdatetime,duration,payload,bkgmethod,$
@@ -99,6 +98,7 @@ endif
 
 ;If the times have already been specified by hand, use them and go: 
 if keyword_set(starttimes) then begin
+
     typ = size(starttimes[0],/type)
     if typ EQ 7 then begin
        for i=0,ss.numsrc-1 do ss.trange[0,i] = str2time(starttimes[i],informat='YMDhms')
@@ -114,8 +114,8 @@ if keyword_set(starttimes) then begin
           for i=0,ss.numbkg-1 do ss.bkgtrange[0,i] = str2time(startbkgs[i],informat='YMDhms')
           for i=0,ss.numbkg-1 do ss.bkgtrange[1,i] = str2time(endbkgs[i],informat='YMDhms')
        endif else begin
-          for i=0,ss.numsrc-1 do ss.bkgtrange[0,i] = startbkgs[i]
-          for i=0,ss.numsrc-1 do ss.bkgtrange[1,i] = endbkgs[i]
+          for i=0,ss.numbkg-1 do ss.bkgtrange[0,i] = startbkgs[i]
+          for i=0,ss.numbkg-1 do ss.bkgtrange[1,i] = endbkgs[i]
        endelse
     endif
 endif  else begin
@@ -124,6 +124,12 @@ barrel_load_data, probe=payload, datatype=['FSPC'], level=level,/no_clobber,$
     version=version,/no_update
 varname='brl'+payload+'_FSPC'+strtrim(lcband,2)   
 tplot_names,varname, NAMES=matches,/ASORT
+if matches eq '' then begin
+     print,'Warning: original LC band '+string(lcband)+' not available, using 1b!'
+     varname='brl'+payload+'_FSPC1b'
+     tplot_names,varname, NAMES=matches,/ASORT
+endif    
+
 if (n_elements(matches) EQ 1) then get_data, matches[0], data=lc $
 else message, 'Bad number of variable name matches: '+ $
         strtrim(n_elements(matches))
@@ -235,6 +241,7 @@ if not keyword_set(altitude) then begin
       altitude = altsum/altnorm
 endif
   
+altitude = altsum/altnorm
 print,'ALTITUDE! ' , altitude
 
 end

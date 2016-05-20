@@ -40,7 +40,7 @@
 pro barrel_sp_readmodelspec, fname, phebins, phmean, outspec
 
 ;Read input spectrum model file.  Units of column 3 must be photons/keV.
-n=datin(barrel_find_file(fname,'barrel_sp_v3.6'), 3, modeldata)
+n=datin(barrel_find_file(fname,'barrel_sp_v3.7'), 3, modeldata)
 if n LT 3 then message, 'Error reading model file -- two few data points (< 3).'
 
 ;Compare energy channels in file to requested ones, and interpolate

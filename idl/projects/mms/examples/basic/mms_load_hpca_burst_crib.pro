@@ -15,13 +15,13 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-27 14:35:06 -0700 (Wed, 27 Apr 2016) $
-; $LastChangedRevision: 20945 $
+; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
+; $LastChangedRevision: 21138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_hpca_burst_crib.pro $
 ;-
 
 ; zoom into the burst interval
-timespan, '2015-12-15/11:20', 20, /min
+timespan, '2015-10-16/13:00', 10, /min
 
 mms_load_hpca, probes='1', datatype='moments', data_rate='brst', level='l2'
 

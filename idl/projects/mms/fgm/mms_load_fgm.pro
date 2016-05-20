@@ -56,8 +56,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-04 07:35:33 -0700 (Wed, 04 May 2016) $
-;$LastChangedRevision: 21016 $
+;$LastChangedDate: 2016-05-19 10:50:42 -0700 (Thu, 19 May 2016) $
+;$LastChangedRevision: 21137 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -155,9 +155,10 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                 endif
             endelse
             
+            ; set some of the metadata
+            mms_fgm_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = this_data_rate, suffix = suffix, level=level
+            
         endfor
     endfor
 
-    ; set some of the metadata
-    mms_fgm_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = data_rate, suffix = suffix, level=level
 end
