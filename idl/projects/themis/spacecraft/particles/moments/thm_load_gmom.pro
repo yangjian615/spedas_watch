@@ -31,9 +31,9 @@
 ;   thm_load_gmom,probe=['a', 'b']
 ;Notes:
 ;  Temporary version, to avoid conflicts, but can read Level 2 data, jmm
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-03 14:19:50 -0700 (Thu, 03 Sep 2015) $
-; $LastChangedRevision: 18709 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-20 16:45:36 -0700 (Fri, 20 May 2016) $
+; $LastChangedRevision: 21157 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_gmom.pro $
 ;-
 pro thm_load_gmom, probe = probe, datatype = datatype, trange = trange, $
@@ -90,14 +90,14 @@ endif
 if n_elements(probe) eq 1 then if probe eq 'f' then vprobes=[vprobes,'f']
 
 if not keyword_set(probe) then probe=vprobes
-probes = thm_check_valid_name(strlowcase(probe), vprobes, /include_all, $
+probes = ssl_check_valid_name(strlowcase(probe), vprobes, /include_all, $
                               invalid=msg_probe, type='probe')
 
 if not keyword_set(datatype) then datatype = vdatatypes else begin
   if n_elements(datatype) Eq 1 and datatype[0] eq 'gmom' then datatype = vdatatypes
 endelse
 
-datatype = thm_check_valid_name(strlowcase(datatype), vdatatypes, /include_all, /loose, $
+datatype = ssl_check_valid_name(strlowcase(datatype), vdatatypes, /include_all, /loose, $
                                 invalid=msg_dt, type='data type')
 
 if not keyword_set(source) then source = !themis

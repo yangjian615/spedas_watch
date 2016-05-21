@@ -6,6 +6,9 @@
 ;		      :Modified by Vassilis, 2001-07-11
 ;             :Modified by Olivier Le Contel, 2008-07
 ;              to be able to change nopfft and steplength
+;             :Modified by O. Le Contel, 2016-03
+;              to be able to change frequency averaging parameter by adding bin_freq keyword 
+;
 ;PURPOSE:To perform polarisation analysis of three orthogonal component time
 ;         series data.
 ;
@@ -85,16 +88,17 @@
 ;	 frequency where the polarisation approaches
 ;	 100%. Remembercomparing two straight lines yields 100% polarisation.
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-11-07 16:36:07 -0800 (Fri, 07 Nov 2014) $
-; $LastChangedRevision: 16154 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-20 14:50:54 -0700 (Fri, 20 May 2016) $
+; $LastChangedRevision: 21152 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wavpol/wavpol.pro $
 ;-
 pro wavpol,ct,Bx,By,Bz,timeline,freqline,powspec,degpol,waveangle,elliptict,helict,pspec3,$
-nopfft=nopfft_input,steplength = steplength_input
+nopfft=nopfft_input,steplength = steplength_input, bin_freq = bin_freq_input
 nopoints=n_elements(Bx)
 If size(nopfft_input, /type) ne 0 then nopfft = nopfft_input else nopfft = 256
 If size(steplength_input, /type) ne 0 then steplength = steplength_input else steplength =  nopfft/2
+If size(bin_freq_input, /type) ne 0 then bin_freq = bin_freq_input else bin_freq = 7
 ;
 ;steplength =128                                  ;overlap between successive FFT intervals
 ;nopfft=256										  ;no. of points in FFT
@@ -102,7 +106,8 @@ If size(steplength_input, /type) ne 0 then steplength = steplength_input else st
 nosteps=(nopoints-nopfft)/steplength             ;total number of FFTs
 leveltplot=0.000001                                         ;power rejection level 0 to 1
 lam=dblarr(2)
-nosmbins=7                                       ;No. of bins in frequency domain
+nosmbins = bin_freq
+;nosmbins=7                                       ;No. of bins in frequency domain
 ;!p.charsize=2                                    ;to include in smoothing (must be odd)
 aa=[0.024,0.093,0.232,0.301,0.232,0.093,0.024]   ;smoothing profile based on Hanning
 ;

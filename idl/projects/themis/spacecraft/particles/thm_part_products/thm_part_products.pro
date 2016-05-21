@@ -1,25 +1,96 @@
 ;+
-;PROCEDURE: thm_part_products
+;PROCEDURE: 
+;  thm_part_products
+;
+;
 ;PURPOSE:
-;  Generate spectra from particle data 
-;  Provides different angular view and angle restriction options in spacecraft and fac coords
+;  Generate spectra and moments from  THEMIS particle data. 
+;  Provides different angular view and angle restriction options 
+;  in spacecraft and field alligned coordinates.
 ;
-;Inputs:
-; Argument descriptions inline below.
 ;
-;Outputs:
-; Argument descriptions inline below
+;Data Products:
+;  'energy' - energy spectrogram
+;  'phi' - azimuthal spectrogram 
+;  'theta' - elevation spectrogram
+;  'gyro' - gyrophase spectrogram
+;  'pa' - pitch angle spectrogram
+;  'moments' - distribution moments (density, velocity, etc.)
 ;
-;Keywords:
-; Argument description inline below
+;
+;Calling Sequence:
+;  thm_part_products, probe=probe, datatype=datatype, trange=trange [,outputs=outputs] ...
+;
+;
+;Example Usage:
+;  See crib sheets in .../themis/examples/
+;
+;
+;Input Keywords:
+;  probe:  Spacecraft designation, e.g. 'a','b'
+;  datatype:  Particle datatype, e.g. 'psif, 'peib'
+;  trange:  Two element time range [start,end]
+;
+;  outputs:  List of requested outputs, array or space separated list, default='energy'
+;
+;  dist_array:  Data loaded manually with thm_part_dist_array or thm_part_combine.
+;               If specified then probe and dataytpe are not needed; trange is optional.
+;               Outputs will be in the data's units (probably counts, or eflux for combined) 
+;               unless specified with UNITS keyword.
+;
+;  energy:  Two element energy range [min,max], in eV
+;  phi:  Two element phi range [min,max], in degrees, spacecraft spin plane
+;  theta:  Two element theta range [min,max], in degrees, latitude from spacecraft spin plane
+;  pitch:  Two element pitch angle range [min,max], in degrees, magnetic field pitch angle
+;  gyro:  Two element gyrophase range [min,max], in degrees, gyrophase  
+;
+;  mag_name:  Tplot variable containing magnetic field data for moments and FAC transformations 
+;  pos_name:  Tplot variable containing spacecraft position for FAC transformations
+;  sc_pot_name:  Tplot variable containing spacecraft potential data for moments corrections
+;    
+;  units:  Specify units of output variables.  Must be 'eflux' to calculate moments.
+;            'counts' -   #
+;            'rate'   -   # / s
+;            'flux'   -   # / (cm^2 * s * sr * eV)
+;            'eflux'  -  eV / (cm^2 * s * sr * eV)  <default>
+;            'df'     -  s^3 /(cm^3 * km^3)
+;
+;  regrid:  Two element array specifying the resolution [azimuth,elevation]
+;           used to regrid the data; default is [16,8].  Field aligned data
+;           is always regridded while phi and theta spectra are regridded if
+;           this keyword is specified.
+;
+;  fac_type:  Select the field aligned coordinate system variant.
+;             Existing options: 'phigeo', 'mphigeo', 'xgse'
+;  
+;  sst_sun_bins:  Array of which sst bins to decontaminate (list of bins numbers, not the old mask array)
+;                 Set to -1 to disable.
+;  esa_bgnd_remove:  Identical to /bgnd_remove; set to 0 to disable ESA background removal.
+;                    See thm_crib_esa_bgnd_remove for more keyword options.
+;
+;  suffix:  Suffix to append to output tplot variable names 
+;
+;  start_angle:  Set a start angle for azimuthal spectrogram y axis
+;  
+;  get_error:  Flag to return error estimates (*_sigma variables)     
+;
+;  datagap:  Setting for tplot variables, controls how long a gap must be before it is drawn. 
+;            (can also manually degap)
+;
+;  display_object:  Object allowing dprint to export output messages
+;
+;  
+;Output Keywords:
+;  tplotnames:  List of tplot variables that were created
+;  error:  Error status flag for calling routine, 1=error 0=success
+;
 ;
 ;Notes: 
 ;
-;  TODO: Accept multiple arguments, loop
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 14:43:44 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21099 $
+;$LastChangedDate: 2016-05-20 17:14:08 -0700 (Fri, 20 May 2016) $
+;$LastChangedRevision: 21158 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -40,7 +111,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                      
                      units=units,$ ;scalar unit conversion for data 
                      
-                     regrid=regrid, $ ;When performing FAC transforms, loss of resolution in sample bins occurs.(because the transformed bins are not aligned with the sample bins)  
+                     regrid=regrid_in, $ ;When performing FAC transforms, loss of resolution in sample bins occurs.(because the transformed bins are not aligned with the sample bins)  
                                       ;To resolve this, the FAC distribution is resampled at higher resolution.  This 2 element array specifies that resolution.[nphi,ntheta]
                      
                      suffix=suffix, $ ;tplot suffix to apply when generating outputs
@@ -169,9 +240,11 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
      datagap = 600.
   endif
 
-  if undefined(regrid) then begin
+  if undefined(regrid_in) then begin
     regrid = [16,8] ;default 16 phi x 8 theta regrid
-  endif
+  endif else begin
+    regrid = regrid_in
+  endelse
 
 ;I don't think that this is needed(fingers crossed)
 ;  if ~undefined(trange) then begin
@@ -300,10 +373,12 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
   ;--------------------------------------------------------
   
   ;create rotation matrix to field aligned coordinates if needed
-  if in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy') then begin
+  fac_requested = in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy')
+  if fac_requested then begin
     thm_pgs_make_fac,times,mag_name,pos_name,probe_lc,fac_output=fac_matrix,fac_type=fac_type_lc,display_object=display_object
     ;remove FAC outputs if there was an error, return if no outputs remain
     if undefined(fac_matrix) then begin
+      fac_requested = 0
       outputs_lc = ssl_set_complement(['pa','gyro','fac_energy'],outputs_lc)
       if array_equal(outputs_lc,-1) then begin
         return
@@ -359,7 +434,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     ;Copy bin status prior to application of angle/energy limits.
     ;Phi limits will need to be re-applied later after phi bins
     ;have been aligned across energy (only necessary for ESA). 
-    if (in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy')) then begin
+    if fac_requested then begin
       pre_limit_bins = clean_data.bins 
     endif
     
@@ -370,8 +445,20 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     ;  -data must be in 'eflux' units 
     if in_set(outputs_lc, 'moments') then begin
       spd_pgs_moments, clean_data, moments=moments, sigma=mom_sigma,delta_times=delta_times, get_error=get_error, mag_data=mag_data, sc_pot_data=sc_pot_data, index=i , _extra = ex
-    endif 
-   
+    endif
+
+    ;Build energy spectrogram
+    if in_set(outputs_lc, 'energy') then begin
+      spd_pgs_make_e_spec, clean_data, spec=en_spec, sigma=en_sigma, yaxis=en_y
+    endif
+ 
+    ;regrid data for theta & phi spectra if regrid array was specified
+    ;save original data for any FAC products (don't interpolate twice)
+    if ~undefined(regrid_in) && (in_set(outputs_lc, 'theta') || in_set(outputs_lc, 'phi')) then begin
+      if fac_requested then orig_data = clean_data
+      spd_pgs_regrid, clean_data, regrid, output=clean_data
+    endif
+
     ;Build theta spectrogram
     if in_set(outputs_lc, 'theta') then begin
       spd_pgs_make_theta_spec, clean_data, spec=theta_spec, sigma=theta_sigma, yaxis=theta_y
@@ -382,14 +469,12 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
       spd_pgs_make_phi_spec, clean_data, spec=phi_spec, sigma=phi_sigma, yaxis=phi_y
     endif
     
-    ;Build energy spectrogram
-    if in_set(outputs_lc, 'energy') then begin
-      spd_pgs_make_e_spec, clean_data, spec=en_spec, sigma=en_sigma, yaxis=en_y
-    endif
-    
     ;Perform transformation to FAC, regrid data, and apply limits in new coords
-    if (in_set(outputs_lc,'pa') || in_set(outputs_lc,'gyro') || in_set(outputs_lc,'fac_energy')) then begin
+    if fac_requested then begin
       
+      ;if data was regridded for phi/theta spec then get the original
+      if ~undefined(orig_data) then clean_data = temporary(orig_data)
+
       ;limits will be applied to energy-aligned bins
       clean_data.bins = temporary(pre_limit_bins)
       
@@ -446,8 +531,6 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
   tplot_prefix = 'th'+probe_lc+'_'+datatype_lc+'_'+units_lc+'_'
   tplot_mom_prefix = 'th'+probe_lc+'_'+datatype_lc+'_'
 
-  ;NOTE: these test for generating spectra will not work if we decide to loop over probe/datatype
-  
   ;Energy Spectrograms
   if ~undefined(en_spec) then begin
     thm_pgs_make_tplot, tplot_prefix+'energy'+suffix, x=times, y=en_y, z=en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames

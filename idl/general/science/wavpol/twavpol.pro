@@ -99,17 +99,17 @@
 ;	 frequency where the polarisation approaches
 ;	 100%. Remembercomparing two straight lines yields 100% polarisation.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-09-23 16:57:26 -0700 (Tue, 23 Sep 2014) $
-; $LastChangedRevision: 15847 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-05-20 14:57:15 -0700 (Fri, 20 May 2016) $
+; $LastChangedRevision: 21153 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wavpol/twavpol.pro $
 ;-
 pro twavpol,tvarname,prefix = prefix, error=error, freqline = freqline, timeline = timeline,$
-nopfft=nopfft,steplength=steplength
+nopfft=nopfft,steplength=steplength, bin_freq=bin_freq
 
   error=0
 
-
+  if not keyword_set(bin_freq) then bin_freq = 7 else bin_freq = bin_freq
 
   if not keyword_set(tvarname) then begin
     dprint, 'tvarname must be set'
@@ -146,7 +146,7 @@ nopfft=nopfft,steplength=steplength
   endif
 
   wavpol, d.x, d.y[*, 0], d.y[*, 1], d.y[*, 2], timeline, freqline,$
-   powspec, degpol, waveangle, elliptict, helict, pspec3, nopfft=nopfft,steplength=steplength
+   powspec, degpol, waveangle, elliptict, helict, pspec3, nopfft=nopfft,steplength=steplength,bin_freq=bin_freq
 
   store_data, prefix+'_powspec', data = {x:timeline, y:powspec, v:freqline}, dlimits = {spec:1B}
 

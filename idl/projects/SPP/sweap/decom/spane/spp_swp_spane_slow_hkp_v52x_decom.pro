@@ -67,6 +67,19 @@ function spp_swp_spane_slow_hkp_v52x_decom,ccsds , ptp_header=ptp_header, apdat=
   endif
 
 
+chksum1 = swap_endian(/swap_if_little_endian, uint( b,152 ) )
+bschk = b[0:151]
+
+uint_array = swap_endian(/swap_if_little_endian,  uint(bschk,0,n_elements(bschk)/2 ) )
+chksum2 = total(/preserve,   uint_array )
+
+if debug(1) then begin
+  printdat,/hex,uint_array
+  printdat,/hex,chksum1
+  printdat,/hex,chksum2
+  printdat,chksum1 - chksum2  
+endif
+
   EM2 = 1
   EM3 = ~EM2
   if EM2 then begin
