@@ -1,13 +1,16 @@
 ; buffer should contain bytes for a single ccsds packet, header is
 ; contained in first 3 words (6 bytes)
 
-function spp_swp_ccsds_decom,buffer          ,subsec=subsec   
+function spp_swp_ccsds_decom,buffer          ,subsec=subsec   , error=error
 
   ;;--------------------------------
   ;; Error Checking
+  error = 0b
   buffer_length = n_elements(buffer)
   if buffer_length lt 12 then begin
      dprint,'Invalid buffer length: ',buffer_length,dlevel=1
+     hexprint,buffer
+     error = 1b
      return, 0
   endif
 
@@ -20,22 +23,29 @@ function spp_swp_ccsds_decom,buffer          ,subsec=subsec
   endif else begin
     MET = double( header[3]*2UL^16 + header[4] ) 
   endelse
-
   utime = spp_spc_met_to_unixtime(MET)
+  pkt_size = header[2] + 7
+  if buffer_length lt pkt_size then begin
+    error=2b
+    pktbuffer = [buffer,bytarr(pkt_size-buffer_length)]
+    dprint,'Not enough bytes in buffer',dlevel=3,pkt_size,buffer_length
+    if debug(2) then  hexprint,buffer
+  endif else pktbuffer = buffer[0:pkt_size-1]
+  
   ccsds = { $
           version_flag: byte(ishft(header[0],-8) ), $
           apid:         apid , $
           seq_group:    ishft(header[1] ,-14) , $
           seq_cntr:     header[1] and '3FFF'x , $
           size:         header[2]   , $
+          pkt_size:     pkt_size,  $
           time:         utime,  $
           MET:          MET,   $
-                                ;    time_diff: cmnblk.time - time,
-                                ;    $   ; time to get transferred
-                                ;    from PFDPU to GSEOS                                                               
-          data:  buffer[0:*], $
-          gap : 0b, $ 
-          smples_sumd:  2^(buffer[12] and 'F'x)} ; this is the number of samples used to make the summed product
+          data:         pktbuffer, $
+;          smples_sumd:  2^(buffer[12] and 'F'x),  $   ;  this doesn't belong here....
+          error : error, $
+          gap : 0b  } ; this is the number of samples used to make the summed product
+
 
 
   if MET lt -1e5 then begin

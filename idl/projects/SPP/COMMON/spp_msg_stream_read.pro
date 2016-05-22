@@ -8,7 +8,8 @@ path =  0u
 ptp_size = 0u
 utime = time
   ptp_header ={ ptp_time:utime, ptp_scid: 0u, ptp_source:source, ptp_spare:spare, ptp_path:path, ptp_size:ptp_size }
-  spp_ccsds_pkt_handler,buffer,ptp_header = ptp_header
+  spp_ccsds_pkt_handler,buffer,ptp_header = ptp_header;,error=error
+  if keyword_set(error) then dprint,error
   return
 end
 
@@ -83,7 +84,10 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
       'c1'x :begin
           time_status = spp_swemulator_time_status(buffer[ptr:ptr+6+psize-1])
           store_data,/append,'swemulator_',data=time_status,tagnames='*'
-;          hexprint,buffer[ptr:ptr+6+psize-1]
+          if debug(3) then begin
+            dprint,dlevel=2,'C1; psize:',psize
+            hexprint,buffer[ptr:ptr+6+psize-1]
+          endif
         end
       'c2'x : dprint,dlevel=2,"Can't deal with C2 messages now'
       'c3'x :begin

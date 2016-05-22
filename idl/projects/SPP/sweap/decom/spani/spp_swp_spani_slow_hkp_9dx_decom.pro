@@ -7,14 +7,14 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
   b = ccsds.data
   
  ; printdat,apdat
- ppp = apdat.last_ccsds
- if ptr_valid(ppp) then begin
-  last_ccsds = *ppp
-  dseq_cntr = ccsds.seq_cntr - last_ccsds.seq_cntr
+ if ptr_valid(apdat.last_ccsds) then  last_ccsds = *(apdat.last_ccsds) else last_ccsds = 0
+ 
+ if keyword_set(last_ccsds) then begin
+  dseq_cntr = (ccsds.seq_cntr - last_ccsds.seq_cntr) and '3fff'x
   dtime = ccsds.time - last_ccsds.time
  endif else begin
-   dseq_cntr = 0 * ccsds.seq_cntr + 1
-   dtime = 0d
+   dseq_cntr =  1
+   dtime = !values.d_nan
  endelse
  
 
@@ -56,7 +56,7 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
          met:             ccsds.met,  $
          delay_time:      ptp_header.ptp_time - ccsds.time, $
          seq_cntr:        ccsds.seq_cntr, $
-         dseq_cntr:       dseq_cntr, $
+         dseq_cntr:       dseq_cntr   < 15, $
  
          REVN:            b[12],  $
          CMDS_REC:        spp_swp_word_decom(b,13),  $

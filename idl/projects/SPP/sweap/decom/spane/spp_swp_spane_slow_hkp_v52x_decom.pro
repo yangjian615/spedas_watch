@@ -72,12 +72,16 @@ bschk = b[0:151]
 
 uint_array = swap_endian(/swap_if_little_endian,  uint(bschk,0,n_elements(bschk)/2 ) )
 chksum2 = total(/preserve,   uint_array )
+ulong_array = swap_endian(/swap_if_little_endian, ulong(bschk,0,n_elements(bschk)/4) )
+chksum3 = total(/preserve, ulong_array)
+chksum3 = ((chksum3 and 'ffff'x)  + ishft(chksum3,-16) ) and 'ffff'x
 
-if debug(1) then begin
-  printdat,/hex,uint_array
+if debug(4) then begin
+  hexprint,uint_array
   printdat,/hex,chksum1
   printdat,/hex,chksum2
-  printdat,chksum1 - chksum2  
+  printdat,/hex,chksum3
+  printdat,chksum1 - chksum3 
 endif
 
   EM2 = 1
@@ -230,7 +234,8 @@ endif
     mram_wr_addr:   swap_endian(/swap_if_little_endian, uint( b,148 ) ) and 'ffff'x , $
     mram_wr_addr_hi:b[150], $
     clks_per_nys:   b[151], $
-    pkt_csum:       swap_endian(/swap_if_little_endian, uint( b,152 ) ) and 'ffff'x , $
+;    pkt_csum:       swap_endian(/swap_if_little_endian, uint( b,152 ) ) and 'ffff'x , $
+    pkt_csum_diff:  chksum1 - chksum3, $
     edba:           swap_endian(/swap_if_little_endian, uint( b,154 ) ) and 'ffff'x , $
     GAP:            ccsds.gap}
 
