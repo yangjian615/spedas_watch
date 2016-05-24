@@ -31,7 +31,7 @@
 ;             PPARC, Tohoku Univ.
 ;
 ;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
+;   $LastChangedDate: 2016-05-23 10:40:20 -0700 (Mon, 23 May 2016) $
 ;   $URL:
 ;-
 pro iug_load_avon_vlfb, site=site, parameter=parameter, $
@@ -42,14 +42,14 @@ site_code_all = strsplit('tnn srb ptk lbs', /extract)
 if(n_elements(site) eq 0) then site='all'
 site=strjoin(site, ' ')
 site=strsplit(strlowcase(site), ' ', /extract)
-site_code=thm_check_valid_name(site, site_code_all, /include_all)
+site_code=ssl_check_valid_name(site, site_code_all, /include_all)
 
 ;--- parameter
 param_all = strsplit('ch1 ch2', /extract)
 if(n_elements(parameter) eq 0) then parameter='all'
 parameter=strjoin(parameter, ' ')
 parameter=strsplit(strlowcase(parameter), ' ', /extract)
-parameter = thm_check_valid_name(parameter, param_all, /include_all)
+parameter = ssl_check_valid_name(parameter, param_all, /include_all)
 
 ;--- other options
 if (not keyword_set(verbose)) then verbose=0

@@ -64,13 +64,13 @@ if ~keyword_set(verbose) then verbose=0
 
 ;----- site -----;
 if(not keyword_set(site)) then site='all'
-site_code = thm_check_valid_name(site, site_code_all, /ignore_case, /include_all)
+site_code = ssl_check_valid_name(site, site_code_all, /ignore_case, /include_all)
 if site_code[0] eq '' then return
 print, 'site_code = ',site_code
 
 ;----- ydatatype -----;
 if(not keyword_set(ydatatype)) then ydatatype='alt'
-ytype = thm_check_valid_name(ydatatype, ydatatype_all, /ignore_case)
+ytype = ssl_check_valid_name(ydatatype, ydatatype_all, /ignore_case)
 if ytype eq '' then return
 if ytype eq 'lon' then ytype='long'
 
@@ -87,12 +87,12 @@ for i=0,n_elements(site_code)-1 do begin
     source = file_retrieve(/struct)
     source.verbose = verbose
     source.local_data_dir  = root_data_dir() + 'iugonet/nipr/eiscat/'
-    source.remote_data_dir = 'http://polaris.nipr.ac.jp/~eiscat/eiscatdata/cdf/'
+    source.remote_data_dir = 'http://pc115.seg20.nipr.ac.jp/www/eiscatdata/cdf/basic/'
     if keyword_set(no_download) then source.no_download = 1
 
     relpathnames1 = file_dailynames(file_format='YYYY', trange=trange)
     relpathnames2 = file_dailynames(file_format='YYYYMMDD', trange=trange)
-    relpathnames  = 'basic/'+stn+'/'+ant+'/'+$
+    relpathnames  = stn+'/'+ant+'/'+$
         relpathnames1 + '/eiscat_kn_'+stn+'_'+ant+'_'+relpathnames2+'_v??.cdf'
 
 ;print, source.remote_data_dir

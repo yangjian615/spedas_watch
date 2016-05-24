@@ -46,8 +46,8 @@
 ;  
 ;ACKNOWLEDGEMENT:
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21069 $
+; $LastChangedDate: 2016-05-23 10:40:20 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21174 $
 ; $URL $
 ;-
 
@@ -71,7 +71,7 @@ parameter1_all = strsplit('eb1p2a eb1p2b eb1p2c eb2p1a eb3p2a eb3p2b eb3p4a eb3p
 
 ;--- check site codes
 if(not keyword_set(parameter1)) then parameter1='all'
-parameters = thm_check_valid_name(parameter1, parameter1_all, /ignore_case, /include_all)
+parameters = ssl_check_valid_name(parameter1, parameter1_all, /ignore_case, /include_all)
 
 print, parameters
 
@@ -84,7 +84,7 @@ parameter2_all = strsplit('dpl1 dpl2 dpl3 dpl4 dpl5 pwr1 pwr2 pwr3 pwr4 pwr5 '+$
 
 ;--- check parameters
 if(not keyword_set(parameter2)) then parameter2='all'
-parameters2 = thm_check_valid_name(parameter2, parameter2_all, /ignore_case, /include_all)
+parameters2 = ssl_check_valid_name(parameter2, parameter2_all, /ignore_case, /include_all)
 
 print, parameters2
 

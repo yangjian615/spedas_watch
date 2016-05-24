@@ -30,8 +30,8 @@
 ;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
 ;
 ;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
-;   $LastChangedRevision: 21070 $
+;   $LastChangedDate: 2016-05-23 10:50:26 -0700 (Mon, 23 May 2016) $
+;   $LastChangedRevision: 21176 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/camera/erg_load_camera_omti_asi.pro $
 ;-
 
@@ -48,7 +48,7 @@ site_code_all = strsplit( $
 
 ;--- check site codes
 if(n_elements(site) eq 0) then site='all'
-site_code = thm_check_valid_name(site, site_code_all, /ignore_case, /include_all)
+site_code = ssl_check_valid_name(site, site_code_all, /ignore_case, /include_all)
 
 if(site_code[0] eq '') then return
 print, site_code

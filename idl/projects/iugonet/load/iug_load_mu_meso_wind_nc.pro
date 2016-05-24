@@ -33,8 +33,8 @@
 ;  
 ;ACKNOWLEDGEMENT:
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21069 $
+; $LastChangedDate: 2016-05-23 10:40:20 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21174 $
 ; $URL $
 ;-
 
@@ -56,7 +56,7 @@ level_all = strsplit('org scr',' ', /extract)
 
 ;--- check level
 if (not keyword_set(level)) then level='all'
-levels = thm_check_valid_name(level, level_all, /ignore_case, /include_all)
+levels = ssl_check_valid_name(level, level_all, /ignore_case, /include_all)
 
 print, levels
 

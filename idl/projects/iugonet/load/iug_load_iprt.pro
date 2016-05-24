@@ -73,7 +73,7 @@ if ~keyword_set(datatype) then datatype='Sun'
 ; validate datatype
 vns=['Sun'];vns=['Sun','Jupiter']
 if size(datatype,/type) eq 7 then begin
-  datatype=thm_check_valid_name(datatype,vns, $
+  datatype=ssl_check_valid_name(datatype,vns, $
                                 /ignore_case, /include_all);, /no_warning)
 
 if datatype[0] eq '' then begin

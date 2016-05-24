@@ -79,7 +79,7 @@ if ~keyword_set(no_download) then no_download=0
 ;----- site -----;
 site_code_all = strsplit('syo hus tjo zho', /extract)
 if(not keyword_set(site)) then site='all'
-site_code = thm_check_valid_name(site, site_code_all, /ignore_case, /include_all)
+site_code = ssl_check_valid_name(site, site_code_all, /ignore_case, /include_all)
 if site_code[0] eq '' then return
 
 print, site_code
@@ -88,7 +88,7 @@ print, site_code
 datatype_all=strsplit('30 38', /extract)
 if(not keyword_set(datatype)) then datatype='all'
 if size(datatype,/type) eq 7 then begin
-  datatype=thm_check_valid_name(datatype,datatype_all, $
+  datatype=ssl_check_valid_name(datatype,datatype_all, $
                                 /ignore_case, /include_all)
   if datatype[0] eq '' then return
 endif else begin
@@ -116,7 +116,7 @@ for i=0,n_elements(site_code)-1 do begin
     end
   endcase
   if size(datatype,/type) eq 7 then begin
-    datatype=thm_check_valid_name(datatype,datatype_all, $
+    datatype=ssl_check_valid_name(datatype,datatype_all, $
                                   /ignore_case, /include_all)
     if datatype[0] eq '' then return
   endif else begin

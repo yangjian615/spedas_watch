@@ -5,15 +5,58 @@
 ;
 ;     This crib sheet demonstrates usage of the wave polarization routines
 ;     using MMS SCM data
+;     
+;This version stores these outputs as tplot variables with the
+;specified prefix
+;         These are follows:
+;
+;         Wave power: On a linear scale, at this stage no units
+;
+;         Degree of Polarisation:
+;   This is similar to a measure of coherency between the input
+;   signals, however unlike coherency it is invariant under
+;   coordinate transformation and can detect pure state waves
+;   which may exist in one channel only.100% indicates a pure
+;   state wave. Less than 70% indicates noise. For more
+;   information see J. C. Samson and J. V. Olson 'Some comments
+;   on the description of the polarization states
+;   of waves' Geophys. J. R. Astr. Soc. (1980) v61 115-130
+;
+;         Wavenormal Angle:
+;   the angle between the direction of minimum
+;   variance calculated from the complex off diagonal
+;   elements of the spectral matrix and the Z direction
+;   of the input
+;   ac field data. For magnetic field data in
+;   field aligned coordinates this is the
+;   wavenormal angle assuming a plane wave.
+;
+;         Ellipticity:The ratio (minor axis)/(major axis) of the
+;   ellipse transcribed by the field variations of the
+;   components transverse to the Z direction. The sign
+;   indicates the direction of rotation of the field vector in
+;     the plane. Negative signs refer to left-handed
+;   rotation about the Z direction. In the field
+;   aligned coordinate system these signs refer to
+;   plasma waves of left and right handed
+;   polarisation.
+;
+;         Helicity:Similar to Ellipticity except defined in terms of the
+; direction of minimum variance instead of Z. Stricltly the Helicity
+; is defined in terms of the wavenormal direction or k.
+; However since from single point observations the
+; sense of k cannot be determined,  helicity here is
+; simply the ratio of the minor to major axis transverse to the
+;       minimum variance direction without sign.
 ;
 ;
-; do you have suggestions for this crib sheet?
-;   please send them to egrimes@igpp.ucla.edu
 ;
+; Last changed by O. Le Contel and egrimes; For more informations about SCM data, 
+;    please contact olivier.lecontel@lpp.polytechnique.fr
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-28 09:40:43 -0700 (Thu, 28 Apr 2016) $
-; $LastChangedRevision: 20958 $
+; $LastChangedDate: 2016-05-23 07:36:23 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21167 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_wavpol_crib.pro $
 ;-
 
@@ -21,38 +64,133 @@
 ;; Select date and time interval
 ;; =============================
 
-trange = ['2016-01-16/00:13', '2016-01-16/00:20']
+trange = ['2015-10-16/13:00', '2015-10-16/13:10']
 
 ;; =============================
 ;; Select probe and mode
 ;; =============================
 
 sc = '4'
-data_rate = 'brst'
+scm_data_rate = 'brst'
 
 ;; Select mode ('scsrvy' for survey data rate (both slow and fast have 32 S/s), 
 ;                'scb' (8192 S/s) or 'schb' (16384 S/s) for burst data rate)
-mode = 'scb'
+scm_datatype = 'scb'
 
 ;; ==============================================================
 ;; Get SCM data 
 ;; ==============================================================
 
-mms_load_scm, probe=sc, datatype=mode, level='l2', trange=trange, data_rate=data_rate
+mms_load_scm, probe=sc, datatype=scm_datatype, level='l2', trange=trange, data_rate=scm_data_rate
 
-mms_scm_name = 'mms'+sc+'_scm_acb_gse_'+mode+'_'+data_rate+'_l2
+mms_scm_name = 'mms'+sc+'_scm_acb_gse_'+scm_datatype+'_'+scm_data_rate+'_l2
+
+;; =====================================================================
+;; Get FGM data in order to define Field-Aligned Coordinate (FAC) system 
+;; =====================================================================
+fgm_data_rate = 'srvy'
+
+mms_load_fgm, probes=sc, trange=trange, data_rate = fgm_data_rate
+mms_fgm_name = 'mms'+sc+'_fgm_b_gse_'+fgm_data_rate+'_l2_bvec'
+
+store_data,'all_b',data=[mms_fgm_name, 'mms'+sc+'_fgm_b_gse_'+fgm_data_rate+'_l2_btot']
+
+;make transformation matrix
+fac_matrix_make, mms_fgm_name,other_dim='xgse',newname = mms_fgm_name+'_fac_mat'
+;other_dim='xgse', newname = 'thc_fgs_gse_sm601_fac_mat'
+
+;transform Bfield vector (or any other) vector into field aligned coordinates
+tvector_rotate, mms_fgm_name+'_fac_mat', mms_scm_name, newname = mms_scm_name+'_fac'
+
 
 ;; =======================
 ;; Calculate polarisation
 ;; =======================
 
-twavpol,mms_scm_name
+;twavpol,mms_scm_name+'_fac'
+;;; number of points for FFT
+nopfft_input     = 8192
+
+;;; number of points for shifting between 2 FFT
+steplength_input = nopfft_input 
+;;; number of bins for frequency averaging
+bin_freq_input = 3
+twavpol,mms_scm_name+'_fac' $
+;, error=error, freqline = freqline, $
+;  timeline = timeline,
+,nopfft=nopfft_input,steplength=steplength_input,bin_freq=bin_freq_input
+
+;=== change of units from radians to degrees for wave angle variable
+get_data,mms_scm_name+'_fac_waveangle',time_wa,val_wa,val_freq
+
+val_wa = val_wa*180./!pi
+store_data,mms_scm_name+'_fac_waveangle',data={x:time_wa,y:val_wa,v:val_freq}
+
+;;; only plot polarisation results if the degree of polarisation is larger than 0.7
+deg_pol_c = 0.7
+
+get_data,mms_scm_name+'_fac_degpol',time,val,val_freq
+index_deg_pol = where(val lt deg_pol_c)
+val(index_deg_pol) = !VALUES.F_NAN
+store_data,mms_scm_name+'_fac_degpol',data={x:time,y:val,v:val_freq}
+get_data,mms_scm_name+'_fac_powspec',time,val,val_freq
+val(index_deg_pol) = !VALUES.F_NAN
+store_data,mms_scm_name+'_fac_powspec',data={x:time,y:val,v:val_freq}
+get_data,mms_scm_name+'_fac_waveangle',time,val,val_freq
+val(index_deg_pol) = !VALUES.F_NAN
+store_data,mms_scm_name+'_fac_waveangle',data={x:time,y:val,v:val_freq}
+get_data,mms_scm_name+'_fac_elliptict',time,val,val_freq
+val(index_deg_pol) = !VALUES.F_NAN
+store_data,mms_scm_name+'_fac_elliptict',data={x:time,y:val,v:val_freq}
+get_data,mms_scm_name+'_fac_elliptict',time,val,val_freq
+val(index_deg_pol) = !VALUES.F_NAN
+store_data,mms_scm_name+'_fac_helict',data={x:time,y:val,v:val_freq}
+
 
 ;; =====================
 ;; Plot calculated data
 ;; =====================
+freq_min = 1.
+freq_max = 4096.
+nlog_f = 1
+
+
+options, mms_scm_name, colors=[2, 4, 6]
+options, mms_scm_name, labels=['X GSE', 'Y GSE', 'Z GSE']
+options, mms_scm_name, labflag=-1
+options,mms_scm_name,ytitle='MMS'+sc+'!C SCM !C'
+
+options,mms_scm_name+'_fac',colors=[2,4,6]
+options, mms_scm_name+'_fac', labels=['X FAC', 'Y FAC', 'Z FAC']
+options, mms_scm_name+'_fac', labflag=-1
+options,mms_scm_name+'_fac',ytitle='MMS'+sc+'!C SCM !C'
+
+ylim,mms_scm_name+'_fac_powspec',freq_min,freq_max,nlog_f
+ylim,mms_scm_name+'_fac_degpol',freq_min,freq_max,nlog_f
+ylim,mms_scm_name+'_fac_waveangle',freq_min,freq_max,nlog_f
+ylim,mms_scm_name+'_fac_elliptict',freq_min,freq_max,nlog_f
+ylim,mms_scm_name+'_fac_helict',freq_min,freq_max,nlog_f
+
+options,mms_scm_name+'_fac_powspec',ztitle='Arbitrary units'
+options,mms_scm_name+'_fac_powspec',ytitle='f !C!C [Hz]'
+options,mms_scm_name+'_fac_degpol',ztitle='Deg. Pol.'
+options,mms_scm_name+'_fac_waveangle',ztitle='Wave !C Angle'
+options,mms_scm_name+'_fac_elliptict',ztitle='Ellipticity'
+options,mms_scm_name+'_fac_helict',ztitle='Helicity'
+
+options,mms_scm_name+'_fac_degpol',ytitle='f !C!C [Hz]'
+options,mms_scm_name+'_fac_waveangle',ytitle='f !C!C [Hz]'
+options,mms_scm_name+'_fac_elliptict',ytitle='f !C!C [Hz]'
+options,mms_scm_name+'_fac_helict',ytitle='f !C!C [Hz]'
+
 
 zlim,'*_powspec',0.0,0.0,1
-tplot, mms_scm_name+['_powspec', '_degpol', '_waveangle', '_elliptict', '_helict']
+zlim,mms_scm_name+'_fac_degpol',0.7,1.,0
+
+tplot_options, 'xmargin', [15, 15]
+tplot_options,title= 'MMS'+sc+' '+ scm_data_rate+' period, '+scm_datatype +' SCM data used for polarisation analysis'
+
+tplot, ['all_b' ,mms_scm_name,mms_scm_name+'_fac'+['','_powspec', '_degpol', '_waveangle', '_elliptict', '_helict']]
+tlimit,trange
 
 end

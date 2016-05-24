@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  mms_crib_mva
+;  mms_mva_crib
 ;
 ;Purpose:
 ;  A crib on showing how to transform tplot variables into 
@@ -9,9 +9,9 @@
 ;Notes:
 ;
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-05-13 17:19:54 -0700 (Fri, 13 May 2016) $
-; $LastChangedRevision: 21084 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-05-23 11:17:20 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21177 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_mva_crib.pro $
 ;-
 
@@ -20,7 +20,7 @@
 ;clear tplot variables
 del_data,'*'
 
-timespan,'2016-01-20', 0.5, /day
+timespan,'2015-10-16', 1, /day
 
 mms_load_fgm, probe='1', /time_clip
 
@@ -34,14 +34,14 @@ mms_load_fgm, probe='1', /time_clip
 ;   -use NEWNAME keword to specify a name for the output, otherwise
 ;    matrices are stored as input_name + "_mva_mat"
 minvar_matrix_make, 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_mat_day', $
-                    tstart='2016-01-20/03:00', tstop='2016-01-20/04:00'
+                    tstart='2015-10-16/13:00', tstop='2015-10-16/14:00'
 
 ; apply transformation to tplot variable
 ;   -applies a right handed rotations
 tvector_rotate, 'mva_mat_day', 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_data_day'
 
 ;limit time range to plot
-timespan, '2016-01-20/03:00', 1, /hour
+timespan, '2015-10-16/13:00', 1, /hour
 tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_day'
 
 print,'Heres the fgm data translated into mva coordinates using a single transformation matrix'
@@ -59,7 +59,7 @@ minvar_matrix_make, 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_mat_hour', $
 
 tvector_rotate, 'mva_mat_hour', 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_data_hour'
 
-timespan, '2016-01-20/03:00', 1, /hour
+timespan, '2015-10-16/13:00', 1, /hour
 tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_hour'
 
 print,'Heres the fgm data translated into mva coordinates using a different transformation every hour'
@@ -78,8 +78,8 @@ minvar_matrix_make, 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_mat_min_tlim', $
 
 tvector_rotate,'mva_mat_min_tlim', 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_data_min_tlim'
 
-timespan, '2016-01-20/03:40', 10, /min
-tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_min'
+timespan, '2015-10-16/13:40', 10, /min
+tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_min_tlim'
 
 print,'Heres the fgm data translated into mva coordinates using a different transformation every 5 minutes'
 
@@ -89,7 +89,7 @@ stop
 ; Plot all Examples
 ;===========================
 
-timespan, '2016-01-20/03:00', 1, /hour
+timespan, '2015-10-16/13:00', 1, /hour
 tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_*'
 
 end

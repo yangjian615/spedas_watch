@@ -59,7 +59,7 @@ pro iug_load_gmag_wdc, site=site, $
   vsnames_sample = strsplit(vsnames, ' ', /extract)
   vsnames_all = iug_load_gmag_wdc_vsnames()
   if(keyword_set(site)) then site_in = site else site_in = vsnames_sample
-  wdc_sites = thm_check_valid_name(site_in, vsnames_all, $
+  wdc_sites = ssl_check_valid_name(site_in, vsnames_all, $
     /ignore_case, /include_all)
   if wdc_sites[0] eq '' then return
   nsites = n_elements(wdc_sites)

@@ -106,6 +106,7 @@ if (not keyword_set(exists)) or (keyword_set(reset)) then begin
                   gmag_magdas_ptk:       0b, $
                   gmag_magdas_wad:       0b, $
                   gmag_magdas_yap:       0b, $
+                  gps_ro_rish:           0b, $
                   imag_nipr_syo:         0b, $
                   imag_nipr_ice:         0b, $
                   imag_stel:             0b, $

@@ -44,7 +44,7 @@ pro iug_load_gmag_wdc_wdcmin, $
   if ~keyword_set(datatype) then datatype='gmag'
   vns=['gmag']
   if size(datatype,/type) eq 7 then begin
-    datatype=thm_check_valid_name(datatype,vns, $
+    datatype=ssl_check_valid_name(datatype,vns, $
       /ignore_case, /include_all, /no_warning)
     if datatype[0] eq '' then return
   endif else begin
@@ -59,7 +59,7 @@ pro iug_load_gmag_wdc_wdcmin, $
   
   ; validate sites
   if(keyword_set(site)) then site_in = site else site_in = vsnames_sample
-  wdc_sites = thm_check_valid_name(site_in, vsnames_all, $
+  wdc_sites = ssl_check_valid_name(site_in, vsnames_all, $
     /ignore_case, /include_all, /no_warning)
   if wdc_sites[0] eq '' then return
   

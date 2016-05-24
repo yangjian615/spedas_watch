@@ -77,7 +77,7 @@ if position[0] ge position[2] or position[1] ge position[3] then begin
 endif
 
 ;----- character size -----;
-if ~keyword_set(charsize) then charsize=1.0
+if ~keyword_set(charsize) then charsize=!p.charsize
 
 ;----- Resize the canvas size for the position values -----;
 if ~keyword_set(nopos) then begin

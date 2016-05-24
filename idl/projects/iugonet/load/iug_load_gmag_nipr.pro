@@ -68,7 +68,7 @@ if ~keyword_set(no_download) then no_download=0
 ;----- site -----;
 site_code_all = strsplit('syo hus tjo aed isa h57 amb srm ihd skl h68', /extract)
 if(not keyword_set(site)) then site='all'
-site_code = thm_check_valid_name(site, site_code_all, /ignore_case, /include_all)
+site_code = ssl_check_valid_name(site, site_code_all, /ignore_case, /include_all)
 if site_code[0] eq '' then return
 
 print, site_code
@@ -77,7 +77,7 @@ print, site_code
 if(not keyword_set(datatype)) then datatype='1sec'
 datatype_all=strsplit('1sec', /extract)
 if size(datatype,/type) eq 7 then begin
-  datatype=thm_check_valid_name(datatype,datatype_all, $
+  datatype=ssl_check_valid_name(datatype,datatype_all, $
                                 /ignore_case, /include_all)
   if datatype[0] eq '' then return
 endif else begin

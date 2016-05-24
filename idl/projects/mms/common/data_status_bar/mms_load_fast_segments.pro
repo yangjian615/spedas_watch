@@ -7,8 +7,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-18 12:26:32 -0700 (Wed, 18 May 2016) $
-;$LastChangedRevision: 21115 $
+;$LastChangedDate: 2016-05-23 09:01:02 -0700 (Mon, 23 May 2016) $
+;$LastChangedRevision: 21169 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_load_fast_segments.pro $
 ;-
 
@@ -31,7 +31,7 @@ pro mms_load_fast_segments, trange=trange, suffix=suffix
     unix_end = reverse(fast_intervals.end_times)
     
     times_in_range = where(unix_start ge tr[0]-86400.0 and unix_start le tr[1], t_count)
-    
+
     if t_count ne 0 then begin
       unix_start = unix_start[times_in_range]
       unix_end = unix_end[times_in_range]
@@ -44,9 +44,6 @@ pro mms_load_fast_segments, trange=trange, suffix=suffix
       store_data,'mms_bss_fast'+suffix,data={x:bar_x, y:bar_y}
       options,'mms_bss_fast'+suffix,thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
         ticklen=0,panel_size=0.09,colors=4, labels=['Fast'], charsize=2.
-        
-        
-      time_clip, 'mms_bss_fast'+suffix, tr[0], tr[1], replace=1, error=error
     endif else begin
       dprint, dlevel = 0, 'Error, no fast segments found in this time interval: ' + time_string(tr[0]) + ' to ' + time_string(tr[1])
     endelse

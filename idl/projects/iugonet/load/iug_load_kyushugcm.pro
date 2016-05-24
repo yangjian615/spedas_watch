@@ -72,7 +72,7 @@ if ~keyword_set(downloadonly) then downloadonly=0
 datatype_all=strsplit('T U V W', /extract)
 if(not keyword_set(datatype)) then datatype='T'
 if size(datatype,/type) eq 7 then begin
-  datatype=thm_check_valid_name(datatype,datatype_all, $
+  datatype=ssl_check_valid_name(datatype,datatype_all, $
                                 /ignore_case)
   if datatype[0] eq '' then return
 endif else begin
@@ -86,7 +86,7 @@ print, datatype
 calmethod_all=strsplit('j3 s1 s2 s3 d1 d2 d3', /extract)
 if(not keyword_set(calmethod)) then calmethod='j3'
 if size(calmethod,/type) eq 7 then begin
-  calmethod=thm_check_valid_name(calmethod,calmethod_all, $
+  calmethod=ssl_check_valid_name(calmethod,calmethod_all, $
                                  /ignore_case, /include_all)
   if calmethod[0] eq '' then return
 endif else begin

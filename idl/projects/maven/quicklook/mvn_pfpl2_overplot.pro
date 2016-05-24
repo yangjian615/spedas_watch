@@ -30,8 +30,8 @@
 ; Hacked from thm_over_shell, 2013-05-12, jmm, jimm@ssl.berkeley.edu
 ; CHanged to use thara's mvn_pl_pfp_tplot.pro, 2015-04-14, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-16 12:39:31 -0700 (Wed, 16 Mar 2016) $
-; $LastChangedRevision: 20478 $
+; $LastChangedDate: 2016-05-23 14:35:24 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21178 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_pfpl2_overplot.pro $
 ;-
 Pro mvn_pfpl2_overplot, orbit_number = orbit_number, $
@@ -70,7 +70,7 @@ Pro mvn_pfpl2_overplot, orbit_number = orbit_number, $
      Return
   Endelse
 
-  mvn_ql_pfp_tplot2, tr0, bcrust=0, /tplot, bvec = bvec
+  mvn_ql_pfp_tplot2, tr0, bcrust=1, /tplot, bvec = bvec
 
 ;Re-init here
   mvn_qlook_init, device = device

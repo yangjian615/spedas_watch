@@ -9,8 +9,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-21 15:12:30 -0700 (Thu, 21 Apr 2016) $
-; $LastChangedRevision: 20878 $
+; $LastChangedDate: 2016-05-23 11:17:20 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21177 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_multi_axis_figure.pro $
 ;-
 
@@ -18,8 +18,8 @@
 !Y.STYLE = 4
 
 ; load the data
-mms_load_fgm, trange=['2015-12-15/11:00', '2015-12-15/12:00'], probe=1, /time_clip
-mms_load_fpi, trange=['2015-12-15/11:00', '2015-12-15/12:00'], probe=1, datatype='des-moms', /time_clip
+mms_load_fgm, trange=['2015-10-16/13:00', '2015-10-16/14:00'], probe=1, /time_clip
+mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/14:00'], probe=1, datatype='des-moms', /time_clip
 
 ; remove the ytitle/labels
 options, 'mms1_des_numberdensity_dbcs_fast', labels='', colors=0 ; black

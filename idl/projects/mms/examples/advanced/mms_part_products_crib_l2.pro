@@ -8,8 +8,8 @@
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-27 15:45:30 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20948 $
+;$LastChangedDate: 2016-05-23 11:17:20 -0700 (Mon, 23 May 2016) $
+;$LastChangedRevision: 21177 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib_l2.pro $
 ;
 ;-
@@ -30,7 +30,7 @@
 
   ;use short time range for data due to high resolution
   ;use longer time range for support data to ensure we have enough to work with
-  timespan, '2016-01-20/19:50:00', 15, /sec
+  timespan, '2015-10-16/13:02:30', 5, /min
   trange = timerange()
   support_trange = trange + [-60,60]
  
@@ -95,7 +95,7 @@
   data_rate = 'srvy'
   level = 'l2'
   
-  timespan, '2015-10-20/05:56:30', 5, /min
+  timespan, '2015-10-16/13:02:30', 5, /min
   trange = timerange()
   
   ;load particle data

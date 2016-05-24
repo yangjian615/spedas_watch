@@ -8,8 +8,8 @@
 ;  spectrograms and moments from level 1 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-27 15:45:30 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20948 $
+;$LastChangedDate: 2016-05-23 11:17:20 -0700 (Mon, 23 May 2016) $
+;$LastChangedRevision: 21177 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib_l1.pro $
 ;
 ;-
@@ -27,7 +27,7 @@
   level ='l1b'
   rate='brst'
 
-  timespan, '2015-10-20/05:56:30', 5, /min
+  timespan, '2015-10-16/13:02:30', 5, /min
   trange = timerange()
 
   ;load particle data
@@ -74,7 +74,7 @@
   data_rate = 'brst'
   level = 'l1b'
 
-  timespan, '2015-10-20/05:56:30', 5, /min  ;brst
+  timespan, '2015-10-16/13:02:30', 5, /min  ;brst
   ;timespan, '2015-11-16/06:32:00', 20, /min  ;brst/srvy
   trange = timerange()
   

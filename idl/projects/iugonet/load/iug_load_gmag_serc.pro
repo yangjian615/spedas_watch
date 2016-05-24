@@ -45,8 +45,8 @@
 ;
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21069 $
+; $LastChangedDate: 2016-05-23 10:40:20 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21174 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/iugonet/load/iug_load_gmag_serc.pro $
 ;-
 
@@ -70,7 +70,7 @@ if ~keyword_set(datatype) then datatype='mag'
 ; validate datatype
 vns=['mag']
 if size(datatype,/type) eq 7 then begin
-  datatype=thm_check_valid_name(datatype,vns, $
+  datatype=ssl_check_valid_name(datatype,vns, $
                                 /ignore_case, /include_all)
   if datatype[0] eq '' then return
 endif else begin
@@ -86,7 +86,7 @@ vsnames_all = strsplit(vsnames, ' ', /extract)
 
 ; validate sites
 if(keyword_set(site)) then site_in = site else site_in = 'all'
-magdas_sites = thm_check_valid_name(site_in, vsnames_all, $
+magdas_sites = ssl_check_valid_name(site_in, vsnames_all, $
                                     /ignore_case, /include_all)
 if magdas_sites[0] eq '' then return
 

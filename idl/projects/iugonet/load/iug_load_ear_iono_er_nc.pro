@@ -42,8 +42,8 @@
 ; 
 ;ACKNOWLEDGEMENT:
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21069 $
+; $LastChangedDate: 2016-05-23 10:40:20 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21174 $
 ; $URL $
 ;-
 
@@ -67,7 +67,7 @@ parameter_all = strsplit('eb1p2a eb1p2b eb1p2c eb2p1a eb3p2a eb3p2b eb3p4a eb3p4
 
 ;--- check parameters
 if(not keyword_set(parameter)) then parameter='all'
-parameters = thm_check_valid_name(parameter, parameter_all, /ignore_case, /include_all)
+parameters = ssl_check_valid_name(parameter, parameter_all, /ignore_case, /include_all)
 
 print, parameters
 

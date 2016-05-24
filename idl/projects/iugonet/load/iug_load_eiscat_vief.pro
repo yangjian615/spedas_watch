@@ -54,7 +54,7 @@ if ~keyword_set(verbose) then verbose=0
 
 ;----- site -----;
 if(not keyword_set(site)) then site='all'
-site_code = thm_check_valid_name(site, site_code_all, /ignore_case, /include_all)
+site_code = ssl_check_valid_name(site, site_code_all, /ignore_case, /include_all)
 if site_code[0] eq '' then return
 print, 'site_code = ',site_code
 

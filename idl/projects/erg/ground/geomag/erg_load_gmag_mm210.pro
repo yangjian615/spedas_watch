@@ -36,8 +36,8 @@
 ;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
 ;
 ;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2016-05-12 17:19:19 -0700 (Thu, 12 May 2016) $
-;   $LastChangedRevision: 21071 $
+;   $LastChangedDate: 2016-05-23 10:50:26 -0700 (Mon, 23 May 2016) $
+;   $LastChangedRevision: 21176 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/geomag/erg_load_gmag_mm210.pro $
 ;-
 

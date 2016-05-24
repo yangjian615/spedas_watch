@@ -25,15 +25,15 @@
 ;   4. mms_bss_fom (histogram, black) 
 ;      The height represents the FOM values (i.e., priority level defined by SITLs)
 ;
-;   See also "spd_load_bss_crib" and "mms_load_bss_crib" for examples.
-;
 ;   5. To labels bss bars set the include_labels flag, /include_labels
+;   
+;   See examples/basic/spd_mms_load_bss_crib.pro for examples. 
 ;   
 ; CREATED BY: Mitsuo Oka   Oct 2015
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-18 12:26:32 -0700 (Wed, 18 May 2016) $
-;$LastChangedRevision: 21115 $
+;$LastChangedDate: 2016-05-23 09:13:14 -0700 (Mon, 23 May 2016) $
+;$LastChangedRevision: 21170 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/spd_mms_load_bss.pro $
 ;-
 

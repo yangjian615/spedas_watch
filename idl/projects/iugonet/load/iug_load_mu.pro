@@ -45,8 +45,8 @@
 ; 
 ;ACKNOWLEDGEMENT:
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21069 $
+; $LastChangedDate: 2016-05-23 10:40:20 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21174 $
 ; $URL $
 ;-
   
@@ -69,7 +69,7 @@ datatype_all = strsplit('troposphere mesosphere ionosphere meteor rass fai',' ',
 
 ;--- check datatypes
 if(not keyword_set(datatype)) then datatype='all'
-datatypes = thm_check_valid_name(datatype, datatype_all, /ignore_case, /include_all)
+datatypes = ssl_check_valid_name(datatype, datatype_all, /ignore_case, /include_all)
 
 print, datatypes
                  
@@ -92,7 +92,7 @@ for i=0, n_elements(datatypes)-1 do begin
       
      ;--- check level
       if (not keyword_set(level)) then level='all'
-      levels = thm_check_valid_name(level, level_all, /ignore_case, /include_all)
+      levels = ssl_check_valid_name(level, level_all, /ignore_case, /include_all)
       
       iug_load_mu_meso_nc, level = levels, downloadonly=downloadonly, trange=trange, verbose=verbose
       iug_load_mu_meso_wind_nc, level = levels, downloadonly=downloadonly, trange=trange, verbose=verbose
@@ -116,7 +116,7 @@ for i=0, n_elements(datatypes)-1 do begin
 
      ;--- check parameters
       if(not keyword_set(parameter)) then parameter='all'
-      parameters = thm_check_valid_name(parameter, parameter_all_meteor, /ignore_case, /include_all)
+      parameters = ssl_check_valid_name(parameter, parameter_all_meteor, /ignore_case, /include_all)
    
       iug_load_mu_meteor_nc, parameter =parameters, length=length, trange = trange, downloadonly=downloadonly, verbose = verbose
    
@@ -130,7 +130,7 @@ for i=0, n_elements(datatypes)-1 do begin
 
      ;--- check parameters
       if(not keyword_set(parameter)) then parameter='all'
-      parameters = thm_check_valid_name(parameter, parameter_all_rass, /ignore_case, /include_all)
+      parameters = ssl_check_valid_name(parameter, parameter_all_rass, /ignore_case, /include_all)
 
       iug_load_mu_rass_txt, parameter =parameters, $
                             trange = trange, downloadonly=downloadonly, verbose = verbose
@@ -169,7 +169,7 @@ for i=0, n_elements(datatypes)-1 do begin
 
      ;--- check parameters
       if(not keyword_set(parameter)) then parameter='all'
-      parameters = thm_check_valid_name(parameter, parameter_all_fai, /ignore_case, /include_all)
+      parameters = ssl_check_valid_name(parameter, parameter_all_fai, /ignore_case, /include_all)
 
       iug_load_mu_fai_nc, parameter =parameters, $
                           trange = trange, downloadonly=downloadonly, verbose = verbose

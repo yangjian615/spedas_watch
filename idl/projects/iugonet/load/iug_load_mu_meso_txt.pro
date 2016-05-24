@@ -37,8 +37,8 @@
 ; 
 ;ACKNOWLEDGEMENT:
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-12 16:56:35 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21069 $
+; $LastChangedDate: 2016-05-23 10:40:20 -0700 (Mon, 23 May 2016) $
+; $LastChangedRevision: 21174 $
 ; $URL $
 ;-
 
@@ -62,7 +62,7 @@ parameter_all = strsplit('dpl1 dpl2 dpl3 dpl4 dpl5 pwr1 pwr2 pwr3 pwr4 pwr5 '+$
 
 ;--- check site codes
 if (not keyword_set(parameter)) then parameter='all'
-parameters = thm_check_valid_name(parameter, parameter_all, /ignore_case, /include_all)
+parameters = ssl_check_valid_name(parameter, parameter_all, /ignore_case, /include_all)
 
 print, parameters
 
@@ -75,7 +75,7 @@ level_all = strsplit('org scr',' ', /extract)
 
 ;--- check parameters
 if (not keyword_set(level)) then level='all'
-levels = thm_check_valid_name(level, level_all, /ignore_case, /include_all)
+levels = ssl_check_valid_name(level, level_all, /ignore_case, /include_all)
 
 print, levels
 
