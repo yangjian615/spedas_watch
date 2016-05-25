@@ -4,7 +4,7 @@
 ;
 ;Purpose:
 ;  Convert standard 3D partical distribution structure into hash
-;  compatible with STEL3D 
+;  compatible with ISEE_3D 
 ;
 ;Calling Sequence:
 ;  hash = spd_dist_to_hash( dist [,counts=dist_counts]
@@ -22,8 +22,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-02-29 14:52:20 -0800 (Mon, 29 Feb 2016) $
-;$LastChangedRevision: 20269 $
+;$LastChangedDate: 2016-05-23 18:52:50 -0700 (Mon, 23 May 2016) $
+;$LastChangedRevision: 21180 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_dist_to_hash.pro $
 ;-
 

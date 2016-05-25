@@ -23,8 +23,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-18 08:38:23 -0700 (Wed, 18 May 2016) $
-; $LastChangedRevision: 21113 $
+; $LastChangedDate: 2016-05-24 08:47:31 -0700 (Tue, 24 May 2016) $
+; $LastChangedRevision: 21182 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
 ;-
 
@@ -37,10 +37,8 @@ start_time = systime(/seconds)
 ; full day for FS
 ;date = '2015-10-16/00:00:00'
 ;timespan, date, 1, /day
-;data_rate = 'fast'
 
 ; small interval for burst
-;date = '2015-12-06/04:14'
 date = '2015-10-16/13:07'
 timespan, date, 15, /min
 
@@ -143,18 +141,18 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     options, prefix+'_fgm_dmpa_srvy_clipped', colors=[2, 4, 6, 0]
     options, prefix+'_fgm_dmpa_srvy_clipped', ytitle=prefix+'!CFGM'
 
-    ; combine the densities into one tplot variable
-    ;join_vec, [obsstr+'desnumberdensity', obsstr+'disnumberdensity'], obsstr+'numberdensity'
-    ;join_vec, [obsstr+'des_numberdensity', obsstr+'dis_numberdensity'], obsstr+'numberdensity'
-    join_vec, [obsstr+'des_numberdensity', obsstr+'dis_numberdensity']+'_dbcs_'+data_rate, obsstr+'numberdensity'
 
     options, obsstr+'des_numberdensity'+'_dbcs_'+data_rate, 'labels', 'Ne, electrons'
     options, obsstr+'dis_numberdensity'+'_dbcs_'+data_rate, 'labels', 'Ni, ions'
     options, obsstr+'des_numberdensity'+'_dbcs_'+data_rate, 'colors', 2
     options, obsstr+'dis_numberdensity'+'_dbcs_'+data_rate, 'colors', 4
-    options, obsstr+'numberdensity', 'labels', ['electrons', 'ions']
+
+    ; combine the densities into one tplot variable
+    store_data, obsstr+'numberdensity', data=[obsstr+'des_numberdensity', obsstr+'dis_numberdensity']+'_dbcs_'+data_rate
+    
     options, obsstr+'numberdensity', 'labflag', -1
     options, obsstr+'numberdensity', 'colors', [2, 4]
+    options, obsstr+'numberdensity', ytitle='MMS'+STRING(probes[i],FORMAT='(I1)')+'!CFPI density'
     
     ; combine the bulk electron velocities into one tplot variable
     get_data, obsstr+'des_bulkx'+'_dbcs_'+data_rate, xtimes, bulkx

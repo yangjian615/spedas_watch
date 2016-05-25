@@ -95,8 +95,8 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21101 $
+;$LastChangedDate: 2016-05-23 19:12:00 -0700 (Mon, 23 May 2016) $
+;$LastChangedRevision: 21181 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -327,6 +327,7 @@ pro mms_part_products, $
     mms_pgs_make_fac,times,mag_name,pos_name,fac_output=fac_matrix,fac_type=fac_type_lc,display_object=display_object,probe=probe
     ;remove FAC outputs if there was an error, return if no outputs remain
     if undefined(fac_matrix) then begin
+      fac_requested = 0
       outputs_lc = ssl_set_complement(fac_outputs,outputs_lc)
       if ~is_string(outputs_lc) then begin
         return

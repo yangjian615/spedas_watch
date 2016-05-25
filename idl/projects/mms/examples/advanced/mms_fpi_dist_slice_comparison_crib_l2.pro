@@ -135,9 +135,9 @@ read,'input max |velocity| in km/s to plot, input 0. for autoscaling:',vmax
 if vmax le min(vr) then vr=[-1.,1.]*max(vr) else vr = [-1,1]*vmax
 if species eq 'e' then zrange = [1.0e-29, 1.0e-25]  ;tmp guess for electrons
 if species eq 'i' then zrange = [1.0e-25, 1.0e-21]  ;tmp guess for ions
- 
-
    
+
+
 win = 9
 WINDOW,/free, XSIZE=1400, YSIZE=800, TITLE='MMS FPI Distributions'  
 ;nx = dimen2(norms)
@@ -160,12 +160,12 @@ for i=0, n_elements(*dist)-1 do begin
   for j=0, 2 do begin
     ipos=ipos+1
     if j eq 2 then nocolorbar=0 else nocolorbar=1
-    if j eq 0 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='xy', geometric=geometric, resolution=resolution)
-    if j eq 1 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='xz', geometric=geometric, resolution=resolution)
-    if j eq 2 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='yz', geometric=geometric, resolution=resolution)
+    if j eq 0 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='xy', geometric=geometric, mag_data=bname, resolution=resolution)
+    if j eq 1 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='xz', geometric=geometric, mag_data=bname, resolution=resolution)
+    if j eq 2 then slice = spd_slice2d(dist, time=time, window=end_time-time, rotation='yz', geometric=geometric, mag_data=bname, resolution=resolution)
     spd_slice2d_plot, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
-      noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
+      noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines ;, /PLOTBFIELD
     xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_PSD'
     mms_draw_circle,0.,0.,r=vmin,/fill  ;SAB, mask out interpolation below 10 eV
   endfor
@@ -175,12 +175,12 @@ for i=0, n_elements(*dist)-1 do begin
   for j=0, 2 do begin
     ipos=ipos+1
     if j eq 2 then nocolorbar=0 else nocolorbar=1
-    if j eq 0 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='xy', geometric=geometric, resolution=resolution)
-    if j eq 1 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='xz', geometric=geometric, resolution=resolution)
-    if j eq 2 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='yz', geometric=geometric, resolution=resolution)
+    if j eq 0 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='xy', geometric=geometric, mag_data=bname, resolution=resolution)
+    if j eq 1 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='xz', geometric=geometric, mag_data=bname, resolution=resolution)
+    if j eq 2 then slice = spd_slice2d(distErr, time=time, window=end_time-time, rotation='yz', geometric=geometric, mag_data=bname, resolution=resolution)
     spd_slice2d_plot, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
-      noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
+      noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines ;, /PLOTBFIELD
     xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_Err'
     mms_draw_circle,0.,0.,r=vmin,/fill  ;SAB, mask out interpolation below 10 eV
   endfor
@@ -213,7 +213,7 @@ for i=0, n_elements(*dist)-1 do begin
 
     spd_slice2d_plot, slice, window=win, xrange = vr, yrange = vr, zrange = zrange,$
       /custom, title='',charsize=1.15, pos = [x0[ipos],y0[ipos],x1[ipos],y1[ipos]],$
-      noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines
+      noerase = ipos gt 0, nocolorbar = nocolorbar,olines=olines ;, /PLOTBFIELD
     xyouts,/norm, align=1.0,x1[ipos]-(x1[ipos]-x0[ipos])/2.,y1[ipos]-0.05,'dist_PSD'
     mms_draw_circle,0.,0.,r=vmin,/fill  ;SAB, mask out interpolation below 10 eV
   endfor

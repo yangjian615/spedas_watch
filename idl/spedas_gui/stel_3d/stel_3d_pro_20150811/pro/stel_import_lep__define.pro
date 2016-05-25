@@ -318,13 +318,14 @@ function stel_import_lep::getVector, cTime, VEL=vel
    endif
 
    ;verify presense of file
-   infile = file_which(in_slice, /INCLUDE_CURRENT_DIR)
-   if infile eq '' then begin
-     message, /info, 'cannot determine supplementary vector:' + $
-                      keyword_set(vel) ? 'velocity':'B field'
-     return, !null
-   endif
-   tplot_restore, FILE=infile
+   ;commented out 2016-05-23 for release
+;   infile = file_which(in_slice, /INCLUDE_CURRENT_DIR)
+;   if infile eq '' then begin
+;     message, /info, 'cannot determine supplementary vector:' + $
+;                      keyword_set(vel) ? 'velocity':'B field'
+;     return, !null
+;   endif
+;   tplot_restore, FILE=infile
    
    if keyword_set(vel) then begin ; Velocity
 ;     print, 'Velocity vector'
