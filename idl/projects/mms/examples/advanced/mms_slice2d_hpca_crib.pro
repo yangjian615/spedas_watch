@@ -19,12 +19,11 @@
 ;  'perp_xz':  The coordinate's x & z axes are projected onto the plane normal to the B field
 ;  'perp_yz':  The coordinate's y & z axes are projected onto the plane normal to the B field
 ;
-;Notes:
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-01 12:14:17 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20703 $
+;$LastChangedDate: 2016-05-25 13:37:25 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21200 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_slice2d_hpca_crib.pro $
 ;-
 
@@ -42,7 +41,7 @@ data_rate = 'srvy'
 
 name = 'mms'+probe+'_hpca_'+species+'_phase_space_density'
 
-timespan, '2015-10-20/05:56:30', 1, /min  ;time range to load
+timespan, '2015-10-16/13:06:00', 1, /min  ;time range to load
 trange = timerange()
 time = trange[0]  ;slice time 
 
@@ -89,7 +88,7 @@ name = 'mms'+probe+'_hpca_'+species+'_phase_space_density'
 bname = 'mms'+probe+'_fgm_b_gse_srvy_l2_bvec'             ;name of bfield vector
 vname = 'mms'+probe+'_hpca_'+species+'_ion_bulk_velocity' ;name of bulk velocity vector
 
-timespan, '2015-10-20/05:56:30', 1, /min  ;time range to load
+timespan, '2015-10-16/13:06:00', 1, /min  ;time range to load
 trange = timerange()
 time = trange[0]  ;slice time 
 
@@ -129,7 +128,7 @@ data_rate = 'srvy'
 
 name = 'mms'+probe+'_hpca_'+species+'_phase_space_density'
 
-timespan, '2015-10-20/05:56:30', 1, /min  ;time range to load
+timespan, '2015-10-16/13:06:00', 1, /min  ;time range to load
 trange = timerange()
 
 mms_load_hpca, probes=probe, trange=trange, data_rate=data_rate, level=level, datatype='ion'
@@ -150,7 +149,6 @@ for i=0, n_elements(times)-1 do begin
   spd_slice2d_plot, slice, export=filename ;,/eps
 
 endfor
-
 
 stop
 

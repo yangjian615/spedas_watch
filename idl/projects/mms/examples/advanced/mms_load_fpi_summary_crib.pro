@@ -6,7 +6,7 @@
 ; 
 ; Note:
 ; Quicklook plots are NOT intended for science analysis
-;     but rather, are useful for identifing data gaps,
+;     but rather, are useful for identifying data gaps,
 ;     instrument problems, etc. 
 ;    
 ;    
@@ -23,8 +23,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-24 08:47:31 -0700 (Tue, 24 May 2016) $
-; $LastChangedRevision: 21182 $
+; $LastChangedDate: 2016-05-25 14:49:33 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21204 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
 ;-
 

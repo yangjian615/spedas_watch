@@ -4,7 +4,7 @@
 ;
 ;Purpose:
 ;  Parse input coordinates stored in suffix string.
-;  This should allow coodinates systems denoted non-three-character strings
+;  This should allow coordinates systems denoted non-three-character strings
 ;  and handle disambiguation between systems with identical substrings.
 ;
 ;Calling Sequence:
@@ -20,9 +20,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-22 16:35:01 -0800 (Tue, 22 Dec 2015) $
-;$LastChangedRevision: 19649 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21208 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_parse.pro $
 ;-
 

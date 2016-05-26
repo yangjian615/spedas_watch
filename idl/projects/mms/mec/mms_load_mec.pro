@@ -23,7 +23,6 @@
 ;         tplotnames:   names for tplot variables
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're
 ;                       using this load routine from a terminal without an X server running
-;                       do not set colors
 ;         time_clip:    clip the data to the requested time range; note that if you do not use
 ;                       this keyword you may load a longer time range than requested
 ;         no_update:    set this flag to preserve the original data. if not set and newer data is
@@ -54,8 +53,8 @@
 ;          
 ;          
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-03 14:32:57 -0700 (Tue, 03 May 2016) $
-;$LastChangedRevision: 21012 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 

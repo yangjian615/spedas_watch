@@ -1,4 +1,4 @@
-; Script to load MMS data from various instruments and plot a subset of parameters. Specfiy plot formats etc...
+; Script to load MMS data from various instruments and plot a subset of parameters. Specifiy plot formats etc...
 
 ; created by Jim Burch, July, 2015.
 ; updated by Tai Phan: August 31, 2015
@@ -13,20 +13,20 @@
 
 i_load=1 ; =1 if data has not been loaded, =0 of data has already been loaded (no need to load again in this IDL session)
 
-; To create a poscript file of the plot, select i_print=1 below
+; To create a postscript file of the plot, select i_print=1 below
 
 i_print=0 ; = 1 to generate a postscript file of plot (default name is 'plot.ps')
 
 ; to zoom in and out, use tlimit (various options in tlimit: 'tlimit,/last', 'tlimit,/full', 'tlimit,time1, time2')
 
-timespan,'2015-11-15/11:45', 4.2, /hour ; (other often-used options are /day or /min)
+timespan,'2015-10-16/13:00', 1, /hour ; (other often-used options are /day or /min)
 
 ;timespan,'2015-08-28/11:00', 8.2, /hour ; (other often-used options are /day or /min)
 
 
 sc_id='mms4' ; specify spacecraft
 
-probe_id=strmid(sc_id,3,1) ; extract the spacecrfat number out of the sc_id string
+probe_id=strmid(sc_id,3,1) ; extract the spacecraft number out of the sc_id string
 
 
 level = 'l2' ; (current options are 'l2', 'sitl' or 'l1b' for HPCA)

@@ -23,7 +23,7 @@
 ;         get_support_data: load support data (defined by support_data VAR_TYPE in the CDF)
 ;         tplotnames:   names for tplot variables
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're using 
-;                       this load routine from a terminal without an X server runningdo not set colors
+;                       this load routine from a terminal without an X server running
 ;         time_clip:    clip the data to the requested time range; note that if you do not use 
 ;                       this keyword you may load a longer time range than requested
 ;         no_update:    set this flag to preserve the original data. if not set and newer data is 
@@ -56,8 +56,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-19 10:50:42 -0700 (Thu, 19 May 2016) $
-;$LastChangedRevision: 21137 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 

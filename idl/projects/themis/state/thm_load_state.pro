@@ -67,8 +67,8 @@
 ; corresponding changes to the c_names constant
 ;
 ; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-06-10 16:56:01 -0700 (Tue, 10 Jun 2014) $
-; $LastChangedRevision: 15342 $
+; $LastChangedDate: 2016-05-25 12:17:42 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21196 $
 ; $URL $
 ;-
 
@@ -82,6 +82,7 @@ pro thm_load_state_post, sname=probe, datatype=dt, level=lvl, $
                          get_support_data = get_support_data, no_spin = no_spin, $
                          keep_spin_data = keep_spin_data, $
                          trange = trange, $
+                         no_time_clip=no_time_clip, $
                          _extra = _extra
 
 ;=================================================================
@@ -143,6 +144,10 @@ if keyword_set(coord) then begin
     tn_after = [tnames('*')]
 endif
 
+; Default to "clip", if no_time_clip is not passed.  (should not happen!)
+
+if (n_elements(no_time_clip) EQ 0) then no_time_clip=0
+
 for i = 0,n_elements(dt_temp)-1L do begin
     
     if(keyword_set(suffix)) then $
@@ -161,8 +166,12 @@ for i = 0,n_elements(dt_temp)-1L do begin
     endelse    
 
     if(tnames(var_name) ne '') then begin
+
+        ; If trange is set, and no_time_clip=0, go ahead and clip
+        ; non-spinmodel-related values  (Currently, no_time_clip
+        ; should always be set and passed via thm_load_xxx)
       
-        If (keyword_set(trange) && n_elements(trange) Eq 2) then begin
+        If (keyword_set(trange) && n_elements(trange) Eq 2 && no_time_clip EQ 0) then begin
            if (STRMATCH(var_name,'*spin*') NE 1) then begin
               time_clip, var_name, trange[0], trange[1], /replace
            endif

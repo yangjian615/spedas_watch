@@ -5,7 +5,7 @@
 ; mms_load_fpi_crib_qlplots.pro
 ; Note:
 ; Quicklook plots are NOT intended for science analysis
-;     but rather, are useful for identifing data gaps,
+;     but rather, are useful for identifying data gaps,
 ;     instrument problems, etc. 
 ;    
 ;    
@@ -21,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-18 13:55:49 -0700 (Wed, 18 May 2016) $
-; $LastChangedRevision: 21118 $
+; $LastChangedDate: 2016-05-25 14:56:02 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21205 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -88,7 +88,7 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
 ;if dfg_level ne 'l2pre' then mms_load_mec, trange = trange, probes = probes
 
 ; load DFG data for all 4 probes
-mms_load_fgm, trange = trange, probes = probes, /no_attitude_data, level = dfg_level, instrument='dfg'
+mms_load_fgm, trange = trange, probes = probes, level = dfg_level, instrument='dfg'
 
 FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     obsstr='mms'+STRING(i,FORMAT='(I1)')+'_'

@@ -20,18 +20,18 @@
 ;    0 otherwise
 ;
 ;Notes:
-;  -Assumes all tranforms performed through ECI
+;  -Assumes all tranformations performed through ECI
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 12:01:25 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21096 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21208 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_qcotrans_check_rate.pro $
 ;-
 function mms_qcotrans_check_rate, in_coord, out_coord, probe
 
     compile_opt idl2, hidden
 
-  ;interesect check bellow fails for inputs with repeated elements
+  ;intersection check bellow fails for inputs with repeated elements
   if in_coord eq out_coord then return, 0
   
   spinning_frames = ['bcs','smpa','ssl']
@@ -45,7 +45,7 @@ function mms_qcotrans_check_rate, in_coord, out_coord, probe
       
       get_data, q_name, ptr=ptr
       
-      ;ignore non-existant data, will be checked elsewhere
+      ;ignore non-existent data, will be checked elsewhere
       if ~is_struct(ptr) then continue 
       
       dt = median( (*ptr.x)[1:*] - *ptr.x )

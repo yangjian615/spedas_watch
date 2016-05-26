@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21138 $
+; $LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21203 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_state_crib.pro $
 ;-
 
@@ -36,7 +36,7 @@ stop
 
 ; same with position 
 ; no probe specified so will get all 4 probes
-; no level spefified so will default to definitive data if avaiable
+; no level specified so will default to definitive data if available
 mms_load_state, /ephemeris_only
 tplot, ['mms*_defeph_*']
 stop

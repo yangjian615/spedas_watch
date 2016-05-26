@@ -1,6 +1,6 @@
-; $LastChangedBy: phyllisw $
-; $LastChangedDate: 2016-03-18 10:53:47 -0700 (Fri, 18 Mar 2016) $
-; $LastChangedRevision: 20493 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2016-05-25 14:37:44 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21201 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/decom/spane/spp_swp_spane_product_decom.pro $
 
 
@@ -16,6 +16,8 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   data_size = n_elements(data)
   apid_name = string(format='(z02)',ccsds.data[1])
 
+;printdat,apdat
+  delta_t = ccsds.time - (*(apdat.last_ccsds)).time
 
   ;;---------------------------------------------
   ;; WORD 1 - 00001aaa aaaaaaaa   
@@ -43,7 +45,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   nbytes_expected = ns * bps
 
   if n_elements(data) ne nbytes_expected then begin
-     dprint,dlevel=3, 'Size error ',  n_elements(data),nbytes_expected,ccsds.size+7,ccsds.apid, format='(a,i5,i5,i5," ",z03)'
+     dprint,dlevel=3, 'Size error ',  n_elements(data),nbytes_expected,ccsds.size+7,ccsds.apid, format='(a,i6,i6,i6," ",z03)'
      return, 0
   endif
 
@@ -100,6 +102,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
      (apid_name eq '60') : begin
         str = { $
               time:        ccsds.time, $
+              delta_time: delta_t, $
               seq_cntr:    ccsds.seq_cntr,  $
               seq_group:   ccsds.seq_group,  $
               ndat:        n_elements(cnts), $
@@ -116,6 +119,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
         cnts = reform(cnts,16,256)
         str = { $
               time:      ccsds.time, $
+              delta_time: delta_t, $
               seq_cntr:  ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat:      n_elements(cnts), $
@@ -196,6 +200,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
      (apid_name eq '62') : begin
         str = { $
               time:      ccsds.time, $
+              delta_time: delta_t, $
               seq_cntr:  ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat:      n_elements(cnts), $
@@ -246,6 +251,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
         cnts = reform(cnts,16,256)
         str = { $
               time:ccsds.time, $
+              delta_time: delta_t, $
               seq_cntr:ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat: n_elements(cnts), $
@@ -296,6 +302,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
      (apid_name eq '64') : begin
         str = { $
               time:        ccsds.time, $
+              delta_time: delta_t, $
               seq_cntr:    ccsds.seq_cntr,  $
               seq_group:   ccsds.seq_group,  $
               ndat:        n_elements(cnts), $
@@ -365,6 +372,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
        cnts = reform(cnts,16,256)
        str = { $
               time:      ccsds.time, $
+              delta_time: delta_t, $
               seq_cntr:  ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat:      n_elements(cnts), $
@@ -430,6 +438,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
      (apid_name eq '66') : begin
        str = { $
          time:      ccsds.time, $
+         delta_time: delta_t, $
          seq_cntr:  ccsds.seq_cntr,  $
          seq_group: ccsds.seq_group,  $
          ndat:      n_elements(cnts), $
@@ -448,6 +457,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
             cnts = reform(cnts,16,256)
             str = { $
               time:ccsds.time, $
+              delta_time: delta_t, $
               seq_cntr:ccsds.seq_cntr,  $
               seq_group: ccsds.seq_group,  $
               ndat: n_elements(cnts), $
@@ -587,6 +597,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
   (apid_name eq '70') : begin
     str = { $
       time:        ccsds.time, $
+      delta_time: delta_t, $
       seq_cntr:    ccsds.seq_cntr,  $
       seq_group:   ccsds.seq_group,  $
       ndat:        n_elements(cnts), $
@@ -603,6 +614,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
       cnts = reform(cnts,16,256)
       str = { $
         time:      ccsds.time, $
+        delta_time: delta_t, $
         seq_cntr:  ccsds.seq_cntr,  $
         seq_group: ccsds.seq_group,  $
         ndat:      n_elements(cnts), $
@@ -683,6 +695,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
       (apid_name eq '72') : begin
         str = { $
           time:      ccsds.time, $
+          delta_time: delta_t, $
           seq_cntr:  ccsds.seq_cntr,  $
           seq_group: ccsds.seq_group,  $
           ndat:      n_elements(cnts), $
@@ -733,6 +746,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
         cnts = reform(cnts,16,256)
         str = { $
           time:ccsds.time, $
+          delta_time: delta_t, $
           seq_cntr:ccsds.seq_cntr,  $
           seq_group: ccsds.seq_group,  $
           ndat: n_elements(cnts), $
@@ -782,6 +796,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
       (apid_name eq '74') : begin
         str = { $
           time:        ccsds.time, $
+          delta_time: delta_t, $
           seq_cntr:    ccsds.seq_cntr,  $
           seq_group:   ccsds.seq_group,  $
           ndat:        n_elements(cnts), $
@@ -851,6 +866,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
         cnts = reform(cnts,16,256)
         str = { $
           time:      ccsds.time, $
+          delta_time: delta_t, $
           seq_cntr:  ccsds.seq_cntr,  $
           seq_group: ccsds.seq_group,  $
           ndat:      n_elements(cnts), $
@@ -934,6 +950,7 @@ function spp_swp_spane_product_decom, ccsds, ptp_header=ptp_header, apdat=apdat
         cnts = reform(cnts,16,256)
         str = { $
           time:ccsds.time, $
+          delta_time: delta_t, $
           seq_cntr:ccsds.seq_cntr,  $
           seq_group: ccsds.seq_group,  $
           ndat: n_elements(cnts), $

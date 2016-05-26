@@ -45,7 +45,6 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
   temp_par_12bit = temp_par
   temp_par_12bit.xmax = 4095
 
-
   ;;-----------------------------------------------------------
   ;; Decommutator
 
@@ -53,6 +52,8 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
 
          time:            ccsds.time, $
          dtime:           dtime/dseq_cntr, $
+         time_mod1:         (ccsds.met) mod 1 , $
+         time2_mod1:      (ccsds.met / (2L^24/19.2d6) ) mod 1, $
          met:             ccsds.met,  $
          delay_time:      ptp_header.ptp_time - ccsds.time, $
          seq_cntr:        ccsds.seq_cntr, $
@@ -230,7 +231,7 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
 
          GAP:            ccsds.gap }
   
-  if debug(3) then printdat,spai,/hex
+  if debug(5) then printdat,spai,/hex
 
   return,spai
   

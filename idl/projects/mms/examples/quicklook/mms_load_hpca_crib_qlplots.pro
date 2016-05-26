@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 11:51:41 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20698 $
+; $LastChangedDate: 2016-05-25 14:56:02 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21205 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_hpca_crib_qlplots.pro $
 ;-
 
@@ -21,7 +21,7 @@ sid = species[0]     ; set species to H+
 tsid = tplotvar_species[0]    
 
 ;timespan, '2015-08-15', 1
-timespan, '2015-11-13', 1
+timespan, '2015-10-16', 1
 ;trange = ['2015-11-02', '2015-11-03']
 tplotvar = 'mms'+pid + '_hpca_' + tsid + '_RF_corrected'
 
@@ -50,7 +50,7 @@ endif
 mms_load_hpca, probes=pid, trange=trange, datatype='rf_corr', level='l1b', data_rate='srvy', suffix='_srvy'
 
 ; load QL FGM data, currently only for ephemeris data 
-mms_load_fgm, instrument='dfg', trange=trange, probes=pid, level='ql', /no_attitude_data
+mms_load_fgm, instrument='dfg', trange=trange, probes=pid, level='ql'
 
 ; sum over nodes
 mms_hpca_calc_anodes, anode=[5, 6], probe=pid, suffix='_srvy'

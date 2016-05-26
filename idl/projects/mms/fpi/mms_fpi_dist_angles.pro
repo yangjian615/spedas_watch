@@ -11,9 +11,9 @@
 ;         This routine might be obsolete once the angles are added to the data CDFs.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-01 11:26:04 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20693 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_dist_angles.pro $
 ;-
 
@@ -42,7 +42,7 @@ pro mms_fpi_dist_angles, probe=probe, level=level, data_rate=data_rate, species=
   get_data, 'mms'+probe+'_d'+species+'s_theta_'+data_rate, ptr=theta_ptr
 
   if ~is_struct(phi_ptr) || ~is_struct(theta_ptr) then begin
-    dprint, dlevel=0, 'Cannot find tplot variables containting azimuth/elevation data'
+    dprint, dlevel=0, 'Cannot find tplot variables containing azimuth/elevation data'
     return
   endif
 

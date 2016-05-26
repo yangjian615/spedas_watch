@@ -21,7 +21,7 @@
 ; CREATED BY: J. Westlake, 2015-09-18
 ;
 ; REVISION HISTORY:
-;       + 2015-09-21, I. Cohen      : changed name from mmms_ang_ang_crib to eis_ang_ang; added trange to keywords; added documentation; set plot window size; 
+;       + 2015-09-21, I. Cohen      : changed name from mms_ang_ang_crib to eis_ang_ang; added trange to keywords; added documentation; set plot window size; 
 ;                                   : moved loadct out of for loop; added flat field array for each probe; added trange to get_data calls
 ;       + 2015-09-22, I. Cohen      : added /time_clip to mms_load_eis call to make trange work correctly; added res keyword for plotting time resolution; 
 ;                                   : replaced i with correct index for timedata when plotting; change y positions in cgimage position to lower first row from top of window
@@ -51,8 +51,8 @@
 ;       + 2016-03-31, E. Grimes     : removed flat fielding 
 ;                        
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-31 09:31:40 -0700 (Thu, 31 Mar 2016) $
-;$LastChangedRevision: 20658 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/eis_ang_ang.pro $
 ;-
 

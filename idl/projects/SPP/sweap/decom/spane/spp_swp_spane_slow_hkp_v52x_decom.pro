@@ -52,19 +52,20 @@ function spp_swp_spane_slow_hkp_v52x_decom,ccsds , ptp_header=ptp_header, apdat=
   ;  psize = 69  ; REV  16
   ;  psize =81   ; REV 19
   ;  psize =89   ; REV 26?
-  psize = 101                   ; REV 29
-  psize = 97                    ;  REV 27
-  psize = 105                   ; REV ??
-  psize = 113                   ; REV ???????
-  psize = 117                   ; REV 3B
-  psize = 133                   ; rev 3d
-  psize = 145                   ; rev 49 & 4b  fixed to allow for both EM2 and EM3
+;  psize = 101                   ; REV 29
+;  psize = 97                    ;  REV 27
+;  psize = 105                   ; REV ??
+;  psize = 113                   ; REV ???????
+;  psize = 117                   ; REV 3B
+;  psize = 133                   ; rev 3d
+;  psize = 145                   ; rev 49 & 4b  fixed to allow for both EM2 and EM3
   psize = 149                   ; rev 52 & 54
 
   if n_elements(b) ne psize+7 then begin
     dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
     return,0
   endif
+
 
 
 chksum1 = swap_endian(/swap_if_little_endian, uint( b,152 ) )
@@ -119,30 +120,23 @@ endif
   endif
 
 
-
-  ;hexprint,ccsds.data[0:31]
-
-  if keyword_set(apdat) && ptr_valid(apdat.dataindex) && keyword_set(*apdat.dataindex) then begin
-    last_spae = (*apdat.dataptr)[*apdat.dataindex -1]
-    ;   printdat,last_spae
-  endif else begin
-    dprint,dlevel=3,'No previous structure'
-    ;   printdat,apdat
-  endelse
+  
 
   sf0 = ccsds.data[11] and 3
   if sf0 ne 0 then dprint,dlevel=4, 'Odd time at: ',time_string(ccsds.time)
 
-  ref = 5.29 ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
+;  ref = 5.29 ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
   ref = 4.   ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
 
   rio_scale = .002444
 
   spae = { $
     time:           ccsds.time, $
+    dtime:          ccsds.dtime/ccsds.dseq_cntr, $
     met:            ccsds.met,  $
     delay_time:     ptp_header.ptp_time - ccsds.time, $
     seq_cntr:       ccsds.seq_cntr, $
+    dseq_cntr:      ccsds.dseq_cntr  < 15, $
     HDR_12:         b[12], $
     HDR_13:         b[13], $
     HDR_14:         b[14], $

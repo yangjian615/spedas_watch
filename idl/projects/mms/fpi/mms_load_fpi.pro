@@ -25,8 +25,7 @@
 ;         get_support_data: load support data (defined by support_data attribute in the CDF)
 ;         tplotnames:   returns a list of the names of the tplot variables loaded by the load routine
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
-;                       using  this load routine from a terminal without an X server runningdo 
-;                       not set colors
+;                       using  this load routine from a terminal without an X server running
 ;         time_clip:    clip the data to the requested time range; note that if you do not use 
 ;                       this keyword you may load a longer time range than requested
 ;         no_update:    set this flag to preserve the original data. if not set and newer 
@@ -65,8 +64,8 @@
 ;          Send me an email --> egrimes@igpp.ucla.edu
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-27 15:53:14 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20951 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 

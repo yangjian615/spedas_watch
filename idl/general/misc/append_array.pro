@@ -20,13 +20,13 @@
 ;   DONE: Equivalent to calling without the a1 argument.
 ;CREATED BY:    Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-02-02 16:58:59 -0800 (Sun, 02 Feb 2014) $
-; $LastChangedRevision: 14129 $
+; $LastChangedDate: 2016-05-25 15:40:47 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21210 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/append_array.pro $
 
 ;LAST MODIFIED: @(#)append_array.pro    1.6 98/08/13
 ;-
-pro append_array,a0,a1,index=index,new_index=new_index,done=done,fillnan=fillnan,verbose=verbose
+pro append_array,a0,a1,index=index,new_index=new_index,done=done,fillnan=fillnan,verbose=verbose,error=error
 
 a0_set = keyword_set(a0) or size(/n_dimension,a0) ge 1    ; a0 is defined
 
@@ -49,9 +49,30 @@ if arg_present(index) or n_elements(index) ne 0 then begin
         return
     endif
 
+error = 0
 if a0_set && size(/type,a0) ne size(/type,a1) then begin
-   dprint,dlevel=1,verbose=verbose,'Incompatible types! Can not append'
+   if debug(3) then printdat,a0,a1
+   dprint,dlevel=2,verbose=verbose,'Incompatible types! Can not append'
+   error = 1
    return
+endif
+
+if a0_set && n_tags(/length,a0) ne n_tags(/length,a1) then begin
+   printdat,a0,a1
+   dprint,dlevel=2,verbose=verbose,'Incompatible structures! Can not append'
+   error = 2
+   return
+endif
+
+
+if a0_set then begin
+  dim0 = size(/dimen,a0)
+  dim1 = size(/dimen,a1)
+  if n_elements(dim0) eq 2 && n_elements(dim1) eq 2 && dim0[1] ne dim1[1] then begin
+    dprint,dlevel=2,verbose=verbose,'Size mismatch'    
+    error = 3
+    return
+  endif
 endif
 
     if not keyword_set(index) then index = n0

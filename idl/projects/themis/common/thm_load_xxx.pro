@@ -64,9 +64,9 @@
 ;Notes:
 ;  This routine is (should be) platform independent.
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-05-19 14:26:27 -0700 (Tue, 19 May 2015) $
-; $LastChangedRevision: 17650 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2016-05-25 12:16:39 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21195 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_load_xxx.pro $
 ;-
 
@@ -334,7 +334,7 @@ pro thm_load_xxx, sname = sname, datatype = datatype, trange = trange, $
             level = lvlk, verbose = vb, tplotnames = tn_for_cal, $
             progobj = progobj, files = files, proc_type = type, $
             get_support_data = get_support_data, trange = trange, $
-            use_eclipse_corrections = use_eclipse_corrections, _extra = _extra
+            use_eclipse_corrections = use_eclipse_corrections, no_time_clip=no_time_clip, _extra = _extra
         endelse
       endif
     

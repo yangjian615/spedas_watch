@@ -13,8 +13,8 @@
 ;   predeph - predicted ephemeris data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-16 12:02:08 -0700 (Wed, 16 Mar 2016) $
-;$LastChangedRevision: 20475 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_get_state_data.pro $
 ;-
 pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames, $
@@ -63,7 +63,7 @@ pro mms_get_state_data, probe = probe, trange = trange, tplotnames = tplotnames,
                     public=public)
 
                 ; if pred_or_def flag was set check that files were found and/or the time frame
-                ; covers the entire time requestd
+                ; covers the entire time requested
                 if pred_or_def then begin
                     switch_to_pred = 0    ; assume files found and start/end covers time span
                     if ~is_array(ancillary_file_info) or ancillary_file_info[0] eq '' then begin

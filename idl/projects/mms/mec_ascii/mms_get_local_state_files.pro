@@ -22,9 +22,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2016-05-13 10:20:28 -0700 (Fri, 13 May 2016) $
-;$LastChangedRevision: 21079 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_get_local_state_files.pro $
 ;-
 
@@ -64,12 +64,12 @@ basic_inputs = [probe, instrument, level, filetype]
 
 ;directory and file name search patterns
 ;  For now
-;  -all anciallary data is in one directory:
+;  -all ancillary data is in one directory:
 ;     mms\ancillary
 ;  -assume file names are of the form:
 ;     SPACECRAFT_FILETYPE_startDate_endDate.version
-;     where SPACECRAFT is [MMS1, MMS2, MMS3, MMS4] in upppercase
-;     and FILETYPE is either DEFATT, PREDATT, DEFEPH, PREDEPH in upppercase
+;     where SPACECRAFT is [MMS1, MMS2, MMS3, MMS4] in uppercase
+;     and FILETYPE is either DEFATT, PREDATT, DEFEPH, PREDEPH in uppercase
 ;     and start/endDate is YYYYDOY
 ;     and version is Vnn (.V00, .V01, etc..)
 dir_pattern = strjoin( basic_inputs, s)+s

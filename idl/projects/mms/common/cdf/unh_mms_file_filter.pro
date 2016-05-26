@@ -4,7 +4,7 @@
 ; PURPOSE:
 ;+
 ;   Filter MMS file names by time and version. File names are assumed to be identical
-;   exept in the TSTART and VERSION fields.
+;   except in the TSTART and VERSION fields.
 ;
 ; :Params:
 ;       FILENAMES:      in, required, type=string/strarr

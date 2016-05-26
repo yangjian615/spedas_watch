@@ -28,8 +28,10 @@ function spp_swp_ccsds_decom,buffer          ,subsec=subsec   , error=error
   if buffer_length lt pkt_size then begin
     error=2b
     pktbuffer = [buffer,bytarr(pkt_size-buffer_length)]
-    dprint,'Not enough bytes in buffer',dlevel=3,pkt_size,buffer_length
-    if debug(2) then  hexprint,buffer
+    if debug(3,msg='Not enough bytes in ccsds buffer') then begin
+      dprint,'pkt_size, buffer_length= ',dlevel=2,pkt_size,buffer_length
+      hexprint,buffer
+    endif
   endif else pktbuffer = buffer[0:pkt_size-1]
   
   ccsds = { $
@@ -43,8 +45,10 @@ function spp_swp_ccsds_decom,buffer          ,subsec=subsec   , error=error
           MET:          MET,   $
           data:         pktbuffer, $
 ;          smples_sumd:  2^(buffer[12] and 'F'x),  $   ;  this doesn't belong here....
+          dtime :  !values.d_nan, $
+          dseq_cntr:   0u , $
           error : error, $
-          gap : 0b  } ; this is the number of samples used to make the summed product
+          gap : 1b  } 
 
 
 
@@ -53,11 +57,6 @@ function spp_swp_ccsds_decom,buffer          ,subsec=subsec   , error=error
      ccsds.time = !values.d_nan
   endif
   
-                                ;  dprint,format='(04z," ",)'
-  ;if ccsds.size ne (n_elements(ccsds.data))-7 then begin
-  ;  dprint,dlevel=3,format='(a," x",z04,i7,i7)','CCSDS size
-  ;  error',ccsds.apid,ccsds.size,n_elements(ccsds.data)
-  ;endif
 
   return,ccsds
   

@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-06 13:56:55 -0700 (Wed, 06 Apr 2016) $
-; $LastChangedRevision: 20734 $
+; $LastChangedDate: 2016-05-25 13:35:14 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21199 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_fields_crib_qlplots.pro $
 ;-
 
@@ -14,7 +14,7 @@
 ; initialize and define parameters
 probes = ['1', '2', '3', '4']
 ;trange = ['2015-09-05', '2015-09-06']
-timespan, '2016-02-23', 1, /day
+timespan, '2015-10-16', 1, /day
 iw = 0
 width = 750
 height = 1000
@@ -45,7 +45,7 @@ mms_load_fgm, instrument='dfg', probes=probes, level='ql', data_rate='srvy'
 
 ; DMPA - Handle Btot and Bvec 
 
-; Btot - set title and colors and create psuedo variable
+; Btot - set title and colors and create pseudo variable
 options, 'mms1*_btot', colors=[0]    ; black
 options, 'mms2*_btot', colors=[6]    ; red
 options, 'mms3*_btot', colors=[4]    ; green
@@ -57,14 +57,14 @@ store_data, 'mms_dfg_srvy_dmpa_btot', data = ['mms1_dfg_srvy_dmpa_btot', $
 options, 'mms_*_btot',ytitle='FGM Btot'
 options, 'mms_*_btot',ysubtitle='QL [nT]'
 
-; Bvec - set colors, psuedo variables and titles
+; Bvec - set colors, pseudo variables and titles
 options, 'mms1*_bvec', colors=[0]    ; black
 options, 'mms2*_bvec', colors=[6]    ; red
 options, 'mms3*_bvec', colors=[4]    ; green
 options, 'mms4*_bvec', colors=[2]    ; blue
 ; split into components x, y, z for plotting
 split_vec, 'mms*_bvec'
-; create psuedo variables for each component x, y, and z
+; create pseudo variables for each component x, y, and z
 store_data, 'mms_dfg_srvy_dmpa_bvec_x', data = ['mms1_dfg_srvy_dmpa_bvec_x', $
   'mms2_dfg_srvy_dmpa_bvec_x', $
   'mms3_dfg_srvy_dmpa_bvec_x', $
@@ -142,7 +142,7 @@ stop
 ;
 ; START OF FIELDS2 E&B PLOTS - ALL SPACECRAFT
 ;
-; Get dec data
+; Get DCE data
 mms_load_edp, data_rate='fast', probes=[1, 2, 3, 4], datatype='dce', level='ql', trange=['2016-02-23', '2016-02-24']
 
 options, 'mms1*_dce_xyz_dsl', colors=[0]    ; black

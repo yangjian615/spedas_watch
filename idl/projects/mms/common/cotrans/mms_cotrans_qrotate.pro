@@ -13,7 +13,7 @@
 ;  quaternion_name:  Tplot variable containing MMS rotation quaternion
 ;  name_out:  New name for output variable, if not specified the original is overwritten
 ;  inverse:  Flag to apply inverse rotation
-;  out_coord:  String specifing output coord for upating dlimits
+;  out_coord:  String specifying output coordinates for updating dlimits
 ;  
 ;Output:
 ;  none, may alter or create new tplot variable
@@ -22,9 +22,9 @@
 ;  -This routine does not alter metadata
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-08 10:00:34 -0700 (Fri, 08 Apr 2016) $
-;$LastChangedRevision: 20758 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21208 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qrotate.pro $
 ;-
 
@@ -70,7 +70,7 @@ endif else begin
 endelse
 
 if n_elements(data_out) eq 1 then begin
-  dprint, dlevel=0, 'Uknown error transformting "'+name_in+'" with "'+q_name+'"'
+  dprint, dlevel=0, 'Unknown error transforming "'+name_in+'" with "'+q_name+'"'
   return
 endif
 

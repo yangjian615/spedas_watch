@@ -61,8 +61,23 @@ dprint,dlevel=3,apid_name,' ',ns
        spec1 = total(cnts,2)
        spec2 = total(cnts,1)        
      end
-     16: begin
+     64: begin
+       dprint,dlevel=4,apdat.apid,format='(z)'
+       cnts = reform(cnts,16,4,/overwrite)
+       spec1 = total(cnts,2)
+       spec2 = total(cnts,1)
+     end
+     32: begin
         spec1 = cnts                                ;     printdat,cnts
+     end
+     16: begin
+       spec1 = cnts                                ;     printdat,cnts
+     end
+     8: begin
+       spec1 = cnts                                ;     printdat,cnts
+     end
+     4: begin
+       spec1 = cnts                                ;     printdat,cnts
      end
      else: begin
 ;       printdat,ccsds

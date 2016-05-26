@@ -20,7 +20,7 @@
 ;                  GEI<->J2000
 ;
 ;Input:
-;  in_name:  name ofvariable to be transformed
+;  in_name:  name of variable to be transformed
 ;  out_name:  output name for transformed variable
 ;  in_coord:  coordinate system of the input
 ;  out_coord:  coordinate system of the output
@@ -37,9 +37,9 @@
 ;  Modeled after thm_cotrans_transform_helper
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-21 19:27:01 -0800 (Mon, 21 Dec 2015) $
-;$LastChangedRevision: 19640 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21208 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_transformer.pro $
 ;-
 

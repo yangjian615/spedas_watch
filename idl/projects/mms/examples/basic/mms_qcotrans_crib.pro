@@ -10,8 +10,8 @@
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-;$LastChangedRevision: 21138 $
+;$LastChangedDate: 2016-05-25 13:35:14 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21199 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_qcotrans_crib.pro $
 ;-
 
@@ -84,7 +84,7 @@ window, xs=900, ys=900
 ;------------------------------------------------------
 ; Implicit transformations
 ;  -Input/output coordinates can be specified with IN/OUT_SUFFIX keywords
-;  -Input coordinates can be ommited when metadata is present
+;  -Input coordinates can be omitted when metadata is present
 ;------------------------------------------------------
 
 ; transform to GSE
@@ -97,7 +97,7 @@ stop
 
 ;------------------------------------------------------
 ; Specify input suffix
-;  -Replaces currect suffix with that of new coordinates
+;  -Replaces current suffix with that of new coordinates
 ;  -If any inputs' metadata do not match explicit input coordinates
 ;   then the transformation will be skipped
 ;------------------------------------------------------
@@ -113,11 +113,11 @@ stop
 
 ;------------------------------------------------------
 ; Explicit transformations
-;  -input/output coordinates can be specified indipendent of suffixes
+;  -input/output coordinates can be specified independent of suffixes
 ;  -if metadata is incorrect or not present then use /IGNORE_DLIMITS to ignore
 ;------------------------------------------------------
 
-; transform both orignal varialbes as though they are both in DMPA coordinates
+; transform both original variables as though they are both in DMPA coordinates
 ; use /ignore_dlimits to ignore metadata for dbcs velocity
 mms_qcotrans, [v_name,b_name], in_coord='dmpa', out_coord='gse', $
               out_suffix='_pseudo_gse', /ignore_dlimits

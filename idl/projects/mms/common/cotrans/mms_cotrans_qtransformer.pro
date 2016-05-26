@@ -13,7 +13,7 @@
 ;  All possible transformations currently go through ECI coordinates 
 ;
 ;Input:
-;  in_name:  name ofvariable to be transformed
+;  in_name:  name of variable to be transformed
 ;  out_name:  output name for transformed variable
 ;  in_coord:  coordinate system of the input
 ;  out_coord:  coordinate system of the output
@@ -26,9 +26,9 @@
 ;  Modeled after thm_cotrans_transform_helper
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 12:01:25 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21096 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21208 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qtransformer.pro $
 ;-
 
@@ -58,7 +58,7 @@ pro mms_cotrans_qtransformer, $
   endif
 
 
-  ; Do not transform to/from spinning frames if quaternion time resulotion 
+  ; Do not transform to/from spinning frames if quaternion time resolution 
   ; is lower than nyquist rate.  All transforms have a single middle step (ECI)
   ; so this should catch all cases w/o leaving a partially transformed var.
   if mms_qcotrans_check_rate(in_coord,out_coord,probe) then return

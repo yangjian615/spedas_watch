@@ -30,9 +30,9 @@
 ;  This is a work in progress
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
-;$LastChangedRevision: 20992 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
@@ -226,15 +226,15 @@ dist.time = (*azimuth.x)[full] - dt_sweep[data_idx]
 dist.end_time = dist.time + dt[full]  ;index won't exceed elements due to selection criteria
 
 ;get azimuth 
-;  -shift from from time-energy-elevation-azimuth to energy-azimuth-elevation-time
+;  -shift from time-energy-elevation-azimuth to energy-azimuth-elevation-time
 ;   (time must be last to be added to structure array)
 dist.phi = transpose( (*azimuth.y)[full,*,*,*], [1,3,2,0])
 
 ;get dphi
-;  -use median distance between subsequent phi measurments within each distribution
+;  -use median distance between subsequent phi measurements within each distribution
 ;   (median is used to discard large differences across 0=360)
 ;  -preserve dimensionality in case differences arise across energy or elevation
-dphi = median( (*azimuth.y)[full,*,*,1:*] - (*azimuth.y)[full,*,*,0:*], dim=4 ) ;get medain across phi
+dphi = median( (*azimuth.y)[full,*,*,1:*] - (*azimuth.y)[full,*,*,0:*], dim=4 ) ;get median across phi
 dphi = rebin( dphi, [dimen(dphi),dim[1]] ) ;expand back to original dimensions
 dist.dphi = transpose( dphi, [1,3,2,0] ) ;shuffle dimensions
 

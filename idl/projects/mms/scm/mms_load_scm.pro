@@ -25,7 +25,7 @@
 ;         tplotnames:   names for tplot variables
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're 
 ;                       using this load
-;                       routine from a terminal without an X server runningdo not set colors
+;                       routine from a terminal without an X server running
 ;         time_clip:    clip the data to the requested time range; note that if you do not use 
 ;                       this keyword you may load a longer time range than requested
 ;         no_update:    set this flag to preserve the original data. if not set and newer data 
@@ -65,8 +65,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-13 12:19:06 -0700 (Wed, 13 Apr 2016) $
-;$LastChangedRevision: 20802 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 
@@ -89,7 +89,7 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
     if array_contains(data_rate, 'srvy') && ~array_contains(datatype, 'scsrvy') then append_array, datatype, 'scsrvy'
     if array_contains(data_rate, 'brst') && (~array_contains(datatype, 'scb') && ~array_contains(datatype, 'schb')) then append_array, datatype, ['scb', 'schb']
    ; if undefined(datatype) && data_rate eq 'brst' then datatype = 'scb'
-    if undefined(time_clip) then time_clip = 1  ;to account for tt2000 timerange set in meta data
+    if undefined(time_clip) then time_clip = 1  ;to account for tt2000 time range set in meta data
     
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'scm', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

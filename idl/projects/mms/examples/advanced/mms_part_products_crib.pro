@@ -1,15 +1,15 @@
 
 ;+
 ;Procedure:
-;  mms_part_products_crib_l2
+;  mms_part_products_crib
 ;
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate particle
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-24 13:12:04 -0700 (Tue, 24 May 2016) $
-;$LastChangedRevision: 21185 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 12:21:16 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21197 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib.pro $
 ;
 ;-

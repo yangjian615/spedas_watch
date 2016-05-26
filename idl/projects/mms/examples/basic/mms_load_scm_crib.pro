@@ -5,13 +5,13 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; Note:
-; 1) Due to calibration processing L2 SCM data are set to 0 at the edges of each continous period of waveform
+; 1) Due to calibration processing L2 SCM data are set to 0 at the edges of each continuous period of waveform
 ; 2) In srvy mode, onboard SCM calibration sequences have been removed from L2 SCM srvy data and appear as data gap    
-; 3) For more informations about SCM data, please contact olivier.lecontel@lpp.polytechnique.fr
+; 3) For more information about SCM data, please contact olivier.lecontel@lpp.polytechnique.fr
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-23 07:51:55 -0700 (Mon, 23 May 2016) $
-; $LastChangedRevision: 21168 $
+; $LastChangedDate: 2016-05-25 13:35:14 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21199 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_scm_crib.pro $
 ;-
 

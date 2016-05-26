@@ -27,9 +27,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-02 17:02:04 -0700 (Mon, 02 May 2016) $
-;$LastChangedRevision: 20992 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -69,7 +69,7 @@ endif
 
 ;double check that required info is defined
 if ~is_string(probe) || ~is_string(species) then begin
-  dprint, 'Cannot determine probe/species from variable name, please specify by kewword'
+  dprint, 'Cannot determine probe/species from variable name, please specify by keyword'
   return, 0
 endif
 
@@ -82,7 +82,7 @@ endif
 
 ; Allow calling code to request a time range and/or specify index
 ; to specific sample.  This allows calling code to extract 
-; structures one at time and improves efficency in other cases.
+; structures one at time and improves efficiency in other cases.
 ;-----------------------------------------------------------------
 
 ;index supersedes time range

@@ -45,7 +45,7 @@
 ;           
 ;  out_vars: return a list of the names of any transformed variables
 ;
-;  valid_names:  return valid coordinate system names in named varibles supplied to
+;  valid_names:  return valid coordinate system names in named variables supplied to
 ;                in_coord and/or out_coord keywords.
 ;  ignore_dlimits: set this keyword to true so that an error will not
 ;                  be produced if the internal label of the coordinate system clashed
@@ -58,8 +58,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-03 09:20:24 -0700 (Tue, 03 May 2016) $
-;$LastChangedRevision: 21002 $
+;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21208 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans.pro $
 ;-
 
@@ -234,7 +234,7 @@ endif else begin
   
     ;this only returns 'unknown' if the field is not present,
     ;blank fields will be returned and lower routines expect
-    ;them to have been filterted as conflicted 
+    ;them to have been filtered as conflicted 
     data_in_coord = cotrans_get_coord(in_names[i])
     
     if ~is_string(in_coord) then begin

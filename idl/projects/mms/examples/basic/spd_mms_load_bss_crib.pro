@@ -3,12 +3,12 @@
 ;
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
-;
-; See also "spd_mms_load_bss", "mms_load_bss", and "mms_load_bss_crib".
+; 
+; Note: status and FoM bars currently require an MMS team password for the SDC
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21138 $
+; $LastChangedDate: 2016-05-25 09:30:45 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21193 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/spd_mms_load_bss_crib.pro $
 ;-
 
@@ -27,16 +27,17 @@ mms_load_fgm, probe=3, data_rate=['srvy', 'brst'], level='l2'
 ; burst segments
 tdegap, 'mms3_fgm_b_gse_brst_l2_bvec', /overwrite
 
-
 tplot,['mms_bss_fast','mms_bss_burst', 'mms3_fgm_b_gse_srvy_l2_bvec', 'mms3_fgm_b_gse_brst_l2_bvec']
 stop
 
 ; Get all BSS data types (Fast, Burst, Status, and FOM)
-spd_mms_load_bss, /include_labels, datatype=['fast', 'burst', 'fom', 'status']
+; Note: the following will request your MMS team username/password due
+; to the FoM and status bars
+; spd_mms_load_bss, /include_labels, datatype=['fast', 'burst', 'fom', 'status']
 
 ; plot bss bars and fom at top of plot
-tplot,['mms_bss_fast','mms_bss_burst','mms_bss_status', 'mms_bss_fom', $
-       'mms3_fgm_b_gse_srvy_l2_bvec', 'mms3_fgm_b_gse_brst_l2_bvec']
-stop
+; tplot,['mms_bss_fast','mms_bss_burst','mms_bss_status', 'mms_bss_fom', $
+;       'mms3_fgm_b_gse_srvy_l2_bvec', 'mms3_fgm_b_gse_brst_l2_bvec']
+; stop
 
 end

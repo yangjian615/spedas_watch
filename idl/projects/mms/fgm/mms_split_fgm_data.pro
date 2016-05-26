@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-03 09:57:57 -0700 (Tue, 03 May 2016) $
-;$LastChangedRevision: 21004 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_split_fgm_data.pro $
 ;-
 pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate, instrument = instrument
@@ -27,7 +27,7 @@ pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level =
 
         if is_struct(fgm_data) && is_struct(fgm_dlimits) then begin
 
-            ; strip suffix off tplot_name. this prevents suffix from occuring twice in tplot variable name
+            ; strip suffix off tplot_name. this prevents suffix from occurring twice in tplot variable name
             if suffix NE '' then tplot_name=strmid(tplot_name, 0, strpos(tplot_name, suffix))
             store_data, tplot_name + '_bvec'+suffix, data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
             store_data, tplot_name + '_btot'+suffix, data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits
@@ -57,7 +57,7 @@ pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level =
 
       if is_struct(fgm_data) && is_struct(fgm_dlimits) then begin
 
-        ; strip suffix off tplot_name. this prevents suffix from occuring twice in tplot variable name
+        ; strip suffix off tplot_name. this prevents suffix from occurring twice in tplot variable name
         if suffix NE '' then tplot_name=strmid(tplot_name, 0, strpos(tplot_name, suffix))
         store_data, tplot_name + '_bvec'+suffix, data={x: fgm_data.X, y: [[fgm_data.Y[*, 0]], [fgm_data.Y[*, 1]], [fgm_data.Y[*, 2]]]}, dlimits=fgm_dlimits
         store_data, tplot_name + '_btot'+suffix, data={x: fgm_data.X, y: fgm_data.Y[*, 3]}, dlimits=fgm_dlimits

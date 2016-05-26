@@ -8,8 +8,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-04-27 14:39:44 -0700 (Wed, 27 Apr 2016) $
-; $LastChangedRevision: 20946 $
+; $LastChangedDate: 2016-05-25 15:41:41 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21211 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -24,6 +24,7 @@ PRO recorder_event, ev   ; recorder
     CASE ev.id OF                         ;  Timed events
     wids.base:  begin
         if info.hfp gt 0 then begin
+            on_ioerror, stream_error
             eofile =0
             info.time_received = systime(1)
             buffer= bytarr(info.maxsize) 
@@ -37,10 +38,18 @@ PRO recorder_event, ev   ; recorder
                     dprint,dlevel=dlevel-1,info.title_num+'Connection to Host: '+hostname[0]+':'+hostport[0]+' broken. ',i
                     eofile = 1
                     break
-                endif
+                endif                
                 readu,info.hfp,b
                 buffer[i] = b
             endfor
+            if eofile eq 1 then begin
+              stream_error:
+              widget_control,wids.host_text,get_value=hostname
+              widget_control,wids.host_port,get_value=hostport
+              dprint,dlevel=dlevel-1,info.title_num+'File error: '+hostname[0]+':'+hostport[0]+' broken. ',i
+
+            endif
+            
             if i gt 0 then begin
               buffer = buffer[0:i-1]
               if keyword_set(info.dfp) then writeu,info.dfp, buffer  ;swap_endian(buffer,/swap_if_little_endian)
@@ -222,22 +231,22 @@ end
 
 PRO recorder,base,title=title,ids=ids,host=host,port=port,destination=destination,exec_proc=exec_proc, $
           set_connect=set_connect, set_output=set_output, pollinterval=pollinterval, $
-          get_procbutton = get_procbutton,set_procbutton=set_procbutton, $ ;,directory=directory
+          get_procbutton = get_procbutton,set_procbutton=set_procbutton,directory=directory, $
           get_filename=get_filename,info=info
 if ~(keyword_set(base) && widget_info(base,/managed) ) then begin
     if not keyword_set(host) then host = 'localhost'
     if not keyword_set(port) then port = '2022'
     if not keyword_set(title) then title = 'Socket Recorder'
     port=strtrim(port,2)
-    if not keyword_set(destination) then destination = 'socket_{HOST}:{PORT}_YYYYMMDD_hhmmss.dat'
+    if not keyword_set(destination) then destination = 'socket_{HOST}.{PORT}_YYYYMMDD_hhmmss.dat'
     ids = create_struct('base', WIDGET_BASE(/COLUMN, title=title ) )
     ids = create_struct(ids,'host_base',   widget_base(ids.base,/row, uname='HOST_BASE') )
     ids = create_struct(ids,'host_button', widget_button(ids.host_base, uname='HOST_BUTTON',value='Connect to') )
     ids = create_struct(ids,'host_text',   widget_text(ids.host_base,  uname='HOST_TEXT' ,VALUE=host ,/EDITABLE ,/NO_NEWLINE ) )
     ids = create_struct(ids,'host_port',   widget_text(ids.host_base,  uname='HOST_PORT',xsize=6, value=port   , /editable, /no_newline))
     ids = create_struct(ids,'poll_int' ,   widget_text(ids.host_base,  uname='POLL_INT',xsize=6,value='1',/editable,/no_newline))
-;  if n_elements(directory) ne 0 then $
-;    ids = create_struct(ids,'destdir_text',   widget_text(ids.base,  uname='DEST_DIRECTORY',xsize=40 ,/EDITABLE ,/NO_NEWLINE  ,VALUE=directory))
+;    if n_elements(directory) ne 0 then $
+;      ids = create_struct(ids,'destdir_text',   widget_text(ids.base,  uname='DEST_DIRECTORY',xsize=40 ,/EDITABLE ,/NO_NEWLINE  ,VALUE=directory))
     ids = create_struct(ids,'dest_base',   widget_base(ids.base,/row, uname='DEST_BASE'))
     ids = create_struct(ids,'dest_button', widget_button(ids.dest_base, uname='DEST_BUTTON',value='Write to'))
     ids = create_struct(ids,'dest_text',   widget_text(ids.dest_base,  uname='DEST_TEXT',xsize=40 ,/EDITABLE ,/NO_NEWLINE  ,VALUE=destination))
@@ -257,6 +266,7 @@ if ~(keyword_set(base) && widget_info(base,/managed) ) then begin
         title_num: title_num, $
         time_received: 0d, $
         hfp:0,  $
+;        directoryformat:directoryformat ,  $
         fileformat:destination,  $
         filename:'', $
         dfp:0 , $

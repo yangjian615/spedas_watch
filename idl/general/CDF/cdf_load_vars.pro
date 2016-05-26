@@ -3,7 +3,7 @@
 ; INPUT:
 ;   file = CDF filename(s)
 ; OUTPUT:
-;   CDFI = A strucutre containing pointers to the data and attributes
+;   CDFI = A structure containing pointers to the data and attributes
 ;          for the files, with tags:
 ;   CDFI.FILENAME = The filename(s)
 ;
@@ -19,7 +19,7 @@
 ;   CDFI.INQ.NATTS = number of variable attributes 
 ;   CDFI.INQ.DIM = dimensions of rVariables
 ;
-;   CDFI.g_atttributes = CDF global attributes, strucuture varies
+;   CDFI.g_atttributes = CDF global attributes, structure varies
 ;   Here is a sample from THEMIS EFI:
 ;
 ;   PROJECT         STRING    'THEMIS'
@@ -76,7 +76,7 @@
 ;  CDFI.VARS.D = A six-element array with the number of dimensions for
 ;                each index
 ;  CDFI.VARS.DATAPTR = A pointer to the data array:
-;  CDFI.VARS.ATTRPTR  = A pointer to the varaible attributes
+;  CDFI.VARS.ATTRPTR  = A pointer to the variable attributes
 ;                       structure for each variable. Content varies,
 ;                       here is a sample from THEMIS EFI Electric
 ;                       field data:
@@ -134,9 +134,9 @@
 ; Side Effects:
 ;   Data is returned in pointer variables. Calling routine is responsible for freeing up heap memory - otherwise a memory leak will occur.
 ;
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-06-04 08:35:27 -0700 (Wed, 04 Jun 2014) $
-; $LastChangedRevision: 15302 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-05-25 15:16:05 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21206 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_load_vars.pro $
 ;
 ;-
@@ -150,7 +150,7 @@ function cdf_load_vars,files,varnames=vars,varformat=vars_fmt,info=info,verbose=
 vb = keyword_set(verbose) ? verbose : 0
 vars=''
 info = 0
-dprint,dlevel=4,verbose=verbose,'$Id: cdf_load_vars.pro 15302 2014-06-04 15:35:27Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'$Id: cdf_load_vars.pro 21206 2016-05-25 22:16:05Z egrimes $'
 
 on_ioerror, ferr
 for fi=0,n_elements(files)-1 do begin

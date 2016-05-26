@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-10 14:31:13 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19594 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_eph_tplot.pro $
 ;-
 pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, level = level, $
@@ -38,7 +38,7 @@ pro mms_load_eph_tplot, filenames, tplotnames = tplotnames, prefix = prefix, lev
         endif
     endfor
 
-    ; sort and find uniq time_values since predicted files overlap each other
+    ; sort and find unique time_values since predicted files overlap each other
     idx=[uniq(time_values, sort(time_values))]
     time_values = time_values[idx]
     if ~undefined(eph_data_pos) then eph_data_pos = eph_data_pos[idx,*]

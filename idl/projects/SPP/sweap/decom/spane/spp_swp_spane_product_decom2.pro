@@ -199,13 +199,15 @@ if  ns gt 0 then begin
     16:   res = spp_swp_spane_16A(cnts, header_str=str, apdat=apdat)
     512:  res = spp_swp_spane_16Ax32E(cnts, header_str=str, apdat=apdat)
     4096: res = spp_swp_spane_16Ax8Dx32E(cnts, header_str=str, apdat=apdat)
-    else:  dprint,dlevel=3,'Size not recognized: ',ndat
+    else:  if debug(3,msg='Unknown data size') then begin
+        hexprint,header
+        dprint,dlevel=2,'Size: ',ndat,' compression: ',compression
+      endif
   endcase
   
   
   
 endif
-
   return, str
 
 

@@ -22,8 +22,8 @@
 ; OUTPUT:
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-29 14:54:18 -0700 (Fri, 29 Apr 2016) $
-;$LastChangedRevision: 20982 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad_spinavg.pro $
 ;
 ; REVISION HISTORY:
@@ -50,7 +50,7 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
 
   if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_'+datatype+'_' else prefix = 'mms'+probe+'_epd_eis_'+datatype+'_'
   if (n_elements(scopes) eq 1) then scope_suffix = '_t'+scopes+suffix_in else if (n_elements(scopes) eq 6) then scope_suffix = '_omni'+suffix_in
-  ; get the spin #s asscoiated with each measurement
+  ; get the spin #s associated with each measurement
   get_data, prefix + 'spin'+suffix_in, data=spin_nums
 
   ; find where the spins start

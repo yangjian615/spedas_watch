@@ -3,7 +3,7 @@
 ; INPUT:
 ;   file = CDF filename(s)
 ; OUTPUT:
-;   CDFI = A strucutre containing pointers to the data and attributes
+;   CDFI = A structure containing pointers to the data and attributes
 ;          for the files, with tags:
 ;   CDFI.FILENAME = The filename(s)
 ;
@@ -19,7 +19,7 @@
 ;   CDFI.INQ.NATTS = number of variable attributes 
 ;   CDFI.INQ.DIM = dimensions of rVariables
 ;
-;   CDFI.g_atttributes = CDF global attributes, strucuture varies
+;   CDFI.g_atttributes = CDF global attributes, structure varies
 ;   Here is a sample from THEMIS EFI:
 ;
 ;   PROJECT         STRING    'THEMIS'
@@ -67,7 +67,7 @@
 ;  CDFI.VARS.NUM  = The index of the given variable in the cdfi.vars array
 ;  CDFI.VARS.IS_ZVAR = 1 for a zVariable
 ;  CDFI.VARS.DATATYPE = The data type, e.g.'CDF_FLOAT'
-;  CDFI.VARS.TYPE = The nummerical IDL data type (float is 4, etc...)
+;  CDFI.VARS.TYPE = The numerical IDL data type (float is 4, etc...)
 ;  CDFI.VARS.NUMATTR = -1,  Not sure about this one, returned from CDF_VARGET
 ;  CDFI.VARS.NUMELEM = Number of elements in a record, returned from CDF_VARGET
 ;  CDFI.VARS.RECVARY = Set to 1 if variable varies from record to record
@@ -76,7 +76,7 @@
 ;  CDFI.VARS.D = A six-element array with the number of dimensions for
 ;                each index
 ;  CDFI.VARS.DATAPTR = A pointer to the data array:
-;  CDFI.VARS.ATTRPTR  = A pointer to the varaible attributes
+;  CDFI.VARS.ATTRPTR  = A pointer to the variable attributes
 ;                       structure for each variable. Content varies,
 ;                       here is a sample from THEMIS EFI Electric
 ;                       field data:

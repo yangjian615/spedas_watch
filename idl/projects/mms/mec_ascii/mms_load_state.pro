@@ -31,19 +31,19 @@
 ;                     attempt to download the data from the URL and REMOTE_DATA_DIR is defined, 
 ;                     the software will attempt to download the file from REMOTE_DATA_DIR, place it 
 ;                     in LOCAL_DATA_DIR with the same relative pathname, and then continue 
-;                     processing.the remote directory the data is downloaded from.
+;                     processing.
 ;         attitude_only: flag to only load L-right ascension and L-declination attitude data, this
 ;                     is only true for predicted data
 ;         ephemeris_only: flag to only load position and velocity data, this is only true for predicted data
 ;         no_download: set flag to use local data only (no download)
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
-;                     with "username" and "password" tags that inclue your API login information
+;                     with "username" and "password" tags that include your SDC login information
 ;         tplotnames: names for tplot variables
 ;         pred_or_def: set this flag to turn off looking for predicted data if definitive not found
 ;                     (pred_or_def=0 will return only the level that was requested). The default is 
 ;                     to load predicted data if definitive data is not found 
 ;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this 
-;                     load routine from a terminal without an X server runningdo not set colors
+;                     load routine from a terminal without an X server running
 ;         suffix:     appends a suffix to the end of the tplot variable name. this is useful for 
 ;                     preserving original tplot variable. 
 ;         ascii:      force loading the state data from the ASCII files (will not use the MEC files)
@@ -85,8 +85,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-04 07:58:58 -0700 (Wed, 04 May 2016) $
-;$LastChangedRevision: 21017 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 

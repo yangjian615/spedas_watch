@@ -75,8 +75,7 @@ end
 
 
 
-
-
+f= spp_file_retrieve( 'spp/data/sci/sweap/prelaunch/gsedata/EM/z320/20160331_125002_/PTP_data.dat' )
 
 
 ;files = spp_swp_spane_functiontest1_files()
@@ -85,6 +84,16 @@ spp_msg_file_read,files
 
 
 tplot,'*CNTS *DCMD_REC *VMON_MCP *VMON_RAW *ACC*'
+
+
+if 0 then begin
+  tplot,'spp_spane_?_ar_????_p1*',/names
+  
+  
+  
+  
+endif
+
 
 
 
@@ -98,6 +107,16 @@ endif else begin
   options,'spp_spane_spec_CNTS1',spec=1,yrange=[-1,32],ylog=0,zrange=[1,500.],zlog=1,/no_interp
   options,'spp_spane_spec_CNTS2',spec=1,yrange=[-1,16],ylog=0,zrange=[1,500.],zlog=1,/no_interp
 endelse
+
+
+if 0 then begin
+  tplot,'spp_spani_hkp_HEMI_CDI spp_manip_MROTPOS spp_spani_tof_TOF APID spp_spani_rates_VALID_CNTS
+  tplot,'spp_spani_ar_full_p0_m?_*_SPEC2'
+  tplot,'spp_spani_ar_full_p1_m?_*_SPEC2'
+  
+  
+endif
+
 
 
 

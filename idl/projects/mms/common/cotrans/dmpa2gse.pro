@@ -5,7 +5,7 @@
 ;            DMPA <--> GSE
 ;
 ;         interpolates, right ascension, declination
-;         updates coord_sys atribute of output tplot variable.
+;         updates coord_sys attribute of output tplot variable.
 ;
 ;inputs
 ;
@@ -30,8 +30,8 @@
 ;    
 ;    
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-01-20 14:30:54 -0800 (Wed, 20 Jan 2016) $
-; $LastChangedRevision: 19767 $
+; $LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21208 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/dmpa2gse.pro $
 ;-
 

@@ -5,15 +5,15 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-06 14:56:25 -0700 (Wed, 06 Apr 2016) $
-; $LastChangedRevision: 20736 $
+; $LastChangedDate: 2016-05-25 14:56:02 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21205 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_eis_crib_qlplots.pro $
 ;-
 
 probe = '3'
 ;trange = ['2015-08-15', '2015-08-16']
 ;timespan, '2015-08-15', 1
-timespan, '2016-01-19', 1
+timespan, '2015-10-16', 1
 iw = 0
 width = 850
 height = 1000
@@ -42,7 +42,7 @@ mms_load_eis, probes=probe, trange=trange, datatype='extof', level='l1b'
 mms_load_eis, probes=probe, trange=trange, datatype='electronenergy', level='l1b'
 
 ; load DFG data
-mms_load_fgm, instrument='dfg', probes=probe, trange=trange, level='ql', /no_attitude_data
+mms_load_fgm, instrument='dfg', probes=probe, trange=trange, level='ql'
 
 ; setup for plotting the proton flux for all channels
 ylim, prefix+'_electronenergy_electron_flux_omni_spin', 30, 1000, 1

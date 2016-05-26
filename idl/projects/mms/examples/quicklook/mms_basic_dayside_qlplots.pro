@@ -20,13 +20,13 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 11:51:41 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20698 $
+; $LastChangedDate: 2016-05-25 09:07:07 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21191 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_basic_dayside_qlplots.pro $
 ;-
 start_time = systime(/sec)
 
-date = '2016-03-7/00:00:00'
+date = '2015-10-16/00:00:00'
 timespan, date, 1, /day
 probe = '1'
 ; options for send_plots_to:

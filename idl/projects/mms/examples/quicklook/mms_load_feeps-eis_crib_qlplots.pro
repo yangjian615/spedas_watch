@@ -5,14 +5,14 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 11:51:41 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20698 $
+; $LastChangedDate: 2016-05-25 09:07:07 -0700 (Wed, 25 May 2016) $
+; $LastChangedRevision: 21191 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps-eis_crib_qlplots.pro $
 ;-
 
 probe = '1'
-trange = ['2015-12-15', '2015-12-16']
-timespan, '2015-12-15'
+trange = ['2015-10-16', '2015-10-17']
+timespan, '2015-10-16'
 iw = 0
 width = 850
 height = 1200

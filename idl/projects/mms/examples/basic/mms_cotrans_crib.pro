@@ -10,8 +10,8 @@
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-;$LastChangedRevision: 21138 $
+;$LastChangedDate: 2016-05-25 13:35:14 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21199 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_cotrans_crib.pro $
 ;-
 
@@ -44,7 +44,7 @@
 ;    -ECI
 ;
 ;  To use quaternion transformations replace MMS_COTRANS with MMS_QCOTRANS.
-;    -the required quaternions varaibles are loded with 
+;    -the required quaternion variables are loaded with 
 ;     mms_load_mec or mms_load_state
 ;
 ;----------------------------------------------------

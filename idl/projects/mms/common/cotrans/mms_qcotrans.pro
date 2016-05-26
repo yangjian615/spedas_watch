@@ -30,7 +30,7 @@
 ;             is present for the tplot variable, and if present, it must match
 ;             the value of that attribute (see cotrans_set_coord, cotrans_get_coord).
 ;               e.g. 'bcs','gse','gse2000','gsm','sm','geo','eci'
-;  out_coord:  String specifying the desitnation coordinate system.
+;  out_coord:  String specifying the output coordinate system.
 ;                e.g. 'bcs','gse','gse2000','gsm','sm','geo','eci'
 ;  in_suffix:  Suffix of input variable name.  This specifies the portion of
 ;              the input variable's name that will be replace with the output
@@ -42,7 +42,7 @@
 ;           
 ;  out_vars: return a list of the names of any transformed variables
 ;
-;  valid_names:  return valid coordinate system names in named varibles supplied to
+;  valid_names:  return valid coordinate system names
 ;  no_update_labels: Set this keyword if you want the routine to not update the labels automatically
 ;
 ;
@@ -50,9 +50,9 @@
 ;  This is a near clone of mms_cotrans and maybe be temporary
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-02 18:51:03 -0700 (Sat, 02 Apr 2016) $
-;$LastChangedRevision: 20715 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21208 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_qcotrans.pro $
 ;-
 
@@ -297,7 +297,7 @@ for i = 0, n_elements(in_names)-1 do begin
 
   in_c = in_coords[i]
 
-  ;notify if in_coord is inconsisten with metadata and skip variable
+  ;notify if in_coord is inconsistent with metadata and skip variable
   if in_c eq 'conflict' then begin
     dprint,'Specified coordinate system does not match metadata for "' + in_name + '". Skipping.'
     continue

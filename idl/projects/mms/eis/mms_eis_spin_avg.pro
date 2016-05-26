@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-29 14:54:18 -0700 (Fri, 29 Apr 2016) $
-;$LastChangedRevision: 20982 $
+;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21203 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_spin_avg.pro $
 ;-
 
@@ -39,7 +39,7 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, $
   if datatype eq 'electronenergy' then species = 'electron'
 
   if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_'+datatype+'_' else prefix = 'mms'+probe+'_epd_eis_'+datatype+'_'
-  ; get the spin #s asscoiated with each measurement
+  ; get the spin #s associated with each measurement
   get_data, prefix + 'spin'+suffix, data=spin_nums
 
   ; find where the spins start
