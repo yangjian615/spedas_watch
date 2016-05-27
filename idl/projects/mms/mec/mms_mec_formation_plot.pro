@@ -19,9 +19,11 @@
 ;       yz_projection: project the S/C positions onto the YZ plane
 ;               
 ;       quality_factor: include the tetrahedron quality factor
+;       coord: coordinate system of the formation plot; default is GSE
+;              valid options are eci, gsm, geo, sm, gse, gse2000
 ;               
 ; EXAMPLES:
-;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection
+;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse'
 ;       
 ;       should create something like:
 ;       
@@ -33,17 +35,20 @@
 ;       and Kim Kokkonen at LASP
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-23 15:40:10 -0700 (Wed, 23 Mar 2016) $
-; $LastChangedRevision: 20568 $
+; $LastChangedDate: 2016-05-26 07:56:48 -0700 (Thu, 26 May 2016) $
+; $LastChangedRevision: 21216 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_mec_formation_plot.pro $
 ;-
 
 pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_factor, $
-  xy_projection=xy_projection, xz_projection=xz_projection, yz_projection=yz_projection
+  xy_projection=xy_projection, xz_projection=xz_projection, yz_projection=yz_projection, $
+  coord=coord
+
+  if undefined(coord) then coord='gse' else coord=strlowcase(coord)
   
   ; load one minute of position data
   current_time = [time_double(time), time_double(time)+60.]
-  mms_load_mec, trange=current_time, probes=[1, 2, 3, 4], varformat='*_r_gse', /time_clip
+  mms_load_mec, trange=current_time, probes=[1, 2, 3, 4], varformat='*_r_'+coord, /time_clip
   
   if keyword_set(quality_factor) then begin
       ; load the tetrahedron quality factor
@@ -52,10 +57,10 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
       get_data, 'mms_tetrahedron_qf', data=tqf
   endif
 
-  get_data, 'mms1_mec_r_gse', data=d1
-  get_data, 'mms2_mec_r_gse', data=d2
-  get_data, 'mms3_mec_r_gse', data=d3
-  get_data, 'mms4_mec_r_gse', data=d4
+  get_data, 'mms1_mec_r_'+coord, data=d1
+  get_data, 'mms2_mec_r_'+coord, data=d2
+  get_data, 'mms3_mec_r_'+coord, data=d3
+  get_data, 'mms4_mec_r_'+coord, data=d4
   
   if ~is_struct(d1) || ~is_struct(d2) || ~is_struct(d3) || ~is_struct(d4) then begin
     dprint, dlevel = 0, 'Error, couldn''t find the spacecraft position for one or more MMS spacecraft. Try a different time'
@@ -157,6 +162,7 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   t = text(x1,.87,title_string2,/current,font_size=16, font_color='black')
   if ~undefined(tqf) then t = text(x1,.81,title_string3,/current,font_size=16, font_color='black')
 
-  t1 = text(0.5, yl+0.05, 'GSE Coordinates, Sun to the right', font_size=8, font_color='black')
+  if coord ne 'geo' and coord ne 'eci' then t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates, Sun to the right', font_size=8, font_color='black') $
+  else t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates', font_size=8, font_color='black')
   t1 = text(0.5, yl+0.025, 'Origin at MMS centroid', font_size=8, font_color='black')
 end

@@ -59,14 +59,14 @@
 ;     
 ; NOTES:
 ;    Have questions regarding this load routine, or its usage?
-;          Send me an email --> egrimes@igpp.ucla.edu
+;          https://groups.google.com/forum/#!forum/spedas
 ;          
 ;          
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
+;$LastChangedRevision: 21219 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 

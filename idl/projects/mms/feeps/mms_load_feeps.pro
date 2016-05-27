@@ -59,7 +59,7 @@
 ;     Due to a change in variable names, this routine currently only supports v5.4+ of the FEEPS CDFs
 ;   
 ;     Have questions regarding this load routine, or its usage?
-;          Send me an email --> egrimes@igpp.ucla.edu
+;          https://groups.google.com/forum/#!forum/spedas
 ;          
 ;          
 ;     The spectra variables created with "_clean" in their names have 
@@ -74,8 +74,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
+;$LastChangedRevision: 21219 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $

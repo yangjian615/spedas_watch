@@ -47,7 +47,7 @@
 ;     the error bars
 ;     
 ;     Have questions regarding this load routine, or its usage?
-;          Send me an email --> egrimes@igpp.ucla.edu
+;          https://groups.google.com/forum/#!forum/spedas
 ;
 ; EXAMPLE:
 ;    See mms_load_edp_crib.pro for usage examples.
@@ -62,8 +62,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-26 07:24:29 -0700 (Tue, 26 Apr 2016) $
-;$LastChangedRevision: 20927 $
+;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
+;$LastChangedRevision: 21219 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $

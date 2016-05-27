@@ -9,9 +9,9 @@
 ;  See also: mms_qcotrans_crib
 ;  
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 13:35:14 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21199 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-05-25 18:22:33 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21214 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_cotrans_crib.pro $
 ;-
 
@@ -42,6 +42,7 @@
 ;    -SM
 ;    -GEO
 ;    -ECI
+;    -J2000 (identical to ECI)
 ;
 ;  To use quaternion transformations replace MMS_COTRANS with MMS_QCOTRANS.
 ;    -the required quaternion variables are loaded with 

@@ -50,9 +50,9 @@
 ;  This is a near clone of mms_cotrans and maybe be temporary
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21208 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-05-25 18:22:33 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21214 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_qcotrans.pro $
 ;-
 
@@ -95,7 +95,7 @@ vb = undefined(verbose) ? !mms.verbose :  verbose
 ;valid values
 valid_probes = ['1','2','3','4']
 ;valid_coords = ['bcs','gse','gse2000','gsm','sm','geo','eci']
-valid_coords = ['bcs','dbcs','dmpa','smpa','dsl','ssl','gse','gse2000','gsm','sm','geo','eci']
+valid_coords = ['bcs','dbcs','dmpa','smpa','dsl','ssl','gse','gse2000','gsm','sm','geo','eci','j2000']
 
 ;print and return valid inputs if requested
 if keyword_set(valid_names) then begin

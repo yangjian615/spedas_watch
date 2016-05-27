@@ -63,9 +63,9 @@
 ;CREATED BY:      Takuya Hara on 2015-04-09.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-16 12:39:31 -0700 (Wed, 16 Mar 2016) $
-; $LastChangedRevision: 20478 $
+; $LastChangedBy: ali $
+; $LastChangedDate: 2016-05-26 13:52:55 -0700 (Thu, 26 May 2016) $
+; $LastChangedRevision: 21225 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot.pro $
 ;
 ;-
@@ -385,16 +385,16 @@ PRO mvn_ql_pfp_tplot, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         septn = 'mvn_sep' + ['1_B-O', '2_B-O', '1_A-F', '2_A-F'] + '_Eflux_Energy'
         store_data, septn[2], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [4.3399, 6813.39]}, $
                     dlim={yrange: [4.3399, 6813.39], ystyle: 1, ylog: 1, zrange: [1., 1.e5], zstyle: 1, zlog: 1, $
-                          spec: 1, ztitle: 'keV/s/ster/keV'}     
+                          spec: 1, ztitle: 'Eflux'}     
         store_data, septn[0], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [4.25304, 6677.02]}, $
                     dlim={yrange: [4.25304, 6677.02], ystyle: 1, ylog: 1, zrange: [1., 1.e5], zstyle: 1, zlog: 1, $
-                          spec: 1, ztitle: 'keV/s/ster/keV'}     
+                          spec: 1, ztitle: 'Eflux'}     
         store_data, septn[3], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [4.06606, 6383.48]}, $
                     dlim={yrange: [4.06606, 6383.48], ystyle: 1, ylog: 1, zrange: [1., 1.e5], zstyle: 1, zlog: 1, $
-                          spec: 1, ztitle: 'keV/s/ster/keV'}     
+                          spec: 1, ztitle: 'Eflux'}     
         store_data, septn[1], data={x: trange, y: REFORM(REPLICATE(nan, 4), [2, 2]), v: [4.13003, 6483.91]}, $
                     dlim={yrange: [4.13003, 6483.91], ystyle: 1, ylog: 1, zrange: [1., 1.e5], zstyle: 1, zlog: 1, $
-                          spec: 1, ztitle: 'keV/s/ster/keV'}
+                          spec: 1, ztitle: 'Eflux'}
         options, septn, bottom=7, top=254
      ENDIF 
      

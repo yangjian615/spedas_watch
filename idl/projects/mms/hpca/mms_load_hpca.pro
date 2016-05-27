@@ -61,7 +61,7 @@
 ;     https://lasp.colorado.edu/galaxy/display/mms/HPCA+Data+Products+Guide
 ;     
 ;     Have questions regarding this load routine, or its usage?
-;          Send me an email --> egrimes@igpp.ucla.edu
+;          https://groups.google.com/forum/#!forum/spedas
 ;          
 ;     When loading HPCA energy spectra with this routine, all of the data are loaded in 
 ;        initially. To plot a meaningful spectra, the user must call mms_hpca_calc_anodes
@@ -70,8 +70,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-27 13:30:07 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20942 $
+;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
+;$LastChangedRevision: 21219 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 

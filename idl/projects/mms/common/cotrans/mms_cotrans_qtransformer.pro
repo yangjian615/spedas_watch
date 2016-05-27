@@ -26,9 +26,9 @@
 ;  Modeled after thm_cotrans_transform_helper
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21208 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-05-25 18:22:33 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21214 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qtransformer.pro $
 ;-
 
@@ -66,6 +66,7 @@ pro mms_cotrans_qtransformer, $
 
   ; Execute next step in transformation tree
   ;   -everything goes through ECI at the moment, so this is very simple
+  ;   -j2000 is identical to ECI
   ;------------------------------------------------
   case in_coord of
 
@@ -77,6 +78,10 @@ pro mms_cotrans_qtransformer, $
         spd_cotrans_validate_transform, in_name, in_coord, out_coord
         mms_cotrans_qrotate, in_name, q_name, out_name
         recursive_in_coord = out_coord
+      endif else if out_coord[0] eq 'j2000' then begin
+        recursive_in_coord = 'j2000'
+        if in_name ne out_name then copy_data, in_name, out_name
+        spd_set_coord, out_name, 'j2000'
       endif else begin
         dprint, dlevel=0, sublevel=1, 'Unknown transformation: "'+ in_coord+'" to "'+out_coord+'"'
         recursive_in_coord = out_coord
@@ -92,6 +97,10 @@ pro mms_cotrans_qtransformer, $
         spd_cotrans_validate_transform, in_name, in_coord, out_coord
         mms_cotrans_qrotate, in_name, q_name, out_name, /inverse
         recursive_in_coord = 'eci'
+      endif else if in_coord[0] eq 'j2000' then begin
+        recursive_in_coord = 'eci'
+        if in_name ne out_name then copy_data, in_name, out_name
+        spd_set_coord, out_name, 'eci'
       endif else begin
         dprint, dlevel=0, sublevel=1, 'Unknown transformation: "'+ in_coord+'" to "'+out_coord+'"'
         recursive_in_coord = out_coord

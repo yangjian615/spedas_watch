@@ -117,7 +117,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          zrange = [.001,1e3]
                          spec = 0
                          yrange =   [1,1e6]  ;zrange * 100
-                         units = '#/s/ster/keV'
+                         units = '#/s/cm2/sr/keV'
                          tdata = total(data * (replicate(1,nt) # denergy),2)
                      end
            'eflux'   : begin
@@ -126,7 +126,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          spec = 1
                          zrange = [1.,1e5]
                          yrange = zrange * 100
-                         units = 'keV/s/ster/keV'
+                         units = 'Eflux'
                          if n_elements(denergy) gt 1  then tdata = total(data * (replicate(1,nt) # denergy),2) else tdata=data
                      end
           endcase

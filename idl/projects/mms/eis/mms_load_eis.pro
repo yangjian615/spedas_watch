@@ -64,7 +64,7 @@
 ;     
 ;     
 ;     Have questions regarding this load routine, or its usage?
-;          Send me an email --> egrimes@igpp.ucla.edu
+;          https://groups.google.com/forum/#!forum/spedas
 ;
 ; HISTORY:
 ;     09/15/2015 - Ian Cohen at APL: added modifications to omni-directional calculations to be able to handle 
@@ -77,8 +77,8 @@
 ;                  changed default level to L2
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-09 14:31:09 -0700 (Mon, 09 May 2016) $
-;$LastChangedRevision: 21049 $
+;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
+;$LastChangedRevision: 21219 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 

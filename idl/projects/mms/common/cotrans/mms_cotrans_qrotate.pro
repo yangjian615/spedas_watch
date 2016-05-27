@@ -19,12 +19,11 @@
 ;  none, may alter or create new tplot variable
 ;
 ;Notes:
-;  -This routine does not alter metadata
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21208 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-05-25 18:22:33 -0700 (Wed, 25 May 2016) $
+;$LastChangedRevision: 21214 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_qrotate.pro $
 ;-
 

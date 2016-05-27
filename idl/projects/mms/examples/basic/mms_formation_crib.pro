@@ -9,8 +9,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21138 $
+; $LastChangedDate: 2016-05-26 08:08:50 -0700 (Thu, 26 May 2016) $
+; $LastChangedRevision: 21217 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_formation_crib.pro $
 ;-
 
@@ -29,6 +29,11 @@ stop
 
 ; with XY projections and the tetrahedron quality factor
 mms_mec_formation_plot, time, /xy_projection, /quality
+
+stop
+
+; use a different coordinate system
+mms_mec_formation_plot, time, coord='gsm'
 
 end
 
