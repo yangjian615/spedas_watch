@@ -50,9 +50,9 @@ pro spp_swp_startup, spanai   = spanai,$
   spp_apid_data,'344'x,routine='spp_generic_decom',tname='spp_swem_events_',   tfields='none',save=save,rt_tags='none',rt_flag=1
   spp_apid_data,'346'x,routine='spp_swp_swem_timing_decom',tname='spp_swem_timing_',   tfields='*',save=save,rt_tags='*',rt_flag=1
 
-  spp_apid_data,'347'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_priority1',   tfields='UNWRAP',save=save,rt_tags='unwrap',rt_flag=1
+  spp_apid_data,'347'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_pr1',   tfields='*',save=save,rt_tags='*',rt_flag=1
 
-  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_priority9',   tfields='UNWRAP',save=save,rt_tags='unwrap',rt_flag=1
+  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_pr9',   tfields='*',save=save,rt_tags='*',rt_flag=1
 
 
   ;;############################################

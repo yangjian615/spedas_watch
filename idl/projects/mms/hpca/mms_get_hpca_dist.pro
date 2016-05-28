@@ -30,9 +30,9 @@
 ;  This is a work in progress
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-05-27 17:38:04 -0700 (Fri, 27 May 2016) $
+;$LastChangedRevision: 21243 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
@@ -124,7 +124,7 @@ if ~undefined(index) then begin
 endif else if ~undefined(trange) then begin
   tr = minmax(time_double(trange))
   index = where( (*azimuth.x)[full] ge tr[0] and (*azimuth.x)[full] lt tr[1], n_full)
-  if n_times eq 0 then begin
+  if n_full eq 0 then begin
     dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
     return, 0
   endif

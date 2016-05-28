@@ -23,7 +23,7 @@ if n_elements(fields_dt) eq 0 then fields_dt = floor(fields_met - fields_f123)
 fields_f123 += fields_dt 
 
 ttt = sample_met
-ttt = fields_met
+;ttt = fields_met
  
  sample_clk_per_delta =     ( sample_clk_per - last_str.sample_clk_per) 
  
@@ -61,7 +61,7 @@ str = {time  : ccsds.time  ,$
      sc_time_diff :         sc_time    - ttt, $
      drift:     time_drift, $
      drift_delta:  (time_drift -last_str.drift) / ccsds.dseq_cntr , $
-       gap:  0}
+       gap:  ccsds.gap }
        
 ;tploprintdat,str
 

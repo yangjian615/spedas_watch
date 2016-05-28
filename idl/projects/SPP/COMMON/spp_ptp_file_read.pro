@@ -22,6 +22,9 @@ pro spp_ptp_file_read,files
       buffer = bytarr(sz-2)
       readu,lun,buffer
       spp_ptp_pkt_handler,[sizebuf,buffer]   ;,time=systime(1)   ;,size=ptp_size
+      if debug(2) then begin
+        dprint,dwait=20,dlevel=2,'File percentage: ' ,(fp*100.)/fi.size
+      endif
     endwhile
     free_lun,lun
   endfor

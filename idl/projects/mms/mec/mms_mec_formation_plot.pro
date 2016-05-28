@@ -29,20 +29,23 @@
 ;       
 ;       https://lasp.colorado.edu/mms/sdc/public/data/sdc/mms_formation_plots/mms_formation_plot_20160108023624.png
 ;       
+;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse', lmn=[[0.00,0.00,1.00],[0.00,-1.00,0.00],[1.00,0.00,0.00]]
+;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse', xyz=[[0.00,0.00,1.00],[0.00,-1.00,0.00],[1.00,0.00,0.00]]
+;
 ; HISTORY:
 ;       Most of this (the good stuff) comes from the 
 ;       SDC version, which was written by Kris Larsen 
 ;       and Kim Kokkonen at LASP
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-26 07:56:48 -0700 (Thu, 26 May 2016) $
-; $LastChangedRevision: 21216 $
+; $LastChangedDate: 2016-05-27 08:14:16 -0700 (Fri, 27 May 2016) $
+; $LastChangedRevision: 21228 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_mec_formation_plot.pro $
 ;-
 
 pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_factor, $
   xy_projection=xy_projection, xz_projection=xz_projection, yz_projection=yz_projection, $
-  coord=coord
+  coord=coord, lmn=lmn, xyz=xyz
 
   if undefined(coord) then coord='gse' else coord=strlowcase(coord)
   
@@ -65,12 +68,19 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   if ~is_struct(d1) || ~is_struct(d2) || ~is_struct(d3) || ~is_struct(d4) then begin
     dprint, dlevel = 0, 'Error, couldn''t find the spacecraft position for one or more MMS spacecraft. Try a different time'
     return
-  endif
-  
+  endif  
 
-  xes = [d1.Y[0, 0], d2.Y[0, 0], d3.Y[0, 0], d4.Y[0, 0]]
-  yes = [d1.Y[0, 1], d2.Y[0, 1], d3.Y[0, 1], d4.Y[0, 1]]
-  zes = [d1.Y[0, 2], d2.Y[0, 2], d3.Y[0, 2], d4.Y[0, 2]]
+  if not undefined(lmn) then xyz=lmn
+
+  if not undefined(xyz) then begin
+    xes = [(reform(d1.Y[0, *]#xyz))[0], (reform(d2.Y[0, *]#xyz))[0], (reform(d3.Y[0, *]#xyz))[0], (reform(d4.Y[0, *]#xyz))[0]]
+    yes = [(reform(d1.Y[0, *]#xyz))[1], (reform(d2.Y[0, *]#xyz))[1], (reform(d3.Y[0, *]#xyz))[1], (reform(d4.Y[0, *]#xyz))[1]]
+    zes = [(reform(d1.Y[0, *]#xyz))[2], (reform(d2.Y[0, *]#xyz))[2], (reform(d3.Y[0, *]#xyz))[2], (reform(d4.Y[0, *]#xyz))[2]]
+  endif else begin
+    xes = [d1.Y[0, 0], d2.Y[0, 0], d3.Y[0, 0], d4.Y[0, 0]]
+    yes = [d1.Y[0, 1], d2.Y[0, 1], d3.Y[0, 1], d4.Y[0, 1]]
+    zes = [d1.Y[0, 2], d2.Y[0, 2], d3.Y[0, 2], d4.Y[0, 2]]
+  endelse
 
   xes = (xes - mean(xes))
   yes = (yes - mean(yes))
@@ -94,10 +104,17 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   ;test = plot3d(xes, yes, zes, linestyle='none', color='black', sym_object = orb(), $
   ;   sym_size=3, /sym_filled, vert_colors=spacecraft_colors, margin=margin)
 
-  p = plot3d(xes1, yes1, zes1, thick=2, color='dim grey', $
-    axis_style=2, xtitle='X, km', ytitle='Y, km', ztitle='Z, km', $
-    xrange=xrange, yrange=yrange, zrange=zrange, $
-    perspective=perspective, margin=margin)
+  if undefined(lmn) then begin
+    p = plot3d(xes1, yes1, zes1, thick=2, color='dim grey', $
+      axis_style=2, xtitle='X, km', ytitle='Y, km', ztitle='Z, km', $
+      xrange=xrange, yrange=yrange, zrange=zrange, $
+      perspective=perspective, margin=margin)
+  endif else begin
+    p = plot3d(xes1, yes1, zes1, thick=2, color='dim grey', $
+      axis_style=2, xtitle='L, km', ytitle='M, km', ztitle='N, km', $
+      xrange=xrange, yrange=yrange, zrange=zrange, $
+      perspective=perspective, margin=margin)
+  endelse
 
   plot2 = plot3d(xes, yes, zes, linestyle='none', color='black', sym_object = orb(), $
     sym_size=3, /sym_filled, vert_colors=spacecraft_colors, perspective=1, $
@@ -162,7 +179,11 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   t = text(x1,.87,title_string2,/current,font_size=16, font_color='black')
   if ~undefined(tqf) then t = text(x1,.81,title_string3,/current,font_size=16, font_color='black')
 
-  if coord ne 'geo' and coord ne 'eci' then t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates, Sun to the right', font_size=8, font_color='black') $
-  else t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates', font_size=8, font_color='black')
+  if undefined(lmn) then begin
+    if coord ne 'geo' and coord ne 'eci' and undefined(xyz) then t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates, Sun to the right', font_size=8, font_color='black') $
+    else if undefined(xyz) then t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates', font_size=8, font_color='black')
+  endif else begin
+    t1 = text(0.5, yl+0.05, 'LMN Coordinates', font_size=8, font_color='black')
+  endelse
   t1 = text(0.5, yl+0.025, 'Origin at MMS centroid', font_size=8, font_color='black')
 end
