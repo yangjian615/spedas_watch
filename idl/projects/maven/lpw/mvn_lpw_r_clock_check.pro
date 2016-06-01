@@ -66,16 +66,13 @@ common clock_check, jump_times_nospice
 ;Create temporary coarse decimal clock:
 tmp_clk = SC_CLK1+SC_CLK2/2l^16
 
-
 ;Use x mod 4 to determine if there's a clock change. x is the length in time of each packet.
+;Use shift function to calculate time differences, since it's more robust - DLM.
 
-;jmm, 2016-03-16, guard against only 1 packet
-If(n_elements(packet_arr) Le 1) Then Begin
-   print, "mvn_lpw_r_header_l0: ", packet_name, " only 1 packet, Returning"
-   return
-Endif
+indx = packet_arr - shift(packet_arr,1)
+indx[0] = 0
 
-tdiff1 = tmp_clk[packet_arr[1:*]] - tmp_clk[packet_arr[0:*]]  ;time difference between packets in secs
+tdiff1 = tmp_clk[indx] - tmp_clk[indx]  ;time difference between packets in secs
 
 tdiff2 = tdiff1 mod 4  ;time difference off of expected length between packets. Should be close to zero (<0.01) unless there's a clock jump
 ;tdiff2 should be ~3.999xxx for EUV. When there's a skip, it will be ~0.499xxxx. 

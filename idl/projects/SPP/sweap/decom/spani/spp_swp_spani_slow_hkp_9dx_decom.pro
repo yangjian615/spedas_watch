@@ -7,13 +7,13 @@ function spp_swp_spani_slow_hkp_9dx_decom, $
   b = ccsds.data
   
  ; printdat,apdat
- if ptr_valid(apdat.last_ccsds) then  last_ccsds = *(apdat.last_ccsds) else last_ccsds = 0
+ if ptr_valid(apdat.last_ccsds) && keyword_set(*(apdat.last_ccsds)) then  last_ccsds = *(apdat.last_ccsds) else last_ccsds = 0
  
  if keyword_set(last_ccsds) then begin
-  dseq_cntr = (ccsds.seq_cntr - last_ccsds.seq_cntr) and '3fff'x
+  dseq_cntr = (ccsds.seq_cntr - last_ccsds.seq_cntr) and '3fff'xu
   dtime = ccsds.time - last_ccsds.time
  endif else begin
-   dseq_cntr =  1
+   dseq_cntr =  1u
    dtime = !values.d_nan
  endelse
  

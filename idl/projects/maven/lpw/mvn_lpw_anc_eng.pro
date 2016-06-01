@@ -366,7 +366,7 @@ if nele_r gt 1 then begin  ;reaction wheels
       ;Construct tplot variable which shows the relative absolute spin freqs of the 4 wheels. When the 4 wheels spin close to the same freq,
       ;I think they appear in the spectra. They don't appear when spinning at different Hz (I think).
       rel_rw = fltarr(nele_r,4)
-      for aa = 0, nele_r-1 do begin
+      for aa = 0L, nele_r-1L do begin
           for bb = 0, 3 do rel_rw[aa,bb] = abs((abs(yyr[aa,0]) - abs(yyr[aa,bb]))) * (1/(2.D*!pi))  ;use RW 1 as the baseline, convert to Hz
       endfor  ;over aa
             ;-------------------------------------------
