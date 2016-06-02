@@ -23,8 +23,8 @@
 ;       OFF:          Turn cross calibration switch off.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:28:27 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21036 $
+; $LastChangedDate: 2016-06-01 17:36:05 -0700 (Wed, 01 Jun 2016) $
+; $LastChangedRevision: 21255 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crosscal.pro $
 ;
 ;CREATED BY:    David L. Mitchell  05-04-16
@@ -74,7 +74,7 @@ function mvn_swe_crosscal, time, on=on, off=off
   if (count gt 0L) then begin
     day = (t_mcp[6] - t_mcp[0])/86400D
     cc[indx] = 1.2379D + day*1.5413d-3
-    print,"Warning: cross calibration factor fixed after ",time_string(t_mcp[6],prec=-3)
+    print,"Warning: SWE-SWI cross calibration factor fixed after ",time_string(t_mcp[6],prec=-3)
   endif
 
   return, cc

@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 13:35:14 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21199 $
+; $LastChangedDate: 2016-06-01 13:00:14 -0700 (Wed, 01 Jun 2016) $
+; $LastChangedRevision: 21252 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_fields_crib_qlplots.pro $
 ;-
 
@@ -143,7 +143,7 @@ stop
 ; START OF FIELDS2 E&B PLOTS - ALL SPACECRAFT
 ;
 ; Get DCE data
-mms_load_edp, data_rate='fast', probes=[1, 2, 3, 4], datatype='dce', level='ql', trange=['2016-02-23', '2016-02-24']
+mms_load_edp, data_rate='fast', probes=[1, 2, 3, 4], datatype='dce', level='ql'
 
 options, 'mms1*_dce_xyz_dsl', colors=[0]    ; black
 options, 'mms2*_dce_xyz_dsl', colors=[6]    ; red

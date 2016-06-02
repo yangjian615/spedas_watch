@@ -14,9 +14,12 @@
 ;
 ;    LIST:          List all configuration changes.
 ;
+;    TIMEBAR:       Overplot vertical dotted lines at the times of configuration
+;                   changes in a tplot window (assumed to exist).
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:23:09 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21031 $
+; $LastChangedDate: 2016-06-01 17:35:40 -0700 (Wed, 01 Jun 2016) $
+; $LastChangedRevision: 21254 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -74,8 +77,10 @@ pro mvn_swe_config, list=list, timebar=timebar
 
 ; 2013-11-18/18:28                                     ; MAVEN launch (bias = 2500 V)
   t_mcp = time_double('2014-03-22/00:00:00')           ; first cross calibration measurement
+; 2014-09-22/01:50                                     ; MAVEN orbit insertion
   t_mcp = [t_mcp, time_double('2014-10-17/02:26:41')]  ; bias adjustment (2500 -> 2600 V)
   t_mcp = [t_mcp, time_double('2014-11-12/00:00:00')]  ; bias = 2600 V (beginning of poly fit)
+; 2014-11-15/00:00                                     ; beginning of science phase
   t_mcp = [t_mcp, time_double('2015-12-18/23:39:09')]  ; bias adjustment (2600 -> 2700 V)
   t_mcp = [t_mcp, time_double('2015-12-22/20:01:45')]  ; revert to 2600 V after HV reset
   t_mcp = [t_mcp, time_double('2015-12-30/02:28:57')]  ; back to correct bias (2700 V)

@@ -11,8 +11,8 @@
 ;     SEP        : 0.2 GB/day
 ;     SWIA       : 0.2 GB/day
 ;     STATIC     : 3.5 GB/day
-;     LPW        : TBD
-;     EUV        : TBD
+;     LPW        : 0.001 GB/day
+;     EUV        : 0.004 GB/day
 ;     -------------------------
 ;      total     : 4.5 GB/day
 ;
@@ -39,24 +39,35 @@
 ;   STATIC:    Include two panels for STATIC data: one mass spectrum, one energy
 ;              spectrum.
 ;
+;   NO2:       Include O2+ density calculated from STATIC.  Has no effect unless
+;              STATIC keyword is set.
+;
 ;   LPW:       Include panels for LPW data.
 ;
 ;   EUV:       Include a panel for EUV data.
 ;
+;   SC_POT:    Include a panel for spacecraft potential.
+;
+;   EPH:       Named variable to hold ephemeris data.
+;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-23 11:12:23 -0800 (Mon, 23 Nov 2015) $
-; $LastChangedRevision: 19453 $
+; $LastChangedDate: 2016-06-01 17:36:49 -0700 (Wed, 01 Jun 2016) $
+; $LastChangedRevision: 21256 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
-pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv
+pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
+                     sc_pot=sc_pot, eph=eph, nO2=nO2
 
   compile_opt idl2
 
   @mvn_swe_com
+  @maven_orbit_common
+  
+  if keyword_set(nO2) then doO2 = 1 else doO2 = 0
 
   mvn_swe_sumplot,/loadonly
   mvn_swe_sc_pot,/over
@@ -116,7 +127,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 ; STATIC data
 
   sta_pan = ''
-  if keyword_set(static) then mvn_swe_addsta, pans=sta_pan
+  if keyword_set(static) then mvn_swe_addsta, pans=sta_pan, nO2=doO2
 
 ; LPW data
 
@@ -128,12 +139,49 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   euv_pan = ''
   if keyword_set(euv) then mvn_swe_addeuv, pans=euv_pan
 
+; Spacecraft Potential
+
+  pot_pan = ''
+  if keyword_set(sc_pot) then begin
+    pot_pan = 'mvn_swe_pot_all'
+    mvn_swe_shape_par, /keep_nan
+    mvn_swe_sc_negpot
+    store_data,pot_pan,data=['mvn_swe_sc_pot','neg_pot']
+    options,'neg_pot','constant',!values.f_nan
+    options,'neg_pot','color',6
+    options,pot_pan,'ytitle','S/C Potential!cVolts'
+  endif
+
+; Ephemeris information from SPICE
+
+  mk = spice_test('*', verbose=-1)
+  indx = where(mk ne '', count)
+  if (count eq 0) then mvn_swe_spice_init,/force
+  eph = state
+
+  mvn_mars_localtime, result=mlt  
+  str_element, eph, 'lst', mlt.lst, /add
+  str_element, eph, 'slon', mlt.slon, /add
+  str_element, eph, 'slat', mlt.slat, /add
+
+; Make density overlay if both STATIC and LPW densities are present
+
+  i = strpos(sta_pan,'mvn_sta_O2+_raw_density')
+  j = strpos(lpw_pan,'mvn_lpw_lp_ne_l2')
+  if ((i gt -1) and (j gt -1)) then begin
+    options,'mvn_lpw_lp_ne_l2','psym',10
+    store_data,'n_ion',data=['mvn_sta_O2+_raw_density','mvn_lpw_lp_ne_l2']
+    ylim,'n_ion',10,1e5,1
+    sta_pan = strmid(sta_pan,0,i) + 'n_ion' + strmid(sta_pan,(i+23))
+    lpw_pan = strmid(lpw_pan,0,j) + strmid(lpw_pan,(j+16))
+  endif
+
 ; Assemble the panels and plot
 
   pans = ram_pan + ' ' + sun_pan + ' ' + alt_pan + ' ' + euv_pan + ' ' + $
          swi_pan + ' ' + sta_pan + ' ' + mag_pan + ' ' + sep_pan + ' ' + $
-         lpw_pan + ' ' + pad_pan + ' ' + engy_pan
-
+         lpw_pan + ' ' + pad_pan + ' ' + pot_pan + ' ' + engy_pan
+  
   tplot, pans
 
   return
