@@ -318,14 +318,19 @@ pro thm_ui_slice2d_gen, tlb, state
     subtract = widget_info(id, /button_set)
   endif
     
-  ; Set minimum count threshold?
+  ; Get count threshold?
   id = widget_info(tlb, find_by_uname='count_threshold')
   if widget_info(id,/sens) then begin
     widget_control, id, get_value=count_threshold
     if ~finite(count_threshold) || count_threshold lt 0 then begin 
       thm_ui_slice2d_error, state.statusbar, err_title, $
-        'Invalid minimum counts value.'
+        'Invalid count threshold value.'
       return
+    endif
+    ;clear count_threshold if contour was requested instead
+    id = widget_info(tlb, find_by_uname='ctcontbutton')
+    if widget_info(id,/button_set) then begin
+      count_contour = temporary(count_threshold)
     endif
   endif
   
@@ -701,7 +706,43 @@ pro thm_ui_slice2d_gen, tlb, state
       continue
     endif
     
-    slices = keyword_set(slices) ? [slices,temporary(slice_tmp)]:temporary(slice_tmp)
+    slices = array_concat(temporary(slice_tmp), slices, /no_copy)
+    
+    ;repeat the process in counts if threshold contour was requested
+    if ~undefined(count_contour) then begin
+      thm_part_slice2d, dist1, dist2, dist3, dist4, $
+        slice_time=times[i], timewin=timewin, $
+        center_time=center_time, $
+        slice_norm=slice_norm, $
+        displacement = displacement, $
+        rotation=rotation, resolution=resolution, $
+        type=type, $
+        coord=coord, $
+        erange=erange, $
+        energy=energy, log=log, $
+        mag_data=mag_data, vel_data=vel_data, $
+        zdirrange=zdirrange, thetarange=thetarange, $
+        average_angle=average_angle, $
+        subtract_bulk=subtract, $
+        sst_sun_bins=sst_sun_bins, $
+;        count_threshold=count_threshold, $
+        units='counts', $
+        smooth=smooth, $
+        part_slice=slice_counts_tmp, $
+        msg_obj = state.statusbar, $
+        fail=fail
+  
+  
+      ; Check for errors from thm_part_slice2d and skip those slices
+      if fail then begin
+        bad[i] = 1b
+        fail = 'Cannot calculate count threshold for slice at '+time_string(times[i])+' - '+fail
+        thm_ui_slice2d_message, fail, sb=state.statusbar
+        continue
+      endif
+  
+      slices_counts = array_concat(temporary(slice_counts_tmp), slices_counts, /no_copy)
+    endif
     
   endfor
 
@@ -723,6 +764,11 @@ pro thm_ui_slice2d_gen, tlb, state
 
   ptr_free, state.slices
   state.slices = ptr_new(slices)
+  
+  ptr_free, state.slices_counts
+  if is_struct(slices_counts) then begin
+    state.slices_counts = ptr_new(slices_counts)
+  endif
 
   ; if we made it to here, no need to force reload data next time
   state.flags.forcereload = 0b
@@ -973,6 +1019,21 @@ pro thm_ui_slice2d_plot, state, current, _extra=_extra
                      zticks=zmajor, $
                      _extra=_extra
                      
+  
+  ; Add contour line at N counts if requested
+  if ptr_valid(state.slices_counts) then begin
+    
+    id = widget_info(tlb, find_by_uname='count_threshold')
+    widget_control, id, get_value=count_threshold
+    if ~finite(count_threshold) || count_threshold lt 0 then begin
+      thm_ui_slice2d_error, state.statusbar, err_title, $
+        'Invalid count threshold value.'
+      return
+    endif
+    
+    spd_slice2d_add_line, (*state.slices_counts)[current], count_threshold
+    
+  endif
 
 end
 
@@ -1578,7 +1639,7 @@ pro thm_ui_slice2d_event, event
       'COORD': thm_ui_slice2d_supportsens, state
 
       'CTBUTTON': begin
-        id = widget_info(event.top, find_by_uname='ctbase')
+        id = widget_info(event.top, find_by_uname='ctoptionsbase')
         widget_control, id, sens=event.select
       end
       
@@ -1665,8 +1726,8 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-29 18:14:19 -0700 (Fri, 29 Apr 2016) $
-;$LastChangedRevision: 20988 $
+;$LastChangedDate: 2016-06-01 19:27:22 -0700 (Wed, 01 Jun 2016) $
+;$LastChangedRevision: 21258 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
@@ -1677,7 +1738,7 @@ pro thm_ui_slice2d, gui_ID=gui_id, $
 
     compile_opt idl2
 
-  tlb_title = 'Particle Distribution Slices v4.4'
+  tlb_title = 'Particle Distribution Slices v4.5'
 
 if keyword_set(gui_ID) then begin
   tlb = widget_base(title = tlb_title, /col, /base_align_center, $ 
@@ -1709,18 +1770,19 @@ thm_graphics_config
     mainoptionsbase = widget_base(mainbase, /col, /align_left, ypad=2)
       moptbase1 = widget_base(mainoptionsbase, /col, space=4)
 
-;Options Base
-  optionsBase = widget_base(tabs, title='Options', /col, xpad=4, ypad=6, space=4)
+;General Options Base
+  optionsBase = widget_base(tabs, title='General Options', /col, xpad=4, ypad=6, space=4)
     rangebase2dnn = widget_base(optionsBase, /col, /align_center, ypad=6, xpad=4)
     rangebase2d = widget_base(optionsBase, /col, /align_center, ypad=6, xpad=4)
 ;    rangebase3d = widget_base(optionsBase, /col, /align_center, ypad=6, xpad=4)
     optionsBase1 = widget_base(optionsBase, /col, /align_center, ypad=2)
 
-;Contamination Base
-  contaminationBase = widget_base(tabs, title='Contamination', /col, xpad=4, ypad=8, space=8)
-    esaContBase = widget_base(contaminationBase, /col, /align_left, ypad=4, xpad=4)
-    sstContBase = widget_base(contaminationBase, /col, /align_left, ypad=4, xpad=4)
-    genContBase = widget_base(contaminationBase, /col, /align_left, ypad=4, xpad=4)
+;Data Options Base
+  dataOptionsBase = widget_base(tabs, title='Data Options', /col, xpad=4, ypad=8, space=8)
+    esaContBase = widget_base(dataOptionsBase, /col, /align_left, ypad=4, xpad=4)
+    sstContBase = widget_base(dataOptionsBase, /col, /align_left, ypad=4, xpad=4)
+    countThreshBase = widget_base(dataOptionsBase, /col, /align_left, ypad=4, xpad=4)
+    genDataOptBase = widget_base(dataOptionsBase, /col, /align_left, ypad=4, xpad=4)
 
 ;Annotations & Ticks Base
   annoBase = widget_base(tabs, title='Annotations', /col, xpad=4, ypad=4, space=2)
@@ -2006,7 +2068,7 @@ thm_graphics_config
 
 
 
-;Contamination Tab
+;Data Options Tab
 ;-------------------
   esaBgndTypes = ['Anode','Angle','Omni'] ;types of background removal for esa (bgnd_type)
   esaNPoints = 3.0 ; bgnd_npoints 
@@ -2044,20 +2106,31 @@ thm_graphics_config
     sstCalButton = widget_button(sstButtonBase, value='Use default SST calibrations', $
        uname='sstcal', uval='SSTCAL', tooltip='See documentation in <?>.')
 
-  ;General Widgets
-  genContToggleBase = widget_base(genContBase, /row, /nonexclusive)
+  ;Count threshold
+  ctButtonBase = widget_base(countThreshBase, /row, /nonexclusive)
+    ctButton = widget_button(ctButtonBase, val='Calculate count threshold', $
+                          uval='CTBUTTON', uname='ctbutton')
+  
+  ctOptionsBase = widget_base(countThreshBase, /row, /base_align_center, space=4, $
+                              xpad=12, uname='ctoptionsbase', frame=1)
+    ctTypeBase = widget_base(ctOptionsBase, /col, xpad=0, ypad=0, /exclusive)
+      ctContButton = widget_button(ctTypeBase, uname='ctcontbutton', $
+                   value='Draw contour at threshold ', tooltip= $
+                   'Draw dashed contour at the specified number of counts.')
+      ctMaskButton = widget_button(ctTypeBase, uname='ctmaskbutton', $
+                   value='Mask data below threshold ', tooltip= $
+                   'Mask data on the final plot that falls below the specified number of counts.')
+    ctspinner = spd_ui_spinner(ctOptionsBase, value=ct, text_box_size=4, incr=1, $
+                  uname='count_threshold', label='', min_value=1, tooltip= $
+                  'Threshold, in counts.  Value is applied after interpolation/averaging.')
+    ctupdate = widget_button(ctOptionsBase, value='Re-Plot', uval='REPLOT', tooltip= $
+                 'Click to re-plot contour line after changing the value.  '+ $
+                 'Must click Generate to calculate the first time.')
+
+  ;Other data options
+  genContToggleBase = widget_base(genDataOptBase, /row, /nonexclusive)
     eclipseButton = widget_button(genContToggleBase, value='Apply eclipse corrections', $
-      uname='eclipse', tooltip='Apply spin period corrections when spacecraft is eclipsed') 
-    
-  countthresholdbase = widget_base(genContBase, /row)
-    ctbuttonbase = widget_base(countthresholdbase, /row, xpad=0, ypad=0, /nonexclusive)
-      ctbutton = widget_button(ctbuttonbase, value='Mask bins below: (counts) ', $
-                    uname='ctbutton', uval='CTBUTTON', tooltip= $
-                    'Mask out bins that fall below this number of counts after averaging.')
-    ctsubbase = widget_base(countthresholdbase, /row, xpad=0, ypad=0, uname='ctbase')
-      ctspinner = spd_ui_spinner(ctsubbase, value=ct, text_box_size=4, incr=1, $
-                    uname='count_threshold', label='', min_value=0, tooltip= $
-                    'Mask bins that fall below this number of counts after averaging.')
+      uname='eclipse', tooltip='Apply spin period corrections when spacecraft is eclipsed')
 
 
 
@@ -2159,7 +2232,7 @@ thm_graphics_config
 ;Plot Tab Widgets
 ;--------------------
   nolines = '8'  ;# contour lines
-  nlevels = '60'  ;# color countour levels
+  nlevels = '60'  ;# color contour levels
   zmax = '1e1'  ; plotting limites (various units)
   zmin = '1e-6'
   xymin = '-2000'
@@ -2255,10 +2328,7 @@ thm_graphics_config
   
   widget_control, exportcurrent, set_button=1
 
-; Options Widgets
-  widget_control, ctbutton, set_button=0 ; no removal by default
-    widget_control, ctsubbase, sens=0
-
+; General Options Widgets
   widget_control, smoothbutton, set_button=0 ; smoothing off by default
     widget_control, smoothsubbase, sens=0
   
@@ -2272,12 +2342,16 @@ thm_graphics_config
 
   widget_control, erangebase2, sens=0 ; energy limits off
 
-;Contamination Widgets
+; Data Options Widgets
   widget_control, esaRemoveOptsBase, sens=0 ; off by def
   
   widget_control, sstcontbutton, set_button=1
   
   widget_control, sstcalbutton, set_button=1
+
+  widget_control, ctbutton, set_button=0 ; don't calculate counts
+  widget_control, ctoptionsbase, sens=0  ;
+  widget_control, ctContButton, set_button=1 ; default to contour instead of mask
   
 ;Annotation Widgets
   widget_control, xyprecision, set_combobox_select = 4 ;4 sig figs
@@ -2375,7 +2449,7 @@ thm_graphics_config
             slider:slider, $
             rotvel:rotvel, rotmag:rotmag, coordmag:coordmag, $
             velbase:veltype, magbase:magdata, times:ptr_new(), $
-            distribution:make_array(4,/ptr), slices:ptr_new(), $
+            distribution:make_array(4,/ptr), slices:ptr_new(), slices_counts:ptr_new(), $
             previous:previous, flags:flags, last:''}
 
   thm_ui_slice2d_methodsens, state, buttongeo, 1b
