@@ -33,9 +33,9 @@
 ;       Requires IDL 7.1 or later to read in .csv files
 ;       Use 'mvn_ngi_read_csv' to load ql data
 ;
-; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-05-12 13:09:05 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21064 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2016-06-03 09:19:03 -0700 (Fri, 03 Jun 2016) $
+; $LastChangedRevision: 21261 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_load.pro $
 ;-
 

@@ -16,9 +16,9 @@
 ; CREATED BY:
 ;       Yuki Harada on 2015-07-13
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-06-01 18:43:50 -0700 (Wed, 01 Jun 2016) $
-; $LastChangedRevision: 21257 $
+; $LastChangedBy: haraday $
+; $LastChangedDate: 2016-06-03 17:01:43 -0700 (Fri, 03 Jun 2016) $
+; $LastChangedRevision: 21263 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/ngi/mvn_ngi_remote_list.pro $
 ;-
 
@@ -54,7 +54,8 @@ function mvn_ngi_remote_list, trange=trange, filetype=filetype, verbose=verbose,
   if s.no_server eq 0 then begin
      for idpn=0,n_elements(dpathnames)-1 do begin
         ;;; download directory and extract links from .remote-index.html
-        file_http_copy,dpathnames[idpn],serverdir=s.remote_data_dir,localdir=s.local_data_dir,url_info=url_info,verbose=verbose,_extra=s,links=links,file_mode='666'o,dir_mode='777'o
+        dum = file_retrieve(dpathnames[idpn],links=links,source=s)
+;        file_http_copy,dpathnames[idpn],serverdir=s.remote_data_dir,localdir=s.local_data_dir,url_info=url_info,verbose=verbose,_extra=s,links=links,file_mode='666'o,dir_mode='777'o ;- obsolete
         for ipf=0,n_elements(pfiles)-1 do begin
            w = where( strmatch(links,pfiles[ipf]) , nw )
            if nw gt 0 then f = [f,links[w]]

@@ -84,9 +84,9 @@
 ;    2012-6-25:  local_data_dir and remote_data_dir accept array inputs 
 ;                with the same # of elements as pathnames/newpathnames   -DO NOT USE this option!
 ;
-;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2015-11-06 11:28:30 -0800 (Fri, 06 Nov 2015) $
-;$LastChangedRevision: 19280 $
+;$LastChangedBy: haraday $
+;$LastChangedDate: 2016-06-03 17:00:09 -0700 (Fri, 03 Jun 2016) $
+;$LastChangedRevision: 21262 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 
@@ -142,18 +142,18 @@ function file_retrieve,pathnames, newpathnames, source=source, psource=psource, 
     oldversion_ext = oldversion_ext, $
     force_download=force_download,$
     no_clobber=no_clobber, ignore_filesize=ignore_filesize, $
-    verbose=verbose,progress=progress,progobj=progobj
+    verbose=verbose,progress=progress,progobj=progobj,links=links
     
 common file_retrieve_com, no_internet_until,wait_time
 if ~keyword_set(wait_time) then wait_time = 180
 if ~keyword_set(no_internet_until) then no_internet_until = systime(1)-1.
 
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 19280 2015-11-06 19:28:30Z davin-mac $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 21262 2016-06-04 00:00:09Z haraday $'
 if size(/type, local_data_dir)  ne 7 then local_data_dir = root_data_dir()
 
 if keyword_set(structure_format)  && structure_format eq 1 then begin    ; Old version maintained for legacy code   - don't use this any more.
-;   swver = strsplit('$Id: file_retrieve.pro 19280 2015-11-06 19:28:30Z davin-mac $',/extract)
+;   swver = strsplit('$Id: file_retrieve.pro 21262 2016-06-04 00:00:09Z haraday $',/extract)
 ;   user_agent =  strjoin(swver[1:3],' ')+' IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    if n_elements(user_agent) eq 0 then user_agent=''
    str= {   $
@@ -200,7 +200,7 @@ if keyword_set(default_structure)  then begin     ; pathnames not provided -  re
   return,psource
 endif
 
-if keyword_set(source) then return, file_retrieve(pathnames,newpathnames,_extra=source)
+if keyword_set(source) then return, file_retrieve(pathnames,newpathnames,_extra=source,links=links)
 
 
 ;if keyword_set(no_download) then no_server = no_download ; Leave this line commented out.  The keyword NO_SERVER is independent of the NO_DOWNLOAD keyword 
@@ -294,7 +294,7 @@ if keyword_set(remote_data_dir) &&  ~(keyword_set(no_server) || keyword_set(no_d
             preserve_mtime = preserve_mtime, restore_mtime=restore_mtime, $
             file_mode=file_mode,dir_mode=dir_mode,last_version=last_version, $
             min_age_limit=min_age_limit,force_download=force_download, $
-            error =error
+            error =error,links=links
             
           if keyword_set(error) then begin   
             dprint,dlevel=1,verbose=verbose,'Network Connection Error detected- Will use local copies only. ',error
