@@ -20,8 +20,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-05-27 18:59:20 -0700 (Fri, 27 May 2016) $
-; $LastChangedRevision: 21244 $
+; $LastChangedDate: 2016-06-05 14:46:14 -0700 (Sun, 05 Jun 2016) $
+; $LastChangedRevision: 21264 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
 ;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
@@ -279,6 +279,8 @@ PRO mms_bss_history, bss=bss, trange=trange, tplot=tplot, csv=csv, dir=dir
   wRL2= wSD2- (wDi2-wDd2)
   wRL3= wSD3- (wDi3-wDd3)
   wRL4= wSD4- (wDi4-wDd4)
+  wRL[qmax-1] = 0
+
   store_data,'wSD',data={x:wDt,y:wSD}
   store_data,'wDi',data={x:wDt,y:wDi-wDd}
   store_data,'wRL',data={x:wDt,y:wRL}
