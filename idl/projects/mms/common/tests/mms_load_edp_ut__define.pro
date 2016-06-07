@@ -11,6 +11,15 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_edp_ut__define.pro $
 ;-
 
+; the following is a regression test for a bug that occurs with the L2 HFESP CDFs
+function mms_load_edp_ut::test_load_hfesp_cdf_bug
+    mms_load_edp,trange=mms_get_roi('2016-02-28/16:00:00',/next),probes=4,level='l2',data_rate='srvy',datatype='hfesp'
+    assert, spd_data_exists('mms4_edp_hfesp_srvy_l2', '2016-02-28/16:00', '2016-02-29/03:00'), $
+      'Problem loading the EDP HFESP data during regression test'
+    get_data, 'mms4_edp_hfesp_srvy_l2', data=hfesp_data
+    assert, n_elements(hfesp_data.V) eq 322, 'Problem with HFESP regression test'
+    return, 1
+end
 
 function mms_load_edp_ut::test_load
   mms_load_edp

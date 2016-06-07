@@ -1,5 +1,5 @@
 
-function spp_swp_spani_rates_64x_decom,ccsds, ptp_header=ptp_header, apdat=apdat
+function spp_swp_spani_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
   b = ccsds.data
   psize = 105+7

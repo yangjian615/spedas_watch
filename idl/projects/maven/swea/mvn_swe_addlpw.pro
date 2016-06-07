@@ -14,14 +14,19 @@
 ;    PANS:          Named variable to hold a space delimited string containing
 ;                   the tplot variable(s) created.
 ;
+;    NE_ONLY:       Only include the density panel, ignoring T_e and V_sc.
+;                   Default = 1 (yes).
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-23 17:10:51 -0800 (Mon, 23 Nov 2015) $
-; $LastChangedRevision: 19460 $
+; $LastChangedDate: 2016-06-06 08:43:10 -0700 (Mon, 06 Jun 2016) $
+; $LastChangedRevision: 21265 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_addlpw.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
 ;-
-pro mvn_swe_addlpw, pans=pans
+pro mvn_swe_addlpw, pans=pans, ne_only=ne_only
+
+  if (size(ne_only,/type) eq 0) then ne_only = 1
 
   pans = ''
   mvn_lpw_load_l2, ['lpnt'], tplotvars=lpw_pan, /notplot
@@ -30,7 +35,10 @@ pro mvn_swe_addlpw, pans=pans
     for i=0,(n_elements(lpw_pan)-1) do pans += lpw_pan[i] + ' '
     pans = strtrim(strcompress(pans),2)
   endif
-  
+
+  options,'mvn_lpw_lp_ne_l2','psym',10
+  if (ne_only) then pans = 'mvn_lpw_lp_ne_l2'
+
   return
   
 end

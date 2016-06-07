@@ -42,7 +42,13 @@
 ;   NO2:       Include O2+ density calculated from STATIC.  Has no effect unless
 ;              STATIC keyword is set.
 ;
-;   LPW:       Include panels for LPW data.
+;   NO1:       Include O+ density calculated from STATIC.  Has no effect unless
+;              STATIC keyword is set.
+;
+;   LPW:       Include panel for electron density from LPW data.
+;
+;              Note: if two or more of O2+, O+, and electron densities are present
+;              they are combined into a single panel.
 ;
 ;   EUV:       Include a panel for EUV data.
 ;
@@ -53,20 +59,21 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-01 17:36:49 -0700 (Wed, 01 Jun 2016) $
-; $LastChangedRevision: 21256 $
+; $LastChangedDate: 2016-06-06 08:45:03 -0700 (Mon, 06 Jun 2016) $
+; $LastChangedRevision: 21267 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
 pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
-                     sc_pot=sc_pot, eph=eph, nO2=nO2
+                     sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2
 
   compile_opt idl2
 
   @mvn_swe_com
   @maven_orbit_common
   
+  if keyword_set(nO1) then doO1 = 1 else doO1 = 0
   if keyword_set(nO2) then doO2 = 1 else doO2 = 0
 
   mvn_swe_sumplot,/loadonly
@@ -127,7 +134,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 ; STATIC data
 
   sta_pan = ''
-  if keyword_set(static) then mvn_swe_addsta, pans=sta_pan, nO2=doO2
+  if keyword_set(static) then mvn_swe_addsta, pans=sta_pan, nO1=doO1, nO2=doO2
 
 ; LPW data
 
@@ -166,14 +173,64 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
 ; Make density overlay if both STATIC and LPW densities are present
 
+  n_pans = ['']
+  n_labs = ['']
+  n_cols = [0]
+  n_sta = 0
+  n_lpw = 0
   i = strpos(sta_pan,'mvn_sta_O2+_raw_density')
-  j = strpos(lpw_pan,'mvn_lpw_lp_ne_l2')
-  if ((i gt -1) and (j gt -1)) then begin
-    options,'mvn_lpw_lp_ne_l2','psym',10
-    store_data,'n_ion',data=['mvn_sta_O2+_raw_density','mvn_lpw_lp_ne_l2']
+  if (i gt -1) then begin
+    n_pans = [n_pans,'mvn_sta_O2+_raw_density']
+    n_labs = [n_labs,'O2+']
+    n_cols = [n_cols,6]
+    sta_pan = strmid(sta_pan,0,i) + strmid(sta_pan,(i+23))
+    n_sta++
+  endif
+  i = strpos(sta_pan,'mvn_sta_O+_raw_density')
+  if (i gt -1) then begin
+    n_pans = [n_pans,'mvn_sta_O+_raw_density']
+    n_labs = [n_labs,'O+']
+    n_cols = [n_cols,4]
+    sta_pan = strmid(sta_pan,0,i) + strmid(sta_pan,(i+22))
+    n_sta++
+  endif
+  i = strpos(lpw_pan,'mvn_lpw_lp_ne_l2')
+  if (i gt -1) then begin
+    n_pans = [n_pans,'mvn_lpw_lp_ne_l2']
+    n_labs = [n_labs,'e-']
+    n_cols = [n_cols,2]
+    lpw_pan = strmid(lpw_pan,0,i) + strmid(lpw_pan,(i+16))
+    n_lpw++
+  endif
+  
+  np = n_elements(n_pans) - 1
+
+  if (np gt 1) then begin
+    n_pans = n_pans[1:np]
+    n_labs = n_labs[1:np]
+    n_cols = n_cols[1:np]
+    tplot_options, get=topt
+    tsp = time_double(topt.trange_full)
+
+    if (n_sta gt 10) then begin  ; disable for now (not very helpful)
+      add_data, 'mvn_sta_O2+_raw_density', 'mvn_sta_O+_raw_density',  $
+                newname='mvn_sta_ion_raw_density'
+      n_pans = ['mvn_sta_ion_raw_density', n_pans]
+      n_labs = ['i+', n_labs]
+      n_cols = [!p.color, n_cols]
+      np++
+    endif
+
+    store_data,'n_lab',data={x:tsp, y:replicate(-1.,2,np), v:indgen(np)}
+    options,'n_lab','labels',n_labs
+    options,'n_lab','colors',n_cols
+    options,'n_lab','labflag',1
+
+    store_data,'n_ion',data=['n_lab', n_pans]
     ylim,'n_ion',10,1e5,1
-    sta_pan = strmid(sta_pan,0,i) + 'n_ion' + strmid(sta_pan,(i+23))
-    lpw_pan = strmid(lpw_pan,0,j) + strmid(lpw_pan,(j+16))
+    options,'n_ion','ytitle','Density!c!c(cm!u-3!n)'
+
+    sta_pan = sta_pan + ' ' + 'n_ion'
   endif
 
 ; Assemble the panels and plot
