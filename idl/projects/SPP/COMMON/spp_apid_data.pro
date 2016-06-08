@@ -32,6 +32,7 @@ pro spp_apid_data,apid,name=name,$
                  save:0b, $
                  ;status_ptr: ptr_new(), $
                  last_ccsds: ptr_new(),  $
+                 last_decom: ptr_new(),  $
                  dataptr:  ptr_new(),   $
                  dataindex: ptr_new() , $
                  dlimits:ptr_new() }
@@ -61,6 +62,8 @@ pro spp_apid_data,apid,name=name,$
         if apdat[i].apid lt 0 then begin
            if ~ptr_valid(apdat[i].last_ccsds) then $
               apdat[i].last_ccsds = ptr_new(/allocate_heap)
+            if ~ptr_valid(apdat[i].last_decom) then $
+              apdat[i].last_decom = ptr_new(/allocate_heap)
            if ~ptr_valid(apdat[i].dataptr)    then $
               apdat[i].dataptr    = ptr_new(/allocate_heap)
            if ~ptr_valid(apdat[i].dataindex)  then $

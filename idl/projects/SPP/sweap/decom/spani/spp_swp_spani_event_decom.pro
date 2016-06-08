@@ -32,20 +32,21 @@ function spp_swp_spani_event_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
   tdt = tw[w_dt]
 
-  events = replicate( {time:0d, seq_cntr15:ccsds.seq_cntr and 'f'x,  channel:0b,  TOF:0u, dt:0u } , n_dt )
+  events = replicate( {time:0d, seq_cntr15:ccsds.seq_cntr and 'f'x,  TOF:0u, dt:0u,  channel:0b , gap:0b} , n_dt )
   events.time = ccsds.time + (tdt-tdt[0])/ 2.^10 * (2d^17/150000d)
   events.channel = ch[w_dt]
   events.tof = tof[w_dt]
   events.dt = dt[w_dt]
 
-  event_str = { $
-              time: time, $
-              met: ccsds.met,  $
-              seq_cntr: ccsds.seq_cntr, $
-              n_tt: n_tt,$
-              n_dt: n_dt,$
-              tt0: uint(wrds[w_tt[0]] and 'ffff'x), $
-              wrds: wrds }
+;  event_str = { $
+;              time: time, $
+;              met: ccsds.met,  $
+;              seq_cntr: ccsds.seq_cntr, $
+;              n_tt: n_tt,$
+;              n_dt: n_dt,$
+;              tt0: uint(wrds[w_tt[0]] and 'ffff'x), $
+;              wrds: wrds, $
+;              gap: 0b }
   
   ;event_times = replicate( { time: 0d,seq_cntr15:ccsds.seq_cntr and
   ;'f'x, valmod: 0u }, n_tt )

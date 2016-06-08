@@ -130,8 +130,9 @@ pro thm_load_esa_post, sname=probe, datatype=dt, level=lvl, $
      endcase
      
      store_data, tplot_var, data=d_str, limit=l_str, dlimit=dl_str
-     if in_set(tag_names(d_str),'V') then begin
-       If(isit_eflux) Then ylim, tplot_var, 0.1, max(d_str.v, /nan), 1
+     if(isit_eflux && in_set(tag_names(d_str),'V')) then begin
+        vmin = min(d_str.v, /nan, max = vmax) > 0.10
+        ylim, tplot_var, vmin, vmax, 1
      endif
 
 ;ylims for data quality flag

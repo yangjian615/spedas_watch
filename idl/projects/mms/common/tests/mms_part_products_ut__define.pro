@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-05-13 19:22:01 -0700 (Fri, 13 May 2016) $
-; $LastChangedRevision: 21086 $
+; $LastChangedDate: 2016-06-07 17:36:55 -0700 (Tue, 07 Jun 2016) $
+; $LastChangedRevision: 21278 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_products_ut__define.pro $
 ;-
 
@@ -424,6 +424,35 @@ function mms_part_products_ut::test_invalid_support
   return, 1
 end
 
+
+;+
+; Test time range with invalid azimuth data
+;   -as of 2016-06-07 most of the azimuth data for this data set was all zero
+;-
+function mms_part_products_ut::test_hpca_bad_azimuth
+
+  probe='1'
+  
+  trange = mms_get_roi(time_double('2016-02-27/16:00:00'),/next)
+  timespan, trange
+
+  mms_load_hpca, probes=probe, trange=trange, datatype='ion', $
+                 level='l2', data_rate='brst'
+  mms_load_mec, probes=probe, trange=trange, level='l2'
+  mms_load_fgm, probes=probe, trange=trange, level='l2'
+
+  name = 'mms1_hpca_hplus_phase_space_density'
+  mms_part_products, name, trange=trange, $
+                     mag_name='mms1_fgm_b_dmpa_srvy_l2_bvec', $
+                     pos_name='mms1_mec_r_eci',outputs='pa'
+
+  assert, spd_data_exists(name+'_pa', trange[0], trange[1]), 'Failed to find expected ouputs'
+
+  tplot, name+'_pa', title='verify pitch angle spectra exists'
+  makepng, self.prefix+'hpca_bad_azimuth'
+
+  return, 1
+end
 
 
 ;+

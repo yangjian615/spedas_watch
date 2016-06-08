@@ -63,7 +63,7 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_lev
         endif
         if apdat.rt_flag && apdat.rt_tags then begin
         ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-           store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags, /append
+           store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags, append = 1 + strct[0].gap
         endif
      endif else begin
         if debug(3) then begin

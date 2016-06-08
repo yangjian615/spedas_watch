@@ -6,6 +6,11 @@ function spp_swp_spani_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat,pl
   ;; 1. 16 CCSDS header bytes (should be 10?)
   ;; 2. 512 ADC values, each 2 bytes
   b = ccsds.data
+  nb = n_elements(b)
+  if nb ne (512*2+16) then begin
+    dprint,dlevel=1,"Incorrect packet size"
+    return,0
+  endif
   data = swap_endian(/swap_if_little_endian,  uint(b,16,512))
   
   

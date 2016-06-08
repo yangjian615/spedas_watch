@@ -115,6 +115,17 @@ if 0 then begin
   tplot,'spp_spani_ar_full_p1_m?_*_SPEC2'
   
   
+  store_data,'ALL_C',data='spp_*_C'
+  store_data,'ALL_V',data='spp_*_V'
+  !y.style=3
+  tplot_options,'ynozero',1
+  
+  tplot,'APID'
+  tplot,/add,'spp_*_TEMPS ALL_? *NYS*'
+  tplot,/add,'spp*hkp*ERR_CNTR'
+  tplot,/add,'spp_*_C'
+  tplot/
+  
 endif
 
 

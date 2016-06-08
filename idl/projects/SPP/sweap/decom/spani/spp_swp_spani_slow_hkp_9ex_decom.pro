@@ -51,6 +51,14 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
 
   ;;-----------------------------------------------------------
   ;; Decommutator
+  
+  MON_LVPS_TEMP =   func((spp_swp_word_decom(b,20) and '3ff'x) *1., param = temp_par_10bit)
+  MON_ANAL_TEMP =   func((spp_swp_word_decom(b,38) and '3ff'x) * 1., param = temp_par_10bit)
+  MON_TDC_TEMP=     func((spp_swp_word_decom(b,62 ) and 'fff'x)  * 1. ,param = temp_par_12bit)
+  MON_FPGA_TEMP=    func((spp_swp_word_decom(b,66 ) and 'fff'x)  * 1. ,param = temp_par_12bit) 
+  
+  TEMPS = float([mon_lvps_temp,mon_anal_temp,mon_TDC_TEMP,mon_FPGA_TEMP])
+
 
   spai = { $
 
@@ -65,7 +73,7 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
  
          REVN:            b[12],  $
          CMDS_REC:        spp_swp_word_decom(b,13),  $
-         CMDS_UNK:        ishft(b[15],4), $
+         CMDS_UNK:        ishft(b[15],-4), $
          CMDS_ERR:        b[15] and 'f'x, $
 
          CH0_OFF:         ishft(b[16],-2),$
@@ -73,29 +81,29 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
          CH1_OFF:         ishft(b[18],-2),$
          GND1:            (spp_swp_word_decom(b,18) AND '3FF'x) * 4.2520,  $
          CH2_OFF:         ishft(b[20],-2),$
-         MON_LVPS_TEMP:   func(spp_swp_word_decom(b,20) * 1., param = temp_par_10bit),  $
+         MON_LVPS_TEMP:   MON_LVPS_TEMP,  $
          CH3_OFF:         ishft(b[22],-2),$   
-         MON_22A_V:       (spp_swp_word_decom(b,22) AND '3FF'x) * 0.0281,$
+         MON_22A_V:       (spp_swp_word_decom(b,22) AND '3FF'x) * 0.028104,$
          CH4_OFF:         ishft(b[24],-2),$
-         MON_1P5D_V:      (spp_swp_word_decom(b,24) AND '3FF'x) * 0.0024,$
+         MON_1P5D_V:      (spp_swp_word_decom(b,24) AND '3FF'x) * 0.0024438,$
          CH5_OFF:         ishft(b[26],-2),$
-         MON_3P3A_V:      (spp_swp_word_decom(b,26) AND '3FF'x) * 0.0037,$
+         MON_3P3A_V:      (spp_swp_word_decom(b,26) AND '3FF'x) * 0.0037097,$
          CH6_OFF:         ishft(b[28],-2),$
-         MON_3P3D_V:      (spp_swp_word_decom(b,28) AND '3FF'x) * 0.0037,$
+         MON_3P3D_V:      (spp_swp_word_decom(b,28) AND '3FF'x) * 0.0037097,$
          CH7_OFF:         ishft(b[30],-2),$
-         MON_N8VA_C:      (spp_swp_word_decom(b,30) AND '3FF'x) * 0.0117,$
+         MON_N8VA_V:      (spp_swp_word_decom(b,30) AND '3FF'x) * 0.01173,$
          CH8_OFF:         ishft(b[32],-2),$
-         MON_N5VA_C:      (spp_swp_word_decom(b,32) AND '3FF'x) * 0.0063,$
+         MON_N5VA_V:      (spp_swp_word_decom(b,32) AND '3FF'x) * .006295,$
          CH9_OFF:         ishft(b[34],-2),$
-         MON_P8VA_C:      (spp_swp_word_decom(b,34) AND '3FF'x) * 0.0117,$
+         MON_P8VA_V:      (spp_swp_word_decom(b,34) AND '3FF'x) * 0.01173,$
          CH10_OFF:        ishft(b[36],-2),$
-         MON_P5A_C:       (spp_swp_word_decom(b,36) AND '3FF'x) * 0.0063,$
+         MON_P5VA_V:       (spp_swp_word_decom(b,36) AND '3FF'x) * .006295,$
          CH11_OFF:        ishft(b[38],-2),$
-         MON_ANAL_TEMP:   func(spp_swp_word_decom(b,38) * 1., param = temp_par_10bit),  $
+         MON_ANAL_TEMP:   MON_ANAL_TEMP,  $
          CH12_OFF:        ishft(b[40],-2),$
-         MON_3P3_C:       (spp_swp_word_decom(b,40) AND '3FF'x) * 0.5720,$
+         MON_3P3_C:       (spp_swp_word_decom(b,40) AND '3FF'x) * 0.572043,$
          CH13_OFF:        ishft(b[42],-2),$
-         MON_1P5_C:       (spp_swp_word_decom(b,42) AND '3FF'x) * 0.1720,$
+         MON_1P5_C:       (spp_swp_word_decom(b,42) AND '3FF'x) * 0.64516,$
          CH14_OFF:        ishft(b[44],-2),$
          MON_P5I_c:       (spp_swp_word_decom(b,44) AND '3FF'x) * 2.4340,$
          CH15_OFF:        ishft(b[46],-2),$
@@ -133,7 +141,7 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
          TOF_COMPR:       ishft(b[62],-6) AND '1'b,$    ; Second bit
          TP_ENA:          ishft(b[62],-5) AND '1'b,$    ; Third  bit
          ALL_FULL_SWP:    ishft(b[62],-4) AND '1'b,$    ; Fourth bit
-         MON_TDC_TEMP:    func(spp_swp_word_decom(b,62 )  * 1. ,param = temp_par_12bit) , $
+         MON_TDC_TEMP:    MON_TDC_TEMP , $
 
          RESET_CNT:       ishft(b[64],-4),$                                ; First 4 bits
          MON_RAW_V:       (spp_swp_word_decom(b,64) AND 'FFF'x) * 1.2210,$ ; Last 12 bits of word
@@ -142,7 +150,7 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
          PROD_AP:         ishft(b[66],-6) AND '1'b,$      ; Second bit
          TOF_HIST:        ishft(b[66],-5) AND '1'b,$      ; Third  bit
          RAW_EVENTS:      ishft(b[66],-4) AND '1'b,$      ; Fourth bit
-         MON_FPGA_TEMP:   func(spp_swp_word_decom(b,66 )  * 1. ,param = temp_par_12bit) , $
+         MON_FPGA_TEMP:   MON_FPGA_TEMP , $
 
          BOARD_ID:        ishft(b[68],-6),$               ; First 2 bits
          HV_KEY_ENA:      ishft(b[68],-5) AND '1'b,$      ; Next bit
@@ -232,6 +240,7 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
          
          RIO_NO_ACK:   ishft(b[135],-7),$
          CLKS_PER_NYS: b[135] AND '7f'x,$
+         all_temps : TEMPS, $
 
          GAP:            ccsds.gap }
   

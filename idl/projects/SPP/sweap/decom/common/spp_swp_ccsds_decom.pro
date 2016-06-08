@@ -39,14 +39,16 @@ function spp_swp_ccsds_decom,buffer          ,subsec=subsec   , error=error
           apid:         apid , $
           seq_group:    ishft(header[1] ,-14) , $
           seq_cntr:     header[1] and '3FFF'x , $
+          seqn:         header[1] and '3FFF'x , $
           size:         header[2]   , $
           pkt_size:     pkt_size,  $
           time:         utime,  $
           MET:          MET,   $
           data:         pktbuffer, $
-;          smples_sumd:  2^(buffer[12] and 'F'x),  $   ;  this doesn't belong here....
-          dtime :  !values.d_nan, $
+          dtime :      !values.d_nan, $
+          time_delta : !values.d_nan, $
           dseq_cntr:   0u , $
+          seqn_delta : 0u, $
           error : error, $
           gap : 1b  } 
 

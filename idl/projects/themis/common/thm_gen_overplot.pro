@@ -733,72 +733,54 @@ load_position='bound'
 ; final tplot preparations
 ;--------------------------
 
-
 load_position='plot'
 
 ;set the low limit of the ESA en_eflux variables to be the lower limit
 ;of either the ion or electron energies
-get_data,  thx+'_peif_en_eflux', data = dion
-get_data,  thx+'_peef_en_eflux', data = dele
-If(is_struct(dion) && is_struct(dele)) Then Begin
-   mineval = min([min(dion.v), min(dele.v)]) > 0.10
+esa_instr = ['f', 'r']
+For j = 0, 1 Do Begin
+   ivar = thx+'_pei'+esa_instr[j]+'_en_eflux'
+   evar = thx+'_pee'+esa_instr[j]+'_en_eflux'
+   get_data,  ivar, data = dion
+   get_data,  evar, data = dele
+   If(is_struct(dion) && is_struct(dele)) Then Begin
+;This needs to be done for data only in the original time interval
+      ss_ion = where(dion.x Ge t0 And dion.x lt t1, nss_ion)
+      ss_ele = where(dele.x Ge t0 And dele.x lt t1, nss_ele)
+      If(nss_ion Eq 0 Or nss_ele Eq 0) Then Begin
+         dprint, ivar+' Or '+evar+' missing'
+         print, time_string([t0, t1])
+         mineval = 0
+      Endif Else Begin
+         mineval = min([min(dion.v[ss_ion, *]), min(dele.v[ss_ele, *])]) > 0.10
+      Endelse
 ;0 energy values will not plot correctly, so
 ;reset any energy = 0 points to 0.01 eV
-   xxx = where(dion.v lt 1.0, nxxx)
-   If(nxxx Gt 0) Then Begin
-      dion.v[xxx] = 0.01
-      store_data,  thx+'_peif_en_eflux', data = dion
-   Endif
-   xxx = where(dele.v lt 1.0, nxxx)
-   If(nxxx Gt 0) Then Begin
-      dele.v[xxx] = 0.01
-      store_data,  thx+'_peef_en_eflux', data = dele
-   Endif
-Endif Else mineval = 0
-thm_spec_lim4overplot, thx+'_peif_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
-thm_spec_lim4overplot, thx+'_peef_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
-
-get_data,  thx+'_peir_en_eflux', data = dion
-get_data,  thx+'_peer_en_eflux', data = dele
-If(is_struct(dion) && is_struct(dele)) Then Begin
-   mineval = min([min(dion.v), min(dele.v)]) > 0.10
-   xxx = where(dion.v lt 1.0, nxxx)
-   If(nxxx Gt 0) Then Begin
-      dion.v[xxx] = 0.01
-      store_data,  thx+'_peir_en_eflux', data = dion
-   Endif
-   xxx = where(dele.v lt 1.0, nxxx)
-   If(nxxx Gt 0) Then Begin
-      dele.v[xxx] = 0.01
-      store_data,  thx+'_peer_en_eflux', data = dele
-   Endif
-Endif Else mineval = 0
-thm_spec_lim4overplot, thx+'_peir_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
-thm_spec_lim4overplot, thx+'_peer_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = mineval
+      xxx = where(dion.v lt 1.0, nxxx)
+      If(nxxx Gt 0) Then Begin
+         dion.v[xxx] = 0.01
+         store_data,  ivar, data = dion
+      Endif
+      xxx = where(dele.v lt 1.0, nxxx)
+      If(nxxx Gt 0) Then Begin
+         dele.v[xxx] = 0.01
+         store_data,  evar, data = dele
+      Endif
+   Endif Else mineval = 0
+   thm_spec_lim4overplot, ivar, zlog = 1, ylog = 1, /overwrite, ymin = mineval
+   thm_spec_lim4overplot, evar, zlog = 1, ylog = 1, /overwrite, ymin = mineval
+;thm_spec_lim4overplot overrides any z-axis min/max with
+;the min/max of the data if zeros are found, so reset zlimits
+   zlim, ivar, 1d3, 7.5d8, 1
+   zlim, evar, 1d4, 7.5d8, 1
+Endfor
 
 ssti_name=thx+'_psif_en_eflux'
 sste_name=thx+'_psef_en_eflux'
 thm_spec_lim4overplot, ssti_name, zlog = 1, ylog = 1, /overwrite
-;                       zmin = 1d1, zmax = 5d7
-;reset sst ylimit maxima to 3.0e6
-;get_data, ssti_name, data = d
-;If(is_struct(d)) Then ylim, ssti_name, min(d.v), 3.0e6, 1
 thm_spec_lim4overplot, sste_name, zlog = 1, ylog = 1, /overwrite
-;                       zmin = 1d1, zmax = 5d7
-;get_data, sste_name, data = d
-;If(is_struct(d)) Then ylim, sste_name, min(d.v), 3.0e6, 1
-
-
-;thm_spec_lim4overplot will override any z-axis min/max with
-;the min/max of the data if any zeros are found, therefore
-;the z-range must be set again here for consistent plots
-zlim, thx+'_peif_en_eflux', 1d3, 7.5d8, 1
-zlim, thx+'_peef_en_eflux', 1d4, 7.5d8, 1
-zlim, thx+'_peir_en_eflux', 1d3, 7.5d8, 1
-zlim, thx+'_peer_en_eflux', 1d4, 7.5d8, 1
 zlim, ssti_name, 1d0, 5d7, 1
 zlim, sste_name, 1d0, 5d7, 1
-
 
 SKIP_BOUNDS:
 

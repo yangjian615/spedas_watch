@@ -89,7 +89,7 @@ pro spp_swp_startup, spanai   = spanai,$
         spp_apid_data,'3b9'x,routine='spp_swp_spani_event_decom',        tname='spp_spani_events_',  tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3ba'x,routine='spp_swp_spani_tof_decom',          tname='spp_spani_tof_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3bb'x,routine='spp_swp_spani_rates_decom',        tname='spp_spani_rates_',   tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-        spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_9dx_decom', tname='spp_spani_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+        spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_9ex_decom', tname='spp_spani_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3bf'x,routine='spp_swp_spani_fast_hkp_decom',     tname='spp_spani_fhkp_',    tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      endif
 

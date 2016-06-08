@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-27 17:38:04 -0700 (Fri, 27 May 2016) $
-;$LastChangedRevision: 21243 $
+;$LastChangedDate: 2016-06-07 17:36:55 -0700 (Tue, 07 Jun 2016) $
+;$LastChangedRevision: 21278 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
@@ -103,6 +103,20 @@ full = where( (data_idx[1:*] - data_idx[0:n_elements(data_idx)-2]) eq n_times, n
 if n_full eq 0 then begin
   dprint, dlevel=0, 'Azimuth data does not cover current data''s time range'
   return, 0
+endif
+
+;hopefully this is temporary:
+;filter times when azimuth data is all zero
+;  -just check the first energy & elevation
+;  -assume azimuth values are positive
+valid_az = where( total((*azimuth.y)[full,0,0,*],4) ne 0, n_valid_az, ncomp=n_blank)
+if n_blank gt 0 then begin
+  if n_valid_az eq 0 then begin
+    dprint, dlevel=0, 'Azimuth data is all zero for requested time range'
+    return, 0
+  endif
+  full = full[valid_az]
+  n_full = n_elements(full)
 endif
 
 
