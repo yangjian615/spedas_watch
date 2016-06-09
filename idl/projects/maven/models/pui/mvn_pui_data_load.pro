@@ -28,8 +28,8 @@ ylim,'mvn_swis_en_eflux',25,25e3
 zlim,'mvn_swis_en_eflux',1e3,1e8
 ylim,'mvn_B_1sec',-10,10
 ylim,'mvn_euv_data',.0001,.01,1
-ylim,'mvn_sep*_*-O_*',10,1e3
-zlim,'mvn_sep*_*-O_*',.1,1e4
+ylim,'mvn_sep*_*-O_Rate_Energy',10,1e3
+zlim,'mvn_sep*_*-O_Rate_Energy',.1,1e4
 ylim,'mvn_sta_c0_?_E',1,32e3,1
 zlim,'mvn_sta_c0_?_E',1e3,1e8,1
 

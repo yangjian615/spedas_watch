@@ -31,8 +31,8 @@
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
-; $LastChangedRevision: 16613 $
+; $LastChangedDate: 2016-06-08 16:03:40 -0700 (Wed, 08 Jun 2016) $
+; $LastChangedRevision: 21288 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -46,12 +46,28 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
   common temp_call_sta_l2gen, load_position
   set_plot, 'z'
   load_position = 'init'
+  ecount = 0
   catch, error_status
   
   if error_status ne 0 then begin
      print, '%MVN_CALL_STA_L2GEN: Got Error Message'
      help, /last_message, output = err_msg
      For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
+;Open a file print out the error message, only 10 times
+     If(ecount Lt 10) Then Begin
+        ecount = ecount+1
+        ec = strcompress(string(ecount), /remove_all)
+        openw, eunit, '/tmp/sta_l2_err_msg'+ec+'.txt', /get_lun
+        For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
+        If(keyword_set(timei)) Then Begin
+           printf, eunit, timei
+        Endif
+        free_lun, eunit
+;mail it to jimm@ssl.berkeley.edu
+        cmd_rq = 'mailx -s "Problem with STA L2 process" jimm@ssl.berkeley.edu < /tmp/sta_l2_err_msg'+ec+'.txt'
+        spawn, cmd_rq
+     Endif
+
      case load_position of
         'init':begin
            print, 'Problem with initialization'

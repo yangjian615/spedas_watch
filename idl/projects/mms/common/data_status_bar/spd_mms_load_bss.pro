@@ -30,10 +30,12 @@
 ;   See examples/basic/spd_mms_load_bss_crib.pro for examples. 
 ;   
 ; CREATED BY: Mitsuo Oka   Oct 2015
+; 
+; Updated by egrimes, June 2016
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-23 09:13:14 -0700 (Mon, 23 May 2016) $
-;$LastChangedRevision: 21170 $
+;$LastChangedDate: 2016-06-08 09:49:46 -0700 (Wed, 08 Jun 2016) $
+;$LastChangedRevision: 21279 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/spd_mms_load_bss.pro $
 ;-
 
@@ -45,30 +47,48 @@ PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_l
   datatype = strlowcase(datatype)
   
   nmax = n_elements(datatype)
-  for n=0,nmax-1 do begin
-    case datatype[n] of
-      'fast':   mms_load_fast_segments, trange=trange
-      'burst':  mms_load_brst_segments, trange=trange
-      'status': mms_load_bss_status, trange=trange, include_labels=include_labels
-      'fom':    mms_load_bss_fom, trange=trange
-      else: message,'datatype: '+datatype[n]+' is not allowed.'
-    endcase
-  endfor
-
+  
+  ; check if team login is required first
+  if array_contains(datatype, 'status') || array_contains(datatype, 'fom') then begin
+      status = mms_login_lasp(username=username)
+      
+      ; valid non-public user?
+      if username eq '' || username eq 'public' then begin
+          dprint, dlevel = 0, 'Error, need to login as an MMS team member for "status" and/or "fom" segment bars' 
+      endif
+  endif
+  
   burst_label = keyword_set(include_labels) ? 'Burst' : ''
   fast_label = keyword_set(include_labels) ? 'Fast' : ''
   status_label = keyword_set(include_labels) ? 'Status' : ''
   fom_label = keyword_set(include_labels) ? 'FoM' : ''
- 
+
   panel_size = keyword_set(include_labels) ? 0.09 : 0.01
   
-  ; set some options so the labels sizes are set properly
-  options,'mms_bss_burst',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-    ticklen=0,panel_size=panel_size,colors=2, labels=[burst_label], labsize=1, charsize=1.
-  options,'mms_bss_fast',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-    ticklen=0,panel_size=panel_size,colors=6, labels=[fast_label], labsize=1, charsize=1.
-  options,'mms_bss_status',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-    ticklen=0,panel_size=panel_size,colors=4, labels=[status_label], labsize=1, charsize=1.
-  options,'mms_bss_fom',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-    ticklen=0,panel_size=panel_size,colors=0, labels=[fom_label], labsize=1, charsize=1.
+  for n=0,nmax-1 do begin
+    case datatype[n] of
+      'fast': begin
+         mms_load_fast_segments, trange=trange
+         options,'mms_bss_fast',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
+          ticklen=0,panel_size=panel_size,colors=6, labels=[fast_label], labsize=1, charsize=1.
+       end
+      'burst': begin
+         mms_load_brst_segments, trange=trange
+         options,'mms_bss_burst',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
+          ticklen=0,panel_size=panel_size,colors=2, labels=[burst_label], labsize=1, charsize=1.
+       end
+      'status': begin
+         mms_load_bss_status, trange=trange, include_labels=include_labels
+         options,'mms_bss_status',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
+          ticklen=0,panel_size=panel_size,colors=4, labels=[status_label], labsize=1, charsize=1.
+       end
+      'fom': begin
+         mms_load_bss_fom, trange=trange
+         options,'mms_bss_fom',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
+          ticklen=0,panel_size=panel_size,colors=0, labels=[fom_label], labsize=1, charsize=1.
+       end
+      else: message,'datatype: '+datatype[n]+' is not allowed.'
+    endcase
+  endfor
+
 END

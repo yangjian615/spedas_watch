@@ -63,8 +63,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
-;$LastChangedRevision: 21219 $
+;$LastChangedDate: 2016-06-08 11:21:42 -0700 (Wed, 08 Jun 2016) $
+;$LastChangedRevision: 21282 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -136,6 +136,10 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
             ; fix some metadata
             mms_fpi_fix_metadata, tplotnames, prefix='mms'+probes[probe_idx], level = level, $
                 suffix = suffix, data_rate = data_rate
+
+            ; create the error bars
+            make_fpi_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_dis_errorflags_'+data_rate+suffix ; ions
+            make_fpi_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_des_errorflags_'+data_rate+suffix ; electrons
         endfor
     endif
 end

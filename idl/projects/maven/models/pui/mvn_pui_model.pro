@@ -15,20 +15,20 @@
 ;   np: number of simulated particles in each time bin. if not set, default is used (1000 particles)
 ;   nodataload: does not load any data. use if you want to re-run the simulation with all required data already loaded
 ;   do3d: models pickup oxygen and hydrogen 3d spectra for SWIA and STATIC
+;   exoden: sets exospheric neutral densities to n(r)=1 m-3 for the pickup ion model-data comparison reverse model 
 
-pro mvn_pui_model,binsize=binsize,trange=trange,np=np,nodataload=nodataload,do3d=do3d
+pro mvn_pui_model,binsize=binsize,trange=trange,np=np,nodataload=nodataload,do3d=do3d,exoden=exoden
 
 common mvn_pui_common,mag,vsw,usw,nsw,scp,kemax, $
-  rxyz,vxyz,drxyz,ntot,ke,v3x,v3y,v3z, $
+  rxyz,vxyz,drxyz,ntot,ke,r3x,r3y,r3z,v3x,v3y,v3z, $
   sep1ld,sep2ld,staxld,stazld,sepeb1att,sepeb2att, $
-  inn,centertime,sep1att,sep1data,sep2att,sep2data,sweaef, $
-  fismir,ifreq_o,ifreq_h, $
-  keflux,keflux1,keflux2,kefswi,kefswi3d,kefsta,kefsta3d, $
+  inn,centertime,sep1att,sep1data,sep2att,sep2data, $
+  fismir,ifreq_o,ifreq_h,sweaef,swiaef,swiaef3d,statef3d,statetd1, $
   srmd,swieb,staeb,sweeb,toteb,swina,swine,totdee,swidee,stadee,swedee, $
-  kefluxo,kefswio,kefstao,kefswio3d,kefstao3d, $
-  kefluxh,kefswih,kefstah,kefswih3d,kefstah3d
-  
-  
+  keflux,keflux1,keflux2,kefswi,kefsta,kefswi3d,kefsta3d,krxswi3d,kryswi3d,krzswi3d,knnswi3d, $
+  kefluxo,kefswio,kefstao,kefswio3d,kefstao3d,krxswio3d,kryswio3d,krzswio3d,knnswio3d, $
+  kefluxh,kefswih,kefstah,kefswih3d,kefstah3d,krxswih3d,kryswih3d,krzswih3d,knnswih3d
+
 srmd=700; %sep response matrix dimentions
 sopeb=30 ;sep open # of energy bins
 swieb=48 ;swia # of energy bins
@@ -51,24 +51,37 @@ mvn_pui_data_res,trange=trange,binsize=binsize ;change data resolution and load 
 mvn_pui_data_analyze ;analyze data
 
 ttdtsf=1. ;time to do the simulation factor!
-if keyword_set(do3d) then ttdtsf=10. ;10 times slower if you do3d!
+if keyword_set(do3d) then ttdtsf=2.4 ;2.4 times slower if you do3d!
 
 dprint,dlevel=2,'All data loaded successfully, the pickup ion model is now calculating...'
-dprint,dlevel=2,'The simulation should take ~'+strtrim(ceil(14.*np*inn/1000./2880.*ttdtsf),2)+' seconds on a modern machine.'
+dprint,dlevel=2,'The simulation should take ~'+strtrim(ceil(10.*np*inn/1000./2880.*ttdtsf),2)+' seconds on a modern machine.'
 simtime=systime(1) ;simulation start time, let's do this!
 
 ;modeling pickup oxygen
 mamu=16; %mass of [H=1 C=12 N=14 O=16] (amu)
-mvn_pui_solver,mamu=mamu,np=np,ntg=0.999 ;solve pickup ion trajectories
+ntg=0.999
+if keyword_set(exoden) then ntg=0.499
+mvn_pui_solver,mamu=mamu,np=np,ntg=ntg ;solve pickup ion trajectories
+nfac=replicate(1.,inn,np) ;neutral density scale factor (scales according to radius)
+nfac[where(rxyz lt 6000e3,/null)]=10. ;increase in electron impact ionization rate inside the bow shock due to increased electron flux
+nfac[where(rxyz lt 3600e3,/null)]=0. ;no pickup source below the exobase (zero neutral density)
+rxyz[where(rxyz lt 3600e3,/null)]=3600e3 ;to ensure the radius doesn't go below the exobase
 qqo=5e22; %for Mars oxygen exosphere (m-0.9) fit to Rahmati et al., 2014
-ntot=1e-4*(ifreq_o#replicate(1.,np))*drxyz*qqo/((rxyz-2400e3)^2.1); %for Mars oxygen exosphere (/[cm2 s]) fit to Rahmati et al., 2014
+ntot=1e-4*nfac*(ifreq_o#replicate(1.,np))*drxyz*qqo/((rxyz-2400e3)^2.1); %total pickup O+ flux (cm-2 s-1)
+if keyword_set(exoden) then ntot=1e-4*nfac*(ifreq_o#replicate(1.,np))*drxyz ; %total pickup O+ flux (cm-2 s-1) assuming n(r)=1 m-3
 mvn_pui_binner,mamu=mamu,np=np,do3d=do3d ;bin the results
 
 kefluxo=keflux/totdee; total pickup oxygen angle integrated differential energy flux (eV/[cm2 s eV])
 kefswio=kefswi/swidee/swiatsa; %differential energy flux (eV/[cm2 s sr eV])
 kefstao=kefsta/stadee/swiatsa; %differential energy flux (eV/[cm2 s sr eV])
-kefswio3d=kefswi3d/stadee/swiatsa*swina*swine; %differential energy flux (eV/[cm2 s sr eV])
-kefstao3d=kefsta3d/stadee/swiatsa*swina*swine; %differential energy flux (eV/[cm2 s sr eV])
+if keyword_set(do3d) then begin
+  kefswio3d=kefswi3d/stadee/swiatsa*swina*swine; %differential energy flux (eV/[cm2 s sr eV])
+  kefstao3d=kefsta3d/stadee/swiatsa*swina*swine; %differential energy flux (eV/[cm2 s sr eV])
+  krxswio3d=krxswi3d
+  kryswio3d=kryswi3d
+  krzswio3d=krzswi3d
+  knnswio3d=knnswi3d
+endif
 
 seprm=replicate(0.,srmd,srmd); %sep response matrix, very crude!
 for j=0,srmd-1 do for i=0,srmd-1 do seprm[j,i]=.05*exp(-.01*(i-.8*j+30.)^2)
@@ -95,15 +108,31 @@ dprint,dlevel=2,'Pickup O+ done, now simulating pickup H+'
 ;Now let's model pickup hydrogen
 mamu=1; %mass of [H=1 C=12 N=14 O=16] (amu)
 mvn_pui_solver,mamu=mamu,np=np,ntg=2.999 ;solve pickup ion trajectories
+rxyz[where(rxyz lt 3600e3,/null)]=3600e3 ;to ensure the radius doesn't go below the exobase
 qqh=4e27; %for Mars hydrogen exosphere (m-0.3) fit to Feldman et al., 2011
 ntot=1e-4*(ifreq_h#replicate(1.,np))*drxyz*qqh/((rxyz-2700e3)^2.7); %for Mars hydrogen exosphere (/[cm2 s]) fit to Feldman et al., 2011
 mvn_pui_binner,mamu=mamu,np=np,do3d=do3d ;bin the results
-
+;-------------
+;let's add other stuff and see what happens!
+;mamu=16+16; %mass of [H=1 C=12 N=14 O=16] (amu)
+;mvn_pui_solver,mamu=mamu,np=np,ntg=0.999 ;solve pickup ion trajectories
+;qqh=1; %production rate (cm-3 s-1)
+;nfac=replicate(0.,inn,np) ;density is zero everywhere, except...
+;nfac[where((rxyz lt 10000e3),/null)]=1. ;density is non-zero below...
+;ntot=drxyz*qqh*nfac; %pickup flux (cm-2 s-1)
+;mvn_pui_binner,mamu=mamu,np=np,do3d=do3d ;bin the results
+;-------------
 kefluxh=keflux/totdee; total pickup hydrogen angle integrated differential energy flux (eV/[cm2 s eV])
 kefswih=kefswi/swidee/swiatsa; %differential energy flux (eV/[cm2 s sr eV])
 kefstah=kefsta/stadee/swiatsa; %differential energy flux (eV/[cm2 s sr eV])
-kefswih3d=kefswi3d/stadee/swiatsa*swina*swine; %differential energy flux (eV/[cm2 s sr eV])
-kefstah3d=kefsta3d/stadee/swiatsa*swina*swine; %differential energy flux (eV/[cm2 s sr eV])
+if keyword_set(do3d) then begin
+  kefswih3d=kefswi3d/stadee/swiatsa*swina*swine; %differential energy flux (eV/[cm2 s sr eV])
+  kefstah3d=kefsta3d/stadee/swiatsa*swina*swine; %differential energy flux (eV/[cm2 s sr eV])
+  krxswih3d=krxswi3d
+  kryswih3d=kryswi3d
+  krzswih3d=krzswi3d
+  knnswih3d=knnswi3d
+endif
 
 mvn_pui_tplot,/store1d,/tplot1d ;store the results in tplot variables and plot them
 dprint,dlevel=2,'Simulation time: '+strtrim(systime(1)-simtime,2)+' seconds'

@@ -46,29 +46,35 @@ zlim,'*_sta_c0',1e3,1e8,1
 endif
 
 if keyword_set(store3d) then begin
-  dprint,dlevel=2,'This may take a minute or two...'
+  store_data,'mvn_*_3d_A*_D*',/delete
+  dprint,dlevel=2,'Creating 3D tplots. This may take a minute or two...'
+
   for j=0,swina-1 do begin ;loop over azimuth bins
     for k=0,swine-1 do begin ;loop over elevation bins
       jj=15-((j+9) mod 16)
       store_data,'mvn_swia_model_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),centertime,kefswih3d[*,*,jj,k]+kefswio3d[*,*,jj,k],swiet
-      store_data,'mvn_swia_data_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),swica.time_unix,transpose(swica[*].data[*,3-k,jj]),swiet
+      store_data,'mvn_swia_data_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),centertime,swiaef3d[*,*,jj,k],swiet
+;      store_data,'mvn_swia_data_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),swica.time_unix,transpose(swica[*].data[*,3-k,jj]),swiet
       store_data,'mvn_stat_modelH_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),centertime,kefstao3d[*,*,jj,k],staet
-      store_data,'mvn_stat_dataH_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),mvn_d1_dat.time,total(mvn_d1_dat.eflux[*,*,k+4*jj,3:5],4),mvn_d1_dat.energy[mvn_d1_dat.swp_ind,*,0,0]
       store_data,'mvn_stat_modelL_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),centertime,kefstah3d[*,*,jj,k],staet
-      store_data,'mvn_stat_dataL_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),mvn_d1_dat.time,total(mvn_d1_dat.eflux[*,*,k+4*jj,0:2],4),mvn_d1_dat.energy[mvn_d1_dat.swp_ind,*,0,0]
+      if keyword_set(mvn_d1_dat) then begin
+        store_data,'mvn_stat_dataH_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),centertime,total(statef3d[*,*,k+4*jj,3:5],4),statetd1
+        store_data,'mvn_stat_dataL_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),centertime,total(statef3d[*,*,k+4*jj,0:2],4),statetd1
+;        store_data,'mvn_stat_dataH_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),mvn_d1_dat.time,total(mvn_d1_dat.eflux[*,*,k+4*jj,3:5],4),mvn_d1_dat.energy[mvn_d1_dat.swp_ind,*,0,0]
+;        store_data,'mvn_stat_dataL_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),mvn_d1_dat.time,total(mvn_d1_dat.eflux[*,*,k+4*jj,0:2],4),mvn_d1_dat.energy[mvn_d1_dat.swp_ind,*,0,0]
+      endif
       ;      store_data,'mvn_stat_model_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),centertime,kefstah3d[*,*,jj,k]+kefstao3d[*,*,jj,k],staet
       ;      store_data,'mvn_stat_data_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),mvn_ca_dat.time,mvn_ca_dat.eflux[*,*,k+4*jj],mvn_ca_dat.energy[mvn_ca_dat.swp_ind,*,0]
    endfor
   endfor
+  options,'mvn_swia*','spec',1
+  ylim,'mvn_swia*',25,25e3,1
+  zlim,'mvn_swia*',1e4,1e8,1
+
+  options,'mvn_stat*','spec',1
+  ylim,'mvn_stat*',1,35e3,1
+  zlim,'mvn_stat*',1e4,1e8,1
 endif
-
-options,'mvn_swia*','spec',1
-ylim,'mvn_swia*',25,25e3,1
-zlim,'mvn_swia*',1e4,1e8,1
-
-options,'mvn_stat*','spec',1
-ylim,'mvn_stat*',1,35e3,1
-zlim,'mvn_stat*',1e4,1e8,1
 
 if keyword_set(swia3d) then begin
   swiastat='swia'
@@ -109,10 +115,10 @@ if keyword_set(swia3d) || keyword_set(static3d_h) || keyword_set(static3d_o) the
 endif
 
 if keyword_set(tplot1d) then begin
-;wi,0,wsize=[1200,1800] ;tplot most of the variables. for diagnostic purposes, best shown on a vertical screen
-;tplot,'MAVEN_pos_(km) alt2 swe_a4 redures_swea mvn_swim_density n_sw_(cm-3) mvn_swim_velocity_mso Vsw_MSO_(km/s) mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux redures_swia mvn_model_swia mvn_B_1sec MAG_MSO_(nT) O+_Max_Energy_(keV) mvn_sep?_B-O_Rate_Energy mvn_model_puo_sep? mvn_SEPS_svy_ATT mvn_euv_l3 Ionization_Frequencies_(s-1) *_sta_c0 mvn_sta_c0_att mvn_sta_c0_mode',window=0
-wi,0,wsize=[1800,1000] ;tplot main results (model-data comparison)
-tplot,'MAVEN_pos_(km) alt2 swe_a4 mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_model_swia MAG_MSO_(nT) O+_Max_Energy_(keV) mvn_sep?_B-O_Rate_Energy mvn_model_puo_sep? mvn_SEPS_svy_ATT *_sta_c0',window=0
+wi,0 ;tplot main results (model-data comparison)
+tplot,'alt2 n_sw_(cm-3) Vsw_MSO_(km/s) redures_swia mvn_model_swia MAG_MSO_(nT) O+_Max_Energy_(keV) mvn_sep?_B-O_Rate_Energy mvn_model_puo_sep? *_sta_c0',window=0
+wi,10 ;tplot most of the variables. for diagnostic purposes, best shown on a vertical screen
+tplot,'MAVEN_pos_(km) swe_a4 redures_swea mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_B_1sec MAG_MSO_(nT) mvn_SEPS_svy_ATT mvn_euv_l3 Ionization_Frequencies_(s-1) mvn_sta_c0_att mvn_sta_c0_mode',window=10
 endif
 
 ;tplot_names
