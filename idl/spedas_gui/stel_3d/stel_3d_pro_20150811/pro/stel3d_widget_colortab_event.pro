@@ -25,7 +25,7 @@ compile_opt idl2
       nrange = [oConf.color_min_val, oConf.color_max_val]
       fStep = (max(nrange)-min(nrange))/(major-1)
       oTicktextBar.Setproperty, FONT=oFont, $
-        STRINGS=strtrim(string(findgen(major)*fStep + min(nrange), FORMAT='(1F10.1)'),1)
+        STRINGS=strtrim(string(findgen(major)*fStep + min(nrange), FORMAT='(1E10.1)'),1)
       ;
       ;update volume data
       voldata = oData.GetVolumedata()
@@ -104,7 +104,7 @@ compile_opt idl2
       nrange = [oConf.color_min_val, oConf.color_max_val]
       fStep = (max(nrange)-min(nrange))/(major-1)
       oTicktextBar.Setproperty, FONT=oFont, $
-        STRINGS=strtrim(string(findgen(major)*fStep + min(nrange), FORMAT='(1F10.1)'),1)
+        STRINGS=strtrim(string(findgen(major)*fStep + min(nrange), FORMAT='(1E10.1)'),1)
       ;
       ;update volume data
       voldata = oData.GetVolumedata()

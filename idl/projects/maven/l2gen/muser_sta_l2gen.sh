@@ -25,13 +25,13 @@ set suffix="$datestr"
 if (! -e /tmp/STAL2lock.txt) then
     cd /mydisks/home/maven
     rm -f run_sta_l2gen.bm
-    rm -f /tmp/run_sta_l2gen.txt
+    rm -f /mydisks/home/maven/stalog/run_sta_l2gen.txt$suffix
 
     set line="run_sta_l2gen"
     echo $line > run_sta_l2gen.bm
     echo exit >> run_sta_l2gen.bm
 
-    idl run_sta_l2gen.bm > /tmp/run_sta_l2gen.txt &
+    idl run_sta_l2gen.bm > /mydisks/home/maven/stalog/run_sta_l2gen.txt$suffix &
 
 #else close quietly
 endif 

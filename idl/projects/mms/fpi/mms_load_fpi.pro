@@ -63,8 +63,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-08 11:21:42 -0700 (Wed, 08 Jun 2016) $
-;$LastChangedRevision: 21282 $
+;$LastChangedDate: 2016-06-09 13:06:30 -0700 (Thu, 09 Jun 2016) $
+;$LastChangedRevision: 21296 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -84,6 +84,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     if undefined(level) then level = 'l2' 
     if undefined(data_rate) then data_rate = 'fast'
     if undefined(autoscale) then autoscale = 1
+    if undefined(suffix) then suffix = ''
     ; 2/22/2016 - getting the support data, for grabbing the energy and PA tables
     ; so that we can hard code the variable names for these, instead of hard
     ; coding the tables directly
@@ -115,7 +116,60 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
         spdf = spdf, center_measurement=center_measurement
-
+        
+    ; the following kludge is due to the errorflags variable in the dist and moments files having the
+    ; same variable name, so loading d?s-dist and d?s-moms files at the same time will overwrite
+    ; one of the vars containing errorflags
+    if array_contains(datatype, 'des-dist') && array_contains(datatype, 'des-moms') then begin
+        ; delete the old errorflags var first
+        del_data, '*_des_errorflags_*'
+        mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
+            data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
+            datatype = 'des-moms', get_support_data = 0, $
+            tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags*', cdf_filenames = cdf_filenames, $
+            cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+            spdf = spdf, center_measurement=center_measurement
+        mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
+            data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
+            datatype = 'des-dist', get_support_data = 0, $
+            tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags*', cdf_filenames = cdf_filenames, $
+            cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+            spdf = spdf, center_measurement=center_measurement
+    endif else begin
+        for probe_idx = 0, n_elements(probes)-1 do begin
+            this_probe = strcompress(string(probes[probe_idx]), /rem)
+            if array_contains(datatype, 'des-dist') then tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist'
+            if array_contains(datatype, 'des-moms') then tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms'
+        endfor
+    endelse
+    if array_contains(datatype, 'dis-dist') && array_contains(datatype, 'dis-moms') then begin
+        ; delete the old errorflags var first
+        del_data, 'mms?_dis_errorflags_*'
+        mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
+            data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
+            datatype = 'dis-moms', get_support_data = 0, $
+            tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags*', cdf_filenames = cdf_filenames, $
+            cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+            spdf = spdf, center_measurement=center_measurement
+        mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
+            data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
+            datatype = 'dis-dist', get_support_data = 0, $
+            tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
+            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags*', cdf_filenames = cdf_filenames, $
+            cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
+            spdf = spdf, center_measurement=center_measurement
+    endif else begin
+        for probe_idx = 0, n_elements(probes)-1 do begin
+            this_probe = strcompress(string(probes[probe_idx]), /rem)
+            if array_contains(datatype, 'dis-dist') then tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist'
+            if array_contains(datatype, 'dis-moms') then tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms'
+        endfor
+    endelse
+    ;;; end of kludge for errorflags variables
+    
     ; since the SITL files contain both ion and electron data, and datatype = '*' doesn't work
     ; in our 'fix'/'calc' routines for the FPI metadata
     if level eq 'sitl' then datatype = ['des-dist', 'dis-dist']
@@ -138,8 +192,12 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                 suffix = suffix, data_rate = data_rate
 
             ; create the error bars
-            make_fpi_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_dis_errorflags_'+data_rate+suffix ; ions
-            make_fpi_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_des_errorflags_'+data_rate+suffix ; electrons
+            ; moms
+            mms_fpi_make_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_dis_errorflags_'+data_rate+suffix+'_moms' ; ions
+            mms_fpi_make_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_des_errorflags_'+data_rate+suffix+'_moms' ; electrons
+            ; dist
+            mms_fpi_make_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_dis_errorflags_'+data_rate+suffix+'_dist' ; ions
+            mms_fpi_make_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_des_errorflags_'+data_rate+suffix+'_dist' ; electrons
         endfor
     endif
 end

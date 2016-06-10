@@ -136,6 +136,43 @@ function mms_load_fpi_ut::test_noupdate_mem
   return, 1
 end
 
+; check that the errorflags variable can be loaded without being overwritten
+; when the user requests datatype=['d?s-dist', 'd?s-moms']
+function mms_load_fpi_ut::test_load_errorflags_moms_and_dist
+  mms_load_fpi, datatype=['dis-moms', 'dis-dist'], data_rate='fast', trange=['2015-12-15', '2015-12-16'], probe=3
+  assert, spd_data_exists('mms3_dis_errorflags_fast_moms mms3_dis_errorflags_fast_dist', '2015-12-15', '2015-12-16'), 'Problem loading errorflags variables'
+  get_data, 'mms3_dis_errorflags_fast_moms', data=a
+  get_data, 'mms3_dis_errorflags_fast_dist', data=b
+  
+  assert, ~array_equal(a.Y, b.Y), 'Problem loading errorflags variables'
+  
+  mms_load_fpi, datatype=['des-moms', 'des-dist'], data_rate='fast', trange=['2015-12-15', '2015-12-16'], probe=3
+  assert, spd_data_exists('mms3_des_errorflags_fast_moms mms3_des_errorflags_fast_dist', '2015-12-15', '2015-12-16'), 'Problem loading errorflags variables'
+  get_data, 'mms3_des_errorflags_fast_moms', data=a
+  get_data, 'mms3_des_errorflags_fast_dist', data=b
+
+  assert, ~array_equal(a.Y, b.Y), 'Problem loading errorflags variables'
+  return, 1
+end
+
+; check that the above works with the suffix keyword
+function mms_load_fpi_ut::test_load_errorflags_moms_and_dist_suffix
+  mms_load_fpi, datatype=['dis-moms', 'dis-dist'], data_rate='fast', trange=['2015-12-15', '2015-12-16'], probe=3, suffix='TESTSUFFIX'
+  assert, spd_data_exists('mms3_dis_errorflags_fastTESTSUFFIX_moms mms3_dis_errorflags_fastTESTSUFFIX_dist', '2015-12-15', '2015-12-16'), 'Problem loading errorflags variables'
+  get_data, 'mms3_dis_errorflags_fastTESTSUFFIX_moms', data=a
+  get_data, 'mms3_dis_errorflags_fastTESTSUFFIX_dist', data=b
+
+  assert, ~array_equal(a.Y, b.Y), 'Problem loading errorflags variables'
+
+  mms_load_fpi, datatype=['des-moms', 'des-dist'], data_rate='fast', trange=['2015-12-15', '2015-12-16'], probe=3, suffix='TESTSUFFIX2'
+  assert, spd_data_exists('mms3_des_errorflags_fastTESTSUFFIX2_moms mms3_des_errorflags_fastTESTSUFFIX2_dist', '2015-12-15', '2015-12-16'), 'Problem loading errorflags variables'
+  get_data, 'mms3_des_errorflags_fastTESTSUFFIX2_moms', data=a
+  get_data, 'mms3_des_errorflags_fastTESTSUFFIX2_dist', data=b
+
+  assert, ~array_equal(a.Y, b.Y), 'Problem loading errorflags variables'
+  return, 1
+end
+
 ; end of regression tests <------
 
 function mms_load_fpi_ut::test_load

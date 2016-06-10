@@ -807,19 +807,50 @@ esa_peif_overlay = thx+'_peif_en_eflux'
 esa_peir_overlay = thx+'_peir_en_eflux'
 esa_peef_overlay = scpot_overlay(thx+'_peef_sc_pot', thx+'_peef_en_eflux', sc_line_thick=2.0, /use_yrange)
 esa_peer_overlay = scpot_overlay(thx+'_peer_sc_pot', thx+'_peer_en_eflux', sc_line_thick=2.0, /use_yrange)
- 
-esaif_flux_name = esa_peif_overlay
-If(ok_esai_flux[0] Eq 0) Then Begin  ;esa ion flux is not present full resolution,
-  If(ok_esai_flux[1]) Then esaif_flux_name = esa_peer_overlay
-Endif
-esaif_v_name = thx+'_peif_velocity_dsl'
+
+;use either peif or peir data, depending on which has better coverage,
+;jmm, 2016-06-09
+If(ok_esai_flux[0] Eq 1 And ok_esai_flux[1] Eq 0) Then Begin
+   esaif_flux_name = esa_peif_overlay
+Endif Else If(ok_esai_flux[0] Eq 0 And ok_esai_flux[1] Eq 1) Then Begin
+   esaif_flux_name = esa_peir_overlay
+Endif Else If(ok_esai_flux[0] Eq 1 And ok_esai_flux[1] Eq 1) Then Begin
+   ;choose the longer time range for plot variable
+   get_data, thx+'_peif_en_eflux', data = df
+   get_data, thx+'_peir_en_eflux', data = dr
+   dtf = max(df.x)-min(df.x)
+   dtr = max(dr.x)-min(dr.x)
+   If(dtf ge dtr) Then esaif_flux_name = esa_peif_overlay $
+   Else esaif_flux_name = esa_peir_overlay
+   undefine, df, dr
+Endif Else Begin
+   ;No data for either, so use peif dummy
+   esaif_flux_name = esa_peif_overlay
+Endelse
+;electrons
+If(ok_esae_flux[0] Eq 1 And ok_esae_flux[1] Eq 0) Then Begin
+   esaef_flux_name = esa_peef_overlay
+Endif Else If(ok_esae_flux[0] Eq 0 And ok_esae_flux[1] Eq 1) Then Begin
+   esaef_flux_name = esa_peer_overlay
+Endif Else If(ok_esae_flux[0] Eq 1 And ok_esae_flux[1] Eq 1) Then Begin
+   ;choose the longer time range for plot variable
+   get_data, thx+'_peef_en_eflux', data = df
+   get_data, thx+'_peer_en_eflux', data = dr
+   dtf = max(df.x)-min(df.x)
+   dtr = max(dr.x)-min(dr.x)
+   If(dtf ge dtr) Then esaef_flux_name = esa_peef_overlay $
+   Else esaef_flux_name = esa_peer_overlay
+   undefine, df, dr
+Endif Else Begin
+   ;No data for either, so use peef dummy
+   esaef_flux_name = esa_peef_overlay
+Endelse
+   
+esaif_v_name = thx+'_peef_velocity_dsl'
 If(ok_esai_moms[0] Eq 0) Then Begin
   If(ok_esai_moms[1]) Then esaif_v_name = thx+'_peir_velocity_dsl'
 Endif
-esaef_flux_name = esa_peef_overlay
-If(ok_esae_flux[0] Eq 0) Then Begin  ;esa electron flux is not present full resolution, rename if possible
-  If(ok_esae_flux[1]) Then esaef_flux_name = esa_peer_overlay
-Endif
+
 esaef_v_name = thx+'_peef_velocity_dsl'
 If(ok_esae_moms[0] Eq 0) Then Begin
   If(ok_esae_moms[1]) Then esaef_v_name = thx+'_peer_velocity_dsl'
