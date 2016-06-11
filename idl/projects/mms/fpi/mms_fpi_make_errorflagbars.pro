@@ -57,8 +57,8 @@
 ;     June 2016: minor updates by egrimes
 ;     
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-09 11:37:33 -0700 (Thu, 09 Jun 2016) $
-; $LastChangedRevision: 21294 $
+; $LastChangedDate: 2016-06-10 07:22:16 -0700 (Fri, 10 Jun 2016) $
+; $LastChangedRevision: 21300 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_make_errorflagbars.pro $
 ;-
 
@@ -83,15 +83,10 @@ PRO mms_fpi_make_errorflagbars,tname
         if fix(strmid(flags[j],10-i,1)) eq 0 then begin
           flagline[j,i]=!values.f_nan
           if flagline_all[j] ne 1.0 then flagline_all[j]=!values.f_nan else flagline_all[j]=1.0
-          if (10-i) ne 1 and (10-i) ne 4 and (10-i) ne 5 then begin
-            if flagline_others[j] ne 1.0 then begin
-              flagline_others[j]=!values.f_nan
-            endif else begin
-              flagline_others[j]=1.0
-            endelse
-          endif
+          if i ne 1 and i ne 4 and i ne 5 then if flagline_others[j] ne 1.0 then flagline_others[j]=!values.f_nan else flagline_others[j]=1.0
         endif else begin
-          if (10-i) ne 1 and (10-i) ne 4 and (10-i) ne 5 then flagline_others[j]=1.0
+          if i ne 1 and i ne 4 and i ne 5 then flagline_others[j]=1.0
+          flagline_all[j]=1.0
           flagline[j,i]=1.0
         endelse
       endfor
@@ -103,7 +98,7 @@ PRO mms_fpi_make_errorflagbars,tname
     ylim,tname+'_flagbars_main',0.1,0.9,0
     options,tname+'_flagbars_main',colors=[6,2,1,0],labels=['Saturation','Cold (>25%)','Hot (>25%)','Others'],ytitle=inst+'!C'+rate,xstyle=4,ystyle=4,ticklen=0,thick=4,panel_size=0.5,labflag=-1,psym=-6,symsize=0.2,datagap=gap
     store_data,tname+'_flagbars_others',data={x:d.x,y:[[flagline[*,7]-0.8],[flagline[*,6]-0.8],[flagline[*,8]-0.8],[flagline[*,9]-0.8],[flagline[*,2]-0.8],[flagline[*,3]-0.8],[flagline[*,10]-0.8],[flagline[*,0]-0.8]]}
-    options,tname+'_flagbars_others',colors=[25,3,255,5,2,1,4,6],xstyle=4,ystyle=4,ticklen=0,thick=3,labflag=-1,psym=-6,symsize=0.15,datagap=gap
+    options,tname+'_flagbars_others',colors=[40,3,255,5,2,1,4,6],xstyle=4,ystyle=4,ticklen=0,thick=3,labflag=-1,psym=-6,symsize=0.15,datagap=gap
     store_data,tname+'_flagbars',data=[tname+'_flagbars_main',tname+'_flagbars_others']
     ylim,tname+'_flagbars',0.1,0.9,0
     options,tname+'_flagbars',xstyle=4,ystyle=4,ticklen=0,panel_size=0.5

@@ -31,8 +31,8 @@
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-06-08 16:03:40 -0700 (Wed, 08 Jun 2016) $
-; $LastChangedRevision: 21288 $
+; $LastChangedDate: 2016-06-10 11:12:21 -0700 (Fri, 10 Jun 2016) $
+; $LastChangedRevision: 21303 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -178,6 +178,8 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
      Endif Else Begin
         nproc = n_elements(timep_do)
 ;extract the date from the filename
+        message, /info, 'Processing: '+instrk
+        For i = 0, nproc-1 Do print, timep_do[i]
         For i = 0, nproc-1 Do Begin
            timei0 = timep_do[i]
            timei = strmid(timei0, 0, 4)+$

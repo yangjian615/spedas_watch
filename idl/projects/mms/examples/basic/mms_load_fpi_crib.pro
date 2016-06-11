@@ -6,8 +6,8 @@
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-17 09:49:10 -0700 (Tue, 17 May 2016) $
-; $LastChangedRevision: 21092 $
+; $LastChangedDate: 2016-06-10 07:27:48 -0700 (Fri, 10 Jun 2016) $
+; $LastChangedRevision: 21301 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fpi_crib.pro $
 ;-
 
@@ -30,6 +30,14 @@ tplot, prefix+'_des_energyspectr_omni_avg', /add
 ; add the ion density
 tplot, prefix+'_dis_numberdensity_dbcs_fast', /add
 
+; add the errorflag bars for ion data
+tplot, prefix+'_dis_errorflags_fast_moms_flagbars', /add
+;tplot, prefix+'_dis_errorflags_fast_moms_flagbars_full', /add
+
 ; and the electron density...
 tplot, prefix+'_des_numberdensity_dbcs_fast', /add
+
+; add the errorflag bars for electron data
+tplot, prefix+'_des_errorflags_fast_moms_flagbars', /add
+;tplot, prefix+'_des_errorflags_fast_moms_flagbars_full', /add
 end
