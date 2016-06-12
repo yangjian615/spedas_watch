@@ -24,15 +24,15 @@
 ;                   the tplot variable(s) created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-06 08:43:58 -0700 (Mon, 06 Jun 2016) $
-; $LastChangedRevision: 21266 $
+; $LastChangedDate: 2016-06-11 17:22:34 -0700 (Sat, 11 Jun 2016) $
+; $LastChangedRevision: 21312 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_addsta.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
 ;-
 pro mvn_swe_addsta, nO1=nO1, nO2=nO2, pans=pans
 
-  if (keyword_set(nO2) or keyword_set(nO1)) then dopot = 1
+  if (keyword_set(nO2) or keyword_set(nO1)) then dopot = 1 else dopot = 0
 
   mvn_sta_l2_load, sta_apid=['c0','c6','ca']
   if (dopot) then begin

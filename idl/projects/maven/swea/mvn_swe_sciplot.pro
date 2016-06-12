@@ -59,8 +59,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-06 08:45:03 -0700 (Mon, 06 Jun 2016) $
-; $LastChangedRevision: 21267 $
+; $LastChangedDate: 2016-06-11 17:23:34 -0700 (Sat, 11 Jun 2016) $
+; $LastChangedRevision: 21313 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -77,7 +77,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   if keyword_set(nO2) then doO2 = 1 else doO2 = 0
 
   mvn_swe_sumplot,/loadonly
-  mvn_swe_sc_pot,/over
+  mvn_swe_sc_pot,/over,/negpot
   engy_pan = 'swe_a4_pot'
   options,engy_pan,'ytitle','SWEA elec!ceV'
 
@@ -149,15 +149,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 ; Spacecraft Potential
 
   pot_pan = ''
-  if keyword_set(sc_pot) then begin
-    pot_pan = 'mvn_swe_pot_all'
-    mvn_swe_shape_par, /keep_nan
-    mvn_swe_sc_negpot
-    store_data,pot_pan,data=['mvn_swe_sc_pot','neg_pot']
-    options,'neg_pot','constant',!values.f_nan
-    options,'neg_pot','color',6
-    options,pot_pan,'ytitle','S/C Potential!cVolts'
-  endif
+  if keyword_set(sc_pot) then pot_pan = 'mvn_swe_pot_all'
 
 ; Ephemeris information from SPICE
 

@@ -3,25 +3,21 @@
 ;   mvn_swe_sc_negpot
 ;
 ;PURPOSE:
-;   Estimates the negative spacecraft potential for dayside from SWEA energy 
-;   spectra.  The basic idea is to use the secondary derivation of the spectrum
-;   to find the shift of He II feature (mainly the 23 eV feature),  
-;   from which then the negative potential can be calculated.
-;   No attempt is made to estimate the potential when the
-;   spacecraft is in darkness or above 1000 km altitude.
+;   Estimates the negative spacecraft potential within the ionosphere
+;   from SWEA energy spectra.  The basic idea is to use the second 
+;   derivative of the spectrum to find the shift of the He II features
+;   at 23 and 27 eV (mainly the 23 eV feature), from which then the 
+;   negative potential can be calculated.  No attempt is made to 
+;   estimate the potential when the spacecraft is in darkness or above
+;   1000 km altitude.
 ;
 ;AUTHOR:
 ;   Shaosui Xu
 ;
 ;CALLING SEQUENCE:
 ;   This procedure requires tplot variables "mvn_swe_shape_par, swe_a4, alt,
-;   sza, d2f". So recommand to run the following precedures:
-;   
-;   mvn_swe_spice_init,/force
-;   mvn_swe_load_l0
-;   mvn_swe_sc_pot,/over
-;   mvn_swe_shape_par, var='swe_a4', erange=[15,100], /keep_nan
-;   swe_sc_negpot
+;   sza, d2f".  If any of these variables does not exist, then this procedure
+;   attempts to create them using the appropriate procedures.
 ;   
 ;INPUTS:
 ;   none
@@ -30,37 +26,69 @@
 ;
 ;   OVERLAY:   Overlay the result on the energy spectrogram.
 ;
-;   FILL:      If keyword set, store the negative potentials to 
-;              the swe_sc_pot common block
+;   FILL:      Store the potentials to the swe_sc_pot common block.
+;              Default = 1 (yes).
 ;
 ;OUTPUTS:
 ;   None - Result is stored as a TPLOT variable 'neg_pot'.
 ;
-; $LastChangedBy: xussui_lap $
-; $LastChangedDate: 2016-05-12 16:45:14 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21067 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-06-11 16:56:26 -0700 (Sat, 11 Jun 2016) $
+; $LastChangedRevision: 21310 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_negpot.pro $
 ;
 ;-
 
-Pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
+pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
 
     compile_opt idl2
+    
+    @mvn_swe_com
+    
+    if (size(fill,/type) eq 0) then fill = 1
 
-    get_data, 'mvn_swe_shape_par', data=shp
+; Make sure SWEA data are loaded.
+
+    get_data, 'swe_a4', data=spec, index=i
+    if (i eq 0) then begin
+      print,"You must load SWEA data first."
+      return
+    endif
+    f40=spec.y[*,40]  ; electron flux of 43 eV
+
+; Get the shape parameter from tplot.  Calculate it if necessary.
+
+    get_data, 'mvn_swe_shape_par', data=shp, index=i
+    if (i eq 0) then begin
+      mvn_swe_shape_par, var='swe_a4', erange=[15,100], /keep_nan
+      get_data, 'mvn_swe_shape_par', data=shp, index=i
+      if (i eq 0) then begin
+        print,"Error getting shape parameter.  Abort!"
+        return
+      endif
+    endif
     shape=shp.y
 
-    get_data, 'swe_a4', data=spec
-    f40=spec.y[*,40] ;electron flux of 43 eV
+; Get ephemeris information from tplot.  Calculate it if necessary.
 
-    get_data, 'alt', data=alt0
+    get_data, 'alt', data=alt0, index=i
+    if (i eq 0) then begin
+      maven_orbit_tplot, /loadonly
+      get_data, 'alt', data=alt0
+    endif
     alt=alt0.y
     talt=alt0.x
 
     get_data,'sza',data=sza0
     sza=sza0.y
 
-    get_data, 'd2f', data=d2f0
+; Get d2(logF)/d(logE)2 from tplot.  Calculate it if necessary.
+
+    get_data, 'd2f', data=d2f0, index=i
+    if (i eq 0) then begin
+      mvn_swe_sc_pot, /over
+      get_data, 'd2f', data=d2f0
+    endif
     t1=d2f0.x
     d2f=d2f0.y
     en1=d2f0.v
@@ -144,8 +172,11 @@ Pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
     endif
     
     if keyword_set(fill) then begin
-        indx=where(pot1 eq pot1,cts)
-        if cts gt 0 then mvn_swe_engy[indx].sc_pot=pot1[indx]
+        indx = where(finite(pot1), cts)
+        if (cts gt 0) then begin
+          mvn_swe_engy[indx].sc_pot  = pot1[indx]
+          swe_sc_pot[indx].potential = pot1[indx]
+        endif
     endif
     ;stop
 end

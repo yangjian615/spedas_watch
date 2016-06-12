@@ -75,20 +75,24 @@
 ;              to emphasize the returning photoelectrons and improve 
 ;              the edge detection (added by Yuki Harada).
 ;
+;   NEGPOT:    Calculate negative potentials with mvn_swe_sc_negpot.
+;              Default = 1 (yes).
+;
 ;OUTPUTS:
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:43:07 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21037 $
+; $LastChangedDate: 2016-06-11 17:22:10 -0700 (Sat, 11 Jun 2016) $
+; $LastChangedRevision: 21311 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
 pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
                     pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
-                    mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr, minflux=minflux
+                    mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr, minflux=minflux, $
+                    negpot=negpot
 
   compile_opt idl2
   
@@ -123,6 +127,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
   
   if (size(badval,/type) eq 0) then badval = !values.f_nan else badval = float(badval)
   if (size(minflux,/type) eq 0) then minflux = 1.e6 else minflux = float(minflux[0])
+  if (size(negpot,/type) eq 0) then negpot = 1
 
 ; Clear any previous potential calculations
 
@@ -384,6 +389,18 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
 
   store_data,'Potential',data=['d2f','mvn_swe_sc_pot']
   ylim,'Potential',0,30,0
+
+; Estimate negative potentials
+
+  if keyword_set(negpot) then begin
+    mvn_swe_sc_negpot
+    pot_pan = 'mvn_swe_pot_all'
+    store_data,pot_pan,data=['mvn_swe_sc_pot','neg_pot']
+    options,'neg_pot','constant',!values.f_nan
+    options,'neg_pot','color',6
+    options,pot_pan,'ytitle','S/C Potential!cVolts'
+    options,pot_pan,'constant',[-1,3]
+  endif
 
   if keyword_set(overlay) then begin
     str_element,pot,'thick',2,/add
