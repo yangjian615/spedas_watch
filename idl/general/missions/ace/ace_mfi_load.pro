@@ -6,6 +6,7 @@
 ;keywords:
 ;   TRANGE= (Optional) Time range of interest  (2 element array).
 ;   /VERBOSE : set to output some useful info
+;   datatype = One of: ['k0, 'h0', 'h1', 'h2', 'h3']
 ;Example:
 ;   ace_mfi_load
 ;Notes:
@@ -22,6 +23,7 @@ pro ace_mfi_load,type,files=files,trange=trange,verbose=verbose,downloadonly=dow
       addmaster=addmaster,tplotnames=tn,source_options=source
 
 if not keyword_set(datatype) then datatype = 'k0'
+dtyp = strcompress(/remove_all, strlowcase(datatype[0]))
 
 istp_init
 if not keyword_set(source) then source = !istp
@@ -32,11 +34,14 @@ if not keyword_set(source) then source = !istp
 ;if datatype eq 'h1'  then    pathformat = 'ace/mfi_h1/YYYY/ac_h1_mfi_YYYYMMDD_v05.cdf'
 ;if datatype eq 'h2'  then    pathformat = 'ace/mfi_h2/YYYY/ac_h2_mfi_YYYYMMDD_v05.cdf'
 ;New URLs 2012/10 pcruce@igpp
-if datatype eq 'k0'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_k0/YYYY/ac_k0_mfi_YYYYMMDD_v01.cdf'
-if datatype eq 'h0'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h0/YYYY/ac_h0_mfi_YYYYMMDD_v05.cdf'
-if datatype eq 'h1'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h1/YYYY/ac_h1_mfi_YYYYMMDD_v05.cdf'
-if datatype eq 'h2'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h2/YYYY/ac_h2_mfi_YYYYMMDD_v05.cdf'
-if datatype eq 'h3'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h3/YYYY/ac_h3_mfi_YYYYMMDD_v01.cdf'
+;if datatype eq 'k0'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_k0/YYYY/ac_k0_mfi_YYYYMMDD_v01.cdf'
+;if datatype eq 'h0'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h0/YYYY/ac_h0_mfi_YYYYMMDD_v05.cdf'
+;if datatype eq 'h1'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h1/YYYY/ac_h1_mfi_YYYYMMDD_v05.cdf'
+;if datatype eq 'h2'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h2/YYYY/ac_h2_mfi_YYYYMMDD_v05.cdf'
+;if datatype eq 'h3'  then    pathformat = 'ace/mag/level_2_cdaweb/mfi_h3/YYYY/ac_h3_mfi_YYYYMMDD_v01.cdf'
+
+;Hard-coded version numbers don't always work, 2016-06-13, jmm
+pathformat = 'ace/mag/level_2_cdaweb/mfi_'+dtyp+'/YYYY/ac_'+dtyp+'_mfi_YYYYMMDD_v??.cdf'
 
 if not keyword_set(varformat) then begin
    varformat = '*'
