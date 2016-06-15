@@ -846,7 +846,7 @@ Endif Else Begin
    esaef_flux_name = esa_peef_overlay
 Endelse
    
-esaif_v_name = thx+'_peef_velocity_dsl'
+esaif_v_name = thx+'_peif_velocity_dsl'
 If(ok_esai_moms[0] Eq 0) Then Begin
   If(ok_esai_moms[1]) Then esaif_v_name = thx+'_peir_velocity_dsl'
 Endif
@@ -863,7 +863,7 @@ If(ok_esai_moms[0] Eq 0) Then Begin
     esaf_n_name = thx+'_Nier'
   Endif
 Endif
-   
+
 vars_full = ['thg_idx_ae', roi_bar, 'Keogram', thx+'_fgs_gse', $
              esaf_n_name, esaif_v_name, esaf_t_name, sample_rate_var, $
              ssti_name, esaif_flux_name, sste_name,  $
