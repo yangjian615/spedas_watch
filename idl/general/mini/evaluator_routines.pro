@@ -6,8 +6,8 @@
 ;          for the evaluator of the mini_language
 ;           
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-17 20:51:36 -0700 (Thu, 17 Sep 2015) $
-; $LastChangedRevision: 18834 $
+; $LastChangedDate: 2016-06-15 15:11:38 -0700 (Wed, 15 Jun 2016) $
+; $LastChangedRevision: 21329 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/evaluator_routines.pro $
 ;- 
 
@@ -764,7 +764,7 @@ end
 ;Checks linked list arg-struct structure to
 ;determine if the keyword is set.
 ;Argument validation is done elsewhere(ambiguous keywords,illegal keywords)
-;Returns true, on first partial match
+;Returns the element numbeR(not index) of the argument that matches the keyword, done for backward compatibility with keyword_set calls
 function is_mini_keyword_set,arg_list,keyword
 
   compile_opt hidden,strictarr
@@ -774,7 +774,7 @@ function is_mini_keyword_set,arg_list,keyword
      stregex(keyword,'^'+arg_list.data.value,/boolean,/fold_case) then return,1
  
   ;recursive call 
-  if arg_list.length gt 1 then return,is_mini_keyword_set(arg_list.next,keyword)
+  if arg_list.length gt 1 then return,(is_mini_keyword_set(arg_list.next,keyword)+1)
   
   return,0 
   
@@ -823,6 +823,23 @@ function get_positional_arg,arg_list,n
     
   
 end  
+
+;Checks linked list arg-structure to
+;  find the nth positional argument. (counting from 0)
+;  keyword arguments are not skipped
+function get_keyword_arg,arg_list,n
+
+  compile_opt hidden,strictarr
+
+  if ~keyword_set(arg_list) then return,0
+
+  if n eq 0 then return, arg_list.data ;0th requested(found it!)
+
+  if arg_list.length eq 1 then return,0 ;gt 0th requested(not enough elements)
+
+  return, get_keyword_arg(arg_list.next,n-1) ;otherwise, skip this position, and decrement positional arg
+
+end
 ;this routine just compiles all the routines in this file 
 pro evaluator_routines
 

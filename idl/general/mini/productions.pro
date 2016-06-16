@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-17 20:51:36 -0700 (Thu, 17 Sep 2015) $
-; $LastChangedRevision: 18834 $
+; $LastChangedDate: 2016-06-15 15:11:38 -0700 (Wed, 15 Jun 2016) $
+; $LastChangedRevision: 21329 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/productions.pro $
 ;-
 
@@ -44,7 +44,7 @@ function productions
                          0,0])
   
   ;the number of rules in the grammar
-  n = 46
+  n = 47
   
   start = 's'
   augment = 'sp'
@@ -67,6 +67,7 @@ function productions
   left[3:40] = 'exp'
   left[41:44] = 'args'
   left[45] = 'keyword'
+  left[46] = 'keyword' 
  
   plist = replicate(production,n)
   
@@ -291,6 +292,11 @@ function productions
   plist[i].length = 2
   plist[i].fun = 'mini_keyword'
   i++ 
+  
+  plist[i].right[0:3] = ['k/','var','asm','var']
+  plist[i].length = 4
+  plist[i].fun = 'mini_keyword'
+  i++
   
   plist.index = lindgen(n_elements(plist))
   

@@ -10,19 +10,33 @@
 ;
 ;CREATED BY:
 ;       Davin Larson
+;   $LastChangedBy$
+;   $LastChangedDate$
+;   $LastChangedRevision$
+;   $URL$
 ; -
+
 function rot_mat,v1,v2
 
-a=v1/(total(v1^2))^.5
-if not keyword_set(v2) then v2 = [1.d,0.d,0.d]
+a  = v1/SQRT(TOTAL(v1^2,/NAN,/DOUBLE))  ;; need to normalize for orthonormal basis
+;a=v1/(total(v1^2))^.5
+if not keyword_set(v2) then v2 = [1d0,0d0,0d0]
+;if not keyword_set(v2) then v2 = [1.d,0.d,0.d]
 
-b=crossp(a,v2)
-b=b/sqrt(total(b^2))
+b  = CROSSP(a,v2)
+b  = b/SQRT(TOTAL(b^2,/NAN,/DOUBLE))  ;; need to normalize for orthonormal basis
+;b=crossp(a,v2)
+;b=b/sqrt(total(b^2))
 
-c=crossp(b,a)
+c  = CROSSP(b,a)
+c  = c/SQRT(TOTAL(c^2,/NAN,/DOUBLE))  ;; need to normalize for orthonormal basis
+;c=crossp(b,a)
 
-rot = [[c],[b],[a]]
- 
-return, rot
+;;  Define rotation to new orthonormal basis
+rmat = [[c],[b],[a]]
+;rot = [[c],[b],[a]]
+
+return, rmat
+;return, rot
 end
 

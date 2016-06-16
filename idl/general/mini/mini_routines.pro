@@ -28,8 +28,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-05-18 12:54:25 -0700 (Wed, 18 May 2016) $
-; $LastChangedRevision: 21117 $
+; $LastChangedDate: 2016-06-15 15:11:38 -0700 (Wed, 15 Jun 2016) $
+; $LastChangedRevision: 21329 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/mini_routines.pro $
 ;- 
 
@@ -599,19 +599,25 @@ function mini_min,arg_list
    
   evaluator_routines
   
-  keyword_list = ['nan']
+  keyword_list = ['nan','subscript']
   
   validate_mini_func_args,1,1,keyword_list,arg_list
   
   x = get_positional_arg(arg_list,0)
   d = get_positional_arg(arg_list,1)
   nan = is_mini_keyword_set(arg_list,keyword_list[0])
-   
+  subscript = is_mini_keyword_set(arg_list,keyword_list[1])
+  
   if keyword_set(d) then begin 
-    data = dim_correct_data(min(x.data,dim=d.data,nan=nan),ndimen(x.data),d.data)
+    data = dim_correct_data(min(x.data,sub,dim=d.data,nan=nan),ndimen(x.data),d.data)
   endif else begin
-    data = min(x.data,nan=nan)
+    data = min(x.data,sub,nan=nan)
   endelse
+
+  if keyword_set(subscript) then begin
+    sub_arg = get_keyword_arg(arg_list,subscript-1)
+    store_var_data,sub_arg.value2,{data:sub}
+  endif
 
   return,reduce_dlimits(reduce_yvalues(reduce_times(replace_data(x,data),d),d),'min',d)
    
@@ -623,19 +629,25 @@ function mini_max,arg_list
   
   evaluator_routines
   
-  keyword_list = ['nan']
+  keyword_list = ['nan','subscript']
   
   validate_mini_func_args,1,1,keyword_list,arg_list
   
   x = get_positional_arg(arg_list,0)
   d = get_positional_arg(arg_list,1)
   nan = is_mini_keyword_set(arg_list,keyword_list[0])
+  subscript = is_mini_keyword_set(arg_list,keyword_list[1])
   
   if keyword_set(d) then begin
-    data = dim_correct_data(max(x.data,dim=d.data,nan=nan),ndimen(x.data),d.data)
+    data = dim_correct_data(max(x.data,sub,dim=d.data,nan=nan),ndimen(x.data),d.data)
   endif else begin
-    data = max(x.data,nan=nan)
+    data = max(x.data,sub,nan=nan)
   endelse
+  
+  if keyword_set(subscript) then begin
+    sub_arg = get_keyword_arg(arg_list,subscript-1)
+    store_var_data,sub_arg.value2,{data:sub}
+  endif
   
   return,reduce_dlimits(reduce_yvalues(reduce_times(replace_data(x,data),d),d),'max',d)
 
@@ -1120,12 +1132,15 @@ function mini_bop,arg1,arg2,arg3
   
 end
 
-function mini_keyword,arg1,arg2
+function mini_keyword,arg1,arg2,arg3,arg4
 
-  out = arg2
-  out.name = 'keyword'
+ if n_params() eq 4 then begin
+   out={type:'identifier',name:'keyword',value:arg2.value,value2:arg4}
+ endif else begin
+   out={type:'identifier',name:'keyword',value:arg2.value}
+ endelse
 
-  return,out
+ return,out
 
 end
 
@@ -1202,12 +1217,12 @@ function function_list
   
   f_list[i].name = 'min'
   f_list[i].value = 'mini_min'
-  f_list[i].syntax= '(x,[,dim][,/nan])'
+  f_list[i].syntax= '(x,[,dim][,/nan],[/subscript=varname])'
   i++
  
   f_list[i].name = 'max'
   f_list[i].value = 'mini_max'
-  f_list[i].syntax= '(x,[,dim][,/nan])'
+  f_list[i].syntax= '(x,[,dim][,/nan],[/subscript=varname])'
   i++
  
   f_list[i].name = 'mean'
