@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-06-15 15:11:38 -0700 (Wed, 15 Jun 2016) $
-; $LastChangedRevision: 21329 $
+; $LastChangedDate: 2016-06-16 16:20:59 -0700 (Thu, 16 Jun 2016) $
+; $LastChangedRevision: 21331 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/productions.pro $
 ;-
 
@@ -66,8 +66,7 @@ function productions
   left[1:2] = 's'
   left[3:40] = 'exp'
   left[41:44] = 'args'
-  left[45] = 'keyword'
-  left[46] = 'keyword' 
+  left[45:46] = 'keyword' 
  
   plist = replicate(production,n)
   

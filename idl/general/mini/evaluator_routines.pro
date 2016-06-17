@@ -6,8 +6,8 @@
 ;          for the evaluator of the mini_language
 ;           
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-06-15 15:11:38 -0700 (Wed, 15 Jun 2016) $
-; $LastChangedRevision: 21329 $
+; $LastChangedDate: 2016-06-16 16:20:59 -0700 (Thu, 16 Jun 2016) $
+; $LastChangedRevision: 21331 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/evaluator_routines.pro $
 ;- 
 
@@ -764,7 +764,7 @@ end
 ;Checks linked list arg-struct structure to
 ;determine if the keyword is set.
 ;Argument validation is done elsewhere(ambiguous keywords,illegal keywords)
-;Returns the element numbeR(not index) of the argument that matches the keyword, done for backward compatibility with keyword_set calls
+;Returns the element number(not index) of the argument that matches the keyword, done for backward compatibility with keyword_set calls
 function is_mini_keyword_set,arg_list,keyword
 
   compile_opt hidden,strictarr
@@ -774,7 +774,10 @@ function is_mini_keyword_set,arg_list,keyword
      stregex(keyword,'^'+arg_list.data.value,/boolean,/fold_case) then return,1
  
   ;recursive call 
-  if arg_list.length gt 1 then return,(is_mini_keyword_set(arg_list.next,keyword)+1)
+  if arg_list.length gt 1 then begin
+    result = is_mini_keyword_set(arg_list.next,keyword)
+    if result gt 0 then return,result+1
+  endif
   
   return,0 
   

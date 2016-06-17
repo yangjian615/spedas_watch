@@ -10,8 +10,8 @@
 ;Warning: this crib uses some data from the THEMIS branch.  You'll require those routines to run this crib
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-18 11:02:58 -0700 (Fri, 18 Sep 2015) $
-; $LastChangedRevision: 18838 $
+; $LastChangedDate: 2016-06-16 16:39:01 -0700 (Thu, 16 Jun 2016) $
+; $LastChangedRevision: 21333 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_calc.pro $
 ;
 ;-
@@ -243,4 +243,16 @@ var2 = ["tha_state_pos_re","thb_state_pos_re"]
 thm_load_state,probe='*'
 
 calc,' $+var2  = $+var1/6371.2'
+
+  stop
+
+;example 21 returning values from keywords
+
+var1 = [2,3,4,1,5]
+calc,' var2  = min(var1,/subscript=s)'
+print,s
+
+;because of some limitations in the parser, keywords that return values still need to be prefixed with a '/' unlike normal IDL 
+
+stop
 end
