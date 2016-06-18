@@ -1,6 +1,6 @@
-pro tprint,filename,printer=printer,times=times,ct=ct
+pro tprint,filename,printer=printer,times=times,ct=ct,landscape=landscape
 if not keyword_set(filename) then filename='tplot'
-popen,filename
+popen,filename,landscape=landscape
 if n_elements(ct) ne 0 then loadct2,ct   ; else loadct2,34
 tplot
 if keyword_set(times) then timebar,times

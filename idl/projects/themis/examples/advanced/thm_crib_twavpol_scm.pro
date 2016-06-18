@@ -1,28 +1,30 @@
 ;+
 ;
 ;NAME:
-; twavpol_scm_crib
+; thm_crib_twavpol_scm
 ; 
 ;Purpose:
-; Demonstrate the usage of the wave polarization routines.
+; Demonstrate the usage of the wave polarization routines
+; for SCM data in magnetic field aligned coordinates.
 ; 
 ;NOTES:
 ;  Shortened version of Olivier Le Contel's <olivier.lecontel@lpp.polytechnique.fr> wave polarization
 ;  crib(scm_mfa_wpol_ole_fc_crib.pro)
-;  
+;  Edited for clarity, minor updates - 2016-06-17 af
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-09-19 11:14:02 -0700 (Thu, 19 Sep 2013) $
-; $LastChangedRevision: 13081 $
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2016-06-17 16:55:39 -0700 (Fri, 17 Jun 2016) $
+; $LastChangedRevision: 21338 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_twavpol_scm.pro $
 ;-
 
-;;    ============================
-;; 1) Select date an time interval
-;;    ============================
 
-  date = '2008-02-26/00:00:00'
+;===============================================
+; 1) Select date, data type, and time interval
+;===============================================
+
+  date = '2008-02-26'
   timespan,date,1,/day
 
 ;; Select satname
@@ -32,26 +34,19 @@
   thscs_mode = 'th'+satname+'_'+mode
 ;; Select FGM_MODE (fgl or fgh)  
   fgm_mode = 'fgl'
-  thscs_fgm_mode ='th'+satname+'_'+fgm_mode
-  
-;; Select COORDINATE FRAME (gse, gsm)
-  coord = 'dsl'
- 
-;;    ==================================
-;; 2) get SCM data and SCM header file
-;;    ==================================
+  thscs_fgm_mode ='th'+satname+'_'+fgm_mode+'_dsl'
+
 
 ;; If you want to set up a limited timespan for calibration,
 ;; you set up a trange array like this:
-
 ;; To impose by hand t1 and t2 :
-  starting_date =strmid(date,0,10)
 
   ;20080129
    ;starting_time='02:24:00.0'
    ;ending_time  ='02:28:00.0'
+
   ;20080226
-  ; scf
+  ;scf
    starting_time='04:30:00.0'
    ending_time  ='05:30:00.0'
   ;scp
@@ -61,52 +56,54 @@
    ;starting_time='04:54:49.0'
    ;ending_time  ='04:54:58.0'
    
-   ;20070508
-   ;thc in scf mode
-   starting_time='03:32:00.0'
-   ending_time  ='04:42:00.0'
+  ;20070508
+  ;thc in scf mode
+   ;starting_time='03:32:00.0'
+   ;ending_time  ='04:42:00.0'
    
-  trange = [starting_date+'/'+starting_time, $
-            starting_date+'/'+ending_time]
+  trange = [date+'/'+starting_time, $
+            date+'/'+ending_time]
 
-; SCM data
-Fmin=0.45
-Fmax = 0.
+
+;===============================================
+; 2) Load FGM and ephemeris support data
+;===============================================
+
 
 thm_load_state, probe=satname, /get_support_data
 
-
 thm_load_fgm,level=2,probe=satname,datatype=fgm_mode,coord='dsl'
 
-split_vec, thscs_fgm_mode+'_'+coord
-;tdotp,thscs_fgm_mode+'_'+coord,thscs_fgm_mode+'_'+coord,newname=thscs_fgm_mode+'_m' 
-calc_string = '"'+thscs_fgm_mode+'_m" = sqrt(total("' + thscs_fgm_mode+'_'+coord + '"^2,2))'
+;calculate field magnitude from FGM vector
+split_vec, thscs_fgm_mode
+calc_string = '"'+thscs_fgm_mode+'_m" = sqrt(total("' + thscs_fgm_mode + '"^2,2))'
+
 ;example of what the calc call will look like with string names filled in
 ;calc,'"thd_fgl_m" = sqrt(total("thd_fgl_dsl"^2,2))
-dprint, "Making call to calc: " + calc_string
 
+dprint, "Making call to calc: " + calc_string
 calc,calc_string,/verbose
 
-
+;tdotp,thscs_fgm_mode+'_'+coord,thscs_fgm_mode+'_'+coord,newname=thscs_fgm_mode+'_m'
 ;get_data,thscs_fgm_mode+'_m',data=mod2
 ;store_data,thscs_fgm_mode+'_m',data={x:mod2.x,y:sqrt(mod2.y)}
 
-;;    =============================================
-;; 3) method for customized and diagnostic calibration
-;;    =============================================
 
-;; get data over a whole day
+;==============================================================================
+; 3) Get SCM data and SCM header file for customized and diagnostic calibration
+;==============================================================================
+
+;; get data within the specified time range
 
 thm_load_scm,probe=satname, level=1,  type='raw',$
 			    trange=trange,$
 			    /get_support
-			   
+
 ;; default values of parameters are shown.
 ;; the '*' appended to mode will get diagnostic parameters
 ;; (_iano, _dc, _misalign) as well as calibrated output.  Note out_suffix
 ;; is necessary to get what was former default behavior (_cal on output)
-;; To run with different parameters, uncomment and change as
-;; you like.
+;; To run with different parameters, uncomment and change as you like.
 ;; Note: the /edge_zero is not a default option, so the output will differ
 ;; slightly from step 4a) above.
 
@@ -120,35 +117,44 @@ thm_load_scm,probe=satname, level=1,  type='raw',$
 ;; To perform only a cleanup of spin tones (power ripples) --> cleanup='spin'
 ;; To perform no cleanup --> comment cleanup keyword
 
+; SCM data
+Fmin=0.45
+Fmax = 0.
+
 thm_cal_scm, probe=satname, datatype=mode+'*', out_suffix = '_cal', $
              trange=trange, $
 ;             nk  = nk_input, $
 ;             mk = 4, $
 ;             Despin=1, $
              N_spinfit = 1, $
-;		  clnup_author = 'ole',$
-; 	      cleanup = cleanup_input,$
-; 	      wind_dur_spin = 0.5,$
-;	      wind_dur_1s = 1.,$
+;		          clnup_author = 'ole',$
+; 	          cleanup = cleanup_input,$
+; 	          wind_dur_spin = 0.5,$
+;	            wind_dur_1s = 1.,$
 ;             Fdet = Fdet, $
 ;             Fcut = 0.1, $
              Fmin = Fmin, $
              Fmax = Fmax, $
-              step = 5, $
+             step = 5, $
              Fsamp=Fsamp,$
              /edge_zero
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;4) Magnetic field-aligned calculations
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;        
-             
 
-;Transform into Xgse field aligned coordinates 
-; built from time averaged fgm data
+
+;===============================================
+; 4) Magnetic field-aligned calculations
+;===============================================
+
+;Transform into Xgse field aligned coordinates built from time averaged fgm data.
 time_av = 3.
-avg_data,thscs_fgm_mode+'_'+coord,time_av,newname=thscs_fgm_mode+'_'+coord+'_av'
-tinterpol_mxn,thscs_fgm_mode+'_'+coord+'_av',thscs_fgm_mode+'_'+coord
-thm_fac_matrix_make, thscs_fgm_mode+'_'+coord+'_av_interp'
-tvector_rotate, thscs_fgm_mode+'_'+coord+'_av_interp_fac_mat',thscs_mode+'_cal'
+avg_data,thscs_fgm_mode,time_av,newname=thscs_fgm_mode+'_av'
+tinterpol_mxn,thscs_fgm_mode+'_av',thscs_fgm_mode
+
+;-------------------------------------------------
+; This transformation is only valid for data in the 
+; same coordinates as the input to thm_fac_matrix_make!
+;-------------------------------------------------
+thm_fac_matrix_make, thscs_fgm_mode+'_av_interp'
+tvector_rotate, thscs_fgm_mode+'_av_interp_fac_mat',thscs_mode+'_cal'
 
 scm_wave = thscs_mode+'_cal_rot'
 
@@ -156,25 +162,25 @@ scm_wave = thscs_mode+'_cal_rot'
 time_clip,scm_wave,trange[0],trange[1],/replace
 
 
-;======================
-;5) Polarization Analysis
-;======================
+;===============================================
+; 5) Polarization Analysis
+;===============================================
 if mode eq 'scf' then nopfft_input     = 32
 if mode eq 'scp' then nopfft_input     = 512
 if mode eq 'scw' then nopfft_input     = 1024
 
-;
+;-------------------------------------------------
 ;Warning:
 ;twavpol/wavpol gives power spectrum in arbitary units,
 ;this may complicate comparison with other data types(ie onboard FFT).
-;
+;-------------------------------------------------
 steplength_input = nopfft_input/2
 twavpol,scm_wave, error=error, freqline = freqline, timeline = timeline,nopfft=nopfft_input,steplength=steplength_input
 
 
-; =========================================
-;6) Plot calibrated data, with time in second
-; =========================================
+;===============================================
+; 6) Plot calibrated data, with time in second
+;===============================================
 
 
 tplot_options,'region',[0.,0.,1.,1.]
@@ -198,9 +204,9 @@ ylim,scm_wave +'_elliptict',freq_min,freq_max,n_yaxis
 ylim,scm_wave +'_helict',freq_min,freq_max,n_yaxis
 
 
-options,thscs_fgm_mode+'_'+coord+'_x',ytitle='Bx!C'
-options,thscs_fgm_mode+'_'+coord+'_y',ytitle='By!C'
-options,thscs_fgm_mode+'_'+coord+'_z',ytitle='Bz!C'
+options,thscs_fgm_mode+'_x',ytitle='Bx!C'
+options,thscs_fgm_mode+'_y',ytitle='By!C'
+options,thscs_fgm_mode+'_z',ytitle='Bz!C'
 
 options,thscs_fgm_mode+'_m','ytitle','B !C!C'
 options,thscs_fgm_mode+'_m','color',0
@@ -228,9 +234,9 @@ if mode eq 'scw' then zmax = 1.e-8
 zlim,scm_wave+'_powspec',zmin,zmax,1
 
 tplot,[$
-	thscs_fgm_mode+'_'+coord+'_x'$
-	,thscs_fgm_mode+'_'+coord+'_y'$
-	,thscs_fgm_mode+'_'+coord+'_z'$
+	 thscs_fgm_mode+'_x'$
+	,thscs_fgm_mode+'_y'$
+	,thscs_fgm_mode+'_z'$
 	,thscs_fgm_mode+'_m'$
 	, scm_wave $
 	,scm_wave+'_powspec' $   

@@ -31,9 +31,9 @@
 ;   thm_load_gmom,probe=['a', 'b']
 ;Notes:
 ;  Temporary version, to avoid conflicts, but can read Level 2 data, jmm
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-20 16:45:36 -0700 (Fri, 20 May 2016) $
-; $LastChangedRevision: 21157 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-06-17 10:10:47 -0700 (Fri, 17 Jun 2016) $
+; $LastChangedRevision: 21334 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_gmom.pro $
 ;-
 pro thm_load_gmom, probe = probe, datatype = datatype, trange = trange, $
@@ -134,7 +134,8 @@ for s = 0, n_elements(probes)-1 do begin
   if(keyword_set(varformat)) then vf = varformat else vf = '*'+datatype
   cdf2tplot, file = files, varformat = vf, verbose = verbose, varname = loaded_vars, suffix=suffix
 ;loaded_vars refers to CDF vars, not necessarily tplot vars
-  new_v = tnames(loaded_vars+suffix) ;kluge around issue
+  If(~keyword_set(suffix)) Then new_v = tnames(loaded_vars) $
+  Else new_v = tnames(loaded_vars+suffix) ;kluge around issue
   If(new_v[0] Ne '') Then Begin
     thm_new_units, new_v  ;set units in dlimits using dlimits.cdf.vatt
     thm_new_coords, new_v       ;set coordinates in dlimits
