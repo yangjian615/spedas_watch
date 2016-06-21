@@ -17,7 +17,7 @@ pro spp_ptp_file_read,files
       sz = sizebuf[0]*256 + sizebuf[1]
       if sz lt 17 then begin
         dprint,format="('Bad PTP packet size',i,' in file: ',a,' at file position: ',i)",sz,file,fp
-        break
+        stop
       endif
       buffer = bytarr(sz-2)
       readu,lun,buffer

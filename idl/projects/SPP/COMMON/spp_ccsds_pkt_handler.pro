@@ -1,8 +1,8 @@
 
 
-pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_level
+pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_level,ccsds=ccsds
 
-  ccsds=spp_swp_ccsds_decom(buffer)
+  if ~keyword_set(ccsds) then ccsds=spp_swp_ccsds_decom(buffer)
 
   if ~keyword_set(ccsds) then begin
      dprint,dlevel=1,'Invalid CCSDS packet'
@@ -62,12 +62,13 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_lev
            append_array, *apdat.dataptr, strct, index = *apdat.dataindex
         endif
         if apdat.rt_flag && apdat.rt_tags then begin
-        ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-           store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags, append = 1 + strct[0].gap
+        if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
+           store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags , append = 1 ;+ strct[0].gap
         endif
      endif else begin
-        if debug(3) then begin
-          dprint,dlevel=3,'Unknown APID: ',ccsds.apid,format='(a,Z04)'
+        if debug(4) then begin
+          dprint,dlevel=2,'Unknown APID: ',ccsds.apid,format='(a,Z04)'
+          printdat,ccsds
         endif
      endelse
      *apdat.last_ccsds = ccsds

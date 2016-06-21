@@ -117,12 +117,18 @@ if 0 then begin
   
   store_data,'ALL_C',data='spp_*_C'
   store_data,'ALL_V',data='spp_*_V'
+  store_data,'ALL_ERR_CNT',data='spp_*_ERR_CNT'
+  store_data,'ALL_ERR',data='spp_*_ERR'
+  store_data,'ALL_CMD_CNT',data='spp_*_CMDS_*'
   !y.style=3
   tplot_options,'ynozero',1
   
   tplot,'APID'
-  tplot,/add,'spp_*_TEMPS ALL_? *NYS*'
-  tplot,/add,'spp*hkp*ERR_CNTR'
+  tplot,'spp_*_TEMPS ALL_? *NYS*',/add
+  tplot,'ALL_ERR_CNT',/add
+  tplot,'ALL_ERR',/add
+  tplot,'ALL_CMD_CNT',/add
+  tplot,/add,'spp*hkp*ERR_CNT'
   tplot,/add,'spp_*_C'
   tplot/
   

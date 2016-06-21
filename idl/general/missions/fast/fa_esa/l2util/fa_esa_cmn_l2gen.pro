@@ -60,8 +60,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20609 $
+; $LastChangedDate: 2016-06-20 11:03:59 -0700 (Mon, 20 Jun 2016) $
+; $LastChangedRevision: 21340 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -117,64 +117,101 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 
 ;Now variables and attributes
   cvars = strlowcase(tag_names(cmn_dat))
+;What type of data? ext is for filenames ext1, 2 for labels
+  If(keyword_set(esa_type)) Then Begin
+     ext = strlowcase(strcompress(/remove_all, esa_type[0])) 
+  Endif Else Begin
+     type_test = strlowcase(strcompress(/remove_all, cmn_dat.data_name))
+     Case type_test Of
+        'iesasurvey': ext = 'ies'
+        'iesaburst': ext = 'ieb'
+        'eesasurvey': ext = 'ees'
+        'eesaburst': ext = 'eeb'
+        Else: ext = 'oops'
+     Endcase
+  Endelse        
+  Case ext Of
+     'ies': Begin
+        ext1 = 'Survey Ion '
+        ext2 = 'Differential survey-mode ion ' 
+     End
+     'ieb': Begin
+        ext1 = 'Burst Ion '
+        ext2 = 'Differential burst-mode ion ' 
+     End
+     'ees': Begin
+        ext1 = 'Survey Electron '
+        ext2 = 'Differential survey-mode electron ' 
+     End
+     'eeb': Begin
+        ext1 = 'Burst Electron '
+        ext2 = 'Differential burst-mode electron ' 
+     End
+     Else: Begin 
+        ext1 = ext
+        ext2 = ext
+     End
+  Endcase
 
 ; Here are variable names, type, catdesc, and lablaxis
-  rv_vt =  [['EPOCH', 'CDF_EPOCH', 'CDF EPOCH time, one element per ion distribution (NUM_DISTS elements)', 'CDF_EPOCH'], $
-            ['TIME_UNIX', 'DOUBLE', 'Unix time (elapsed seconds since 1970-01-01/00:00 without leap seconds) for each data record, one element per distribution. This time is the center time of data collection. (NUM_DISTS elements)', 'Unix Time'], $
-            ['TIME_START', 'DOUBLE', 'Unix time at the start of data collection. (NUM_DISTS elements)', 'Interval start time (unix)'], $
-            ['TIME_END', 'DOUBLE', 'Unix time at the end of data collection. (NUM_DISTS elements)', 'Interval end time (unix)'], $
-            ['TIME_DELTA', 'DOUBLE', 'Averaging time. (TIME_END - TIME_START). (NUM_DISTS elements).', 'Averaging time'], $
-            ['TIME_INTEG', 'DOUBLE', 'Integration time. (TIME_DELTA/N_ENERGY). (NUM_DISTS elements).', 'Integration time'], $
-            ['HEADER_BYTES', 'BYTE', 'The packet header bytes. (44XNUM_DISTS elements)', 'Header'], $
-            ['VALID', 'INTEGER', 'Validity flag codes valid data (bit 0), non-zero values are not necessarily valid (NUM_DISTS elements)', ' Valid flag'], $
-            ['DATA_QUALITY', 'INTEGER', 'Quality flag (NUM_DISTS elements)', 'Quality flag'], $
-            ['NBINS', 'INTEGER', 'Number of angluar bins (NUM_DISTS elements)', 'Number of bins'], $
-            ['NENERGY', 'INTEGER', 'Number of energies (NUM_DISTS elements)', 'Number of energies'], $
-            ['GEOM_FACTOR', 'DOUBLE', 'GEOM_FACTOR, Geometrical factor used in calibration (NUM_DISTS elements)', 'Geometric Factor'], $
-            ['GF_IND', 'INTEGER', 'Index for the value of the Geometrical factor for data (NUM_DISTS elements)', 'GF index'], $
-            ['BINS_IND', 'INTEGER', 'Index for the number of angular bins for data (NUM_DISTS elements)', 'Bins index'], $
-            ['MODE_IND', 'INTEGER', 'Index for the data mode (0-2 for survey data, 0-1 for burst data) (NUM_DISTS elements)', 'Mode index'], $
-            ['THETA_SHIFT', 'DOUBLE', 'Angular shift (NUM_DISTS elements)', 'Angular shift, converts theta bin values to pitch angles'], $
-            ['THETA_MAX', 'DOUBLE', 'Angular maximum (NUM_DISTS elements)', 'Angular max'], $
-            ['THETA_MIN', 'DOUBLE', 'Angular minimum (NUM_DISTS elements)', 'Angular min'], $
-            ['BKG', 'FLOAT', 'Background counts array with dimensions (NUM_DISTS)', 'Background counts'], $
-            ['SC_POT', 'FLOAT', 'Spacecraft potential (NUM_DISTS elements)', 'Spacecraft potential'], $
-            ['DATA', 'BYTE', 'Raw Counts data with dimensions (96, 64, NUM_DISTS)', 'Raw Counts'], $
-            ['EFLUX', 'FLOAT', 'Differential energy flux array with dimensions (96, 64, NUM_DISTS)', 'Energy flux'], $
-            ['PITCH_ANGLE', 'FLOAT', 'Pitch Angle values for each distribution (96, 64, NUM_DISTS)', 'Pitch Angle'], $
-            ['DOMEGA', 'FLOAT', 'Solid angle for each distribution (96, 64, NUM_DISTS)', 'DOmega'], $
-            ['ENERGY_FULL', 'FLOAT', 'Angular values for each distribution (96, 64, NUM_DISTS)', 'Energy'], $
-            ['DENERGY_FULL', 'FLOAT', 'Energy bin size for each distribution (96, 64, NUM_DISTS)', 'DEnergy'], $
-            ['ORBIT_NUMBER', 'FLOAT', 'Orbit number for this file, does not change, so only 2 entries per file', 'Orbit_number'], $
-            ['ORBIT_NUMBER_TIME', 'DOUBLE', 'Time array, unix time for orbit number', 'Orbit Number Time'], $
-            ['ORBIT_NUMBER_EPOCH', 'CDF_EPOCH', 'CDF Epoch array for orbit number', 'Orbit Number Epoch']]
+  rv_vt =  [['epoch', 'CDF_EPOCH', 'CDF EPOCH time, one element per ion distribution (NUM_DISTS elements)', 'CDF_EPOCH'], $
+            ['time_unix', 'DOUBLE', 'Unix time (elapsed seconds since 1970-01-01/00:00 without leap seconds) for each data record, one element per distribution. This time is the center time of data collection. (NUM_DISTS elements)', 'Unix Time'], $
+            ['time_start', 'DOUBLE', 'Unix time at the start of data collection. (NUM_DISTS elements)', 'Interval start time (unix)'], $
+            ['time_end', 'DOUBLE', 'Unix time at the end of data collection. (NUM_DISTS elements)', 'Interval end time (unix)'], $
+            ['time_delta', 'DOUBLE', 'Averaging time. (TIME_END - TIME_START). (NUM_DISTS elements).', 'Averaging time'], $
+            ['time_integ', 'DOUBLE', 'Integration time. (TIME_DELTA/N_ENERGY). (NUM_DISTS elements).', 'Integration time'], $
+            ['header_bytes', 'BYTE', 'The packet header bytes. (44XNUM_DISTS elements)', 'Header'], $
+            ['valid', 'INTEGER', 'Validity flag codes valid data (bit 0), non-zero values are not necessarily valid (NUM_DISTS elements)', ' Valid flag'], $
+            ['data_quality', 'INTEGER', 'Quality flag (NUM_DISTS elements)', 'Quality flag'], $
+            ['nbins', 'INTEGER', 'Number of angluar bins (NUM_DISTS elements)', 'Number of bins'], $
+            ['nenergy', 'INTEGER', 'Number of energies (NUM_DISTS elements)', 'Number of energies'], $
+            ['geom_factor', 'DOUBLE', 'GEOM_FACTOR, Geometrical factor used in calibration (NUM_DISTS elements)', 'Geometric Factor'], $
+            ['gf_ind', 'INTEGER', 'Index for the value of the Geometrical factor for data (NUM_DISTS elements)', 'GF index'], $
+            ['bins_ind', 'INTEGER', 'Index for the number of angular bins for data (NUM_DISTS elements)', 'Bins index'], $
+            ['mode_ind', 'INTEGER', 'Index for the data mode (0-2 for survey data, 0-1 for burst data) (NUM_DISTS elements)', 'Mode index'], $
+            ['theta_shift', 'DOUBLE', 'Angular shift (NUM_DISTS elements)', 'Angular shift, converts theta bin values to pitch angles'], $
+            ['theta_max', 'DOUBLE', 'Angular maximum (NUM_DISTS elements)', 'Angular max'], $
+            ['theta_min', 'DOUBLE', 'Angular minimum (NUM_DISTS elements)', 'Angular min'], $
+            ['bkg', 'FLOAT', 'Background counts array with dimensions (NUM_DISTS)', 'Background counts'], $
+            ['sc_pot', 'FLOAT', 'Spacecraft potential (NUM_DISTS elements)', 'Spacecraft potential'], $
+            ['data', 'BYTE', ext1+'Raw Counts data with dimensions (96, 64, NUM_DISTS)', ext1+'Raw Counts'], $
+            ['eflux', 'FLOAT', ext2+'Differential energy flux array with dimensions (96, 64, NUM_DISTS) (as plasmagrams)', ext1+'Energy flux'], $
+            ['eflux_movie', 'FLOAT', ext1+'Plasmagram movie', ext1+'Energy Flux'],$
+            ['eflux_byE_atA', 'FLOAT', ext1+'Spectrograms by energy at sample pitch angles', ext1+'Energy Flux'],$
+            ['eflux_byA_atE', 'FLOAT', ext1+'Spectrograms by pitch_angle at sample energies', ext1+'Energy Flux'],$
+            ['pitch_angle_median', 'FLOAT', '---> Median Pitch Angle', 'Median Pitch Angle'],$
+            ['energy_median', 'FLOAT', '---> Median Energy', 'Median Energy'],$
+            ['pitch_angle', 'FLOAT', 'Pitch Angle values for each distribution (96, 64, NUM_DISTS)', 'Pitch Angle'], $
+            ['domega', 'FLOAT', 'Solid angle for each distribution (96, 64, NUM_DISTS)', 'DOmega'], $
+            ['energy_full', 'FLOAT', 'Angular values for each distribution (96, 64, NUM_DISTS)', 'Energy'], $
+            ['denergy_full', 'FLOAT', 'Energy bin size for each distribution (96, 64, NUM_DISTS)', 'DEnergy'], $
+            ['orbit_number', 'FLOAT', 'Orbit number for this file, does not change, so only 2 entries per file', 'Orbit_number'], $ 
+            ['orbit_number_time', 'DOUBLE', 'Time array, unix time for orbit number', 'Orbit Number Time'], $
+            ['orbit_number_epoch', 'CDF_EPOCH', 'CDF Epoch array for orbit number', 'Orbit Number Epoch']]
 
-;Use Lower case for variable names
-  rv_vt[0, *] = strlowcase(rv_vt[0, *])
+;Use Lower case for variable names; try to relax this assumption
+;  rv_vt[0, *] = strlowcase(rv_vt[0, *])
 
 ;No need for lablaxis values here, just use the name
-  nv_vt = [['PROJECT_NAME', 'STRING', 'FAST'], $
-           ['DATA_NAME', 'STRING', cmn_dat.data_name], $
-           ['DATA_LEVEL', 'STRING', 'Level 2'], $
-           ['UNITS_NAME', 'STRING', 'eflux'], $
-           ['UNITS_PROCEDURE', 'STRING', 'fa_esa_convert_esa_units, name of IDL routine used for units conversion '], $
-           ['NUM_DISTS', 'INTEGER', 'Number of measurements or times in the file'], $
-           ['BINS', 'INTEGER', 'Array with dimension NBINS containing 1 OR 0 used to flag bad angle bins'], $
-           ['ENERGY', 'FLOAT', 'Energy array with dimension (96,64 or 32,nmode)'], $
-           ['DENERGY', 'FLOAT', 'Delta Energy array with dimension (96, 64 or 32, 2 or 3)'], $
-           ['THETA', 'FLOAT', 'Angle array with with dimension (96, 64 or 32, 2 or 3)'], $
-           ['DTHETA', 'FLOAT', 'Delta Angle array with with dimension (96, 64 or 32, 2 or 3)'], $
-           ['GF', 'FLOAT', 'Geometric Factor array with dimension (96, 64)'], $
-           ['EFF', 'FLOAT', 'Efficiency array with dimension (96, 64 or 32, 2 or 3)'], $
-           ['DEAD', 'FLOAT', 'Dead time in seconds for 1 processed count'], $
-           ['MASS', 'FLOAT', 'Proton or Electron mass in units of MeV/c2'], $
-           ['CHARGE', 'FLOAT', 'Proton or Electron charge (1 or -1)'], $
-           ['BKG_ARR', 'FLOAT', 'Background counts array with dimension (96, 64)'], $
-           ['ORBIT_START', 'LONG', 'Start Orbit of file'], $
-           ['ORBIT_END', 'LONG', 'End Orbit of file']]
-
-;Use Lower case for variable names
-  nv_vt[0, *] = strlowcase(nv_vt[0, *])
+  nv_vt = [['project_name', 'STRING', 'FAST'], $
+           ['data_name', 'STRING', cmn_dat.data_name], $
+           ['data_level', 'STRING', 'Level 2'], $
+           ['units_name', 'STRING', 'eflux'], $
+           ['units_procedure', 'STRING', 'fa_esa_convert_esa_units, name of IDL routine used for units conversion '], $
+           ['num_dists', 'INTEGER', 'Number of measurements or times in the file'], $
+           ['bins', 'INTEGER', 'Array with dimension NBINS containing 1 OR 0 used to flag bad angle bins'], $
+           ['energy', 'FLOAT', 'Energy array with dimension (96,64 or 32,nmode)'], $
+           ['denergy', 'FLOAT', 'Delta Energy array with dimension (96, 64 or 32, 2 or 3)'], $
+           ['theta', 'FLOAT', 'Angle array with with dimension (96, 64 or 32, 2 or 3)'], $
+           ['dtheta', 'FLOAT', 'Delta Angle array with with dimension (96, 64 or 32, 2 or 3)'], $
+           ['gf', 'FLOAT', 'Geometric Factor array with dimension (96, 64)'], $
+           ['eff', 'FLOAT', 'Efficiency array with dimension (96, 64 or 32, 2 or 3)'], $
+           ['dead', 'FLOAT', 'Dead time in seconds for 1 processed count'], $
+           ['mass', 'FLOAT', 'Proton or Electron mass in units of MeV/c2'], $
+           ['charge', 'FLOAT', 'Proton or Electron charge (1 or -1)'], $
+           ['bkg_arr', 'FLOAT', 'Background counts array with dimension (96, 64)'], $
+           ['orbit_start', 'LONG', 'Start Orbit of file'], $
+           ['orbit_end', 'LONG', 'End Orbit of file']]
 
 ;Create variables for epoch
   cdf_leap_second_init
@@ -194,6 +231,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 ;Either the name is in the common block or not, names not in the
 ;common block have to be dealt with as special cases. Vectors will
 ;need label and component variables
+     is_virtual = 0b
      is_tvar = 0b
      vj = rv_vt[0, j]
      Have_tag = where(cvars Eq vj, nhave_tag)
@@ -230,17 +268,31 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
               dvar = time_epoch(minmax(center_time))
               is_tvar = 1b
            End
+           'eflux_movie':Begin
+              dvar = 1.0 ;do this for data typing
+              is_virtual = 1b
+           End
+           'eflux_byE_atA':Begin
+              dvar = 1.0
+              is_virtual = 1b
+           End
+           'eflux_byA_atE':Begin
+              dvar = 1.0
+              is_virtual = 1b
+           End
+           'energy_median':Begin
+              is_virtual = 1b
+              dvar = 1.0
+           End
+           'pitch_angle_median':Begin
+              dvar = 1.0
+              is_virtual = 1b
+           End
            Else: Begin
               message, /info, 'Variable '+vj+' Unaccounted for.'
            End
         Endcase
      Endelse
-
-     cdf_type = idl2cdftype(dvar, format_out = fmt, fillval_out = fll, validmin_out = vmn, validmax_out = vmx)
-;Change types for CDF time variables
-     If(vj eq 'epoch' Or vj Eq 'orbit_number_epoch') Then cdf_type = 'CDF_EPOCH'
-
-     dtype = size(dvar, /type)
 ;variable attributes here, but only the string attributes, the others
 ;depend on the data type
      vatt = {catdesc:'NA', display_type:'NA', fieldnam:'NA', $
@@ -250,92 +302,162 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
              coordinate_system:'sensor', $
              scaletyp:'NA', lablaxis:'NA',$
              labl_ptr_1:'NA',labl_ptr_2:'NA',labl_ptr_3:'NA', $
-             form_ptr:'NA', monoton:'NA',var_notes:'None'}
-
-;fix fill vals, valid mins and valid max's here
+             form_ptr:'NA', monoton:'FALSE',var_notes:'None'}
+     cdf_type = idl2cdftype(dvar, format_out = fmt, fillval_out = fll, validmin_out = vmn, validmax_out = vmx)
+;Change types for CDF time variables
+     If(vj eq 'epoch' Or vj Eq 'orbit_number_epoch') Then cdf_type = 'CDF_EPOCH'
+     dtype = size(dvar, /type)
+;probably the same for all vars
+     vatt.catdesc = rv_vt[2, j]
+     vatt.lablaxis = rv_vt[3, j]
+     vatt.fieldnam = rv_vt[3, j] ;shorter name
+     vatt.depend_0 = 'epoch'
+     vatt.depend_time = 'time_unix'
+     vatt.var_type='data'
      str_element, vatt, 'fillval', fll, /add
      str_element, vatt, 'format', fmt, /add
-     If(vj Eq 'epoch' Or vj Eq 'orbit_number_epoch') Then Begin
-        str_element, vatt, 'fillval', -1.0d+31, /add_replace ;istp
-        str_element, vatt, 'validmin', epoch_range[0], /add
-        str_element, vatt, 'validmax', epoch_range[1], /add
-     Endif Else If(vj Eq 'time_unix' Or vj Eq 'time_start' Or vj Eq 'time_end' Or vj Eq 'orbit_number_time') Then Begin
-        str_element, vatt, 'validmin', date_range[0], /add
-        str_element, vatt, 'validmax', date_range[1], /add
-     Endif Else If(vj Eq 'theta_shift' Or vj Eq 'pitch_angle' Or vj Eq 'dpitch_angle') Then Begin
+;Handle virtual variables separately
+     If(vj Eq 'eflux_movie') Then Begin
+        vatt.units='eV/sr/sec'
+        vatt.scaletyp='log'
+        vatt.display_type = 'plasmagram>THUMBSIZE>166>xsz=4,ysz=7>x,x=pitch_angle_median,y=energy_median,z=data'
         str_element, vatt, 'validmin', 0.0, /add
+        str_element, vatt, 'validmax', 1.0e10, /add
+        vatt.depend_2 = 'energy_median'
+        vatt.depend_1 = 'pitch_angle_median'
+        str_element, vatt, 'virtual', 'true', /add
+        str_element, vatt, 'funct', 'alternate_view', /add
+        str_element, vatt, 'component_0', 'eflux', /add
+     Endif Else If(vj Eq 'eflux_byE_atA') Then Begin
+        vatt.units='eV/sr/sec'
+        vatt.scaletyp='log'
+        vatt.display_type = 'spectrogram>y=energy_median,z=eflux_byE_atA(2,*),z=eflux_byE_atA(8,*),z=eflux_byE_atA(14,*),z=eflux_byE_atA(20,*),z=eflux_byE_atA(26,*),z=eflux_byE_atA(32,*),z=eflux_byE_atA(50,*)'
+        str_element, vatt, 'validmin', 0.0, /add
+        str_element, vatt, 'validmax', 1.0e10, /add
+        vatt.depend_2 = 'energy_median'
+        vatt.depend_1 = 'pitch_angle_median'
+        str_element, vatt, 'virtual', 'true', /add
+        str_element, vatt, 'funct', 'alternate_view', /add
+        str_element, vatt, 'component_0', 'eflux', /add
+        vatt.labl_ptr_1 = 'eflux_bypitch_labl'
+        vatt.labl_ptr_2 = 'eflux_byenergy_labl'        
+     Endif Else If(vj Eq 'eflux_byA_atE') Then Begin
+        vatt.units='eV/sr/sec'
+        vatt.scaletyp='log'
+        vatt.display_type =  'spectrogram>y=compno_64,z=eflux_byA_atE(*,2),z=eflux_byA_atE(*,8),z=eflux_byA_atE(*,14),z=eflux_byA_atE(*,20),z=eflux_byA_atE(*,26),z=eflux_byA_atE(*,32),z=eflux_byA_atE(*,38),z=eflux_byA_atE(*,44),z=eflux_byA_atE(*,76)'
+        str_element, vatt, 'validmin', 0.0, /add
+        str_element, vatt, 'validmax', 1.0e10, /add
+        vatt.depend_2 = 'energy_median'
+        vatt.depend_1 = 'pitch_angle_median'
+        str_element, vatt, 'virtual', 'true', /add
+        str_element, vatt, 'funct', 'alternate_view', /add
+        str_element, vatt, 'component_0', 'eflux', /add
+        vatt.labl_ptr_1 = 'eflux_bypitch_labl'
+        vatt.labl_ptr_2 = 'eflux_byenergy_labl'        
+     Endif Else If(vj Eq 'energy_median') Then Begin
+        vatt.units = 'eV'
+        vatt.scaletyp = 'log'
+        vatt.display_type = 'stack_plot'
+        str_element, vatt, 'validmin', 0.0, /add
+        str_element, vatt, 'validmax', 200000.0, /add
+        str_element, vatt, 'scalemin', 1.0, /add
+        str_element, vatt, 'scalemax', 100000.0, /add
+        vatt.depend_1 = 'compno_64'
+        vatt.labl_ptr_1 = 'angle_labl_64'
+        str_element, vatt, 'virtual', 'true', /add
+        str_element, vatt, 'funct', 'arr_slice', /add
+        str_element, vatt, 'component_0', 'energy_full', /add
+        str_element, vatt, 'arr_index', 16, /add
+        str_element, vatt, 'arr_dim', 0, /add        
+     Endif Else If(vj Eq 'pitch_angle_median') Then Begin
+        vatt.units = 'degrees'
+        vatt.scaletyp = 'linear'
+        vatt.display_type = 'stack_plot'
+        str_element, vatt, 'validmin',-360.0, /add
         str_element, vatt, 'validmax', 360.0, /add
+        str_element, vatt, 'scalemin', -20.0, /add
+        str_element, vatt, 'scalemax', 380.0, /add
+        vatt.depend_1 = 'compno_64'
+        vatt.labl_ptr_1 = 'angle_labl_64'
+        str_element, vatt, 'virtual', 'true', /add
+        str_element, vatt, 'funct', 'arr_slice', /add
+        str_element, vatt, 'component_0', 'pitch_angle', /add
+        str_element, vatt, 'arr_index', 24, /add
+        str_element, vatt, 'arr_dim', 1, /add        
      Endif Else Begin
-        str_element, vatt, 'validmin', vmn, /add
-        str_element, vatt, 'validmax', vmx, /add
-;scalemin and scalemax depend on the variable's values
-        str_element, vatt, 'scalemin', vmn, /add
-        str_element, vatt, 'scalemax', vmx, /add
-        ok = where(finite(dvar), nok)
-        If(nok Gt 0) Then Begin
-           vatt.scalemin = min(dvar[ok])
-           vatt.scalemax = max(dvar[ok])
-        Endif
-     Endelse
-     vatt.catdesc = rv_vt[2, j]
-
+;fix valid mins and valid max's here
+        If(vj Eq 'eflux') Then Begin
+           str_element, vatt, 'validmin', 0.0, /add
+           str_element, vatt, 'validmax', 1.0e10, /add
+        Endif Else If(vj Eq 'epoch' Or vj Eq 'orbit_number_epoch') Then Begin
+           str_element, vatt, 'fillval', -1.0d+31, /add_replace ;istp
+           str_element, vatt, 'validmin', epoch_range[0], /add
+           str_element, vatt, 'validmax', epoch_range[1], /add
+        Endif Else If(vj Eq 'time_unix' Or vj Eq 'time_start' Or vj Eq 'time_end' $
+                      Or vj Eq 'orbit_number_time') Then Begin
+           str_element, vatt, 'validmin', date_range[0], /add
+           str_element, vatt, 'validmax', date_range[1], /add
+        Endif Else If(vj Eq 'theta_shift' Or vj Eq 'pitch_angle' Or vj Eq 'dpitch_angle' Or $
+                      vj Eq 'theta_min' Or vj Eq 'theta_max') Then Begin
+           str_element, vatt, 'validmin', -400.0, /add
+           str_element, vatt, 'validmax', 400.0, /add
+        Endif Else Begin
+           str_element, vatt, 'validmin', vmn, /add
+           str_element, vatt, 'validmax', vmx, /add
+        Endelse
 ;data is log scaled, everything else is linear, set data, support data
 ;display type here
-     IF(vj Eq 'data' Or vj Eq 'eflux') Then Begin
-        vatt.scaletyp = 'log' 
-        vatt.display_type = 'spectrogram'
-        vatt.var_type = 'data'
-     Endif Else Begin
-        vatt.scaletyp = 'linear'
-        vatt.display_type = 'time_series'
-        vatt.var_type = 'support_data'
-     Endelse
-
-     vatt.fieldnam = rv_vt[3, j] ;shorter name
+        IF(vj Eq 'data' Or vj Eq 'eflux') Then Begin
+           vatt.scaletyp = 'log' 
+           vatt.display_type = 'plasmagram>THUMBSIZE>166>xsz=4,ysz=7>x,x=pitch_angle_median,y=energy_median,z=data'
+        Endif Else Begin
+           vatt.scaletyp = 'linear'
+           vatt.display_type = 'time_series'
+           If(vj eq 'bkg' Or vj Eq 'theta_shift' Or vj Eq 'pitch_angle' Or $
+              vj Eq 'dpitch_angle' Or vj Eq 'theta_min' Or vj Eq 'theta_max' Or $
+              vj Eq 'sc_pot') Then Begin
+              dummy = 1         ;var type is already 'data'
+           Endif Else vatt.var_type = 'support_data'
+        Endelse
 ;Units
-     If(is_tvar) Then Begin     ;Time variables
-        vatt.units = 'sec'
-     Endif Else Begin
-        If(strpos(vj, 'time') Ne -1) Then vatt.units = 'sec' $ ;time interval sizes
-        Else If(strpos(vj, 'theta') Ne -1 Or strpos(vj, 'pitch') Ne -1) Then vatt.units = 'degrees' $
-        Else If(strpos(vj, 'energy') Ne -1) Then vatt.units = 'eV' $
-        Else If(strpos(vj, 'omega') Ne -1) Then vatt.units = 'ster' $
-        Else If(vj Eq 'sc_pot') Then vatt.units = 'volts' $
-        Else If(vj Eq 'data') Then vatt.units = 'Counts' $
-        Else If(vj Eq 'eflux') Then vatt.units = 'eV/sr/sec' ;check this
-     Endelse
-
+        If(is_tvar) Then Begin  ;Time variables
+           vatt.units = 'sec'
+        Endif Else Begin
+           If(strpos(vj, 'time') Ne -1) Then vatt.units = 'sec' $ ;time interval sizes
+           Else If(strpos(vj, 'theta') Ne -1 Or strpos(vj, 'pitch') Ne -1) Then vatt.units = 'degrees' $
+           Else If(strpos(vj, 'energy') Ne -1) Then vatt.units = 'eV' $
+           Else If(strpos(vj, 'omega') Ne -1) Then vatt.units = 'ster' $
+           Else If(vj Eq 'sc_pot') Then vatt.units = 'volts' $
+           Else If(vj Eq 'data') Then vatt.units = 'Counts' $
+           Else If(vj Eq 'eflux') Then vatt.units = 'eV/sr/sec' ;check this
+        Endelse
+           
 ;Depends and labels
-     If(strpos(vj, 'orbit_number') Ne -1) Then Begin
-        vatt.depend_time = 'orbit_number_time'
-        vatt.depend_0 = 'orbit_number_epoch'
-     Endif Else Begin
-        vatt.depend_time = 'time_unix'
-        vatt.depend_0 = 'epoch'
-     Endelse
-     vatt.lablaxis = rv_vt[3, j]
-
+        If(strpos(vj, 'orbit_number') Ne -1) Then Begin
+           vatt.depend_time = 'orbit_number_time'
+           vatt.depend_0 = 'orbit_number_epoch'
+        Endif Else Begin
+           vatt.depend_time = 'time_unix'
+           vatt.depend_0 = 'epoch'
+        Endelse
+        If(vj Eq 'theta_shift') Then vatt.lablaxis = 'Angular shift' ;jmm, 2016-06-17
 ;Assign labels and components for vectors
-     If(vj Eq 'data' Or vj Eq 'eflux' Or $
-        vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
-        vj Eq 'denergy_full' Or vj Eq 'domega') Then Begin
+        If(vj Eq 'data' Or vj Eq 'eflux' Or $
+           vj Eq 'pitch_angle' Or vj Eq 'energy_full' Or $
+           vj Eq 'denergy_full' Or vj Eq 'domega') Then Begin
 ;For ISTP compliance, it looks as if the depend's are switched,
 ;probably because we transpose it all in the file
 ;??? Check this ???
-        vatt.depend_2 = 'compno_96'
-        vatt.depend_1 = 'compno_64'
-        vatt.labl_ptr_2 = 'energy_labl_96'
-        vatt.labl_ptr_1 = 'angle_labl_64'
-     Endif
- 
+           vatt.depend_2 = 'energy_median'
+           vatt.depend_1 = 'pitch_angle_median'
+        Endif
 ;Time variables are monotonically increasing:
-     If(is_tvar) Then vatt.monoton = 'INCREASE' Else vatt.monoton = 'FALSE'
-
+        If(is_tvar) Then vatt.monoton = 'INCREASE' Else vatt.monoton = 'FALSE'
+     Endelse
 ;delete all 'NA' tags
      vatt_tags = tag_names(vatt)
      nvatt_tags = n_elements(vatt_tags)
      rm_tag = bytarr(nvatt_tags)
-
      For k = 0, nvatt_tags-1 Do Begin
         If(is_string(vatt.(k)) && vatt.(k) Eq 'NA') Then rm_tag[k] = 1b
      Endfor
@@ -344,7 +466,6 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
         tags_to_remove = vatt_tags[xtag]
         For k = 0, nxtag-1 Do str_element, vatt, tags_to_remove[k], /delete
      Endif
-
 ;Create and fill the variable structure
      vsj = {name:'', num:0, is_zvar:1, datatype:'', $
             type:0, numattr: -1, numelem: 1, recvary: 1b, $
@@ -355,13 +476,15 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      vsj.type = dtype
      vsj.numrec = num_dists
 ;It looks as if you do not include the time variation?
-     ndim = size(dvar, /n_dimen)
-     dims = size(dvar, /dimen)
-     vsj.ndimen = ndim-1
-     If(ndim Gt 1) Then vsj.d[0:ndim-2] = dims[1:*]
-     vsj.dataptr = ptr_new(dvar)
+;No data if it's a virtual variable
+     If(~is_virtual) Then Begin
+        ndim = size(dvar, /n_dimen)
+        dims = size(dvar, /dimen)
+        vsj.ndimen = ndim-1
+        If(ndim Gt 1) Then vsj.d[0:ndim-2] = dims[1:*]
+        vsj.dataptr = ptr_new(dvar)
+     Endif
      vsj.attrptr = ptr_new(vatt)
-     
 ;Append the variables structure
      If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
      count = count+1
@@ -405,14 +528,8 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
            str_element, vatt, 'validmax', vmx, /add
         Endelse
         str_element, vatt, 'fillval', fll, /add
-;scalemin and scalemax depend on the variable's values
         str_element, vatt, 'scalemin', vmn, /add
         str_element, vatt, 'scalemax', vmx, /add
-        ok = where(finite(dvar) And dvar Ne fll, nok)
-        If(nok Gt 0) Then Begin
-           vatt.scalemin = min(dvar[ok])
-           vatt.scalemax = max(dvar[ok])
-        Endif
      Endif
      vatt.catdesc = nv_vt[2, j]
      vatt.fieldnam = nv_vt[0, j]
@@ -434,12 +551,10 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      If(ndim Gt 0) Then vsj.d[0:ndim-1] = dims
      vsj.dataptr = ptr_new(dvar)
      vsj.attrptr = ptr_new(vatt)
-     
 ;Append the variables structure
      If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
      count = count+1
   Endfor
-     
 ;Now compnos, need 96, 64
   ext_compno = [96, 64]
   vcompno = 'compno_'+strcompress(/remove_all, string(ext_compno))
@@ -454,7 +569,6 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
               validmax:255, var_type:'metadata'}
 ;Also a data array
      dvar = 1+indgen(nj)
-
 ;Create and fill the variable structure
      vsj = {name:'', num:0, is_zvar:1, datatype:'', $
             type:0, numattr: -1, numelem: 1, recvary: 0b, $
@@ -470,15 +584,12 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      If(ndim Gt 0) Then vsj.d[0:ndim-1] = dims
      vsj.dataptr = ptr_new(dvar)
      vsj.attrptr = ptr_new(vatt)
-     
 ;Append the variables structure
      If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
      count = count+1
   Endfor
-     
 ;Labels now
-  lablvars = ['energy_labl_96', $
-              'angle_labl_64']
+  lablvars = ['energy_labl_96', 'angle_labl_64']
   For j = 0, n_elements(lablvars)-1 Do Begin
      vj = lablvars[j]
      xj = strsplit(vj, '_', /extract)
@@ -486,10 +597,8 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      aj = xj[0]+'@'+strupcase(xj[1])
      dvar = aj+strcompress(/remove_all, string(indgen(nj)))
      ndv = n_elements(dvar)
-
      numelem = strlen(dvar[ndv-1]) ;needed for numrec
      fmt = 'A'+strcompress(/remove_all, string(numelem))
-
 ;Label attributes
      vatt =  {catdesc:vj, fieldnam:vj, $
               format:fmt, dict_key:'label', $
@@ -510,12 +619,57 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      If(ndim Gt 0) Then vsj.d[0:ndim-1] = dims
      vsj.dataptr = ptr_new(dvar)
      vsj.attrptr = ptr_new(vatt)
-     
 ;Append the variables structure
      If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
      count = count+1
   Endfor
-     
+;more labels
+  vj = 'eflux_bypitch_labl'
+  nj = 64
+  dvar = ext1+'eflux @ PA '+strcompress(string(indgen(nj)+1), /remove_all)
+  vatt =  {catdesc:'Energy Flux by Pitch Angle labels', $
+           fieldnam:'Energy Flux by Pitch Angle labels', $
+           format:'A29', dict_key:'label>angle', $
+           var_type:'metadata'}
+  vsj = {name:'', num:0, is_zvar:1, datatype:'', $
+         type:0, numattr: -1, numelem: 1, recvary: 0b, $
+         numrec:-1L, ndimen: 0, d:lonarr(6), dataptr:ptr_new(), $
+         attrptr:ptr_new()}
+  vsj.name = vj
+  vsj.datatype = 'CDF_CHAR'
+  vsj.type = 1
+  vsj.numelem = nj
+  ndim = size(dvar, /n_dimen)
+  dims = size(dvar, /dimen)
+  vsj.ndimen = ndim
+  If(ndim Gt 0) Then vsj.d[0:ndim-1] = dims
+  vsj.dataptr = ptr_new(dvar)
+  vsj.attrptr = ptr_new(vatt)
+  If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
+  count = count+1
+  vj = 'eflux_byenergy_labl'
+  nj = 96
+  dvar = ext1+'eflux @ Energy '+strcompress(string(indgen(nj)+1), /remove_all)
+  vatt =  {catdesc:'Energy Flux by Energy labels', $
+           fieldnam:'Energy Flux by Energy labels', $
+           format:'A33', dict_key:'label>energy', $
+           var_type:'metadata'}
+  vsj = {name:'', num:0, is_zvar:1, datatype:'', $
+         type:0, numattr: -1, numelem: 1, recvary: 0b, $
+         numrec:-1L, ndimen: 0, d:lonarr(6), dataptr:ptr_new(), $
+         attrptr:ptr_new()}
+  vsj.name = vj
+  vsj.datatype = 'CDF_CHAR'
+  vsj.type = 1
+  vsj.numelem = nj
+  ndim = size(dvar, /n_dimen)
+  dims = size(dvar, /dimen)
+  vsj.ndimen = ndim
+  If(ndim Gt 0) Then vsj.d[0:ndim-1] = dims
+  vsj.dataptr = ptr_new(dvar)
+  vsj.attrptr = ptr_new(vatt)
+  If(count Eq 0) Then vstr = vsj Else vstr = [vstr, vsj]
+  count = count+1
   nvars = n_elements(vstr)
   natts = n_tags(global_att)+n_tags(vstr[0])
 
@@ -542,20 +696,6 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      If(ll Ne '/' And ll Ne '\') Then temp_string = temp_string+'/'
      dir = temporary(temp_string)
   Endif Else dir = './'
-  
-;What type of data
-  If(keyword_set(esa_type)) Then Begin
-     ext = strlowcase(strcompress(/remove_all, esa_type[0])) 
-  Endif Else Begin
-     type_test = strlowcase(strcompress(/remove_all, cmn_dat.data_name))
-     Case type_test Of
-        'iesasurvey': ext = 'ies'
-        'iesaburst': ext = 'ieb'
-        'eesasurvey': ext = 'ees'
-        'eesaburst': ext = 'eeb'
-        Else: ext = 'oops'
-     Endcase
-  Endelse        
 
 ;SPDF requests full start time in the filename
   date = time_string(min(center_time), format=6)
@@ -566,7 +706,6 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
   otp_struct.g_attributes.data_type = 'l2_'+ext+'>Level 2 data: '+cmn_dat.data_name
   otp_struct.g_attributes.logical_file_id = file0
   otp_struct.g_attributes.logical_source = 'fa_esa_l2_'+ext
-
 ;save the file -- full database management
   dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)
   If(~keyword_set(no_compression)) Then Begin

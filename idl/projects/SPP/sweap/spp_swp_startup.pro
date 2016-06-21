@@ -2,6 +2,7 @@
 pro spp_swp_startup, spanai   = spanai,$
                      spanae   = spanae,$
                      spanb    = spanb,$
+                     swem = swem, $
                      optional = optional
 
 
@@ -301,7 +302,7 @@ pro spp_swp_startup, spanai   = spanai,$
   
   ;;------------------------------
   ;; Connect to GSEOS
-  spp_init_realtime
+  spp_init_realtime,swem=swem
   
   store_data,'APID',data='APIDS_*'
   ylim,'APID',820,960

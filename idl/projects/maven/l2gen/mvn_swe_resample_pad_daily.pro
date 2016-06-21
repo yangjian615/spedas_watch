@@ -21,8 +21,8 @@
 ;                     incomplete or not available.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-16 17:23:48 -0800 (Mon, 16 Nov 2015) $
-; $LastChangedRevision: 19381 $
+; $LastChangedDate: 2016-06-20 17:07:48 -0700 (Mon, 20 Jun 2016) $
+; $LastChangedRevision: 21342 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_resample_pad_daily.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -65,6 +65,7 @@ pro mvn_swe_resample_pad_daily, trange, l2only=l2only
 
     if (ok) then begin
       mvn_swe_pad_resample,nbins=128,erange=[100.,150.],/norm,/mask,/silent
+      options,'mvn_swe_pad_resample','maglev',maglev
       tplot_save,'mvn_swe_pad_resample',file=ofile
       if (file_test(ofile+'.tplot',/user)) then file_chmod, ofile+'.tplot', '664'o $
                                            else print,"Can't chmod - I'm not the owner!"

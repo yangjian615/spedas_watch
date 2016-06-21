@@ -70,7 +70,8 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   ptp_code = buffer[2]
   if ptp_code eq 0 then begin
     dprint,'End of Transmission Code'
-    printdat,buffer
+    printdat,buffer,/hex
+;    savetomain,buffer
     return
   endif
   if ptp_code eq 'ff'x then begin
@@ -83,7 +84,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
     return
   endif
   ga   = buffer[3:16]
-  sc_id = swap_endian(/swap_if_little_endian, uint(ga,0))   
+  sc_id = swap_endian(/swap_if_little_endian, uint(ga,1))   
   days  = swap_endian(/swap_if_little_endian, uint(ga,2))
   ms    = swap_endian(/swap_if_little_endian, ulong(ga,4))
   us    = swap_endian(/swap_if_little_endian, uint(ga,8))
@@ -100,8 +101,14 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
     return
   endif
   ptp_header ={ ptp_time:utime, ptp_scid: sc_id, ptp_source:source, ptp_spare:spare, ptp_path:path, ptp_size:ptp_size }
-  if debug(5) then begin
+  if sc_id ne 'BB53'x then begin
+    dprint,dlevel=2,'Unknown SC_ID: '+string(sc_id)
+    hexprint,buffer
+    
+  endif
+  if debug(4) then begin
     dprint,dlevel=2,'ptp_size=',ptp_size
+;    printdat,/hex,buffer
     hexprint,buffer    
   endif
   spp_ccsds_pkt_handler, buffer[17:*],ptp_header = ptp_header

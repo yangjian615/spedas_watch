@@ -16,8 +16,14 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
    dseq_cntr =  1u
    dtime = !values.d_nan
  endelse
- 
 
+ REVNUMBER      =       b[12]
+ if REVNUMBER ne '9e'x then begin
+  dprint, dlevel=2, 'Bad Revnumber: ',REVNUMBER
+ endif
+  
+ 
+  
   ;;------------------
   ;; Housekeeping Size
   psize = 136
@@ -33,10 +39,26 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
   sf0 = ccsds.data[11] and 3
   if sf0 ne 0 then dprint, 'Odd time at: ',time_string(ccsds.time)
 
-  ;; Volts   
-  ;; EM is 5 Volt reference.
-  ;; FM will be 4 Volt reference.
-  ref = 4.                      
+
+if debug(5)  then begin   ; compression test
+;  common spp_hkp_decom_data, data_delta_last
+;  if not keyword_set(data_delta_last) then data_delta_last = b *0
+  b_last = keyword_set(last_ccsds) ? last_ccsds.data : b* 0b
+;  b_last =  b* 0b
+  data_delta = b- b_last
+;  data_ddelta = data_delta - data_delta_last
+;  data_delta_last = data_delta
+  ind = where(data_delta ne 0)
+  dprint,total( data_delta ne 0)
+  hexprint,data_delta
+  printdat,ind
+  printdat,ind-shift(ind,1)
+  printdat,data_delta[ind]  ;+4b
+;  printdat,total(data_ddelta ne 0)
+;  hexprint,data_ddelta
+endif
+
+
 
   n=0  
 
@@ -58,10 +80,28 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
   MON_FPGA_TEMP=    func((spp_swp_word_decom(b,66 ) and 'fff'x)  * 1. ,param = temp_par_12bit) 
   
   TEMPS = float([mon_lvps_temp,mon_anal_temp,mon_TDC_TEMP,mon_FPGA_TEMP])
+  
+  ;; Voltages
+  
+
+  ;; offsets
+  ch_offsets = ishft( b[[16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46]], -2)
+  
+  ;  The foolow look wrong!!!
+    DAC_MCP=         spp_swp_word_decom(b,104)
+    DAC_ACC=         spp_swp_word_decom(b,106)
+    DAC_RAW=         spp_swp_word_decom(b,108)
+    DAC_HEM=        spp_swp_word_decom(b,120)
+    DAC_SPOILER=     spp_swp_word_decom(b,122)
+    DAC_DEF1=        spp_swp_word_decom(b,124)
+    DAC_DEF2=        spp_swp_word_decom(b,126)
+  DAC_VALS  =  [DAC_MCP,DAC_ACC,DAC_RAW,DAC_HEM,DAC_SPOILER,DAC_DEF1,DAC_DEF2]
+
+ ADC_VALS2 = spp_swp_word_decom(b,384/8,12,mask = 'fff'x)
+; hexprint,ADC_VALS2
 
 
   spai = { $
-
          time:            ccsds.time, $
          dtime:           dtime/dseq_cntr, $
          time_mod1:         (ccsds.met) mod 1 , $
@@ -72,43 +112,42 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
          dseq_cntr:       dseq_cntr   < 15, $
  
          REVN:            b[12],  $
-         CMDS_REC:        spp_swp_word_decom(b,13),  $
+         CMDS_REC:        spp_swp_word_decom(b,13)  and 'ff'x,  $
          CMDS_UNK:        ishft(b[15],-4), $
          CMDS_ERR:        b[15] and 'f'x, $
-
-         CH0_OFF:         ishft(b[16],-2),$
+         CH_OFFSETS:      ch_offsets, $
+;         CH0_OFF:         ishft(b[16],-2),$
+;         CH1_OFF:         ishft(b[18],-2),$
+;         CH2_OFF:         ishft(b[20],-2),$
+;         CH3_OFF:         ishft(b[22],-2),$
+;         CH4_OFF:         ishft(b[24],-2),$
+;         CH5_OFF:         ishft(b[26],-2),$
+;         CH6_OFF:         ishft(b[28],-2),$
+;         CH7_OFF:         ishft(b[30],-2),$
+;         CH8_OFF:         ishft(b[32],-2),$
+;         CH9_OFF:         ishft(b[34],-2),$
+;         CH10_OFF:        ishft(b[36],-2),$
+;         CH11_OFF:        ishft(b[38],-2),$
+;         CH12_OFF:        ishft(b[40],-2),$
+;         CH13_OFF:        ishft(b[42],-2),$
+;         CH14_OFF:        ishft(b[44],-2),$
+;         CH15_OFF:        ishft(b[46],-2),$
          GND0:            (spp_swp_word_decom(b,16) AND '3FF'x) * 4.2520,  $
-         CH1_OFF:         ishft(b[18],-2),$
          GND1:            (spp_swp_word_decom(b,18) AND '3FF'x) * 4.2520,  $
-         CH2_OFF:         ishft(b[20],-2),$
          MON_LVPS_TEMP:   MON_LVPS_TEMP,  $
-         CH3_OFF:         ishft(b[22],-2),$   
          MON_22A_V:       (spp_swp_word_decom(b,22) AND '3FF'x) * 0.028104,$
-         CH4_OFF:         ishft(b[24],-2),$
          MON_1P5D_V:      (spp_swp_word_decom(b,24) AND '3FF'x) * 0.0024438,$
-         CH5_OFF:         ishft(b[26],-2),$
          MON_3P3A_V:      (spp_swp_word_decom(b,26) AND '3FF'x) * 0.0037097,$
-         CH6_OFF:         ishft(b[28],-2),$
          MON_3P3D_V:      (spp_swp_word_decom(b,28) AND '3FF'x) * 0.0037097,$
-         CH7_OFF:         ishft(b[30],-2),$
          MON_N8VA_V:      (spp_swp_word_decom(b,30) AND '3FF'x) * 0.01173,$
-         CH8_OFF:         ishft(b[32],-2),$
          MON_N5VA_V:      (spp_swp_word_decom(b,32) AND '3FF'x) * .006295,$
-         CH9_OFF:         ishft(b[34],-2),$
          MON_P8VA_V:      (spp_swp_word_decom(b,34) AND '3FF'x) * 0.01173,$
-         CH10_OFF:        ishft(b[36],-2),$
          MON_P5VA_V:       (spp_swp_word_decom(b,36) AND '3FF'x) * .006295,$
-         CH11_OFF:        ishft(b[38],-2),$
          MON_ANAL_TEMP:   MON_ANAL_TEMP,  $
-         CH12_OFF:        ishft(b[40],-2),$
          MON_3P3_C:       (spp_swp_word_decom(b,40) AND '3FF'x) * 0.572043,$
-         CH13_OFF:        ishft(b[42],-2),$
          MON_1P5_C:       (spp_swp_word_decom(b,42) AND '3FF'x) * 0.64516,$
-         CH14_OFF:        ishft(b[44],-2),$
          MON_P5I_c:       (spp_swp_word_decom(b,44) AND '3FF'x) * 2.4340,$
-         CH15_OFF:        ishft(b[46],-2),$
          MON_N5I_C:       (spp_swp_word_decom(b,46) AND '3FF'x) * 2.4340,$
-
          ACC_ERR_CNT:     ishft(b[48],-6),$                                ; First 2 bits
          CDI_ERR_CNT:     ishft(b[48],-4) AND '11'b,$                      ; Next  2 bits
          MON_ACC_V:       (spp_swp_word_decom(b,48) AND 'FFF'x) * 3.6630,$ ; Last 12 bits of word
@@ -165,33 +204,35 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
          PPULSE_MASK:     spp_swp_word_decom(b,76), $
          PEAK_STEP:       b[78], $
 
-         CVRPRIME:        ishft(b[79],-7) AND '1'b,$
-         CVRSEC:          ishft(b[79],-6) AND '1'b,$
-         ACTOPENPRIME:    ishft(b[79],-5) AND '1'b,$
-         ACTSHUTPRIME:    ishft(b[79],-4) AND '1'b,$
-         ACTOPENSEC:      ishft(b[79],-3) AND '1'b,$
-         ACTSHUTSEC:      ishft(b[79],-2) AND '1'b,$
-         ACTI:            ishft(b[79],-1) AND '1'b,$
-         RLXOPENA:        b[79] AND '1'b,$
+         ACT_FLAGS:       B[79], $
+;         CVRPRIME:        ishft(b[79],-7) AND '1'b,$
+;         CVRSEC:          ishft(b[79],-6) AND '1'b,$
+;         ACTOPENPRIME:    ishft(b[79],-5) AND '1'b,$
+;         ACTSHUTPRIME:    ishft(b[79],-4) AND '1'b,$
+;         ACTOPENSEC:      ishft(b[79],-3) AND '1'b,$
+;         ACTSHUTSEC:      ishft(b[79],-2) AND '1'b,$
+;         ACTI:            ishft(b[79],-1) AND '1'b,$
+;         RLXOPENA:        b[79] AND '1'b,$
 
          PEAK_CNT:        spp_swp_word_decom(b,80),$
-         TIME_CMDS:       ishft(b[82],-4),$
+         CMDS_TIME:       ishft(b[82],-4),$
          PPULSE_SEL:      ishft(b[82],-2) AND '11'b,$
          F0_CNT:          (spp_swp_word_decom(b,82) AND '3FF'x),$
          
          ERR_ATN:         ishft(b[84],-2),$
          ERR_CVR:         b[84] AND '11'b,$
 
-         PILUT_CHKSUM:    b[85], $       
-         TSLUT_CHKSUM:    b[86], $
-         SLUT_CHKSUM:     b[87], $
-         MLUT_CHKSUM:     b[88], $
-         MRAN_CHKSUM:     b[89], $
-         PSUM_CHKSUM:     b[90], $
-         PADD_CHKSUM:     b[91], $
-         FSLUT_CHKSUM:    b[92], $
-         PEADL_CHKSUM:    b[93], $
-         PMBINS_CHKSUM:   b[94], $
+         ALL_CHKSUM:      b[85:94],  $
+;         PILUT_CHKSUM:    b[85], $       
+;         TSLUT_CHKSUM:    b[86], $
+;         SLUT_CHKSUM:     b[87], $
+;         MLUT_CHKSUM:     b[88], $
+;         MRAN_CHKSUM:     b[89], $
+;         PSUM_CHKSUM:     b[90], $
+;         PADD_CHKSUM:     b[91], $
+;         FSLUT_CHKSUM:    b[92], $
+;         PEADL_CHKSUM:    b[93], $
+;         PMBINS_CHKSUM:   b[94], $
          
          PEAK_CYCLE:      ishft(b[95],-4), $            ; First 4 bits 
          PEAK_OVERRIDE:   ishft(b[95],-3) AND '1'b, $   ; Bit 5 
@@ -203,10 +244,7 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
          CVR_RELAX_TM:    spp_swp_word_decom(b,98),$  
          ACTIN_ACT_TIME:  spp_swp_word_decom(b,100),$ 
          ACTOUT_ACT_TIME: spp_swp_word_decom(b,102),$ 
-         DAC_MCP:         spp_swp_word_decom(b,104), $
-         DAC_ACC:         spp_swp_word_decom(b,106), $
-         DAC_RAW:         spp_swp_word_decom(b,108), $
-         PEAK_MASK:       spp_swp_word_decom(b,110), $
+         PEAK_MASK_FLAG:       spp_swp_word_decom(b,110), $
          ACT_OVERRIDE:    b[112],$ 
          TIMEOUT_CVR:     b[113],$  
          TIMEOUT_ATN:     b[114],$
@@ -214,10 +252,16 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
          TABLE_CHKSUM:    b[116],$
          RATES_CYCLES:    ishft(b[117],-5), $
          MRAM_ADDR:       spp_swp_word_decom(b,117), $ ;;;!!!!! CHANGE TO LSB 21 bits !!!!!
-         HEMI_CDI:        spp_swp_word_decom(b,120), $
-         SPOILER_CDI:     spp_swp_word_decom(b,122), $
-         DEF1_CDI:        spp_swp_word_decom(b,124), $
-         DEF2_CDI:        spp_swp_word_decom(b,126), $
+         DACS  :         DAC_VALS,  $
+         DACS2  :         ADC_VALS2,  $
+         ADCS   :         ADC_VALS2,  $
+;         DAC_MCP:         DAC_MCP, $
+;         DAC_ACC:         DAC_ACC, $
+;         DAC_RAW:         DAC_RAW,  $     ;spp_swp_word_decom(b,108), $
+;         DAC_HEM:         DAC_HEM, $
+;         DAC_SPOILER:     DAC_SPOILER, $
+;         DAC_DEF1:        DAC_DEF1, $
+;         DAC_DEF2:        DAC_DEF2, $
 
          ACT_COOLTIME:       ishft(ishft(b[128],1) or b[129],-7),$
          SNAPSHOT_FULL_AP:   ishft(b[129],-6) AND   '1'b,$

@@ -13,7 +13,7 @@ pro spp_ptp_stream_read,buffer,info=info,no_sum=no_sum  ;,time=time
       total_bytes += len
       if dt gt .1 then begin
         rate = total_bytes/dt
-        store_data,'AVG_DATA_RATE2',append=1,time, rate,dlimit={psym:-4}
+        store_data,'PTP_DATA_RATE',append=1,time, rate,dlimit={psym:-4}
         total_bytes =0
         last_time = time
       endif
