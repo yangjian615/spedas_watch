@@ -62,8 +62,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
-;$LastChangedRevision: 21219 $
+;$LastChangedDate: 2016-06-21 15:09:32 -0700 (Tue, 21 Jun 2016) $
+;$LastChangedRevision: 21346 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
@@ -89,4 +89,9 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, $
         cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
         latest_version = latest_version, min_version = min_version, spdf = spdf
+
+    for level_idx = 0, n_elements(level)-1 do begin
+      ; set some of the metadata
+      mms_edp_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = 'edp', data_rate = data_rate, suffix = suffix, level=level[level_idx]
+    endfor
 end

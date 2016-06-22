@@ -60,8 +60,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-06-20 11:03:59 -0700 (Mon, 20 Jun 2016) $
-; $LastChangedRevision: 21340 $
+; $LastChangedDate: 2016-06-21 09:38:56 -0700 (Tue, 21 Jun 2016) $
+; $LastChangedRevision: 21343 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -320,7 +320,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
      If(vj Eq 'eflux_movie') Then Begin
         vatt.units='eV/sr/sec'
         vatt.scaletyp='log'
-        vatt.display_type = 'plasmagram>THUMBSIZE>166>xsz=4,ysz=7>x,x=pitch_angle_median,y=energy_median,z=data'
+        vatt.display_type = 'plasmagram>THUMBSIZE>166>xsz=4,ysz=7>xx=pitch_angle_median,y=energy_median,z=data'
         str_element, vatt, 'validmin', 0.0, /add
         str_element, vatt, 'validmax', 1.0e10, /add
         vatt.depend_2 = 'energy_median'
@@ -409,7 +409,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 ;display type here
         IF(vj Eq 'data' Or vj Eq 'eflux') Then Begin
            vatt.scaletyp = 'log' 
-           vatt.display_type = 'plasmagram>THUMBSIZE>166>xsz=4,ysz=7>x,x=pitch_angle_median,y=energy_median,z=data'
+           vatt.display_type = 'plasmagram>THUMBSIZE>166>xsz=4,ysz=7>xx=pitch_angle_median,y=energy_median,z=data'
         Endif Else Begin
            vatt.scaletyp = 'linear'
            vatt.display_type = 'time_series'
