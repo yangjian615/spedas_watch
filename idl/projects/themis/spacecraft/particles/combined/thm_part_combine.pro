@@ -45,7 +45,8 @@
 ;  get_sun_direction: Load sun direction with particle data (for 2D slices)
 ;  extrapolate_esa: Flag to extrapolate from ESA data where no valid SST data exists
 ;                   instead of throwing error.  Not recommended - use with caution!
-;
+;                   
+;  remove_one_count: removes all bins that are less than one count, suggestion from heli hielala(heli@igpp.ucla.edu)
 ;
 ;Outputs:
 ;  combined_dist: Pointer array to combined distribution data.  This is analagous
@@ -91,9 +92,9 @@
 ;  uniformity will be assumed as data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-18 11:38:28 -0700 (Mon, 18 Apr 2016) $
-;$LastChangedRevision: 20847 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-06-22 13:03:52 -0700 (Wed, 22 Jun 2016) $
+;$LastChangedRevision: 21347 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -118,6 +119,7 @@ function thm_part_combine, probe=probe, $
                       interp_to_sst=interp_to_sst,$ ;Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
                       get_sun_direction=get_sun_direction, $
                       extrapolate_esa=extrapolate_esa, $
+                      remove_one_count=remove_one_count,$
                       _extra=_extra
 
     compile_opt idl2
@@ -223,6 +225,11 @@ function thm_part_combine, probe=probe, $
   if ~undefined(set_counts) && is_num(set_counts) then begin
     thm_part_set_counts, sst, set_counts
     thm_part_set_counts, esa, set_counts
+  endif
+
+  if ~undefined(remove_one_count) then begin
+    thm_part_remove, esa, threshold=1., /zero
+    thm_part_remove, sst, threshold=1., /zero
   endif
 
   ;convert to flux and remove unnecessary fields from structures

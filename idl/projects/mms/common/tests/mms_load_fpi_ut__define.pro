@@ -175,6 +175,14 @@ end
 
 ; end of regression tests <------
 
+; check multiple data rates
+;function mms_load_fpi_ut::test_load_datarate_array
+;  mms_load_fpi, probe=3, data_rate=['fast', 'brst'], level='l2'
+;  assert, spd_data_exists('', '2015-12-15', '2015-12-16'), $
+;    'Problem loading FPI data with multiple data rates specified'
+;  return, 1
+;end
+
 function mms_load_fpi_ut::test_load
   mms_load_fpi, probe=4, level='l2', datatype='des-moms'
   assert, spd_data_exists('mms4_des_energyspectr_omni_avg mms4_des_pitchangdist_avg mms4_des_energyspectr_px_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data'
@@ -288,6 +296,8 @@ end
 pro mms_load_fpi_ut::setup
   del_data, '*'
   timespan, '2015-12-15', 1, /day
+  ; create a connection to the SDC (as a team member); ignore the 'FGM' part
+  mms_load_data, login_info='test_auth_info_team.sav', instrument='fgm'
 end
 
 function mms_load_fpi_ut::init, _extra=e
