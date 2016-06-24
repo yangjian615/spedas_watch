@@ -54,9 +54,9 @@
 ; Last changed by O. Le Contel and egrimes; For more informations about SCM data, 
 ;    please contact olivier.lecontel@lpp.polytechnique.fr
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-23 07:36:23 -0700 (Mon, 23 May 2016) $
-; $LastChangedRevision: 21167 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2016-06-23 11:26:26 -0700 (Thu, 23 Jun 2016) $
+; $LastChangedRevision: 21355 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_wavpol_crib.pro $
 ;-
 
@@ -102,7 +102,9 @@ fac_matrix_make, mms_fgm_name,other_dim='xgse',newname = mms_fgm_name+'_fac_mat'
 ;transform Bfield vector (or any other) vector into field aligned coordinates
 tvector_rotate, mms_fgm_name+'_fac_mat', mms_scm_name, newname = mms_scm_name+'_fac'
 
-
+;fill data gaps with regularly spaced(in time) NaNs, wavpol *only* works on regularly gridded data
+;using data with irregular grids will produce incorrect results
+tdegap,mms_scm_name+'_fac',/overwrite
 ;; =======================
 ;; Calculate polarisation
 ;; =======================

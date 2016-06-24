@@ -27,15 +27,15 @@ mvn_save_reduce_timeres,path,init=1,resstr='1sec',verbose=1
 ;mvn_save_reduce_timeres,init=1,/mag,resstr='30sec',verbose=1
 
 path = 'maven/data/sci/mag/l2/sav/$RES/YYYY/MM/mvn_mag_l2_pl_$RES_YYYYMMDD.sav'
-mvn_save_reduce_timeres,path,init=1,/mag,resstr='30sec',verbose=1
+;mvn_save_reduce_timeres,path,init=1,/mag,resstr='30sec',verbose=1
+;20160623:Ali: removed the /mag keyword, as it is intended for l1 only
+mvn_save_reduce_timeres,path,init=1,resstr='30sec',verbose=1
 
 ;path = 'maven/data/sci/mag/l2/sav/$RES/YYYY/MM/mvn_mag_l2_ss_$RES_YYYYMMDD.sav'
-;mvn_save_reduce_timeres,path,init=1,/mag,resstr='30sec',verbose=1
+;mvn_save_reduce_timeres,path,init=1,resstr='30sec',verbose=1
 
-path = 'maven/data/sci/mag/l2/sav/$RES/YYYY/MM/mvn_mag_l2_pc_$RES_YYYYMMDD.sav'
-mvn_save_reduce_timeres,path,init=1,/mag,resstr='30sec',verbose=1
+;path = 'maven/data/sci/mag/l2/sav/$RES/YYYY/MM/mvn_mag_l2_pc_$RES_YYYYMMDD.sav'
+;mvn_save_reduce_timeres,path,init=1,resstr='30sec',verbose=1
 
 
 exit
-
-

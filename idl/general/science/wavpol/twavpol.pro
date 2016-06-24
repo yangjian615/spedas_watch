@@ -80,7 +80,13 @@
 ;	simply the ratio of the minor to major axis transverse to the
 ;       minimum variance direction without sign.
 ;
-;
+;WARNING:
+;  (t)wavpol *only* works on regularly gridded data
+;  using data with irregular grids will produce incorrect results
+;  Calling tdegap on tvarname before using this routine will fill gaps with NANs.
+;  For even better results, fill gaps with NANs using tdegap then interpolate to a regular 
+;  time grid using tinterpol_mxn.pro
+;  
 ;NOTES:
 ;1. Although the input is in the form of a tplot variable, the
 ;output is currently in the form of arrays
@@ -99,9 +105,11 @@
 ;	 frequency where the polarisation approaches
 ;	 100%. Remembercomparing two straight lines yields 100% polarisation.
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-20 14:57:15 -0700 (Fri, 20 May 2016) $
-; $LastChangedRevision: 21153 $
+;
+;
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2016-06-23 11:26:26 -0700 (Thu, 23 Jun 2016) $
+; $LastChangedRevision: 21355 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wavpol/twavpol.pro $
 ;-
 pro twavpol,tvarname,prefix = prefix, error=error, freqline = freqline, timeline = timeline,$

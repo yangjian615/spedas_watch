@@ -106,6 +106,10 @@ thm_load_scm, probe=sc, datatype=mode, level=1, trange=trange
 thscs_mode = 'th'+sc+'_'+mode
 ;thscs_mode = 'th'+sc+'_'+mode+'_gsm'
 
+;fill data gaps with regularly spaced(in time) NaNs, wavpol *only* works on regularly gridded data
+;using data with irregular grids will produce incorrect results
+tdegap,'thc_scf',/overwrite
+
 ;; =======================
 ;; Calculate polarisation
 ;; =======================

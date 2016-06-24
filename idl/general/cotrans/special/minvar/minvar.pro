@@ -24,60 +24,70 @@
 ;Written by: Vassilis Angelopoulos
 ;
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2010-04-13 11:49:40 -0700 (Tue, 13 Apr 2010) $
-; $LastChangedRevision: 7502 $
+; $LastChangedBy: lbwilson $
+; $LastChangedDate: 2016-06-23 12:01:09 -0700 (Thu, 23 Jun 2016) $
+; $LastChangedRevision: 21356 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/minvar/minvar.pro $
 ;
 ;-
 
 pro minvar,Vxyz,eigenVijk,Vrot=Vrot,lambdas2=lambdas2
 
-vec=double(Vxyz)
-npnts=n_elements(Vxyz(0,*))
-vecavg=vec(*,0) & vecavg(*)=!VALUES.F_NAN
-mvamat=make_array(3,3,/double,value=!VALUES.F_NAN)
+vec = double(Vxyz)
+npnts = n_elements(Vxyz[0,*])
+vecavg = vec[*,0] & vecavg[*] = !VALUES.F_NAN
+mvamat = make_array(3,3,/double,value=!VALUES.F_NAN)
 
-for i = 0, 2 do vecavg(i) = total(/nan, Vxyz(i,*))/npnts
+;;  compute component averages
+for i=0L, 2L do vecavg[i] = total(/nan, Vxyz[i,*])/npnts[0]
 
-; build matrix
-for i = 0, 2 do begin
-   mvamat(i,0) = total(/nan, vec(i,*)*vec(0,*))/npnts - vecavg(i)*vecavg(0)
-   mvamat(i,1) = total(/nan, vec(i,*)*vec(1,*))/npnts - vecavg(i)*vecavg(1)
-   mvamat(i,2) = total(/nan, vec(i,*)*vec(2,*))/npnts - vecavg(i)*vecavg(2)
+;;  build matrix
+for i=0L, 2L do begin
+   mvamat[i,0] = total(/nan, vec[i,*]*vec[0,*])/npnts[0] - vecavg[i]*vecavg[0]
+   mvamat[i,1] = total(/nan, vec[i,*]*vec[1,*])/npnts[0] - vecavg[i]*vecavg[1]
+   mvamat[i,2] = total(/nan, vec[i,*]*vec[2,*])/npnts[0] - vecavg[i]*vecavg[2]
 endfor
 
-
+;;  TRIRED Input
+;;    eigenVijk   = [3,3]-Element real symmetric matrix
+;;  TRIRED Output Results
+;;    diagonal    = Returned [3]-Element vector of the diagonal elements of eigenVijk
+;;    offdiagonal = Returned [3]-Element vector of the off-diagonal " " 
 eigenVijk=mvamat
 trired,eigenVijk,diagonal,offdiagonal,/double
+;;  TRIQL Output Results
+;;    diagonal    = Eigenvalues of the input matrix eigenVijk
+;;    offdiagonal = Destroyed by TRIQL.PRO
+;;    eigenVijk   = Three eigenvectors of input matrix eigenVijk
 triql,diagonal,offdiagonal,eigenVijk,/double
 
-diagonal=abs(diagonal)
+;;  Force eigenvalues to be positive
+diagonal  = abs(diagonal)
 
-index=reverse(sort(diagonal)) ; descending order: min var last
-diagonal=diagonal(index)
-eigenVijk=eigenVijk(*,index)
+index     = reverse(sort(diagonal)) ; descending order: min var last
+diagonal  = diagonal[index]
+eigenVijk = eigenVijk[*,index]
 
 ; Rotate intermediate var direction if system is not Right Handed
-YcrosZdotX=eigenVijk(0,0)*(eigenVijk(1,1)*eigenVijk(2,2)-eigenVijk(2,1)*eigenVijk(1,2))
-if (YcrosZdotX lt 0.) then eigenVijk(*,1)=-eigenVijk(*,1)
+YcrosZdotX = eigenVijk[0,0]*(eigenVijk[1,1]*eigenVijk[2,2] - eigenVijk[2,1]*eigenVijk[1,2])
+if (YcrosZdotX lt 0.) then eigenVijk[*,1] = -eigenVijk[*,1]
 
 ; Ensure minvar direction is along +Z (for FAC system)
-if (eigenVijk(2,2) lt 0) then begin
-  eigenVijk(*,2)=-eigenVijk(*,2)
-  eigenVijk(*,1)=-eigenVijk(*,1)
+if (eigenVijk[2,2] lt 0) then begin
+  eigenVijk[*,2] = -eigenVijk[*,2]
+  eigenVijk[*,1] = -eigenVijk[*,1]
 endif
 
-; Rotate data into minvar coords
-Vrot=vec & Vrot(*,*)=!VALUES.F_NAN
+;;  create dummy variable for rotated vectors (output keyword variable)
+Vrot = vec & Vrot[*,*] = !VALUES.F_NAN
+;;  Rotate data into minvar coords
+Vrot(0,*) = eigenVijk[0,0]*vec[0,*] + eigenVijk[1,0]*vec[1,*] + eigenVijk[2,0]*vec[2,*]
+Vrot(1,*) = eigenVijk[0,1]*vec[0,*] + eigenVijk[1,1]*vec[1,*] + eigenVijk[2,1]*vec[2,*]
+Vrot(2,*) = eigenVijk[0,2]*vec[0,*] + eigenVijk[1,2]*vec[1,*] + eigenVijk[2,2]*vec[2,*]
 
-Vrot(0,*)=eigenVijk(0,0)*vec(0,*) + eigenVijk(1,0)*vec(1,*) + eigenVijk(2,0)*vec(2,*)
-Vrot(1,*)=eigenVijk(0,1)*vec(0,*) + eigenVijk(1,1)*vec(1,*) + eigenVijk(2,1)*vec(2,*)
-Vrot(2,*)=eigenVijk(0,2)*vec(0,*) + eigenVijk(1,2)*vec(1,*) + eigenVijk(2,2)*vec(2,*)
-
-
+;;  Define output keyword variable
 lambdas2=diagonal
 
+;;  Return to user
 return
-
 end
