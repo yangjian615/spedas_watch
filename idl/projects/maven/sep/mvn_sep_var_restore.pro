@@ -1,4 +1,4 @@
-pro mvn_sep_var_restore,pathname,trange=trange,verbose=verbose,download_only=download_only,prereq_info=prereq_temp,filename=files,no_finish=no_finish
+pro mvn_sep_var_restore,pathname,trange=trange,verbose=verbose,download_only=download_only,prereq_info=prereq_temp,filename=files,no_finish=no_finish,lowres=lowres
 
 @mvn_sep_handler_commonblock.pro
 @mvn_pfdpu_handler_commonblock.pro
@@ -13,6 +13,7 @@ if ~keyword_set(files) then begin
   ndays=1
   if not keyword_set(pathname) then pathname =  'maven/data/sci/sep/l1/sav/YYYY/MM/mvn_sep_l1_YYYYMMDD_$NDAY.sav'
   pn = str_sub(pathname, '$NDAY', strtrim(ndays,2) +'day')
+  if keyword_set(lowres) then pn='maven/data/sci/sep/l1/sav_5min/YYYY/MM/mvn_sep_l1_YYYYMMDD_5min.sav'
   files = mvn_pfp_file_retrieve(pn,/daily,trange=trange,source=source,verbose=verbose,/valid_only,no_update=0,last_version=0)
 endif
 

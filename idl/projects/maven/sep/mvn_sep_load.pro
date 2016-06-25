@@ -1,13 +1,14 @@
-
+; the keyword 'eflux' loads tplot variables for energy flux also.
 
 pro mvn_sep_load,pathnames=pathnames,trange=trange,files=files,RT=RT,download_only=download_only, $
         mag=mag,pfdpu=pfdpu,sep=sep,lpw=lpw,sta=sta,format=format,use_cache=use_cache,  $
         source=source,verbose=verbose,L1=L1,L0=L0,L2=L2,ancillary=ancillary, anc_structure = anc_structure,$
-                 pad = pad
+                 pad = pad, eflux = eflux
         
       @mvn_sep_handler_commonblock.pro
 ;common mvn_sep_load_com, last_files
         
+    
 ; loading the ancillary data.
 if keyword_set(ancillary) then begin
   cdf_format = 'maven/data/sci/sep/anc/cdf/YYYY/MM/mvn_sep_l2_anc_YYYYMMDD_v0?_r??.cdf'
@@ -68,9 +69,8 @@ if keyword_set(ancillary) then begin
         options, 'phi_1R', 'labels', '1R'
         options, 'phi_2F', 'labels', '2F'
         options, 'phi_2R', 'labels', '2R'
-        store_data, 'MSO_phi', data = ['phi_1F','phi_1R','phi_2F','phi_2R', 'IMF_phi']
-        store_data, 'MSO_phi', data = ['phi_1F','phi_1R','phi_2F','phi_2R', 'B_phi']
-        store_data, 'MSO_theta', data = ['theta_1F','theta_1R','theta_2F','theta_2R',  'B_theta']
+        store_data, 'MSO_phi', data = ['phi_1F','phi_1R','phi_2F','phi_2R']
+        store_data, 'MSO_theta', data = ['theta_1F','theta_1R','theta_2F','theta_2R']
         ylim, 'MSO_phi', 0.0, 360.0
         options, 'MSO_phi','yticks', 4
         options, 'MSO_phi', 'yminor', 9
@@ -98,7 +98,17 @@ if keyword_set(ancillary) then begin
         ylim, 'Nadir_angles', 0.0, 180.0
         options, 'Nadir_angles','yticks', 4
         options, 'Nadir_angles', 'yminor', 3
-        options, ' Nadir_angles', 'ystyle',1        
+        options, ' Nadir_angles', 'ystyle',1      
+
+                                ; get spacecraft altitude,, in
+                                ; case the user hasn't aalready
+                                ; loaded it
+        get_data, 'mvn_pos_mso', data = MSO
+        altitude = SQRT(total (MSO.y^2, 2))-3390.0
+        store_data, 'Altitude_geocentric', data = {x:MSO.x,y: altitude}
+        ylim,'Altitude_geocentric', 0,7000,0
+        options, 'Altitude_geocentric','ytitle', 'Alt, km'
+
      endif
 
 
@@ -144,15 +154,83 @@ endif
 
 
 if format eq 'L2_CDF' then begin
-  for sepnum = 1,2 do begin
-    sepstr = 's'+strtrim(sepnum,2)
-    data_type = sepstr+'-cal-svy-full'
-    L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v0?_r??.cdf'
+   for sepnum = 1,2 do begin
+      sepstr = 's'+strtrim(sepnum,2)
+      data_type = sepstr+'-cal-svy-full'
+      L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v0?_r??.cdf'
 ;    if getenv('USER') eq 'davin' then L2_fileformat =  'maven/data/sci/sep/l2_v04/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_v04_r??.cdf'    
-    filenames = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange,verbose=verbose,/valid_only)
-    if ~keyword_set(download_only) then   cdf2tplot,filenames    ,prefix = 'MVN_SEP'+strtrim(sepnum,2)+''
-  endfor
-  return
+      filenames = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange,verbose=verbose,/valid_only)
+      if ~keyword_set(download_only) then   cdf2tplot,filenames    ,prefix = 'MVN_SEP'+strtrim(sepnum,2)+''
+      
+   endfor
+
+                                ; set the plots to spectrum with logarithmic Y and Z (color) axes
+   options,'MVN_SEP*flux', 'spec', 1
+   options,'MVN_SEP*flux', 'ylog', 1
+   options,'MVN_SEP*flux', 'zlog', 1
+
+   if keyword_set (eflux) then begin
+; also load Energy flux
+      get_data,  'MVN_SEP1f_ion_flux', data = ion_1F
+      get_data,  'MVN_SEP2f_ion_flux', data = ion_2F
+      get_data,  'MVN_SEP1r_ion_flux', data = ion_1R
+      get_data,  'MVN_SEP2r_ion_flux', data = ion_2R
+      ion_energies = mean (ion_1f.v, dim = 1,/nan)
+      
+; make tplot variables for ion energy flux
+      store_data,'MVN_SEP1f_ion_eflux', data = {x: ion_1f.x, y: ion_1f.y*ion_1f.v, v:ion_energies}
+      store_data,'MVN_SEP1r_ion_eflux', data = {x: ion_1r.x, y: ion_1r.y*ion_1r.v, v:ion_energies}
+      store_data,'MVN_SEP2f_ion_eflux', data = {x: ion_2f.x, y: ion_2f.y*ion_2f.v, v:ion_energies}
+      store_data,'MVN_SEP2r_ion_eflux', data = {x: ion_2r.x, y: ion_2r.y*ion_2r.v, v:ion_energies}
+
+; get electron flux data
+      get_data,  'MVN_SEP1f_elec_flux', data = electron_1F
+      get_data,  'MVN_SEP2f_elec_flux', data = electron_2F
+      get_data,  'MVN_SEP1r_elec_flux', data = electron_1R
+      get_data,  'MVN_SEP2r_elec_flux', data = electron_2R
+
+; make tplot variables for electron energy flux
+      electron_energies = reform (electron_1f.v [0,*])
+      store_data,'MVN_SEP1f_electron_eflux', $
+                 data = {x: electron_1f.x, y: electron_1f.y*electron_1f.v, v:electron_energies}
+      store_data,'MVN_SEP1r_electron_eflux', $
+                 data = {x: electron_1r.x, y: electron_1r.y*electron_1r.v, v:electron_energies}
+      store_data,'MVN_SEP2f_electron_eflux', $
+                 data = {x: electron_2f.x, y: electron_2f.y*electron_2f.v, v:electron_energies}
+      store_data,'MVN_SEP2r_electron_eflux', $
+                 data = {x: electron_2r.x, y: electron_2r.y*electron_2r.v, v:electron_energies}
+      options,'MVN_SEP*flux', 'spec', 1
+      options,'MVN_SEP*flux', 'ylog', 1
+      options,'MVN_SEP*flux', 'zlog', 1
+      options,'MVN_SEP*eflux', 'ztitle', 'Diff Eflux, !c keV/cm2/s/sr/keV'
+      zlim, 'MVN_SEP*_eflux', 1e1,2e5, 1
+      
+   endif
+
+; make y-axis titles
+   options,'MVN_SEP1f_ion_*flux','ytitle', '1F ions, !C keV'
+   options,'MVN_SEP2f_ion_*flux','ytitle', '2F ions, !C keV'
+   options,'MVN_SEP1r_ion_*flux','ytitle', '1R ions, !C keV'
+   options,'MVN_SEP2r_ion_*flux','ytitle', '2R ions, !C keV'
+   options,'MVN_SEP1f_elec*flux','ytitle', '1F elec,!C keV'
+   options,'MVN_SEP2f_elec*flux','ytitle', '2F elec,!C keV'
+   options,'MVN_SEP1r_elec*flux','ytitle', '1R elec,!C keV'
+   options,'MVN_SEP2r_elec*flux','ytitle', '2R elec,!C keV'
+
+; z-axis title & limits
+   options,'MVN_SEP*_flux', 'ztitle', 'Diff Flux, !c #/cm2/s/sr/keV'
+   ylim, 'MVN_SEP*ion_*flux', 7,1e4, 1
+   ylim, 'MVN_SEP*elec_*flux', 10,3e2, 1
+
+; make a tplot variable for both attenuators
+   store_data, 'Attenuator', data = ['MVN_SEP1attenuator_state', 'MVN_SEP2attenuator_state']
+   options, 'Attenuator', 'colors',[70, 221]
+   ylim, 'Attenuator', 0.5, 2.5
+   options, 'Attenuator', 'labels',['SEP1', 'SEP2']
+   options, 'Attenuator', 'labflag',1
+   options, 'Attenuator', 'panel_size', 0.5
+
+   return
 endif
 
 
@@ -161,10 +239,10 @@ endif
 files = mvn_pfp_file_retrieve(/L0,/daily,trange=trange,source=source,verbose=verbose,RT=RT,files=files,pathnames)
 
 if keyword_set(use_cache) and keyword_set(source_filenames) then begin
-  if array_equal(files,source_filenames) then begin
-    dprint,dlevel=2,'Using cached common block'
-    return
-  endif
+   if array_equal(files,source_filenames) then begin
+      dprint,dlevel=2,'Using cached common block'
+      return
+   endif
 endif
 
 
