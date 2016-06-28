@@ -78,13 +78,18 @@
 ;   NEGPOT:    Calculate negative potentials with mvn_swe_sc_negpot.
 ;              Default = 1 (yes).
 ;
+;   STA_POT:   Use STATIC-derived potentials to fill in gaps.  This is 
+;              especially useful in the high-altitude shadow region.
+;              Assumes that you have calculated STATIC potentials.
+;              (See mvn_sta_scpot_load.pro)
+;
 ;OUTPUTS:
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-11 17:22:10 -0700 (Sat, 11 Jun 2016) $
-; $LastChangedRevision: 21311 $
+; $LastChangedDate: 2016-06-27 10:39:22 -0700 (Mon, 27 Jun 2016) $
+; $LastChangedRevision: 21370 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -92,7 +97,7 @@
 pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
                     pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
                     mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr, minflux=minflux, $
-                    negpot=negpot
+                    negpot=negpot, sta_pot=sta_pot
 
   compile_opt idl2
   
@@ -395,11 +400,54 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
   if keyword_set(negpot) then begin
     mvn_swe_sc_negpot
     pot_pan = 'mvn_swe_pot_all'
-    store_data,pot_pan,data=['mvn_swe_sc_pot','neg_pot']
+    store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,2)}
+    options,'swe_pot_lab','labels',['swe-','swe+']
+    options,'swe_pot_lab','colors',[6,!p.color]
+    options,'swe_pot_lab','labflag',1
+    
+    store_data,pot_pan,data=['swe_pot_lab','mvn_swe_sc_pot','neg_pot']
     options,'neg_pot','constant',!values.f_nan
     options,'neg_pot','color',6
     options,pot_pan,'ytitle','S/C Potential!cVolts'
     options,pot_pan,'constant',[-1,3]
+  endif
+
+  if keyword_set(sta_pot) then begin
+    get_data,'mvn_sta_c6_scpot',data=stapot,index=i
+    if (i gt 0) then begin
+      indx = where(stapot.y ge 0., count)
+      if (count gt 0L) then stapot.y[indx] = badval
+      nndx = nn(stapot.x, t)
+      if (finite(badval)) then indx = where(phi eq badval, count) $
+                          else indx = where(~finite(phi), count)
+      if (count gt 0L) then begin
+        phi[indx] = stapot.y[nndx[indx]]
+        swe_sc_pot.potential = phi
+        mvn_swe_engy.sc_pot = phi
+
+        sphi = replicate(!values.f_nan, n_elements(phi))
+        sphi[indx] = phi[indx]
+        store_data,'sta_pot',data={x:t, y:sphi}
+        options,'sta_pot','color',4
+
+        get_data,'mvn_swe_pot_all',data=tpot,index=i
+        if (i gt 0) then begin
+          tpot = [tpot,'sta_pot']
+          store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,3)}
+          options,'swe_pot_lab','labels',['sta','swe-','swe+']
+          options,'swe_pot_lab','colors',[4,6,!p.color]
+          options,'swe_pot_lab','labflag',1
+        endif else begin
+          tpot = ['mvn_swe_sc_pot','sta_pot']
+          pot_pan = 'mvn_swe_pot_all'
+          store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,2)}
+          options,'swe_pot_lab','labels',['sta','swe+']
+          options,'swe_pot_lab','colors',[4,!p.color]
+          options,'swe_pot_lab','labflag',1
+        endelse
+        store_data,'mvn_swe_pot_all',data=tpot
+      endif
+    endif else print,"Can't find tplot variable: mvn_sta_c6_scpot"
   endif
 
   if keyword_set(overlay) then begin

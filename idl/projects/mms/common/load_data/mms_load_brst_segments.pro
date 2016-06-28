@@ -7,8 +7,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-18 08:38:23 -0700 (Wed, 18 May 2016) $
-;$LastChangedRevision: 21113 $
+;$LastChangedDate: 2016-06-27 15:02:36 -0700 (Mon, 27 Jun 2016) $
+;$LastChangedRevision: 21375 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_brst_segments.pro $
 ;-
 
@@ -48,8 +48,8 @@ pro mms_load_brst_segments, trange=trange, suffix=suffix
     unix_start = mms_tai2unix(tai_start)
     unix_end = mms_tai2unix(tai_end)
     
-    times_in_range = where(unix_start ge tr[0] and unix_end le tr[1], t_count)
-    
+    times_in_range = where(unix_start ge tr[0]-180. and unix_end le tr[1]+180., t_count)
+
     if t_count ne 0 then begin
       unix_start = unix_start[times_in_range]
       unix_end = unix_end[times_in_range]

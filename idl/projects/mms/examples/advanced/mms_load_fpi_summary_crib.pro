@@ -23,8 +23,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 14:49:33 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21204 $
+; $LastChangedDate: 2016-06-27 12:14:56 -0700 (Mon, 27 Jun 2016) $
+; $LastChangedRevision: 21371 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
 ;-
 
@@ -125,9 +125,9 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0], eph_variable+'numberdensity']
 
     ; Data quality bar
-    quality_bar = mms_fpi_quality_bar(probes[i], data_rate)
+    quality_bar = obsstr+'dis_errorflags_'+data_rate+'_moms_flagbars_mini'
     
-    ; combine bent pipe B DSC into a single tplot variable
+    ; combine B into a single tplot variable
     prefix = 'mms'+strcompress(string(probes[i]), /rem)
     split_vec, prefix+b_variable
     
@@ -205,7 +205,7 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     ; replace gaps with NaNs so tplot doesn't interpolate on the X axis
     tdegap, electron_espec, /overwrite
     tdegap, electron_espec_omni, /overwrite
-    panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', obsstr+'des_errorflags_'+data_rate+'_moms_flagbars', $
             prefix+'_fgm_dmpa_srvy_clipped', electron_espec, electron_espec_omni]
    ; window_caption="MMS FPI Electron energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
@@ -228,7 +228,7 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     tdegap, ion_espec, /overwrite
     tdegap, ion_espec_omni, /overwrite
     
-    panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', obsstr+'dis_errorflags_'+data_rate+'_moms_flagbars', $
              prefix+'_fgm_dmpa_srvy_clipped',ion_espec, ion_espec_omni]
    ; window_caption="MMS FPI Ion energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
@@ -250,7 +250,7 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     tdegap, e_pad, /overwrite
     tdegap, e_pad_allE, /overwrite
     
-    panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', obsstr+'des_errorflags_'+data_rate+'_moms_flagbars', $
              prefix+'_fgm_dmpa_srvy_clipped',e_pad, e_pad_allE]
     window_caption="MMS FPI Electron PAD"
     if ~postscript then window, iw, xsize=width, ysize=height
@@ -264,10 +264,15 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
    ; fpi_moments = [prefix+'_fgm_dmpa_srvy_clipped', [obsstr+'des_numberdensity', obsstr+'dis_numberdensity'], obsstr+'ebulkv_dbcs',  $
    ;                obsstr+'ibulkv_dbcs', obsstr+'temp']
    ; fpi_espects = [obsstr+'dis_EnergySpectr_omni_avg', obsstr+'des_EnergySpectr_omni_avg']
-    fpi_moments = [prefix+'_fgm_dmpa_srvy_clipped', [obsstr+'des_numberdensity', obsstr+'dis_numberdensity']+'_dbcs_'+data_rate, obsstr+'ebulkv_dbcs',  $
+    fpi_moments = [prefix+'_fgm_dmpa_srvy_clipped', $
+                   obsstr+'des_errorflags_'+data_rate+'_moms_flagbars_mini', $
+                   obsstr+'des_numberdensity'+'_dbcs_'+data_rate, $
+                   obsstr+'dis_errorflags_'+data_rate+'_moms_flagbars_mini', $
+                   obsstr+'dis_numberdensity'+'_dbcs_'+data_rate, $
+                   obsstr+'ebulkv_dbcs',  $
                    obsstr+'ibulkv_dbcs', obsstr+'temp']
     fpi_espects = [obsstr+'dis_energyspectr_omni_avg', obsstr+'des_energyspectr_omni_avg']
-    panels=['mms_bss_burst', 'mms_bss_fast', quality_bar, $
+    panels=['mms_bss_burst', 'mms_bss_fast', $
             fpi_moments, obsstr+'des_pitchangdist_avg', fpi_espects]                    
     window_caption="MMS FPI Observatory Summary:"+"MMS"+STRING(probes[i],FORMAT='(I1)')
     if ~postscript then window, iw, xsize=width, ysize=height

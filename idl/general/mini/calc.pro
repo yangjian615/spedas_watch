@@ -103,8 +103,8 @@
 ;       4. Implement control statements
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-17 20:51:36 -0700 (Thu, 17 Sep 2015) $
-; $LastChangedRevision: 18834 $
+; $LastChangedDate: 2016-06-27 14:12:31 -0700 (Mon, 27 Jun 2016) $
+; $LastChangedRevision: 21373 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/calc.pro $
 ;-
 
@@ -260,7 +260,7 @@ pro calc,s,error=error,function_list=function_list,operator_list=operator_list,v
   endif
 
   if is_endline_type(token_list[0]) then begin
-    ptr_free,!mini_globals.extrahe
+    ptr_free,!mini_globals.extra
     ptr_free,!mini_globals.interpolate
     return
   endif

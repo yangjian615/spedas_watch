@@ -57,8 +57,8 @@
 ;     June 2016: minor updates by egrimes
 ;     
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-10 07:22:16 -0700 (Fri, 10 Jun 2016) $
-; $LastChangedRevision: 21300 $
+; $LastChangedDate: 2016-06-27 12:15:33 -0700 (Mon, 27 Jun 2016) $
+; $LastChangedRevision: 21372 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_make_errorflagbars.pro $
 ;-
 
@@ -101,10 +101,10 @@ PRO mms_fpi_make_errorflagbars,tname
     options,tname+'_flagbars_others',colors=[40,3,255,5,2,1,4,6],xstyle=4,ystyle=4,ticklen=0,thick=3,labflag=-1,psym=-6,symsize=0.15,datagap=gap
     store_data,tname+'_flagbars',data=[tname+'_flagbars_main',tname+'_flagbars_others']
     ylim,tname+'_flagbars',0.1,0.9,0
-    options,tname+'_flagbars',xstyle=4,ystyle=4,ticklen=0,panel_size=0.5
+    options,tname+'_flagbars',xstyle=4,ystyle=4,ticklen=0,panel_size=0.5,labsize=1
     store_data,tname+'_flagbars_mini',data={x:d.x,y:flagline_all}
     ylim,tname+'_flagbars_mini',0.9,1.1,0
-    options,tname+'_flagbars_mini',colors=0,labels='Flagged',xstyle=4,ystyle=4,ticklen=0,thick=4,panel_size=0.1,labflag=-1,psym=-6,symsize=0.2,datagap=gap
+    options,tname+'_flagbars_mini',colors=0,labels='Flagged',xstyle=4,ystyle=4,ticklen=0,thick=4,panel_size=0.1,labflag=-1,psym=-6,symsize=0.2,datagap=gap,labsize=1
 
     ; kludge for the titles to show up on the y axes
     options, tname+'_flagbars_full', axis={yaxis: 0, ytitle: inst+'!C'+rate, yticks: 1, yminor: 1, ystyle: 0, yticklayout: 1, ytickv: [-1, 2]}

@@ -114,9 +114,9 @@
 ;        TWOPOT:       Allow input a two-element array to allow shifting different
 ;                      potentials on parallel and anti-parallel directions
 ;        
-; $LastChangedBy: xussui_lap $
-; $LastChangedDate: 2016-05-12 16:55:57 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21068 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-06-27 10:37:27 -0700 (Mon, 27 Jun 2016) $
+; $LastChangedRevision: 21368 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -141,7 +141,13 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if not keyword_set(zrange) then zrange = 0
   if keyword_set(ddd) then dflg = 1 else dflg = 0
-  if keyword_set(resample) then rflg = 1 else rflg = 0
+  if keyword_set(resample) then begin
+    rflg = 1
+    if (resample gt 1) then dotwo = 0 else dotwo = 1
+  endif else begin
+    rflg = 0
+    dotwo = 1
+  endelse
   if keyword_set(hires) then hflg = 1 else hflg = 0
   if (size(fbdata, /type) eq 0) then fbdata = 'mvn_B_full'
   if keyword_set(adiabatic) then begin
@@ -322,6 +328,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if keyword_set(zrange) then str_element, limits, 'zrange', zrange, /add
 
 ; Select the first time, then get the PAD spectrum closest that time
+
   if size(pad, /type) ne 8 then begin
      print,'Use button 1 to select time; button 3 to quit.'
      
@@ -344,23 +351,18 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif
   
   if keyword_set(dir) then begin
-    if (aflg) then begin
-      str_element, mvn_swe_pad_arc, 'time', ptime, success=ok
-      if (not ok) then str_element, a3, 'time', ptime, success=ok
-    endif else begin
-      str_element, mvn_swe_pad, 'time', ptime, success=ok
-      if (not ok) then str_element, a2, 'time', ptime, success=ok
-    endelse
-    if (not ok) then begin
-      print,"No PAD data!"
-      wdelete,Pwin                         ; Don't keep empty windows.
-      if (sflg) then wdelete,Nwin
-      if (dospec) then wdelete,Ewin
-      if (rflg or hflg) then wdelete,Rwin
-      wset,Twin
-      return
+    get_data,'mvn_B_1sec',index=i
+    if (i eq 0) then mvn_mag_load
+
+    get_data,'mvn_B_1sec_iau_mars',data=mag_pc,index=i
+    if (i eq 0) then begin
+      mvn_mag_geom
+      get_data,'mvn_B_1sec_iau_mars',data=mag_pc,index=i
+      if (i eq 0) then print,"Can't get MAG data!"
     endif
-    get_mvn_eph, ptime, pos, verbose=-1
+
+    get_data,'mvn_B_1sec_maven_mso',data=mag_ss,index=j
+    if ((i eq 0) or (j eq 0)) then dir = 0
   endif
 
   ok = 1
@@ -381,12 +383,25 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     endif
     
     if (size(pad,/type) eq 8) then begin
+
+      if keyword_set(dir) then begin
+        dt = min(abs(mag_ss.x - pad.time),i)
+        B_mso = reform(mag_ss.y[i,*])
+
+        dt = min(abs(mag_pc.x - pad.time),i)
+        B_geo = reform(mag_pc.y[i,*])
+        B_azim  = mag_pc.azim[i]
+        B_elev  = mag_pc.elev[i]
+      endif
+
+      if (size(swe_sc_pot, /type) eq 8) then begin
+          pot = swe_sc_pot[nn(swe_sc_pot.time, pad.time)].potential
+          if (~finite(pot)) then pot = 0.
+      endif else pot = 0.
+      if (finite(scp)) then pot = scp  ; override with user-supplied value
+      pad.sc_pot = pot
   
       if (spflg) then begin
-        if (finite(scp)) then pot = scp else begin
-          pot = swe_sc_pot[nn(swe_sc_pot.time, pad.time)].potential
-          if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
-        endelse
         mvn_swe_convert_units, pad, 'df'
         pad.energy -= pot
         mvn_swe_convert_units, pad, units
@@ -471,10 +486,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
       !p.multi = [0,1,2]
       specplot,x,y1,z1,limits=limits
-      if (dopot and not spflg) then begin
-        if (finite(scp)) then pot = scp $
-                         else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
-        oplot,[pot,pot],[0,180],line=2
+      if (dopot) then begin
+        if (spflg) then oplot,[-pot,-pot],[0,180],line=2,color=6 $
+                   else oplot,[pot,pot],[0,180],line=2
       endif
       if (plot_pa_lims) then begin
         oplot,[3,5000],[ylo1[63,1],ylo1[63,1]],line=2
@@ -482,10 +496,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       endif
       limits.title = ''
       specplot,x,y2,z2,limits=limits
-      if (dopot and not spflg) then begin
-        if (finite(scp)) then pot = scp $
-                         else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
-        oplot,[pot,pot],[0,180],line=2
+      if (dopot) then begin
+        if (spflg) then oplot,[-pot,-pot],[0,180],line=2,color=6 $
+                   else oplot,[pot,pot],[0,180],line=2
       endif
       if (plot_pa_lims) then begin
         oplot,[3,5000],[ylo2[63,1],ylo2[63,1]],line=2
@@ -507,17 +520,16 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             rtime = minmax(trange)
             if rtime[0] eq rtime[1] then rtime = rtime[0]
             mvn_swe_pad_resample, rtime, snap=0, tplot=0, result=rpad, silent=3, hires=hflg, $
-                                  fbdata=fbdata, sc_pot=spflg
+                                  fbdata=fbdata, sc_pot=spflg, archive=aflg
             arpad = rpad.avg
             if size(arpad, /n_dimension) eq 3 then arpad = average(arpad, 3)
             if (nflg) then arpad /= rebin(average(arpad, 2, /nan), n_elements(arpad[*, 0]), n_elements(arpad[0, *]), /sample)
             str_element, rlim, 'title', time_string(mean(rpad.time)) + ' (Resampled)', /add_replace
             specplot, average(pad.energy, 2), rpad[0].xax, arpad, lim=rlim
 
-            if (dopot and not spflg) then begin
-              if (finite(scp)) then pot = scp $
-                               else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
-              oplot,[pot,pot],[0,180],line=2
+            if (dopot) then begin
+              if (spflg) then oplot,[-pot,-pot],[0,180],line=2,color=6 $
+                         else oplot,[pot,pot],[0,180],line=2
             endif
 
             if (uflg) then begin
@@ -527,10 +539,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                str_element, rlim, 'zrange', [1.d-2, 1.], /add_replace
                str_element, rlim, 'title', 'Resampled PAD Relative Uncertainty', /add_replace
                specplot, average(pad.energy, 2), rpad[0].xax, urpad/arpad, lim=rlim
-               if (dopot and not spflg) then begin
-                 if (finite(scp)) then pot = scp $
-                                  else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
-                 oplot,[pot,pot],[0,180],line=2
+               if (dopot) then begin
+                 if (spflg) then oplot,[-pot,-pot],[0,180],line=2,color=6 $
+                            else oplot,[pot,pot],[0,180],line=2
                endif
             endif 
          endif 
@@ -616,88 +627,38 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         endif
 
         IF keyword_set(dir) THEN BEGIN
-           et = time_ephemeris(pad.time)
-           objects = ['MARS', 'MAVEN_SPACECRAFT']
-           valid = spice_valid_times(et, object=objects)
-           IF valid EQ 0B THEN BEGIN
-              dprint, 'SPICE/kernels are invalid.'
-              if (kflg) then begin
-                 wdelete, Pwin
-                 if (sflg) then wdelete, Nwin
-                 if (dflg) then wdelete, Cwin
-                 if (dospec) then wdelete, Ewin
-                 if (rflg or hflg) then wdelete, Rwin
-              endif
-              
-              if ~(psflg) then wset, Twin
-              RETURN
-           ENDIF
-           undefine, et, objects
+           
+          IF B_mso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
+          IF B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
+          IF -B_mso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
+          IF -B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
+           
+          bperp = [B_mso[1], B_mso[2], -B_geo[0], -B_geo[1]]
+          FOR j=0, 3 DO $
+            IF bperp[j] GT 0. THEN append_array, dircol, 6 ELSE append_array, dircol, 2
+          FOR j=0, 3 DO $
+            XYOUTS, 17.5+45.*j, 15., dirname[j], color=!p.color, charsize=1.3, /data
 
-           IF pad.time LT t_mtx[2] THEN fswe = 'MAVEN_SWEA_STOW' $
-           ELSE fswe = 'MAVEN_SWEA'
-           bmso = REFORM(spice_vector_rotate(pad.magf, pad.time, fswe, 'MAVEN_MSO', verbose=-1))
-           bmso /= SQRT(TOTAL(bmso*bmso))
-           bgeo = REFORM(spice_vector_rotate(pad.magf, pad.time, fswe, 'IAU_MARS', verbose=-1))
-           bgeo /= SQRT(TOTAL(bgeo*bgeo))
-           
-           ;get_mvn_eph, pad.time, pos, /silent
-           idx = nn(pos.time, pad.time)
-           lat = pos[idx].lat
-           lon = pos[idx].elon
-                      
-           mtx = DBLARR(3, 3)
-           mtx[0, 0] = -SIN(lon)
-           mtx[1, 0] =  COS(lon)
-           mtx[2, 0] =  0.d0
-           mtx[0, 1] = -COS(lon) * SIN(lat)
-           mtx[1, 1] = -SIN(lon) * SIN(lat)
-           mtx[2, 1] =  COS(lat)
-           mtx[0, 2] =  COS(lon) * COS(lat)
-           mtx[1, 2] =  SIN(lon) * COS(lat)
-           mtx[2, 2] =  SIN(lat)
-           B_lg = TRANSPOSE(mtx ## TRANSPOSE(bgeo))
-           
-           B_azim = atan(B_lg[1],B_lg[0])*!radeg
-           B_elev = asin(B_lg[2])*!radeg
-           
-           IF bmso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
-           IF B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
-           IF -bmso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
-           IF -B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
-           
-           bperp = [bmso[1], bmso[2], -bgeo[0], -bgeo[1]]
-           FOR j=0, 3 DO $
-              IF bperp[j] GT 0. THEN append_array, dircol, 6 ELSE append_array, dircol, 2
-           FOR j=0, 3 DO $
-              XYOUTS, 17.5+45.*j, 15., dirname[j], color=!p.color, charsize=1.3, /data
-
-           undefine, dircol
-           PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.285892, 0.874722, 0.39075, 1.], $
+          PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.285892, 0.874722, 0.39075, 1.], $
                  /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
-           OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
-           angle = ATAN(bmso[2], bmso[1])
-           IF bmso[0] GT 0. THEN dircol = 6 ELSE dircol = 2
-           ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
-           XYOUTS, 0., -1.3, 'MSO', /data, alignment=0.5
-           XYOUTS, 0., 0.5, 'Z', /data, alignment=0.5
-           XYOUTS, 0.6, 0., 'Y', /data, alignment=0.5
+          OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
+          angle = ATAN(B_mso[2], B_mso[1])
+          IF B_mso[0] GT 0. THEN dircol = 6 ELSE dircol = 2
+          ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
+          XYOUTS, 0., -1.3, 'MSO', /data, alignment=0.5
+          XYOUTS, 0., 0.5, 'Z', /data, alignment=0.5
+          XYOUTS, 0.6, 0., 'Y', /data, alignment=0.5
 
-           undefine, dircol
-           PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.708061, 0.874722, 0.812919, 1.], $
+          PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.708061, 0.874722, 0.812919, 1.], $
                  /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
-           OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
-           angle = ATAN(-bgeo[1], -bgeo[0])
-           IF -bgeo[2] GT 0. THEN dircol = 6 ELSE dircol = 2
-           ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
-           XYOUTS, 0., -1.3, 'GEO', /data, alignment=0.5
-           XYOUTS, 0., 0.5, 'N', /data, alignment=0.5
-           XYOUTS, 0.6, 0., 'E', /data, alignment=0.5
-
-           undefine, bmso, bgeo, bperp, angle
-           undefine, idx, lat, lon, mtx
-           undefine, dirname, dircol
-        ENDIF  
+          OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
+          angle = ATAN(-B_geo[1], -B_geo[0])
+          IF -B_geo[2] GT 0. THEN dircol = 6 ELSE dircol = 2
+          ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
+          XYOUTS, 0., -1.3, 'GEO', /data, alignment=0.5
+          XYOUTS, 0., 0.5, 'N', /data, alignment=0.5
+          XYOUTS, 0.6, 0., 'E', /data, alignment=0.5
+        ENDIF
 
         if (dflg) then begin
           ddd = mvn_swe_get3d(trange,archive=aflg,all=doall,/sum,units=units)
@@ -755,29 +716,31 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         
         plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
           xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-          charsize=1.4
+          charsize=1.4,xmargin=[10,0]
         oplot, x1, Fp, psym=10, color=6
         oplot, x2, Fm, psym=10, color=2
         if (domid) then oplot, x, Fz, psym=10, color=4
-        if (dopot and not spflg) then begin
-          if (finite(scp)) then pot = scp $
-                           else if (finite(pad.sc_pot)) then pot = pad.sc_pot else pot = 0.
-          oplot,[pot,pot],drange,line=2
+        if (dopot) then begin
+          if (spflg) then oplot,[-pot,-pot],drange,line=2,color=6 $
+                     else oplot,[pot,pot],drange,line=2
         endif
         if (pflg) then begin
           oplot,[23.,23.],drange,line=2,color=1
           oplot,[27.,27.],drange,line=2,color=1
+          oplot,[60.,60.],drange,line=2,color=1
         endif
 
-        xs = 0.71
+        xs = 0.68
         ys = 0.90
         dys = 0.03
         pa_min = round(swidth*!radeg)
         pa_max = 180 - pa_min
         xyouts,xs,ys,string(pa_min, format='("  0 - ",i2)'),charsize=1.2,/norm,color=6
         ys -= dys
-        xyouts,xs,ys,string(pa_min, pa_max, format='(i3," - ",i3)'),charsize=1.2,/norm,color=4
-        ys -= dys
+        if (domid) then begin
+          xyouts,xs,ys,string(pa_min, pa_max, format='(i3," - ",i3)'),charsize=1.2,/norm,color=4
+          ys -= dys
+        endif
         xyouts,xs,ys,string(pa_max, format='(i3," - 180")'),charsize=1.2,/norm,color=2
         ys -= dys
 
@@ -786,6 +749,11 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
           ys -= dys
           xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+          ys -= dys
+        endif
+        
+        if (dopot) then begin
+          xyouts,xs,ys,string(pot, format='("SCP = ",f5.1)'),charsize=1.2,/norm
           ys -= dys
         endif
         
@@ -811,7 +779,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         ;first half of the PAD
         plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-            charsize=1.4
+            charsize=1.4,xmargin=[10,0]
                     
         xs = 0.36
         ys = 0.90
@@ -836,6 +804,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         if (pflg) then begin
             oplot,[23.,23.],drange,line=2,color=1
             oplot,[27.,27.],drange,line=2,color=1
+            oplot,[60.,60.],drange,line=2,color=1
         endif
 
         if (doalt) then begin
@@ -858,9 +827,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         ;second half of the PAD
         plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-            charsize=1.4
+            charsize=1.4,xmargin=[10,0]
 
-        xs = 0.86
+        xs = 0.68
         ys = 0.90
         dys = 0.03
 
@@ -883,6 +852,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         if (pflg) then begin
             oplot,[23.,23.],drange,line=2,color=1
             oplot,[27.,27.],drange,line=2,color=1
+            oplot,[60.,60.],drange,line=2,color=1
         endif
 
         if (doalt) then begin

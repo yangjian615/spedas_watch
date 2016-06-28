@@ -2,6 +2,9 @@
 ;PROCEDURE:   mvn_swe_addsta
 ;PURPOSE:
 ;  Loads STATIC data and creates tplot variables using STATIC code.
+;  By default APID's c0, c6, and ca are loaded.  This is sufficient
+;  to generate energy and mass spectra, and to calculate densities
+;  of O+ and O2+.  Optionally, you can also load additional APID's.
 ;
 ;USAGE:
 ;  mvn_swe_addsta
@@ -10,6 +13,11 @@
 ;    None:          Data are loaded based on timespan.
 ;
 ;KEYWORDS:
+;    APID:          Additional APID's to load.  This procedure always 
+;                   loads c0, c6, and ca.  For example, set this keyword
+;                   to 'd0' (4D distributions) or 'd1' (4D distributions,
+;                   burst).
+;
 ;    NO1:           Calculate O+ density from STATIC data using moments.
 ;                   Method is from McFadden's key parameter code.  This
 ;                   routine attempts to correct for spacecraft potential 
@@ -24,17 +32,19 @@
 ;                   the tplot variable(s) created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-11 17:22:34 -0700 (Sat, 11 Jun 2016) $
-; $LastChangedRevision: 21312 $
+; $LastChangedDate: 2016-06-27 10:38:45 -0700 (Mon, 27 Jun 2016) $
+; $LastChangedRevision: 21369 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_addsta.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
 ;-
-pro mvn_swe_addsta, nO1=nO1, nO2=nO2, pans=pans
+pro mvn_swe_addsta, apid=apid, nO1=nO1, nO2=nO2, pans=pans
 
+  sta_apid = ['c0','c6','ca']
+  if (size(apid,/type) eq 7) then sta_apid = [sta_apid, apid]
   if (keyword_set(nO2) or keyword_set(nO1)) then dopot = 1 else dopot = 0
 
-  mvn_sta_l2_load, sta_apid=['c0','c6','ca']
+  mvn_sta_l2_load, sta_apid=sta_apid
   if (dopot) then begin
     tplot_options,get=topt
     kk2 = mvn_sta_get_kk2(topt.trange_full[0])

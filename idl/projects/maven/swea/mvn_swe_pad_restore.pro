@@ -33,15 +33,18 @@
 ;       PAD:           Named variable to hold the restored 2D energy-pitch angle
 ;                      data.  Must be used with keyword FULL.
 ;
+;       L2ONLY:        Insist that MAG L2 data were used for resampling.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-28 17:10:08 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20612 $
+; $LastChangedDate: 2016-06-27 17:53:01 -0700 (Mon, 27 Jun 2016) $
+; $LastChangedRevision: 21376 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_restore.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_pad_restore.pro
 ;-
-pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm, full=full, pad=epad
+pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm, full=full, pad=epad, $
+                         l2only=l2only
 
 ; Process keywords
 
@@ -203,6 +206,30 @@ pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm, 
       str_element, dl, 'ztitle', ztit
       ztit = (strsplit(ztit, /extract))[1]
       str_element, dl, 'ztitle', ztit, /add_replace
+    endif
+
+; Check on MAG data level
+
+    get_data, tname, data=pad, alim=alim, index=k
+    if (k eq 0) then begin
+      print, "No pad data were restored."
+      return
+    endif
+    str_element, alim, 'mavlev', maglev, success=ok
+    if (not ok) then begin
+      print, "Can't determine MAG data level!  Assuming L1."
+      options,tname,'maglev',replicate(1B, n_elements(pad.x))
+    endif
+    indx = where(maglev lt 2B, count)
+    if (count gt 0L) then begin
+      print, "*****************************************************"
+      print, "PAD data are based, at least in part, on L1 MAG data."
+      print, "These data may not be used for publication."
+      print, "*****************************************************"
+      if keyword_set(l2only) then begin
+        store_data,tname,/delete
+        return
+      endif
     endif
 
 ; Store the result back into tplot
