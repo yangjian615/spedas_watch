@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-01 09:49:56 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20684 $
+;$LastChangedDate: 2016-06-28 08:28:42 -0700 (Tue, 28 Jun 2016) $
+;$LastChangedRevision: 21380 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -101,7 +101,7 @@ pro mms_ui_load_data_import,$
 
   if ~undefined(tplotnames) then begin
     if ~is_array(tplotnames) then tplotnames = [tplotnames]
-    valid_products = mms_gui_data_products(probes, instrument, rate, level)
+    valid_products = mms_gui_data_products(strlowcase(probes), strlowcase(instrument), strlowcase(rate), strlowcase(level))
     tplotnames = ssl_set_intersection(tplotnames, valid_products)
   endif
 

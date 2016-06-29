@@ -32,17 +32,35 @@
 ;Keywords:
 ;
 ;  esa_max_energy: Set to maximum energy to toss bins that are having problems from instrument contamination. 
+;  esa_bgnd_advanced: Flag to apply advanced background subtraction
+;                         Background must be pre-calculated with thm_load_esa_bkg
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-04-15 11:37:22 -0700 (Fri, 15 Apr 2016) $
-;$LastChangedRevision: 20838 $
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-06-27 18:32:34 -0700 (Mon, 27 Jun 2016) $
+;$LastChangedRevision: 21378 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_esa.pro $
 ;-
 
 ;Note: Keep options for vectorizing open
-pro thm_pgs_clean_esa,data,units,output=output,_extra=ex,esa_max_energy=esa_max_energy
+pro thm_pgs_clean_esa,data,units,output=output,_extra=ex,esa_max_energy=esa_max_energy,esa_bgnd_advanced=esa_bgnd_advanced
 
   compile_opt idl2,hidden
+  
+
+  ;advanced background subtraction
+  ;background must be calculated prior to this step
+  ;see thm_load_esa_bkg and thm_pse_bkg_auto for more info
+  if keyword_set(esa_bgnd_advanced) then begin
+    ;data must be in counts, will just return if it already is 
+    data = conv_units(data,'counts',_extra=ex)
+    if data.charge gt 0 then begin
+      data = thm_pei_bkg_sub(data)
+    endif else begin
+      data = thm_pee_bkg_sub(data)
+    endelse
+  endif
+  
   
   ;convert to requested units
   ;get scaling coefficient used to convert from counts->units

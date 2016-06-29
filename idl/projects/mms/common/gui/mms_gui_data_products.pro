@@ -12,14 +12,14 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-07 10:34:51 -0700 (Thu, 07 Apr 2016) $
-; $LastChangedRevision: 20743 $
+; $LastChangedDate: 2016-06-28 08:28:42 -0700 (Tue, 28 Jun 2016) $
+; $LastChangedRevision: 21380 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_data_products.pro $
 ;-
 
 function mms_gui_data_products, probes, instrument, rate, level
     ; maps instrument-rate-level to list of valid tplot variables to load into the GUI
-    valid_products = hash(/fold_case)
+    valid_products = hash()
 
     valid_products['fgm-srvy-l2'] = ['_fgm_b_dmpa_srvy_l2_bvec', $
                                     '_fgm_b_dmpa_srvy_l2_btot', $

@@ -65,8 +65,12 @@
 ;  
 ;  sst_sun_bins:  Array of which sst bins to decontaminate (list of bins numbers, not the old mask array)
 ;                 Set to -1 to disable.
-;  esa_bgnd_remove:  Identical to /bgnd_remove; set to 0 to disable ESA background removal.
+;  esa_bgnd_remove:  Set to 0 to disable ESA background removal, 
+;                    otherwise default anode-based background will be subtracted.
 ;                    See thm_crib_esa_bgnd_remove for more keyword options.
+;  esa_bgnd_advanced:  Apply advanced ESA background subtraction. 
+;                      Must call thm_load_esa_bkg first to calculate background.
+;                      Disables default background removal.
 ;
 ;  suffix:  Suffix to append to output tplot variable names 
 ;
@@ -89,8 +93,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-20 17:14:08 -0700 (Fri, 20 May 2016) $
-;$LastChangedRevision: 21158 $
+;$LastChangedDate: 2016-06-27 18:32:34 -0700 (Mon, 27 Jun 2016) $
+;$LastChangedRevision: 21378 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -140,7 +144,8 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                      tplotnames=tplotnames, $ ;set of tplot variable names that were created
                      
                      sst_cal=sst_cal,$
-                     esa_bgnd_remove=esa_bgnd_remove,$ 
+                     esa_bgnd_remove=esa_bgnd_remove,$
+                     esa_bgnd_advanced=esa_bgnd_advanced,$
                     
                      erange=erange, $ ; deprecated.  Here just to post a warning if someone is accidentally using the old keyword'
                     
@@ -210,9 +215,16 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     dprint,"Warning, new SST calibrations do not work with reduced distribution data",dlevel=1 
   endif
   
-  if esa && undefined(esa_bgnd_remove) && size(dist_array,/type) ne 10 then begin
-    esa_bgnd_remove = 1
-    dprint,'ESA background removal being enabled by default(disable with esa_bgnd_remove=0)',dlevel=1
+  if esa && size(dist_array,/type) ne 10 then begin
+    if keyword_set(esa_bgnd_advanced) then begin
+      if keyword_set(esa_bgnd_remove) then $
+        dprint, 'Disabling default ESA background subtraction', dlevel=1
+      esa_bgnd_remove = 0
+    endif
+    if undefined(esa_bgnd_remove) then begin
+      esa_bgnd_remove = 1
+      dprint,'ESA background removal being enabled by default (disable with esa_bgnd_remove=0)',dlevel=1
+    endif
   endif
 
   if undefined(outputs) then begin
@@ -421,7 +433,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     ;#2 performs some basic transforms so that esa and sst are represented more consistently
     ;#3 converts to physical units
     if esa then begin
-      thm_pgs_clean_esa,data,units_lc,output=clean_data,_extra=ex ;output is anonymous struct of goodies
+      thm_pgs_clean_esa,data,units_lc,output=clean_data,esa_bgnd_advanced=esa_bgnd_advanced,_extra=ex ;output is anonymous struct of goodies
     endif else if sst then begin
       thm_pgs_clean_sst,data,units_lc,output=clean_data,sst_sun_bins=sst_sun_bins,sst_method_clean=sst_method_clean,_extra=ex
     endif else if combined then begin

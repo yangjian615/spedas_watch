@@ -8,13 +8,13 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 09:06:46 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20678 $
+; $LastChangedDate: 2016-06-28 08:28:42 -0700 (Tue, 28 Jun 2016) $
+; $LastChangedRevision: 21380 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_levels.pro $
 ;-
 function mms_gui_levels, instrument
   instrument = strlowcase(instrument)
-  valid_levels = hash(/fold_case)
+  valid_levels = hash()
   valid_levels['fgm'] = ['L2']
   valid_levels['hpca'] = ['L2']
   valid_levels['eis'] = ['L2', 'L1b']

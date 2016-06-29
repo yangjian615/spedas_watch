@@ -43,6 +43,9 @@
 ;  interp_to_esa: Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
 ;  interp_to_sst: Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
 ;  get_sun_direction: Load sun direction with particle data (for 2D slices)
+;  esa_bgnd_advanced: Apply advanced ESA background subtraction 
+;                     Must call thm_load_esa_bkg first to calculate background
+;                     Disables default anode-based background removal
 ;  extrapolate_esa: Flag to extrapolate from ESA data where no valid SST data exists
 ;                   instead of throwing error.  Not recommended - use with caution!
 ;                   
@@ -92,9 +95,9 @@
 ;  uniformity will be assumed as data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-06-22 13:03:52 -0700 (Wed, 22 Jun 2016) $
-;$LastChangedRevision: 21347 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-06-27 18:32:34 -0700 (Mon, 27 Jun 2016) $
+;$LastChangedRevision: 21378 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -118,6 +121,7 @@ function thm_part_combine, probe=probe, $
                       interp_to_esa=interp_to_esa,$ ;Combined product but data interpolated to match ESA(instead of always interpolating to higher resolution)
                       interp_to_sst=interp_to_sst,$ ;Combined product but data interpolated to match SST(instead of always interpolating to higher resolution)
                       get_sun_direction=get_sun_direction, $
+                      esa_bgnd_advanced=esa_bgnd_advanced, $
                       extrapolate_esa=extrapolate_esa, $
                       remove_one_count=remove_one_count,$
                       _extra=_extra
@@ -178,7 +182,10 @@ function thm_part_combine, probe=probe, $
   endif else begin
     trange=timerange()
   endelse
-  
+
+  ;ensure only one background removal method is used  
+  esa_bgnd_remove = ~keyword_set(esa_bgnd_advanced)
+
   if ~undefined(energies) then begin
     energies=energies
   endif else begin
@@ -207,7 +214,7 @@ function thm_part_combine, probe=probe, $
   endif else begin
     sst_cal = stregex(sst_datatype, 'ps[ei]r', /bool, /fold_case) ? 0b:1b
     sst = thm_part_dist_array(probe=probe,type=sst_datatype,trange=trange,sst_cal=sst_cal,_extra=_extra)
-    esa = thm_part_dist_array(probe=probe,type=esa_datatype,trange=trange,/bgnd_remove,_extra=_extra)
+    esa = thm_part_dist_array(probe=probe,type=esa_datatype,trange=trange,bgnd_remove=esa_bgnd_remove,_extra=_extra)
   endelse
 
   if ~ptr_valid(sst[0]) or ~ptr_valid(esa[0]) then begin
@@ -235,7 +242,7 @@ function thm_part_combine, probe=probe, $
   ;convert to flux and remove unnecessary fields from structures
   ;(energy interpolation should be perfomed in flux)
   thm_cmb_clean_sst, sst, units='flux', sst_sun_bins=sst_sun_bins,sst_min_energy=sst_min_energy,method_clean=method_clean ;<-unused keyword
-  thm_cmb_clean_esa, esa, units='flux', esa_max_energy=esa_max_energy
+  thm_cmb_clean_esa, esa, units='flux', esa_max_energy=esa_max_energy, esa_bgnd_advanced=esa_bgnd_advanced
   
   
   ;-------------------------------------------------------------------------------------------

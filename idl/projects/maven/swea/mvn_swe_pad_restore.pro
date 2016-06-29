@@ -36,8 +36,8 @@
 ;       L2ONLY:        Insist that MAG L2 data were used for resampling.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-27 17:53:01 -0700 (Mon, 27 Jun 2016) $
-; $LastChangedRevision: 21376 $
+; $LastChangedDate: 2016-06-28 15:16:00 -0700 (Tue, 28 Jun 2016) $
+; $LastChangedRevision: 21386 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_restore.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -146,7 +146,7 @@ pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm, 
 
       if (first) then begin
         tplot_restore, filename=file[i]
-        get_data,tname,data=pad,index=k, dlim=dl
+        get_data,tname,data=pad,index=k, alim=dl
         if (k gt 0L) then begin
           npts = n_elements(pad.x)
           x = pad.x
@@ -157,7 +157,7 @@ pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm, 
         endif else print,"No data were restored."
       endif else begin
         tplot_restore, filename=file[i]
-        get_data,tname,data=pad,index=k, dlim=dl
+        get_data,tname,data=pad,index=k, alim=dl
         if (k gt 0L) then begin
           mpts = n_elements(pad.x)
           x = [temporary(x), pad.x]
@@ -215,10 +215,11 @@ pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm, 
       print, "No pad data were restored."
       return
     endif
-    str_element, alim, 'mavlev', maglev, success=ok
+    str_element, alim, 'maglev', maglev, success=ok
     if (not ok) then begin
       print, "Can't determine MAG data level!  Assuming L1."
-      options,tname,'maglev',replicate(1B, n_elements(pad.x))
+      maglev = replicate(1B, n_elements(pad.x))
+      options,tname,'maglev',maglev
     endif
     indx = where(maglev lt 2B, count)
     if (count gt 0L) then begin
@@ -230,7 +231,13 @@ pro mvn_swe_pad_restore, trange, orbit=orbit, loadonly=loadonly, unnorm=unnorm, 
         store_data,tname,/delete
         return
       endif
-    endif
+      options, tname, 'ytitle', 'SWEA L1 PAD!c(111-140 eV)'
+      str_element, dl, 'ytitle', 'SWEA L1 PAD!c(111-140 eV)', /add_replace
+    endif else begin
+      print,"PAD data are based on L2 MAG data."
+      options, tname, 'ytitle', 'SWEA L2 PAD!c(111-140 eV)'
+      str_element, dl, 'ytitle', 'SWEA L2 PAD!c(111-140 eV)', /add_replace
+    endelse
 
 ; Store the result back into tplot
 

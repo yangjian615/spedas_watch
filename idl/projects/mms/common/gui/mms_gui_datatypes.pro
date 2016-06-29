@@ -8,8 +8,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 11:25:11 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20692 $
+; $LastChangedDate: 2016-06-28 08:43:21 -0700 (Tue, 28 Jun 2016) $
+; $LastChangedRevision: 21381 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_datatypes.pro $
 ;-
 
@@ -20,7 +20,7 @@ function mms_gui_datatypes, instrument, rate, level
   if undefined(rate) && array_contains(['fpi', 'edp', 'dsp'], instrument) then rate = 'fast'
   if undefined(level) then level = 'l2'
 
-  valid_datatypes = hash(/fold_case)
+  valid_datatypes = hash()
   valid_datatypes['fgm-srvy-l2'] = ['']
   valid_datatypes['fgm-brst-l2'] = ['']
   valid_datatypes['hpca-srvy-l2'] = ['ion', 'moments']

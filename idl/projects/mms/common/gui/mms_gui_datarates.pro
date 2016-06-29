@@ -8,14 +8,14 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-01 09:06:46 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20678 $
+; $LastChangedDate: 2016-06-28 08:28:42 -0700 (Tue, 28 Jun 2016) $
+; $LastChangedRevision: 21380 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_datarates.pro $
 ;-
 
 function mms_gui_datarates, instrument
   instrument = strlowcase(instrument)
-  valid_rates = hash(/fold_case)
+  valid_rates = hash()
 
   valid_rates['fgm'] = ['srvy', 'brst']
   valid_rates['hpca'] = ['srvy', 'brst']

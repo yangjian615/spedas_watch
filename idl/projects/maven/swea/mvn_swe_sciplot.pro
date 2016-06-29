@@ -59,8 +59,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-11 17:23:34 -0700 (Sat, 11 Jun 2016) $
-; $LastChangedRevision: 21313 $
+; $LastChangedDate: 2016-06-28 15:15:11 -0700 (Tue, 28 Jun 2016) $
+; $LastChangedRevision: 21385 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -86,10 +86,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   mvn_swe_pad_restore
   tname = 'mvn_swe_pad_resample'
   get_data,tname,index=i
-  if (i gt 0) then begin
-    pad_pan = tname
-    options,tname,'ytitle','SWEA PAD!c(111-140 eV)'
-  endif else pad_pan = 'swe_a2_280'
+  if (i gt 0) then pad_pan = tname else pad_pan = 'swe_a2_280'
 
 ; Spacecraft orientation
 
