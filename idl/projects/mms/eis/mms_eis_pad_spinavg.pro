@@ -22,8 +22,8 @@
 ; OUTPUT:
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-06-29 13:52:44 -0700 (Wed, 29 Jun 2016) $
+;$LastChangedRevision: 21395 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad_spinavg.pro $
 ;
 ; REVISION HISTORY:
@@ -79,6 +79,9 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
   endfor
 
   newname = prefix+en_range_string+'_'+species+'_'+data_units+scope_suffix+'_pad_spin'
+  
+  ; the following is because of prefix becoming a single element array in some cases
+  if is_array(newname) then newname = newname[0] 
 
   ; rebin the data before storing it
   ; the idea here is, for bin_size = 15 deg, rebin the data from center points to:
@@ -96,5 +99,5 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
 
   ; zlim, newname, 0, 0, 1
   ;options, newname, no_interp=0
-  ;  tdegap, newname, /overwrite
+  tdegap, newname, /overwrite
 end

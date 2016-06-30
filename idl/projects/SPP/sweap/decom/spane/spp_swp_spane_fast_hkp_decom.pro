@@ -41,6 +41,7 @@ function spp_swp_spane_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
         }
 
+return,0   ; quick fix
   return,fhk
 
 end

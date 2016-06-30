@@ -19,7 +19,7 @@ pro spp_itf_stream_read,buffer,info=info,no_sum=no_sum
      len = n_elements(buffer)
      total_bytes += len
      if dt gt .1 then begin
-       rate = total_bytes/dt
+       rate = total_bytes*1.d;/dt
        store_data,'ITF_DATA_RATE',append=1,time, rate,dlimit={psym:-4}
        total_bytes =0
        last_time = time
@@ -70,11 +70,12 @@ pro spp_itf_stream_read,buffer,info=info,no_sum=no_sum
     endif
     
     if debug(3) then begin
-      dprint,dlevel=2,phelp=0,bsize,p,itf_size,itf_vc,itf_seq,itf_offset
+      dprint,dlevel=2,phelp=0,'new frame ',bsize,p,itf_size,itf_vc,itf_seq,itf_offset
  ;     hexprint,buffer[p:p+10-1]
     endif
         
     q = p+10
+    npackets = 0
     while q lt p+itf_size-4 do begin
       ;; Buffer doesn't have complete pkt.
       if q gt bsize then begin
@@ -92,16 +93,19 @@ pro spp_itf_stream_read,buffer,info=info,no_sum=no_sum
       endif else begin
         q += ccsds.pkt_size
       endelse
+      npackets +=1
       if debug(3) then begin
-        dprint,'CCSDS Size:',ccsds.pkt_size,ccsds.apid,q
-;        hexprint,ccsds.data        
+        dprint,dlevel=2,'CCSDS Size:',ccsds.pkt_size,ccsds.apid,q
+  ;      hexprint,ccsds.data        
       endif
       ptp_header ={ ptp_time:systime(1), ptp_scid: 0, ptp_source:0, ptp_spare:0, ptp_path:0, ptp_size: 17 + ccsds.pkt_size }
       spp_ccsds_pkt_handler,ptp_header = ptp_header,ccsds = ccsds
 
     endwhile
 ;    p += itf_size
-    if q ne p+10+itf_size-4 then dprint,dlevel=2,'ITF error', p,itf_size,q
+    if q ne p+10+itf_size-4 then begin
+       dprint,dlevel=2,'ITF error', p,itf_size,q
+    endif
     p += 8198
     
   endwhile

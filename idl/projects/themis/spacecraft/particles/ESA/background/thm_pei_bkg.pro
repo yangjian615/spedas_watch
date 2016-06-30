@@ -11,7 +11,9 @@
 ;-
 function thm_pei_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins
 
-; most keywords included to make compatible with get_2dt.pro
+  compile_opt strictarr, hidden
+
+; most keywords included to make compatible with thm_get_2dt.pro
 
 ; first make an omni directional distribution normalized by integration time
 
@@ -32,15 +34,15 @@ function thm_pei_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BIN
 		return,0
 	endif
 
-	if datdim then energy=reform(dat.energy(*,0)) else energy=dat.energy
+	if datdim then energy=reform(dat.energy[*,0]) else energy=dat.energy
 
 ; find the two lowest count rate bins, and average to form mavg
 
 ;	min1=min(odat,ind1)
-	odat(ind1)=odat(ind1)+10000.
+	odat[ind1]=odat[ind1]+10000.
 	min2=min(odat,ind2)
 	mavg=(1.*min1+min2)/2.>1.
-	odat(ind1)=odat(ind1)-10000.
+	odat[ind1]=odat[ind1]-10000.
 ;	print,'min1,min2= ',min1,min2
 
 ; find all bins within 2 sigma of mavg
@@ -52,7 +54,7 @@ function thm_pei_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BIN
 
 ; assume background rate is the average rate of the above bins
 
-	mavg=total(odat(ind))/n_elements(ind)
+	mavg=total(odat[ind])/n_elements(ind)
 ;	print,'new mavg= ',mavg
 
 return,mavg

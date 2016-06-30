@@ -85,8 +85,9 @@ if debug(4) then begin
   printdat,chksum1 - chksum3 
 endif
 
-  EM2 = 1
-  EM3 = ~EM2
+ ; EM2 = 1
+  EM3 = 1
+  EM2 = ~EM3
   if EM2 then begin
     ;ADC 0: Ch 0 = Ground
     ;ADC 0: Ch 1 = Ground
@@ -129,7 +130,41 @@ endif
   ref = 4.   ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
 
   rio_scale = .002444
+  
+  temp_par = spp_swp_therm_temp()
 
+  temp_par_8bit       = temp_par
+  temp_par_8bit.xmax  = 255
+  temp_par_10bit      = temp_par
+  temp_par_10bit.xmax = 1023
+  temp_par_12bit      = temp_par
+  temp_par_12bit.xmax = 4095
+
+
+  MON_LVPS_TEMP =   func(swap_endian(/swap_if_little_endian,  fix(b,24 ) ), param = temp_par_12bit)
+  MON_ANAL_TEMP =   func(swap_endian(/swap_if_little_endian,  fix(b,42 ) ), param = temp_par_12bit)
+  MON_PCB_TEMP=     func(swap_endian(/swap_if_little_endian,  fix(b,66 ) ), param = temp_par_12bit)
+  MON_FPGA_TEMP=    func(swap_endian(/swap_if_little_endian,  fix(b,70 ) ), param = temp_par_12bit)
+  MON_ASIC_TEMP=    func(swap_endian(/swap_if_little_endian,  fix(b,74 ) ), param = temp_par_12bit)
+  
+  ADCarray = [swap_endian(/swap_if_little_endian,  fix(b,MCP_VMON_CH ) ), $
+  swap_endian(/swap_if_little_endian,  fix(b,54 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,MCP_IMON_CH ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,58 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,RAW_HV_VMON_CH ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,62 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,RAW_HV_IMON_CH ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,66 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,HEMI_VMON_CH ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,70 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,72 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,74 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,76 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,78 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,80 ) ),$
+  swap_endian(/swap_if_little_endian,  fix(b,82 ) )]
+  
+  
   spae = { $
     time:           ccsds.time, $
     dtime:          ccsds.dtime/ccsds.dseq_cntr, $
@@ -148,7 +183,7 @@ endif
 
     RIO_20:         swap_endian(/swap_if_little_endian,  fix(b,20 ) ),$
     RIO_21:         swap_endian(/swap_if_little_endian,  fix(b,22 ) ),$
-    RIO_LVPS_TEMP:  swap_endian(/swap_if_little_endian,  fix(b,24 ) ),$
+    RIO_LVPS_TEMP:  MON_LVPS_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,24 ) ),$
     RIO_22VA:       swap_endian(/swap_if_little_endian,  fix(b,26 ) ),$
     RIO_1p5VD:      swap_endian(/swap_if_little_endian,  fix(b,28 ) ),$
     RIO_3p3VDA:     swap_endian(/swap_if_little_endian,  fix(b,30 ) ),$
@@ -157,7 +192,7 @@ endif
     RIO_M5VA:       swap_endian(/swap_if_little_endian,  fix(b,36 ) ),$
     RIO_P85A:       swap_endian(/swap_if_little_endian,  fix(b,38 ) ),$
     RIO_P5VA:       swap_endian(/swap_if_little_endian,  fix(b,40 ) ),$
-    RIO_ANAL_TEMP:  swap_endian(/swap_if_little_endian,  fix(b,42 ) ),$
+    RIO_ANAL_TEMP:  MON_ANAL_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,42 ) ),$
     RIO_3p3I:       swap_endian(/swap_if_little_endian,  fix(b,44 ) ),$
     RIO_1p5I:       swap_endian(/swap_if_little_endian,  fix(b,46 ) ),$
     RIO_P5IA:       swap_endian(/swap_if_little_endian,  fix(b,48 ) ),$
@@ -170,11 +205,11 @@ endif
     adc_VMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,RAW_HV_VMON_CH ) ) * ref*752.88/4095. , $
     adc_VMON_SPL:   swap_endian(/swap_if_little_endian,  fix(b,62 ) )              * ref*20.12/4095. , $
     adc_IMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,RAW_HV_IMON_CH ) ) * ref*1000./40.2/4095. , $
-    adc_PCBT:       swap_endian(/swap_if_little_endian,  fix(b,66 ) )             * ref/4095. , $
+    adc_PCBT:       MON_PCB_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,66 ) )             * ref/4095. , $
     adc_HEMIV:      swap_endian(/swap_if_little_endian,  fix(b,HEMI_VMON_CH ) )   * ref*1271./4095. , $
-    adc_FPGAT:      swap_endian(/swap_if_little_endian,  fix(b,70 ) ) * ref/4095. , $
+    adc_FPGAT:      MON_FPGA_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,70 ) ) * ref/4095. , $
     adc_ch10:       swap_endian(/swap_if_little_endian,  fix(b,72 ) ) * ref*1000./40.2/4095. , $
-    adc_ASICT:      swap_endian(/swap_if_little_endian,  fix(b,74 ) ) * ref/4095. , $
+    adc_ASICT:      MON_ASIC_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,74 ) ) * ref/4095. , $
     adc_ch12:       swap_endian(/swap_if_little_endian,  fix(b,76 ) ) * ref*1000./4095. , $
     adc_ch13:       swap_endian(/swap_if_little_endian,  fix(b,78 ) ) * ref/4095. , $
     adc_ch14:       swap_endian(/swap_if_little_endian,  fix(b,80 ) ) * ref/4095. , $
@@ -231,7 +266,8 @@ endif
 ;    pkt_csum:       swap_endian(/swap_if_little_endian, uint( b,152 ) ) and 'ffff'x , $
     pkt_csum_diff:  chksum1 - chksum3, $
     edba:           swap_endian(/swap_if_little_endian, uint( b,154 ) ) and 'ffff'x , $
-    GAP:            ccsds.gap}
+    GAP:            ccsds.gap, $
+    all_ADC:        ADCarray}
 
 
 

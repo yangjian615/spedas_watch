@@ -20,8 +20,8 @@
 ;   DONE: Equivalent to calling without the a1 argument.
 ;CREATED BY:    Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-05-25 15:40:47 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21210 $
+; $LastChangedDate: 2016-06-29 10:35:02 -0700 (Wed, 29 Jun 2016) $
+; $LastChangedRevision: 21387 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/append_array.pro $
 
 ;LAST MODIFIED: @(#)append_array.pro    1.6 98/08/13
@@ -81,7 +81,10 @@ endif
     if n1+index gt n0 then begin
         xfactor = .5
         fill = keyword_set(fillnan) ?  fill_nan(a1[0]) : a1[0]
-        if n_elements(dim1) ne n_elements(dim0) then message,'Incompatible appending'
+        if n_elements(dim1) ne n_elements(dim0) then begin
+          dprint,dlevel=2,'Incompatible appending'
+          if debug(3) then printdat,a0,a1
+        endif
         dim = dim0
         add = floor(n0 * xfactor + n1)
         dim[0] = add

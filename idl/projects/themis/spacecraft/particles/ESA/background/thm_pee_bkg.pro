@@ -11,7 +11,9 @@
 ;-
 function thm_pee_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins
 
-; most keywords included to make compatible with get_2dt.pro
+  compile_opt strictarr, hidden
+
+; most keywords included to make compatible with thm_get_2dt.pro
 
 ; first make an omni directional distribution normalized by integration time
 
@@ -31,10 +33,10 @@ function thm_pee_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BIN
 
 ; the below is probably not needed for electrons
 
-	odat(ind1)=odat(ind1)+10000.
+	odat[ind1]=odat[ind1]+10000.
 	min2=min(odat,ind2)
 	mavg=(1.*min1+min2)/2.>1.
-	odat(ind1)=odat(ind1)-10000.
+	odat[ind1]=odat[ind1]-10000.
 ;	print,'min1,min2= ',min1,min2
 
 ; find all bins within 2 sigma of mavg

@@ -1,4 +1,4 @@
-function spp_swp_spani_tof_decom,ccsds,ptp_header=ptp_header,apdat=apdat
+tplfunction spp_swp_spani_tof_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
 
   ;; IMPLEMENT DECOMPRESSION

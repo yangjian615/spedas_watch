@@ -21,6 +21,8 @@
 ;-
 function thm_pee_bkg_sub,dat2,plot=plot
 
+  compile_opt strictarr, hidden
+
 	cols=get_colors()
 	dat = conv_units(dat2,'eflux')
 	nenergy=dat.nenergy
@@ -71,7 +73,7 @@ function thm_pee_bkg_sub,dat2,plot=plot
 skip=1
 if not skip then begin
 	if nbins gt 1 then begin
-		nrg=reform(dat2.energy(*,0))
+		nrg=reform(dat2.energy[*,0])
 		pot = dat2.sc_pot
 		bins=where(abs(dat2.theta[0,*])+dat2.dtheta[0,*]/2. gt 70.)
 		minval1 = min(abs(nrg-pot-3.),k2)
@@ -96,12 +98,12 @@ endif
 	if keyword_set(plot) then begin
 		window,1
 		spec3d,dat2,/pot
-		for i=0,nbins-1 do oplot,dat2.energy(*,i),sec_spec(*,i)
-		for i=0,nbins-1 do oplot,dat2.energy(*,i),pho_spec(*,i),color=cols.red
-		oplot,dat2.energy(*,0),replicate(1.e7,nenergy),psym=1
+		for i=0,nbins-1 do oplot,dat2.energy[*,i],sec_spec[*,i]
+		for i=0,nbins-1 do oplot,dat2.energy[*,i],pho_spec[*,i],color=cols.red
+		oplot,dat2.energy[*,0],replicate(1.e7,nenergy),psym=1
 		window,2
 		spec3d,dat,/pot
-		oplot,dat2.energy(*,0),replicate(1.e7,nenergy),psym=1
+		oplot,dat2.energy[*,0],replicate(1.e7,nenergy),psym=1
 		print,n_3d_new(dat2),n_3d_new(dat)
 	endif
 

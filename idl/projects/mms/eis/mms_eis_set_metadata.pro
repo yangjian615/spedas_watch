@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-09 14:56:40 -0700 (Mon, 09 May 2016) $
-; $LastChangedRevision: 21051 $
+; $LastChangedDate: 2016-06-29 11:59:56 -0700 (Wed, 29 Jun 2016) $
+; $LastChangedRevision: 21390 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_set_metadata.pro $
 ;-
 ;
@@ -29,12 +29,13 @@ pro mms_eis_set_metadata, tplotnames, probe = probe, level=level, data_rate = da
             zlim, '*_extof_proton_flux_omni*', 0, 0, 1
             zlim, '*_extof_alpha_flux_omni*', 0, 0, 1
             zlim, '*_extof_oxygen_flux_omni*', 0, 0, 1
-            options, '*_extof_*_flux_omni*', ystyle=1
+            options, '*_extof_*_flux_omni*', ystyle=1, yticks=2
             if undefined(no_interp) && data_rate eq 'srvy' then options, '*extof_*_flux_omni*', no_interp=0, y_no_interp=0
         end
         'phxtof': begin
-            ; still todo: need to set ylimits based on P#
-            ; energy depends on version of files
+            ; note: PHxTOF proton energy depends on version of files
+            ; so yrange is set by the p# in the variable name
+            ; in the file mms_eis_omni (so it shouldn't be set here)
             
             zlim, '*phxtof_*_flux_omni*', 0, 0, 1
             options, '*_phxtof_*_flux_omni*', ystyle=1
@@ -43,7 +44,7 @@ pro mms_eis_set_metadata, tplotnames, probe = probe, level=level, data_rate = da
         'electronenergy': begin
             ylim,'*_electronenergy_electron_flux_omni*', 40, 660, 1
             zlim, '*_electronenergy_electron_flux_omni*', 0, 0, 1
-            options, '*_electronenergy_electron_flux_omni*', ystyle=1
+            options, '*_electronenergy_electron_flux_omni*', ystyle=1, yticks=2
             if undefined(no_interp) && data_rate eq 'srvy' then options, '*_electronenergy_electron_flux_omni*', no_interp=0, y_no_interp=0
         end  
     endcase

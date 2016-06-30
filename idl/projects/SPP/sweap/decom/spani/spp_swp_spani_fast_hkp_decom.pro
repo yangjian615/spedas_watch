@@ -18,9 +18,9 @@ function spp_swp_spani_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat,pl
   ;; The data is sorted LSB 16 bits followed 
   ;; by MSB 16 bits. Therefore, we need to
   ;; switch LSB and MSB.
-  ind = indgen(256)*2
-  ind = reform(transpose([[ind+1],[ind]]),512)
-  data = data[ind]
+  ;ind = indgen(256)*2
+  ;ind = reform(transpose([[ind+1],[ind]]),512)
+  ;data = data[ind]
 
 
   ;;-----------------------------------------
@@ -31,7 +31,7 @@ function spp_swp_spani_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat,pl
      xx = indgen(512)
      plot, xx,data
      ;oplot,xx,data, color=250
-     plot, xx,data, /ylog,yst=1,yr=[1,max(data)]
+     plot, xx,data, /ylog,yst=1,yr=[1,max(data) > 10]
      ;oplot,xx,data, color=250
      !P.MULTI = 0
   endif
@@ -51,7 +51,8 @@ function spp_swp_spani_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat,pl
         ADC:        data $
 
         }
-
+printdat,fhk
+return,0   ; cluge to prevent error
   return,fhk
 
 end

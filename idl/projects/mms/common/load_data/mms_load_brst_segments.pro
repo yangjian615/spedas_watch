@@ -1,14 +1,21 @@
 ;+
 ; PROCEDURE:
-;         mms_load_brst_segments
+;         mms_load_brst_segments_sdc
 ;
 ; PURPOSE:
 ;         Loads the burst segment intervals into a bar that can be plotted
 ;
-;
+; NOTE:
+;         This is the old version of this file, use: 
+;         
+;         mms_load_brst_segments
+;            
+;         instead.
+; 
+; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-27 15:02:36 -0700 (Mon, 27 Jun 2016) $
-;$LastChangedRevision: 21375 $
+;$LastChangedDate: 2016-06-29 15:52:02 -0700 (Wed, 29 Jun 2016) $
+;$LastChangedRevision: 21404 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_brst_segments.pro $
 ;-
 

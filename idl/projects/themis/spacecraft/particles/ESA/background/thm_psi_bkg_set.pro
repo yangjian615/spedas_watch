@@ -50,7 +50,7 @@ pro thm_psi_bkg_set,sc=sc,tt_on=tt_on,tt_off=tt_off
 	name2='th'+sc+'_psir_atten'
 	get_data,name2,data=tmp2,index=index
 	if index eq 0 then begin
-		get_2dt,'sst_atten','thm_sst_psir',name=name2,probe=sc,gap_time=10000.
+		thm_get_2dt,'sst_atten','thm_sst_psir',name=name2,probe=sc,gap_time=10000.
 			ylim,name2,0.,11,0
 			options,name2,'ytitle','e- sst th'+sc+'!C!C Atten'
 		get_data,name2,data=tmp2
@@ -59,7 +59,7 @@ pro thm_psi_bkg_set,sc=sc,tt_on=tt_on,tt_off=tt_off
 	name3='th'+sc+'_psif_atten'
 	get_data,name3,data=tmp3,index=index
 	if index eq 0 then begin
-		get_2dt,'sst_atten','thm_sst_psif',name=name3,probe=sc,gap_time=10000.
+		thm_get_2dt,'sst_atten','thm_sst_psif',name=name3,probe=sc,gap_time=10000.
 			ylim,name3,0.,11,0
 			options,name3,'ytitle','e- sst th'+sc+'!C!C Atten'
 		get_data,name3,data=tmp3

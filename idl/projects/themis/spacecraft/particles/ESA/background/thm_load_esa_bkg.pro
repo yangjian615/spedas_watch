@@ -1,5 +1,5 @@
 ;+
-;PROCEDURE:	thm_load_pei_bkg
+;PROCEDURE:	thm_load_esa_bkg
 ;PURPOSE:	
 ;	Adds background count rates to the ESA data structures which can be used by thm_pei_bkg_sub and thm_pee_bkg_sub for background removal
 ;INPUT:		
@@ -36,6 +36,8 @@
 
 pro thm_load_esa_bkg,sc=sc,probe=probe,themishome=themishome,datatype=datatype
 
+  compile_opt strictarr
+
 ;	Time how long the routine takes
 	ex_start = systime(1)
 
@@ -44,7 +46,7 @@ cols=get_colors()
 ; sc default
 	if keyword_set(probe) then sc=probe
 	if not keyword_set(sc) then begin
-		print,'S/C number not set, default = all probes'
+		dprint,'S/C number not set, default = all probes', dlevel=1
 		sc=['a','b','c','d','e','f']
 	endif
 
@@ -52,7 +54,7 @@ cols=get_colors()
 
 nsc = n_elements(sc)
 probes=strarr(1)
-if nsc eq 1 then probes(0)=strlowcase(sc)
+if nsc eq 1 then probes[0]=strlowcase(sc)
 if nsc ne 1 then probes=strlowcase(sc)
 
 ; matrix to transform pser count spectra to psir background counts -- needs to be calculated
@@ -68,14 +70,14 @@ aa = [0.70,6.27452e-005,0.000120554,0.000222392,0.000539607,0.00150673,0.0039266
 
 for i=0,nsc-1 do begin
 
-	print,'Calculating background for th'+probes[i]
+	dprint,'Calculating background for th'+probes[i], dlevel=2
 	data_type=' '
 	if keyword_set(datatype) then data_type=datatype
 
 ; pser determined background
 
 	if not keyword_set(datatype) or string(data_type) eq 'pser' then begin
-		print,'Calculating background from pser data'
+		dprint,'Calculating background from pser data', dlevel=2
 		wait,.1
 
 ;	'th'+probes[i]+'_pser_minus_bkg' contains pser counts after sunlight background subtraction
@@ -88,17 +90,27 @@ for i=0,nsc-1 do begin
 ;    this user_select section doesn't work, bkg keyword disabled for pse data
 			name1='th'+probes[i]+'_pser_minus_bkg'
 			get_dat='thm_sst_pser'
-			get_en_spec,get_dat,units='counts',name=name1,probe=probes(i),bkg=1
+			thm_get_en_spec,get_dat,units='counts',name=name1,probe=probes[i],bkg=1
 				ylim,name1,100.,100000.,1
 				options,name1,'ytitle','e- th'+probes[i]+'!C!CCounts'
 				options,name1,'spec',0
 			name2='th'+probes[i]+'_pser_atten'
-			get_2dt,'sst_atten',get_dat,name=name2,probe=probes(i)
+			thm_get_2dt,'sst_atten',get_dat,name=name2,probe=probes[i]
 				ylim,name2,0.,11,0
 				options,name2,'ytitle','e- sst th'+probes[i]+'!C!C Atten'
-		endif else thm_pse_bkg_auto,sc=probes[i]
+		endif else begin
+      thm_pse_bkg_auto,sc=probes[i]
+    endelse
 
 		get_data,'th'+probes[i]+'_pser_minus_bkg',data=tmp1
+    ;warn if data is not present and proceed as though no pser was used -af
+    if ~is_struct(tmp1) then begin
+      dprint, 'WARNING: No pser data available for background determination'
+      att_on = [1.,1.]
+      bkg1 = [0.,0.]
+      time1 = [time_double('07-02-01/0'),time_double('27-02-01/0')]
+    endif
+
 ;		get_data,'th'+probes[i]+'_pser_atten',data=tmp2
 		sst = transpose(tmp1.y[*,0:8]) & sst[0,*]=1.
 ;		att = interp(tmp2.y,tmp2.x,tmp1.x)
@@ -108,7 +120,7 @@ for i=0,nsc-1 do begin
 		bkg1 = total((aa#att_on)*sst,1)
 		time1=tmp1.x
 
-		get_2dt,'jo_3d_new','th'+sc+'_peer',name='Jeo_10_30keV',gap_time=6.,energy=[10000,27000.]
+		thm_get_2dt,'jo_3d_new','th'+sc+'_peer',name='Jeo_10_30keV',gap_time=6.,energy=[10000,27000.]
 		get_data,'Jeo_10_30keV',data=tmp8
 		bkg_pee = 5.e-9*interp(tmp8.y,tmp8.x,tmp1.x)
 		store_data,'th'+probes[i]+'_peer_pei_bkg',data={x:tmp1.x,y:bkg_pee}
@@ -134,7 +146,7 @@ for i=0,nsc-1 do begin
 		get_dat='th'+probes[i]+'_peir'
 		name1='th'+probes[i]+'_pei_pei_bkg'
 ;TODO here it stops now		
-		get_2dt,'thm_pei_bkg',get_dat,name=name1
+		thm_get_2dt,'thm_pei_bkg',get_dat,name=name1
 			ylim,name1,1.,10000.,1
 			options,name1,'ytitle','Bkg pei th'+probes[i]+'!C!C Counts'
 ; the following screwed up in shadow and was replaced with tsmooth2
@@ -160,7 +172,7 @@ for i=0,nsc-1 do begin
 
 		get_dat='th'+probes[i]+'_peer'
 		name1='th'+probes[i]+'_peer_pee_bkg'
-		get_2dt,'thm_pee_bkg',get_dat,name=name1
+		thm_get_2dt,'thm_pee_bkg',get_dat,name=name1
 			ylim,name1,1.,10000.,1
 			options,name1,'ytitle','Bkg pee th'+probes[i]+'!C!C Counts'
 		tsmooth2,name1,3,newname='thm_pee_bkg_smooth'				; smooth over 3 spins
@@ -194,7 +206,7 @@ for i=0,nsc-1 do begin
 				ind2 = where(finite(bkg8) and finite(bkg7) and dist gt 5.3,count2)
 				if count2 gt 1000 then scale = total(bkg7[ind2]*bkg8[ind2])/total(bkg7[ind2]*bkg7[ind2]) else scale=1.
 				if scale gt 2. or scale lt .5 then begin
-					print,'Error - thm_load_pei_bkg scale correction is too large'
+					print,'Error - thm_load_esa_bkg scale correction is too large'
 					print,'Probable error in pser optimization code'
 					print,'pser background set to zero'
 					att_on = [1.,1.]
@@ -219,18 +231,18 @@ for i=0,nsc-1 do begin
 ; print,n_elements(where(att_on eq 1))
 ; print,n_elements(where(att_on ne 1))
 
-	if probes(i) eq 'a' then begin
+	if probes[i] eq 'a' then begin
 		common tha_454,tha_454_ind,tha_454_dat 
 		if n_elements(tha_454_dat) ne 0 then begin
 		  if tha_454_ind ne -1 then begin
 			time=(tha_454_dat.time+tha_454_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			tha_454_dat.bkg_pse=bkg_pse
@@ -243,12 +255,12 @@ for i=0,nsc-1 do begin
 		  if tha_455_ind ne -1 then begin
 			time=(tha_455_dat.time+tha_455_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			tha_455_dat.bkg_pse=bkg_pse
@@ -267,12 +279,12 @@ for i=0,nsc-1 do begin
 		  if tha_456_ind ne -1 then begin
 			time=(tha_456_dat.time+tha_456_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			tha_456_dat.bkg_pse=bkg_pse
@@ -285,13 +297,13 @@ for i=0,nsc-1 do begin
 		  if tha_457_ind ne -1 then begin
 			time=(tha_457_dat.time+tha_457_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			tha_457_dat.bkg_pse=bkg_pse
@@ -305,13 +317,13 @@ for i=0,nsc-1 do begin
 		  if tha_458_ind ne -1 then begin
 			time=(tha_458_dat.time+tha_458_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			tha_458_dat.bkg_pse=bkg_pse
@@ -331,13 +343,13 @@ for i=0,nsc-1 do begin
 		  if tha_459_ind ne -1 then begin
 			time=(tha_459_dat.time+tha_459_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			tha_459_dat.bkg_pse=bkg_pse
@@ -346,18 +358,18 @@ for i=0,nsc-1 do begin
 			tha_459_dat.bkg=bkg3
 		  endif
 		endif
-	endif else if probes(i) eq 'b' then begin
+	endif else if probes[i] eq 'b' then begin
 		common thb_454,thb_454_ind,thb_454_dat 
 		if n_elements(thb_454_dat) ne 0 then begin
 		  if thb_454_ind ne -1 then begin
 			time=(thb_454_dat.time+thb_454_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thb_454_dat.bkg_pse=bkg_pse
@@ -370,12 +382,12 @@ for i=0,nsc-1 do begin
 		  if thb_455_ind ne -1 then begin
 			time=(thb_455_dat.time+thb_455_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thb_455_dat.bkg_pse=bkg_pse
@@ -394,12 +406,12 @@ for i=0,nsc-1 do begin
 		  if thb_456_ind ne -1 then begin
 			time=(thb_456_dat.time+thb_456_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thb_456_dat.bkg_pse=bkg_pse
@@ -412,13 +424,13 @@ for i=0,nsc-1 do begin
 		  if thb_457_ind ne -1 then begin
 			time=(thb_457_dat.time+thb_457_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thb_457_dat.bkg_pse=bkg_pse
@@ -432,13 +444,13 @@ for i=0,nsc-1 do begin
 		  if thb_458_ind ne -1 then begin
 			time=(thb_458_dat.time+thb_458_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thb_458_dat.bkg_pse=bkg_pse
@@ -458,13 +470,13 @@ for i=0,nsc-1 do begin
 		  if thb_459_ind ne -1 then begin
 			time=(thb_459_dat.time+thb_459_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thb_459_dat.bkg_pse=bkg_pse
@@ -473,18 +485,18 @@ for i=0,nsc-1 do begin
 			thb_459_dat.bkg=bkg3
 		  endif
 		endif
-	endif else if probes(i) eq 'c' then begin
+	endif else if probes[i] eq 'c' then begin
 		common thc_454,thc_454_ind,thc_454_dat 
 		if n_elements(thc_454_dat) ne 0 then begin
 		  if thc_454_ind ne -1 then begin
 			time=(thc_454_dat.time+thc_454_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thc_454_dat.bkg_pse=bkg_pse
@@ -497,12 +509,12 @@ for i=0,nsc-1 do begin
 		  if thc_455_ind ne -1 then begin
 			time=(thc_455_dat.time+thc_455_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thc_455_dat.bkg_pse=bkg_pse
@@ -521,12 +533,12 @@ for i=0,nsc-1 do begin
 		  if thc_456_ind ne -1 then begin
 			time=(thc_456_dat.time+thc_456_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thc_456_dat.bkg_pse=bkg_pse
@@ -539,13 +551,13 @@ for i=0,nsc-1 do begin
 		  if thc_457_ind ne -1 then begin
 			time=(thc_457_dat.time+thc_457_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thc_457_dat.bkg_pse=bkg_pse
@@ -559,13 +571,13 @@ for i=0,nsc-1 do begin
 		  if thc_458_ind ne -1 then begin
 			time=(thc_458_dat.time+thc_458_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thc_458_dat.bkg_pse=bkg_pse
@@ -585,13 +597,13 @@ for i=0,nsc-1 do begin
 		  if thc_459_ind ne -1 then begin
 			time=(thc_459_dat.time+thc_459_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thc_459_dat.bkg_pse=bkg_pse
@@ -600,18 +612,18 @@ for i=0,nsc-1 do begin
 			thc_459_dat.bkg=bkg3
 		  endif
 		endif
-	endif else if probes(i) eq 'd' then begin
+	endif else if probes[i] eq 'd' then begin
 		common thd_454,thd_454_ind,thd_454_dat 
 		if n_elements(thd_454_dat) ne 0 then begin
 		  if thd_454_ind ne -1 then begin
 			time=(thd_454_dat.time+thd_454_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thd_454_dat.bkg_pse=bkg_pse
@@ -624,12 +636,12 @@ for i=0,nsc-1 do begin
 		  if thd_455_ind ne -1 then begin
 			time=(thd_455_dat.time+thd_455_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thd_455_dat.bkg_pse=bkg_pse
@@ -648,12 +660,12 @@ for i=0,nsc-1 do begin
 		  if thd_456_ind ne -1 then begin
 			time=(thd_456_dat.time+thd_456_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thd_456_dat.bkg_pse=bkg_pse
@@ -666,13 +678,13 @@ for i=0,nsc-1 do begin
 		  if thd_457_ind ne -1 then begin
 			time=(thd_457_dat.time+thd_457_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thd_457_dat.bkg_pse=bkg_pse
@@ -686,13 +698,13 @@ for i=0,nsc-1 do begin
 		  if thd_458_ind ne -1 then begin
 			time=(thd_458_dat.time+thd_458_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thd_458_dat.bkg_pse=bkg_pse
@@ -712,13 +724,13 @@ for i=0,nsc-1 do begin
 		  if thd_459_ind ne -1 then begin
 			time=(thd_459_dat.time+thd_459_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			thd_459_dat.bkg_pse=bkg_pse
@@ -727,18 +739,18 @@ for i=0,nsc-1 do begin
 			thd_459_dat.bkg=bkg3
 		  endif
 		endif
-	endif else if probes(i) eq 'e' then begin
+	endif else if probes[i] eq 'e' then begin
 		common the_454,the_454_ind,the_454_dat 
 		if n_elements(the_454_dat) ne 0 then begin
 		  if the_454_ind ne -1 then begin
 			time=(the_454_dat.time+the_454_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			the_454_dat.bkg_pse=bkg_pse
@@ -751,12 +763,12 @@ for i=0,nsc-1 do begin
 		  if the_455_ind ne -1 then begin
 			time=(the_455_dat.time+the_455_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			the_455_dat.bkg_pse=bkg_pse
@@ -775,12 +787,12 @@ for i=0,nsc-1 do begin
 		  if the_456_ind ne -1 then begin
 			time=(the_456_dat.time+the_456_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			the_456_dat.bkg_pse=bkg_pse
@@ -793,13 +805,13 @@ for i=0,nsc-1 do begin
 		  if the_457_ind ne -1 then begin
 			time=(the_457_dat.time+the_457_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			the_457_dat.bkg_pse=bkg_pse
@@ -813,13 +825,13 @@ for i=0,nsc-1 do begin
 		  if the_458_ind ne -1 then begin
 			time=(the_458_dat.time+the_458_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			the_458_dat.bkg_pse=bkg_pse
@@ -839,13 +851,13 @@ for i=0,nsc-1 do begin
 		  if the_459_ind ne -1 then begin
 			time=(the_459_dat.time+the_459_dat.end_time)/2.
 			bkg_pse = interp(/no_extrapolate,interp_threshold=5.1,bkg1,time1,time)
-			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse(ind9)=0.
+			ind9 = where(0 eq finite(bkg_pse),count) & if count gt 1 then bkg_pse[ind9]=0.
 ;			att_pse = interp(/no_extrapolate,interp_threshold=5.1,att_on,time1,time)
 			att_pse = interp((dis3 gt 5.3),time3,time)
 			bkg_pei = interp(/no_extrapolate,interp_threshold=5.1,bkg2,time2,time)
 			bkg_pee = interp(/no_extrapolate,interp_threshold=5.1,bkg4,time4,time)
 			indtmp = where(bkg_pei gt 300.,count) & tmp_pse=bkg_pse
-			if count gt 1 then tmp_pse(indtmp) = bkg_pei(indtmp) > bkg_pse(indtmp) 
+			if count gt 1 then tmp_pse[indtmp] = bkg_pei[indtmp] > bkg_pse[indtmp] 
 			if (max(bkg1) eq 0.) then bkg3=bkg_pei else if (max(bkg2) eq 0.) then bkg3=bkg_pse else $
 				bkg3=att_pse*(tmp_pse<bkg_pei)+(1.-att_pse)*bkg_pei
 			the_459_dat.bkg_pse=bkg_pse

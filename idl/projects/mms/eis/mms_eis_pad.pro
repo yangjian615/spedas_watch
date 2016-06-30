@@ -30,8 +30,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp and Ian Cohen (APL)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-29 14:54:18 -0700 (Fri, 29 Apr 2016) $
-;$LastChangedRevision: 20982 $
+;$LastChangedDate: 2016-06-29 13:52:44 -0700 (Wed, 29 Jun 2016) $
+;$LastChangedRevision: 21395 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -177,10 +177,14 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
                 endelse
             endfor
           endfor
-
+          
           en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV
           new_name = prefix + datatype + '_' + en_range_string + '_' + ion_type[ion_type_idx] + '_' + data_units + scope_suffix + '_pad'
-         ; store_data, new_name, data={x:d.x, y:pa_flux, v:pa_label}
+          
+          ; the following is because of prefix becoming a single element array in some cases
+          if is_array(new_name) then new_name = new_name[0] 
+
+          ; store_data, new_name, data={x:d.x, y:pa_flux, v:pa_label}
           store_data, new_name, data={x:d.x, y:new_pa_flux, v:pa_label}
           options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1 , $
             ytitle = 'MMS'+probe+' EIS ' + ion_type[ion_type_idx], ysubtitle=en_range_string+'!CPA [Deg]', ztitle=units_label, minzlog=.01

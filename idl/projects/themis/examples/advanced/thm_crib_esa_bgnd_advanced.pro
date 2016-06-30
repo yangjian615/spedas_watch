@@ -26,8 +26,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-06-27 18:32:34 -0700 (Mon, 27 Jun 2016) $
-;$LastChangedRevision: 21378 $
+;$LastChangedDate: 2016-06-29 18:07:05 -0700 (Wed, 29 Jun 2016) $
+;$LastChangedRevision: 21406 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_esa_bgnd_advanced.pro $
 ;-
 
@@ -41,9 +41,13 @@ timespan, '2011-07-14/08', 4, /hours
 trange = timerange()
 
 
+;load data for primary analysis
+thm_part_load, probe=probe, trange=trange, datatype=datatype 
+
+
 ;background determination requires state and some particle data be loaded
 ;  -peer and peir data must be loaded manually
-;  -pser data will be loaded automatically (loaded here for clarity)
+;  -pser data will be loaded automatically in thm_load_esa_bkg (loaded here for clarity)
 thm_part_load, probe=probe, trange=trange, datatype=['peer','peir']
 thm_part_load, probe=probe, trange=trange, datatype='pser', /get_support
 thm_load_state, probe=probe, trange=trange, /get_support
@@ -53,22 +57,28 @@ thm_load_state, probe=probe, trange=trange, /get_support
 ;  -assumes peer & peir data are present, will load pser data as needed
 ;  -if both iesa and sst data sets are present, will use the lower background estimate 
 ;  -uses iesa data for background in the inner magnetosphere
+;  -calls thm_pse_bkg_auto to calculate contribution from sst electrons
 thm_load_esa_bkg, probe=probe
 
 
 ;get energy spectra and moments with and without background subtracted
-;  -using /esa_bgnd_advanced will disable default anode-based background subtraction
+;  -/esa_bgnd_advanced will disable default anode-based background subtraction
 ;  -/esa_bgnd_advanced can also be used with thm_part_combine and thm_part_slice2d
 thm_part_products, probe=probe, trange=trange, datatype=datatype, outputs='energy moments'
 thm_part_products, probe=probe, trange=trange, datatype=datatype, outputs='energy moments', $
                    /esa_bgnd_advanced, suffix='_sub'
 
 
-options, '*density*', yrange=[1e-3,1]
-options, '*eflux_energy*', zrange=[10,1e6]
+prefix = 'th'+probe+'_'+datatype+'_'
+
+;make pseudo-var for density
+store_data, prefix + 'density_all', data = prefix + 'density' + ['','_sub']
+options, '*density_sub', colors='b' 
+
+options, '*eflux_energy*', zrange=[100,1e6]
 
 window, xs=900, ys=1000
-tplot, 'th'+probe+'_'+datatype+'_' + ['density*','eflux_energy*']
+tplot, 'th'+probe+'_'+datatype+'_' + ['density_all','eflux_energy*']
 
 
 end

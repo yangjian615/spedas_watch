@@ -2,7 +2,7 @@
 ;FUNCTION:	thm_pei_bkg_sub(dat,bkg=bkg)
 ;
 ;PURPOSE:
-;	returns data structure with background subtracted, assumes dat.bkg in data structure, run thm_load_pei_bkg.pro first
+;	returns data structure with background subtracted, assumes dat.bkg in data structure, run thm_load_esa_bkg.pro first
 ;
 ;INPUT:	
 ;	dat:	themis pei data structure 
@@ -12,7 +12,7 @@
 ;Assumptions
 ;	Program assumes no energy dependence for contamination
 ;	Program assumes dat.bkg is already computed
-;	dat.bkg is added to structure by thm_load_pei_bkg.pro
+;	dat.bkg is added to structure by thm_load_esa_bkg.pro
 ;
 ;CREATED BY:
 ;	J.McFadden	08-12-29
@@ -22,6 +22,8 @@
 ;	mcfadden	09-01-30	changed dat.bkg to an array		 
 ;-
 function thm_pei_bkg_sub,dat2,bkg=bkg
+
+  compile_opt strictarr, hidden
 
 	dat=dat2
 	
@@ -50,25 +52,25 @@ function thm_pei_bkg_sub,dat2,bkg=bkg
 ; zero the counts in dat.data(E,*) at energies "E" where odat(E) < one sigma above background
 
 	ind = where(odat lt (mavg^.5 + 1.),count)
-	if count ne 0 then dat.data(ind,*)=0.
+	if count ne 0 then dat.data[ind,*]=0.
 
 ; get rid of fractional counts in dat.data at energies  "E" where odat(E) < two sigma above background
 
 	ind = where(odat lt (2.*mavg^.5 + 1.),count)
-	if count ne 0 then dat.data(ind,*)=1.*fix(dat.data(ind,*))
+	if count ne 0 then dat.data[ind,*]=1.*fix(dat.data[ind,*])
 
 ; get rid of all counts in the lowest energy bins when background is high
 
 	elow = (alog(mavg) > 0.) * 6.
-	ind = where(dat.energy(*,0) lt elow,count)
-	if count ne 0 then dat.data(ind,*)=0.
+	ind = where(dat.energy[*,0] lt elow,count)
+	if count ne 0 then dat.data[ind,*]=0.
 ;	if count ne 0 then print,'low energy bin active now',time_string(dat.time),' ',count,' ',ind
 
 ; get rid of all counts in dat.data at energies  "E" where odat(E) < sigma above background
 
 ;	sigma = 2. - (1. > (mavg-4.)/4. > 0.)
 ;	ind = where(odat lt (sigma*mavg^.5 + 1.),count)
-;	if count ne 0 then dat.data(ind,*)=0.
+;	if count ne 0 then dat.data[ind,*]=0.
 
 ; zero out bins with negative values
 
@@ -81,7 +83,7 @@ function thm_pei_bkg_sub,dat2,bkg=bkg
 	
 
 ;	tmp=min(abs(dat2.energy-15.),ind3)
-;	dat.data(ind3:dat2.nenergy-1,*)=1.*fix(dat.data(ind3:dat2.nenergy-1,*))
+;	dat.data[ind3:dat2.nenergy-1,*]=1.*fix(dat.data[ind3:dat2.nenergy-1,*])
 
 return,dat
 end

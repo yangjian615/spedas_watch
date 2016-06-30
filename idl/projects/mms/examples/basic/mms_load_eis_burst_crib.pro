@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21138 $
+; $LastChangedDate: 2016-06-29 13:53:07 -0700 (Wed, 29 Jun 2016) $
+; $LastChangedRevision: 21396 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_eis_burst_crib.pro $
 ;-
 probe = '1'
@@ -45,6 +45,21 @@ tdegap, prefix+'_epd_eis_brst_phxtof_*keV_proton_flux_omni_pad_spin', /overwrite
 
 tplot, prefix+['_epd_eis_brst_phxtof_proton_flux_omni_spin', $
     '_epd_eis_brst_phxtof_*keV_proton_flux_omni_pad_spin']
+
+stop
+
+; load the burst mode electron data
+; note: different time range from above examples; this is
+; because there is no brst mode L2 electronenergy data 
+; for October 2015
+mms_load_eis, probes=probe, trange=['2016-04-23', '2016-04-24'], datatype='electronenergy', data_rate='brst', level='l2'
+
+; calculate the electron PAD
+mms_eis_pad, probe=probe, species='electron', datatype='electronenergy', data_units='flux', data_rate='brst', level='l2'
+
+tplot, ['mms1_epd_eis_brst_electronenergy_electron_flux_omni_spin', $
+        'mms1_epd_eis_brst_electronenergy_0-1000keV_electron_flux_omni_pad_spin'], $
+        trange=['2016-04-23', '2016-04-24'] ; trange required to reset the trange of the plot (default set above to October 2015)
 
 ; list tplot variables that were loaded
 tplot_names

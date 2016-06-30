@@ -1,14 +1,18 @@
 
 
-pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub
+pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=itf
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
-  exec, exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*3600*.05'
+  exec, exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*3600*.1'
   
   if n_elements(hub) eq 0 then hub = 1
+  if keyword_set(itf) then begin
+    recorder,title='SWEM ITF', port= hub ? 8082 : 2024, host='abiad-sw.ssl.berkeley.edu', exec_proc='spp_itf_stream_read' ;,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+    return
+  endif
   if keyword_set(swemgse) then begin
-    recorder,title='SWEMGSE', port= hub ? 8082 : 2024, host='abiad-sw.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read' ;,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+    recorder,title='SWEMGSE', port= hub ? 8081 : 2024, host='abiad-sw.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read' ;,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
     return
   endif
   host = 'localhost'

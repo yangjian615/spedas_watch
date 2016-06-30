@@ -3,7 +3,7 @@
 ;INPUT:	
 ;	
 ;PURPOSE:
-;	Generates 'th'+sc+'_pser_minus_bkg' for use by thm_load_pei_bkg.pro -- Auto selects time interval for pser background subtract
+;	Generates 'th'+sc+'_pser_minus_bkg' for use by thm_load_esa_bkg.pro -- Auto selects time interval for pser background subtract
 ;
 ;CREATED BY:
 ;	J.McFadden	09-01-01
@@ -18,6 +18,7 @@
 
 pro thm_pse_bkg_auto,sc=sc,t1=t1,t2=t2
 
+  compile_opt strictarr
 
 ; sc default
 	if not keyword_set(sc) then begin
@@ -42,35 +43,35 @@ pro thm_pse_bkg_auto,sc=sc,t1=t1,t2=t2
 
 	get_dat='thm_sst_pser'
 	name1='th'+sc+'_pser_counts'
-	get_en_spec,get_dat,units='counts',name=name1,probe=sc,t1=t1,t2=t2,gap_time=gap_time
+	thm_get_en_spec,get_dat,units='counts',name=name1,probe=sc,t1=t1,t2=t2,gap_time=gap_time
 		ylim,name1,10000.,1000000.,1
 		zlim,name1,100.,100000.,1
 		options,name1,'ytitle','e- th'+sc+'!C!CCounts'
 		options,name1,'spec',1
 	name2='th'+sc+'_pser_atten'
-	get_2dt,'sst_atten',get_dat,name=name2,probe=sc,t1=t1,t2=t2,gap_time=gap_time
+	thm_get_2dt,'sst_atten',get_dat,name=name2,probe=sc,t1=t1,t2=t2,gap_time=gap_time
 		ylim,name2,0.,11,0
 		options,name2,'ytitle','e- sst th'+sc+'!C!C Atten'
 	name3='th'+sc+'_pser6_counts_bin'
-	get_en_spec,get_dat,units='counts',name=name3,probe=sc,t1=t1,t2=t2,bins=[0,0,0,1,0,1],gap_time=gap_time
+	thm_get_en_spec,get_dat,units='counts',name=name3,probe=sc,t1=t1,t2=t2,bins=[0,0,0,1,0,1],gap_time=gap_time
 		ylim,name3,10000.,1000000.,1
 		zlim,name3,100.,100000.,1
 		options,name3,'ytitle','e- th'+sc+'!C!CCounts'
 		options,name3,'spec',1
 	get_dat='thm_sst_psef'
 	name4='th'+sc+'_psef_counts_bin'
-	get_en_spec,get_dat,units='counts',name=name4,probe=sc,t1=t1,t2=t2,gap_time=gap_time
+	thm_get_en_spec,get_dat,units='counts',name=name4,probe=sc,t1=t1,t2=t2,gap_time=gap_time
 		ylim,name4,10000.,1000000.,1
 		zlim,name4,100.,100000.,1
 		options,name4,'ytitle','e- th'+sc+'!C!CCounts'
 		options,name4,'spec',1
 	name5='th'+sc+'_psef_atten'
-	get_2dt,'sst_atten',get_dat,name=name5,probe=sc,t1=t1,t2=t2,gap_time=gap_time
+	thm_get_2dt,'sst_atten',get_dat,name=name5,probe=sc,t1=t1,t2=t2,gap_time=gap_time
 		ylim,name5,0.,11,0
 		options,name5,'ytitle','e- sst th'+sc+'!C!C Atten'
 	name6='th'+sc+'_psef6_counts_bin'
 	bins=bytarr(64) & bins[50:53]=1 & bins[58:61]=1 & bins[34:37]=1 & bins[42:45]=1
-	get_en_spec,get_dat,units='counts',name=name6,probe=sc,t1=t1,t2=t2,bins=bins,gap_time=gap_time
+	thm_get_en_spec,get_dat,units='counts',name=name6,probe=sc,t1=t1,t2=t2,bins=bins,gap_time=gap_time
 		ylim,name6,10000.,1000000.,1
 		zlim,name6,100.,100000.,1
 		options,name6,'ytitle','e- th'+sc+'!C!CCounts'
@@ -115,8 +116,8 @@ if time_double(t1) gt time_double('2009-02-01/23:59') then begin
 	ntot=n_elements(atot)
 	ind_on  = where(atot eq 5,cnt_on)
 	ind_off = where(atot ne 5,cnt_off)
-	nrg = n_elements(tmp1.y(0,*))
-	energy = reform(tmp1.v(0,*))
+	nrg = n_elements(tmp1.y[0,*])
+	energy = reform(tmp1.v[0,*])
 endif else begin
 	ntot = n_elements(tmp1.x)
 	times=tmp1.x
@@ -127,15 +128,15 @@ endif else begin
 	ptot6 = total(tmp3.y,2)
 	ind_on  = where(atot eq 5,cnt_on)
 	ind_off = where(atot ne 5,cnt_off)
-	nrg = n_elements(tmp1.y(0,*))
-	energy = reform(tmp1.v(0,*))
+	nrg = n_elements(tmp1.y[0,*])
+	energy = reform(tmp1.v[0,*])
 endelse
 
 ; attenuator ON: determine intervals with lowest counts for pser background 
 
 	if cnt_on ne 0 then begin
 		atten = replicate(1.,ntot) 
-		if cnt_off ne 0 then atten(ind_off) = 100000. 
+		if cnt_off ne 0 then atten[ind_off] = 100000. 
 
 
 
@@ -149,7 +150,7 @@ endelse
 		endwhile
 		if npts gt 50 then begin
 ;				the following could include a correction for relative sensitivity instead of just 4.*
-			pbak_on = total(ptmp(ind,*),1)/npts - 4.*total(ptmp6(ind,*),1)/npts
+			pbak_on = total(ptmp[ind,*],1)/npts - 4.*total(ptmp6[ind,*],1)/npts
 ;print,'pbak_on'
 ;print,pbak_on
 ;print,total(ptmp(ind,*),1)/npts
@@ -161,7 +162,7 @@ endelse
 				ind = where(ptot*atten lt pmax and ptot*atten gt pmin,npts)
 				pmax = pmax*scale
 			endwhile
-			if npts gt 50 then pbak_on = total(ptmp(ind,*),1)/npts else pbak_on = fltarr(nrg)
+			if npts gt 50 then pbak_on = total(ptmp[ind,*],1)/npts else pbak_on = fltarr(nrg)
 		endelse
 	endif else pbak_on = fltarr(nrg)
 	pbak_on = pbak_on > 0.
@@ -182,7 +183,7 @@ endelse
 
 	if cnt_off ne 0 then begin
 		atten = replicate(1.,ntot) 
-		if cnt_on ne 0 then atten(ind_on) = 1000000. 
+		if cnt_on ne 0 then atten[ind_on] = 1000000. 
 
 ;		print,'minmax(ptot)=',minmax(ptot)
 		scale = 2.^(1./32.)
@@ -194,7 +195,7 @@ endelse
 		endwhile
 		if npts gt 10 then begin
 ;				the following could include a correction for relative sensitivity instead of just 4.*
-			pbak_off = total(ptmp(ind,*),1)/npts - 4.*total(ptmp6(ind,*),1)/npts
+			pbak_off = total(ptmp[ind,*],1)/npts - 4.*total(ptmp6[ind,*],1)/npts
 ;print,'pbak_off'
 ;print,pbak_off
 ;print,total(ptmp(ind,*),1)/npts
@@ -207,7 +208,7 @@ endelse
 				ind = where(ptot*atten lt pmax and ptot*atten gt pmin,npts)
 				pmax = pmax*scale
 			endwhile
-			if npts gt 10 then pbak_off = total(ptmp(ind,*),1)/npts else pbak_off = fltarr(nrg)
+			if npts gt 10 then pbak_off = total(ptmp[ind,*],1)/npts else pbak_off = fltarr(nrg)
 		endelse
 	endif else pbak_off = fltarr(nrg)
 	pbak_off = pbak_off > 0.
@@ -225,8 +226,8 @@ endelse
 ; calculate and subtract background from pser data and store
 
 	bak_on = fltarr(ntot) & bak_off=fltarr(ntot)
-	if cnt_on  ne 0 then bak_on(ind_on)=1. 
-	if cnt_off ne 0 then bak_off(ind_off)=1. 
+	if cnt_on  ne 0 then bak_on[ind_on]=1. 
+	if cnt_off ne 0 then bak_off[ind_off]=1. 
 	tmp = ptmp - bak_on#pbak_on - bak_off#pbak_off > 0.
 	tmp0 = ptmp > 0.
 
@@ -260,8 +261,8 @@ endelse
 
 
 if cnt_off ne 0 then begin
-	tmp(ind_off,*)=tmp(ind_off,*)/scale
-	tmp0(ind_off,*)=tmp0(ind_off,*)/scale
+	tmp[ind_off,*]=tmp[ind_off,*]/scale
+	tmp0[ind_off,*]=tmp0[ind_off,*]/scale
 endif
 
 
@@ -281,10 +282,10 @@ print,pbak_on
 print,'scale factor is the ratio of gf for att_off/att_on, should be approximately 64'
 print,'scale=',scale
 
-	store_data,'th'+sc+'_pser_minus_bkg_tot0-8',data={x:times,y:total(tmp(*,0:8),2)}
+	store_data,'th'+sc+'_pser_minus_bkg_tot0-8',data={x:times,y:total(tmp[*,0:8],2)}
 		ylim,'th'+sc+'_pser_minus_bkg_tot0-8',1,1.e5,1
 
-	store_data,'th'+sc+'_pser_with_bkg_tot0-8',data={x:times,y:total(tmp0(*,0:8),2)}
+	store_data,'th'+sc+'_pser_with_bkg_tot0-8',data={x:times,y:total(tmp0[*,0:8],2)}
 		ylim,'th'+sc+'_pser_with_bkg_tot0-8',1,1.e5,1
 		options,'th'+sc+'_pser_with_bkg_tot0-8',color=6
 

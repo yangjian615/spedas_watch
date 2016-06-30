@@ -10,8 +10,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-23 11:17:20 -0700 (Mon, 23 May 2016) $
-; $LastChangedRevision: 21177 $
+; $LastChangedDate: 2016-06-29 14:53:36 -0700 (Wed, 29 Jun 2016) $
+; $LastChangedRevision: 21398 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_mva_crib.pro $
 ;-
 
@@ -40,6 +40,12 @@ minvar_matrix_make, 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_mat_day', $
 ;   -applies a right handed rotations
 tvector_rotate, 'mva_mat_day', 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_data_day'
 
+; update the labels for the transformed variable
+options, 'mva_data_day', labels='B'+['i', 'j', 'k']+' GSE'
+
+; update the ysubtitle for the transformed variable
+options, 'mva_data_day', ysubtitle='single transformation!C[nT]'
+
 ;limit time range to plot
 timespan, '2015-10-16/13:00', 1, /hour
 tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_day'
@@ -59,6 +65,12 @@ minvar_matrix_make, 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_mat_hour', $
 
 tvector_rotate, 'mva_mat_hour', 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_data_hour'
 
+; update the labels for the transformed variable
+options, 'mva_data_hour', labels='B'+['i', 'j', 'k']+' GSE'
+
+; update the ysubtitle for the transformed variable
+options, 'mva_data_hour', ysubtitle='1 hour sliding avg!C[nT]'
+
 timespan, '2015-10-16/13:00', 1, /hour
 tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_hour'
 
@@ -77,6 +89,12 @@ minvar_matrix_make, 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_mat_min_tlim', $
                     twindow=300, tslide=150
 
 tvector_rotate,'mva_mat_min_tlim', 'mms1_fgm_b_gse_srvy_l2_bvec', newname='mva_data_min_tlim'
+
+; update the labels for the transformed variable
+options, 'mva_data_min_tlim', labels='B'+['i', 'j', 'k']+' GSE'
+
+; update the ysubtitle for the transformed variable
+options, 'mva_data_min_tlim', ysubtitle='5 min sliding avg!C[nT]'
 
 timespan, '2015-10-16/13:40', 10, /min
 tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_min_tlim'

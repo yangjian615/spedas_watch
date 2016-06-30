@@ -217,7 +217,7 @@ endif
          PEAK_CNT:        spp_swp_word_decom(b,80),$
          CMDS_TIME:       ishft(b[82],-4),$
          PPULSE_SEL:      ishft(b[82],-2) AND '11'b,$
-         F0_CNT:          (spp_swp_word_decom(b,82) AND '3FF'x),$
+         F0:          (spp_swp_word_decom(b,82) AND '3FF'x),$
          
          ERR_ATN:         ishft(b[84],-2),$
          ERR_CVR:         b[84] AND '11'b,$

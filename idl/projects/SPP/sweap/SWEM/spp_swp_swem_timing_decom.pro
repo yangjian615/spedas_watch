@@ -1,10 +1,24 @@
+pro spp_timing_temp
+
+get_data,'spp_swem_timing_FIELDS_CLK_CYCLES',data=d
+clk = d.y
+dc = long(clk)-long(shift(clk,1))
+dc[0]=dc[1]
+over = dc lt 0
+dc += over * 2L^25
+store_data,'foo2',data={x:d.x,y:dc}
+
+end
+
+
+
 function spp_swp_swem_timing_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
 common spp_swp_swem_timing_decom_com2,  last_str,  fields_dt
 data = ccsds.data
 
 if ccsds.pkt_size lt 72 then begin
-  dprint,'error'
+  dprint,'error',ccsds.pkt_size
   return,0
 endif
 
@@ -30,7 +44,7 @@ clks_per_pps = values2[3]
 ;last_str = 0
 
 nan= !values.d_nan
-if ~keyword_set(last_str) then last_str = {sample_clk_per:nan, scpps_met_time:nan, sample_met: nan, sc_time:nan,  $
+if ~keyword_set(last_str) then last_str = {sample_clk_per:sample_clk_per-1, scpps_met_time:scpps_met_time-1, sample_met: nan, sc_time:nan,  $
      fields_f123:nan, fields_met:nan, drift:nan, fields_clk_cycles:0ul,clks_per_pps:0ul}
 
 ;cludge to force the fields quantities to be nearly the same
@@ -49,32 +63,36 @@ ttt = sample_met
 sample_clk_per_delta =    double( uint( ( sample_clk_per - last_str.sample_clk_per) ) )
  
 time_drift = (sample_MET - sample_clk_per * (2d^24 / 19.2d6) ) mod 1
+
+
+
+df0 = uint( sample_clk_per - last_str.sample_clk_per)
+
  
 fields_clk_cycles =  ishft(ulong(values[4]),-1)
-fields_clk_cycles_delta = ( fields_clk_cycles - last_str.fields_clk_cycles )   and '1FFFFFF'xu
+fields_clk_cycles_delta = long( fix( fields_clk_cycles - last_str.fields_clk_cycles ) ) 
 
-if fields_clk_cycles_delta ge 2e7 then fields_clk_cycles_delta /= 2
+;fields_clk_cycles_delta =  fields_clk_cycles_delta / df0
+
+
+if debug(3) then begin
+  ;dprint,str.fields_clk_cycles_delta
+  hexprint,[fields_clk_cycles,fields_clk_cycles_delta,ulong(sample_clk_per_delta)]
+endif
+
 
 
 dseq = ccsds.dseq_cntr
 k = 2ul^25
 
 clks_per_pps_delta =     ( clks_per_pps - last_str.clks_per_pps  ) and (k-1)
-
 clks_per_pps_delta = ( clks_per_pps_delta + k *floor(dseq * 19.2d6/k) ) / dseq
 
 
 if debug(3) then begin
-  
   hexprint,[clks_per_pps,clks_per_pps_delta]
-  dprint,clks_per_pps,clks_per_pps_delta
+;  dprint,clks_per_pps,clks_per_pps_delta
 endif
-
-
-; hexprint,fields_clk_cycles
-;dprint,dlevel=2,fields_clk_cycles ,fields_clk_cycles_delta
-;hexprint,[fields_clk_cycles,fields_clk_cycles_delta]
-;printdat,fields_clk_cycles,fields_clk_cycles_delta
 
  
 str = {time:   ccsds.time  ,$
@@ -89,7 +107,7 @@ str = {time:   ccsds.time  ,$
      sample_MET_subsec:   values[2] ,$
 ;     sample_MET_secs:   values[3] ,$
      fields_clk_cycles:  fields_clk_cycles,$
-       fields_clk_cycles_delta:  long(fields_clk_cycles_delta) - 2L^24,$
+       fields_clk_cycles_delta:  fields_clk_cycles_delta,$
      fields_clk_transition:  values[4] and 1 ,$
 ;     fields_F1F2:       values[5] ,$
      fields_subsec:          values[6] ,$
@@ -126,11 +144,6 @@ str = {time:   ccsds.time  ,$
      hexprint,ccsds.data
   endif
 
-if debug(3) then begin
-  ;dprint,str.fields_clk_cycles_delta
-  hexprint,[fields_clk_cycles,fields_clk_cycles_delta,ulong(sample_clk_per)]
-  
-endif
   last_str = str
 
   return,str

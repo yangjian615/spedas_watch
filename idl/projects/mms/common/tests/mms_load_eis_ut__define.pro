@@ -6,10 +6,60 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-29 14:54:42 -0700 (Fri, 29 Apr 2016) $
-; $LastChangedRevision: 20983 $
+; $LastChangedDate: 2016-06-29 13:23:49 -0700 (Wed, 29 Jun 2016) $
+; $LastChangedRevision: 21394 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_eis_ut__define.pro $
 ;-
+
+function mms_load_eis_ut::test_yrange_of_spectra
+  mms_load_eis, datatype='phxtof', level='l2', probe=1
+  get_data, 'mms1_epd_eis_phxtof_proton_flux_omni_spin', limits=l
+  assert, array_equal(l.yrange, [14, 45]), 'Problem with yrange of L2 PHxTOF proton variable'
+  
+  mms_load_eis, datatype='extof', level='l2', probe=1
+  get_data, 'mms1_epd_eis_extof_proton_flux_omni_spin', limits=proton_l
+  get_data, 'mms1_epd_eis_extof_alpha_flux_omni_spin', limits=alpha_l
+  get_data, 'mms1_epd_eis_extof_oxygen_flux_omni_spin', limits=oxygen_l
+  assert, array_equal(proton_l.yrange, [55, 1000]), 'Problem with yrange of L2 ExTOF proton variable'
+  assert, array_equal(alpha_l.yrange, [80, 650]), 'Problem with yrange of L2 ExTOF alpha variable'
+  assert, array_equal(oxygen_l.yrange, [145, 950]), 'Problem with yrange of L2 ExTOF oxygen variable'
+  
+  mms_load_eis, datatype='electronenergy', level='l2', probe=1
+  get_data, 'mms1_epd_eis_electronenergy_electron_flux_omni_spin', limits=electrons_l
+  assert, array_equal(electrons_l.yrange, [40, 660]), 'Problem with yrange of L2 electronenergy variable'
+  
+  del_data, '*'
+  
+  ; the following will break when the L1b files are updated to v3
+  mms_load_eis, datatype='phxtof', level='l1b', probe=1
+  get_data, 'mms1_epd_eis_phxtof_proton_flux_omni_spin', limits=l1b_l
+  assert, array_equal(l1b_l.yrange, [10, 28]), 'Problem with yrange of L1b PHxTOF proton variable'
+  
+  return, 1
+end
+
+function mms_load_eis_ut::test_yrange_of_spectra_brst
+  mms_load_eis, datatype='phxtof', level='l2', probe=1, data_rate='brst'
+  get_data, 'mms1_epd_eis_brst_phxtof_proton_flux_omni_spin', limits=l
+  assert, array_equal(l.yrange, [14, 45]), 'Problem with yrange of L2 PHxTOF proton variable (brst)'
+
+  mms_load_eis, datatype='extof', level='l2', probe=1, data_rate='brst'
+  get_data, 'mms1_epd_eis_brst_extof_proton_flux_omni_spin', limits=proton_l
+  get_data, 'mms1_epd_eis_brst_extof_alpha_flux_omni_spin', limits=alpha_l
+  get_data, 'mms1_epd_eis_brst_extof_oxygen_flux_omni_spin', limits=oxygen_l
+  assert, array_equal(proton_l.yrange, [55, 1000]), 'Problem with yrange of L2 ExTOF proton variable (brst)'
+  assert, array_equal(alpha_l.yrange, [80, 650]), 'Problem with yrange of L2 ExTOF alpha variable (brst)'
+  assert, array_equal(oxygen_l.yrange, [145, 950]), 'Problem with yrange of L2 ExTOF oxygen variable (brst)'
+
+  del_data, '*'
+
+  ; the following will break when the L1b files are updated to v3
+  mms_load_eis, datatype='phxtof', level='l1b', probe=1, data_rate='brst'
+  get_data, 'mms1_epd_eis_brst_phxtof_proton_flux_omni_spin', limits=l1b_l
+  assert, array_equal(l1b_l.yrange, [10, 28]), 'Problem with yrange of L1b PHxTOF proton variable (brst)'
+
+  return, 1
+end
 function mms_load_eis_ut::test_load_pad_suffix
   mms_load_eis, datatype='phxtof', level='l2', probe=3, suffix='_p'
   mms_eis_pad, datatype='phxtof', suffix='_p', probe=3
