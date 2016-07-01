@@ -8,6 +8,7 @@
 ;	J.McFadden	08-12-31
 ;Modifications
 ;	J.McFadden	08-12-31		 
+; aflores   2016-06-30  minor changes to integrate with spedas
 ;-
 function thm_pei_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins
 
@@ -28,7 +29,7 @@ function thm_pei_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BIN
 	max1=max(odat,maxind)
 	min1=min(odat,ind1)
 	if maxind gt 5 and max1 gt 3000. and max1/(min1+1.) gt 100. then begin
-		print, ' No subtraction - sheath assumed
+		dprint, ' No peir subtraction - sheath assumed', dlevel=2, dwait=0.5d
 ;		print,'odat='
 ;		print,odat
 		return,0

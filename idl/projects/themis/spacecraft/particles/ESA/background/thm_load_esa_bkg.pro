@@ -24,6 +24,7 @@
 ;				08/12/31	
 ;				10/03/18	added peer background from scattered electrons	
 ;				10/04/06	background array for electrons now filled using ion calculated background
+;     2016/06/30  minor changes to integrate with spedas
 ;
 ;NOTES:	 
 ;		Assumes esa data is loaded 
@@ -78,7 +79,7 @@ for i=0,nsc-1 do begin
 
 	if not keyword_set(datatype) or string(data_type) eq 'pser' then begin
 		dprint,'Calculating background from pser data', dlevel=2
-		wait,.1
+;		wait,.1
 
 ;	'th'+probes[i]+'_pser_minus_bkg' contains pser counts after sunlight background subtraction
 
@@ -105,31 +106,33 @@ for i=0,nsc-1 do begin
 		get_data,'th'+probes[i]+'_pser_minus_bkg',data=tmp1
     ;warn if data is not present and proceed as though no pser was used -af
     if ~is_struct(tmp1) then begin
-      dprint, 'WARNING: No pser data available for background determination'
+      dprint, 'WARNING: No pser data available for background determination!',dlevel=1
       att_on = [1.,1.]
       bkg1 = [0.,0.]
       time1 = [time_double('07-02-01/0'),time_double('27-02-01/0')]
-    endif
+    endif else begin
 
-;		get_data,'th'+probes[i]+'_pser_atten',data=tmp2
-		sst = transpose(tmp1.y[*,0:8]) & sst[0,*]=1.
-;		att = interp(tmp2.y,tmp2.x,tmp1.x)
-		npt = n_elements(tmp1.x) 
-;		att_on=fltarr(npt) & att_on(where(att eq 5))=1.
-		att_on=replicate(1.,npt)
-		bkg1 = total((aa#att_on)*sst,1)
-		time1=tmp1.x
+  ;		get_data,'th'+probes[i]+'_pser_atten',data=tmp2
+  		sst = transpose(tmp1.y[*,0:8]) & sst[0,*]=1.
+  ;		att = interp(tmp2.y,tmp2.x,tmp1.x)
+  		npt = n_elements(tmp1.x) 
+  ;		att_on=fltarr(npt) & att_on(where(att eq 5))=1.
+  		att_on=replicate(1.,npt)
+  		bkg1 = total((aa#att_on)*sst,1)
+  		time1=tmp1.x
+  
+  		thm_get_2dt,'jo_3d_new','th'+sc+'_peer',name='Jeo_10_30keV',gap_time=6.,energy=[10000,27000.]
+  		get_data,'Jeo_10_30keV',data=tmp8
+  		bkg_pee = 5.e-9*interp(tmp8.y,tmp8.x,tmp1.x)
+  		store_data,'th'+probes[i]+'_peer_pei_bkg',data={x:tmp1.x,y:bkg_pee}
+  			ylim,'th'+probes[i]+'_peer_pei_bkg',1,100,1
+  		bkg1=bkg1+bkg_pee
+  
+  		store_data,'th'+probes[i]+'_pser_pei_bkg',data={x:tmp1.x,y:bkg1}
+  			ylim,'th'+probes[i]+'_pser_pei_bkg',1.,10000.,1
+  			options,'th'+probes[i]+'_pser_pei_bkg','ytitle','Bkg pse th'+probes[i]+'!C!CCounts'
 
-		thm_get_2dt,'jo_3d_new','th'+sc+'_peer',name='Jeo_10_30keV',gap_time=6.,energy=[10000,27000.]
-		get_data,'Jeo_10_30keV',data=tmp8
-		bkg_pee = 5.e-9*interp(tmp8.y,tmp8.x,tmp1.x)
-		store_data,'th'+probes[i]+'_peer_pei_bkg',data={x:tmp1.x,y:bkg_pee}
-			ylim,'th'+probes[i]+'_peer_pei_bkg',1,100,1
-		bkg1=bkg1+bkg_pee
-
-		store_data,'th'+probes[i]+'_pser_pei_bkg',data={x:tmp1.x,y:bkg1}
-			ylim,'th'+probes[i]+'_pser_pei_bkg',1.,10000.,1
-			options,'th'+probes[i]+'_pser_pei_bkg','ytitle','Bkg pse th'+probes[i]+'!C!CCounts'
+    endelse
 
 	endif else begin
 		att_on = [1.,1.]
@@ -140,8 +143,8 @@ for i=0,nsc-1 do begin
 ; peir determined background
 
 	if not keyword_set(datatype) or string(data_type) eq 'peir' then begin
-		print,'Calculating background from peir data'
-		wait,.1
+		dprint,'Calculating background from peir data', dlevel=2
+;		wait,.1
 
 		get_dat='th'+probes[i]+'_peir'
 		name1='th'+probes[i]+'_pei_pei_bkg'
@@ -167,8 +170,8 @@ for i=0,nsc-1 do begin
 ; peer determined background
 
 	if 1 then begin
-		print,'Calculating background from peer data'
-		wait,.1
+		dprint,'Calculating background from peer data', dlevel=2
+;		wait,.1
 
 		get_dat='th'+probes[i]+'_peer'
 		name1='th'+probes[i]+'_peer_pee_bkg'
@@ -206,21 +209,21 @@ for i=0,nsc-1 do begin
 				ind2 = where(finite(bkg8) and finite(bkg7) and dist gt 5.3,count2)
 				if count2 gt 1000 then scale = total(bkg7[ind2]*bkg8[ind2])/total(bkg7[ind2]*bkg7[ind2]) else scale=1.
 				if scale gt 2. or scale lt .5 then begin
-					print,'Error - thm_load_esa_bkg scale correction is too large'
-					print,'Probable error in pser optimization code'
-					print,'pser background set to zero'
+					dprint,'Error - thm_load_esa_bkg scale correction is too large',dlevel=1
+					dprint,'Probable error in pser optimization code',dlevel=1
+					dprint,'pser background set to zero',dlevel=1
 					att_on = [1.,1.]
 					bkg1 = [0.,0.]
 					time1 = [time_double('07-02-01/0'),time_double('27-02-01/0')]
 				endif else begin
-					print,'pser background scaled from default values by :',scale
+					dprint,'pser background scaled from default values by: ',strtrim(scale,2), dlevel=2
 					bkg1 = bkg1 * scale
 					store_data,'th'+probes[i]+'_pser_pei_bkg',data={x:time1,y:bkg1}
 				endelse
 			endif
 		endif
 	endif else begin
-		print,'State data not loaded for th'+probes[i]+', cannot optimize pser background subtraction'
+		dprint,'State data not loaded for th'+probes[i]+', cannot optimize pser background subtraction',dlevel=1
 	endelse
 
 
@@ -869,7 +872,7 @@ for i=0,nsc-1 do begin
 	endif
 
 	ex_time = systime(1) - ex_start
-	message,'Loading pei background complete:  '+string(ex_time)+' seconds execution time.',/info,/cont
+	dprint,'Loading ESA background complete:  '+strtrim(ex_time,2)+' seconds execution time.', dlevel=2
 	tplot,['th'+probes[i]+'_pei_bkg'],title='THEMIS '+strupcase(sc)+'  PEI Background'
 
 endfor

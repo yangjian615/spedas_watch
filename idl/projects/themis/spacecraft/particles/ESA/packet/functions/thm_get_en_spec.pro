@@ -45,6 +45,7 @@
 ;		09/01/05	calib keyword no longer passed to routine
 ;		09/04/16	bkg keyword removed for Themis electron sst, assume bkg removal is part of get_th?_pse?
 ; 2014/06/30  Adding thm prefix to differentiate from identically named FAST routines
+; 2016/06/30  re-enabling time range constraints, minor changes for spedas compatibility
 ;
 ;NOTES:	  
 ;	Current version only works for FAST and THEMIS
@@ -71,7 +72,7 @@ pro thm_get_en_spec,get_dat,  $
 	probe = probe, $
 	_extra=_extra
 
-
+  compile_opt strictarr
 
 ;	Time how long the routine takes
 ex_start = systime(1)
@@ -177,29 +178,29 @@ if (dat.valid eq 1) then begin
 		str_element,dat,'PHI',INDEX=tf_phi
 		if tf_phi lt 0 then bins=angle_to_bins(dat,an)
 		if tf_phi gt 0 then begin
-			th=reform(dat.theta(0,*)/!radeg)
-			ph=reform(dat.phi(fix(dat.nenergy/2),*)/!radeg)
+			th=reform(dat.theta[0,*]/!radeg)
+			ph=reform(dat.phi[fix(dat.nenergy/2),*]/!radeg)
 			xx=cos(ph)*cos(th)
 			yy=sin(ph)*cos(th)
 			zz=sin(th)
-			Bmag=(dat.magf(0)^2+dat.magf(1)^2+dat.magf(2)^2)^.5
-			pitch=acos((dat.magf(0)*xx+dat.magf(1)*yy+dat.magf(2)*zz)/Bmag)*!radeg
-			if an(0) gt an(1) then an=reverse(an)
-			bins= pitch gt an(0) and pitch lt an(1)
+			Bmag=(dat.magf[0]^2+dat.magf[1]^2+dat.magf[2]^2)^.5
+			pitch=acos((dat.magf[0]*xx+dat.magf[1]*yy+dat.magf[2]*zz)/Bmag)*!radeg
+			if an[0] gt an[1] then an=reverse(an)
+			bins= pitch gt an[0] and pitch lt an[1]
 			if total(bins) eq 0 then begin
-				tmp=min(abs(pitch-(an(0)+an(1))/2.),ind)
-				bins(ind)=1
+				tmp=min(abs(pitch-(an[0]+an[1])/2.),ind)
+				bins[ind]=1
 			endif
 		endif
 	endif
 	if keyword_set(ar) then begin
 		nb=dat.nbins
 		bins=bytarr(nb)
-		if ar(0) gt ar(1) then begin
-			bins(ar(0):nb-1)=1
-			bins(0:ar(1))=1
+		if ar[0] gt ar[1] then begin
+			bins[ar[0]:nb-1]=1
+			bins[0:ar[1]]=1
 		endif else begin
-			bins(ar(0):ar(1))=1
+			bins[ar[0]:ar[1]]=1
 		endelse
 	endif
 ; Set the "count" to the number of bins summed over
@@ -209,15 +210,15 @@ if (dat.valid eq 1) then begin
 	if units eq 'Counts' or units eq 'counts' then norm = 1 else norm = count
 
 	if abs((dat.time+dat.end_time)/2.-last_time) ge gap_time then begin
-		if n ge 2 then dbadtime = time(n-1) - time(n-2) else dbadtime = gap_time/2.
-		time(n) = (last_time) + dbadtime
-		data(n,*) = missing
-		var(n,*) = missing
+		if n ge 2 then dbadtime = time[n-1] - time[n-2] else dbadtime = gap_time/2.
+		time[n] = (last_time) + dbadtime
+		data[n,*] = missing
+		var[n,*] = missing
 		n=n+1
-		if (dat.time+dat.end_time)/2. gt time(n-1) + gap_time then begin
-			time(n) = (dat.time+dat.end_time)/2. - dbadtime
-			data(n,*) = missing
-			var(n,*) = missing
+		if (dat.time+dat.end_time)/2. gt time[n-1] + gap_time then begin
+			time[n] = (dat.time+dat.end_time)/2. - dbadtime
+			data[n,*] = missing
+			var[n,*] = missing
 			n=n+1
 		endif
 	endif
@@ -234,42 +235,42 @@ if (dat.valid eq 1) then begin
 
 	nvar = dat.nenergy
 	if nvar gt nmax then nmax = nvar
-	time(n)   = (dat.time+dat.end_time)/2.
-	if ind(0) ne -1 then begin
+	time[n]   = (dat.time+dat.end_time)/2.
+	if ind[0] ne -1 then begin
 		if ndimen(dat.data) gt 1 and n_elements(ind) gt 1 then begin
 			if units eq 'Counts' or units eq 'counts' then begin
-				data(n,0:nvar-1) = total( dat.data(*,ind), 2)/norm
-				var(n,0:nvar-1) = total( dat.energy(*,ind), 2)/count
+				data[n,0:nvar-1] = total( dat.data[*,ind], 2)/norm
+				var[n,0:nvar-1] = total( dat.energy[*,ind], 2)/count
 			endif else begin
-				data(n,0:nvar-1) = total( dat.data(*,ind)*dat.gf(*,ind), 2)/total(dat.gf(*,ind),2)
-				var(n,0:nvar-1) = total( dat.energy(*,ind), 2)/count
+				data[n,0:nvar-1] = total( dat.data[*,ind]*dat.gf[*,ind], 2)/total(dat.gf[*,ind],2)
+				var[n,0:nvar-1] = total( dat.energy[*,ind], 2)/count
 			endelse
 		endif else if ndimen(dat.data) gt 1 then begin
-			data(n,0:nvar-1) = dat.data(*,ind)/norm
-			var(n,0:nvar-1) = dat.energy(*,ind)/count
+			data[n,0:nvar-1] = dat.data[*,ind]/norm
+			var[n,0:nvar-1] = dat.energy[*,ind]/count
 		endif else begin
-			data(n,0:nvar-1) = dat.data(*)
-			var(n,0:nvar-1) = dat.energy(*)
+			data[n,0:nvar-1] = dat.data[*]
+			var[n,0:nvar-1] = dat.energy[*]
 		endelse
 	endif else begin
-		data(n,0:nvar-1) = 0
-		var(n,0:nvar-1) =  dat.energy(*,0)
+		data[n,0:nvar-1] = 0
+		var[n,0:nvar-1] =  dat.energy[*,0]
 	endelse
 
 ; test the following lines, the 96-6-19 version of tplot did not work with !values.f_nan
 ;	if nvar lt nmaxvar then data(n,nvar:nmaxvar-1) = !values.f_nan
 ;	if nvar lt nmaxvar then var(n,nvar:nmaxvar-1) = !values.f_nan
-	if nvar lt nmaxvar then data(n,nvar:nmaxvar-1) = data(n,nvar-1)
-	if nvar lt nmaxvar then var(n,nvar:nmaxvar-1) = 1.5*var(n,nvar-1)-.5*var(n,nvar-2)
+	if nvar lt nmaxvar then data[n,nvar:nmaxvar-1] = data[n,nvar-1]
+	if nvar lt nmaxvar then var[n,nvar:nmaxvar-1] = 1.5*var[n,nvar-1]-.5*var[n,nvar-2]
 
 	if (all_same eq 1) then begin
-		if dimen1(where(var(n,0:nvar-1) ne var(0,0:nvar-1))) gt 1 then all_same = 0
+		if dimen1(where(var[n,0:nvar-1] ne var[0,0:nvar-1])) gt 1 then all_same = 0
 	endif
-	last_time = time(n)
+	last_time = time[n]
 	n=n+1
 
 endif else begin
-	dprint, 'Invalid packet, dat.valid ne 1, at: ',time_to_str(dat.time)
+	dprint, 'Invalid packet, dat.valid ne 1, at: ',time_string(dat.time), dlevel=2
 endelse
 	idx=idx+1
 	if keyword_set(probe) then dat = call_function(routine,probe=probe,index=idx) else dat = call_function(routine,index=idx)
@@ -286,7 +287,12 @@ endwhile
 ;continue:
 
 
-
+;make sure valid data was found -af
+if undefined(count) then begin
+  no_data = 1
+  dprint, 'No valid data found for "'+get_dat+'"', dlevel=1
+  return
+endif
 
 
 
@@ -298,15 +304,15 @@ endwhile
 
 if not keyword_set(retrace) then begin
 ;	If you want to plot the retrace, set the retrace flag to 1.
-	data = data(0l:n-1,0:nmax-1)
-	var = var(0l:n-1,0:nmax-1)
+	data = data[0l:n-1,0:nmax-1]
+	var = var[0l:n-1,0:nmax-1]
 endif else begin
-	data = data(0l:n-1,retrace:nmax-1)
-	var = var(0l:n-1,retrace:nmax-1)
+	data = data[0l:n-1,retrace:nmax-1]
+	var = var[0l:n-1,retrace:nmax-1]
 endelse
 
 
-if not all_same then dprint, 'all_same=',all_same
+if not all_same then dprint, 'all_same=',strtrim(all_same,2),dlevel=4
 ;labels=''
 ; The following has be removed so that FAST summary cdf files contain both arrays
 ;if all_same then begin
@@ -314,27 +320,26 @@ if not all_same then dprint, 'all_same=',all_same
 ;	labels = strtrim( round(var) ,2)+ ' eV'
 ;endif
 
-time = time(0l:n-1)
+time = time[0l:n-1]
 
-dprint, 'thm_get_en_spec time range = ',time_string(minmax(time))
-;if keyword_set(t1) then begin
-;	ind=where(time ge t1,count)
-;	print,count
-;	if count ne 0 then begin
-;		time=time(ind) 
-;		data=data(ind,*)
-;		var=var(ind,*)
-;	endif else return
-;endif
-;if keyword_set(t2) then begin
-;	ind=where(time le t2,count)
-;	print,count
-;	if count ne 0 then begin
-;		time=time(ind)
-;		data=data(ind,*)
-;		var=var(ind,*)
-;	endif else return
-;endif
+dprint, 'time range = ',time_string(minmax(time)), dlevel=4
+
+if keyword_set(t1) then begin
+	ind=where(time ge t1,count)
+	if count ne 0 then begin
+		time=time[ind] 
+		data=data[ind,*]
+		var=var[ind,*]
+	endif else return
+endif
+if keyword_set(t2) then begin
+	ind=where(time le t2,count)
+	if count ne 0 then begin
+		time=time[ind]
+		data=data[ind,*]
+		var=var[ind,*]
+	endif else return
+endif
 
 ; remove any negative values caused by background subtractions
 	data=data>0.
@@ -346,8 +351,8 @@ datastr = {x:time,y:data,v:var}
 store_data,name,data=datastr
 
 ex_time = systime(1) - ex_start
-dprint,string(ex_time)+' seconds execution time.'
-dprint, 'Number of data points = ',n
+dprint, strtrim(ex_time,2)+' seconds execution time.', dlevel=2
+dprint, 'Number of data points = ',strtrim(n,2), dlevel=4
 
 return
 

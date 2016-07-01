@@ -18,6 +18,7 @@
 ;	J.McFadden	09-11-18
 ;Modifications
 ;	J.McFadden	10-04-06	Changed to allow dat2.bkg subtraction of Bremstrahlung X-rays and seconda
+; aflores   2016-06-30  minor changes to integrate with spedas
 ;-
 function thm_pee_bkg_sub,dat2,plot=plot
 

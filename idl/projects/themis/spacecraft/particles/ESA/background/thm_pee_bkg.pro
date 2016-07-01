@@ -8,6 +8,7 @@
 ;	J.McFadden	10-04-06
 ;Modifications
 ;	J.McFadden	10-04-06		 
+; aflores   2016-06-30  minor changes to integrate with spedas
 ;-
 function thm_pee_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins
 
@@ -48,7 +49,7 @@ function thm_pee_bkg,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BIN
 
 ; assume background rate is the average rate of the above bins
 
-	mavg=total(odat(ind))/n_elements(ind)
+	mavg=total(odat[ind])/n_elements(ind)
 ;	print,'new mavg= ',mavg
 
 return,mavg

@@ -55,14 +55,15 @@
 ;		09/01/05	changed loop to use index to allow for dat.valid=0 data in stored data
 ;		09/01/05	calib keyword no longer passed to routine
 ;		09/04/16	bkg keyword removed for Themis electron sst, assume bkg removal is part of get_th?_pse?
-; 2014/06/30  Adding thm prefix to differentiate from identically named FAST routines  
+; 2014/06/30  Adding thm prefix to differentiate from identically named FAST routines
+; 2016/06/30  minor changes for spedas compatibility
 ; 
 ;NOTES:
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-06-30 18:58:14 -0700 (Mon, 30 Jun 2014) $
-;$LastChangedRevision: 15492 $
+;$LastChangedDate: 2016-06-30 16:57:15 -0700 (Thu, 30 Jun 2016) $
+;$LastChangedRevision: 21412 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/packet/functions/thm_get_2dt.pro $
 ;-
 pro thm_get_2dt,funct,get_dat, $
@@ -83,6 +84,8 @@ pro thm_get_2dt,funct,get_dat, $
         CALIB = calib, $
 	probe = probe, $
 	_extra=_extra
+
+  compile_opt strictarr
 
 ;	Time how long the routine takes
 ex_start = systime(1)
@@ -151,8 +154,6 @@ if strupcase(strmid(dat.project_name,0,6)) eq 'THEMIS' then default_gap_time = 1
 
 
 
-
-
 if not keyword_set(gap_time) then gap_time = default_gap_time
 
 maxpts = idxmax-idx+1000 < 300000l			; this limits a tplot str to < 10 days
@@ -167,28 +168,19 @@ if not keyword_set(missing) then missing = !values.f_nan
 
 
 
-
-
-
-
-
-
-
-
-
 ;while (dat.valid ne 0) and (n lt maxpts) do begin
 while (idx lt idxmax) and (n lt maxpts) do begin
 
 if (dat.valid eq 1) then begin
 
 	if abs((dat.time+dat.end_time)/2.-last_time) ge gap_time then begin
-		if n ge 2 then dbadtime = time(n-1) - time(n-2) else dbadtime = gap_time/2.
-		time(n) = (last_time) + dbadtime
-		data(n,*) = missing
+		if n ge 2 then dbadtime = time[n-1] - time[n-2] else dbadtime = gap_time/2.
+		time[n] = (last_time) + dbadtime
+		data[n,*] = missing
 		n=n+1
-		if (dat.time+dat.end_time)/2. gt time(n-1) + gap_time then begin
-			time(n) = (dat.time+dat.end_time)/2. - dbadtime
-			data(n,*) = missing
+		if (dat.time+dat.end_time)/2. gt time[n-1] + gap_time then begin
+			time[n] = (dat.time+dat.end_time)/2. - dbadtime
+			data[n,*] = missing
 			n=n+1
 		endif
 	endif
@@ -203,13 +195,13 @@ if (dat.valid eq 1) then begin
 	endif
 
 	sum = call_function(funct,dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,_extra=_extra)
-	data(n,*) = sum
-	time(n)   = (dat.time+dat.end_time)/2.
-	last_time = time(n)
+	data[n,*] = sum
+	time[n]   = (dat.time+dat.end_time)/2.
+	last_time = time[n]
 	n = n+1
 
 endif else begin
-	dprint, 'Invalid packet, dat.valid ne 1, at: ',time_to_str(dat.time)
+	dprint, 'Invalid packet, dat.valid ne 1, at: ',time_string(dat.time)
 endelse
 	idx=idx+1
 	if keyword_set(probe) then dat = call_function(routine,t,probe=probe,index=idx) else dat = call_function(routine,t,index=idx)
@@ -223,26 +215,30 @@ endelse
 endwhile
 
 if not keyword_set(name) then name=ytitle else ytitle=name
-data = data(0l:n-1,*)
-time = time(0l:n-1)
+data = data[0l:n-1,*]
+time = time[0l:n-1]
 
 if keyword_set(t1) then begin
-	ind=where(time ge t1)
-	time=time(ind)
-	data=data(ind,*)
+	ind=where(time ge t1,count)
+  if count ne 0 then begin
+  	time=time[ind]
+  	data=data[ind,*]
+  endif else return
 endif
 if keyword_set(t2) then begin
-	ind=where(time le t2)
-	time=time(ind)
-	data=data(ind,*)
+	ind=where(time le t2,count)
+  if count ne 0 then begin
+  	time=time[ind]
+  	data=data[ind,*]
+  endif else return
 endif
 
 datastr = {x:time,y:data,ytitle:ytitle}
 store_data,name,data=datastr
 
 ex_time = systime(1) - ex_start
-dprint,string(ex_time)+' seconds execution time.'
-dprint, 'Number of data points = ',n
+dprint,strtrim(ex_time,2)+' seconds execution time.', dlevel=2
+dprint, 'Number of data points = ',strtrim(n,2), dlevel=4
 
 return
 end

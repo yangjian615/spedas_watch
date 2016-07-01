@@ -10,7 +10,8 @@
 ;Modifications
 ;	J.McFadden	09-02-05	modified to work with both attenuator on and off	
 ;	J.McFadden	09-04-15	modified to include correct calibrations	
-;	J.McFadden	09-09-16	modified to include modes with psef w/ spin resolution and pser w/o spin resolution	
+;	J.McFadden	09-09-16	modified to include modes with psef w/ spin resolution and pser w/o spin resolution
+; aflores   2016-06-30  minor changes to integrate with spedas	
 ;Assumptions
 ;	SST data is already loaded
 ;	Uses pser data only - assumes it is the highest time resolution	 
@@ -22,7 +23,7 @@ pro thm_pse_bkg_auto,sc=sc,t1=t1,t2=t2
 
 ; sc default
 	if not keyword_set(sc) then begin
-		print,'Error - sc keyword must be set!'
+		dprint,'Error - sc keyword must be set!', level=0
 		return
 	endif
 
@@ -34,7 +35,7 @@ pro thm_pse_bkg_auto,sc=sc,t1=t1,t2=t2
 
 ; one spacecraft at a time - background intervals differ for different s/c
 	if n_elements(sc) gt 1 then begin
-		print,' Error - sc keyword must be set to one of the following - a,b,c,d,e'
+		dprint,' Error - sc keyword must be set to one of the following - a,b,c,d,e', level=0
 		return
 	endif
 
@@ -52,6 +53,8 @@ pro thm_pse_bkg_auto,sc=sc,t1=t1,t2=t2
 	thm_get_2dt,'sst_atten',get_dat,name=name2,probe=sc,t1=t1,t2=t2,gap_time=gap_time
 		ylim,name2,0.,11,0
 		options,name2,'ytitle','e- sst th'+sc+'!C!C Atten'
+    ;if variable already exists from thm_load_sst then tplot will attempt to use bitplot (var is float)
+    options,name2,'tplot_routine',/default
 	name3='th'+sc+'_pser6_counts_bin'
 	thm_get_en_spec,get_dat,units='counts',name=name3,probe=sc,t1=t1,t2=t2,bins=[0,0,0,1,0,1],gap_time=gap_time
 		ylim,name3,10000.,1000000.,1
@@ -83,6 +86,13 @@ pro thm_pse_bkg_auto,sc=sc,t1=t1,t2=t2
 	get_data,name4,data=tmp4
 	get_data,name5,data=tmp5
 	get_data,name6,data=tmp6
+
+  if ~is_struct(tmp) || ~is_struct(tmp) || ~is_struct(tmp) || $ 
+     ~is_struct(tmp) || ~is_struct(tmp) || ~is_struct(tmp) then begin
+    dprint, 'Missing required SST data for background determination', dlevel=1
+    return
+  endif
+
 	ntmp1 = n_elements(tmp1.x)
 	ntmp2 = n_elements(tmp2.x)
 	ntmp3 = n_elements(tmp3.x)
@@ -91,7 +101,7 @@ pro thm_pse_bkg_auto,sc=sc,t1=t1,t2=t2
 	ntmp6 = n_elements(tmp6.x)
 ;print,ntmp1,ntmp2,ntmp3,ntmp4,ntmp5,ntmp6
 if ntmp1 ne ntmp2 or ntmp4 ne ntmp5 then begin
-	print,'Error 7 - thm_pse_bkg_auto'
+	dprint,'Error: Time samples between SST variables to not match.  Canceling PSER background calculation.', level=0
 	return
 endif
 
@@ -275,12 +285,12 @@ endif
 		zlim,'th'+sc+'_pser_with_bkg',1,1.e5,1
 		options,'th'+sc+'_pser_with_bkg',spec=1
 
-print,'pbak_off'
-print,pbak_off
-print,'pbak_on'
-print,pbak_on
-print,'scale factor is the ratio of gf for att_off/att_on, should be approximately 64'
-print,'scale=',scale
+dprint,'pbak_off', dlevel=4
+dprint,pbak_off, dlevel=4
+dprint,'pbak_on', dlevel=4
+dprint,pbak_on, dlevel=4
+dprint,'scale factor is the ratio of gf for att_off/att_on, should be approximately 64', dlevel=4
+dprint,'scale=',scale, dlevel=4
 
 	store_data,'th'+sc+'_pser_minus_bkg_tot0-8',data={x:times,y:total(tmp[*,0:8],2)}
 		ylim,'th'+sc+'_pser_minus_bkg_tot0-8',1,1.e5,1

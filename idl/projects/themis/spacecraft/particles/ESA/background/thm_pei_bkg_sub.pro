@@ -20,6 +20,7 @@
 ;
 ;	Mcfadden	09-01-09	added relative bkg dependence as a function of anode 
 ;	mcfadden	09-01-30	changed dat.bkg to an array		 
+; aflores   2016-06-30  minor changes to integrate with spedas
 ;-
 function thm_pei_bkg_sub,dat2,bkg=bkg
 
