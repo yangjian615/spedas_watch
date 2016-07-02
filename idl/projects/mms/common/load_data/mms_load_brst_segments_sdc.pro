@@ -14,12 +14,12 @@
 ; 
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-29 15:52:02 -0700 (Wed, 29 Jun 2016) $
-;$LastChangedRevision: 21404 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_brst_segments.pro $
+;$LastChangedDate: 2016-07-01 07:52:56 -0700 (Fri, 01 Jul 2016) $
+;$LastChangedRevision: 21414 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_brst_segments_sdc.pro $
 ;-
 
-pro mms_load_brst_segments, trange=trange, suffix=suffix
+pro mms_load_brst_segments_sdc, trange=trange, suffix=suffix
   if undefined(suffix) then suffix = ''
   if (keyword_set(trange) && n_elements(trange) eq 2) $
     then tr = timerange(trange) $

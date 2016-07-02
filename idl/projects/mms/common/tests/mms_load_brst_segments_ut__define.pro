@@ -12,10 +12,17 @@
 ;   2015-10-16: 13:03:34.000 - 13:04:54.000
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-27 14:58:19 -0700 (Mon, 27 Jun 2016) $
-; $LastChangedRevision: 21374 $
+; $LastChangedDate: 2016-07-01 08:30:38 -0700 (Fri, 01 Jul 2016) $
+; $LastChangedRevision: 21417 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_brst_segments_ut__define.pro $
 ;-
+
+function mms_load_brst_segments_ut::test_load_singletime
+  mms_load_brst_segments, trange=['2015-10-16/13:02:25', '2015-10-16/13:02:25']
+  assert, spd_data_exists('mms_bss_burst', '2015-10-16/13:02:24', '2015-10-16/13:02:26'), $
+    'Problem loading burst bar with start time = end time in a burst interval'
+  return, 1
+end
 
 function mms_load_brst_segments_ut::test_load_overlap_two_segs
   mms_load_brst_segments, trange=['2015-10-16/13:03', '2015-10-16/13:04:05']

@@ -12,9 +12,9 @@
 ;   October 2014: only v00 is available for the 2013-14 campaign year, this might change in the future
 ;   
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
-;$LastChangedRevision: 17332 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2016-07-01 10:25:55 -0700 (Fri, 01 Jul 2016) $
+;$LastChangedRevision: 21422 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/barrel/spedas_plugin/barrel_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -40,12 +40,14 @@ pro barrel_ui_import_data,     $
 
   barrelmintime = '2013-01-01'
   barrelmaxtime = '2013-02-16'
-  barrel_version = 'v02' ; v02 data is available for the 2012-13 campaign year
+; removed barrel_version, all are version 5 now, and handled by
+; barrel_load_data, jmm, 2016-07-01
+;  barrel_version = 'v02' ; v02 data is available for the 2012-13 campaign year
   errmsg = 'No BARREL Data Loaded, BARREL data for 2012-2013 is only available between ' + barrelmintime + ' and ' + barrelmaxtime
   if campaignyear eq '2013-2014' then begin
     barrelmintime = '2013-12-27'
     barrelmaxtime = '2014-02-11'
-    barrel_version = 'v00' ; only v00 data is available for the 2013-14 campaign year
+;    barrel_version = 'v00' ; only v00 data is available for the 2013-14 campaign year
     errmsg = 'No BARREL Data Loaded, BARREL data for 2013-2014 is only available between ' + barrelmintime + ' and ' + barrelmaxtime
   end
 
@@ -71,7 +73,7 @@ pro barrel_ui_import_data,     $
 
   tn_before = [tnames('*',create_time=cn_before)]
 
-  barrel_load_data, trange = timeRange, probe = probe, datatype = datatype, level=level, version=barrel_version
+  barrel_load_data, trange = timeRange, probe = probe, datatype = datatype, level=level;, version=barrel_version
 
 
   if undefined(to_delete) then begin

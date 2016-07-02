@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-22 14:30:49 -0700 (Wed, 22 Jun 2016) $
-;$LastChangedRevision: 21350 $
+;$LastChangedDate: 2016-07-01 09:39:18 -0700 (Fri, 01 Jul 2016) $
+;$LastChangedRevision: 21418 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_edp_fix_metadata.pro $
 ;-
 
@@ -39,6 +39,9 @@ pro mms_edp_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
                       options, /def, tplot_name, 'colors', [2,4,6]
                       options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!C' + strupcase(instrument)
                       options, /def, tplot_name, 'labels', ['Ex DSL', 'Ey DSL', 'Ez DSL']
+                    end
+                    prefix[sc_idx] + '_'+instrument+'_hfesp_'+data_rate+'_'+level+suffix: begin
+                      options, /def, tplot_name, ylog=1, zlog=1
                     end
                     else: ; not doing anything
                 endcase

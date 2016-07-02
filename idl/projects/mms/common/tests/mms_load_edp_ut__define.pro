@@ -212,7 +212,7 @@ end
 function mms_load_edp_ut::init, _extra=e
   if (~self->MGutTestCase::init(_extra=e)) then return, 0
   ; the following adds code coverage % to the output
-  self->addTestingRoutine, ['mms_load_edp']
+  self->addTestingRoutine, ['mms_load_edp', 'mms_edp_fix_metadata']
   return, 1
 end
 

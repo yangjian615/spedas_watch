@@ -6,11 +6,11 @@
 ;  Basic example on how to load MMS position data and retrieve the neutral sheet
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 12:21:16 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21197 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib.pro $
-;
+;$LastChangedDate: 2016-07-01 10:19:23 -0700 (Fri, 01 Jul 2016) $
+;$LastChangedRevision: 21420 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/load_mms_position_and_neutral_sheet_crib.pro $
 ;-
+
 pro load_mms_position_and_neutral_sheet_crib
 
   re=6378.

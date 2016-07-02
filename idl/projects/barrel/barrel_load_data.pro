@@ -47,6 +47,7 @@
 ;EXAMPLE:
 ;
 ;REVISION HISTORY:
+;Version 0.96c JMM 07/01/2016, defaults to v05
 ;Version 0.96b JGS 07/02/2015 RC1, defaults to v04 dataset
 ;Version 0.96a KBY 07/07/2014 RC1, defaults to v03 dataset
 ;Version 0.95b KBY 12/29/2013 default to v02 dataset
@@ -77,7 +78,7 @@ pro barrel_load_data, probe=probe, datatype=datatype, trange=trange, $
 
 dprint, verbose=verbose, dlevel=4, 'BARREL data analysis software v0.96b' ; bdas_version
 
-file_version = 'v04'    ; default argument to VERSION (public release)
+file_version = 'v05'    ; default argument to VERSION (public release), jmm 2016-07-01
 vlevels = ['l2','l1']   ; master level: accepts multiple inputs
 vdatatypes = ['FSPC','EPHM','HKPG','MAGN','MSPC','MISC','RCNT','SSPC']   
                         ; master level: accepts multiple inputs 
@@ -137,7 +138,6 @@ version = STRSPLIT(STRJOIN(TEMPORARY(version),' '), ' ', /EXTRACT)
 version = version[0]
 
 addmaster=0
-
 
 ; call FILETYPE specific routines from here, if requested
 IF TOTAL(strfilter(datatype,'FSPC', /BYTE), /INTEGER) THEN $
