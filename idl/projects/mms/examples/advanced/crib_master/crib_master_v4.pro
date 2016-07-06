@@ -184,8 +184,9 @@ options, sc_id+'_hpca_oplus_flux_elev_0-360','ysubtitle','[eV]'
 ;zlim,    sc_id+'_hpca_oplus_RF_corrected', .1, 1000.,1
 ;
 ylim, sc_id+'_hpca_hplus_number_density', 0,0,0
-options, sc_id+'_hpca_hplus_number_density', 'ytitle', 'cm!U-3!N'
-options, sc_id+'_hpca_hplus_number_density', labels=['h!U+!N', 'o!U+!N']
+options, sc_id+'_hpca_hplus_number_density','ytitle','H!U+!N Density'
+options, sc_id+'_hpca_hplus_number_density', 'ysubtitle', '[cm!U-3!N]'
+options, sc_id+'_hpca_hplus_number_density', labels='n (H!U+!N)'
 options, sc_id+'_hpca_hplus_number_density','labflag',-1
 ;
 ;
