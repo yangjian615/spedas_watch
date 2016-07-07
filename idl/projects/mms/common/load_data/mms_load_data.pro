@@ -38,7 +38,9 @@
 ;         cdf_records: specify the # of records to load from the CDF files; this is useful
 ;             for grabbing one record from a CDF file
 ;         spdf: grab the data from the SPDF instead of the LASP SDC (only works for public access)
-;         
+;         available: returns a list of files available at the SDC for the requested parameters
+;             this is useful for finding which files would be downloaded (along with their sizes) if 
+;             you didn't specify this keyword (also outputs total download size)
 ;         
 ; EXAMPLE:
 ;     See the instrument specific crib sheets in the examples/ folder for usage examples
@@ -85,9 +87,9 @@
 ;           the directory structure at the SDC.
 ;      
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 14:43:44 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21099 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-07-06 15:40:46 -0700 (Wed, 06 Jul 2016) $
+;$LastChangedRevision: 21431 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -99,7 +101,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   suffix = suffix, time_clip = time_clip, no_update = no_update, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version, cdf_records = cdf_records, spdf = spdf, $
-                  center_measurement=center_measurement
+                  center_measurement = center_measurement, available = available
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -182,6 +184,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
           latest_version = latest_version, time_clip = time_clip, suffix = suffix
         return
     endif
+        
+    total_size = 0d ; for counting total download size when requesting /available
 
     ;loop over probe, rate, level, and datatype
     ;omitting some tabbing to keep format reasonable
@@ -225,9 +229,17 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 dprint, dlevel = 0, 'Error getting the information on remote files'
                 return
             endif
-
+            
             filename = remote_file_info.filename
             num_filenames = n_elements(filename)
+            
+            if keyword_set(available) then begin
+              for file_idx = 0, num_filenames-1 do begin
+                print, remote_file_info[file_idx].filename, ' ', '('+strcompress(string(remote_file_info[file_idx].filesize/(1024.*1024), format='(F0.1)'), /rem) + ' MB'+')'
+                total_size += remote_file_info[file_idx].filesize/(1024.*1024) ; in MB
+              endfor
+              continue
+            endif
             
             for file_idx = 0, num_filenames-1 do begin
                 ; For Survey and SITL products, the bottommost level are monthly directories,
@@ -318,6 +330,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     endfor
     endfor
     endfor
+
+    ; print the total size of requested data if the user specified /available
+    if keyword_set(available) then print, 'Total download size: ' + strcompress(string(total_size, format='(F0.1)'), /rem) + ' MB'
 
     ; just in case multiple datatypes loaded identical variables
     ; (this occurs with hpca moments & logicals)

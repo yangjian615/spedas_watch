@@ -57,8 +57,8 @@
 ;     June 2016: minor updates by egrimes
 ;     
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-27 12:15:33 -0700 (Mon, 27 Jun 2016) $
-; $LastChangedRevision: 21372 $
+; $LastChangedDate: 2016-07-06 12:16:13 -0700 (Wed, 06 Jul 2016) $
+; $LastChangedRevision: 21429 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_make_errorflagbars.pro $
 ;-
 
@@ -109,6 +109,7 @@ PRO mms_fpi_make_errorflagbars,tname
     ; kludge for the titles to show up on the y axes
     options, tname+'_flagbars_full', axis={yaxis: 0, ytitle: inst+'!C'+rate, yticks: 1, yminor: 1, ystyle: 0, yticklayout: 1, ytickv: [-1, 2]}
     options, tname+'_flagbars', axis={yaxis: 0, ytitle: inst+'!C'+rate, yticks: 1, yminor: 1, ystyle: 0, yticklayout: 1, ytickv: [-1, 2]}
+    options, tname+'_flagbars_mini', axis={yaxis: 0, ytitle: inst, yticks: 1, yminor: 1, ystyle: 0, yticklayout: 1, ytickv: [-1, 2]}
   endif else begin
     if strmid(dl.cdf.gatt.data_type,3,4,/rev) eq 'dist' then begin
       flags=string(d.y,format='(b011)')

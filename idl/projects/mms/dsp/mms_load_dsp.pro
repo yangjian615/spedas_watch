@@ -41,6 +41,9 @@
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
 ;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         available:    returns a list of files available at the SDC for the requested parameters
+;                       this is useful for finding which files would be downloaded (along with their sizes) if
+;                       you didn't specify this keyword (also outputs total download size)
 ;
 ; OUTPUT:
 ;
@@ -57,8 +60,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
-;$LastChangedRevision: 21219 $
+;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
+;$LastChangedRevision: 21430 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
 
@@ -69,7 +72,8 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-    latest_version = latest_version, min_version = min_version, spdf = spdf
+    latest_version = latest_version, min_version = min_version, spdf = spdf, $
+    available = available
 
     if undefined(probes) then probes = [1, 2, 3, 4] ; default to MMS 1
     if undefined(datatype) then datatype = ['epsd', 'bpsd','tdn', 'swd']
@@ -89,7 +93,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                     tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
                     cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
-                    latest_version = latest_version, min_version = min_version, spdf = spdf
+                    latest_version = latest_version, min_version = min_version, spdf = spdf, available = available
                 append_array, tplot_names_full, tplotnames_out
                 append_array, cdf_filenames_full, cdf_filenames_out
             endfor
@@ -108,7 +112,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                     tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
                     cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
-                    latest_version = latest_version, min_version = min_version, spdf = spdf
+                    latest_version = latest_version, min_version = min_version, spdf = spdf, available = available
                 append_array, tplot_names_full, tplotnames_out
                 append_array, cdf_filenames_full, cdf_filenames_out
             endfor
@@ -122,7 +126,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                 tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                 no_update = no_update, suffix = suffix, varformat = varformat, $
                 cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
-                latest_version = latest_version, min_version = min_version, spdf = spdf
+                latest_version = latest_version, min_version = min_version, spdf = spdf, available = available
             append_array, tplot_names_full, tplotnames_out
             append_array, cdf_filenames_full, cdf_filenames_out
         endfor

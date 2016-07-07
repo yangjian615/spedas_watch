@@ -42,6 +42,9 @@
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
 ;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public data)
+;         available:    returns a list of files available at the SDC for the requested parameters
+;                       this is useful for finding which files would be downloaded (along with their sizes) if
+;                       you didn't specify this keyword (also outputs total download size)
 ;
 ; 
 ; EXAMPLE:
@@ -77,8 +80,8 @@
 ;                  changed default level to L2
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-26 09:20:14 -0700 (Thu, 26 May 2016) $
-;$LastChangedRevision: 21219 $
+;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
+;$LastChangedRevision: 21430 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_load_eis.pro $
 ;-
 
@@ -90,7 +93,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, no_interp = no_interp, $
                   suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
                   cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version, spdf = spdf
+                  min_version = min_version, spdf = spdf, available = available
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'extof'
@@ -109,7 +112,7 @@ pro mms_load_eis, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf
+        spdf = spdf, available = available
     
     ; don't try to calculate omnidirectional quantities if no data was loaded
     if undefined(tplotnames) || tplotnames[0] eq '' then return

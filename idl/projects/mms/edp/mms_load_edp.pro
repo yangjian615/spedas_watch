@@ -39,6 +39,9 @@
 ;                       (e.g., /latest_version)
 ;         min_version:  specify a minimum CDF version # to load
 ;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         available:    returns a list of files available at the SDC for the requested parameters
+;                       this is useful for finding which files would be downloaded (along with their sizes) if
+;                       you didn't specify this keyword (also outputs total download size)
 ;
 ; NOTES:
 ;     Please always use error bars on E-field data 
@@ -62,8 +65,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-21 15:09:32 -0700 (Tue, 21 Jun 2016) $
-;$LastChangedRevision: 21346 $
+;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
+;$LastChangedRevision: 21430 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
@@ -73,7 +76,8 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-    latest_version = latest_version, min_version = min_version, spdf = spdf
+    latest_version = latest_version, min_version = min_version, spdf = spdf, $
+    available = available
 
     if undefined(probes) then probes = [1, 2, 3, 4] 
     if undefined(datatype) then datatype = ['dce']
@@ -88,7 +92,8 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, $
         cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
-        latest_version = latest_version, min_version = min_version, spdf = spdf
+        latest_version = latest_version, min_version = min_version, spdf = spdf, $
+        available = available
 
     for level_idx = 0, n_elements(level)-1 do begin
       ; set some of the metadata

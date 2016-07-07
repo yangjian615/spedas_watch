@@ -42,6 +42,9 @@
 ;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;         center_measurement: set this keyword to shift the data to the center of the measurement interval
 ;                       using the DELTA_PLUS_VAR/DELTA_MINUS_VAR attributes
+;         available:    returns a list of files available at the SDC for the requested parameters
+;                       this is useful for finding which files would be downloaded (along with their sizes) if
+;                       you didn't specify this keyword (also outputs total download size)
 ; 
 ; 
 ; EXAMPLE:
@@ -63,8 +66,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-09 13:06:30 -0700 (Thu, 09 Jun 2016) $
-;$LastChangedRevision: 21296 $
+;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
+;$LastChangedRevision: 21430 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -77,7 +80,8 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                   autoscale = autoscale, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
-                  spdf = spdf, center_measurement=center_measurement
+                  spdf = spdf, center_measurement=center_measurement, $
+                  available = available
 
     if undefined(probes) then probes = ['3'] ; default to MMS 3
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
@@ -115,8 +119,11 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf, center_measurement=center_measurement
+        spdf = spdf, center_measurement = center_measurement, available = available
         
+    ; no reason to continue if the user only requested available data
+    if keyword_set(available) then return
+    
     ; the following kludge is due to the errorflags variable in the dist and moments files having the
     ; same variable name, so loading d?s-dist and d?s-moms files at the same time will overwrite
     ; one of the vars containing errorflags

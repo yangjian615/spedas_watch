@@ -43,6 +43,9 @@
 ;         keep_flagged: don't remove flagged data (flagged data are set to NaNs by default, this keyword
 ;                       turns this off)
 ;         get_fgm_ephemeris: keep the ephemeris variables in the FGM files
+;         available:    returns a list of files available at the SDC for the requested parameters
+;                       this is useful for finding which files would be downloaded (along with their sizes) if
+;                       you didn't specify this keyword (also outputs total download size)
 ;
 ; 
 ; EXAMPLE:
@@ -56,8 +59,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
+;$LastChangedRevision: 21430 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -72,7 +75,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
                   spdf = spdf, no_split_vars=no_split_vars, keep_flagged = keep_flagged, $
-                  get_fgm_ephemeris = get_fgm_ephemeris
+                  get_fgm_ephemeris = get_fgm_ephemeris, available = available
 
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
@@ -97,8 +100,11 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf
+        spdf = spdf, available = available
 
+    ; no reason to continue if the user only requested available data
+    if keyword_set(available) then return
+    
     for probe_idx = 0, n_elements(probes)-1 do begin
         this_probe = 'mms'+strcompress(string(probes[probe_idx]), /rem)
         

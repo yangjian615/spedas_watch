@@ -85,8 +85,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-07-06 10:37:56 -0700 (Wed, 06 Jul 2016) $
+;$LastChangedRevision: 21427 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -131,7 +131,9 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     mec_cutoff_date = systime(/seconds)-60.*60.*24.*4.
     
     ; initialize undefined values
-    if undefined(trange_in) then trange = timerange() else trange = timerange(trange_in)
+    if ~undefined(trange_in) && n_elements(trange_in) eq 2 $
+      then trange_in = timerange(trange_in) $
+      else trange_in = timerange()
     if undefined(probes) then probes = p_names else probes = strcompress(string(probes), /rem)
     if undefined(level) then level = 'def' else level = strlowcase(level)
     if undefined(datatypes) then datatypes = '*' else datatypes = strlowcase(datatypes) 
@@ -187,7 +189,7 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     def_idx = where(strpos(level, 'def') GE 0, nlev)
 
      ; cutoff date is now defined to be 
-     if trange[1] le mec_cutoff_date then begin
+     if trange_in[1] le mec_cutoff_date then begin
        mec_flag = 1
        eph_idx = where(strpos(datatypes, 'spin') EQ -1, neph)
      endif
@@ -198,14 +200,14 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     for i = 0, n_elements(probes)-1 do begin      
        for j = 0, n_elements(level)-1 do begin
             if mec_flag EQ 1 && level[j] NE 'pred' then begin
-                 mms_load_mec, probe = probes[i], trange = trange, cdf_filenames=cdf_files, $
+                 mms_load_mec, probe = probes[i], trange = trange_in, cdf_filenames=cdf_files, $
                   varformat=mec_varformat, suffix=suffix
                  if ~keyword_set(attitude_only) then begin
                     copy_data, 'mms'+probes[i]+'_mec_r_eci'+suffix, 'mms'+probes[i]+'_defeph_pos'+suffix
                     copy_data, 'mms'+probes[i]+'_mec_v_eci'+suffix, 'mms'+probes[i]+'_defeph_vel'+suffix
                  endif 
             endif else begin
-                 mms_get_state_data, probe = probes[i], trange = trange, tplotnames = tplotnames, $
+                 mms_get_state_data, probe = probes[i], trange = trange_in, tplotnames = tplotnames, $
                    login_info = login_info, datatypes = datatypes, level = level[j], $
                    local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
                    no_download=no_download, pred_or_def=pred_or_def, suffix = suffix, $
@@ -217,7 +219,7 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
     ; time clip the data
     if ~undefined(tplotnames) then begin
         if (tplotnames[0] ne '') then begin
-            time_clip, tplotnames, time_double(trange[0]), time_double(trange[1]), replace=1, error=error
+            time_clip, tplotnames, time_double(trange_in[0]), time_double(trange_in[1]), replace=1, error=error
         endif
     endif
 end

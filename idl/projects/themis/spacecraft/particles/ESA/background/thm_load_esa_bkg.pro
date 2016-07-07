@@ -193,11 +193,11 @@ for i=0,nsc-1 do begin
 ; dis3 and time3 are used to force pei bkg use for distance<5.3Re
 
 	get_data,'th'+probes[i]+'_state_pos',data=tmp3,index=index
-		if index eq 0 then begin
-			thm_load_state,/get_support_data,probe=probes[i],version=2
-			get_data,'th'+probes[i]+'_state_pos',data=tmp3,index=index
-		endif
-	if index then begin
+	if index eq 0 then begin
+		thm_load_state,/get_support_data,probe=probes[i],version=2
+		get_data,'th'+probes[i]+'_state_pos',data=tmp3,index=index
+	endif
+	if index gt 0 then begin
 		dis3=(total(tmp3.y^2,2))^.5/6370.
 		time3=tmp3.x
 		if total(bkg1)*total(bkg2) ne 0. then begin
@@ -223,7 +223,10 @@ for i=0,nsc-1 do begin
 			endif
 		endif
 	endif else begin
-		dprint,'State data not loaded for th'+probes[i]+', cannot optimize pser background subtraction',dlevel=1
+    ;af - it's not clear what the correct treatment should be if state data is missing
+    ;     but it *should* be present at all times
+    dprint,'ERROR: State data not present for th'+probes[i]+'; no background loaded',dlevel=0
+    continue
 	endelse
 
 
