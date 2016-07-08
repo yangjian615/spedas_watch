@@ -7,9 +7,9 @@
 ; A widget to display About information (SPEDAS Version)
 ;
 ;
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2016-05-27 11:03:07 -0700 (Fri, 27 May 2016) $
-;$LastChangedRevision: 21234 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-07-07 14:52:57 -0700 (Thu, 07 Jul 2016) $
+;$LastChangedRevision: 21436 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_help_about.pro $
 ;-
 
@@ -29,9 +29,9 @@ Pro spd_ui_help_about_event, ev
   case uval of
     'ABOUT': begin
         GETRESOURCEPATH, path ; start at the resources folder
-        xdisplayfile, path+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY)+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY) + PATH_SEP() +  'projects'+ PATH_SEP() + strlowcase(plugin_mission) +PATH_SEP()  $
-            +strlowcase(plugin_about_file), done_button='CLOSE', height=50, $
-            /modal, title='About ' + plugin_mission
+        plugin_about_path = path+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY)+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY) + PATH_SEP() +  'projects'+ PATH_SEP() + strlowcase(plugin_mission) +PATH_SEP() 
+        if ~file_test(plugin_about_path, /directory) then plugin_about_path = path + PATH_SEP() + 'terms_of_use' + PATH_SEP()
+        xdisplayfile, plugin_about_path + strlowcase(plugin_about_file), done_button='CLOSE', height=50, /modal, title='About ' + plugin_mission
     end    
     'SPEDASWEB' : begin
       spd_ui_open_url, 'http://spedas.org/'

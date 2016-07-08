@@ -89,8 +89,14 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
   
   ; INCOMPLETE
   bsa = mms_bss_query(bss=bss, status='INCOMPLETE')
-  bsf = mms_bss_query(bss=bsa, status='FINISHED')
-  d_icmp = mms_bss_fom_read(bsf)
+  if n_tags(bsa) gt 0 then begin
+    bsf = mms_bss_query(bss=bsa, status='FINISHED')
+  endif else bsf = -1
+  if n_tags(bsf) gt 0 then begin
+    d_icmp = mms_bss_fom_read(bsf)
+  endif else begin
+    d_icmp = {x:0, y:0, z:0, nmax: 0, Nsegs: 0}
+  endelse
   print, 'incomplete', d_icmp.NSEGS
   
   ;---------------
