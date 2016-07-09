@@ -31,8 +31,8 @@
 ;
 ; VERSION:
 ;	$LastChangedBy: aaronbreneman $
-;	$LastChangedDate: 2016-01-25 13:14:19 -0800 (Mon, 25 Jan 2016) $
-;	$LastChangedRevision: 19806 $
+;	$LastChangedDate: 2016-07-08 13:26:46 -0700 (Fri, 08 Jul 2016) $
+;	$LastChangedRevision: 21445 $
 ;	$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_spec.pro $
 ;
 ;-
@@ -64,7 +64,7 @@ pro rbsp_efw_make_l2_spec,sc,date,folder=folder,testing=testing
 	; Grab the skeleton file.
 	skeleton=rbspx+'/l2/spec/0000/'+ $
 		rbspx+'_efw-l2_spec_00000000_v'+vstr+'.cdf'
-	source_file=file_retrieve(skeleton,_extra=!rbsp_efw)
+	if ~keyword_set(testing) then source_file=file_retrieve(skeleton,_extra=!rbsp_efw)
 
 
         if keyword_set(testing) then begin

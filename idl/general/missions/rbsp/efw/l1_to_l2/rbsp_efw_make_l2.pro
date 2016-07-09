@@ -3,7 +3,7 @@
 ;   rbsp_efw_make_l2
 ;
 ; PURPOSE:
-;   Generate level-2 EFW CDF files 
+;   Generate level-2 EFW CDF files
 ;
 ;
 ; CALLING SEQUENCE:
@@ -47,12 +47,12 @@
 ;
 ; HISTORY:
 ;   2014-12-02: Created by Aaron W Breneman, U. Minnesota
-;				
+;
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-05-18 14:57:59 -0700 (Wed, 18 May 2016) $
-; $LastChangedRevision: 21121 $
+; $LastChangedDate: 2016-07-08 13:26:27 -0700 (Fri, 08 Jul 2016) $
+; $LastChangedRevision: 21443 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -169,11 +169,11 @@ pro rbsp_efw_make_l2,sc,date,$
      vsvy_vavg = [[(vsvy.y[*,0] - vsvy.y[*,1])/2.],$
                   [(vsvy.y[*,2] - vsvy.y[*,3])/2.],$
                   [(vsvy.y[*,4] - vsvy.y[*,5])/2.]]
-     
+
      split_vec, 'rbsp'+sc+'_efw_vsvy', suffix='_V'+['1','2','3','4','5','6']
      get_data,'rbsp'+sc+'_efw_vsvy',data=vsvy
 
-     
+
      if type eq 'combo' or type eq 'pfaff_esvy' or type eq 'esvy_despun' or type eq 'combo_pfaff' then begin
         rbsp_load_efw_waveform,probe=sc,type='calibrated',datatype='esvy',/noclean
 
@@ -185,7 +185,7 @@ pro rbsp_efw_make_l2,sc,date,$
            tinterpol_mxn,'rbsp'+sc+'_efw_esvy','rbsp'+sc+'_efw_vsvy',newname='rbsp'+sc+'_efw_esvy'
            get_data,'rbsp'+sc+'_efw_esvy',data=esvy_v
         endif
-        
+
      endif
 
 
@@ -209,7 +209,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
      endif
 
-     
+
                                 ;Load ECT's magnetic ephemeris
      rbsp_read_ect_mag_ephem,sc
 
@@ -250,7 +250,7 @@ pro rbsp_efw_make_l2,sc,date,$
                   'tmp_sf_vxb_edotb_34'
         copy_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb',$
                   'tmp_sf_vxb_coro_edotb_34'
-        
+
 
 
 
@@ -279,7 +279,7 @@ pro rbsp_efw_make_l2,sc,date,$
                   'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_12'
         copy_data,'tmp_sf_vxb_coro_edotb_34',$
                   'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit_edotb_34'
-        
+
 
         store_data,['*tmp_sf*'],/delete
      endif
@@ -306,14 +306,14 @@ pro rbsp_efw_make_l2,sc,date,$
 
      ;;Get hires density values
      if type eq 'combo' then begin
-        goo_str = rbsp_efw_get_flag_values(sc,times_v,density_min=dmin)
+        goo_str = rbsp_efw_get_flag_values(sc,times_v,density_min=dmin,boom_pair=bp)
         copy_data,'rbsp'+sc+'_density12','rbsp'+sc+'_density12_hires'
         copy_data,'rbsp'+sc+'_density34','rbsp'+sc+'_density34_hires'
         store_data,['rbsp'+sc+'_density12','rbsp'+sc+'_density34'],/delete
      endif
 
 
-     flag_str = rbsp_efw_get_flag_values(sc,times,density_min=dmin)
+     flag_str = rbsp_efw_get_flag_values(sc,times,density_min=dmin,boom_pair=bp)
 
      flag_arr = flag_str.flag_arr
      bias_sweep_flag = flag_str.bias_sweep_flag
@@ -322,7 +322,7 @@ pro rbsp_efw_make_l2,sc,date,$
      ibias = flag_str.ibias
 
 
-     
+
 
 ;--------------------------------------------------
 ;save all spinfit resolution Efield quantities
@@ -470,7 +470,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
      model = 't89'
      rbsp_efw_DCfield_removal_crib,sc,/no_spice_load,/noplot,model=model
-     
+
 
 ;--------------------------------------
 ; SC potentials (V1+V2)/2 and (V3+V4)/2
@@ -483,12 +483,12 @@ pro rbsp_efw_make_l2,sc,date,$
      get_data,'rbsp'+sc +'_efw_vsvy_V5',data=v5
      get_data,'rbsp'+sc +'_efw_vsvy_V6',data=v6
 
-     sum12 = (v1.y + v2.y)/2.	
-     sum34 = (v3.y + v4.y)/2.	
-     sum56 = (v5.y + v6.y)/2.	
+     sum12 = (v1.y + v2.y)/2.
+     sum34 = (v3.y + v4.y)/2.
+     sum56 = (v5.y + v6.y)/2.
 
      sum56[*] = -1.0E31
-     
+
      store_data,'sum12',data={x:v1.x,y:sum12}
      tinterpol_mxn,'sum12',times,newname='sum12'
      get_data,'sum12',data=sum12
@@ -505,7 +505,7 @@ pro rbsp_efw_make_l2,sc,date,$
                                 ;to low cadence for combo file
      tinterpol_mxn,'rbsp'+sc+'_efw_vsvy',times,newname='rbsp'+sc+'_efw_vsvy_combo'
      get_data,'rbsp'+sc+'_efw_vsvy_combo',data=vsvy_spinres
-     
+
 
 ;--------------------------------------------------
 ;Nan out various values when global flag is thrown
@@ -552,12 +552,12 @@ pro rbsp_efw_make_l2,sc,date,$
            goo = where(dens34.y eq -1.e31)
            if goo[0] ne -1 then flag_arr[goo,16] = 1
         endelse
-     endif     
+     endif
 
 
-     
+
 ;the times for the mag spinfit can be slightly different than the times for the
-;Esvy spinfit. 
+;Esvy spinfit.
      tinterpol_mxn,'rbsp'+sc+'_mag_mgse',times,newname='rbsp'+sc+'_mag_mgse'
      get_data,'rbsp'+sc+'_mag_mgse',data=mag_mgse
 
@@ -573,7 +573,7 @@ pro rbsp_efw_make_l2,sc,date,$
      get_data,'rbsp'+sc+'_state_vel_gse',data=vel_gse
      get_data,'rbsp'+sc+'_E_coro_mgse',data=ecoro_mgse
      get_data,'rbsp'+sc+'_state_vel_coro_mgse',data=vcoro_mgse
-     
+
      tinterpol_mxn,'rbsp'+sc+'_mag_mgse_'+model,times,newname='rbsp'+sc+'_mag_mgse_'+model
      tinterpol_mxn,'rbsp'+sc+'_mag_mgse_t89_dif',times,newname='rbsp'+sc+'_mag_mgse_t89_dif'
      get_data,'rbsp'+sc+'_mag_mgse_'+model,data=mag_model
@@ -676,7 +676,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
      cdf_varrename,cdfid,'e12_vxb_coro_spinfit_mgse','efield_spinfit_vxb_coro_e12'
      cdf_varrename,cdfid,'e34_vxb_coro_spinfit_mgse','efield_spinfit_vxb_coro_e34'
-     
+
      ;;Remove the highcadence version and rename the lowcadence one to vsvy_vavg
      cdf_vardelete,cdfid,'vsvy_vavg'
      cdf_varrename,cdfid,'vsvy_vavg_lowcadence','vsvy_vavg'
@@ -740,7 +740,8 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'vsvy'
      cdf_vardelete,cdfid,'esvy'
 
-     cdf_vardelete,cdfid,'vsvy_vavg_combo'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
@@ -814,7 +815,8 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'vsvy'
      cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'vsvy_vavg'
-     cdf_vardelete,cdfid,'vsvy_vavg_combo'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
      cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'mag_model_mgse'
@@ -850,21 +852,26 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_varput,cdfid,'flags_all',transpose(flag_arr)
 
      cdf_varput,cdfid,'vsvy_combo',transpose(vsvy_spinres.y)
-     cdf_varput,cdfid,'vsvy_vavg_combo',sum12
-     cdf_varput,cdfid,'mag_model_mgse',transpose(mag_model.y)    
-     cdf_varput,cdfid,'mag_minus_model_mgse',transpose(mag_diff.y) 
+     cdf_varput,cdfid,'mag_model_mgse',transpose(mag_model.y)
+     cdf_varput,cdfid,'mag_minus_model_mgse',transpose(mag_diff.y)
      cdf_varput,cdfid,'magnitude_minus_modelmagnitude',mag_diff_magnitude
      cdf_varput,cdfid,'mag_spinfit_mgse',transpose(mag_mgse.y)
      if bp eq '12' then begin
-        cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb) 
+        cdf_varrename,cdfid,'vsvy_vavg_combo_v12','vsvy_vavg_combo'
+        cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
+        cdf_varput,cdfid,'vsvy_vavg_combo',sum12
+        cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb)
         cdf_varrename,cdfid,'density_v12_hires','density_hires'
         cdf_vardelete,cdfid,'density_v34_hires'
-        cdf_varput,cdfid,'density',dens12.y     
-        cdf_varput,cdfid,'density_hires',dens12_hires.y 
+        cdf_varput,cdfid,'density',dens12.y
+        cdf_varput,cdfid,'density_hires',dens12_hires.y
         cdf_vardelete,cdfid,'e34_vxb_spinfit_mgse'
      endif
      if bp eq '34' then begin
-        cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb) 
+        cdf_varrename,cdfid,'vsvy_vavg_combo_v34','vsvy_vavg_combo'
+        cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+        cdf_varput,cdfid,'vsvy_vavg_combo',sum34
+        cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb)
         cdf_varrename,cdfid,'density_v34_hires','density_hires'
         cdf_vardelete,cdfid,'density_v12_hires'
         cdf_varput,cdfid,'density',dens34.y
@@ -953,7 +960,7 @@ pro rbsp_efw_make_l2,sc,date,$
 ;     cdf_varput,cdfid,'Lstar',lstar
 ;     cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
-     
+
 
 
 ;full resolution
@@ -990,7 +997,8 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'vsvy_combo'
      cdf_vardelete,cdfid,'vsvy_vavg'
-     cdf_vardelete,cdfid,'vsvy_vavg_combo'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
      cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'mag_model_mgse'
@@ -1004,7 +1012,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'mag_spinfit_mgse'
      cdf_vardelete,cdfid,'e12_vxb_coro_spinfit_mgse'
      cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
-     
+
   endif
 
 
@@ -1067,7 +1075,8 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'bfield_magnitude'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
      cdf_vardelete,cdfid,'e34_spinfit_mgse'
-     cdf_vardelete,cdfid,'vsvy_vavg_combo'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
      cdf_vardelete,cdfid,'vsvy_combo'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
@@ -1098,10 +1107,10 @@ pro rbsp_efw_make_l2,sc,date,$
 ;spinfit resolution
      cdf_varput,cdfid,'flags_all',transpose(flag_arr)
      cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
-     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb)   
-     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb)   
-     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_coro_spinfit_mgse',transpose(spinfit_vxb_coro) 
-     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_coro_spinfit_mgse',transpose(spinfit_vxb_coro) 
+     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb)
+     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb)
+     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_coro_spinfit_mgse',transpose(spinfit_vxb_coro)
+     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_coro_spinfit_mgse',transpose(spinfit_vxb_coro)
      if bp eq '12' then cdf_varput,cdfid,'density',dens12.y
      if bp eq '34' then cdf_varput,cdfid,'density',dens34.y
      cdf_varput,cdfid,'efield_coro_mgse',transpose(ecoro_mgse.y)
@@ -1147,7 +1156,8 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'vsvy'
      cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'vsvy_vavg'
-     cdf_vardelete,cdfid,'vsvy_vavg_combo'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
      cdf_vardelete,cdfid,'vsvy_combo'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
@@ -1213,7 +1223,8 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'esvy'
      cdf_vardelete,cdfid,'vsvy_combo'
      cdf_vardelete,cdfid,'vsvy_vavg'
-     cdf_vardelete,cdfid,'vsvy_vavg_combo'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+     cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
      cdf_vardelete,cdfid,'e12_spinfit_mgse'
      cdf_vardelete,cdfid,'e34_spinfit_mgse'
      cdf_vardelete,cdfid,'mag_model_mgse'
@@ -1244,8 +1255,8 @@ pro rbsp_efw_make_l2,sc,date,$
 ;spinfit cadence
      cdf_varput,cdfid,'flags_all',transpose(flag_arr)
      cdf_varput,cdfid,'flags_charging_bias_eclipse',transpose(flags)
-     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb) 
-     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb) 
+     if bp eq '12' then cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb)
+     if bp eq '34' then cdf_varput,cdfid,'e34_vxb_spinfit_mgse',transpose(spinfit_vxb)
      if bp eq '12' then cdf_varput,cdfid,'density',dens12.y
      if bp eq '34' then cdf_varput,cdfid,'density',dens34.y
      cdf_varput,cdfid,'efield_coro_mgse',transpose(ecoro_mgse.y)
@@ -1265,7 +1276,16 @@ pro rbsp_efw_make_l2,sc,date,$
 ;     cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
      if ~keyword_set(hires) then cdf_varput,cdfid,'vsvy_combo',transpose(vsvy_spinres.y)
-     if ~keyword_set(hires) then cdf_varput,cdfid,'vsvy_vavg_combo',transpose(sum12)
+     if ~keyword_set(hires) and bp eq '12' then begin
+       cdf_varrename,cdfid,'vsvy_vavg_combo_v12','vsvy_vavg_combo'
+       cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
+       cdf_varput,cdfid,'vsvy_vavg_combo',transpose(sum12)
+     endif
+     if ~keyword_set(hires) and bp eq '34' then begin
+       cdf_varrename,cdfid,'vsvy_vavg_combo_v34','vsvy_vavg_combo'
+       cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+       cdf_varput,cdfid,'vsvy_vavg_combo',transpose(sum34)
+     endif
 
 ;full cadence
      if keyword_set(hires) then cdf_varput,cdfid,'esvy_vxb_mgse',transpose(esvy_vxb_mgse.y)
@@ -1297,7 +1317,8 @@ pro rbsp_efw_make_l2,sc,date,$
      if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
      if keyword_set(hires) then cdf_vardelete,cdfid,'vsvy_combo'
      if ~keyword_set(hires) then cdf_vardelete,cdfid,'vsvy_vavg'
-     if keyword_set(hires) then cdf_vardelete,cdfid,'vsvy_vavg_combo'
+     if keyword_set(hires) then cdf_vardelete,cdfid,'vsvy_vavg_combo_v12'
+     if keyword_set(hires) then cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
      cdf_vardelete,cdfid,'mag_model_mgse'
      cdf_vardelete,cdfid,'mag_minus_model_mgse'
      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
@@ -1309,7 +1330,7 @@ pro rbsp_efw_make_l2,sc,date,$
      cdf_vardelete,cdfid,'e34_vxb_coro_spinfit_mgse'
      if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy'
      if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
-     
+
 
   endif
 

@@ -1,22 +1,23 @@
 ;+
 ; NAME: rbsp_efw_get_flag_values
-; SYNTAX: 
+; SYNTAX:
 ; PURPOSE: Returns a structure with flag values at "times" that is
 ; used to create CDF files
 ; INPUT:  sc ->  'a' or 'b'
-;         times -> an array of unix times 
-; OUTPUT: 
+;         times -> an array of unix times
+;         bp -> boom pair. '12' or '34'
+; OUTPUT:
 ;
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
-; VERSION: 
+; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-03-25 12:13:56 -0700 (Fri, 25 Mar 2016) $
-;   $LastChangedRevision: 20589 $
+;   $LastChangedDate: 2016-07-08 14:15:10 -0700 (Fri, 08 Jul 2016) $
+;   $LastChangedRevision: 21447 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
 
-function rbsp_efw_get_flag_values,sc,times,density_min=dmin
+function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
 
   if ~keyword_set(dmin) then dmin = 10.
   date = strmid(time_string(timerange()),0,10)
@@ -71,12 +72,12 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
   get_data,'rbsp'+sc +'_efw_vsvy_V5',data=v5
   get_data,'rbsp'+sc +'_efw_vsvy_V6',data=v6
 
-  sum12 = (v1.y + v2.y)/2.	
-  sum34 = (v3.y + v4.y)/2.	
-  sum56 = (v5.y + v6.y)/2.	
+  sum12 = (v1.y + v2.y)/2.
+  sum34 = (v3.y + v4.y)/2.
+  sum56 = (v5.y + v6.y)/2.
 
   sum56[*] = -1.0E31
-  
+
 
 
 ;--------------------------------------------------
@@ -102,20 +103,33 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
 ;For density we have a special requirement
 ;.....Remove when (V1+V2)/2 > -1  AND
 ;.....Lshell > 4  (avoids hot plasma sheet)
+;.....AND remove when (V1+V2)/2 < -10
 ;But, we'll also remove values +/- 10 minutes at start and
 ;finish of charging times (Scott indicates that this is a good thing
 ;to do)
 
   padch = 10.*60. ;plus/minus time from actual times of charging for triggering the charging flag.
-  
+
   charging_flag = replicate(0.,n_elements(times))
   tinterpol_mxn,'rbsp'+sc+'_state_lshell',times
   get_data,'rbsp'+sc+'_state_lshell_interp',data=lshell
 
   ;;Find charging times
   pot_tmp = replicate(0.,n_elements(times))
-  goo = where((lshell.y gt 4) and (sum12 gt -1))
-  if goo[0] ne -1 then pot_tmp[goo] = 1B
+
+  if bp eq '12' then begin
+    goo = where((lshell.y gt 4) and (sum12 gt -1))
+    if goo[0] ne -1 then pot_tmp[goo] = 1B
+    goo = where(sum12 lt -10)
+    if goo[0] ne -1 then pot_tmp[goo] = 1B
+  endif
+  if bp eq '34' then begin
+    goo = where((lshell.y gt 4) and (sum34 gt -1))
+    if goo[0] ne -1 then pot_tmp[goo] = 1B
+    goo = where(sum34 lt -10)
+    if goo[0] ne -1 then pot_tmp[goo] = 1B
+  endif
+
 
   pot_diff = pot_tmp - shift(pot_tmp,1)
   ;; store_data,'pot_diff',data={x:times,y:pot_diff}
@@ -175,7 +189,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
 
 ;----------------------------------------------------------------------------------------------------
 ;FIND AND SET ALL FLAG VALUES
-;---------------------------------------------------------------------------------------------------- 
+;----------------------------------------------------------------------------------------------------
 
   ;;    names = ['global_flag',$
   ;;             'eclipse',$
@@ -205,7 +219,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
   na_val = -2                   ;not applicable value
   fill_val = -1                 ;value in flag array that indicates "dunno"
   maxvolts = 195.               ;Max antenna voltage above which the saturation flag is thrown
-  offset = 5                    ;position in flag_arr of "v1_saturation" 
+  offset = 5                    ;position in flag_arr of "v1_saturation"
 
   tmp = replicate(0,n_elements(times),6)
   flag_arr = replicate(fill_val,n_elements(times),20)
@@ -259,28 +273,28 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
   dep = rbsp_efw_boom_deploy_history(date,allvals=av)
 
   if sc eq 'a' then begin
-     ds12 = strmid(av.deploystarta12,0,10)  
-     ds34 = strmid(av.deploystarta34,0,10)  
-     ds5 = strmid(av.deploystarta5,0,10)  
-     ds6 = strmid(av.deploystarta6,0,10)  
+     ds12 = strmid(av.deploystarta12,0,10)
+     ds34 = strmid(av.deploystarta34,0,10)
+     ds5 = strmid(av.deploystarta5,0,10)
+     ds6 = strmid(av.deploystarta6,0,10)
 
-     de12 = strmid(av.deployenda12,0,10)  
-     de34 = strmid(av.deployenda34,0,10)  
-     de5 = strmid(av.deployenda5,0,10)  
-     de6 = strmid(av.deployenda6,0,10)  
+     de12 = strmid(av.deployenda12,0,10)
+     de34 = strmid(av.deployenda34,0,10)
+     de5 = strmid(av.deployenda5,0,10)
+     de6 = strmid(av.deployenda6,0,10)
 
      deps_alltimes = time_double([av.deploystarta12,av.deploystarta34,av.deploystarta5,av.deploystarta6])
      depe_alltimes = time_double([av.deployenda12,av.deployenda34,av.deployenda5,av.deployenda6])
   endif else begin
-     ds12 = strmid(av.deploystartb12,0,10)  
-     ds34 = strmid(av.deploystartb34,0,10)  
-     ds5 = strmid(av.deploystartb5,0,10)  
-     ds6 = strmid(av.deploystartb6,0,10)  
+     ds12 = strmid(av.deploystartb12,0,10)
+     ds34 = strmid(av.deploystartb34,0,10)
+     ds5 = strmid(av.deploystartb5,0,10)
+     ds6 = strmid(av.deploystartb6,0,10)
 
-     de12 = strmid(av.deployendb12,0,10)  
-     de34 = strmid(av.deployendb34,0,10)  
-     de5 = strmid(av.deployendb5,0,10)  
-     de6 = strmid(av.deployendb6,0,10)  
+     de12 = strmid(av.deployendb12,0,10)
+     de34 = strmid(av.deployendb34,0,10)
+     de5 = strmid(av.deployendb5,0,10)
+     de6 = strmid(av.deployendb6,0,10)
 
      deps_alltimes = time_double([av.deploystartb12,av.deploystartb34,av.deploystartb5,av.deploystartb6])
      depe_alltimes = time_double([av.deployendb12,av.deployendb34,av.deployendb5,av.deployendb6])
@@ -337,7 +351,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
 ;------------------------------------------------
 ;ADD AUTO BIAS TO FLAG VALUES
 ;------------------------------------------------
-  
+
 ;; AutoBias starts actively controlling the bias currents at V12 = -1.0 V,
 ;; ramping down the magnitude of the bias current so that when V12 = 0.0 V,
 ;; the bias current is very near to zero after starting out around -20
@@ -371,7 +385,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
 
   goo = where((tbd.y eq 4) or (tbd.y eq 5) or (tbd.y eq 6) or (tbd.y eq 7) or (tbd.y eq 12) or (tbd.y eq 13) or (tbd.y eq 14) or (tbd.y eq 15))
   if goo[0] ne -1 then ab_flag[goo] = 1
-  
+
   store_data,'ab_flag',data={x:tbd.x,y:ab_flag}
   ;; options,['rbsp'+sc+'_efw_hsk_idpu_fast_TBD','ab_flag'],'psym',4
   ;; tplot,['rbsp'+sc+'_efw_hsk_idpu_fast_TBD','ab_flag','rbsp'+sc+'_state_lshell']
@@ -422,7 +436,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
   flag_arr[*,3] = bias_sweep_flag
   flag_arr[*,14] = ab_flag       ;autobias
   flag_arr[*,15] = charging_flag ;charging
-  
+
 
 ;--------------------------------------------------
 ;Change values of certain arrays that are "fill_val" to 0
@@ -472,7 +486,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
 
   goo = where(flag_arr[*,3] eq 1) ;bias sweep
   if goo[0] ne -1 then flag_arr[goo,0] = 1
-  
+
   goo = where(flag_arr[*,4] eq 1) ;antenna deploy
   if goo[0] ne -1 then flag_arr[goo,0] = 1
 
@@ -495,5 +509,3 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin
 
 
 end
-
-

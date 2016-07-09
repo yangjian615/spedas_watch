@@ -8,11 +8,28 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-07-07 14:52:57 -0700 (Thu, 07 Jul 2016) $
-;$LastChangedRevision: 21436 $
+;$LastChangedDate: 2016-07-08 11:41:27 -0700 (Fri, 08 Jul 2016) $
+;$LastChangedRevision: 21441 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_help_about.pro $
 ;-
 
+function spd_ui_help_about_dlm, type
+
+  dlm_result = ""
+  help, type, /dlm, output=dlm_about
+  if (!D.NAME eq 'WIN') then newline = string([13B, 10B]) else newline = string(10B)
+  
+  if n_elements(dlm_about) gt 0 then begin
+    for i=0, n_elements(dlm_about)-1 do begin
+      dlm_result = dlm_result + STRTRIM(dlm_about[i], 2)
+      if i lt n_elements(dlm_about)-1 then  dlm_result = dlm_result + newline + newline
+    endfor
+  endif else begin
+    dlm_result = dlm_about[0]
+  endelse   
+  
+  return, dlm_result
+end
 
 Pro spd_ui_help_about_event, ev
     plugin_mission = ''
@@ -47,12 +64,24 @@ Pro spd_ui_help_about, gui_id, historywin
   ;aboutlabel should show the SPEDAS version and some other info (perhaps build date, web site URL, etc)
   aboutString= ' SPEDAS 2.00 beta 1 '  +  string(10B) + string(10B) $
     + ' Space Physics Environment Data Analysis Software ' $
-    + string(10B) + string(10B) + ' May 2016 ' + string(10B) $
-    + string(10B) + string(10B) + string(10B) $
+    + string(10B) + string(10B) + ' May 2016 ' + string(10B) + string(10B)  $
     + ' For support or bug reports, contact: THEMIS_Science_Support@ssl.berkeley.edu '
 
+  cdf_about = spd_ui_help_about_dlm('cdf')
+  geopack_about = spd_ui_help_about_dlm('geopack')
+
   aboutBase = widget_base(/col, title = 'About', /modal, Group_Leader=gui_id)
-  aboutLabel = widget_label(aboutBase, value=aboutString, /align_center, XSIZE=500, YSIZE=150, UNITS=0)
+  aboutLabel = widget_label(aboutBase, value=aboutString, /align_center, SCR_XSIZE=600, SCR_YSIZE=100, UNITS=0)
+  
+  cdfBase = widget_base(aboutBase, /row)
+ ; cdfLabel = widget_label(cdfBase, value=cdf_about, /align_center, SCR_XSIZE=300, SCR_YSIZE=100, UNITS=0, /SUNKEN_FRAME)
+ ; geoLabel = widget_label(cdfBase, value=geopack_about, /align_center, SCR_XSIZE=300, SCR_YSIZE=100, UNITS=0, /SUNKEN_FRAME)
+  
+  
+  cdfLabel = widget_text(cdfBase, value=cdf_about, /align_center, SCR_XSIZE=300, SCR_YSIZE=130, UNITS=0, /SCROLL, /WRAP)
+  geoLabel = widget_text(cdfBase, value=geopack_about, /align_center, SCR_XSIZE=300, SCR_YSIZE=130, UNITS=0, /SCROLL, /WRAP)
+  aboutLabel0 = widget_label(aboutBase, value=' ', /align_center, XSIZE=500, YSIZE=20, UNITS=0)
+    
   spedasButton = widget_button(aboutBase, value = ' Go to http://spedas.org/ ', uvalue= 'SPEDASWEB', /align_center, scr_xsize = 300)
   aboutPluginButtons = widget_button(aboutBase, value='About SPEDAS Plugins...', uvalue='ABOUTPLUGINS', /align_center, scr_xsize=300, /menu)
   
@@ -71,7 +100,7 @@ Pro spd_ui_help_about, gui_id, historywin
     widget_control, aboutPluginButtons, sensitive = 0
   endelse
   
-  aboutLabel = widget_label(aboutBase, value=' ', /align_center, XSIZE=500, YSIZE=20, UNITS=0)
+  aboutLabel = widget_label(aboutBase, value=' ', /align_center, SCR_XSIZE=500, SCR_YSIZE=20, UNITS=0)
   exitButton = widget_button(aboutBase, value = ' Close ', uvalue= 'QUIT', /align_center, scr_xsize = 150)
 
   widget_control, aboutBase, /realize

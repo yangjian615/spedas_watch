@@ -1,9 +1,9 @@
 ;+
 ; NAME: rbsp_efw_make_l3
-; SYNTAX: 
-; PURPOSE: Create the EFW L3 CDF file 
-; INPUT: 
-; OUTPUT: 
+; SYNTAX:
+; PURPOSE: Create the EFW L3 CDF file
+; INPUT:
+; OUTPUT:
 ; KEYWORDS: type -> hidden - version for creating hidden file with EMFISIS data
 ;                -> survey - version for long-duration survey plots
 ;                -> if not set defaults to standard L3 version
@@ -14,10 +14,10 @@
 ;           to '34'
 ;
 ; HISTORY: Created by Aaron W Breneman, May 2014
-; VERSION: 
+; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-05-04 11:08:49 -0700 (Wed, 04 May 2016) $
-;   $LastChangedRevision: 21021 $
+;   $LastChangedDate: 2016-07-08 13:26:20 -0700 (Fri, 08 Jul 2016) $
+;   $LastChangedRevision: 21442 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
@@ -30,7 +30,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
   ;KEEP!!!!!! Necessary when running scripts
   if keyword_set(script) then date = time_string(double(date),prec=-3)
-  
+
   if ~keyword_set(testing) then begin
      openw,lun,'output.txt',/get_lun
      printf,lun,'date = ',date
@@ -45,7 +45,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
 
   rbsp_efw_init
-  if ~keyword_set(type) then type = 'L3'  
+  if ~keyword_set(type) then type = 'L3'
   if ~keyword_set(bp) then bp = '12'
 
   skip_plot = 1                 ;set to skip restoration of cdf file and test plotting at end of program
@@ -121,8 +121,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
 
 ;Get all the flag values
-  flag_str = rbsp_efw_get_flag_values(sc,times)
-
+  flag_str = rbsp_efw_get_flag_values(sc,times,boom_pair=bp)
 
   flag_arr = flag_str.flag_arr
   bias_sweep_flag = flag_str.bias_sweep_flag
@@ -164,7 +163,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
   model = 't89'
   rbsp_efw_dcfield_removal_crib,sc,/no_spice_load,/noplot,model=model
-  
+
 
 
 ;--------------------------------------------------
@@ -185,7 +184,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
 
 ;the times for the mag spinfit can be slightly different than the times for the
-;Esvy spinfit. 
+;Esvy spinfit.
   tinterpol_mxn,'rbsp'+sc+'_mag_mgse',times,newname='rbsp'+sc+'_mag_mgse'
   get_data,'rbsp'+sc+'_mag_mgse',data=mag_mgse
 
@@ -201,7 +200,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   get_data,'rbsp'+sc+'_state_vel_gse',data=vel_gse
   get_data,'rbsp'+sc+'_E_coro_mgse',data=ecoro_mgse
   get_data,'rbsp'+sc+'_state_vel_coro_mgse',data=vcoro_mgse
-  
+
   tinterpol_mxn,'rbsp'+sc+'_mag_mgse_'+model,times,newname='rbsp'+sc+'_mag_mgse_'+model
   tinterpol_mxn,'rbsp'+sc+'_mag_mgse_t89_dif',times,newname='rbsp'+sc+'_mag_mgse_t89_dif'
   get_data,'rbsp'+sc+'_mag_mgse_'+model,data=mag_model
@@ -232,7 +231,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
   get_data,'angles',data=angles
 
- 
+
   get_data,'rbsp'+sc +'_efw_vsvy_V1',data=v1
   get_data,'rbsp'+sc +'_efw_vsvy_V2',data=v2
   get_data,'rbsp'+sc +'_efw_vsvy_V3',data=v3
@@ -240,11 +239,11 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   get_data,'rbsp'+sc +'_efw_vsvy_V5',data=v5
   get_data,'rbsp'+sc +'_efw_vsvy_V6',data=v6
 
-  
-  if bp eq '12' then vavg = (v1.y + v2.y)/2.	
-  if bp eq '34' then vavg = (v3.y + v4.y)/2.	
-  if bp eq '56' then vavg = (v5.y + v6.y)/2.	
- 
+
+  if bp eq '12' then vavg = (v1.y + v2.y)/2.
+  if bp eq '34' then vavg = (v3.y + v4.y)/2.
+  if bp eq '56' then vavg = (v5.y + v6.y)/2.
+
 ;--------------------------------------------------
   ;These are variables for the L3 survey plots
   mlt_lshell_mlat = [[mlt.y],[lshell.y],[mlat.y]]
@@ -265,7 +264,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   if type eq 'survey' then filename = 'rbsp'+sc+'_efw-l3_'+strjoin(strsplit(date,'-',/extract))+'_v'+vstr+'_survey.cdf'
 
 
-  
+
   file_copy,source_file,folder+filename,/overwrite
 
   cdfid = cdf_open(folder+filename)
@@ -289,7 +288,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
      vavg[goo] = !values.f_nan
   endif
 
- 
+
 ;--------------------------------------------------
 ;Populate CDF file for L3 version
 ;--------------------------------------------------
@@ -334,7 +333,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
 
   if type eq 'L3' then begin
-     
+
      cdf_varput,cdfid,'efield_inertial_frame_mgse',transpose(spinfit_vxb)
      cdf_varput,cdfid,'efield_corotation_frame_mgse',transpose(spinfit_vxb_coro)
      cdf_varput,cdfid,'VcoroxB_mgse',transpose(ecoro_mgse.y)
@@ -345,7 +344,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
-     
+
      cdf_vardelete,cdfid,'efield_inertial_frame_mgse_edotb_zero'
      cdf_vardelete,cdfid,'efield_corotation_frame_mgse_edotb_zero'
      cdf_vardelete,cdfid,'bfield_mgse'
@@ -383,10 +382,10 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
      cdf_varput,cdfid,'ephemeris',transpose(location)
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      cdf_varput,cdfid,'bias_current',transpose(ibias)
-     
+
      cdf_vardelete,cdfid,'orbit_num'
      cdf_vardelete,cdfid,'Lstar'
-     cdf_vardelete,cdfid,'density'   
+     cdf_vardelete,cdfid,'density'
      cdf_vardelete,cdfid,'Vavg'
      cdf_vardelete,cdfid,'pos_gse'
      cdf_vardelete,cdfid,'vel_gse'
@@ -429,7 +428,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
      cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      cdf_varput,cdfid,'bias_current',transpose(ibias)
 
-     
+
      cdf_vardelete,cdfid,'Bfield'
      cdf_vardelete,cdfid,'ephemeris'
      cdf_vardelete,cdfid,'density_potential'
