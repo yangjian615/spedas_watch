@@ -17,7 +17,9 @@
 ;              parameters:
 ;              instrument - character string (or array) containing the name of
 ;                           the instrument such as 'fgm', 'epd', or eng
-;              datatype -not yet implemented
+;              datalevel - L1 or L2 
+;              datatype - for fgm (mag) 
+;                       - add types for epd and eng
 ;              time range - an array of 2 character strings containing the 
 ;                           start and stop times of the data to be loaded.
 ;                           ['2007-03-23/00:00:00', '2007-03-24/00:00:00']       
@@ -70,6 +72,7 @@ pro elf_ui_load_data_load_pro,$
 
   ; extract the variables from the load structure
   instrument=loadStruc.instrument
+  datalevel=loadStruc.datalevels
   datatype=loadStruc.datatypes
   timeRange=loadStruc.timerange
   
@@ -88,7 +91,7 @@ pro elf_ui_load_data_load_pro,$
   ; ***** This routine is provided by each mission ***** 
   ; ***** Parameters for the load routines will vary per mission *****
   elf_load_data, instrument=instrument, datatype=datatype, level=level, $
-                    timerange=timeRange 
+                    trange=timeRange 
 
   ; determine which tplot variables to delete and which ones are the new temporary 
   ; variables

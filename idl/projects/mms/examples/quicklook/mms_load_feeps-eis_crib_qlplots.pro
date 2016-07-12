@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 09:07:07 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21191 $
+; $LastChangedDate: 2016-07-11 12:55:27 -0700 (Mon, 11 Jul 2016) $
+; $LastChangedRevision: 21448 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps-eis_crib_qlplots.pro $
 ;-
 
@@ -101,7 +101,7 @@ panels = ['mms_bss_burst', 'mms_bss_fast', $
 
 if ~postscript then window, iw, xsize=width, ysize=height
 tplot, panels, var_label=position_vars, window=iw
-title='EPD EIS - Quicklook'
+title='EPD FEEPS-EIS - Quicklook'
 xyouts, .4, .98, title, /normal, charsize=1.5
 
 if postscript then tprint, plot_directory + prefix + "_quicklook_plots"

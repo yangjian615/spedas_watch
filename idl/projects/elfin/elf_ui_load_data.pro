@@ -67,17 +67,23 @@ pro elf_ui_load_data_event,event
         ;instrlist = widget_info(event.handler,find_by_uname='instrument')
         ;stop 
         ;widget_control,instrlist,set_value=state.instrumentArray[event.index],set_list_select=0
-        datalist = widget_info(event.handler,find_by_uname='datalist')
-        if event.index eq 0 then dataArray = state.fgmTypeArray
-        if event.index eq 1 then dataArray = state.epdTypeArray
-        if event.index eq 2 then dataArray = state.engTypeArray
-        ;stop
-        widget_control, datalist, set_value=dataArray
+        levellist = widget_info(event.handler,find_by_uname='levellist')
+        if event.index eq 0 then levelArray = state.prmLevelArray
+        if event.index eq 1 then levelArray = state.epdLevelArray
+        if event.index eq 2 then levelArray = state.engLevelArray
+        widget_control, levellist, set_value=levelArray
+        typelist = widget_info(event.handler,find_by_uname='typelist')
+        if event.index eq 0 then typeArray = state.prmTypeArray
+        if event.index eq 1 then typeArray = state.epdTypeArray
+        if event.index eq 2 then typeArray = state.engTypeArray
+        widget_control, typelist, set_value=typeArray
       end    
-      'CLEARTYPE': begin
-        ;clear the data type list widget of all selections
-        datalist = widget_info(event.handler,find_by_uname='datalist')
-        widget_control,datalist,set_list_select=-1
+      'CLEARPARAMS': begin
+        ;clear the level and type list widget of all selections
+        levellist = widget_info(event.handler,find_by_uname='levellist')
+        widget_control,levellist,set_list_select=-1
+        typelist = widget_info(event.handler,find_by_uname='typelist')
+        widget_control,typelist,set_list_select=-1
       end
       'CLEARDATA': begin
         ;clear the actual data that has been loaded. this will delete all 
@@ -126,8 +132,10 @@ pro elf_ui_load_data_event,event
       'ADD': begin
       
         ;retrieve the data types that were selected by the user
-        datalist = widget_info(event.handler,find_by_uname='datalist')
-        typeSelect = widget_info(datalist,/list_select)      
+        levellist = widget_info(event.handler,find_by_uname='levellist')
+        levelSelect = widget_info(levellist,/list_select)
+        typelist = widget_info(event.handler,find_by_uname='typelist')
+        typeSelect = widget_info(typelist,/list_select)      
         ;if no selections were made, report this to the user via the 
         ;status bar and log the error to the history window
         state.statusBar->update,'Nothing to load. Widgets for probe and data type selection have not yet been provided.'
@@ -142,7 +150,11 @@ pro elf_ui_load_data_event,event
         instlist = widget_info(event.handler,find_by_uname='instrument')
         instrument = widget_info(instlist,/combobox_gettext)        
         instNum = widget_info(instlist,/combobox_number)        
-        if instrument eq 'fgm' then typeArray = state.fgmTypeArray
+        if instrument eq 'prm' then levelArray = state.prmLevelArray
+        if instrument eq 'epd' then levelArray = state.epdLeveLArray
+        if instrument eq 'eng' then levelArray = state.engLeveLArray
+        levels = levelArray[levelSelect]
+        if instrument eq 'prm' then typeArray = state.prmTypeArray
         if instrument eq 'epd' then typeArray = state.epdTypeArray
         if instrument eq 'eng' then typeArray = state.engTypeArray
         types = typeArray[typeSelect]
@@ -172,9 +184,10 @@ pro elf_ui_load_data_event,event
         ;create a load structure to pass the parameters needed by the load
         ;procedure
         loadStruc = { instrument:instrument, $
+                      datalevels:levels, $
                       datatypes:types, $
                       timeRange:[startTimeString, endTimeString] }
-  
+
         ;call the routine that loads the data and update the loaded data tree
         ;this routine is specific to each mission 
         elf_ui_load_data_load_pro, $
@@ -242,7 +255,7 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   middleBase = widget_base(topBase,/col,/align_center)
   rightBase = widget_base(topBase,/col)
   
-  leftLabel = widget_label(leftBase,value='elf Data Selection:',/align_left)
+  leftLabel = widget_label(leftBase,value='Data Selection:',/align_left)
   rightLabel = widget_label(rightBase,value='Data Loaded:',/align_left)
   
   selectionBase = widget_base(leftBase,/col,/frame)
@@ -277,15 +290,12 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
                                   uname='time_widget')
     
   ;create the dropdown menu that lists the various instrument types for this mission
-  instrumentArray = ['fgm','epd','eng']
+  instrumentArray = ['prm','epd','eng']
   ;Note: these type arrays are temporarily commented out because LOMO data only has one type of data - level 1
-  ;fgm may have level 2 data in the future
-    ;fgmTypeArray = ['fgs','fgf','fgs_dsl_gei_mag','fgf_dsl_gei_mag']
+  ;prm may have level 2 data in the future
+    ;prmTypeArray = ['fgs','fgf','fgs_dsl_gei_mag','fgf_dsl_gei_mag']
     ;epdTypeArray = ['pis_en_counts','pif_en_counts','pis_en_eflux','pif_en_eflux']
     ;engTypeArray = ['temp','volt']
-  fgmTypeArray = ['level 1']
-  epdTypeArray = ['level 1']
-  engTypeArray = ['level 1']
   instrumentBase = widget_base(selectionBase,/row) 
   instrumentLabel = widget_label(instrumentBase,value='Instrument Type: ')
   instrumentCombo = widget_combobox(instrumentBase,$
@@ -299,15 +309,41 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   
   ;create the list box and a clear all button for the data types for a given 
   ;instrument             
-  typeBase = widget_base(dataBase,/col)
-  typeLabel = widget_label(typeBase,value='Data Type:')
-  typeList = widget_list(typeBase,$
-                         value=fgmTypeArray,$
+  prmLevelArray = ['L1']
+  epdLevelArray = ['L1']
+  engLevelArray = ['L1']
+  levelBase = widget_base(dataBase,/col)
+  levelLabel = widget_label(levelBase,value='Level:')
+  levelList = widget_list(levelBase,$
+                         value=prmlevelArray,$
                          /multiple,$
-                         uname='datalist',$
+                         uname='levellist',$
                          xsize=16,$
                          ysize=15)                         
-  clearTypeButton = widget_button(typeBase,value='Clear Data Type',uvalue='CLEARTYPE',ToolTip='Deselect all parameter types')
+;  clearLevelButton = widget_button(levelBase,value='Clear Level',uvalue='CLEARLEVEL',ToolTip='Deselect level')
+
+  ;create the list box and a clear all button for the data types for a given
+  ;instrument
+  prmtypeArray = ['mag']
+  epdtypeArray = ['epde', 'epdi']
+  engtypeArray = ['*'] 
+                  ;'bias_temp', '23v_temp', '8v6_temp', '5v7_temp', '5v0_dig_temp', '3v3_temp', '1v5_dig_temp', $
+                  ;'1v5_epd_temp', '1v5_prm_temp', '30v_volt_mon','23v_volt_mon', '22v_volt_mon', $
+                  ;'8v6_volt_mon', '8v_volt_mon', '5v_dig_volt_mon', '5v_epd_volt_mon', '4v5_volt_mon', $
+                  ;'3v3_volt_mon', '1v5_volt_dig_volt_mon', '1v5_epd_volt_mon', '1v5_prm_volt_mon', $
+                  ;'epd_biasl_volt_mon', 'epd_biash_volt_mon', 'epd_fend_temp']
+  typeBase = widget_base(dataBase,/col)
+  typeLabel = widget_label(typeBase,value='Type:')
+  typeList = widget_list(typeBase,$
+    value=prmtypeArray,$
+    /multiple,$
+    uname='typelist',$
+    xsize=16,$
+    ysize=15)
+;  clearTypeButton = widget_button(typeBase,value='Clear Type',uvalue='CLEARTYPE',ToolTip='Deselect data type')
+
+  clearBase = widget_base(selectionBase,/row, /align_center)
+  clearTypeButton = widget_button(clearBase,value='Clear Parameter Selections',uvalue='CLEARPARAMS',/align_center,ToolTip='Deselect all parameter selections')
 
   ;create the state variable with all the parameters that are needed by this 
   ;panels event handler routine                                                               
@@ -320,9 +356,12 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
            loadedData:loadedData,$
            callSequence:callSequence,$
            instrumentArray:instrumentArray,$
-           fgmTypeArray:fgmTypeArray, $
+           prmLevelArray:prmLevelArray, $
+           epdLevelArray:epdLevelArray, $
+           engLevelArray:engLevelArray, $            
+           prmTypeArray:prmTypeArray, $
            epdTypeArray:epdTypeArray, $
-           engTypeArray:engTypeArray}            
+           engTypeArray:engTypeArray}
   widget_control,topBase,set_uvalue=state
                                   
   return
