@@ -14,6 +14,25 @@
 
 ; regression tests ---------->
 
+; tplotnames regressions
+function mms_load_fpi_ut::test_loading_tplotnames_desmoms
+  mms_load_fpi, trange=['2015-10-15', '2015-10-16'], datatype='des-moms', tplotnames = tplotnames
+  assert, n_elements(tplotnames) eq 97, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_loading_tplotnames_desdist
+  mms_load_fpi, trange=['2015-10-15', '2015-10-16'], datatype='des-dist', tplotnames = tplotnames
+  assert, n_elements(tplotnames) eq 12, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_loading_tplotnames_des
+  mms_load_fpi, trange=['2015-10-15', '2015-10-16'], datatype=['des-moms', 'des-dist'], tplotnames = tplotnames
+  assert, n_elements(tplotnames) eq 105, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
+  return, 1
+end
+
 ; user requests a few seconds after file start time
 function mms_load_fpi_ut::test_seconds_after_file_start_spdf
   mms_load_fpi, trange=['2015-10-15/6:45:21', '2015-10-15/6:51:21'], data_rate='brst', level='l2', /spdf
