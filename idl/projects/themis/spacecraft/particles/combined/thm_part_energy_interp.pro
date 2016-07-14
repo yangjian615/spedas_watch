@@ -96,12 +96,14 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_es
        combined_energy = [sample_esa.energy,sample_sst.energy]
        combined_data = [sample_esa.data,sample_sst.data]
        combined_bins = [sample_esa.bins,sample_sst.bins]
+       combined_dim = dimen(combined_energy)
        
        ;Calculate energy bin widths.  If energies do not change between samples
        ;in a single mode for both ESA and SST then this could be moved out of the loop. 
-       combined_denergy = abs(deriv(combined_energy))
-       ncde = n_elements(combined_denergy)
-       sst_mode_out[j].denergy = combined_denergy[ ncde-n_elements(energies):ncde-1 ] # (fltarr(sst_dim[1])+1) 
+    
+       esa_dim = dimen(sample_esa.data)
+       combined_denergy = deriv([sample_esa.energy[*,0],energies])
+       sst_mode_out[j].denergy = combined_denergy[esa_dim[0]:combined_dim[0]-1] # (fltarr(sst_dim[1])+1) 
        
        if max(sample_esa.energy,/nan) gt min(energies,/nan) then begin
          dprint,dlevel=1,'ERROR: ESA maximum energy(' + strtrim(max(sample_esa.energy,/nan),2) + ' eV) greater than minimum energy target(' + strtrim(min(energies,/nan),2) + ' eV)' 
@@ -123,8 +125,8 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_es
            ;set highest SST energy bin to zero to ensure interpolation doesn't go wild
            if keyword_set(extrapolate_esa) then begin
              extrap_num++
-             combined_bins[-1,l] = 1
-             combined_data[-1,l] = 0
+             combined_bins[combined_dim[0]-1l,l] = 1 ;enable highest energy
+             combined_data[combined_dim[0]-1l,l] = 0 ;set to zero
 ;             combined_energy[-1,l] = energies[-1]
              sst_mode_out[j].bins[*,l] = 1
            endif else begin

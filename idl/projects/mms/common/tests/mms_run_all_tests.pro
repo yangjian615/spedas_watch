@@ -9,8 +9,8 @@
 ;     
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-28 09:18:18 -0700 (Tue, 28 Jun 2016) $
-; $LastChangedRevision: 21382 $
+; $LastChangedDate: 2016-07-13 15:15:53 -0700 (Wed, 13 Jul 2016) $
+; $LastChangedRevision: 21458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_run_all_tests.pro $
 ;-
 
@@ -33,6 +33,7 @@ pro mms_run_all_tests
                    'mms_part_products_ut', $
                    'mms_load_coverage_ut', $
                    'mms_load_brst_segments_ut', $
+                   'mms_load_fast_segments_ut', $
                    'mms_file_filter_ut']
     
     file_out =   'mms_tests_output_'+time_string(systime(/sec), tformat='YYYYMMDD_hhmm')+'.txt'

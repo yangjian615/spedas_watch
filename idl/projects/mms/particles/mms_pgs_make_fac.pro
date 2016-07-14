@@ -107,8 +107,8 @@ end
 ;  If an error occurs fac_output will be undfined on return
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21101 $
+;$LastChangedDate: 2016-07-13 10:15:49 -0700 (Wed, 13 Jul 2016) $
+;$LastChangedRevision: 21454 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_make_fac.pro $
 ;-
 pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
@@ -147,7 +147,7 @@ pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
   if (tnames(mag_tvar_in))[0] ne '' then begin
     mag_temp = mag_tvar_in + '_pgs_temp'
     ;Right now, magnetic field must be in dmpa coordinates
-    mms_cotrans,mag_tvar_in,mag_temp,out_coord='dmpa',probe=probe,in_coord='dmpa'
+    mms_cotrans,mag_tvar_in,mag_temp,out_coord='dmpa',probe=probe
     tinterpol_mxn,mag_temp,times,newname=mag_temp,/nan_extrapolate
   endif else begin
     dprint, 'Magnetic field variable not found: "' + mag_tvar_in + $

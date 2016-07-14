@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-19 11:15:49 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21140 $
+; $LastChangedDate: 2016-07-13 15:15:53 -0700 (Wed, 13 Jul 2016) $
+; $LastChangedRevision: 21458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
 
@@ -139,6 +139,24 @@ function mms_load_fgm_ut::test_load_fgm_cdf_filenames
     mms_load_fgm, probe=1, level='l2', /spdf, suffix='_fromspdf', cdf_filenames=spdf_filenames
     mms_load_fgm, probe=1, level='l2', suffix='_fromsdc', cdf_filenames=sdc_filenames
     assert, array_equal(spdf_filenames, sdc_filenames), 'Problem with cdf_filenames keyword (SDC vs. SPDF)'
+    return, 1
+end
+
+function mms_load_fgm_ut::test_keep_flagged
+    mms_load_fgm, probe=1, level='l2', /keep_flagged
+    get_data, 'mms1_fgm_flag_srvy_l2', data=flags
+    get_data, 'mms1_fgm_b_gsm_srvy_l2_bvec', data=flagged
+    assert, finite(flagged.y[(where(flags.Y ne 0))[0], 0]), $
+      'Problem with keep_flagged keyword in mms_load_fgm'
+    return, 1
+end
+
+function mms_load_fgm_ut::test_remove_flagged_default
+    mms_load_fgm, probe=4, level='l2'
+    get_data, 'mms4_fgm_flag_srvy_l2', data=flags
+    get_data, 'mms4_fgm_b_gsm_srvy_l2_bvec', data=flagged
+    assert, ~finite(flagged.y[(where(flags.Y ne 0))[0], 0]), $
+      'Problem with removing flags in mms_load_fgm'
     return, 1
 end
 

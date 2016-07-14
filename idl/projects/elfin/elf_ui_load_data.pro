@@ -326,12 +326,11 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   ;instrument
   prmtypeArray = ['mag']
   epdtypeArray = ['epde', 'epdi']
-  engtypeArray = ['*'] 
-                  ;'bias_temp', '23v_temp', '8v6_temp', '5v7_temp', '5v0_dig_temp', '3v3_temp', '1v5_dig_temp', $
-                  ;'1v5_epd_temp', '1v5_prm_temp', '30v_volt_mon','23v_volt_mon', '22v_volt_mon', $
-                  ;'8v6_volt_mon', '8v_volt_mon', '5v_dig_volt_mon', '5v_epd_volt_mon', '4v5_volt_mon', $
-                  ;'3v3_volt_mon', '1v5_volt_dig_volt_mon', '1v5_epd_volt_mon', '1v5_prm_volt_mon', $
-                  ;'epd_biasl_volt_mon', 'epd_biash_volt_mon', 'epd_fend_temp']
+  engtypeArray = ['*', 'bias_temp', '23v_temp', '8v6_temp', '5v7_temp', '5v0_dig_temp', '3v3_temp', '1v5_dig_temp', $
+                  '1v5_epd_temp', '1v5_prm_temp', '30v_volt_mon','23v_volt_mon', '22v_volt_mon', $
+                  '8v6_volt_mon', '8v_volt_mon', '5v_dig_volt_mon', '5v_epd_volt_mon', '4v5_volt_mon', $
+                  '3v3_volt_mon', '1v5_volt_dig_volt_mon', '1v5_epd_volt_mon', '1v5_prm_volt_mon', $
+                  'epd_biasl_volt_mon', 'epd_biash_volt_mon', 'epd_fend_temp']
   typeBase = widget_base(dataBase,/col)
   typeLabel = widget_label(typeBase,value='Type:')
   typeList = widget_list(typeBase,$
@@ -340,7 +339,6 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
     uname='typelist',$
     xsize=16,$
     ysize=15)
-;  clearTypeButton = widget_button(typeBase,value='Clear Type',uvalue='CLEARTYPE',ToolTip='Deselect data type')
 
   clearBase = widget_base(selectionBase,/row, /align_center)
   clearTypeButton = widget_button(clearBase,value='Clear Parameter Selections',uvalue='CLEARPARAMS',/align_center,ToolTip='Deselect all parameter selections')

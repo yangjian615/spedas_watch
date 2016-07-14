@@ -12,10 +12,16 @@
 ;   2015-10-16: 13:03:34.000 - 13:04:54.000
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-01 08:30:38 -0700 (Fri, 01 Jul 2016) $
-; $LastChangedRevision: 21417 $
+; $LastChangedDate: 2016-07-13 14:31:03 -0700 (Wed, 13 Jul 2016) $
+; $LastChangedRevision: 21457 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_brst_segments_ut__define.pro $
 ;-
+function mms_load_brst_segments_ut::test_load_suffix
+  mms_load_brst_segments, trange=['2015-12-15', '2015-12-16'], suffix='_testsuffix'
+  assert, spd_data_exists('mms_bss_burst_testsuffix', '2015-12-15', '2015-12-16'), $
+    'Problem with the suffix keyword when loading burst segment bar'
+  return, 1
+end
 
 function mms_load_brst_segments_ut::test_load_singletime
   mms_load_brst_segments, trange=['2015-10-16/13:02:25', '2015-10-16/13:02:25']

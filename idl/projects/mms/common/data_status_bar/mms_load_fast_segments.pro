@@ -7,8 +7,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-23 09:01:02 -0700 (Mon, 23 May 2016) $
-;$LastChangedRevision: 21169 $
+;$LastChangedDate: 2016-07-13 11:00:00 -0700 (Wed, 13 Jul 2016) $
+;$LastChangedRevision: 21455 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_load_fast_segments.pro $
 ;-
 
@@ -30,15 +30,17 @@ pro mms_load_fast_segments, trange=trange, suffix=suffix
     unix_start = reverse(fast_intervals.start_times)
     unix_end = reverse(fast_intervals.end_times)
     
-    times_in_range = where(unix_start ge tr[0]-86400.0 and unix_start le tr[1], t_count)
+    times_in_range = where(unix_start ge tr[0]-86400.0 and unix_start le tr[1]+86400.0, t_count)
 
     if t_count ne 0 then begin
       unix_start = unix_start[times_in_range]
       unix_end = unix_end[times_in_range]
       
       for idx = 0, n_elements(unix_start)-1 do begin
-        append_array, bar_x, [unix_start[idx], unix_start[idx], unix_end[idx], unix_end[idx]]
-        append_array, bar_y, [!values.f_nan, 0.,0., !values.f_nan]
+        if unix_end[idx] ge tr[0] and unix_start[idx] le tr[1] then begin
+          append_array, bar_x, [unix_start[idx], unix_start[idx], unix_end[idx], unix_end[idx]]
+          append_array, bar_y, [!values.f_nan, 0.,0., !values.f_nan]
+        endif
       endfor
       
       store_data,'mms_bss_fast'+suffix,data={x:bar_x, y:bar_y}
