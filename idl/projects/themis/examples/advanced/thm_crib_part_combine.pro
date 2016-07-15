@@ -17,9 +17,9 @@
 ;  If you see any useful examples missing from these cribs, please let us know.
 ;  A lot of instrument specific options(e.g. decontamination, are found in the other cribs)
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-04-15 11:23:58 -0700 (Fri, 15 Apr 2016) $
-;$LastChangedRevision: 20837 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-07-14 17:31:52 -0700 (Thu, 14 Jul 2016) $
+;$LastChangedRevision: 21469 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
 ;-
 
@@ -292,6 +292,7 @@ combined = thm_part_combine(probe=probe, trange=trange, $
 
 thm_part_products, dist_array=combined, outputs='energy'
 
+options, 'thd_pt??f_eflux_energy', zrange=[1e3,1e7]
 tplot,'thd_pt??f_eflux_energy'
 
 

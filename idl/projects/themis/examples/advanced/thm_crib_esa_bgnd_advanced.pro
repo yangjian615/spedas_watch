@@ -26,8 +26,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-06-29 18:07:05 -0700 (Wed, 29 Jun 2016) $
-;$LastChangedRevision: 21406 $
+;$LastChangedDate: 2016-07-13 18:54:23 -0700 (Wed, 13 Jul 2016) $
+;$LastChangedRevision: 21461 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_esa_bgnd_advanced.pro $
 ;-
 
@@ -45,20 +45,12 @@ trange = timerange()
 thm_part_load, probe=probe, trange=trange, datatype=datatype 
 
 
-;background determination requires state and some particle data be loaded
-;  -peer and peir data must be loaded manually
-;  -pser data will be loaded automatically in thm_load_esa_bkg (loaded here for clarity)
-thm_part_load, probe=probe, trange=trange, datatype=['peer','peir']
-thm_part_load, probe=probe, trange=trange, datatype='pser', /get_support
-thm_load_state, probe=probe, trange=trange, /get_support
-
-
 ;calculate background
-;  -assumes peer & peir data are present, will load pser data as needed
-;  -if both iesa and sst data sets are present, will use the lower background estimate 
+;  -peir, pser, peer, and state data will be auto-loaded as needed
+;  -if both iesa and sst data sets are present the lower background estimate will be used 
 ;  -uses iesa data for background in the inner magnetosphere
-;  -calls thm_pse_bkg_auto to calculate contribution from sst electrons
-thm_load_esa_bkg, probe=probe
+;  -uses thm_pse_bkg_auto to calculate contribution from sst electrons
+thm_load_esa_bkg, probe=probe, trange=trange
 
 
 ;get energy spectra and moments with and without background subtracted

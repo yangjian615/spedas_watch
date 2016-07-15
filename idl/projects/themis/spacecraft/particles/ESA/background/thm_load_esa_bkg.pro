@@ -1,21 +1,25 @@
 ;+
-;PROCEDURE:	thm_load_esa_bkg
-;PURPOSE:	
-;	Adds background count rates to the ESA data structures which can be used by thm_pei_bkg_sub and thm_pee_bkg_sub for background removal
-;INPUT:		
+;PROCEDURE:
+; thm_load_esa_bkg
 ;
-;KEYWORDS:
-;	probe:		strarr		themis spacecraft - "a", "b", "c", "d", "e"
-;					if not set defaults to all		
+;PURPOSE:	
+;	Adds background count rates to the ESA data structures which can be used 
+; by thm_pei_bkg_sub and thm_pee_bkg_sub for background removal.
+;
+;INPUT:		
+;	probe:  strarr		themis spacecraft - "a", "b", "c", "d", "e"
+;         if not set defaults to all		
 ;	sc:		strarr		themis spacecraft - "a", "b", "c", "d", "e"
-;					if not set defaults to all		
-;	themishome:	string		path to data dir, where data dir contains the th* dir, where *=a,b,c,d,e
-;	datatype	string or 0/1	if not set, uses both pser and peir data
-;					if set to pser, uses pser only
-;					if set to peir, uses peir only
-;	user_select	0/1		keyword not working -- code under construction
-;						if set, will run thm_pse_bkg_set.pro to let the user select the interval for calculating pser sunlight background 
-;						if not set, will run thm_pse_bkg_auto.pro for automated pser sunlight background subtraction
+;       if not set defaults to all		
+;	datatype:  string array specifying datatypes from which background is calculated
+;            valid inputs: "peir", "peer", "pser"
+;            if not set defaults to all
+;            peer data is also used for calculating pser background
+; trange:  two element time range
+;          if not specified or set with timespan user will be prompted
+;	user_select:  0/1	keyword not working -- code under construction
+;               if set, will run thm_pse_bkg_set.pro to let the user select the interval for calculating pser sunlight background 
+;               if not set, will run thm_pse_bkg_auto.pro for automated pser sunlight background subtraction
 ;
 ;CREATED BY:	J. McFadden	08/12/31
 ;VERSION:	1
@@ -25,38 +29,45 @@
 ;				10/03/18	added peer background from scattered electrons	
 ;				10/04/06	background array for electrons now filled using ion calculated background
 ;     2016/06/30  minor changes to integrate with spedas
+;     2016/07/12  autoload all data, some code cleaning
 ;
 ;NOTES:	 
-;		Assumes esa data is loaded 
-;		Loads pser data to be used for background, if needed 
+;		Autoloads pser, peir, peer, and state data if not present
 ;		If both iesa and sst data sets are used, will use the lower background estimate 
 ;		Uses iesa data for background in the inner magnetosphere
 ;		Will only work properly if data includes a perigee pass 
 ;	
 ;-
 
-pro thm_load_esa_bkg,sc=sc,probe=probe,themishome=themishome,datatype=datatype
+pro thm_load_esa_bkg,sc=sc, probes=probes_in, datatype=datatype_in, trange=trange, _extra=_extra
 
   compile_opt strictarr
 
 ;	Time how long the routine takes
-	ex_start = systime(1)
+ex_start = systime(1)
 
 cols=get_colors()
 
-; sc default
-	if keyword_set(probe) then sc=probe
-	if not keyword_set(sc) then begin
-		dprint,'S/C number not set, default = all probes', dlevel=1
-		sc=['a','b','c','d','e','f']
-	endif
+; get spacecraft/probe input
+if undefined(probes_in) then begin
+  if undefined(sc) then begin
+    probes = ['a','b','c','d','e','f']
+  endif else begin
+    probes = sc
+  endelse
+endif else begin
+  probes = probes_in
+endelse
 
-	if not keyword_set(themishome) then themishome=!themis.local_data_dir
+; get datatype input
+if undefined(datatype) then begin
+  datatype = ['peir','peer','pser']
+endif else begin
+  datatype = datatype_in
+endelse
 
-nsc = n_elements(sc)
-probes=strarr(1)
-if nsc eq 1 then probes[0]=strlowcase(sc)
-if nsc ne 1 then probes=strlowcase(sc)
+dprint, 'Loading ESA background for probes: '+strjoin(probes,', '), dlevel=2
+dprint, 'Loading ESA background from datatypes: '+strjoin(datatype,', '), dlevel=2
 
 ; matrix to transform pser count spectra to psir background counts -- needs to be calculated
 ; we may need different arrays for different spacecraft
@@ -67,17 +78,20 @@ aa = [1.50000,6.27452e-005,0.000120554,0.000222392,0.000539607,0.00150673,0.0039
 ; the 0.7 in aa[0] sets the minimum background determined from pser
 aa = [0.70,6.27452e-005,0.000120554,0.000222392,0.000539607,0.00150673,0.00392665,0.00984036,0.0241520]
 ;***********************************************************************************
-; get background data
 
-for i=0,nsc-1 do begin
+;=======================================================
+; get background data
+;=======================================================
+
+for i=0, n_elements(probes)-1 do begin
 
 	dprint,'Calculating background for th'+probes[i], dlevel=2
-	data_type=' '
-	if keyword_set(datatype) then data_type=datatype
 
+;=======================================================
 ; pser determined background
+;=======================================================
 
-	if not keyword_set(datatype) or string(data_type) eq 'pser' then begin
+	if in_set(datatype,'pser') then begin
 		dprint,'Calculating background from pser data', dlevel=2
 ;		wait,.1
 
@@ -85,7 +99,10 @@ for i=0,nsc-1 do begin
 
 ;		tmp = thm_sst_pser(probe=probes[i],index=10)
 ;		if not keyword_set(tmp) then thm_load_sst,probe=probes[i]
-		thm_load_sst,probe=probes[i]
+;		thm_load_sst,probe=probes[i]
+
+    thm_part_load, probe=probes[i], datatype='pser', trange=trange, _extra=_extra
+    thm_part_load, probe=probes[i], datatype='peer', trange=trange, _extra=_extra
 
 		if keyword_set(user_select) then begin
 ;    this user_select section doesn't work, bkg keyword disabled for pse data
@@ -120,7 +137,7 @@ for i=0,nsc-1 do begin
   		att_on=replicate(1.,npt)
   		bkg1 = total((aa#att_on)*sst,1)
   		time1=tmp1.x
-  
+ 
   		thm_get_2dt,'jo_3d_new','th'+sc+'_peer',name='Jeo_10_30keV',gap_time=6.,energy=[10000,27000.]
   		get_data,'Jeo_10_30keV',data=tmp8
   		bkg_pee = 5.e-9*interp(tmp8.y,tmp8.x,tmp1.x)
@@ -140,11 +157,15 @@ for i=0,nsc-1 do begin
 		time1 = [time_double('07-02-01/0'),time_double('27-02-01/0')]
 	endelse
 
+;=======================================================
 ; peir determined background
+;=======================================================
 
-	if not keyword_set(datatype) or string(data_type) eq 'peir' then begin
+	if in_set(datatype,'peir') then begin
 		dprint,'Calculating background from peir data', dlevel=2
 ;		wait,.1
+
+    thm_part_load, probe=probes[i], datatype='peir', trange=trange, _extra=_extra
 
 		get_dat='th'+probes[i]+'_peir'
 		name1='th'+probes[i]+'_pei_pei_bkg'
@@ -167,11 +188,15 @@ for i=0,nsc-1 do begin
 		time2 = [time_double('07-02-01/0'),time_double('27-02-01/0')]
 	endelse
 
+;=======================================================
 ; peer determined background
+;=======================================================
 
-	if 1 then begin
+	if in_set(datatype,'peer') then begin
 		dprint,'Calculating background from peer data', dlevel=2
 ;		wait,.1
+
+    thm_part_load, probe=probes[i], datatype='peer', trange=trange, _extra=_extra
 
 		get_dat='th'+probes[i]+'_peer'
 		name1='th'+probes[i]+'_peer_pee_bkg'
@@ -188,13 +213,17 @@ for i=0,nsc-1 do begin
 		time4 = [time_double('07-02-01/0'),time_double('27-02-01/0')]
 	endelse
 
+;=======================================================
+; optimize with sc pos
+;=======================================================
+
 ; if both peir and pser background used, then optimize pser background, state data must be loaded
 ; scale pser bkg to optimize agreement with peir bkg for distance>5.3Re
 ; dis3 and time3 are used to force pei bkg use for distance<5.3Re
 
 	get_data,'th'+probes[i]+'_state_pos',data=tmp3,index=index
 	if index eq 0 then begin
-		thm_load_state,/get_support_data,probe=probes[i],version=2
+		thm_load_state,probe=probes[i],version=2, trange=trange
 		get_data,'th'+probes[i]+'_state_pos',data=tmp3,index=index
 	endif
 	if index gt 0 then begin
@@ -229,6 +258,9 @@ for i=0,nsc-1 do begin
     continue
 	endelse
 
+;=======================================================
+; add to esa common block structures
+;=======================================================
 
 ; diagnostics
 ; print,minmax(bkg1)
@@ -876,7 +908,7 @@ for i=0,nsc-1 do begin
 
 	ex_time = systime(1) - ex_start
 	dprint,'Loading ESA background complete:  '+strtrim(ex_time,2)+' seconds execution time.', dlevel=2
-	tplot,['th'+probes[i]+'_pei_bkg'],title='THEMIS '+strupcase(sc)+'  PEI Background'
+	tplot,['th'+probes[i]+'_pei_bkg'],title='THEMIS '+strupcase(probes[i])+'  PEI Background'
 
 endfor
 end

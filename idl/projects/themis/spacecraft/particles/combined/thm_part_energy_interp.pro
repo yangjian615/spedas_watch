@@ -93,17 +93,24 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_es
        sample_sst = (*dist_sst[i])[j]
        sample_esa = (*dist_esa[dist_esa_i])[dist_esa_j]
 
+       ;combined, pre-interpolated data
        combined_energy = [sample_esa.energy,sample_sst.energy]
        combined_data = [sample_esa.data,sample_sst.data]
        combined_bins = [sample_esa.bins,sample_sst.bins]
        combined_dim = dimen(combined_energy)
        
-       ;Calculate energy bin widths.  If energies do not change between samples
-       ;in a single mode for both ESA and SST then this could be moved out of the loop. 
-    
+       ;Calculate energy bin widths for target energies a la moments_3d
+       ;  -uses 1/2 the separation of each 2 energy bin values
+       ;  -endpoints use the de/e from adjacent bin scaled by their energy
+       combined_tmp = [sample_esa.energy[*,0],energies]
        esa_dim = dimen(sample_esa.data)
-       combined_denergy = deriv([sample_esa.energy[*,0],energies])
-       sst_mode_out[j].denergy = combined_denergy[esa_dim[0]:combined_dim[0]-1] # (fltarr(sst_dim[1])+1) 
+       tmp_dim = dimen(combined_tmp)
+       combined_denergy = (shift(combined_tmp,-1)-shift(combined_tmp,1))/2. / combined_tmp
+       combined_denergy[0] = combined_denergy[1]
+       combined_denergy[tmp_dim[0]-1] = combined_denergy[tmp_dim[0]-2]
+       combined_denergy *= combined_tmp
+       ;combined_denergy = deriv([sample_esa.energy[*,0],energies])
+       sst_mode_out[j].denergy = (combined_denergy[esa_dim[0]:tmp_dim[0]-1]) # replicate(1.,sst_dim[1]) 
        
        if max(sample_esa.energy,/nan) gt min(energies,/nan) then begin
          dprint,dlevel=1,'ERROR: ESA maximum energy(' + strtrim(max(sample_esa.energy,/nan),2) + ' eV) greater than minimum energy target(' + strtrim(min(energies,/nan),2) + ' eV)' 

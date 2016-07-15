@@ -9,39 +9,83 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-06 15:42:54 -0700 (Wed, 06 Jul 2016) $
-; $LastChangedRevision: 21432 $
+; $LastChangedDate: 2016-07-14 16:09:32 -0700 (Thu, 14 Jul 2016) $
+; $LastChangedRevision: 21467 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/quicklook/mms_tplot_quicklook.pro $
 ;-
 
-pro mms_tplot_quicklook, tplotnames, _extra=ex
-@tplot_com.pro
-    ; grab the trange from the common block
-    if is_struct(tplot_vars.options) then begin
+pro mms_tplot_quicklook, tplotnames, degap=degap, window=win_idx, $
+  xsize=xsize, ysize=ysize, burst_bar=burst_bar, fast_bar=fast_bar, $
+  trange=trange, _extra=ex
+  
+@tplot_com.pro ; tplot common block
+
+    if keyword_set(trange) then begin
+      start_time = time_string(trange[0])
+      end_time = time_string(trange[1])
+    endif else if is_struct(tplot_vars.options) then begin
+      ; grab the trange from the common block if it isn't specified as a keyword
       start_time = time_string(tplot_vars.options.trange[0])
       end_time = time_string(tplot_vars.options.trange[1])
     endif
     
+    ; grab previous data names if tplotnames isn't specified
+    if undefined(tplotnames) then begin
+      tpv_opt_tags = tag_names( tplot_vars.options)
+      idx = where( tpv_opt_tags eq 'DATANAMES', icnt)
+      if icnt gt 0 then begin
+        tplotnames = tplot_vars.options.datanames
+        tplotnames = tnames(tplotnames, nd, /all, index=ind)
+      endif else begin
+        return
+      endelse
+    endif
+
+    if ~keyword_set(xsize) then xsize=710
+    if ~keyword_set(ysize) then ysize=1150
+
+    if keyword_set(fast_bar) && tnames(fast_bar) ne '' then begin
+      append_array, tplotnames_with_data, fast_bar
+      append_array, data_or_no_data, 1
+    endif
+    if keyword_set(burst_bar) && tnames(burst_bar) ne '' then begin
+      append_array, tplotnames_with_data, burst_bar
+      append_array, data_or_no_data, 1
+    endif
+
     ; check that the tvars exist and have data over the trange
     for tvar_idx = 0, n_elements(tplotnames)-1 do begin
-      if tdexists(tplotnames[tvar_idx], start_time, end_time) ne 0 then begin
+      get_data, tplotnames[tvar_idx], data=d
+      if tdexists(tplotnames[tvar_idx], start_time, end_time) ne 0 or (is_array(d) && is_string(d)) then begin
+        
+        ; force the data to be monotonic
+       ; tplot_force_monotonic, tplotnames[tvar_idx], /forward, /keep_repeats 
+        
         append_array, tplotnames_with_data, tplotnames[tvar_idx]
+        append_array, data_or_no_data, 1
       endif else begin
-        store_data, 'no_data', data={x: [time_double(start_time), time_double(end_time)], y: [0, 0]}
-        append_array, tplotnames_with_data, 'no_data'
+        ; dummy var, only name is correct (for y-axis title)
+        store_data, tplotnames[tvar_idx]+'_nodata', data={x: [time_double(start_time), time_double(end_time)], y: [0, 0]}
+        append_array, tplotnames_with_data, tplotnames[tvar_idx]+'_nodata'
+        append_array, data_or_no_data, 0
       endelse
     endfor
-
-    ; plot them
-    tplot, tplotnames_with_data, get_plot_pos=positions, _extra=ex
     
+    ; degap the data
+    if keyword_set(degap) then tdegap, tplotnames_with_data, /overwrite
+    
+    ; plot them
+    if keyword_set(win_idx) then window, win_idx, xsize=xsize, ysize=ysize else window, xsize=xsize, ysize=ysize
+
+    tplot, tplotnames_with_data, get_plot_pos=positions, window=win_idx, trange=trange, _extra=ex
+
     ; add NO DATA labels to plots on the figure without any data
-    where_no_data = where(tplotnames_with_data eq 'no_data', nodatacount)
+    where_no_data = where(data_or_no_data eq 0, nodatacount)
     if nodatacount ne 0 then begin
       no_data_msg = 'NO DATA'
       no_data_panel_pos = positions[*, where_no_data]
       for no_data_panel=0, nodatacount-1 do begin
-        xyouts, /normal, 0.47, (no_data_panel_pos[*,no_data_panel])[1]+((no_data_panel_pos[*,no_data_panel])[3]-(no_data_panel_pos[*,no_data_panel])[1])/2.0, no_data_msg
+        xyouts, charsize=1, /normal, 0.47, (no_data_panel_pos[*,no_data_panel])[1]+((no_data_panel_pos[*,no_data_panel])[3]-(no_data_panel_pos[*,no_data_panel])[1])/2.0, no_data_msg
       endfor
     endif
 end
