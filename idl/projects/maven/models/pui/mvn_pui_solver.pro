@@ -4,7 +4,7 @@
 
 pro mvn_pui_solver,mamu=mamu,np=np,ntg=ntg
 
-common mvn_pui_common
+@mvn_pui_commonblock.pro ;common mvn_pui_common
 
 onesnp=replicate(1.,np)
 
@@ -48,15 +48,19 @@ t=dt*(replicate(1.,inn)#dindgen(np)); %time (s)
 omegat=fg*t ;omega*t (radians)
 sinomt=sin(omegat) ;sin(omega*t)
 cosomt=cos(omegat) ;cos(omega*t)
-rgfg=rg*fg
+rgfg=rg*fg ;r*omega (m/s)
+axyz=rg*fg*fg; ;r*omega2 or acceleration (m/s2)
 
 ;solving trajectories assuming the electric field E is aligned with +Z
 r1x=-rg*sintub*(sinomt-omegat); starting point of pickup ions (m)
 r1y=-rg*costub*(sinomt-omegat);
 r1z=-rg*(1-cosomt);
-v1x=+rgfg*sintub*(cosomt-1); %velocity when they reach MAVEN (m/s)
+v1x=+rgfg*sintub*(cosomt-1); %velocity when reaching MAVEN (m/s)
 v1y=+rgfg*costub*(cosomt-1);
 v1z=+rgfg*sinomt
+a1x=-axyz*sintub*sinomt; %acceleration when reaching MAVEN (m/s2)
+a1y=-axyz*costub*sinomt
+a1z=+axyz*cosomt
 
 ;rotate the coordinates about the x-axis by tez (bring E back to its original direction)
 r2x=r1x
@@ -77,6 +81,8 @@ v3z=    -(vswx*v2z+vswz*v2x-vswy*(vswy*v2z-vswz*v2y)/(uswn-vswx))/uswn
 rxyz=sqrt(r3x^2+r3y^2+r3z^2); %radial distance of pickup ions from the center of Mars (m)
 vxyz=sqrt(v3x^2+v3y^2+v3z^2); %velocity of pickup ions (m/s)
 drxyz=vxyz*dt ;pickup ion distance increment (m)
-ke=.5*m*(vxyz^2)/q; %kinetic energy of pickup ions at MAVEN (eV)
+dvxyz=axyz*dt ;pickup ion velocity increment (m/s)
+ke=.5*m/q*(vxyz^2); %kinetic energy of pickup ions at MAVEN (eV)
+de=m/q*(v1x*a1x+v1y*a1y+v1z*a1z)*dt ;energy increment (eV)
 
 end

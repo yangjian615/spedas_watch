@@ -5,7 +5,7 @@
 
 pro mvn_pui_data_analyze
 
-common mvn_pui_common
+@mvn_pui_commonblock.pro ;common mvn_pui_common
 
 mi=1.67e-24; %proton mass (g)
 me=9.1e-28; %electron mass (g)
@@ -75,6 +75,8 @@ ifreq_ei_h=4*!pi*swedee*sweaef*(replicate(1.,inn)#xsec_ei[1,*])*1e-18; %H electr
 ifreq_ei_o=4*!pi*swedee*sweaef*(replicate(1.,inn)#xsec_ei[2,*])*1e-18; %O electron impact ionization frequency (s-1 per energy bin)
 i_ei_h=total(ifreq_ei_h,2); %H electron impact ionization frequency (s-1)
 i_ei_o=total(ifreq_ei_o,2); %O electron impact ionization frequency (s-1)
+i_ei_h(where(~finite(i_ei_h),/null))=1.2e-8 ;in case SWEA data is not available, use default ionization frequency.
+i_ei_o(where(~finite(i_ei_o),/null))=2e-8
 ;%%%%
 
 ;ifreq=4.5e-7; O total ionization frequency (s-1) per Rahmati et al., 2014

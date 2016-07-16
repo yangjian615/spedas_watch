@@ -9,10 +9,11 @@
 
 pro mvn_pui_tplot,store1d=store1d,tplot1d=tplot1d,store3d=store3d,swia3d=swia3d,static3d_h=static3d_h,static3d_o=static3d_o
 
-common mvn_pui_common
+@mvn_pui_commonblock.pro ;common mvn_pui_common
 common mvn_swia_data
-common mvn_d1
-;common mvn_ca
+common mvn_d1,mvn_d1_ind,mvn_d1_dat
+
+tplot_options,'no_interp',1
 
 totet=exp(totdee*dindgen(toteb,start=126.5,increment=-1)); total flux energy bin midpoints (312 keV to 15.6 keV)
 swiet=exp(swidee*dindgen(swieb,start=69.5,increment=-1)); SWIA (post Nov 2014) energy bin midpoints (23 keV to 26 eV)
@@ -25,11 +26,13 @@ store_data,'mvn_model_puh_tot',data={x:centertime,y:kefluxh,v:totet}, $
 store_data,'mvn_model_puo_tot',data={x:centertime,y:kefluxo,v:totet}, $
   dlimits={ylog:1,zlog:1,spec:1,yrange:[10.,300e3],ytitle:'Model PUO',zrange:[1e2,1e6],ztitle:'Eflux'}
   
-store_data,'mvn_model_puo_sep1',centertime,sepeb1att,sep1data.v
-store_data,'mvn_model_puo_sep2',centertime,sepeb2att,sep2data.v
-options,'mvn_model_puo_sep?','spec',1
-ylim,'mvn_model_puo_sep?',10,1e3,1
-zlim,'mvn_model_puo_sep?',.1,1e4,1
+if keyword_set(sep1data) then begin
+  store_data,'mvn_model_puo_sep1',centertime,sepeb1att,sep1data.v
+  store_data,'mvn_model_puo_sep2',centertime,sepeb2att,sep2data.v
+  options,'mvn_model_puo_sep?','spec',1
+  ylim,'mvn_model_puo_sep?',10,1e3,1
+  zlim,'mvn_model_puo_sep?',.1,1e4,1
+endif
 
 store_data,'mvn_model_swia',centertime,kefswih+kefswio,swiet
 ;store_data,'mvn_model_swia_O',centertime,kefswio,swiaet
@@ -118,7 +121,7 @@ if keyword_set(tplot1d) then begin
 wi,0 ;tplot main results (model-data comparison)
 tplot,'alt2 n_sw_(cm-3) Vsw_MSO_(km/s) redures_swia mvn_model_swia MAG_MSO_(nT) O+_Max_Energy_(keV) mvn_sep?_B-O_Rate_Energy mvn_model_puo_sep? *_sta_c0',window=0
 wi,10 ;tplot most of the variables. for diagnostic purposes, best shown on a vertical screen
-tplot,'MAVEN_pos_(km) swe_a4 redures_swea mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_B_1sec MAG_MSO_(nT) mvn_SEPS_svy_ATT mvn_euv_l3 Ionization_Frequencies_(s-1) mvn_sta_c0_att mvn_sta_c0_mode',window=10
+tplot,'MAVEN_pos_(km) swe_a4 redures_swea mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode swica_dt swics_dt mvn_swis_en_eflux mvn_B_1sec MAG_MSO_(nT) sep1_dt sep2_dt mvn_sep?_redures mvn_SEPS_svy_ATT mvn_euv_l3 mvn_euv_data Ionization_Frequencies_(s-1) mvn_sta_c0_att mvn_sta_c0_mode',window=10
 endif
 
 ;tplot_names

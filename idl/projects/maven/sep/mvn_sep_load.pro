@@ -146,8 +146,8 @@ if ~keyword_set(format) then format='L1_SAV'
 if format eq 'L1_SAV' then begin
   mvn_sep_var_restore,trange=trange,download_only=download_only,verbose=verbose,lowres=lowres
   if ~keyword_set(download_only) then begin
-    mvn_sep_cal_to_tplot,sepn=1
-    mvn_sep_cal_to_tplot,sepn=2
+    mvn_sep_cal_to_tplot,sepn=1,lowres=lowres
+    mvn_sep_cal_to_tplot,sepn=2,lowres=lowres
   endif
   return
 endif

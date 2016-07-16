@@ -1,8 +1,10 @@
 
 
-pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_level,ccsds=ccsds
+pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_level,ccsds=ccsds,remainder=remainder
 
-  if ~keyword_set(ccsds) then ccsds=spp_swp_ccsds_decom(buffer)
+  if ~keyword_set(ccsds) then begin
+    ccsds=spp_swp_ccsds_decom(buffer)
+  endif
 
   if ~keyword_set(ccsds) then begin
      dprint,dlevel=1,'Invalid CCSDS packet'
@@ -11,27 +13,6 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_lev
      return
   endif
 
-  ;if n_elements(buffer) ne ccsds.length+7  $
-  ;then dprint,'size error',ccsds.apid,n_elements(buffer),ccsds.length+7
-
-;  common spp_ccsds_pkt_handler_com,last_time,total_bytes,rate_sm  ;,LAST_CCSDS
-;;  time = ptp_header.ptp_time
-;  time = systime(1)
-;  if keyword_set(last_time) then begin
-;     dt = time - last_time
-;     len = n_elements(buffer)
-;     total_bytes += len
-;     if dt gt .1 then begin
-;        rate = total_bytes/dt
-;        store_data,'AVG_DATA_RATE',append=1,time, rate,dlimit={psym:-4}
-;        total_bytes =0
-;        last_time = time
-;     endif
-;  endif else begin
-;     last_time = time
-;     total_bytes = 0
-;  endelse
-;  last_ccsds = ccsds
 
   if 1 then begin
      spp_apid_data,ccsds.apid,apdata=apdat,/increment
@@ -44,13 +25,13 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_lev
      if keyword_set( *apdat.last_ccsds) then last_ccsds = *apdat.last_ccsds else last_ccsds = 0
      
      if (size(/type,last_ccsds) eq 8)  then begin 
-        dseq = (( ccsds.seq_cntr - last_ccsds.seq_cntr ) and '3fff'xu) 
-        ccsds.dseq_cntr = dseq
-        ccsds.dtime = (ccsds.met - last_ccsds.met)
+        dseq = (( ccsds.seqn - last_ccsds.seqn ) and '3fff'xu) 
+        ccsds.seqn_delta = dseq
+        ccsds.time_delta = (ccsds.met - last_ccsds.met)
         ccsds.gap = (dseq ne 1)
      endif 
      if ccsds.gap ne 0  then begin
-       dprint,dlevel=3,format='("Lost ",i5," 0x", Z03, " packets")',  ccsds.dseq_cntr,apdat.apid
+       dprint,dlevel=3,format='("Lost ",i5," 0x", Z03, " packets")',  ccsds.seqn_delta,apdat.apid
        store_data,'APIDS_GAP',ccsds.time,ccsds.apid,  /append,dlimit={psym:4,symsize:.4 ,ynozero:1, colors:'r'}
      endif
      
@@ -66,8 +47,8 @@ pro spp_ccsds_pkt_handler,buffer,ptp_header=ptp_header,recurse_level=recurse_lev
            store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags , append = 1 ;+ strct[0].gap
         endif
      endif else begin
-        if debug(4) then begin
-          dprint,dlevel=2,'Unknown APID: ',ccsds.apid,format='(a,Z04)'
+        if debug(2) then begin
+          dprint,dlevel=1,'Unknown APID: ',ccsds.apid,format='(a,Z04)'
           printdat,ccsds
         endif
      endelse

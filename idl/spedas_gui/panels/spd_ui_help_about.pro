@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-07-08 11:41:27 -0700 (Fri, 08 Jul 2016) $
-;$LastChangedRevision: 21441 $
+;$LastChangedDate: 2016-07-15 11:07:55 -0700 (Fri, 15 Jul 2016) $
+;$LastChangedRevision: 21475 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_help_about.pro $
 ;-
 
@@ -29,6 +29,18 @@ function spd_ui_help_about_dlm, type
   endelse   
   
   return, dlm_result
+end
+
+pro spd_ui_help_about_update_dlm
+  plugin_mission='themis'
+  GETRESOURCEPATH, path ; start at the resources folder
+  update_dlm_info = path+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY)+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY) + PATH_SEP() +  'external'+ PATH_SEP() + 'dlm_files' +PATH_SEP() + 'update_dlm_info.txt'
+  if file_test(update_dlm_info, /READ) then begin
+    xdisplayfile, update_dlm_info, done_button='CLOSE', height=50, /modal, title='How to update CDF and GEOPACK' 
+  endif else begin
+      
+  endelse
+  
 end
 
 Pro spd_ui_help_about_event, ev
@@ -52,6 +64,9 @@ Pro spd_ui_help_about_event, ev
     end    
     'SPEDASWEB' : begin
       spd_ui_open_url, 'http://spedas.org/'
+    end
+    'UPDATEDLM' : begin
+      spd_ui_help_about_update_dlm
     end
     'QUIT' : begin
       widget_control, ev.top, /destroy
@@ -80,10 +95,11 @@ Pro spd_ui_help_about, gui_id, historywin
   
   cdfLabel = widget_text(cdfBase, value=cdf_about, /align_center, SCR_XSIZE=300, SCR_YSIZE=130, UNITS=0, /SCROLL, /WRAP)
   geoLabel = widget_text(cdfBase, value=geopack_about, /align_center, SCR_XSIZE=300, SCR_YSIZE=130, UNITS=0, /SCROLL, /WRAP)
-  aboutLabel0 = widget_label(aboutBase, value=' ', /align_center, XSIZE=500, YSIZE=20, UNITS=0)
+  ;aboutLabel0 = widget_label(aboutBase, value=' ', /align_center, SCR_XSIZE=500, SCR_YSIZE=5, UNITS=0)
     
-  spedasButton = widget_button(aboutBase, value = ' Go to http://spedas.org/ ', uvalue= 'SPEDASWEB', /align_center, scr_xsize = 300)
+  dlmButton = widget_button(aboutBase, value = ' How to update CDF and GEOPACK ', uvalue= 'UPDATEDLM', /align_center, scr_xsize = 300)    
   aboutPluginButtons = widget_button(aboutBase, value='About SPEDAS Plugins...', uvalue='ABOUTPLUGINS', /align_center, scr_xsize=300, /menu)
+  spedasButton = widget_button(aboutBase, value = ' Go to http://spedas.org/ ', uvalue= 'SPEDASWEB', /align_center, scr_xsize = 300)
   
   widget_control, gui_id, get_uvalue=info
   about_plugins = info.pluginManager->getAboutPlugins()

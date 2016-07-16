@@ -1,6 +1,8 @@
 mvn_pui_model: models oxygen and hydrogen pickup ions measured by MAVEN SEP, SWIA, STATIC
 please send bugs/comments to rahmati@ssl.berkeley.edu
 
+160712: modified/added a few routines for better visualization of model results.
+
 160608: speed/memory improvements. fixed a data loading bug. added a couple of routines.
 
 160518: 3D spectra for STATIC are now modeled. Oxygen and hydrogen pickup ions are stored in separare variables for STATIC.

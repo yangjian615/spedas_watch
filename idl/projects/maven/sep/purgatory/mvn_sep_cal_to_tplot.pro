@@ -1,4 +1,4 @@
-pro mvn_sep_cal_to_tplot,newdat,sepnum=sepnum,qfilter=qfilter,smoothcounts=smoothcounts
+pro mvn_sep_cal_to_tplot,newdat,sepnum=sepnum,qfilter=qfilter,smoothcounts=smoothcounts,lowres=lowres
 
 @mvn_sep_handler_commonblock.pro
 
@@ -26,6 +26,8 @@ endif
 
 prefix='mvn_SEP'+strtrim(sepnum,2)
 if keyword_set(smoothcounts) then prefix='<mvn>_SEP'+strtrim(sepnum,2)
+if keyword_set(lowres) then prefix='mvn_5min_SEP'+strtrim(sepnum,2)
+if keyword_set(smoothcounts) and keyword_set(lowres) then prefix='<mvn>_5min_SEP'+strtrim(sepnum,2)
 
   ;
   data = newdat.f_ion_flux
@@ -50,35 +52,35 @@ if keyword_set(smoothcounts) then prefix='<mvn>_SEP'+strtrim(sepnum,2)
   rr[1,13:20]=1
   rr[2,21:27]=1
 
-  panel_size = .5
+  panel_size = 1.
 
   data = newdat.f_ion_eflux
   ddata = newdat.f_ion_eflux_unc
   bad = data lt .0* ddata
   w = where(bad)
   ;data[w] = !values.f_nan
-  store_data,prefix+'F_ion_eflux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:panel_size}
+  store_data,prefix+'F_ion_eflux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1.,1e5],zlog:1,panel_size:panel_size}
 
   data = newdat.r_ion_eflux
   ddata = newdat.r_ion_eflux_unc
   bad = data lt .0* ddata
   ;w = where(bad)
   data[w] = !values.f_nan
-  store_data,prefix+'R_ion_eflux',newdat.time,transpose(data),transpose(newdat.R_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:panel_size}
+  store_data,prefix+'R_ion_eflux',newdat.time,transpose(data),transpose(newdat.R_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1.,1e5],zlog:1,panel_size:panel_size}
 
   data = newdat.f_elec_eflux
   ddata = newdat.f_elec_eflux_unc
   bad = data lt .0* ddata
   w = where(bad)
   ;data[w] = !values.f_nan
-  store_data,prefix+'F_elec_eflux',newdat.time,transpose(data),transpose(newdat.f_elec_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:panel_size}
+  store_data,prefix+'F_elec_eflux',newdat.time,transpose(data),transpose(newdat.f_elec_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1.,1e5],zlog:1,panel_size:panel_size}
 
   data = newdat.r_elec_eflux
   ddata = newdat.r_elec_eflux_unc
   bad = data lt .0* ddata
   ;w = where(bad)
   data[w] = !values.f_nan
-  store_data,prefix+'R_elec_eflux',newdat.time,transpose(data),transpose(newdat.R_elec_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[100.,1e5],zlog:1,panel_size:panel_size}
+  store_data,prefix+'R_elec_eflux',newdat.time,transpose(data),transpose(newdat.R_elec_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1.,1e5],zlog:1,panel_size:panel_size}
 
   data = newdat.f_ion_flux
   ddata = newdat.f_ion_flux_unc

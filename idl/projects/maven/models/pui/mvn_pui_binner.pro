@@ -2,9 +2,9 @@
 ;binning of fluxes according to energy and angular response of SEP, SWIA, STATIC
 ;to be called by mvn_pui_model
 
-pro mvn_pui_binner,mamu=mamu,np=np,do3d=do3d
+pro mvn_pui_binner,np=np,do3d=do3d
 
-common mvn_pui_common
+@mvn_pui_commonblock.pro ;common mvn_pui_common
 
 onesnp=replicate(1.,np)
 
@@ -87,14 +87,14 @@ ke5=ke/1e3
 ke5[where(ke5 lt 5.,/null)]=5.
 rfov=1.+(ke5-5.)/5.; correction factor for SWIA and STATIC reduced FOV at E>5keV
 
-cosfovsep=cos(!dtor*30.) ;sep opening angle (assuming conic) needs to be improved...
+cosfovsep=cos(!dtor*30.) ;sep opening angle (assuming conic)
 sinfovswi=sin(!dtor*45./rfov) ;swia and static +Z opening angle
 phifovswi=!dtor*dindgen(swina+1,increment=22.5,start=22.50) ;swia anode phi angle bins (azimuth):between 22.5 and 360+22.5 deg
 phifovsta=!dtor*dindgen(swina+1,increment=22.5,start=11.25) ;static anode phi angle bins (azimuth):between 11.25 and 360+11.25 deg
 thefovswi=!dtor*dindgen(swine+1,increment=22.5,start=-45.0) ;swia and static deflection theta angles (elevation):between -45 and 45 deg
 
-cosfovsepxy=cos(!dtor*21.0) ;sep opening angle (full angular extent) in sep xy plane
-cosfovsepxz=cos(!dtor*15.5) ;sep opening angle (full angular extent) in sep xz plane
+cosfovsepxy=cos(!dtor*21.0) ;sep opening angle (full angular extent) in sep xy plane (s/c xz)
+cosfovsepxz=cos(!dtor*15.5) ;sep opening angle (full angular extent) in sep xz plane (s/c yz)
 
 sdea1xy=(cosvsep1xy-cosfovsepxy)/(1-cosfovsepxy) ;sep projected detector effective area on sep1 xy plane
 sdea2xy=(cosvsep2xy-cosfovsepxy)/(1-cosfovsepxy)
@@ -105,8 +105,8 @@ sdea1=sdea1xy*sdea1xz ;sep detector effective area factor (cm2)
 sdea2=sdea2xy*sdea2xz
 
 ;very small sep detector area within cosfovsep (cm2)
-sdea1[where((cosvsep1xy lt cosfovsepxy) or (cosvsep1xz lt cosfovsepxz),/null)]=1e-3
-sdea2[where((cosvsep2xy lt cosfovsepxy) or (cosvsep2xz lt cosfovsepxz),/null)]=1e-3
+sdea1[where((cosvsep1xy lt cosfovsepxy) or (cosvsep1xz lt cosfovsepxz),/null)]=1e-2
+sdea2[where((cosvsep2xy lt cosfovsepxy) or (cosvsep2xz lt cosfovsepxz),/null)]=1e-2
 sdea1[where(cosvsep1 lt cosfovsep,/null)]=0.
 sdea2[where(cosvsep2 lt cosfovsep,/null)]=0.
 
