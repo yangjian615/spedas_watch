@@ -34,18 +34,21 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2013-11-04 11:14:33 -0800 (Mon, 04 Nov 2013) $
-;   $LastChangedRevision: 13482 $
+;   $LastChangedDate: 2016-07-18 16:58:37 -0700 (Mon, 18 Jul 2016) $
+;   $LastChangedRevision: 21483 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_load_efw_esvy_mgse.pro $
 ;
 ;-
 
 
 pro rbsp_load_efw_esvy_mgse,probe=probe,no_spice_load=no_spice_load,$
-	debug=debug,qa=qa
+	debug=debug,qa=qa,bad_probe=bad_probe
 
 	etype='esvy'
-	
+
+	date = timerange()
+	date = strmid(time_string(date[0]),0,10)
+
 	; check probe keyword
 	if ~keyword_set(probe) then begin
 		message,"Probe keyword not set. Using default probe='a'.",/continue
@@ -62,17 +65,21 @@ pro rbsp_load_efw_esvy_mgse,probe=probe,no_spice_load=no_spice_load,$
 ;	enames=''
 ;	enames=tnames('rbsp'+probe+'_efw_'+etype)
 ;	if enames[0] eq '' then noedata=1b else noedata=0b
-;	
+;
 ;	; load survey, housekeeping if we're missing E or SC_Spin* data
 ;	if noedata then $
 ;		rbsp_load_efw_waveform, probe=probe, datatype=etype, type='cal', $
 ;			coord='uvw',/noclean
 
 	; force reload of esvy in uvw coordinates without cleaning
-	if ~keyword_set(qa) then rbsp_load_efw_waveform, probe=probe, datatype=etype, type='cal', $
-		coord='uvw',/noclean
-	if keyword_set(qa) then rbsp_load_efw_waveform, probe=probe, datatype=etype, type='cal', $
-		coord='uvw',/noclean,/qa
+
+	if ~keyword_set(bad_probe) then begin
+		if ~keyword_set(qa) then rbsp_load_efw_waveform, probe=probe, datatype=etype, type='cal', $
+			coord='uvw',/noclean
+		if keyword_set(qa) then rbsp_load_efw_waveform, probe=probe, datatype=etype, type='cal', $
+			coord='uvw',/noclean,/qa
+	endif else rbsp_efw_create_esvy_uvw_from_vsvy,date,probe,bad_probe
+
 
 
 	if ~keyword_set(no_spice_load) then begin
@@ -80,12 +87,12 @@ pro rbsp_load_efw_esvy_mgse,probe=probe,no_spice_load=no_spice_load,$
 		rbsp_load_spice_kernels
 	endif
 
-	rbsp_uvw_to_mgse,probe,'rbsp'+probe+'_efw_'+etype,debug=debug,/no_spice_load		
+	rbsp_uvw_to_mgse,probe,'rbsp'+probe+'_efw_'+etype,debug=debug,/no_spice_load
 
 
 	if ~keyword_set(no_spice_load) then begin
 		rbsp_load_spice_predict,/unload
 		rbsp_load_spice_kernels,/unload
 	endif
-		
+
 end

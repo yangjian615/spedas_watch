@@ -137,8 +137,11 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_es
 ;             combined_energy[-1,l] = energies[-1]
              sst_mode_out[j].bins[*,l] = 1
            endif else begin
-             dprint,dlevel=1,'ERROR: No SST bins enabled for angle:'+strtrim(l,2)
-             return
+             combined_bins[combined_dim[0]-n_elements(energies):combined_dim[0]-1l,l] = 1 ;enable bins
+             combined_data[combined_dim[0]-n_elements(energies):combined_dim[0]-1l,l] = !VALUES.D_NAN ;set to zero
+           
+             ;dprint,dlevel=1,'ERROR: No SST bins enabled for angle:'+strtrim(l,2)
+             ;return
            endelse
          endif
          

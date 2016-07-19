@@ -1,4 +1,4 @@
-;WARNING!!! RESULTS ARE PRELIMINARY. DO NOT PUBLISH OR PRESENT THESE RESULTS 
+;WARNING!!! RESULTS ARE PRELIMINARY. DO NOT PUBLISH OR PRESENT THESE RESULTS
 ;WITHOUT FIRST CONSULTING THE EFW PI JOHN WYGANT <wygan001@umn.edu>
 
 ;rbsp_efw_vxb_subtract_crib
@@ -15,10 +15,10 @@
 ;
 ;keywords:	ql -> use EMFISIS quicklook UVW data instead of 4sec GSE L3. This will be despun and spinfit.
 ;				  This has the advantage of not having to wait for the EMFISIS L3 data set to be produced
-;			hires -> use EMFISIS hires L3 GSE data instead of 4sec GSE L3. 
+;			hires -> use EMFISIS hires L3 GSE data instead of 4sec GSE L3.
 ;			qa -> load the QA testing L1 EFW data instead of the usual L1 data
 ;
-;
+
 ;requires: THEMIS TDAS software
 ;			 http://themis.ssl.berkeley.edu/software.shtml
 ;		   as well as SPICE software
@@ -34,7 +34,7 @@
 
 
 pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,ql=ql,l2=l2,$
-                               hires=hires,qa=qa ;,nopreload=nopreload
+                               hires=hires,qa=qa,bad_probe=bad_probe
 
 
 ;Set timerange if it's not already set
@@ -61,7 +61,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
 
                                 ;Get antenna pointing direction and stuff
-  rbsp_load_state,probe=probe,/no_spice_load,datatype=['spinper','spinphase','mat_dsc','Lvec'] 
+  rbsp_load_state,probe=probe,/no_spice_load,datatype=['spinper','spinphase','mat_dsc','Lvec']
 
                                 ;Load other state variables
   rbsp_efw_position_velocity_crib,/no_spice_load,/noplot
@@ -69,8 +69,8 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
 
 
-;Load Esvy data in MGSE 
-  if ~keyword_set(qa) then rbsp_load_efw_esvy_mgse,probe=probe,/no_spice_load
+;Load Esvy data in MGSE
+  if ~keyword_set(qa) then rbsp_load_efw_esvy_mgse,probe=probe,/no_spice_load,bad_probe=bad_probe
   if keyword_set(qa)  then rbsp_load_efw_esvy_mgse,probe=probe,/no_spice_load,/qa
 
 
@@ -91,7 +91,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
   if ~is_struct(dd2) then begin
      print,'******NO MAG DATA TO LOAD.....rbsp_efw_DCfield_removal_crib.pro*******'
      return
-  endif		
+  endif
 
 
 
@@ -100,7 +100,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
      if keyword_set(hires) then get_data,rbspx+'_emfisis_l3_hires_gse_Mag',data=tmpp else $
         get_data,rbspx+'_emfisis_l3_1sec_gse_Mag',data=tmpp
-     get_data,rbspx+'_spinaxis_direction_gse',data=wsc_GSE	
+     get_data,rbspx+'_spinaxis_direction_gse',data=wsc_GSE
 
      wsc_GSE_tmp = [[interpol(wsc_GSE.y[*,0],wsc_GSE.x,tmpp.x)],$
                     [interpol(wsc_GSE.y[*,1],wsc_GSE.x,tmpp.x)],$
@@ -142,13 +142,13 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
                                 ;spinfit the mag data and transform to MGSE
      rbsp_decimate,rbspx +'_emfisis_l2_uvw_Mag', upper = 2
-     rbsp_spinfit,rbspx +'_emfisis_l2_uvw_Mag', plane_dim = 0 
+     rbsp_spinfit,rbspx +'_emfisis_l2_uvw_Mag', plane_dim = 0
      rbsp_cotrans,rbspx +'_emfisis_l2_uvw_Mag_spinfit',rbspx+'_mag_mgse', /dsc2mgse
 
   endif
 
 
-; Load eclipse times 
+; Load eclipse times
 
   if ~keyword_set(noplot) then begin
      rbsp_load_eclipse_predict,probe,date
@@ -181,7 +181,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 ;	d.y[*, 1] *= 1.05d
 ;	d.y[*, 2] *= 1.05d
   d.y[*, 1] *= 0.947d           ;found by S. Thaller
-  d.y[*, 2] *= 0.947d     
+  d.y[*, 2] *= 0.947d
   store_data,rbspx+'_efw_esvy_mgse_vxb_removed', data = d
 
 
@@ -194,12 +194,12 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
   split_vec,rbspx+'_efw_esvy_mgse_vxb_removed'
   split_vec,rbspx+'_efw_esvy_mgse'
-  
+
 
   options,rbspx+'_efw_esvy_mgse_vxb_removed_x','colors',4
   options,rbspx+'_efw_esvy_mgse_vxb_removed_y','colors',1
   options,rbspx+'_efw_esvy_mgse_vxb_removed_z','colors',2
-  
+
 
   options,rbspx+'_efw_esvy_mgse_vxb_removed_?','ysubtitle',''
   options,rbspx+'_efw_esvy_mgse_vxb_removed','ysubtitle',''
@@ -259,7 +259,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
      tplot_options,'yticklen',0.02
      tplot_options,'xthick',2
      tplot_options,'ythick',2
-     tplot_options,'labflag',-1	
+     tplot_options,'labflag',-1
 
 
      ylim,[rbspx+'_efw_esvy_mgse_vxb_removed_?',$
@@ -294,7 +294,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
             rbspx+'_efw_esvy_mgse_vxb_removed_z',$
             rbspx+'_efw_esvy_mgse_y',$
             rbspx+'_efw_esvy_mgse_z']
-     
+
 
                                 ;eclipse times
      if is_struct(eu) then timebar,eu.x,color=50

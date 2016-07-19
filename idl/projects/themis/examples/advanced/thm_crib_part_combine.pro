@@ -17,9 +17,9 @@
 ;  If you see any useful examples missing from these cribs, please let us know.
 ;  A lot of instrument specific options(e.g. decontamination, are found in the other cribs)
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-07-14 17:31:52 -0700 (Thu, 14 Jul 2016) $
-;$LastChangedRevision: 21469 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-07-18 13:44:45 -0700 (Mon, 18 Jul 2016) $
+;$LastChangedRevision: 21482 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
 ;-
 
@@ -297,6 +297,27 @@ tplot,'thd_pt??f_eflux_energy'
 
 
 print, ' ','Load original data manually', ' '
+
+stop
+
+;--------------------------------------------------------------------------------------
+;Mask SST data at particular times
+;--------------------------------------------------------------------------------------
+;Generate the mask variable
+calc,'"thd_psif_count_rate_mask"="thd_psif_count_rate" lt 800' ;include data only when rate is less than 800
+
+;Generate combined data
+combined = thm_part_combine(probe=probe, trange=trange, esa_datatype=esa_datatype,$
+                            sst_datatype=sst_datatype, orig_esa=esa, orig_sst=sst,$
+                            sst_data_mask="thd_psif_count_rate_mask")
+                            ;set /esa_extrapolate if you want to extrapolate esa data instead of removing sst data
+            
+;Generate products
+thm_part_products, dist_array=combined, outputs='energy'
+
+tplot,'thd_ptirf_eflux_energy'
+
+print,'Mask SST data for particular time intervals'
 
 stop
 

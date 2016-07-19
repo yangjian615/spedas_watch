@@ -164,7 +164,7 @@ PRO sitl_report_latest, dir=dir, force=force
     if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
     tn=tnames('mms'+probes[p]+'_position_x',mmax)
     if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
-    var_lab = var_lab[1:*]
+    var_lab = (n_elements(var_lab) gt 1) ? var_lab[1:*] : ''
     tplot,thislist, var_lab=var_lab
     write_png, dir_png+pname+'_mms'+probes[p]+'.png', tvrd(/true)
     info=file_info(dir_png+pname+'_mms'+probes[p]+'.png')

@@ -17,7 +17,8 @@
 ;  dist_array:  SST particle data array from thm_part_dist_array
 ;  units: String specifying output units
 ;  sst_sun_bins: Numerical list of contaminated bins to be removed
-;
+;  sst_data_mask:  The name of a tplot variable containing a 1-dimensional, 0-1 array indicating SST samples to exclude(0=exclude,1=include),
+;                  If values don't match the times of particle data, they'll be nearest neighbor interpolated to match.
 ;
 ;Output:
 ;  none, modifies input
@@ -28,17 +29,20 @@
 ;  due to the loss of some support quantities.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-03-04 18:12:33 -0800 (Fri, 04 Mar 2016) $
-;$LastChangedRevision: 20333 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-07-18 12:21:54 -0700 (Mon, 18 Jul 2016) $
+;$LastChangedRevision: 21480 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_cmb_clean_sst.pro $
 ;
 ;-
 
-pro thm_cmb_clean_sst, data, units=units, sst_sun_bins=sst_sun_bins,sst_method_clean=sst_method_clean,_extra=ex 
+pro thm_cmb_clean_sst, data, units=units, sst_sun_bins=sst_sun_bins,sst_method_clean=sst_method_clean,sst_data_mask=sst_data_mask,_extra=ex 
 
   compile_opt idl2,hidden
 
+  if n_elements(sst_data_mask) ne 0 && tnames(sst_data_mask) ne '' then begin  ;first clause uses short circuit operation because tnames will mutate argument if undefined
+    get_data,sst_data_mask,data=sst_mask
+  endif
   
   ;loop over pointers
   for i=0, n_elements(data)-1 do begin
@@ -57,6 +61,16 @@ pro thm_cmb_clean_sst, data, units=units, sst_sun_bins=sst_sun_bins,sst_method_c
       endelse
       
     endfor
+
+    if is_struct(sst_mask) then begin
+      ;interpolate to match data times
+      ;rounding creates a nearest neighbor interpolation
+      ;consider checking to verify sst_mask.y contains values that are either 0 or 1 and warning if not in range
+      mask_idx = where(~round(interpol(sst_mask.y,sst_mask.x,temp_arr.time)),mask_count)
+      if mask_count ne 0 then begin
+        temp_arr[mask_idx].bins=0
+      endif
+    endif
 
     ;remove repeated times
     if n_elements(temp_arr) gt 1 then begin
