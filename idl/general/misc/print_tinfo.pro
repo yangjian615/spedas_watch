@@ -17,14 +17,20 @@
 ;                     
 ; Example:  
 ;             MMS> print_tinfo, 'mms1_hpca_hplus_phase_space_density'
-;             *** Variable: mms1_hpca_hplus_phase_space_density
-;             <Expression>    DOUBLE    = Array[20456, 63, 16]
-;             Data format: [Epoch, mms1_hpca_ion_energy, mms1_hpca_polar_anode_number]
+;                 *** Variable: mms1_hpca_hplus_phase_space_density
+;                 ** Structure <221f3690>, 4 tags, length=165121216, data length=165121212, refs=1:
+;                 X               DOUBLE    Array[20456]
+;                 Y               DOUBLE    Array[20456, 63, 16]
+;                 V1              DOUBLE    Array[16]
+;                 V2              FLOAT     Array[63]
+;                 Data format: [Epoch, mms1_hpca_ion_energy, mms1_hpca_polar_anode_number]
+;                 v1: mms1_hpca_polar_anode_number
+;                 v2: mms1_hpca_ion_energy
 ;  
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-15 13:10:57 -0700 (Wed, 15 Jun 2016) $
-; $LastChangedRevision: 21328 $
+; $LastChangedDate: 2016-07-19 09:06:43 -0700 (Tue, 19 Jul 2016) $
+; $LastChangedRevision: 21488 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/print_tinfo.pro $
 ;-
 
@@ -53,7 +59,7 @@ pro print_tinfo, tplot_name, time = time, help = help
     if is_struct(dl.cdf.vatt) then begin
       ndimens = ndimen(d.Y)
       metadata = (dl.cdf.vatt)[0]
-      help, d.Y ; show the dimensions before showing what data they represent
+      help, d, /structure ; show the dimensions before showing what data they represent
       if ndimens eq 4 then print, 'Data format: ['+metadata.depend_0+', '+metadata.depend_3+', '+metadata.depend_2+', '+metadata.depend_1+']'
       if ndimens eq 3 then print, 'Data format: ['+metadata.depend_0+', '+metadata.depend_2+', '+metadata.depend_1+']'
       if ndimens eq 2 then begin
@@ -65,5 +71,7 @@ pro print_tinfo, tplot_name, time = time, help = help
           print, 'Data format: ['+metadata.depend_0+', '+metadata.fieldnam+']'
       endif
     endif
-
+    if tag_exist(d, 'v1') then print, 'v1: ' + metadata.depend_1
+    if tag_exist(d, 'v2') then print, 'v2: ' + metadata.depend_2
+    if tag_exist(d, 'v3') then print, 'v3: ' + metadata.depend_3
 end

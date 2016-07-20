@@ -15,8 +15,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21138 $
+; $LastChangedDate: 2016-07-19 08:35:14 -0700 (Tue, 19 Jul 2016) $
+; $LastChangedRevision: 21487 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_hpca_crib.pro $
 ;-
 
@@ -78,4 +78,39 @@ tplot, ['mms1_hpca_hplus_flux_elev_0-360_spin', $
         'mms1_hpca_heplusplus_flux_elev_0-360_spin']
 
 stop
+
+; The following is an example of extracting and working with the HPCA data
+; in IDL structures
+
+; to extract data from a tplot variable, use get_data:
+get_data, 'mms1_hpca_hplus_phase_space_density', data=hpca_psd, dlimits=hpca_dlimits
+
+; to see the format of the data in the IDL structure, use help, /structure:
+help, hpca_psd, /structure
+
+; Note that the indices may be different from what you're 
+; expecting; to find which each dimension of Y represents 
+; in the IDL data structure, use print_tinfo:
+print_tinfo, 'mms1_hpca_hplus_phase_space_density'
+stop
+
+; With some higher dimensional products, the array indices can be ambiguous
+get_data, 'mms1_hpca_azimuth_angles_per_ev_degrees', data=azimuth_angles
+
+; e.g., the azimuth angles variable has 2 dimensions with 16 elements (16 anodes, 16 azimuths):
+help, azimuth_angles, /structure
+;** Structure <2283cae0>, 5 tags, length=624902264, data length=624902262, refs=1:
+;X               DOUBLE    Array[4843]
+;Y               DOUBLE    Array[4843, 63, 16, 16]
+;V1              UINT      Array[16]
+;V2              DOUBLE    Array[16]
+;V3              UINT      Array[63]
+
+; to find which index represents azimuth and which represents anodes,
+; use print_tinfo again:
+print_tinfo, 'mms1_hpca_azimuth_angles_per_ev_degrees'
+;*** Variable: mms1_hpca_azimuth_angles_per_ev_degrees
+;<Expression>    DOUBLE    = Array[4843, 63, 16, 16]
+;Data format: [Epoch_Angles, mms1_hpca_energy_step_number, mms1_hpca_polar_anode_number, mms1_hpca_azimuth_index]
+
 end

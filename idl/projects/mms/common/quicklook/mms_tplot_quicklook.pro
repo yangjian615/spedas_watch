@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-14 16:09:32 -0700 (Thu, 14 Jul 2016) $
-; $LastChangedRevision: 21467 $
+; $LastChangedDate: 2016-07-19 15:11:05 -0700 (Tue, 19 Jul 2016) $
+; $LastChangedRevision: 21492 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/quicklook/mms_tplot_quicklook.pro $
 ;-
 
@@ -39,7 +39,7 @@ pro mms_tplot_quicklook, tplotnames, degap=degap, window=win_idx, $
       endif else begin
         return
       endelse
-    endif
+    endif else tplotnames = tnames(tplotnames, nd, /all, index=ind)
 
     if ~keyword_set(xsize) then xsize=710
     if ~keyword_set(ysize) then ysize=1150
@@ -61,8 +61,29 @@ pro mms_tplot_quicklook, tplotnames, degap=degap, window=win_idx, $
         ; force the data to be monotonic
        ; tplot_force_monotonic, tplotnames[tvar_idx], /forward, /keep_repeats 
         
-        append_array, tplotnames_with_data, tplotnames[tvar_idx]
-        append_array, data_or_no_data, 1
+        if is_array(d) && is_string(d) then begin
+          ; pseudo variable
+          valid_p_var = 0
+          
+          for pseudo_var_idx = 0, n_elements(d)-1 do begin
+            if tdexists(d[pseudo_var_idx], start_time, end_time) ne 0 then valid_p_var += 1
+          endfor
+          
+          ; check if there was a valid variable inside the pseudo variable
+          if valid_p_var gt 0 then begin
+            append_array, tplotnames_with_data, tplotnames[tvar_idx]
+            append_array, data_or_no_data, 1
+          endif else begin
+            ; dummy var, only name is correct (for y-axis title)
+            store_data, tplotnames[tvar_idx]+'_nodata', data={x: [time_double(start_time), time_double(end_time)], y: [0, 0]}
+            append_array, tplotnames_with_data, tplotnames[tvar_idx]+'_nodata'
+            append_array, data_or_no_data, 0
+          endelse
+            
+        endif else begin
+          append_array, tplotnames_with_data, tplotnames[tvar_idx]
+          append_array, data_or_no_data, 1
+        endelse
       endif else begin
         ; dummy var, only name is correct (for y-axis title)
         store_data, tplotnames[tvar_idx]+'_nodata', data={x: [time_double(start_time), time_double(end_time)], y: [0, 0]}

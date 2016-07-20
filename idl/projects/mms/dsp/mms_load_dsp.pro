@@ -60,8 +60,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
-;$LastChangedRevision: 21430 $
+;$LastChangedDate: 2016-07-19 13:42:05 -0700 (Tue, 19 Jul 2016) $
+;$LastChangedRevision: 21490 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
 
@@ -134,4 +134,10 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
     endif
     if ~undefined(tplot_names_full) then tplotnames = tplot_names_full
     if ~undefined(cdf_filenames_full) then cdf_filenames = cdf_filenames_full
+
+    for level_idx = 0, n_elements(level)-1 do begin
+      ; set some of the metadata
+      mms_dsp_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = 'dsp', $
+        data_rate = data_rate, suffix = suffix, level=level[level_idx]
+    endfor
 end
