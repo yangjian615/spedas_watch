@@ -30,9 +30,9 @@
 ;                days_in option. (passed through to mvn_sta_l2gen.pro)
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-06-10 11:12:21 -0700 (Fri, 10 Jun 2016) $
-; $LastChangedRevision: 21303 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2016-07-20 15:48:47 -0700 (Wed, 20 Jul 2016) $
+; $LastChangedRevision: 21500 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -127,7 +127,7 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
            Else: instr_dir = instrk
         Endcase
 ;Set up check directories, l0 is first
-        sdir = '/disks/data/maven/data/sci/pfp/l0/mvn_pfp_all_l0_*.dat'
+        sdir = '/disks/data/maven/data/sci/pfp/l0_all/*/*/mvn_pfp_all_l0_*.dat'
         pfile = file_search(sdir)
         If(keyword_set(use_file4time)) Then Begin
  ;Get the file date
@@ -141,7 +141,7 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
            test_time = time_double(time_string(temporary(timep), /date_only))
         Endif Else Begin
            finfo = file_info(pfile)
-           test_time = finfo.mtime
+           test_time = finfo.ctime ;changed from mtime, jmm, 2016-07-20
         Endelse
         If(keyword_set(search_time_range)) Then Begin
            atime_test = test_time GT time_double(search_time_range[0])

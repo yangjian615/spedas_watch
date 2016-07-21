@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-19 15:11:05 -0700 (Tue, 19 Jul 2016) $
-; $LastChangedRevision: 21492 $
+; $LastChangedDate: 2016-07-20 09:15:25 -0700 (Wed, 20 Jul 2016) $
+; $LastChangedRevision: 21495 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/quicklook/mms_tplot_quicklook.pro $
 ;-
 
@@ -39,7 +39,7 @@ pro mms_tplot_quicklook, tplotnames, degap=degap, window=win_idx, $
       endif else begin
         return
       endelse
-    endif else tplotnames = tnames(tplotnames, nd, /all, index=ind)
+    endif; else tplotnames = tnames(tplotnames, nd, /all, index=ind)
 
     if ~keyword_set(xsize) then xsize=710
     if ~keyword_set(ysize) then ysize=1150

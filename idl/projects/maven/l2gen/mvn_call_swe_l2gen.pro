@@ -37,9 +37,9 @@
 ;                 data without affecting the cron job)
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen, 17-Apr-2014, jmm
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 13:42:56 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17724 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2016-07-20 15:49:16 -0700 (Wed, 20 Jul 2016) $
+; $LastChangedRevision: 21501 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_swe_l2gen.pro $
 ;-
 Pro mvn_call_swe_l2gen, time_in = time_in, $
@@ -121,7 +121,7 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
            Else: instr_dir = instrk
         Endcase
 ;Set up check directories, l0 is first
-        sdir = '/disks/data/maven/data/sci/pfp/l0/mvn_pfp_all_l0_*.dat'
+        sdir = '/disks/data/maven/data/sci/pfp/l0_all/*/*/mvn_pfp_all_l0_*.dat'
         pfile = file_search(sdir)
         If(keyword_set(use_file4time)) Then Begin
  ;Get the file date
@@ -135,7 +135,7 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
            test_time = time_double(time_string(temporary(timep), /date_only))
         Endif Else Begin
            finfo = file_info(pfile)
-           test_time = finfo.mtime
+           test_time = finfo.ctime ;changed to ctime, 2016-07-20, jmm
         Endelse
         If(keyword_set(search_time_range)) Then Begin
            atime_test = test_time GT time_double(search_time_range[0])

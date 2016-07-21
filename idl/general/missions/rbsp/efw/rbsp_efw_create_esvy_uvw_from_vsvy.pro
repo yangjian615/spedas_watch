@@ -20,8 +20,10 @@
 ;           method -> 1 = (default) Calculate Ew directly using linear combination of diagonal antenna pairs.
 ;                         Project the result onto the usual u or v axis. For
 ;                         ex, if V1 is bad we can calculate V12 from V23 and V24
-
-;           method -> 2 = (NOT WORKING YET) mimic the bad antenna by time-shifting data from adjacent
+;           method -> 2 = Calculate Ew using average of good boom pair. Ex, if V1
+;                         is bad then E12 = 2*(V3+V4)/2 - V2
+;
+;           method -> 3 = (NOT WORKING YET) mimic the bad antenna by time-shifting data from adjacent
 ;                         antenna by 1/4 spinperiod. For ex, if V4 is bad we can
 ;                         substitute V4 data with time-shifted V1 data. This method
 ;                         can be useful if two probe potentials are misbehaving. Ex.
@@ -58,19 +60,18 @@
 ;--which antennas are bad
 
 
-
 pro rbsp_efw_create_esvy_uvw_from_vsvy,$
   date,$
   probe,$
   bad_probe,$
   testing=testing,$
+  method=method,$
   pairs=pairs,$
   no_spice_load=no_spice_load,$
   rerun=rerun
 
 
-  method = 1  ;method 2 not implemented yet
-
+  if ~KEYWORD_SET(method) then method = 1
   timespan,date
   probe = probe
 
@@ -94,7 +95,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
 
   ;Get antenna pointing direction and stuff
   if ~keyword_set(rerun) then rbsp_load_state,probe=probe,/no_spice_load,$
-    datatype=['spinper','spinphase','mat_dsc','Lvec']
+  datatype=['spinper','spinphase','mat_dsc','Lvec']
   if ~keyword_set(rerun) then rbsp_efw_position_velocity_crib,/no_spice_load,/noplot
 
 
@@ -215,16 +216,86 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
 
   endif  ;;method eq 1
 
+  ;-------------------------------------------------------------------------------
+  ;Method 2
+  ;-------------------------------------------------------------------------------
 
+  if method eq 2 then begin
+
+
+    get_data,rbv+'1',times,v1
+    get_data,rbv+'2',times,v2
+    get_data,rbv+'3',times,v3
+    get_data,rbv+'4',times,v4
+
+    if bad_probe eq '1' then begin
+
+      dif_data,rbv+'3',rbv+'4',newname='tmp'
+      get_data,'tmp',data=dd
+      E34 = dd.y * 1000./boom_length[1]
+
+      dif_data,rbv+'5',rbv+'6',newname='tmp'
+      get_data,'tmp',data=dd
+      E56 = dd.y * 1000./boom_length[2]
+
+      E12 = 1*1000.*(v3 + v4 - v2)/boom_length[0]
+
+    endif
+    if bad_probe eq '2' then begin
+
+      dif_data,rbv+'3',rbv+'4',newname='tmp'
+      get_data,'tmp',data=dd
+      E34 = dd.y * 1000./boom_length[1]
+
+      dif_data,rbv+'5',rbv+'6',newname='tmp'
+      get_data,'tmp',data=dd
+      E56 = dd.y * 1000./boom_length[2]
+
+      E12 = -1*1000.*(v3 + v4 - v1)/boom_length[0]
+
+    endif
+    if bad_probe eq '3' then begin
+
+      dif_data,rbv+'1',rbv+'2',newname='tmp'
+      get_data,'tmp',data=dd
+      E12 = dd.y * 1000./boom_length[1]
+
+      dif_data,rbv+'5',rbv+'6',newname='tmp'
+      get_data,'tmp',data=dd
+      E56 = dd.y * 1000./boom_length[2]
+
+      E34 = 1000.*(v1 + v2 - v4)/boom_length[1]
+
+    endif
+    if bad_probe eq '4' then begin
+
+      dif_data,rbv+'1',rbv+'2',newname='tmp'
+      get_data,'tmp',data=dd
+      E12 = dd.y * 1000./boom_length[1]
+
+      dif_data,rbv+'5',rbv+'6',newname='tmp'
+      get_data,'tmp',data=dd
+      E56 = dd.y * 1000./boom_length[2]
+
+      E34 = -1*1000.*(v1 + v2 - v3)/boom_length[1]
+
+    endif
+
+    store_data,'rbsp'+probe+'_efw_esvy',dd.x,[[E12],[E34],[E56]]
+    options,'rbsp'+probe+'_efw_esvy','ytitle','rbsp'+probe+'_efw_esvy'+'!C[mV/m]'
+
+
+
+  endif
 
 
   ;
   ; ;-------------------------------------------------------------------------------
-  ; ;Method 2
+  ; ;Method 3
   ; ;-------------------------------------------------------------------------------
   ;
   ;
-  ; if method eq 2 then begin
+  ; if method eq 3 then begin
   ;
   ;
   ;   get_data,rb+'_spinper',data=sp

@@ -11,8 +11,8 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-07-08 14:15:10 -0700 (Fri, 08 Jul 2016) $
-;   $LastChangedRevision: 21447 $
+;   $LastChangedDate: 2016-07-20 11:27:50 -0700 (Wed, 20 Jul 2016) $
+;   $LastChangedRevision: 21496 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
@@ -111,27 +111,40 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
   padch = 10.*60. ;plus/minus time from actual times of charging for triggering the charging flag.
 
   charging_flag = replicate(0.,n_elements(times))
+  charging_flag_extreme = replicate(0.,n_elements(times))
   tinterpol_mxn,'rbsp'+sc+'_state_lshell',times
   get_data,'rbsp'+sc+'_state_lshell_interp',data=lshell
 
   ;;Find charging times
   pot_tmp = replicate(0.,n_elements(times))
+  pot_tmp_extreme = pot_tmp
 
   if bp eq '12' then begin
-    goo = where((lshell.y gt 4) and (sum12 gt -1))
+    goo = where((lshell.y gt 4) and (sum12 gt 0))
     if goo[0] ne -1 then pot_tmp[goo] = 1B
-    goo = where(sum12 lt -10)
+    goo = where(sum12 lt -20)
     if goo[0] ne -1 then pot_tmp[goo] = 1B
+
+    goo = where((lshell.y gt 4) and (sum12 gt 20))
+    if goo[0] ne -1 then pot_tmp_extreme[goo] = 1B
+    goo = where(sum12 lt -20)
+    if goo[0] ne -1 then pot_tmp_extreme[goo] = 1B
   endif
   if bp eq '34' then begin
-    goo = where((lshell.y gt 4) and (sum34 gt -1))
+    goo = where((lshell.y gt 4) and (sum34 gt 0))
     if goo[0] ne -1 then pot_tmp[goo] = 1B
-    goo = where(sum34 lt -10)
+    goo = where(sum34 lt -20)
     if goo[0] ne -1 then pot_tmp[goo] = 1B
+
+    goo = where((lshell.y gt 4) and (sum34 gt 20))
+    if goo[0] ne -1 then pot_tmp_extreme[goo] = 1B
+    goo = where(sum34 lt -20)
+    if goo[0] ne -1 then pot_tmp_extreme[goo] = 1B
   endif
 
 
   pot_diff = pot_tmp - shift(pot_tmp,1)
+  pot_diff_extreme = pot_tmp_extreme - shift(pot_tmp_extreme,1)
   ;; store_data,'pot_diff',data={x:times,y:pot_diff}
   ;; store_data,'Vavg',data={x:times,y:sum12}
   ;; tplot,['pot_diff','rbsp'+sc+'_density','Vavg','rbsp'+sc+'_state_lshell']
@@ -139,9 +152,11 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
   ;;Shift the times...
   boo = where(pot_diff eq 1.)   ;start of charging
   moo = where(pot_diff eq -1.)  ;end of charging
+  boo_ex = where(pot_diff_extreme eq 1.)   ;start of extreme charging
+  moo_ex = where(pot_diff_extreme eq -1.)  ;end of extreme charging
+
 
   ;;equal number of elements in start and end of charging (usually the case)
-
   if boo[0] ne -1 and moo[0] ne -1 then begin
      if n_elements(boo) eq n_elements(moo) then begin
         for jj=0,n_elements(boo)-1 do begin
@@ -149,6 +164,16 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
            l1 = times[moo[jj]] + padch
            bad = where((times ge l0) and (times le l1))
            if bad[0] ne -1 then charging_flag[bad] = 1
+        endfor
+     endif
+  endif
+  if boo_ex[0] ne -1 and moo_ex[0] ne -1 then begin
+     if n_elements(boo_ex) eq n_elements(moo_ex) then begin
+        for jj=0,n_elements(boo_ex)-1 do begin
+           l0 = times[boo_ex[jj]] - padch
+           l1 = times[moo_ex[jj]] + padch
+           bad = where((times ge l0) and (times le l1))
+           if bad[0] ne -1 then charging_flag_extreme[bad] = 1
         endfor
      endif
   endif
@@ -170,6 +195,23 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
         if bad[0] ne -1 then charging_flag[bad] = 1
      endif
   endif
+  if boo_ex[0] ne -1 then begin
+     if n_elements(boo_ex) gt n_elements(moo_ex) then begin
+        for jj=0,n_elements(boo_ex)-2 do begin
+           l0 = times[boo_ex[jj]] - padch
+           l1 = times[moo_ex[jj]] + padch
+           bad = where((times ge l0) and (times le l1))
+           if bad[0] ne -1 then charging_flag_extreme[bad] = 1
+        endfor
+        jj++
+        l0 = times[boo_ex[jj]] - padch
+        l1 = times[n_elements(times)-1]
+        bad = where((times ge l0) and (times le l1))
+        if bad[0] ne -1 then charging_flag_extreme[bad] = 1
+     endif
+  endif
+
+
 
   ;; store_data,'charging_flag',data={x:times,y:charging_flag}
   ;; ylim,'charging_flag',-1,2
@@ -186,6 +228,9 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
   if goo[0] ne -1 then dens.y[goo] = -1.e31
   store_data,'rbsp'+sc+'_density34',data=dens
 
+
+  ;Combine density flag criteria for single flag value
+  goo = where(charging_flag eq 1)
 
 ;----------------------------------------------------------------------------------------------------
 ;FIND AND SET ALL FLAG VALUES
@@ -207,8 +252,8 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
   ;;             'magnetic_wake',$
   ;;             'autobias',$
   ;;             'charging',$
+  ;;             'charging_extreme',$
   ;;             'density',$
-  ;;             'undefined',$
   ;;             'undefined',$
   ;;             'undefined']
 
@@ -436,7 +481,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
   flag_arr[*,3] = bias_sweep_flag
   flag_arr[*,14] = ab_flag       ;autobias
   flag_arr[*,15] = charging_flag ;charging
-
+  flag_arr[*,16] = charging_flag_extreme ;extreme charging
 
 ;--------------------------------------------------
 ;Change values of certain arrays that are "fill_val" to 0
@@ -502,6 +547,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
              bias_sweep_flag:bias_sweep_flag,$
              ab_flag:ab_flag,$
              charging_flag:charging_flag,$
+             charging_flag_extreme:charging_flag_extreme,$
              ibias:ibias}
 
   return,flagstr

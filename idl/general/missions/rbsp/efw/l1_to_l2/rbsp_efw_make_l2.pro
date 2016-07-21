@@ -51,8 +51,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-07-18 16:59:46 -0700 (Mon, 18 Jul 2016) $
-; $LastChangedRevision: 21485 $
+; $LastChangedDate: 2016-07-20 08:01:54 -0700 (Wed, 20 Jul 2016) $
+; $LastChangedRevision: 21494 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -175,27 +175,20 @@ pro rbsp_efw_make_l2,sc,date,$
      get_data,'rbsp'+sc+'_efw_vsvy',data=vsvy
 
 
-     if type eq 'combo' or type eq 'pfaff_esvy' or type eq 'esvy_despun' or type eq 'combo_pfaff' then begin
-
-
-
-     ;Create the despun variable with a bad probe
-     if KEYWORD_SET(bad_probe) then $
-        rbsp_efw_create_esvy_uvw_from_vsvy,date,sc,bad_probe else $
-        rbsp_load_efw_waveform,probe=sc,type='calibrated',datatype='esvy',/noclean
-
-
-
-        get_data,'rbsp'+sc+'_efw_esvy',data=esvy
-        epoch_e = tplot_time_to_epoch(esvy.x,/epoch16)
-        times_e = esvy.x
-
-        if type eq 'combo' or type eq 'pfaff_esvy' or type eq 'combo_pfaff' then begin
-           tinterpol_mxn,'rbsp'+sc+'_efw_esvy','rbsp'+sc+'_efw_vsvy',newname='rbsp'+sc+'_efw_esvy'
-           get_data,'rbsp'+sc+'_efw_esvy',data=esvy_v
-        endif
-
-     endif
+;     if type eq 'combo' or type eq 'pfaff_esvy' or type eq 'esvy_despun' or type eq 'combo_pfaff' then begin
+;
+;       rbsp_load_efw_waveform,probe=sc,type='calibrated',datatype='esvy',/noclean
+;
+;        get_data,'rbsp'+sc+'_efw_esvy',data=esvy
+;        epoch_e = tplot_time_to_epoch(esvy.x,/epoch16)
+;        times_e = esvy.x
+;
+;        if type eq 'combo' or type eq 'pfaff_esvy' or type eq 'combo_pfaff' then begin
+;           tinterpol_mxn,'rbsp'+sc+'_efw_esvy','rbsp'+sc+'_efw_vsvy',newname='rbsp'+sc+'_efw_esvy'
+;           get_data,'rbsp'+sc+'_efw_esvy',data=esvy_v
+;        endif
+;
+;     endif
 
 
 
@@ -208,7 +201,6 @@ pro rbsp_efw_make_l2,sc,date,$
         if ~keyword_set(qa) then rbsp_efw_vxb_subtract_crib,sc,/no_spice_load,/noplot,bad_probe=bad_probe
         if keyword_set(qa)  then rbsp_efw_vxb_subtract_crib,sc,/no_spice_load,/noplot,/qa
 
-
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed',data=esvy_vxb_mgse
         esvy_vxb_mgse.y[*,0] = -1.e31
 
@@ -218,6 +210,10 @@ pro rbsp_efw_make_l2,sc,date,$
         get_data,'rbsp'+sc+'_efw_esvy_mgse',data=esvy_mgse
 
      endif
+
+
+
+
 
 
                                 ;Load ECT's magnetic ephemeris
@@ -1135,7 +1131,8 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;full resolution
-     cdf_varput,cdfid,'efield_mgse',transpose(esvy_mgse.y)
+;cdf_varput,cdfid,'efield_mgse',transpose(esvy_mgse.y)
+cdf_varput,cdfid,'efield_mgse',transpose(esvy_vxb_mgse.y)
 
 
 
