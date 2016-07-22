@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-07-15 11:07:55 -0700 (Fri, 15 Jul 2016) $
-;$LastChangedRevision: 21475 $
+;$LastChangedDate: 2016-07-21 11:27:01 -0700 (Thu, 21 Jul 2016) $
+;$LastChangedRevision: 21504 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_help_about.pro $
 ;-
 
@@ -34,7 +34,7 @@ end
 pro spd_ui_help_about_update_dlm
   plugin_mission='themis'
   GETRESOURCEPATH, path ; start at the resources folder
-  update_dlm_info = path+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY)+ PATH_SEP() + PATH_SEP(/PARENT_DIRECTORY) + PATH_SEP() +  'external'+ PATH_SEP() + 'dlm_files' +PATH_SEP() + 'update_dlm_info.txt'
+  update_dlm_info = path + PATH_SEP() + 'update_dlm_info.txt'
   if file_test(update_dlm_info, /READ) then begin
     xdisplayfile, update_dlm_info, done_button='CLOSE', height=50, /modal, title='How to update CDF and GEOPACK' 
   endif else begin

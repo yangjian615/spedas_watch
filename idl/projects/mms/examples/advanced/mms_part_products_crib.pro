@@ -7,9 +7,9 @@
 ;  Basic example on how to use mms_part_products to generate particle
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 12:21:16 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21197 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-07-21 17:20:34 -0700 (Thu, 21 Jul 2016) $
+;$LastChangedRevision: 21509 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib.pro $
 ;
 ;-
@@ -23,14 +23,14 @@
   del_data,'*'
 
   ;setup
-  probe='1'
-  species='e'
-  rate='brst'
+  probe='1'      ;1, 2, 3, 4
+  species='e'    ;e, i
+  rate='brst'    ;brst, fast
   level = 'l2'
 
   ;use short time range for data due to high resolution
   ;use longer time range for support data to ensure we have enough to work with
-  timespan, '2015-10-16/13:02:30', 5, /min
+  timespan, '2015-10-16/13:02:40', 30, /sec
   trange = timerange()
   support_trange = trange + [-60,60]
  
@@ -43,17 +43,11 @@
   ;load magnetic field data
   mms_load_fgm, probe=probe, trange=support_trange, level=level
  
-  ;magnetic field vector
-  bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
-  
-  ;spacecraft position
-  ; -currently wrong, FAC spectrograms will be skipped
-  pos_name = 'mms' + probe+ '_defeph_pos'
-  
-  ;L2 particle data
+  ;tplot names for L2 particle data, magnetic field vector, and spacecraft position
   name = 'mms'+probe+'_d'+species+'s_dist_'+rate
+  bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
+  pos_name = 'mms' + probe+ '_defeph_pos'
  
-  
   ;generate products
   mms_part_products, name, trange=trange, $
                      mag_name=bname, pos_name=pos_name, $ ;required for field aligned spectra
@@ -80,7 +74,9 @@
   ;  released by the team (des-moms, dis-moms datatypes)
   mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-moms'
   tplot, 'mms' + probe + '_d'+species+'s_numberdensity_dbcs_brst'
+
   stop
+
 
 ;==========================================================
 ; HPCA - L2
@@ -90,9 +86,9 @@
   del_data,'*'
 
   ;setup
-  probe = '1'
-  species = 'hplus'
-  data_rate = 'srvy'
+  probe = '1'          ;1, 2, 3, 4
+  species = 'hplus'    ;hplus, heplus, heplusplus, oplus, oplusplus
+  data_rate = 'srvy'   ;srvy, brst
   level = 'l2'
   
   timespan, '2015-10-16/13:02:30', 5, /min
@@ -107,26 +103,22 @@
   ;load magnetic field data (for field aligned coordinates)
   mms_load_fgm, probe=probe, trange=trange, level=level
  
-  ;magnetic field vector
+  ;tplot names for L2 particle data, magnetic field vector, and spacecraft position
+  name =  'mms'+probe+'_hpca_'+species+'_phase_space_density'
   bname = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
-  
-  ;spacecraft position
-  ; -currently wrong, FAC spectrograms will be skipped
   pos_name = 'mms' + probe+ '_defeph_pos'
   
-  ;L2 particle data
-  name =  'mms'+probe+'_hpca_'+species+'_phase_space_density'
- 
   ;generate products
   mms_part_products, name, trange=trange,$
                      mag_name=bname, pos_name=pos_name, $ ;required for field aligned spectra
                      outputs=['energy','phi','theta','pa','gyro','moments']
 
+  ;plot spectrograms
   tplot,name+'_'+['energy','theta','phi','pa','gyro']
 
   stop
 
-  ; plot the moments
+  ;plot moments
   tplot, name+'_'+['density', 'avgtemp']
   
   stop

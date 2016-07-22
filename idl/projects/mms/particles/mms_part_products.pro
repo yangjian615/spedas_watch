@@ -88,6 +88,9 @@
 ;  
 ;Output Keywords:
 ;  tplotnames:  List of tplot variables that were created
+;  get_data_structures:  Set to named variable to return structures directly when
+;                        generating field aligned outputs.  This may considerably
+;                        slow the process!
 ;  error:  Error status flag for calling routine, 1=error 0=success
 ;
 ;
@@ -95,8 +98,8 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-05-23 19:12:00 -0700 (Mon, 23 May 2016) $
-;$LastChangedRevision: 21181 $
+;$LastChangedDate: 2016-07-21 17:17:45 -0700 (Thu, 21 Jul 2016) $
+;$LastChangedRevision: 21508 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -140,6 +143,8 @@ pro mms_part_products, $
                       
                      tplotnames=tplotnames, $ ;set of tplot variable names that were created
                    
+                     get_data_structures=get_data_structures, $  ;pass out aggregated fac data structures
+                     
                      display_object=display_object, $ ;object allowing dprint to export output messages
 
                      silent=silent, $ ;supress pop-up messages
@@ -418,6 +423,11 @@ pro mms_part_products, $
       ;apply gyro & pitch angle limits(identical to phi & theta, just in new coords)
       spd_pgs_limit_range,clean_data,phi=gyro,theta=pitch
       
+      ;agreggate transformed data structures if requested
+      if arg_present(get_data_structures) then begin
+        clean_data_all = array_concat(clean_data, clean_data_all,/no_copy)
+      endif
+
     endif
     
     ;Build pitch angle spectrogram
@@ -515,19 +525,11 @@ pro mms_part_products, $
     spd_pgs_moments_tplot, fac_moments, /no_mag, prefix=tplot_prefix, suffix=fac_mom_suffix, tplotnames=tplotnames
   endif
 
-;  
-;  ;Moments Error Esitmates
-;  if ~undefined(mom_sigma) then begin
-;    mom_sigma.time = times
-;    thm_pgs_moments_tplot, mom_sigma, /get_error, prefix=tplot_mom_prefix, suffix=suffix, tplotnames=tplotnames
-;  endif
-;  
-;  if ~undefined(delta_times) then begin
-;    store_data,tplot_mom_prefix+'delta_time',data={x:times,y:delta_times},verbose=0
-;    tplotnames = array_concat(tplot_mom_prefix+'delta_time',tplotnames)
-;  endif
- 
- 
+  ;Return transformed data structures
+  if arg_present(get_data_structures) and is_struct(clean_data_all) then begin
+    get_data_structures = temporary(clean_data_all)
+  endif
+
   error = 0
   
   dprint,'Complete. Runtime: ',systime(/sec) - twin,' secs' 

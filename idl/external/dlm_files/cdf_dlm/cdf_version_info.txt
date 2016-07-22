@@ -1,2 +1,0 @@
-Version 3.6.2
-http://cdf.gsfc.nasa.gov/html/sw_and_docs.html

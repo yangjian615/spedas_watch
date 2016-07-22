@@ -86,6 +86,8 @@
 ;  
 ;Output Keywords:
 ;  tplotnames:  List of tplot variables that were created
+;  get_data_structures:  Set to named variable to return data structures when generating
+;                        field aligned outputs.  This may considerably slow the process!
 ;  error:  Error status flag for calling routine, 1=error 0=success
 ;
 ;
@@ -93,8 +95,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-06-27 18:32:34 -0700 (Mon, 27 Jun 2016) $
-;$LastChangedRevision: 21378 $
+;$LastChangedDate: 2016-07-21 17:30:51 -0700 (Thu, 21 Jul 2016) $
+;$LastChangedRevision: 21510 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -148,6 +150,8 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                      esa_bgnd_advanced=esa_bgnd_advanced,$
                     
                      erange=erange, $ ; deprecated.  Here just to post a warning if someone is accidentally using the old keyword'
+
+                     get_data_structures=get_data_structures, $  ;pass out aggregated fac data structures
                     
                      display_object=display_object, $ ;object allowing dprint to export output messages
 
@@ -505,6 +509,11 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
       ;apply gyro & pitch angle limits(identical to phi & theta, just in new coords)
       spd_pgs_limit_range,clean_data,phi=gyro,theta=pitch
       
+      ;agreggate transformed data structures if requested
+      if arg_present(get_data_structures) then begin
+        clean_data_all = array_concat(clean_data, clean_data_all,/no_copy)
+      endif
+      
     endif
     
     ;Build pitch angle spectrogram
@@ -615,8 +624,12 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     store_data,tplot_mom_prefix+'delta_time',data={x:times,y:delta_times},verbose=0
     tplotnames = array_concat(tplot_mom_prefix+'delta_time',tplotnames)
   endif
- 
- 
+  
+  ;Return transformed data structures
+  if arg_present(get_data_structures) and is_struct(clean_data_all) then begin
+    get_data_structures = temporary(clean_data_all)
+  endif
+  
   error = 0
   
   dprint,'Complete. Runtime: ',systime(/sec) - twin,' secs' 
