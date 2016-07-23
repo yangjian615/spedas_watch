@@ -9,17 +9,30 @@
 ;See also:
 ;  thm_crib_part_products
 ;  thm_crib_part_slice2d
+;  thm_crib_part_combine_ncount
 ;  thm_crib_sst_load_calibrate
 ;  thm_crib_sst.pro
 ;  thm_crib_esa.pro
 ;
 ;Notes:
 ;  If you see any useful examples missing from these cribs, please let us know.
-;  A lot of instrument specific options(e.g. decontamination, are found in the other cribs)
+;  A lot of instrument specific options (e.g. decontamination) are found in the other cribs.
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-07-18 13:44:45 -0700 (Mon, 18 Jul 2016) $
-;$LastChangedRevision: 21482 $
+;Notes on method:
+;  Internally, combined distributions are created in three steps:
+;    a) Linear time interpolation
+;         -time samples are matched by linearly interpolating the  
+;          data set with lower time resolution to match the other
+;    b) Linear spherical interpolation
+;         -both data sets are interpolated onto the same angular grid
+;    c) Energy gap interpolation
+;         -once all times/angles match the gap between the 
+;          ESA and SST energy ranges is filled in with a logarithmic 
+;          linear interpolation (log(flux) vs log(energy))
+;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-07-22 16:56:13 -0700 (Fri, 22 Jul 2016) $
+;$LastChangedRevision: 21515 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine.pro $
 ;-
 
@@ -78,11 +91,11 @@ thm_part_products, dist_array=combined, outputs='energy'
 window, ysize=800
 
 ;naming is slightly different than normal particles variables.
-;p=particles
-;t=total
-;i=ions
-;f=full distribution esa
-;f=full distribution sst
+; p=particles
+; t=total
+; i=ions
+; r=reduced distribution esa
+; f=full distribution sst
 tplot, 'thd_ptirf_eflux_energy'
 
 print, ' ','Pass the combined data to thm_part_products to produce spectrograms.'
@@ -245,6 +258,8 @@ combined = thm_part_combine(probe=probe, trange=trange, $
 ;Pass the combined data into processing routines the same way you
 ;would use output from thm_part_dist_array.
 thm_part_products, dist_array=combined, outputs='energy'
+
+window, 0, ysize=800
 
 tplot,'thd_psif_eflux_energy'
 

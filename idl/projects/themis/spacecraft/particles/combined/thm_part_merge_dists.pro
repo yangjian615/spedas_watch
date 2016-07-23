@@ -1,9 +1,5 @@
 ;+
 ;
-;
-;*** This routine is in development, do not use! ***
-;
-;
 ;Procedure:
 ;  thm_part_merge_dists.pro
 ;
@@ -11,18 +7,19 @@
 ;  Merge ESA/SST particle distributions once they have been 
 ;  altered to match in time, energy, angle, and mode transition. 
 ;
-;Calling Sequence:
-;  
-;
 ;Inputs:
+;  esa_dist:  esa distribution array
+;  sst_dist:  sst distribution array
+;  sst_only:  flag to only return SST + new energies
+;  probe:  probe designation
+;  esa_datatype:  esa data type, e.g. 'peif'
+;  sst_datatype:  sst data type, e.g. 'psif'
 ;
 ;
 ;Outputs:
-;
+;  out_dist:  combined distributions, fresh and ready for unit conversion
 ;
 ;Notes:
-;  
-;
 ;
 ;
 ;$LastChangedBy: aaflores $
@@ -39,8 +36,8 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
   error = 1
 
   if n_elements(esa_dist) ne n_elements(sst_dist) then begin
-    ;should already be separated into unqie combinations instrument modes
-    message, 'Incorrect mode matching' ;temporary halt
+    ;should already be separated into unique combinations instrument modes
+    message, 'Incorrect mode matching' ;this shouldn't happen
     return
   endif 
   
@@ -72,7 +69,7 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
     
     ;angle and energy dimensions should be the same
     if ~array_equal(dim_esa[1:*],dim_sst[1:*]) then begin
-      message, 'Incorrect dimensions for current mode' ;temporary halt
+      message, 'Incorrect dimensions for current mode' ;this also shouldn't happen
       return
     endif
     

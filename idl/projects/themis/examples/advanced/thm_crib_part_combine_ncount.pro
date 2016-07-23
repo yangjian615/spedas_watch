@@ -7,24 +7,27 @@
 ;  Crib demonstrating how to subtract or mask a set number of counts
 ;  from combined ESA-SST particle distributions.
 ;
+;  Rather than masking/subtracting the raw data this will create
+;  a second product in parallel: a mask that can be applied to the 
+;  final product (i.e. the subtraction is applied after averaging 
+;  and/or interpolating the data instead of before) 
+;
 ;See also:
+;  thm_crib_part_combine
+;  thm_crib_part_products_ncount
 ;  thm_crib_part_slice2d
-;  thm_crib_part_slice2d_adv.pro
-;  thm_crib_part_slice2d_multi.pro
 ;  thm_crib_part_products
-;  thm_crib_sst_load_calibrate
 ;
 ;Notes:
 ;  
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-07-01 19:04:38 -0700 (Wed, 01 Jul 2015) $
-;$LastChangedRevision: 18008 $
+;$LastChangedDate: 2016-07-22 16:53:38 -0700 (Fri, 22 Jul 2016) $
+;$LastChangedRevision: 21514 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_combine_ncount.pro $
 ;-
 
 compile_opt idl2
-
 
 
 ;--------------------------------------------------------------------------------------
@@ -62,8 +65,7 @@ stop
 ;Create identical plots from real and synthetic data
 ;--------------------------------------------------------------------------------------
 
-
-;produce slices of 3D distribution along the GSM x-y axis
+;produce 2d slices of 3D distribution along the GSM x-y axis
 ;  -limit energy range to exclude top SST energies
 thm_part_slice2d, combined, slice_time=trange[0], timewin=30, $
                   erange=[0,4e5], coord='gsm', part_slice=slice

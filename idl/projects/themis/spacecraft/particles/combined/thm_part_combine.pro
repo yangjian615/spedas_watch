@@ -1,24 +1,32 @@
 ;+
 ;
-;
-;*** WARNING: This routine is still in testing ***
-;
-;
 ;Procedure:
 ;  thm_part_combine.pro
 ;
 ;
 ;Purpose:
-;  Create combined particle distribution from ESA and SST data.
+;  Create combined particle distributions from ESA and SST data.
 ;  This distributions acts as a new data type and can be passed 
-;  to all particle product code to create combined ESA/SST plots.
-;
+;  to most THEMIS/SPEDAS particle product routines to create 
+;  combined ESA/SST plots.
+;  
+;  Combined distributions are created in three steps:
+;    a) Linear time interpolation
+;         -time samples are matched by linearly interpolating the  
+;          data set with lower time resolution to match the other
+;    b) Linear spherical interpolation
+;         -both data sets are interpolated onto the same angular grid
+;    c) Energy gap interpolation
+;         -once all times/angles match the gap between the 
+;          ESA and SST energy ranges is filled in with a logarithmic 
+;          linear interpolation (log(flux) vs log(energy))
+;          
 ;
 ;Calling Sequence:
-;  combined_dist = thm_part_combine(probe=probe, trange=trange, 
+;  combined_dist = thm_part_combine( probe=probe, trange=trange, 
 ;                     esa_datatype=esa_datatype, sst_datatype=sst_datatype
 ;                     [,units=units] [,regrid=regrid] [,energies=energies]
-;                     [,orig_esa=orig_esa] [,orig_sst=orig_sst]) 
+;                     [,orig_esa=orig_esa] [,orig_sst=orig_sst] ... ) 
 ;                    
 ;
 ;Inputs:
@@ -48,7 +56,6 @@
 ;                     Disables default anode-based background removal
 ;  extrapolate_esa: Flag to extrapolate from ESA data where no valid SST data exists
 ;                   instead of throwing error.  Not recommended - use with caution!
-;                   
 ;  remove_one_count: removes all bins that are less than one count, suggestion from heli hielala(heli@igpp.ucla.edu)
 ;  sst_data_mask:  The name of a tplot variable containing a 1-dimensional, 0-1 array indicating SST samples to exclude(0=exclude,1=include),
 ;                  If values don't match the times of particle data, they'll be nearest neighbor interpolated to match.
@@ -95,12 +102,12 @@
 ;                 any point due to eclipse corrections to phi values.
 ;  
 ;  All E/phi/theta items above are assumed for the bin widths as well.  Greater
-;  uniformity will be assumed as data is replaced with interpolated versions.
+;  uniformity is assumed as the data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-07-18 12:21:54 -0700 (Mon, 18 Jul 2016) $
-;$LastChangedRevision: 21480 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-07-22 16:52:32 -0700 (Fri, 22 Jul 2016) $
+;$LastChangedRevision: 21513 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -302,7 +309,7 @@ function thm_part_combine, probe=probe, $
   ;Form final distribution
   ;-------------------------------------------------------------------------------------------
 
-    ;create output product
+  ;create output product
   thm_part_merge_dists, esa, sst, out_dist=out_dist, only_sst=only_sst,$
            probe=probe, esa_datatype=esa_datatype, sst_datatype=sst_datatype
 
