@@ -15,8 +15,8 @@
 ;HISTORY:
 ; 20-oct-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-09 10:22:20 -0800 (Fri, 09 Jan 2015) $
-; $LastChangedRevision: 16613 $
+; $LastChangedDate: 2016-07-22 18:41:07 -0700 (Fri, 22 Jul 2016) $
+; $LastChangedRevision: 21517 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/rerun_sta_l2gen.pro $
 ;-
 
@@ -33,7 +33,7 @@ Pro rerun_sta_l2gen, ndays = ndays
 ;Subtract ndays from today
      tt = time_string(systime(/sec)-ndays*86400.0d0)
      days_in = time_string(tt, precision = -3)
-     mvn_call_sta_l2gen, days_in = days_in, /use_l2_files
+     mvn_call_sta_l2gen, days_in = days_in;, /use_l2_files temporarily use L0, jmm, 2016-07-22
      message, /info, 'Removing Lock file /tmp/STAL2Rlock.txt'
      file_delete, test_file[0]
   Endelse

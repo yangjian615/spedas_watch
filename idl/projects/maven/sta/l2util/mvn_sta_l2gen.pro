@@ -25,9 +25,9 @@ End
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: muser $
-; $LastChangedDate: 2016-02-27 08:05:34 -0800 (Sat, 27 Feb 2016) $
-; $LastChangedRevision: 20241 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-07-22 18:34:32 -0700 (Fri, 22 Jul 2016) $
+; $LastChangedRevision: 21516 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -57,7 +57,6 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
         cmd_rq = 'mailx -s "Problem with STA L2 process" jimm@ssl.berkeley.edu < /tmp/sta_l2_err_msg.txt'
         spawn, cmd_rq
      Endif
-
      case load_position of
         'init':begin
            print, 'Problem with initialization'
@@ -256,6 +255,8 @@ skip_ephemeris_l2:
      ttest = systime(/sec)-time_double(date)
      If(ttest Gt 10.0*86400.0d0) Then Begin
         mvn_sta_mag_load
+        mvn_sta_qf14_load
+        mvn_sta_dead_load
         mk = mvn_spice_kernels(/all,/load,trange=timerange())
         If(is_struct(mvn_c8_dat)) Then mvn_sta_sc_bins_load
 ;ephemeris might crash, don't kill the process, jmm, 2016-02-03

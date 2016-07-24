@@ -24,7 +24,7 @@ if (! -e /tmp/STAL2Rlock.txt) then
     rm -f run_sta_l2reprocess.bm
     rm -f /tmp/run_sta_l2reprocess.txt
 
-    set line="rerun_sta_l2gen, ndays = 14"
+    set line="rerun_sta_l2gen, ndays = 21"
     echo $line > run_sta_l2reprocess.bm
     set line="rerun_sta_l2gen, ndays = 30"
     echo $line >> run_sta_l2reprocess.bm
