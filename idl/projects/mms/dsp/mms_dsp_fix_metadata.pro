@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-19 15:03:30 -0700 (Tue, 19 Jul 2016) $
-;$LastChangedRevision: 21491 $
+;$LastChangedDate: 2016-07-25 14:58:36 -0700 (Mon, 25 Jul 2016) $
+;$LastChangedRevision: 21523 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_dsp_fix_metadata.pro $
 ;-
 
@@ -52,10 +52,9 @@ pro mms_dsp_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
             options, tplot_name, ystyle=1
           end
           prefix[sc_idx] + '_'+instrument+'_epsd_omni'+suffix: begin
-            options, /def, tplot_name, ysubtitle='[Hz]', ztitle='[(V/m)^2/Hz]'
+            options, /def, tplot_name, ysubtitle='[Hz]', ztitle='[(V/m)^2/Hz]', ystyle=1
             ylim, tplot_name, 0, 0, 1
             zlim, tplot_name, 0, 0, 1
-            options, tplot_name, ystyle=1
           end
           prefix[sc_idx] + '_'+instrument+'_epsd_x'+suffix: begin
             options, /def, tplot_name, ysubtitle='[Hz]', ztitle='[(V/m)^2/Hz]'
