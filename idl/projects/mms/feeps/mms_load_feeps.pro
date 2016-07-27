@@ -77,8 +77,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
-;$LastChangedRevision: 21430 $
+;$LastChangedDate: 2016-07-26 09:52:50 -0700 (Tue, 26 Jul 2016) $
+;$LastChangedRevision: 21530 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -97,7 +97,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
     if undefined(data_units) then data_units = 'flux'
     if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
-    if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '4.3.0'
+    if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '5.5.0'
     if undefined(get_support_data) then get_support_data = 1 ; support data needed for sun removal and spin averaging
     l1a_datatypes = ['electron-bottom', 'electron-top', 'ion-top', 'ion-bottom']
     
@@ -133,15 +133,15 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
   
         ; calculate the omni-directional spectra
         mms_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units, $
-            data_rate = data_rate_in, suffix=suffix
+            data_rate = data_rate_in, suffix=suffix, level = level_in
   
         ; calculate the spin averages
         mms_feeps_spin_avg, probe=this_probe, datatype=this_datatype, suffix = suffix, data_units = data_units, $
-            tplotnames = tplotnames
+            tplotnames = tplotnames, data_rate = data_rate_in, level = level_in
         
         ; calculate the smoothed products
         if ~undefined(num_smooth) then mms_feeps_smooth, probe=this_probe, datatype=this_datatype, $
-          suffix=suffix, data_units=data_units, data_rate=data_rate_in, num_smooth=num_smooth
+          suffix=suffix, data_units=data_units, data_rate=data_rate_in, level=level_in, num_smooth=num_smooth
       endfor
     endfor
     

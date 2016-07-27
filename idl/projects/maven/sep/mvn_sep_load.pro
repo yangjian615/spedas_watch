@@ -35,7 +35,7 @@ if keyword_set(ancillary) then begin
         store_data, 'angles_1F', data = ['theta_1F','phi_1F']
         store_data,'theta_1R',data = {x: FOV_1R.x, y:theta_1R/!dtor}
         store_data,'phi_1R',data = {x: FOV_1R.x, y:phi_1R/!dtor}
-        options, 'theta_1R', 'linestyle', 0
+        optionns, 'theta_1R', 'linestyle', 0
         options, 'phi_1R', 'linestyle', 0
         store_data, 'angles_1R', data = ['theta_1R','phi_1R']
 
@@ -171,6 +171,7 @@ if format eq 'L2_CDF' then begin
 
    if keyword_set (eflux) then begin
 ; also load Energy flux
+      stop
       get_data,  'MVN_SEP1f_ion_flux', data = ion_1F
       get_data,  'MVN_SEP2f_ion_flux', data = ion_2F
       get_data,  'MVN_SEP1r_ion_flux', data = ion_1R
@@ -190,7 +191,7 @@ if format eq 'L2_CDF' then begin
       get_data,  'MVN_SEP2r_elec_flux', data = electron_2R
 
 ; make tplot variables for electron energy flux
-      electron_energies = reform (electron_1f.v [0,*])
+      electron_energies = mean (electron_1f.v, dim = 1,/nan)
       store_data,'MVN_SEP1f_electron_eflux', $
                  data = {x: electron_1f.x, y: electron_1f.y*electron_1f.v, v:electron_energies}
       store_data,'MVN_SEP1r_electron_eflux', $

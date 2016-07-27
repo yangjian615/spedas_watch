@@ -6,16 +6,16 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 14:56:02 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21205 $
+; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
+; $LastChangedRevision: 21548 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps_crib_qlplots.pro $
 ;-
 
 probe = '1'
 date = '2015-10-16'
 timespan, date, 1
-width = 950
-height = 1000
+;width = 950
+;height = 1000
 ; options:
 ; 1) intensity
 ; 2) count_rate
@@ -30,7 +30,7 @@ data_rate = 'srvy'
 ;   win: creates/opens all of the tplot windows
 
 send_plots_to = 'win'
-plot_directory = ''
+plot_directory = 'feeps_summary/'+time_string(date, tformat='YYYY/MM/DD/')
 
 postscript = send_plots_to eq 'ps' ? 1 : 0
 
@@ -68,7 +68,7 @@ options, prefix+b_variable+'_clipped', colors=[2, 4, 6, 0]
 options, prefix+b_variable+'_clipped', ytitle=prefix+'!CFGM QL'
 
 ; ephemeris data - set the label to show along the bottom of the tplot
-eph_gsm = 'mms'+probe+'_ql_pos_gsm'
+eph_gsm = 'mms'+probe+'_ql_pos_gse'
 
 ; convert km to re
 calc,'"'+eph_gsm+'_re" = "'+eph_gsm+'"/6378.'
@@ -76,29 +76,37 @@ calc,'"'+eph_gsm+'_re" = "'+eph_gsm+'"/6378.'
 ; split the position into its components
 split_vec, eph_gsm+'_re'
 
-options, eph_gsm+'_re_0',ytitle='X-GSM (Re)'
-options, eph_gsm+'_re_1',ytitle='Y-GSM (Re)'
-options, eph_gsm+'_re_2',ytitle='Z-GSM (Re)'
+options, eph_gsm+'_re_0',ytitle='X (Re, GSE)'
+options, eph_gsm+'_re_1',ytitle='Y (Re, GSE)'
+options, eph_gsm+'_re_2',ytitle='Z (Re, GSE)'
 options, eph_gsm+'_re_3',ytitle='R (Re)'
 position_vars = eph_gsm+'_re_'+['3', '2', '1', '0']
 
-if ~postscript then window, xsize=width, ysize=height
+if ~postscript then window;, xsize=width, ysize=height
 
 tplot_options, 'xmargin', [15, 15]
 
 ; data availability bar
 spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
 
-tplot, [['mms_bss_burst', 'mms_bss_fast'], $
-        'mms'+probe+['_epd_feeps_electron_'+type+'_omni_spin_electrons', $
-                    '_epd_feeps_*keV_pad*electrons*spin', $
-                    '_epd_feeps_ion_'+type+'_omni_spin_ions', $
-                    '_epd_feeps_*keV_pad*ions*spin', $
-                    '_dfg_srvy_dmpa_clipped' $
-                    ]], var_label=position_vars
+panels = 'mms'+probe+['_dfg_srvy_dmpa_clipped', $
+  '_epd_feeps_srvy_l2_electron_'+type+'_omni_spin_electrons', $
+  '_epd_feeps_srvy_l2_electron_'+type+'_70-71keV_pad_electrons_spin', $
+  '_epd_feeps_srvy_l2_electron_'+type+'_200-201keV_pad_electrons_spin', $
+  '_epd_feeps_srvy_l2_ion_'+type+'_omni_spin_ions', $
+  '_epd_feeps_srvy_l2_ion_'+type+'_76-77keV_pad_ions_spin', $
+  '_epd_feeps_srvy_l2_ion_'+type+'_205-206keV_pad_ions_spin']
+
+mms_tplot_quicklook, panels, var_label=position_vars, title='MMS'+probe+' FEEPS Summary', $
+    burst_bar = 'mms_bss_burst', fast_bar = 'mms_bss_fast'
 
 if send_plots_to eq 'png' then begin
-  thm_gen_multipngplot, 'mms'+probe+'_', date, directory = plot_directory, /mkdir
+  mms_gen_multipngplot, 'mms'+probe + '_feeps_'+ $
+    time_string(date, tformat='YYYYMMDD_hhmmss.fff'), date, directory = plot_directory, /mkdir, $
+    vars24 = panels, vars06 =  panels, vars02 = panels, vars12=panels, window=iw, $
+    burst_bar = 'mms_bss_burst', $
+    fast_bar = 'mms_bss_fast'
 endif
+
 if postscript then tprint, plot_directory + 'mms'+probe+'_feeps_qlplots"
 end

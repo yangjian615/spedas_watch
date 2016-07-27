@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-01 09:39:18 -0700 (Fri, 01 Jul 2016) $
-;$LastChangedRevision: 21418 $
+;$LastChangedDate: 2016-07-26 14:29:31 -0700 (Tue, 26 Jul 2016) $
+;$LastChangedRevision: 21545 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_edp_fix_metadata.pro $
 ;-
 
@@ -41,7 +41,7 @@ pro mms_edp_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
                       options, /def, tplot_name, 'labels', ['Ex DSL', 'Ey DSL', 'Ez DSL']
                     end
                     prefix[sc_idx] + '_'+instrument+'_hfesp_'+data_rate+'_'+level+suffix: begin
-                      options, /def, tplot_name, ylog=1, zlog=1
+                      options, /def, tplot_name, ylog=1, zlog=1, ysubtitle='[Hz]', ztitle='(V/m)^2/Hz'
                     end
                     else: ; not doing anything
                 endcase

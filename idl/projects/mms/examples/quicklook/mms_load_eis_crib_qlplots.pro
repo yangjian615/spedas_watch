@@ -5,15 +5,16 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 14:56:02 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21205 $
+; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
+; $LastChangedRevision: 21548 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_eis_crib_qlplots.pro $
 ;-
 
-probe = '3'
+probe = '1'
 ;trange = ['2015-08-15', '2015-08-16']
 ;timespan, '2015-08-15', 1
-timespan, '2015-10-16', 1
+date = '2015-10-16'
+timespan, date, 1
 iw = 0
 width = 850
 height = 1000
@@ -25,7 +26,7 @@ prefix = 'mms'+probe+'_epd_eis'
 ;   win: creates/opens all of the tplot windows
 
 send_plots_to = 'win'
-plot_directory = ''
+plot_directory = 'epd_eis/'+time_string(date, tformat='YYYY/MM/DD/')
 
 postscript = send_plots_to eq 'ps' ? 1 : 0
 
@@ -62,7 +63,7 @@ options, '*_flux_omni*', ystyle=1
 ;eph_j2000 = 'mms'+probe+'_defeph_pos'
 ;eph_gei = 'mms'+probe+'defeph_pos_gei'
 ;eph_gse = 'mms'+probe+'_defeph_pos_gse'
-eph_gsm = 'mms'+probe+'_ql_pos_gsm'
+eph_gsm = 'mms'+probe+'_ql_pos_gse'
 
 ; calculate MLT
 tgsm2mlt, eph_gsm, 'mms'+probe+'_ql_pos_mlt'
@@ -77,10 +78,10 @@ split_vec, eph_gsm+'_re'
 ;calc, '"mms'+probe+'_defeph_R_gsm" = sqrt("'+eph_gsm+'_re_x'+'"^2+"'+eph_gsm+'_re_y'+'"^2+"'+eph_gsm+'_re_z'+'"^2)'
 
 ; set the label to show along the bottom of the tplot
-options, eph_gsm+'_re_0',ytitle='X-GSM (Re)'
-options, eph_gsm+'_re_1',ytitle='Y-GSM (Re)'
-options, eph_gsm+'_re_2',ytitle='Z-GSM (Re)'
-options, eph_gsm+'_re_3',ytitle='R-GSM (Re)'
+options, eph_gsm+'_re_0',ytitle='X (Re, GSE)'
+options, eph_gsm+'_re_1',ytitle='Y (Re, GSE)'
+options, eph_gsm+'_re_2',ytitle='Z (Re, GSE)'
+options, eph_gsm+'_re_3',ytitle='R (Re)'
 options, 'mms'+probe+'_ql_pos_mlt', ytitle='MLT'
 position_vars = ['mms'+probe+'_ql_pos_mlt', eph_gsm+'_re_3', eph_gsm+'_re_2', eph_gsm+'_re_1', eph_gsm+'_re_0']
 
@@ -95,19 +96,28 @@ options, 'mms'+probe+'_dfg_srvy_dmpa_bvec', labels=['Bx DMPA', 'By DMPA', 'Bz DM
 
 spd_mms_load_bss, trange=trange, /include_labels 
 
-panels = ['mms_bss_burst', 'mms_bss_fast', $
-  'mms'+probe+'_dfg_srvy_dmpa_bvec', $
+panels = ['mms'+probe+'_dfg_srvy_dmpa_bvec', $
   prefix+'_electronenergy_electron_flux_omni_spin', $
   prefix+'_extof_proton_flux_omni_spin', $
   prefix+'_extof_alpha_flux_omni_spin', $
   prefix+'_extof_oxygen_flux_omni_spin']
-
+ 
 if ~postscript then window, iw, xsize=width, ysize=height
-tplot, panels, var_label=position_vars, window=iw
+;tplot, panels, var_label=position_vars, window=iw
+mms_tplot_quicklook, panels, var_label=position_vars, $
+  burst_bar='mms_bss_burst', fast_bar='mms_bss_fast', window=iw
 timebar, 0.0, /databar, varname='mms'+probe+'_dfg_srvy_dmpa_bvec', linestyle=2
 title='EIS - Quicklook'
 xyouts, .4, .96, title, /normal, charsize=1.5
 
 if postscript then tprint, plot_directory + prefix + "_quicklook_plots"
+
+if send_plots_to eq 'png' then begin
+  mms_gen_multipngplot, 'mms'+probe + '_epd_eis_'+ $
+    time_string(date, tformat='YYYYMMDD_hhmmss.fff'), date, directory = plot_directory, /mkdir, $
+    vars24 = panels, vars06 =  panels, vars02 = panels, vars12=panels, window=iw, $
+    burst_bar = 'mms_bss_burst', $
+    fast_bar = 'mms_bss_fast'
+endif
 
 end

@@ -21,8 +21,8 @@
 ; BGILES UPDATED 31AUGUST2015
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 14:56:02 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21205 $
+; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
+; $LastChangedRevision: 21548 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_fpi_crib_qlplots.pro $
 ;-
 
@@ -35,7 +35,7 @@ start_time = systime(/seconds)
 ; full day for FS
 ;date = '2015-11-13/00:00:00'
 ;date = '2015-10-11/00:00:00'
-date = '2015-10-16/00:00:00'
+date = '2016-1-15/00:00:00'
 timespan, date, 1, /day
 data_rate = 'fast'
 
@@ -59,12 +59,12 @@ height = 750
 ;   win: creates/opens all of the tplot windows
 
 send_plots_to = 'win'
-plot_directory = ''
+plot_directory = 'fpi_ql/'+time_string(date, tformat='YYYY/MM/DD/')
 
 postscript = send_plots_to eq 'ps' ? 1 : 0
 
 tplot_options,'xmargin',[15,15]              ; Set left/right margins to 10 characters
-;tplot_options,'ymargin',[4,2]                ; Set top/bottom margins to 4/2 lines
+tplot_options,'ymargin',[4,5]                ; Set top/bottom margins to 4/2 lines
 
 ; handle any errors that occur in this script gracefully
 catch, errstats
@@ -82,6 +82,9 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
     autoscale = autoscale
 
+; load the fast/burst bars
+spd_mms_load_bss, /include_labels
+  
 ; load ephemeris data for all 4 probes
 ; as of 1/29/16, we use the S/C position data loaded from the FGM files
 ;mms_load_state, trange = trange, probes = probes, /ephemeris
@@ -98,10 +101,10 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     ; convert the position data into Re
    ; eph_variable = 'mms'+strcompress(string(i), /rem)+'_defeph_pos'
     if dfg_level eq 'l2pre' then begin
-        eph_variable = 'mms'+strcompress(string(i), /rem)+'_pos_gsm'
+        eph_variable = 'mms'+strcompress(string(i), /rem)+'_pos_gse'
         b_variable = '_dfg_srvy_l2pre_dmpa'
     endif else begin
-        eph_variable = 'mms'+strcompress(string(i), /rem)+'_ql_pos_gsm'
+        eph_variable = 'mms'+strcompress(string(i), /rem)+'_ql_pos_gse'
         b_variable = '_dfg_srvy_dmpa'
     endelse
 
@@ -114,12 +117,13 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
 
     ; set the label to show along the bottom of the tplot
     options, eph_variable+'_R_gsm', ytitle='R (Re)'
-    options, eph_variable+'_re_'+suffix_kludge[0],ytitle='X-GSM (Re)'
-    options, eph_variable+'_re_'+suffix_kludge[1],ytitle='Y-GSM (Re)'
-    options, eph_variable+'_re_'+suffix_kludge[2],ytitle='Z-GSM (Re)'
-    position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0], eph_variable+'_R_gsm']
+    options, eph_variable+'_re_'+suffix_kludge[0],ytitle='X (Re, GSE)'
+    options, eph_variable+'_re_'+suffix_kludge[1],ytitle='Y (Re, GSE)'
+    options, eph_variable+'_re_'+suffix_kludge[2],ytitle='Z (Re, GSE)'
+    position_vars = [eph_variable+'_R_gsm', eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0]]
 
     ; Data quality bar
+    join_vec, [obsstr+'des_dataQuality', obsstr+'dis_dataQuality'], obsstr+'dataQuality'
     qual_bar = mms_quality_bar(obsstr+'dataQuality')
     
     ; combine bent pipe B DSC into a single tplot variable
@@ -180,9 +184,7 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
 ;    options, obsstr+'temp', 'colors', [2, 4, 6, 8]
 ;    options, obsstr+'temp', 'ytitle', 'MMS'+STRING(i,FORMAT='(I1)')+'!CTemp'
 
-    ; use bss routine to create tplot variables for fast, burst, status, and/or FOM
     trange = timerange(trange)
-    spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
         
     ;-----------PLOT ELECTRON ENERGY SPECTRA DETAILS -- ONE SPACECRAFT --------------------
     ;PLOT: electron energy spectra for each observatory
@@ -193,13 +195,20 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     ; replace gaps with NaNs so tplot doesn't interpolate on the X axis
     tdegap, electron_espec, /overwrite
     tdegap, electron_espec_omni, /overwrite
-    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
-            prefix+'_dfg_dmpa_srvy_clipped', electron_espec, electron_espec_omni]
+    panels=[qual_bar, prefix+'_dfg_dmpa_srvy_clipped', electron_espec, electron_espec_omni]
     window_caption="MMS FPI Electron energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
-    tplot, panels, window=iw, var_label=position_vars
-    xyouts, .01, .98, window_caption, /normal, charsize=1.15
+    mms_tplot_quicklook, panels, window=iw, var_label=position_vars, trange=trange, $
+      title=window_caption, fast_bar='mms_bss_fast', burst_bar='mms_bss_burst'
+    
+    if send_plots_to eq 'png' then begin
+      mms_gen_multipngplot, obsstr+"electron_eSpec"+ $
+        time_string(date, tformat='YYYYMMDD_hhmmss.fff'), date, directory = plot_directory, /mkdir, $
+        vars24 = panels, vars06 =  panels, vars02 = panels, vars12=panels, window=iw, $
+        burst_bar = 'mms_bss_burst', $
+        fast_bar = 'mms_bss_fast'
+    endif
     
     if postscript then tprint, plot_directory + obsstr+"electron_eSpec"
     iw=iw+1
@@ -214,14 +223,23 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     tdegap, ion_espec, /overwrite
     tdegap, ion_espec_omni, /overwrite
     
-    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
-             prefix+'_dfg_dmpa_srvy_clipped',ion_espec, ion_espec_omni]
+    panels=[qual_bar, prefix+'_dfg_dmpa_srvy_clipped',ion_espec, ion_espec_omni]
     window_caption="MMS FPI Ion energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
 ;    tplot_options,'title', window_caption
-    tplot, panels, window=iw, var_label=position_vars
-    xyouts, .05, .98, window_caption, /normal, charsize=1.15
+    mms_tplot_quicklook, panels, window=iw, var_label=position_vars, trange=trange, $
+      title=window_caption, fast_bar='mms_bss_fast', burst_bar='mms_bss_burst'
+
     if postscript then tprint, plot_directory + obsstr+"ion_eSpec"
+    
+    if send_plots_to eq 'png' then begin
+      mms_gen_multipngplot, obsstr+"ion_eSpec"+ $
+        time_string(date, tformat='YYYYMMDD_hhmmss.fff'), date, directory = plot_directory, /mkdir, $
+        vars24 = panels, vars06 =  panels, vars02 = panels, vars12=panels, window=iw, $
+        burst_bar = 'mms_bss_burst', $
+        fast_bar = 'mms_bss_fast'
+    endif
+    
     iw=iw+1
       
                  
@@ -233,52 +251,83 @@ FOR i=1,n_elements(probes) DO BEGIN    ;step through the observatories
     tdegap, e_pad, /overwrite
     tdegap, e_pad_allE, /overwrite
     
-    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
-             prefix+'_dfg_dmpa_srvy_clipped',e_pad, e_pad_allE]
+    ;panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+    ;         prefix+'_dfg_dmpa_srvy_clipped',e_pad, e_pad_allE]
+    panels=[qual_bar, prefix+'_dfg_dmpa_srvy_clipped',e_pad, e_pad_allE]
     window_caption="MMS FPI Electron PAD:  Counts, summed/averaged over energy bands"
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
-    tplot, panels, window=iw, var_label=position_vars
-    xyouts, .15, .98, window_caption, /normal, charsize=1.15
+    mms_tplot_quicklook, panels, window=iw, var_label=position_vars, trange=trange, $
+      title=window_caption, fast_bar='mms_bss_fast', burst_bar='mms_bss_burst'
+
     if postscript then tprint, plot_directory + obsstr+"ePAD"
+    
+    if send_plots_to eq 'png' then begin
+      mms_gen_multipngplot, obsstr+"ePAD"+ $
+        time_string(date, tformat='YYYYMMDD_hhmmss.fff'), date, directory = plot_directory, /mkdir, $
+        vars24 = panels, vars06 =  panels, vars02 = panels, vars12=panels, window=iw, $
+        burst_bar = 'mms_bss_burst', $
+        fast_bar = 'mms_bss_fast'
+    endif
+    
     iw=iw+1    
            
               
     ;-----------ONE SPACECRAFT FPI SUMMARY PLOT--------------------
+    ;fpi_moments = [prefix+'_dfg_dmpa_srvy_clipped', [obsstr+'des_numberDensity', obsstr+'dis_numberDensity'], obsstr+'eBulkV_DSC',  $
+    ;               obsstr+'iBulkV_DSC', obsstr+'temp']
     fpi_moments = [prefix+'_dfg_dmpa_srvy_clipped', [obsstr+'des_numberDensity', obsstr+'dis_numberDensity'], obsstr+'eBulkV_DSC',  $
-                   obsstr+'iBulkV_DSC', obsstr+'temp']
+      obsstr+'iBulkV_DSC']
     fpi_espects = [obsstr+'dis_EnergySpectr_omni_avg', obsstr+'des_EnergySpectr_omni_avg']
-    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
-            fpi_moments, obsstr+'des_PitchAngDist_avg', fpi_espects]                    
+;    panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, $
+;            fpi_moments, obsstr+'des_PitchAngDist_avg', fpi_espects]     
+    panels=[qual_bar, fpi_moments, obsstr+'des_PitchAngDist_avg', fpi_espects]               
     window_caption="MMS FPI Observatory Summary:"+"MMS"+STRING(i,FORMAT='(I1)')
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
-    tplot, panels, window=iw, var_label=position_vars
-    xyouts, .3, .98, window_caption, /normal, charsize=1.15
+    mms_tplot_quicklook, panels, window=iw, var_label=position_vars, trange=trange, $
+      title=window_caption, fast_bar='mms_bss_fast', burst_bar='mms_bss_burst'
+
     if postscript then tprint, plot_directory + obsstr+"Observatory Summary"
     iw=iw+1
+;    if send_plots_to eq 'png' then begin
+;        thm_gen_multipngplot, obsstr, date, directory = plot_directory, /mkdir
+;    endif
     if send_plots_to eq 'png' then begin
-        thm_gen_multipngplot, obsstr, date, directory = plot_directory, /mkdir
+      mms_gen_multipngplot, obsstr+ $
+        time_string(date, tformat='YYYYMMDD_hhmmss.fff'), date, directory = plot_directory, /mkdir, $
+        vars24 = panels, vars06 =  panels, vars02 = panels, vars12=panels, window=iw, $
+        burst_bar = 'mms_bss_burst', $
+        fast_bar = 'mms_bss_fast'
     endif
 ENDFOR
 
 
 ;-----------FOUR SPACECRAFT SUMMARY PLOT--------------------
-panels=['mms_bss_burst', 'mms_bss_fast', qual_bar, obsstr+'dataQuality']
+;panels=['mms_bss_burst', 'mms_bss_fast', qual_bar]
+panels=[qual_bar]
 FOR i=1,4 DO BEGIN
    obsstr = 'mms'+STRING(i,FORMAT='(I1)')
    panels=[panels,obsstr+'_dfg_dmpa_srvy_clipped',obsstr+'_des_EnergySpectr_omni_sum',obsstr+'_dis_EnergySpectr_omni_sum'] 
 ENDFOR
 window_caption="MMS FPI Observatory Summary: MMS1, MMS2, MMS3, MMS4"
 if ~postscript then window, iw, xsize=width, ysize=height
-;tplot_options,'title', window_caption
-tplot, panels, window=iw, var_label='mms'+strcompress(string(i), /rem)+'_defeph_pos'
-xyouts, .25, .98, window_caption, /normal, charsize=1.15
+
+mms_tplot_quicklook, panels, window=iw, trange=trange, title=window_caption, $
+  fast_bar='mms_bss_fast', burst_bar='mms_bss_burst'
+
 if postscript then tprint, plot_directory + "MMS-all FPI Observatory Summary"
 
 ; make the PNGs
+;if send_plots_to eq 'png' then begin
+;    thm_gen_multipngplot, 'mms_fpi_all', date, directory = plot_directory, /mkdir
+;endif
 if send_plots_to eq 'png' then begin
-    thm_gen_multipngplot, 'mms_fpi_all', date, directory = plot_directory, /mkdir
+      mms_gen_multipngplot, 'mms_fpi_all_'+ $
+        time_string(date, tformat='YYYYMMDD_hhmmss.fff'), date, directory = plot_directory, /mkdir, $
+        vars24 = panels, vars06 =  panels, vars02 = panels, vars12=panels, window=iw, $
+        burst_bar = 'mms_bss_burst', $
+        fast_bar = 'mms_bss_fast'
 endif
 print, 'FPI QL script took: ' + string(systime(/sec)-start_time) + ' seconds to run'
 

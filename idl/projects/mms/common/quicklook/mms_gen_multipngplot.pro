@@ -24,6 +24,8 @@
 ;     directory = the output directory, remember the trailing slash....
 ;     vars24 = the variable names to plot for the full 24hr plot
 ; 
+;     vars12 = the variable names to plot for the 12hr plots
+;
 ;     vars06 = the variable names to plot for the 6hr plots
 ; 
 ;     vars02 = the variable names to plot for the 2hr plots
@@ -32,12 +34,12 @@
 ; 14-july-2016, egrimes, forked for MMS QL plots
 ; 21-may-2008, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-14 16:09:32 -0700 (Thu, 14 Jul 2016) $
-; $LastChangedRevision: 21467 $
+; $LastChangedDate: 2016-07-26 15:49:12 -0700 (Tue, 26 Jul 2016) $
+; $LastChangedRevision: 21547 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/quicklook/mms_gen_multipngplot.pro $
 ;-
 Pro mms_gen_multipngplot, filename_proto, date0, directory = directory, $
-                          vars24 = vars24, vars06 = vars06, vars02 = vars02, $
+                          vars24 = vars24, vars06 = vars06, vars02 = vars02, vars12 = vars12, $
                           burst_bar=burst_bar, fast_bar=fast_bar, window=win_idx, $
                           _extra = _extra
 
@@ -60,6 +62,16 @@ Pro mms_gen_multipngplot, filename_proto, date0, directory = directory, $
   If(keyword_set(vars24)) Then mms_tplot_quicklook, vars24, trange=tr24, burst_bar=burst_bar, fast_bar=fast_bar, window=win_idx $
      Else mms_tplot_quicklook,trange=tr24, burst_bar=burst_bar, fast_bar=fast_bar, window=win_idx
   makepng,dir+filename_proto+'_'+ymd+'_0024',/no_expose,_extra = _extra
+;twelve-hour plots
+  For j = 0, 1 Do Begin
+    hrs0 = 12*j
+    hrs1 = 12*j+12
+    tr0 = date_double+3600.0d0*[hrs0, hrs1]
+    If(keyword_set(vars12)) Then mms_tplot_quicklook, vars12, trange = tr0, burst_bar=burst_bar, fast_bar=fast_bar, window=win_idx $
+    Else mms_tplot_quicklook, trange = tr0, burst_bar=burst_bar, fast_bar=fast_bar, window=win_idx
+    hshf = string(hrs0, format = '(i2.2)')+string(hrs1, format = '(i2.2)')
+    makepng, dir+filename_proto+'_'+ymd+'_'+hshf, /no_expose, _extra = _extra
+  Endfor
 ;six-hour plots
   For j = 0, 3 Do Begin
     hrs0 = 6*j

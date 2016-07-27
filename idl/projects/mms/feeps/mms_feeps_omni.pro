@@ -25,11 +25,13 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-21 15:03:15 -0700 (Mon, 21 Mar 2016) $
-; $LastChangedRevision: 20543 $
+; $LastChangedDate: 2016-07-26 09:16:24 -0700 (Tue, 26 Jul 2016) $
+; $LastChangedRevision: 21526 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
-pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate
+pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, $
+  data_units = data_units, data_rate = data_rate, level = level
+  if undefined(level) then level = 'l2'
   if undefined(probe) then probe = '1' else probe = strcompress(string(probe))
   ; default to electrons
   if undefined(datatype) then datatype = 'electron'
@@ -53,8 +55,9 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   ;species_str = datatype+'_'+species
   ;if (data_rate) eq 'brst' then prefix = 'mms'+probe+'_epd_feeps_brst_' else prefix = 'mms'+probe+'_epd_feeps_'
   prefix = 'mms'+probe+'_epd_feeps_'
-  var_name = prefix+'top_'+datatype+'_'+data_units+'_sensorID_'+sensors[0]+'_clean_sun_removed'+suffix
-  var_name = strlowcase(var_name)
+  ;var_name = prefix+'top_'+datatype+'_'+data_units+'_sensorID_'+sensors[0]+'_clean_sun_removed'+suffix
+  ;var_name = strlowcase(var_name)
+  var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[0])+'_clean_sun_removed'+suffix, /rem)
   get_data, var_name, data = d, dlimits=dl
 
   if is_struct(d) then begin
@@ -62,21 +65,24 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
     sensor_count = 0
 
     for i=0, n_elements(sensors)-1. do begin ; loop through each top sensor
-      var_name = prefix+'top_'+datatype+'_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix
-      var_name = strlowcase(var_name)
+      ;var_name = prefix+'top_'+datatype+'_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix
+      ;var_name = strlowcase(var_name)
+      var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[i])+'_clean_sun_removed'+suffix, /rem)
       get_data, var_name, data = d
       flux_omni[*, sensor_count, *] = d.Y
       sensor_count += 1
     endfor
     for i=0, n_elements(sensors)-1. do begin ; loop through each bottom sensor
-      var_name = prefix+'bottom_'+datatype+'_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix
-      var_name = strlowcase(var_name)
+      ;var_name = prefix+'bottom_'+datatype+'_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix
+      ;var_name = strlowcase(var_name)
+      var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_bottom_'+data_units+'_sensorid_'+string(sensors[i])+'_clean_sun_removed'+suffix, /rem)
       get_data, var_name, data = d
       flux_omni[*, sensor_count, *] = d.Y
       sensor_count += 1
     endfor
 
-    newname = prefix+datatype+'_'+data_units+'_omni'+suffix
+    ;newname = prefix+datatype+'_'+data_units+'_omni'+suffix
+    newname = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+data_units+'_omni'+suffix, /rem)
     
     flux_avg = average(flux_omni, 2, /nan)
     
@@ -87,7 +93,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
 
     options, newname[0], spec = 1, yrange = en_range, yticks=3, $
       ytitle = 'mms'+probe+'!Cfeeps!C'+datatype+'!Comni', $
-      ysubtitle='Energy [keV]', ztitle=units_label, ystyle=1, /default
+      ysubtitle='[keV]', ztitle=units_label, ystyle=1, /default
     append_array, tplotnames, newname[0]
 
   endif

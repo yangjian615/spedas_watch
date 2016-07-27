@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-07 10:33:56 -0700 (Thu, 07 Apr 2016) $
-; $LastChangedRevision: 20742 $
+; $LastChangedDate: 2016-07-26 09:16:24 -0700 (Tue, 26 Jul 2016) $
+; $LastChangedRevision: 21526 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -35,7 +35,8 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
     if data_rate eq 'brst' && datatype eq 'ion' then sensors = ['6','7','8']
 
     ; get the sector data
-    get_data, 'mms'+probe+'_epd_feeps_'+datatype+'_spinsectnum'+suffix, data=spin_sector
+    get_data,  'mms'+probe+'_epd_feeps_' + data_rate + '_' + level + '_' + datatype + '_spinsectnum'+suffix, data=spin_sector
+ ;   get_data, 'mms'+probe+'_epd_feeps_'+datatype+'_spinsectnum'+suffix, data=spin_sector ; v5.4.x
     
     if ~is_struct(spin_sector) then begin
         dprint, dlevel = 0, 'Error - couldn''t find the spin sector variable!!!! Cannot remove sun contamination!'
@@ -52,12 +53,14 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         units_label = these_units eq 'intensity' ? '1/(cm!U2!N-sr-s-keV)' : 'Counts/s'
         
         ; added datatype to the name for L2 data
-        these_units = datatype + '_' + these_units
+        ;these_units = datatype + '_' + these_units
         
         ; top sensors
         for sensor_idx = 0, n_elements(sensors)-1 do begin
-          var_name = 'mms'+probe+'_epd_feeps_top_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
-          var_name = strlowcase(var_name)
+          ;var_name = 'mms'+probe+'_epd_feeps_top_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
+          ;var_name = strlowcase(var_name)
+          var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_top_'+these_units+'_sensorid_'+string(sensors[sensor_idx])+'_clean', /rem)
+
           
           get_data, var_name+suffix, data = top_data, dlimits=top_dlimits
           if mask_sectors.haskey('mms'+probe+'imaskt'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]] ne !NULL then begin
@@ -81,9 +84,10 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         ; note: no bottom data in SITL files
         if level ne 'sitl' then begin
           for sensor_idx = 0, n_elements(sensors)-1 do begin
-            var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
-            var_name = strlowcase(var_name)
-            
+            ;var_name = 'mms'+probe+'_epd_feeps_bottom_'+these_units+'_sensorID_'+sensors[sensor_idx]+'_clean'
+            ;var_name = strlowcase(var_name)
+            var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_bottom_'+these_units+'_sensorid_'+string(sensors[sensor_idx])+'_clean', /rem)
+
             get_data, var_name+suffix, data = bottom_data, dlimits=bottom_dlimits
             if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
               bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]

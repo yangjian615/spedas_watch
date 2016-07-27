@@ -65,8 +65,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
-;$LastChangedRevision: 21430 $
+;$LastChangedDate: 2016-07-26 14:22:54 -0700 (Tue, 26 Jul 2016) $
+;$LastChangedRevision: 21544 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
@@ -81,7 +81,7 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
 
     if undefined(probes) then probes = [1, 2, 3, 4] 
     if undefined(datatype) then datatype = ['dce']
-    if undefined(level) then level = ['l2pre']
+    if undefined(level) then level = ['l2']
     if undefined(suffix) then suffix = ''
     if undefined(data_rate) then data_rate = 'fast'
     if undefined(varformat) && undefined(get_support_data) then get_support_data = 1

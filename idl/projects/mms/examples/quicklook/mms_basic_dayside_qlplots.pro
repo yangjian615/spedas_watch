@@ -20,10 +20,11 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 09:07:07 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21191 $
+; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
+; $LastChangedRevision: 21548 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_basic_dayside_qlplots.pro $
 ;-
+tplot_options, 'xmargin', [15, 15]
 start_time = systime(/sec)
 
 date = '2015-10-16/00:00:00'
@@ -34,7 +35,7 @@ probe = '1'
 ;   png: png files
 ;   win: creates/opens all of the tplot windows
 send_plots_to = 'win'
-plot_directory = ''
+plot_directory = 'basic_dayside/'+time_string(date, tformat='YYYY/MM/DD/')
 postscript = send_plots_to eq 'ps' ? 1 : 0
 
 ; load the data
@@ -44,7 +45,13 @@ mms_load_edp, probe=probe, datatype='scpot', level='sitl'
 mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce'
 mms_load_edp, probe=probe, data_rate='srvy', level='l2', datatype=['dce', 'hfesp']
 mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd'
-mms_load_hpca, probe=probe, data_rate='srvy', level='sitl'
+; older HPCA SITL data seems to have been deleted, switching to L1b (7/7/2016)
+;mms_load_hpca, probe=probe, data_rate='srvy', level='sitl'
+mms_load_hpca, probe=probe, data_rate='srvy', level='l1b', datatype='ion'
+mms_load_hpca, probe=probe, data_rate='srvy', level='l1b', datatype='moments'
+
+; burst/fast segment bars
+spd_mms_load_bss, /include_labels
 
 ; sum the HPCA spectra over the full field of view
 mms_hpca_calc_anodes, fov=[0, 360], probe=probe
@@ -131,7 +138,7 @@ if ct eq 1 then begin
 endif
 
 ; let's put the ephemeris data at the bottom
-eph_variable = 'mms'+strcompress(string(probe), /rem)+'_ql_pos_gsm'
+eph_variable = 'mms'+strcompress(string(probe), /rem)+'_ql_pos_gse'
 b_variable = '_dfg_srvy_dmpa'
 suffix_kludge = ['0', '1', '2'] ; because the suffix is different depending on the level...
 
@@ -142,12 +149,13 @@ calc,'"'+eph_variable+'_re" = "'+eph_variable+'"/6371.2'
 split_vec, eph_variable+'_re'
 
 ; set the label to show along the bottom of the tplot
-options, eph_variable+'_re_'+suffix_kludge[0],ytitle='X-GSM (Re)'
-options, eph_variable+'_re_'+suffix_kludge[1],ytitle='Y-GSM (Re)'
-options, eph_variable+'_re_'+suffix_kludge[2],ytitle='Z-GSM (Re)'
-;position_vars = [eph_variable+'_re_'+suffix_kludge[0], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[2]]
-position_vars = [eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0]]
+options, eph_variable+'_re_'+suffix_kludge[0],ytitle='X (Re, GSE)'
+options, eph_variable+'_re_'+suffix_kludge[1],ytitle='Y (Re, GSE)'
+options, eph_variable+'_re_'+suffix_kludge[2],ytitle='Z (Re, GSE)'
+options, eph_variable+'_re_3', ytitle='R (Re)' ; magnitude
 
+;position_vars = [eph_variable+'_re_'+suffix_kludge[0], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[2]]
+position_vars = [eph_variable+'_re_3', eph_variable+'_re_'+suffix_kludge[2], eph_variable+'_re_'+suffix_kludge[1], eph_variable+'_re_'+suffix_kludge[0]]
 
 ; set some plot options
 ylim, 'mms'+probe+'_dsp_bpsd_omni_fast_l2', 0, 0, 1
@@ -180,30 +188,39 @@ tdegap, 'mms'+probe+'_fpi_eEnergySpectr_omni_avg', /overwrite
 ; degap the BPSD
 tdegap, 'mms'+probe+'_dsp_bpsd_omni_fast_l2', /overwrite
 
-window, ysize=800
+tplot_force_monotonic, /forward, 'mms'+probe+'_edp_hfesp_srvy_l2'
+
+
+;window, ysize=800
 ; plot the data
-tplot, 'mms'+probe+['_dfg_gsm_srvy', $
-                    '_dfg_srvy_dmpa_btot', $
-                    '_fpi_iEnergySpectr_omni_avg', $
-                    '_fpi_eEnergySpectr_omni_avg', $
-                    '_fpi_DISnumberDensity', $
-                    '_edp_fast_scpot_ln', $
-                    '_fpi_iBulkV', $
-                    '_exb_vperp_z', $
-                    '_hpca_hplus_RF_corrected_elev_0-360', $
-                    '_hpca_oplus_RF_corrected_elev_0-360', $
-                    '_edp_dce_xyz_dsl', $
-                    '_edp_hfesp_srvy_l2', $
-                    '_dsp_bpsd_omni_fast_l2' $
-                    ], var_label=position_vars
+panels = 'mms'+probe+['_dfg_gsm_srvy', $
+  '_dfg_srvy_dmpa_btot', $
+  '_fpi_iEnergySpectr_omni_avg', $
+  '_fpi_eEnergySpectr_omni_avg', $
+  '_fpi_DISnumberDensity', $
+  '_edp_fast_scpot_ln', $
+  '_fpi_iBulkV', $
+  '_exb_vperp_z', $
+  '_hpca_hplus_RF_corrected_elev_0-360', $
+  '_hpca_oplus_RF_corrected_elev_0-360', $
+  '_edp_dce_xyz_dsl', $
+  '_edp_hfesp_srvy_l2', $
+  '_dsp_bpsd_omni_fast_l2' $
+  ]
+mms_tplot_quicklook, panels, var_label=position_vars, $
+                    burst_bar = 'mms_bss_burst', $
+                    fast_bar = 'mms_bss_fast', $
+                    title='MMS'+probe+ ' Overall Summary'
                     
 if postscript then tprint, plot_directory + 'mms'+probe + '_basic_dayside'
+
 if send_plots_to eq 'png' then begin
-  makepng, plot_directory + 'mms'+probe + '_basic_dayside_'+ $
-    time_string(date, tformat='YYYYMMDD_hhmmss.fff'), $
-    /mkdir
+    mms_gen_multipngplot, 'mms'+probe + '_basic_dayside_'+ $
+      time_string(date, tformat='YYYYMMDD_hhmmss.fff'), date, directory = plot_directory, /mkdir, $
+      vars24 = panels, vars06 =  panels, vars02 = panels, vars12=panels, $
+      burst_bar = 'mms_bss_burst', $
+      fast_bar = 'mms_bss_fast'
 endif
-            
 print, 'took ' + string(systime(/sec)-start_time) + ' seconds to run'
 
 end

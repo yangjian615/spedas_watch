@@ -5,6 +5,7 @@
 ; updated by Eric Grimes: January 4, 2016
 ; updated to v4 by Eric Grimes, 4/1/2016 (now works for public access, uses L2 data)
 ; updated to include omni-directional FEEPS electron data by Eric Grimes, April 12, 2016
+; updated variable name for omni-directional FEEPS electron data by Eric Grimes, July 26, 2016
 
 ; to run this script, in IDL session, type: .r crib_master_v4 (or click the run button)
 
@@ -264,7 +265,7 @@ name_dsp = [sc_id+'_dsp_epsd_omni',sc_id+'_dsp_bpsd_omni_fast_l2']
 
 ;name_eis=[sc_id+'_epd_eis_alltof_proton_flux_av']
 
-name_feeps=[sc_id+'_epd_feeps_electron_intensity_omni']
+name_feeps=[sc_id+'_epd_feeps_srvy_l2_electron_intensity_omni']
 
 tplot_options,'ygap',0.3 ; set vertical gap size between panels (the default gap is often too large with multi panels)
 
