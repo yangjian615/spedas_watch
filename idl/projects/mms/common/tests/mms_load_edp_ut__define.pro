@@ -23,21 +23,21 @@ end
 
 function mms_load_edp_ut::test_load
   mms_load_edp
-  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2pre mms2_edp_dce_par_epar_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading edp data'
-  assert, spd_data_exists('mms3_edp_dce_dsl_fast_l2pre mms4_edp_dce_par_epar_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading edp data'
+  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2 mms2_edp_dce_par_epar_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading edp data'
+  assert, spd_data_exists('mms3_edp_dce_dsl_fast_l2 mms4_edp_dce_par_epar_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading edp data'
   return, 1
 end
 
 function mms_load_edp_ut::test_multi_probe
   mms_load_edp, probes=[1, 2]
-  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2pre mms2_edp_dce_par_epar_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading edp data multiprobe'
+  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2 mms2_edp_dce_par_epar_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading edp data multiprobe'
   return, 1
 end
 
 function mms_load_edp_ut::test_multi_probe_mixed_type
   mms_load_edp, probes=['1', 2, 3, '4']
-  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2pre mms2_edp_dce_par_epar_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading edp data mixed probe type'
-  assert, spd_data_exists('mms3_edp_dce_dsl_fast_l2pre mms4_edp_dce_par_epar_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading edp data mixed probe type'
+  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2 mms2_edp_dce_par_epar_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading edp data mixed probe type'
+  assert, spd_data_exists('mms3_edp_dce_dsl_fast_l2 mms4_edp_dce_par_epar_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading edp data mixed probe type'
   return, 1
 end
 
@@ -62,7 +62,7 @@ end
 
 function mms_load_edp_ut::test_load_l2a
   mms_load_edp, probe=1, level=['l2a']
-  assert, ~spd_data_exists('mms1_edp_dce_par_epar_fast_l2pre mms1_edp_dce_dsl_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading l2a edp data'
+  assert, ~spd_data_exists('mms1_edp_dce_par_epar_fast_l2 mms1_edp_dce_dsl_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading l2a edp data'
   return, 1
 end
 
@@ -81,19 +81,19 @@ end
 
 function mms_load_edp_ut::test_default_level
   mms_load_edp, probe=1
-  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2pre mms1_edp_dce_par_epar_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading edp data'
+  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2 mms1_edp_dce_par_epar_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading edp data'
   return, 1
 end
 
 function mms_load_edp_ut::test_load_invalid_level
   mms_load_edp, probe=1, level='xxxx'
-  assert, ~spd_data_exists('mms1_edp_dce_dsl_fast_l2pre mms1_edp_dce_par_epar_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading ql edp data (invalid level)'
+  assert, ~spd_data_exists('mms1_edp_dce_dsl_fast_l2 mms1_edp_dce_par_epar_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading ql edp data (invalid level)'
   return, 1
 end
 
 function mms_load_edp_ut::test_load_brst
   mms_load_edp, probe=1, data_rate='brst'
-  assert, spd_data_exists('mms1_edp_dce_dsl_brst_l2pre mms1_edp_dce_par_epar_brst_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading brst edp data'
+  assert, spd_data_exists('mms1_edp_dce_dsl_brst_l2 mms1_edp_dce_par_epar_brst_l2', '2015-12-15', '2015-12-16'), 'Problem loading brst edp data'
   return, 1
 end
 
@@ -118,7 +118,7 @@ end
 
 function mms_load_edp_ut::test_load_slow
   mms_load_edp, probe=1, data_rate='slow'
-  assert, spd_data_exists('mms1_edp_dce_dsl_slow_l2pre mms1_edp_dce_par_epar_slow_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading slow edp data'
+  assert, spd_data_exists('mms1_edp_dce_dsl_slow_l2 mms1_edp_dce_par_epar_slow_l2', '2015-12-15', '2015-12-16'), 'Problem loading slow edp data'
   return, 1
 end
 
@@ -156,7 +156,7 @@ end
 
 function mms_load_edp_ut::test_load_dce
   mms_load_edp, probe=1, datatype='dce'
-  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2pre mms1_edp_dce_par_epar_fast_l2pre', '2015-12-15', '2015-12-16'), 'Problem loading dce edp data'
+  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2 mms1_edp_dce_par_epar_fast_l2', '2015-12-15', '2015-12-16'), 'Problem loading dce edp data'
   return, 1
 end
 
@@ -174,13 +174,13 @@ end
 
 function mms_load_edp_ut::test_trange
   mms_load_edp, trange=['2015-12-10', '2015-12-20'], probe=1
-  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2pre mms1_edp_dce_par_epar_fast_l2pre', '2015-12-10', '2015-12-20'), 'Problem loading edp data with trange keyword'
+  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2 mms1_edp_dce_par_epar_fast_l2', '2015-12-10', '2015-12-20'), 'Problem loading edp data with trange keyword'
   return, 1
 end
 
 function mms_load_edp_ut::test_timeclip
   mms_load_edp, probe=1, time_clip=['2015-12-15 04:00:00', '2015-12-15 08:00:00']
-  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2pre mms1_edp_dce_par_epar_fast_l2pre', '2015-12-10', '2015-12-20'), 'Problem loading edp data with time clip keyword'
+  assert, spd_data_exists('mms1_edp_dce_dsl_fast_l2 mms1_edp_dce_par_epar_fast_l2', '2015-12-10', '2015-12-20'), 'Problem loading edp data with time clip keyword'
   return, 1
 end
 
@@ -200,7 +200,7 @@ end
 
 function mms_load_edp_ut::test_load_edp_coord
   mms_load_edp, probe=1, datatype='dce'
-  assert, cotrans_get_coord('mms1_edp_dce_dsl_fast_l2pre') eq 'dsl', 'Problem with coordinate system in data'
+  assert, cotrans_get_coord('mms1_edp_dce_dsl_fast_l2') eq 'dsl', 'Problem with coordinate system in data'
   return, 1
 end
 

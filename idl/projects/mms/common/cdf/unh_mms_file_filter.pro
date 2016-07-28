@@ -29,6 +29,11 @@
 ;
 ; :Returns:
 ;       FILES_OUT:      Those files within `FILENAMES` that pass the filter criterion.
+;       
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-07-27 11:11:21 -0700 (Wed, 27 Jul 2016) $
+; $LastChangedRevision: 21551 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/unh_mms_file_filter.pro $
 ;-
 function unh_mms_file_filter, filenames, $
 COUNT=count, $
