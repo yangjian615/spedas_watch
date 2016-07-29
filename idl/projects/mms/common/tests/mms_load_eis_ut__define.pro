@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-29 13:23:49 -0700 (Wed, 29 Jun 2016) $
-; $LastChangedRevision: 21394 $
+; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
+; $LastChangedRevision: 21557 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_eis_ut__define.pro $
 ;-
 
@@ -182,6 +182,25 @@ function mms_load_eis_ut::test_load_l2
   return, 1
 end
 
+function mms_load_eis_ut::test_load_timeclip
+  del_data, '*'
+  mms_load_eis, trange=['2015-12-15/11:00', '2015-12-15/12:00'], /time_clip
+  assert, spd_data_exists('mms1_epd_eis_extof_proton_flux_omni_spin mms1_epd_eis_extof_alpha_flux_omni_spin mms1_epd_eis_extof_oxygen_flux_omni_spin', '2015-12-15/11:00', '2015-12-15/12:00'), $
+    'Problem loading L2 EIS data with time clipping'
+  assert, ~spd_data_exists('mms1_epd_eis_extof_proton_flux_omni_spin mms1_epd_eis_extof_alpha_flux_omni_spin mms1_epd_eis_extof_oxygen_flux_omni_spin', '2015-12-15/10:00', '2015-12-15/11:00'), $
+    'Problem loading L2 EIS data with time clipping'
+  assert, ~spd_data_exists('mms1_epd_eis_extof_proton_flux_omni_spin mms1_epd_eis_extof_alpha_flux_omni_spin mms1_epd_eis_extof_oxygen_flux_omni_spin', '2015-12-15/12:00', '2015-12-15/13:00'), $
+    'Problem loading L2 EIS data with time clipping'
+  return, 1
+end
+
+function mms_load_eis_ut::test_pad_binsize
+  mms_eis_pad, bin_size=3
+  get_data, 'mms1_epd_eis_extof_0-1000keV_proton_flux_omni_pad_spin', data=d
+  assert, n_elements(d.V) eq 61, 'Problem with bin_size keyword in mms_eis_pad'
+  return, 1
+end
+
 pro mms_load_eis_ut::setup
   del_data, '*'
   timespan, '2015-12-15/00:00', 1, /day
@@ -192,7 +211,7 @@ function mms_load_eis_ut::init, _extra=e
   if (~self->MGutTestCase::init(_extra=e)) then return, 0
   ; the following adds code coverage % to the output
   self->addTestingRoutine, ['mms_load_eis', 'mms_eis_omni', $
-    'mms_eis_pad_spinavg', 'mms_eis_pad', $
+    'mms_eis_pad_spinavg', 'mms_eis_pad', 'mms_eis_set_metadata', $
     'mms_eis_spin_avg']
   return, 1
 end

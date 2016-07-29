@@ -204,6 +204,13 @@ function mms_load_edp_ut::test_load_edp_coord
   return, 1
 end
 
+function mms_load_edp_ut::test_all_datatypes
+  mms_load_edp, probe=2, datatype='*'
+  assert, spd_data_exists('mms2_edp_dce_dsl_fast_l2 mms2_edp_scpot_fast_l2 mms2_edp_dcv_fast_l2', '2015-12-15', '2015-12-16'), $
+    'Problem loading EDP data with datatype="*"'
+  return, 1
+end
+
 pro mms_load_edp_ut::setup
   del_data, '*'
   timespan, '2015-12-15', 1, /day

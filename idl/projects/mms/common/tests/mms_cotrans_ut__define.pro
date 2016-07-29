@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-26 08:53:20 -0700 (Thu, 26 May 2016) $
-; $LastChangedRevision: 21218 $
+; $LastChangedDate: 2016-07-28 15:17:57 -0700 (Thu, 28 Jul 2016) $
+; $LastChangedRevision: 21562 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_cotrans_ut__define.pro $
 ;-
 
@@ -47,28 +47,28 @@ function mms_cotrans_ut::test_cotrans_eci2gsm
 end
 
 function mms_cotrans_ut::test_cotrans_gsm2geo
-  mms_qcotrans, 'mms1_mec_r_gsm ', in_coord='gsm', out_coord='geo', out_suffix='_gsm2geo'
+  mms_qcotrans, 'mms1_mec_r_gsm ', out_coord='geo', out_suffix='_gsm2geo'
   assert, spd_data_exists('mms1_mec_r_gsm_gsm2geo', '2015-12-1', '2015-12-2'), $
     'Problem qcotrans''ing to GSM from GEO'
   return, 1
 end
 
 function mms_cotrans_ut::test_cotrans_dmpa2gse
-  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='gse', out_suffix='_gse'
+  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', out_coord='gse', out_suffix='_gse'
   assert, tnames('mms1_fgm_b_dmpa_srvy_l2_bvec_gse') ne '', 'Problem with mms_cotrans (dmpa2gse)'
   return, 1
 end
 
 function mms_cotrans_ut::test_qcotrans_dmpa2gse
-  mms_qcotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='gse', out_suffix='_gse'
+  mms_qcotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', out_coord='gse', out_suffix='_gse'
   assert, tnames('mms1_fgm_b_dmpa_srvy_l2_bvec_gse') ne '', 'Problem with mms_qcotrans (dmpa2gse)'
   return, 1
 end
 
 ; compare the two methods to check for regressions
 function mms_cotrans_ut::test_cotrans_qcotrans_dmpa2gse
-  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='gse', out_suffix='_cotrans_gse'
-  mms_qcotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='gse', out_suffix='_qcotrans_gse'
+  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', out_coord='gse', out_suffix='_cotrans_gse'
+  mms_qcotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', out_coord='gse', out_suffix='_qcotrans_gse'
   calc, '"qdiff"="mms1_fgm_b_dmpa_srvy_l2_bvec_qcotrans_gse"-"mms1_fgm_b_dmpa_srvy_l2_bvec_cotrans_gse"'
   get_data, 'qdiff', data=d
   zero_idxs = where(d.Y le 0.001, zerocount)
@@ -78,8 +78,8 @@ function mms_cotrans_ut::test_cotrans_qcotrans_dmpa2gse
 end
 
 function mms_cotrans_ut::test_cotrans_qcotrans_dmpa2gsm
-  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='gsm', out_suffix='_cotrans_gsm'
-  mms_qcotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='gsm', out_suffix='_qcotrans_gsm'
+  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', out_coord='gsm', out_suffix='_cotrans_gsm'
+  mms_qcotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', out_coord='gsm', out_suffix='_qcotrans_gsm'
   calc, '"qdiff"="mms1_fgm_b_dmpa_srvy_l2_bvec_qcotrans_gsm"-"mms1_fgm_b_dmpa_srvy_l2_bvec_cotrans_gsm"'
   get_data, 'qdiff', data=d
   zero_idxs = where(d.Y le 0.001, zerocount)
@@ -89,8 +89,8 @@ function mms_cotrans_ut::test_cotrans_qcotrans_dmpa2gsm
 end
 
 function mms_cotrans_ut::test_cotrans_qcotrans_dmpa2sm
-  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='sm', out_suffix='_cotrans_sm'
-  mms_qcotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='sm', out_suffix='_qcotrans_sm'
+  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', out_coord='sm', out_suffix='_cotrans_sm'
+  mms_qcotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', out_coord='sm', out_suffix='_qcotrans_sm'
   calc, '"qdiff"="mms1_fgm_b_dmpa_srvy_l2_bvec_qcotrans_sm"-"mms1_fgm_b_dmpa_srvy_l2_bvec_cotrans_sm"'
   get_data, 'qdiff', data=d
   zero_idxs = where(d.Y le 0.001, zerocount)
@@ -101,8 +101,8 @@ function mms_cotrans_ut::test_cotrans_qcotrans_dmpa2sm
 end
 
 function mms_cotrans_ut::test_cotrans_qcotrans_gse2sm
-  mms_cotrans, 'mms1_fgm_b_gse_srvy_l2_bvec', in_coord='gse', out_coord='sm', out_suffix='_cotrans_sm'
-  mms_qcotrans, 'mms1_fgm_b_gse_srvy_l2_bvec', in_coord='gse', out_coord='sm', out_suffix='_qcotrans_sm'
+  mms_cotrans, 'mms1_fgm_b_gse_srvy_l2_bvec', out_coord='sm', out_suffix='_cotrans_sm'
+  mms_qcotrans, 'mms1_fgm_b_gse_srvy_l2_bvec', out_coord='sm', out_suffix='_qcotrans_sm'
   calc, '"qdiff"="mms1_fgm_b_gse_srvy_l2_bvec_qcotrans_sm"-"mms1_fgm_b_gse_srvy_l2_bvec_cotrans_sm"'
   get_data, 'qdiff', data=d
   zero_idxs = where(d.Y le 0.001, zerocount)

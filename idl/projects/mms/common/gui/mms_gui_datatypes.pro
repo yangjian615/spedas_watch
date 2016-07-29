@@ -8,8 +8,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-28 08:43:21 -0700 (Tue, 28 Jun 2016) $
-; $LastChangedRevision: 21381 $
+; $LastChangedDate: 2016-07-28 14:47:06 -0700 (Thu, 28 Jul 2016) $
+; $LastChangedRevision: 21561 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_datatypes.pro $
 ;-
 
@@ -18,7 +18,7 @@ function mms_gui_datatypes, instrument, rate, level
   ; default to srvy data for most instruments, fast for FPI/EDP/DSP
   if undefined(rate) && ~array_contains(['fpi', 'edp', 'dsp'], instrument) then rate = 'srvy'
   if undefined(rate) && array_contains(['fpi', 'edp', 'dsp'], instrument) then rate = 'fast'
-  if undefined(level) then level = 'l2'
+  if undefined(level) then level = 'l2' else level = strlowcase(level)
 
   valid_datatypes = hash()
   valid_datatypes['fgm-srvy-l2'] = ['']

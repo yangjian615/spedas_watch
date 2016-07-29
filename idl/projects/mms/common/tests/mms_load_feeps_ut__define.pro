@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-26 09:29:13 -0700 (Tue, 26 Jul 2016) $
-; $LastChangedRevision: 21529 $
+; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
+; $LastChangedRevision: 21557 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
 
@@ -157,6 +157,42 @@ function mms_load_feeps_ut::test_load_l1b_pad_ion
   
   assert, spd_data_exists('mms1_epd_feeps_brst_l1b_ion_intensity_omni_spin mms1_epd_feeps_brst_l1b_ion_intensity_omni', '2015-12-15', '2015-12-16'), $
     'Problem loading burst mode FEEPS PAD for L1b data'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_load_suffix_pad
+  del_data, '*'
+  mms_load_feeps, level='l2', suffix='suffix_test'
+  mms_feeps_pad, level='l2', suffix='suffix_test'
+  assert, spd_data_exists('mms1_epd_feeps_srvy_l2_electron_intensity_0-1000keV_padsuffix_test mms1_epd_feeps_srvy_l2_electron_intensity_0-1000keV_pad_spinsuffix_test', '2015-12-15', '2015-12-16'), $
+    'Problem with suffix test in FEEPS PAD'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_load_timeclip
+  del_data, '*'
+  mms_load_feeps, level='l2', trange=['2015-12-15/11:00', '2015-12-15/12:00'], /time_clip
+  assert, spd_data_exists('mms1_epd_feeps_srvy_l2_electron_count_rate_omni_spin', '2015-12-15/11:00', '2015-12-15/12:00'), $
+    'Problem with FEEPS time clipping'
+  assert, ~spd_data_exists('mms1_epd_feeps_srvy_l2_electron_count_rate_omni_spin', '2015-12-15/10:00', '2015-12-15/11:00'), $
+    'Problem with FEEPS time clipping'
+  assert, ~spd_data_exists('mms1_epd_feeps_srvy_l2_electron_count_rate_omni_spin', '2015-12-15/12:00', '2015-12-15/13:00'), $
+    'Problem with FEEPS time clipping'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_smooth_pad
+  mms_load_feeps, num_smooth=30.0, level='l2'
+  mms_feeps_pad, level='l2', num_smooth=30.0
+  assert, spd_data_exists('mms1_epd_feeps_srvy_l2_electron_intensity_0-1000keV_pad_smth', '2015-12-15', '2015-12-16'), 'Problem with creating smooted PAD'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_pad_binsize
+  mms_load_feeps, level='l2'
+  mms_feeps_pad, bin_size=3
+  get_data, 'mms1_epd_feeps_srvy_l2_electron_intensity_0-1000keV_pad_spin', data=d
+  assert, n_elements(d.V) eq 61, 'Problem with bin_size keyword in FEEPS PAD' 
   return, 1
 end
 

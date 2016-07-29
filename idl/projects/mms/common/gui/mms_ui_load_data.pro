@@ -12,8 +12,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-01 11:35:24 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20694 $
+;$LastChangedDate: 2016-07-28 14:47:06 -0700 (Thu, 28 Jul 2016) $
+;$LastChangedRevision: 21561 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -62,14 +62,14 @@ pro mms_ui_load_data_update_science, state, $
   datatypes = mms_gui_datatypes(instrument, rate, level)
 
 ;  mms_load_options, instrument, rate=rate, level=level, datatype=datatype, valid=valid
-  
+
   ;just in case
   if size(datatypes[0], /type) eq 2 then begin
     spd_ui_message, 'WARNING: Invalid input selected, please report to SPEDAS development team', $
                     sb=state.statusbar, hw=state.historywin
     return
   endif
-  
+
   ;update rate/level fields as needed/requested
   if keyword_set(get_rate) || rate_idx eq -1 then begin
     rates = mms_gui_datarates(instrument)
@@ -361,11 +361,15 @@ pro mms_ui_load_data_event,event
           break
         endif
         
+        spdf_download = widget_info(event.handler,find_by_uname='spdfdownload')
+        spdf_set = widget_info(spdf_download, /button_set)
+        
         ;turn on the hour glass while the data is being loaded
         widget_control, /hourglass
         
         ;create a load structure to pass the parameters needed by the load procedure
         loadStruc =  { probes:probes, $
+                       spdf: spdf_set, $
                        instrument:instrument, $
                        level:levels, $
                        rate:rates, $
@@ -544,6 +548,8 @@ pro mms_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   clearButton = widget_button(datatypeBase,value='Clear Type', $
        uname='cleardatatype', ToolTip='Deselect all datatypes')
 
+  spdfButtonBase = widget_base(leftBase,/row,/NONEXCLUSIVE)
+  spdfButton = widget_button(spdfButtonBase, value='Download from SPDF', uname='spdfdownload')
 
   ;create the state variable with all the parameters that are needed by this 
   ;panels event handler routine                                                               

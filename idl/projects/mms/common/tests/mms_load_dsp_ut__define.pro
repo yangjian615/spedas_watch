@@ -158,6 +158,12 @@ function mms_load_dsp_ut::test_load_dsp_cdf_filenames
   return, 1
 end
 
+function mms_load_dsp_ut::test_load_all_datatypes
+  mms_load_dsp, probe=1, datatype='*'
+  assert, spd_data_exists('mms1_dsp_lfe mms1_dsp_mfe mms1_dsp_lfb', '2015-12-15', '2015-12-16'), $
+    'Problem loading DSP data with the datatype keyword specified'
+  return, 1
+end
 
 pro mms_load_dsp_ut::setup
   del_data, '*'
@@ -167,7 +173,7 @@ end
 function mms_load_dsp_ut::init, _extra=e
   if (~self->MGutTestCase::init(_extra=e)) then return, 0
   ; the following adds code coverage % to the output
-  self->addTestingRoutine, ['mms_load_dsp']
+  self->addTestingRoutine, ['mms_load_dsp', 'mms_dsp_fix_metadata']
   return, 1
 end
 

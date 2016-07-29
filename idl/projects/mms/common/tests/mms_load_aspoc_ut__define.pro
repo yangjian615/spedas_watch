@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-22 08:36:38 -0700 (Fri, 22 Apr 2016) $
-; $LastChangedRevision: 20884 $
+; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
+; $LastChangedRevision: 21557 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_aspoc_ut__define.pro $
 ;-
 
@@ -35,6 +35,13 @@ end
 function mms_load_aspoc_ut::test_load_l2
   mms_load_aspoc, level='l2'
   assert, spd_data_exists('mms1_aspoc_ionc_l2 mms1_asp1_ionc_l2 mms1_asp2_ionc_l2 mms1_asp1_energy_l2 mms1_aspoc_status_l2', '2015-12-15', '2015-12-16'), $
+    'Problem loading L2 ASPOC data.'
+  return, 1
+end
+
+function mms_load_aspoc_ut::test_load_suffix
+  mms_load_aspoc, level='l2', probe='3', suffix='_suffix_test'
+  assert, spd_data_exists('mms3_aspoc_ionc_l2_suffix_test mms3_asp1_ionc_l2_suffix_test mms3_asp2_ionc_l2_suffix_test mms3_asp1_energy_l2_suffix_test mms3_aspoc_status_l2_suffix_test', '2015-12-15', '2015-12-16'), $
     'Problem loading L2 ASPOC data.'
   return, 1
 end

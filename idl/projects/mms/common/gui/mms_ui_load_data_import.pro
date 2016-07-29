@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-28 08:28:42 -0700 (Tue, 28 Jun 2016) $
-;$LastChangedRevision: 21380 $
+;$LastChangedDate: 2016-07-28 14:17:18 -0700 (Thu, 28 Jul 2016) $
+;$LastChangedRevision: 21559 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -46,6 +46,7 @@ pro mms_ui_load_data_import,$
   rate=loadStruc.rate
   level=loadStruc.level
   datatype=loadStruc.datatype 
+  spdf = loadStruc.spdf
 
   ; need to update for MMS
   mmsmintime = '2015-03-01'
@@ -56,17 +57,17 @@ pro mms_ui_load_data_import,$
   if instrument eq 'STATE' then begin
      mms_load_state, probes=probes, level=level, datatypes=datatype, trange=timeRange, tplotnames=tplotnames
   endif else if instrument eq 'AFG' or instrument eq 'DFG' or instrument eq 'FGM' then begin
-     mms_load_fgm, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames, /time_clip
+     mms_load_fgm, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'FPI' then begin
-     mms_load_fpi, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_fpi, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'SCM' then begin
-     mms_load_scm, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_scm, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'FEEPS' then begin
-     mms_load_feeps, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_feeps, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'EIS' then begin
-     mms_load_eis, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_eis, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'HPCA' then begin
-     mms_load_hpca, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_hpca, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
      
      ;filter types with too many dimensions so that the user doesn't have to click
      ;through multiple warnings, there must be a better way...
@@ -77,15 +78,15 @@ pro mms_ui_load_data_import,$
      endif
   
   endif else if instrument eq 'EDI' then begin
-     mms_load_edi, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_edi, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'EDP' then begin
-     mms_load_edp, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_edp, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'DSP' then begin
-     mms_load_dsp, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_dsp, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'ASPOC' then begin
-     mms_load_aspoc, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_aspoc, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'MEC' then begin
-     mms_load_mec, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip
+     mms_load_mec, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
 
      ;filter types with too many dimensions so that the user doesn't have to click
      ;through multiple warnings, there must be a better way...
@@ -96,7 +97,7 @@ pro mms_ui_load_data_import,$
         tplotnames =  n_valid gt 0 ? tplotnames[valid_idx] : ''
      endif
   endif else begin
-     mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames, /time_clip
+     mms_load_data, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames, /time_clip, spdf=spdf
   endelse
 
   if ~undefined(tplotnames) then begin

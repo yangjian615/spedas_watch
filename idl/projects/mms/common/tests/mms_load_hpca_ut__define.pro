@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-25 08:13:52 -0700 (Mon, 25 Apr 2016) $
-; $LastChangedRevision: 20907 $
+; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
+; $LastChangedRevision: 21557 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_hpca_ut__define.pro $
 ;-
 
@@ -185,7 +185,7 @@ end
 function mms_load_hpca_ut::init, _extra=e
   if (~self->MGutTestCase::init(_extra=e)) then return, 0
   ; the following adds code coverage % to the output
-  self->addTestingRoutine, ['mms_load_hpca', 'mms_hpca_calc_anodes', 'mms_hpca_set_metadata']
+  self->addTestingRoutine, ['mms_load_hpca', 'mms_hpca_calc_anodes', 'mms_hpca_set_metadata', 'mms_hpca_spin_sum']
   self->addTestingRoutine, ['mms_hpca_sum_fov', 'mms_hpca_avg_fov', 'mms_hpca_anodes', 'mms_hpca_energies', 'mms_hpca_elevations'], /is_function
   return, 1
 end

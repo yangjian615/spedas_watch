@@ -46,6 +46,11 @@ function mms_load_state_ut::test_load_att_only
   return, 1
 end
 
+function mms_load_state_ut::test_multi_probe_star
+  mms_load_state, probes='*'
+  assert, spd_data_exists('mms1_defeph_pos mms2_defeph_vel mms3_defatt_spinras mms4_defatt_spindec', '2015-12-15', '2015-12-16'), 'Problem loading state data for multiple spacecraft'
+  return, 1
+end
 function mms_load_state_ut::test_multi_probe
   mms_load_state, probes=[1, 2, 3, 4], level='def'
   assert, spd_data_exists('mms1_defeph_pos mms2_defeph_vel mms3_defatt_spinras mms4_defatt_spindec', '2015-12-15', '2015-12-16'), 'Problem loading state data for multiple spacecraft'

@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-03 14:42:43 -0700 (Tue, 03 May 2016) $
-; $LastChangedRevision: 21013 $
+; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
+; $LastChangedRevision: 21557 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_mec_ut__define.pro $
 ;-
 
@@ -66,6 +66,13 @@ function mms_load_mec_ut::test_load_eci_coord_sys
   assert, cotrans_get_coord('mms3_mec_v_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI velocity data'
   assert, cotrans_get_coord('mms2_mec_r_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI position data'
   assert, cotrans_get_coord('mms2_mec_v_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI velocity data'
+  return, 1
+end
+
+function mms_load_mec_ut::test_load_datatype
+  mms_load_mec, datatype='ephts04d', probe=2
+  assert, spd_data_exists('mms2_mec_r_sm mms2_mec_r_gsm', '2016-2-10', '2016-2-11'), $
+    'Problem loading MEC data with datatype keyword specified'
   return, 1
 end
 

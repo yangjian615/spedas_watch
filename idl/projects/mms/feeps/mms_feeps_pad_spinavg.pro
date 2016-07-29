@@ -20,8 +20,8 @@
 ; NOTES:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-26 09:16:24 -0700 (Tue, 26 Jul 2016) $
-;$LastChangedRevision: 21526 $
+;$LastChangedDate: 2016-07-28 12:45:02 -0700 (Thu, 28 Jul 2016) $
+;$LastChangedRevision: 21556 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -78,7 +78,7 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
     current_start = spin_starts[spin_idx]+1
   endfor
 
-  suffix_in = suffix_in + '_spin'
+  suffix_in = '_spin' + suffix_in
   ;newname = prefix+en_range_string+'_pad'+suffix_in
   newname = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+data_units+'_'+ en_range_string +'_pad'+suffix_in, /rem)
 

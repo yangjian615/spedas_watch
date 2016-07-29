@@ -110,6 +110,20 @@ function mms_load_scm_ut::test_load_spdf
   return, 1
 end
 
+function mms_load_scm_ut::test_load_burst_spdf
+  mms_load_scm, probe='2', /spdf, data_rate='brst', trange=['2015-12-15/11:00', '2015-12-15/12:00']
+  assert, spd_data_exists('mms2_scm_acb_gse_scb_brst_l2 mms2_scm_acb_gse_schb_brst_l2', '2015-12-15/11:00', '2015-12-15/12:00'), $
+    'Problem loading burst mode SCM data from SPDF'
+  return, 1
+end
+
+function mms_load_scm_ut::test_load_burst_spdf_schb_dtype
+  mms_load_scm, probe='2', /spdf, data_rate='brst', trange=['2015-12-15/11:00', '2015-12-15/12:00'], datatype='schb'
+  assert, spd_data_exists('mms2_scm_acb_gse_schb_brst_l2', '2015-12-15/11:00', '2015-12-15/12:00'), $
+    'Problem loading burst mode (schb) SCM data from SPDF'
+  return, 1
+end
+
 function mms_load_scm_ut::test_load_get_support_data
   mms_load_scm, probe=1, /get_support_data
   assert, spd_data_exists('mms1_scm_acb_gse_scsrvy_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading scm data with get_support_data keyword set'

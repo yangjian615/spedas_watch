@@ -59,7 +59,7 @@
 ;     See crib sheet mms_load_feeps_crib.pro for usage examples
 ;     
 ; NOTES:
-;     Due to a change in variable names, this routine currently only supports v5.4+ of the FEEPS CDFs
+;     Due to a change in variable names, this routine currently only supports v5.5+ of the FEEPS CDFs
 ;   
 ;     Have questions regarding this load routine, or its usage?
 ;          https://groups.google.com/forum/#!forum/spedas
@@ -77,8 +77,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-26 09:52:50 -0700 (Tue, 26 Jul 2016) $
-;$LastChangedRevision: 21530 $
+;$LastChangedDate: 2016-07-28 09:45:55 -0700 (Thu, 28 Jul 2016) $
+;$LastChangedRevision: 21554 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -95,7 +95,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if undefined(level) then level_in = 'l2' else level_in = level
     if undefined(probes) then probes_in = ['1'] else probes_in = probes
     if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
-    if undefined(data_units) then data_units = 'flux'
+    if undefined(data_units) then data_units = ['count_rate', 'intensity']
     if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
     if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '5.5.0'
     if undefined(get_support_data) then get_support_data = 1 ; support data needed for sun removal and spin averaging
@@ -123,25 +123,27 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
       for datatype_idx = 0, n_elements(datatype_in)-1 do begin
         this_datatype = datatype_in[datatype_idx]
         ; split the extra integral channel from all of the spectrograms
-        mms_feeps_split_integral_ch, ['count_rate', 'intensity'], this_datatype, this_probe, $
+        mms_feeps_split_integral_ch, data_units, this_datatype, this_probe, $
           suffix = suffix, data_rate = data_rate_in, level = level_in
-          
-        ; remove the sunlight contamination
-        mms_feeps_remove_sun, probe = this_probe, datatype = this_datatype, level = level_in, $
-            data_rate = data_rate_in, suffix = suffix, data_units = ['count_rate', 'intensity'], $
-            tplotnames = tplotnames
-  
-        ; calculate the omni-directional spectra
-        mms_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units, $
-            data_rate = data_rate_in, suffix=suffix, level = level_in
-  
-        ; calculate the spin averages
-        mms_feeps_spin_avg, probe=this_probe, datatype=this_datatype, suffix = suffix, data_units = data_units, $
-            tplotnames = tplotnames, data_rate = data_rate_in, level = level_in
         
-        ; calculate the smoothed products
-        if ~undefined(num_smooth) then mms_feeps_smooth, probe=this_probe, datatype=this_datatype, $
-          suffix=suffix, data_units=data_units, data_rate=data_rate_in, level=level_in, num_smooth=num_smooth
+        for data_units_idx = 0, n_elements(data_units)-1 do begin
+          ; remove the sunlight contamination
+          mms_feeps_remove_sun, probe = this_probe, datatype = this_datatype, level = level_in, $
+              data_rate = data_rate_in, suffix = suffix, data_units = data_units[data_units_idx], $
+              tplotnames = tplotnames
+    
+          ; calculate the omni-directional spectra
+          mms_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units[data_units_idx], $
+              data_rate = data_rate_in, suffix=suffix, level = level_in
+    
+          ; calculate the spin averages
+          mms_feeps_spin_avg, probe=this_probe, datatype=this_datatype, suffix = suffix, data_units = data_units[data_units_idx], $
+              tplotnames = tplotnames, data_rate = data_rate_in, level = level_in
+          
+          ; calculate the smoothed products
+          if ~undefined(num_smooth) then mms_feeps_smooth, probe=this_probe, datatype=this_datatype, $
+            suffix=suffix, data_units=data_units[data_units_idx], data_rate=data_rate_in, level=level_in, num_smooth=num_smooth
+        endfor
       endfor
     endfor
     
