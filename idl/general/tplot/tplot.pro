@@ -90,9 +90,9 @@
 ;Still have questions:
 ;   Send e-mail to:  tplot@ssl.berkeley.edu    someone might answer!
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2016-02-03 17:03:41 -0800 (Wed, 03 Feb 2016) $
-; $LastChangedRevision: 19898 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2016-07-29 07:40:46 -0700 (Fri, 29 Jul 2016) $
+; $LastChangedRevision: 21564 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot.pro $
 ;-
 
@@ -344,7 +344,7 @@ for i=0,nd-1 do begin
    get_data,name,alimits=limits,ptr=pdata,data=data,index=index,dtype=dtype
 
    if not keyword_set(pdata) and dtype ne 3 then  dprint,verbose=verbose,'Undefined or empty variable data: ',name $
-   else dprint,verbose=verbose,dlevel=1,index,name,format='(i3," ",a)'
+   else dprint,verbose=verbose,dlevel=1,index,name,format='(i4," ",a)'
    if keyword_set(pdata) then  nd2 = n_elements(pdata) else nd2 = 1
    if dtype eq 3 then begin
     datastr = data

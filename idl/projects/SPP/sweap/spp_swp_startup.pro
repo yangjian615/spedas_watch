@@ -3,6 +3,8 @@ pro spp_swp_startup, spanai   = spanai,$
                      spanae   = spanae,$
                      spanb    = spanb,$
                      swem = swem, $
+                     itf = itf, $
+                     rm133 = rm133, $
                      optional = optional
 
 
@@ -51,9 +53,10 @@ pro spp_swp_startup, spanai   = spanai,$
   spp_apid_data,'344'x,routine='spp_generic_decom',tname='spp_swem_events_',   tfields='none',save=save,rt_tags='none',rt_flag=1
   spp_apid_data,'346'x,routine='spp_swp_swem_timing_decom',tname='spp_swem_timing_',   tfields='*',save=save,rt_tags='*',rt_flag=1
 
-  spp_apid_data,'347'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_pr1',   tfields='*',save=save,rt_tags='*',rt_flag=1
+  spp_apid_data,'347'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_347_',   tfields='*',save=save,rt_tags='*',rt_flag=1
 
-  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_pr9',   tfields='*',save=save,rt_tags='*',rt_flag=1
+  spp_apid_data,'34e'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_34E_',   tfields='*',save=save,rt_tags='*',rt_flag=1
+  spp_apid_data,'34f'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_34F_',   tfields='*',save=save,rt_tags='*',rt_flag=1
 
 
   ;;############################################
@@ -62,6 +65,7 @@ pro spp_swp_startup, spanai   = spanai,$
 
   SPC = 1
   IF SPC THEN  BEGIN
+    spp_apid_data,'352'x,routine='spp_swp_spc_decom',    tname='spp_spc_352_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
     spp_apid_data,'353'x,routine='spp_swp_spc_decom',    tname='spp_spc_353_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
     spp_apid_data,'35E'x,routine='spp_swp_spc_decom',    tname='spp_spc_35E_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
     spp_apid_data,'35F'x,routine='spp_swp_spc_decom',    tname='spp_spc_hkp_',tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
@@ -282,7 +286,7 @@ pro spp_swp_startup, spanai   = spanai,$
   ;;############################################
   spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',       tfields='*',     save=save,rt_tags='*_?',   rt_flag=1
   spp_apid_data,'7c0'x,routine='spp_log_msg_decom',     tname='log_',      tfields='MSG',   save=save,rt_tags='MSG',   rt_flag=1
-  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='SWEAP SPAN-I Manip',rt_tags='M???POS',save=1,/rt_flag
+  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='SWEAP SPAN-I Manip',rt_tags='M???POS',save=save,rt_flag=rt_flag
 
 
   ;;############################################
@@ -302,7 +306,7 @@ pro spp_swp_startup, spanai   = spanai,$
   
   ;;------------------------------
   ;; Connect to GSEOS
-  spp_init_realtime,swem=swem
+  spp_init_realtime,swem=swem,itf=itf,rm133=rm133
   
   store_data,'APID',data='APIDS_*'
   ylim,'APID',820,960

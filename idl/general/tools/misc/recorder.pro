@@ -8,8 +8,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-05-25 15:41:41 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21211 $
+; $LastChangedDate: 2016-07-29 07:41:31 -0700 (Fri, 29 Jul 2016) $
+; $LastChangedRevision: 21565 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -84,6 +84,7 @@ PRO recorder_event, ev   ; recorder
         server_n_port = server_name+':'+server_port
         case status of
         'Connect to': begin
+            *info.buffer_ptr = !null                                  ; Get rid of previous buffer contents cache
             WIDGET_CONTROL, wids.host_button, set_value = 'Connecting',sensitive=0
             WIDGET_CONTROL, wids.host_text, sensitive=0
             WIDGET_CONTROL, wids.host_port, sensitive=0
@@ -271,11 +272,11 @@ if ~(keyword_set(base) && widget_info(base,/managed) ) then begin
         filename:'', $
         dfp:0 , $
         maxsize:2L^20, $
-        buffer_ptr: ptr_new(),   $
+        buffer_ptr: ptr_new(!null),   $
 ;        pollinterval:1., $
         verbose:2, $
         dlevel: 2, $
-        exec_proc_ptr: ptr_new(null), $        
+        exec_proc_ptr: ptr_new(!null), $        
         run_proc:keyword_set(set_procbutton) }
         
 ;    info.buffer_ptr = ptr_new( bytarr( info.maxsize ) )

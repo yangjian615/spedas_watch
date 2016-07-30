@@ -25,13 +25,6 @@ function spp_swp_int4_decom,buffer,n
    return,   swap_endian(/swap_if_little_endian,  long(buffer,n) )
 end
 
-function spp_swp_float_decom,buffer,n
-   if n gt n_elements(buffer)-4 then begin
-    dprint,'Outside buffer size ',n
-    return, -99.
-   endif
-   return,   swap_endian(/swap_if_little_endian,  float(buffer,n) )
-end
 
 
 

@@ -38,7 +38,7 @@ common ctime_common, ptr        ;this should NOT appear in ctime, it is local
       endcase     ;ie:  ctime bahaves as if exact eq 0
       3:  begin
         get_data,var,data=var_str
-        if ndimen(var_str) eq 0 then var_str = str_sep(strcompress(var_str),' ')
+        if ndimen(var_str) eq 0 then var_str = tnames(var_str) ; str_sep(strcompress(var_str),' ')
         nd2 = n_elements(var_str)
         ptr = {n:nd2}
         for i=0,nd2-1 do begin

@@ -15,7 +15,9 @@ end
 function spp_swp_swem_timing_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
 common spp_swp_swem_timing_decom_com2,  last_str,  fields_dt
-data = ccsds.data
+
+if typename(ccsds) eq 'CCSDS_FORMAT' then data = *ccsds.pdata  else data=ccsds.data
+;data = ccsds.data
 
 if ccsds.pkt_size lt 72 then begin
   dprint,'error',ccsds.pkt_size
@@ -82,7 +84,7 @@ endif
 
 
 
-dseq = ccsds.dseq_cntr
+dseq = ccsds.seqn_delta
 k = 2ul^25
 
 clks_per_pps_delta =     ( clks_per_pps - last_str.clks_per_pps  ) and (k-1)
@@ -96,10 +98,10 @@ endif
 
  
 str = {time:   ccsds.time  ,$
-       dtime:  ccsds.dtime / ccsds.dseq_cntr   ,$
+       time_delta:  ccsds.time_delta / ccsds.seqn_delta   ,$
        ptp_delay_time:  ptp_header.ptp_time - ccsds.time, $
-       seq_cntr : ccsds.seq_cntr, $
-       dseq_cntr:  ccsds.dseq_cntr < 15u , $
+       seqn : ccsds.seqn, $
+       seqn_delta:  ccsds.seqn_delta < 15u , $
        sample_clk_per: sample_clk_per  , $
      scpps_met_time:    scpps_met_time ,$
      scpps_met_time_delta:  scpps_met_time - last_str.scpps_met_time, $
@@ -121,16 +123,16 @@ str = {time:   ccsds.time  ,$
      fields_MET:       fields_met ,$
      sc_time :         sc_time, $
      sample_clk_per_delta:      sample_clk_per_delta  , $
-     fields_f123_delta:    (fields_F123 - last_str.fields_F123) / ccsds.dseq_cntr , $
-     fields_met_delta:     (fields_met - last_str.fields_met) / ccsds.dseq_cntr , $
+     fields_f123_delta:    (fields_F123 - last_str.fields_F123) / ccsds.seqn_delta , $
+     fields_met_delta:     (fields_met - last_str.fields_met) / ccsds.seqn_delta , $
      sample_met_delta:     (sample_met - last_str.sample_met) / sample_clk_per_delta , $
-     sc_time_delta:        (sc_time - last_str.sc_time) / ccsds.dseq_cntr , $
+     sc_time_delta:        (sc_time - last_str.sc_time) / ccsds.seqn_delta , $
      sample_MET_diff:       sample_MET - ttt, $
      fields_F123_diff:      fields_f123 -ttt ,$
      fields_MET_diff:       fields_met  -ttt ,$
      sc_time_diff :         sc_time    - ttt, $
      drift:     time_drift, $
-     drift_delta:  (time_drift -last_str.drift) / ccsds.dseq_cntr , $
+     drift_delta:  (time_drift -last_str.drift) / ccsds.seqn_delta , $
      clks_per_pps:  clks_per_pps, $
      clks_per_pps_delta:  long(clks_per_pps_delta - 19200000L), $
      scsubsecsatpps:scsubsecsatpps,$

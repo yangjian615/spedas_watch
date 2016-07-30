@@ -21,14 +21,14 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
   bsize= n_elements(buffer)
   time = info.time_received
   
-  if n_elements( *info.exec_proc_ptr ) ne 0 then begin   ; Handle remainder of buffer from previous call
-    remainder =  *info.exec_proc_ptr
-    if debug(3) then begin
+  if n_elements( *info.buffer_ptr ) ne 0 then begin   ; Handle remainder of buffer from previous call
+    remainder =  *info.buffer_ptr
+    if debug(2) then begin
       dprint,dlevel=2,'Using remainder buffer from previous call'
       dprint,dlevel=2,/phelp, remainder
       hexprint,remainder[0:31]
     endif
-    undefine , *info.exec_proc_ptr
+    undefine , *info.buffer_ptr
     if bsize gt 0 then  spp_msg_stream_read, [remainder,buffer],info=info
     return
   endif
@@ -67,13 +67,13 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
 
 
     if ptr+6+psize gt bsize then begin
-      dprint,dlevel=3,'Buffer has incomplete packet. Saving ',n_elements(buffer)-ptr,' bytes for next call.'
-      *info.exec_proc_ptr = buffer[ptr:*]                   ; store remainder of buffer to be used on the next call to this procedure
+      dprint,dlevel=2,'Buffer has incomplete packet. Saving ',n_elements(buffer)-ptr,' bytes for next call.'
+      *info.buffer_ptr = buffer[ptr:*]                   ; store remainder of buffer to be used on the next call to this procedure
       return
       break
     endif
 
-    if debug(3) then begin
+    if debug(4) then begin
       dprint,format='(i,i,z,z,i)',ptr,bsize,sync,code,psize,dlevel=3
 ;      hexprint,buffer[ptr+6:ptr+6+psize-1] ;,nbytes=32
       hexprint,buffer[ptr:ptr+6+psize-1] ;,nbytes=32

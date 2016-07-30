@@ -5,7 +5,8 @@ function spp_swp_spani_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat,pl
   ;;-----------------------------------------
   ;; 1. 16 CCSDS header bytes (should be 10?)
   ;; 2. 512 ADC values, each 2 bytes
-  b = ccsds.data
+  ccsds_data = spp_swp_ccsds_data(ccsds)
+  b = ccsds_data
   nb = n_elements(b)
   if nb ne (512*2+16) then begin
     dprint,dlevel=1,"Incorrect packet size"
@@ -45,7 +46,7 @@ function spp_swp_spani_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat,pl
         time:       time, $
         met:        ccsds.met,  $
         delay_time: ptp_header.ptp_time - ccsds.time, $
-        seq_cntr:   ccsds.seq_cntr, $
+        seqn:   ccsds.seqn, $
 
         ;; 16 bits x offset 16 bytes x 512 values
         ADC:        data $

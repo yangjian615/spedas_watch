@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 15:17:57 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21562 $
+; $LastChangedDate: 2016-07-29 08:12:44 -0700 (Fri, 29 Jul 2016) $
+; $LastChangedRevision: 21569 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_cotrans_ut__define.pro $
 ;-
 
@@ -124,7 +124,7 @@ end
 function mms_cotrans_ut::init, _extra=e
   if (~self->MGutTestCase::init(_extra=e)) then return, 0
   ; the following adds code coverage % to the output
-  self->addTestingRoutine, ['mms_cotrans', 'mms_qcotrans']
+  self->addTestingRoutine, ['mms_cotrans', 'mms_qcotrans', 'mms_cotrans_qtransformer', 'mms_cotrans_qrotate']
   return, 1
 end
 

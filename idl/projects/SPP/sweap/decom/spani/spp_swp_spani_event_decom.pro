@@ -1,16 +1,18 @@
 function spp_swp_spani_event_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
-  b = ccsds.data
+  ccsds_data = spp_swp_ccsds_data(ccsds)
+
+  b = ccsds_data
   psize = 2048
   if n_elements(b) ne psize then begin
-     dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
+     dprint,dlevel=1, 'Size error ',ccsds.pkt_size,ccsds.apid
      return,0
   endif
   
   time = ccsds.time
   ;dprint,time_string(time)
 
-  wrds = swap_endian(ulong(ccsds.data,20,(2048-20)/4) ,/swap_if_little_endian )
+  wrds = swap_endian(ulong(ccsds_data,20,(2048-20)/4) ,/swap_if_little_endian )
   tf = (wrds and '80000000'x) ne 0
   w_tt = where(tf,n_tt)
   w_dt= where(~tf,n_dt)

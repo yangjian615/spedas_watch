@@ -135,22 +135,25 @@ function spp_swp_spane_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
   ;;-------------------------------------------
   ;; Parse data
   
-  pksize = ccsds.size+7
+  pksize = ccsds.pkt_size
   if pksize le 20 then begin
     dprint,dlevel = 2, 'size error - no data'
     return, 0
   endif
   
-  if pksize ne n_elements(ccsds.data) then begin
-    dprint,dlevel=1,'Product size mismatch', n_elements(ccsds.data)
+  ccsds_data = spp_swp_ccsds_data(ccsds)  
+;  dprint,'hello
+  
+  if pksize ne n_elements(ccsds_data) then begin
+    dprint,dlevel=1,'Product size mismatch', n_elements(ccsds_data)
     return,0
   endif
 
-  header    = ccsds.data[0:19]
+  header    = ccsds_data[0:19]
   ns = pksize - 20   
   log_flag    = header[12]
   mode1 = header[13]
-  mode2 = (swap_endian(uint(ccsds.data,14,1) ,/swap_if_little_endian ))[0]
+  mode2 = (swap_endian(uint(ccsds_data,14,1) ,/swap_if_little_endian ))[0]
   f0 = (swap_endian(ulong(header,16,1), /swap_if_little_endian))[0]
   status_flag = header[18]
   peak_bin = header[19]
@@ -163,7 +166,7 @@ function spp_swp_spane_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
   ndat = ns / bps
 
   if ns gt 0 then begin
-    data      = ccsds.data[20:*]
+    data      = ccsds_data[20:*]
     ; data_size = n_elements(data)
     if compression then    cnts = spp_swp_log_decomp(data,0) $
     else    cnts = swap_endian(ulong(data,0,ndat) ,/swap_if_little_endian )
@@ -177,7 +180,7 @@ function spp_swp_spane_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
     time:        ccsds.time, $
     apid:        ccsds.apid, $
     delta_time:  float(delta_t), $
-    seq_cntr:    ccsds.seq_cntr,  $
+    seqn:        ccsds.seqn,  $
     seq_group:   ccsds.seq_group,  $
     ndat:        ndat, $
     datasize:    ns, $

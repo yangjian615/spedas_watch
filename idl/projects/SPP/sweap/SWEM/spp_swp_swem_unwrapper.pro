@@ -1,6 +1,6 @@
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-05-21 09:27:13 -0700 (Sat, 21 May 2016) $
-; $LastChangedRevision: 21162 $
+; $LastChangedDate: 2016-07-29 07:51:41 -0700 (Fri, 29 Jul 2016) $
+; $LastChangedRevision: 21568 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/SWEM/spp_swp_swem_unwrapper.pro $
 
 function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
@@ -8,17 +8,27 @@ function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
 ;  str = create_struct(ptp_header,ccsds)
   str = {time:ccsds.time, $
          apid:ccsds.apid, $
-         size:ccsds.size+7 -20, $
+         seqn:ccsds.seqn, $
+         seq_group:ccsds.seq_group, $
+         pkt_size:ccsds.pkt_size, $
          gap:0 }
 
-  n = n_elements(ccsds.data)
-  if debug(4) then begin
-    if ccsds.data[13] ne '00'x then   dprint,dlevel=2,'swem',ccsds.size+7, n_elements(ccsds.data), ccsds.apid
-    hexprint,ccsds.data[0: (n-1) < 31]
+  ccsds_data = spp_swp_ccsds_data(ccsds)
+
+  if debug(5) then begin
+    if ccsds_data[13] ne '00'x then   dprint,dlevel=1,'swem',ccsds.pkt_size, ccsds.apid
+    hexprint,ccsds_data,nbytes=32
   endif
-  if 1 then begin
-    sub = ccsds.data[12:*]
-    spp_ccsds_pkt_handler,sub,ptp_header=ptp_header
+  
+
+  if ccsds.seq_group eq 3 && keyword_set(ccsds_data) then begin   ; Loner packets
+    spp_ccsds_pkt_handler,ccsds_data[12:*],remainder=remainder,ptp_header=ptp_header
+    if keyword_set(remainder) then dprint,'error'
+  endif
+  
+  if ccsds.seq_group eq 5 then begin
+    hexprint,ccsds_data,nbytes=32
+    printdat,apdat
   endif
   
   return,str

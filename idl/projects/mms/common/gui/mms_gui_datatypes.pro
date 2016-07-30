@@ -8,8 +8,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 14:47:06 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21561 $
+; $LastChangedDate: 2016-07-29 09:01:51 -0700 (Fri, 29 Jul 2016) $
+; $LastChangedRevision: 21571 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_datatypes.pro $
 ;-
 
@@ -42,6 +42,7 @@ function mms_gui_datatypes, instrument, rate, level
   valid_datatypes['edp-brst-l2'] = ['dce', 'hmfe', 'scpot']
   valid_datatypes['edp-fast-l2'] = ['dce', 'scpot']
   valid_datatypes['edp-slow-l2'] = ['dce', 'scpot']
+  valid_datatypes['edp-srvy-l2'] = ['hfesp']
   valid_datatypes['dsp-fast-l2'] = ['bpsd', 'epsd', 'swd']
   valid_datatypes['dsp-slow-l2'] = ['bpsd', 'epsd']
   valid_datatypes['aspoc-srvy-l2'] = ['aspoc']

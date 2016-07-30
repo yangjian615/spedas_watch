@@ -1,6 +1,6 @@
 
 
-pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=itf
+pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=itf,RM133=RM133
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
@@ -13,6 +13,10 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
   endif
   if keyword_set(swemgse) then begin
     recorder,title='SWEMGSE', port= hub ? 8081 : 2024, host='abiad-sw.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read' ;,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+    return
+  endif
+  if keyword_set(rm133) then begin
+    recorder,title='ROOM 133', port= hub ? 2028 : 2024, host='128.32.13.37', exec_proc='spp_ptp_stream_read'
     return
   endif
   host = 'localhost'

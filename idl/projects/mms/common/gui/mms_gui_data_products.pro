@@ -12,8 +12,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-28 08:28:42 -0700 (Tue, 28 Jun 2016) $
-; $LastChangedRevision: 21380 $
+; $LastChangedDate: 2016-07-29 09:01:51 -0700 (Fri, 29 Jul 2016) $
+; $LastChangedRevision: 21571 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_data_products.pro $
 ;-
 
@@ -250,61 +250,111 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_temppara_brst', $
                                     '_dis_tempperp_brst']
                                     
-    valid_products['feeps-srvy-l2'] = ['_epd_feeps_electron_intensity_omni', $
-                                      '_epd_feeps_electron_intensity_omni_spin', $
-                                      '_epd_feeps_ion_intensity_omni', $
-                                      '_epd_feeps_ion_intensity_omni_spin', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_1_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_2_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_3_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_4_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_5_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_9_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_10_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_11_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_count_rate_sensorid_12_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_1_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_2_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_3_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_4_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_5_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_9_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_10_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_11_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_count_rate_sensorid_12_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_1_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_2_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_3_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_4_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_5_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_9_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_10_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_11_clean_sun_removed', $
-                                      '_epd_feeps_top_electron_intensity_sensorid_12_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_1_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_2_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_3_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_4_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_5_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_9_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_10_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_11_clean_sun_removed', $
-                                      '_epd_feeps_bottom_electron_intensity_sensorid_12_clean_sun_removed', $
-                                      '_epd_feeps_top_ion_count_rate_sensorid_6_clean_sun_removed', $
-                                      '_epd_feeps_top_ion_count_rate_sensorid_7_clean_sun_removed', $
-                                      '_epd_feeps_top_ion_count_rate_sensorid_8_clean_sun_removed', $
-                                      '_epd_feeps_bottom_ion_count_rate_sensorid_6_clean_sun_removed', $
-                                      '_epd_feeps_bottom_ion_count_rate_sensorid_7_clean_sun_removed', $
-                                      '_epd_feeps_bottom_ion_count_rate_sensorid_8_clean_sun_removed', $
-                                      '_epd_feeps_top_ion_intensity_sensorid_6_clean_sun_removed', $
-                                      '_epd_feeps_top_ion_intensity_sensorid_7_clean_sun_removed', $
-                                      '_epd_feeps_top_ion_intensity_sensorid_8_clean_sun_removed', $
-                                      '_epd_feeps_bottom_ion_intensity_sensorid_6_clean_sun_removed', $
-                                      '_epd_feeps_bottom_ion_intensity_sensorid_7_clean_sun_removed', $
-                                      '_epd_feeps_bottom_ion_intensity_sensorid_8_clean_sun_removed']
+    valid_products['feeps-srvy-l2'] = ['_epd_feeps_srvy_l2_electron_intensity_omni', $
+                                      '_epd_feeps_srvy_l2_electron_intensity_omni_spin', $
+                                      '_epd_feeps_srvy_l2_ion_intensity_omni', $
+                                      '_epd_feeps_srvy_l2_ion_intensity_omni_spin', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_1_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_2_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_3_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_4_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_5_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_9_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_10_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_11_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_12_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_1_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_2_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_3_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_4_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_5_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_9_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_10_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_11_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_12_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_1_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_2_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_3_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_4_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_5_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_9_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_10_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_11_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_top_intensity_sensorid_12_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_1_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_2_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_3_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_4_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_5_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_9_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_10_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_11_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_12_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_top_count_rate_sensorid_6_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_top_count_rate_sensorid_7_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_top_count_rate_sensorid_8_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_bottom_count_rate_sensorid_6_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_bottom_count_rate_sensorid_7_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_bottom_count_rate_sensorid_8_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_top_intensity_sensorid_6_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_top_intensity_sensorid_7_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_top_intensity_sensorid_8_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_bottom_intensity_sensorid_6_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_bottom_intensity_sensorid_7_clean_sun_removed', $
+                                      '_epd_feeps_srvy_l2_ion_bottom_intensity_sensorid_8_clean_sun_removed']
     
-    ; assuming L2 FEEPS srvy == L2 FEEPS brst
-    valid_products['feeps-brst-l2'] = valid_products['feeps-srvy-l2']
+    valid_products['feeps-brst-l2'] = ['_epd_feeps_brst_l2_electron_intensity_omni', $
+                                      '_epd_feeps_brst_l2_electron_intensity_omni_spin', $
+                                      '_epd_feeps_brst_l2_ion_intensity_omni', $
+                                      '_epd_feeps_brst_l2_ion_intensity_omni_spin', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_1_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_2_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_3_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_4_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_5_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_9_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_10_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_11_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_count_rate_sensorid_12_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_1_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_2_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_3_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_4_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_5_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_9_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_10_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_11_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_count_rate_sensorid_12_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_1_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_2_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_3_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_4_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_5_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_9_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_10_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_11_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_top_intensity_sensorid_12_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_1_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_2_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_3_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_4_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_5_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_9_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_10_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_11_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_12_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_top_count_rate_sensorid_6_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_top_count_rate_sensorid_7_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_top_count_rate_sensorid_8_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_bottom_count_rate_sensorid_6_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_bottom_count_rate_sensorid_7_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_bottom_count_rate_sensorid_8_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_top_intensity_sensorid_6_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_top_intensity_sensorid_7_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_top_intensity_sensorid_8_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_bottom_intensity_sensorid_6_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_bottom_intensity_sensorid_7_clean_sun_removed', $
+                                      '_epd_feeps_brst_l2_ion_bottom_intensity_sensorid_8_clean_sun_removed']
     
     valid_products['scm-srvy-l2'] = ['_scm_acb_gse_scsrvy_srvy_l2']
     
@@ -332,6 +382,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_edp_hfesp_slow_l2']
     valid_products['edp-brst-l2'] = ['_edp_dce_gse_brst_l2', '_edp_dce_dsl_brst_l2', '_edp_scpot_brst_l2', $
                                     '_edp_hmfe_dsl_brst_l2']
+    valid_products['edp-srvy-l2'] = ['_edp_hfesp_srvy_l2']
 
     valid_products['dsp-fast-l2'] = ['_dsp_epsd_x', '_dsp_epsd_y', '_dsp_epsd_z', $
                                     '_dsp_epsd_omni', '_dsp_bpsd_scm1_fast_l2', $

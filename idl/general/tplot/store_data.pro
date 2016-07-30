@@ -36,9 +36,9 @@
 ;SEE ALSO:    "GET_DATA", "TPLOT_NAMES",  "TPLOT", "OPTIONS"
 ;
 ;CREATED BY:    Davin Larson
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-05-17 14:51:47 -0700 (Tue, 17 May 2016) $
-; $LastChangedRevision: 21100 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2016-07-29 07:46:51 -0700 (Fri, 29 Jul 2016) $
+; $LastChangedRevision: 21567 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/store_data.pro $
 ;-
 pro store_data,name, time,ydata,values, $
@@ -52,7 +52,7 @@ pro store_data,name, time,ydata,values, $
    min=min, max=max, $
    delete = delete, $
    clear = clear, $
-   verbose = verbose, $
+   verbose = verbose_t, $
    nostrsw = nostrsw,$
    except_ptrs = except_ptrs, $
    error=error
@@ -69,9 +69,9 @@ error = 0
 ;   if keyword_set(values) then data = create_struct(data,'v',values)
 ;endif
 
-if size(verbose,/type) eq 0 then begin
+if size(verbose_t,/type) eq 0 then begin
     str_element,tplot_vars,'options.verbose',verbose ; get default verbose value if it exists
-endif
+endif else verbose = verbose_t
 
 if size(/type,tagnames) eq 7 then begin
   if size(/type,data) ne 8 then begin
@@ -202,8 +202,13 @@ if n_params() ge 3 then begin
             append_array,*(*dq.dh).y, fill_nan(ydata), index=(*dq.dh).y_ind ,new_index=ind ,/fillnan   &   (*dq.dh).y_ind = ind
 ;    dprint,dlevel=2,'Data gap in ',dq.name,ind
         endif
-        append_array,*(*dq.dh).x, time , index=(*dq.dh).x_ind ,new_index=ind ,/fillnan   &   (*dq.dh).x_ind = ind
-        append_array,*(*dq.dh).y, ydata, index=(*dq.dh).y_ind ,new_index=ind ,/fillnan   &   (*dq.dh).y_ind = ind
+        append_array,*(*dq.dh).x, time , index=(*dq.dh).x_ind ,new_index=ind ,/fillnan 
+        (*dq.dh).x_ind = ind
+        append_array,*(*dq.dh).y, ydata, index=(*dq.dh).y_ind ,new_index=ind ,/fillnan ,error = error
+        if keyword_set(error) && debug(4) then begin
+            printdat,dq
+        endif
+        (*dq.dh).y_ind = ind
 ;    dprint,dlevel=3,'Normal in ',dq.name,ind
 ;        if keyword_set(values) then append_array,*dqdh.v,values,index = *dqdy.v_ind,/fill_nan
 ;        dprint,dlevel=4,verbose=verbose,'Appending to ',name

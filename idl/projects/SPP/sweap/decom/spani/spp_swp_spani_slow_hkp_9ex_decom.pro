@@ -253,7 +253,7 @@ endif
          RATES_CYCLES:    ishft(b[117],-5), $
          MRAM_ADDR:       spp_swp_word_decom(b,117), $ ;;;!!!!! CHANGE TO LSB 21 bits !!!!!
          DACS  :         DAC_VALS,  $
-         DACS2  :         ADC_VALS2,  $
+;         DACS2  :         ADC_VALS2,  $
          ADCS   :         ADC_VALS2,  $
 ;         DAC_MCP:         DAC_MCP, $
 ;         DAC_ACC:         DAC_ACC, $

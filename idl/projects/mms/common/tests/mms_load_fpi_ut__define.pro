@@ -287,7 +287,8 @@ end
 function mms_load_fpi_ut::test_load_time_clip
   mms_load_fpi, probe=1, datatype='DIS', level='ql', trange=['2015-12-15 00:04:00', '2015-12-15 00:12:00'], /time_clip
   assert, spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15/00:04:00', '2015-12-15/00:12:00'), 'Problem loading fpi data with time_clip'
-  assert, spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15/00:00:00', '2015-12-15/00:4:00'), 'Problem loading fpi data with time_clip'
+  assert, ~spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15/00:00:00', '2015-12-15/00:4:00'), 'Problem loading fpi data with time_clip'
+  assert, ~spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15/00:12:00', '2015-12-15/00:14:00'), 'Problem loading fpi data with time_clip'
   return, 1
 end
 

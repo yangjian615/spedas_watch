@@ -12,14 +12,14 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
 ;      DATABAR:    Set to plot horizontal lines.  *** Must set VARNAME also (for the time being) ***.
 ;      COLOR:      byte or bytarr of color values
 ;      LINESTYLE:  int or intarr of linestyles
-;      THICK:      int or intarr of line thicknesses
-;   for any of the above keywords, a scalar input will apply to all times
+;      THICK:      int or intarr of line thicknesses for any of the above keywords, a scalar input will apply to all times
 ;      VERBOSE: print more error messages; useful for debugging
-;      VARNAME: TPLOT variable name or index indicating panel in which to plot bar
-;      BETWEEN: array of two TPLOT variable names indicating
-;           between which two panels to plot timebar
-;                       TRANSIENT:  timebar,t,/transient called once plots a
-;           timebar. Called twice, it deletes the timebar.
+;      VARNAME: TPLOT variable names or indices indicating panel in which
+;      to plot bar, can be an array or glob string, color, linestyle
+;      thick should either be scalar or n_elements(varname) for
+;      multiple varables
+;      BETWEEN: array of two TPLOT variable names indicating between which two panels to plot timebar
+;      TRANSIENT:  timebar,t,/transient called once plots a timebar. Called twice, it deletes the timebar.
 ;                                Note:  1) all other keywords except VERBOSE
 ;                                be the same for both calls. 2) COLOR will most
 ;                                likely not come out what you ask for, but
@@ -45,6 +45,7 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
 
   ; Validate parameter according to whether it is a timebar or a databar:
   ;
+
   if undefined(t1) then begin
     case keyword_set(databar) of
       0: t = time_double(t1)
@@ -61,6 +62,42 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
     endcase
   endelse
 
+;If varname is an array and /databar is set, call recursively, jmm,
+;2016-07-29
+  if keyword_set(databar) then begin
+     if ~keyword_set(varname) then begin
+        dprint, 'VARNAME is requred when DATABAR is set. Returning,...',dlevel=2
+        return
+     endif
+     vn = tnames(varname)
+     nvn = n_elements(vn)
+     if nvn Eq 0 then begin
+        dprint, 'No valid varnames for /databar option. Returning,...',dlevel=2
+        return
+     endif
+     if n_elements(vn) gt 1 then begin
+;handle arrays in keywords
+        if keyword_set(color) then begin
+           if n_elements(color) eq nvn then clr = color $
+           else clr = intarr(nvn)+color[0]
+        endif else clr = bytarr(nvn)
+        if keyword_set(linestyle) then begin
+           if n_elements(linestyle) eq nvn then lns = linestyle $
+           else lns = intarr(nvn)+linestyle[0]
+        endif else lns = bytarr(nvn)
+        if keyword_set(thick) then begin
+           if n_elements(thick) eq nvn then thk = thick $
+           else thk = intarr(nvn)+thick[0]
+        endif else thk = bytarr(nvn)
+        for j = 0, nvn-1 do begin
+           timebar, t, color=clr[j], linestyle=lns[j], $
+                    thick=thk[j], verbose=verbose,$
+                    varname=vn[j],/databar
+        endfor
+        return
+     endif
+  endif
+
   nt = n_elements(t)
   if not keyword_set(color) then begin
     if !p.background eq 0 then color = !d.n_colors-1 else color = 0
@@ -74,14 +111,9 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
   if !d.name eq 'X' or !d.name eq 'WIN' then begin
     current_window= !d.window > 0
     wset,tplot_vars.settings.window
-;    wshow,icon=0
   endif
   str_element,tplot_vars,'settings.x.window',xp
   str_element,tplot_vars,'settings.x.crange',xr
-;  if keyword_set(databar) then begin                                              ;databar
-;    str_element,tplot_vars,'settings.y.window',yp
-;    str_element,tplot_vars,'settings.y.crange',yr
-;  endif
   nd1 = n_elements(tplot_vars.settings.y)-1
   nd0 = 0
   if keyword_set(varname) then begin
@@ -90,7 +122,6 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
      nd1=nd[0]
   endif else if keyword_set(databar) then begin
      dprint, 'VARNAME is requred when DATABAR is set.  Returning,...',dlevel=2
-     ;message,/info,'VARNAME is requred when DATABAR is set.  Returning,...'
      return
   endif
   nt = n_elements(t)
@@ -125,11 +156,8 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
     endfor
   endif else begin
 
-;    for i=0l,nt-1 do begin                                      ;databar
-    for i=0l,0l do begin                                      ;databar    ;for now work only on first element.
+    for i=0l,0l do begin ;databar    ;for now work only on first element.
       dp = t[i]
-;      if tplot_vars.settings.y[nd[i]].type then dp = yp[0,i] + (( alog10(dp) - yr[0,i] )/(yr[1,i]-yr[0,i]) * (yp[1,i]-yp[0,i])) else $
-;        dp = yp[0,i] + (dp-yr[0,i])/(yr[1,i]-yr[0,i]) * (yp[1,i]-yp[0,i])
       if tplot_vars.settings.y[nd[i]].type then dp = yp[0] + (( alog10(dp) - yr[0] )/(yr[1]-yr[0]) * (yp[1]-yp[0])) else $
         dp = yp[0] + (dp-yr[0])/(yr[1]-yr[0]) * (yp[1]-yp[0])
 ;      if dp ge yp[0] and dp le yp[1] then begin

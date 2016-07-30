@@ -47,7 +47,11 @@
 
 function spp_swp_spane_slow_hkp_v52x_decom,ccsds , ptp_header=ptp_header, apdat=apdat
 
-  b = ccsds.data
+
+  ccsds_data = spp_swp_ccsds_data(ccsds)  
+
+  b = ccsds_data
+  
   ;print, 'SIZE[B]', size(b)
   ;  psize = 69  ; REV  16
   ;  psize =81   ; REV 19
@@ -123,7 +127,7 @@ endif
 
   
 
-  sf0 = ccsds.data[11] and 3
+  sf0 = ccsds_data[11] and 3
   if sf0 ne 0 then dprint,dlevel=4, 'Odd time at: ',time_string(ccsds.time)
 
 ;  ref = 5.29 ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
@@ -167,11 +171,11 @@ endif
   
   spae = { $
     time:           ccsds.time, $
-    dtime:          ccsds.dtime/ccsds.dseq_cntr, $
+    time_delta:     ccsds.time_delta/ccsds.seqn_delta, $
     met:            ccsds.met,  $
-    delay_time:     ptp_header.ptp_time - ccsds.time, $
-    seq_cntr:       ccsds.seq_cntr, $
-    dseq_cntr:      ccsds.dseq_cntr  < 15, $
+;    delay_time:     ptp_header.ptp_time - ccsds.time, $
+    seqn :          ccsds.seqn, $
+    seqn_delta:     ccsds.seqn_delta  < 15, $
     HDR_12:         b[12], $
     HDR_13:         b[13], $
     HDR_14:         b[14], $
@@ -260,8 +264,8 @@ endif
     peak_period_act_cldn: swap_endian(/swap_if_little_endian, uint( b, 144 ) ) and 'ffff'x, $
     sample_sum:     b[146], $
     warm_reset:     b[147], $
-    mram_wr_addr:   swap_endian(/swap_if_little_endian, uint( b,148 ) ) and 'ffff'x , $
-    mram_wr_addr_hi:b[150], $
+    mram_wr_addr:   swap_endian(/swap_if_little_endian, uint( b,149 ) ) and 'ffff'x , $
+    mram_wr_addr_hi:b[148], $
     clks_per_nys:   b[151], $
 ;    pkt_csum:       swap_endian(/swap_if_little_endian, uint( b,152 ) ) and 'ffff'x , $
     pkt_csum_diff:  chksum1 - chksum3, $
