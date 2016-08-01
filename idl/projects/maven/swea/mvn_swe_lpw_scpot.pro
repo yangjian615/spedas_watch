@@ -2,6 +2,7 @@
 ; PROCEDURE:
 ;       mvn_swe_lpw_scpot
 ; PURPOSE:
+;       To load data quickly, use mvn_swe_lpw_scpot_restore
 ;       ******************************************
 ;       *** This routine is still experimental ***
 ;       ******************************************
@@ -16,6 +17,8 @@
 ;                               linear fitting of Vswe v. -Vinfl
 ;       mvn_swe_lpw_scpot_pow : spacecraft potentials derived from
 ;                               power law fitting of Vswe v. -Vinfl
+;                               - does a better job at small (~3-5 V)
+;                                 and large (~10-20 V) potentials
 ; KEYWORDS:
 ;       trange: time range
 ;       norbwin: odd number of orbits used for Vswe-Vinfl fitting (Def. 37)
@@ -47,8 +50,8 @@
 ;       Yuki Harada on 2016-02-29
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-03-10 12:40:44 -0800 (Thu, 10 Mar 2016) $
-; $LastChangedRevision: 20388 $
+; $LastChangedDate: 2016-07-31 12:59:21 -0700 (Sun, 31 Jul 2016) $
+; $LastChangedRevision: 21578 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
@@ -62,9 +65,10 @@ if ~keyword_set(maxgap) then maxgap = 257.
 if ~keyword_set(vrinfl) then vrinfl = [-15,5] ;- inflection point V range
 if ~keyword_set(ntsmo) then ntsmo = 3 ;- odd number, smooth IV curves in time
 if keyword_set(noangcorr) then angcorr = 0 else angcorr = 1
-if ~keyword_set(icur_thld) then icur_thld = -8.3 ;- I_V0 > -10^icur_thld
 if ~keyword_set(atrtname) then atrtname = 'mvn_lpw_atr_swp'
+if ~keyword_set(icur_thld) then icur_thld = -8.3 ;- I_V0 > -10^icur_thld
 
+tr_icur9 = time_double(['2016-04-12/00:00','2016-05-29/02:00']) ;- icur_thld=-9 during this time
 
 tr = timerange(trange)
 
@@ -183,7 +187,12 @@ chi2 = replicate(!values.f_nan,n_elements(div.x))
 
 ;;; check valid IV curves
 validiv = replicate(1b,n_elements(div.x))
-w = where( div.y[*,0] gt -10.^icur_thld, nw )
+w9 = where( div.x gt tr_icur9[0] and div.x lt tr_icur9[1] , nw9 )
+if nw9 gt 0 then begin
+   icur_thld_arr = replicate(icur_thld,n_elements(div.x))
+   icur_thld_arr[w9] = -9.
+   w = where( div.y[*,0] gt -10.^icur_thld_arr, nw )
+endif else w = where( div.y[*,0] gt -10.^icur_thld, nw )
 if nw gt 0 then validiv[w] = 0b ;- filter out positive/small Ii at V0
 
 ;;; quick fix to erroneous I-V curves when the mode changes before
