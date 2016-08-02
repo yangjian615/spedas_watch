@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
-; $LastChangedRevision: 21548 $
+; $LastChangedDate: 2016-08-01 15:57:27 -0700 (Mon, 01 Aug 2016) $
+; $LastChangedRevision: 21587 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -91,11 +91,11 @@ spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
 
 panels = 'mms'+probe+['_dfg_srvy_dmpa_clipped', $
   '_epd_feeps_srvy_l2_electron_'+type+'_omni_spin_electrons', $
-  '_epd_feeps_srvy_l2_electron_'+type+'_70-71keV_pad_electrons_spin', $
-  '_epd_feeps_srvy_l2_electron_'+type+'_200-201keV_pad_electrons_spin', $
+  '_epd_feeps_srvy_l2_electron_'+type+'_70-71keV_pad_spin_electrons', $
+  '_epd_feeps_srvy_l2_electron_'+type+'_200-201keV_pad_spin_electrons', $
   '_epd_feeps_srvy_l2_ion_'+type+'_omni_spin_ions', $
-  '_epd_feeps_srvy_l2_ion_'+type+'_76-77keV_pad_ions_spin', $
-  '_epd_feeps_srvy_l2_ion_'+type+'_205-206keV_pad_ions_spin']
+  '_epd_feeps_srvy_l2_ion_'+type+'_76-77keV_pad_spin_ions', $
+  '_epd_feeps_srvy_l2_ion_'+type+'_205-206keV_pad_spin_ions']
 
 mms_tplot_quicklook, panels, var_label=position_vars, title='MMS'+probe+' FEEPS Summary', $
     burst_bar = 'mms_bss_burst', fast_bar = 'mms_bss_fast'

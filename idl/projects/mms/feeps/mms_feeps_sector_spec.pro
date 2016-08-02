@@ -9,14 +9,16 @@
 ;
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-03 13:14:10 -0800 (Thu, 03 Mar 2016) $
-; $LastChangedRevision: 20311 $
+; $LastChangedDate: 2016-08-01 11:29:10 -0700 (Mon, 01 Aug 2016) $
+; $LastChangedRevision: 21582 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_sector_spec.pro $
 ;-
 
-pro mms_feeps_sector_spec, probe = probe, data_units = data_units, data_rate = data_rate, datatype = datatype, suffix = suffix, remove_sun = remove_sun
+pro mms_feeps_sector_spec, probe = probe, data_units = data_units, data_rate = data_rate, $
+  datatype = datatype, suffix = suffix, remove_sun = remove_sun, level = level
     if undefined(suffix) then suffix = ''
-    if undefined(probe) then probe = '1'
+    if undefined(level) then level = 'l2'
+    if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
     if undefined(data_units) then data_units = 'count_rate'
     if undefined(data_rate) then data_rate = 'brst'
     if undefined(datatype) then datatype = 'electron'
@@ -37,8 +39,14 @@ pro mms_feeps_sector_spec, probe = probe, data_units = data_units, data_rate = d
     sensor_types = ['top', 'bottom']
     for sensor_type_idx = 0, n_elements(sensor_types)-1 do begin
         for sensor_idx = 0, n_elements(sensors)-1 do begin
-          get_data, 'mms'+probe+'_epd_feeps_'+sensor_types[sensor_type_idx]+'_'+datatype+'_'+data_units+'_sensorid_'+sensors[sensor_idx]+'_clean'+suffix_in, data=sensor_data
-          get_data, 'mms'+probe+'_epd_feeps_'+datatype+'_spinsectnum'+suffix, data=sector_data
+          ; the following are valid names for v5.4 and below of the FEEPS CDFs
+         ; get_data, 'mms'+probe+'_epd_feeps_'+sensor_types[sensor_type_idx]+'_'+datatype+'_'+data_units+'_sensorid_'+sensors[sensor_idx]+'_clean'+suffix_in, data=sensor_data
+         ; get_data, 'mms'+probe+'_epd_feeps_'+datatype+'_spinsectnum'+suffix, data=sector_data
+          
+         ; the following are valid names for v5.5 and above of the FEEPS CDFs
+          get_data, 'mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+sensor_types[sensor_type_idx]+'_'+data_units+'_sensorid_'+string(sensors[sensor_idx])+'_clean'+suffix_in, data=sensor_data
+          get_data, 'mms'+probe+'_epd_feeps_' + data_rate + '_' + level + '_' + datatype + '_spinsectnum'+suffix, data=sector_data
+
 
           if ~is_struct(sensor_data) then begin
               dprint, dlevel = 0, 'Error, couldn''t find the sensor data for sensor ID: ' + sensors[sensor_idx] 
@@ -59,7 +67,7 @@ pro mms_feeps_sector_spec, probe = probe, data_units = data_units, data_rate = d
               current_start = spin_starts[spin_idx]
           endfor
           
-          new_name = 'mms'+probe+'_epd_feeps_'+sensor_types[sensor_type_idx]+'_'+datatype+'_'+data_units+'_sensorid_'+sensors[sensor_idx]+suffix_in+'_sectspec'
+          new_name = 'mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+sensor_types[sensor_type_idx]+'_'+data_units+'_sensorid_'+string(sensors[sensor_idx])+'_sectspec'+suffix_in
           store_data, new_name, data={x: sector_data.X[spin_starts], y: sector_spec, v: indgen(64)}
           options, new_name, spec=1
           ylim, new_name, 0, 64, 0

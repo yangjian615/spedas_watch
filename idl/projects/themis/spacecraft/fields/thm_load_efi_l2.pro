@@ -53,9 +53,9 @@
 ;    through to THM_CAL_EFI.PRO, W.M.Feuerstein, 4/7/2008 (M).
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-01 11:53:52 -0700 (Mon, 01 Aug 2016) $
+; $LastChangedRevision: 21583 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi_l2.pro $
 ;-
 
@@ -218,6 +218,7 @@ pro thm_load_efi_l2, probe = probe, datatype = datatype, trange = trange, $
         tplot_var_suf = tplot_var+suffix[0]
 ;        tplot_names
         copy_data, tplot_var, tplot_var_suf
+        store_data,tplot_var,/delete
 ;        tplot_names
       endif
     endfor                      ;end of loop for loaded variables
