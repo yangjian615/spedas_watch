@@ -8,13 +8,15 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-01 09:37:06 -0700 (Mon, 01 Aug 2016) $
-;$LastChangedRevision: 21579 $
+;$LastChangedDate: 2016-08-02 11:58:11 -0700 (Tue, 02 Aug 2016) $
+;$LastChangedRevision: 21590 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_find_burst_intervals_crib.pro $
 ;-
 
+trange = ['2015-10-16/13:00', '2015-10-16/14:00']
+
 ; Load the burst segments bar for October 16, 2015
-mms_load_brst_segments, trange=['2015-10-16/13:00', '2015-10-16/14:00']
+mms_load_brst_segments, trange=trange
 
 get_data, 'mms_bss_burst', data=burst_interval_data 
 

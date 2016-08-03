@@ -30,8 +30,8 @@
 ; Written by Davin Larson
 ;
 ; $LastChangedBy: cfowler2 $
-; $LastChangedDate: 2015-11-30 08:31:39 -0800 (Mon, 30 Nov 2015) $
-; $LastChangedRevision: 19487 $
+; $LastChangedDate: 2016-08-02 07:33:17 -0700 (Tue, 02 Aug 2016) $
+; $LastChangedRevision: 21588 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/lpw/mvn_lpw_cdf_info_to_tplot.pro $
 ; #############
 ; 
@@ -50,7 +50,7 @@ function mvn_lpw_cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
 
 if not keyword_set(cdf_filename) then cdf_filename = ''
 
-dprint,verbose=verbose,dlevel=4,'$Id: mvn_lpw_cdf_info_to_tplot.pro 19487 2015-11-30 16:31:39Z cfowler2 $'
+dprint,verbose=verbose,dlevel=4,'$Id: mvn_lpw_cdf_info_to_tplot.pro 21588 2016-08-02 14:33:17Z cfowler2 $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -115,6 +115,7 @@ if nqq eq 1 then begin  ;if we have only one 'data' structure
    dy_catdesc = struct_value(attr, 'dy_catdesc', default='NA')
    dv_catdesc = struct_value(attr, 'dv_catdesc', default='NA')
    flag_catdesc = struct_value(attr, 'flag_catdesc', default='NA')
+   info_catdesc = struct_value(attr, 'info_catdesc', default='NA')
    depend_0 = struct_value(attr, 'depend_0', default = 'depend_0')
    if tag_exist(attr, 'depend_1') then depend_1 = struct_value(attr, 'depend_1', default = 'depend_1') else depend_1 = 'NA'  ;depend_1 is not always present
    display_type = struct_value(attr, 'display_type', default = 'NA')
@@ -124,6 +125,7 @@ if nqq eq 1 then begin  ;if we have only one 'data' structure
    dyfieldnam = struct_value(attr, 'dyfieldnam', default = 'NA')
    dvfieldnam = struct_value(attr, 'dvfieldnam', default = 'NA')
    flagfieldnam = struct_value(attr, 'flagfieldnam', default = 'NA') 
+   infofieldnam = struct_value(attr, 'infofieldnam', default = 'NA')
    fillval = struct_value(attr, 'fillval', default = 'NA')  
    form_ptr = struct_value(attr, 'form_ptr', default = 'NA')
    lablaxis = struct_value(attr, 'lablaxis', default = 'NA')
@@ -143,6 +145,7 @@ if nqq eq 1 then begin  ;if we have only one 'data' structure
    dy_var_notes = struct_value(attr, 'dy_var_notes', default = 'NA')
    dv_var_notes = struct_value(attr, 'dv_var_notes', default = 'NA')
    flag_var_notes = struct_value(attr, 'flag_var_notes', default = 'NA')
+   info_var_notes = struct_value(attr, 'info_var_notes', default = 'NA')
    t_epoch = struct_value(attr, 't_epoch', default=!values.f_nan)
    l0_datafile = struct_value(attr, 'L0_datafile', default='NA') + ' # '+cdf_filename
    cal_vers = struct_value(attr, 'cal_vers', default='NA')
@@ -259,6 +262,10 @@ if nqq eq 1 then begin  ;if we have only one 'data' structure
   j = (where(strcmp(cdfi.vars.name, 'flag', /fold_case), nj))[0]
   if nj gt 0 then flag = cdfi.vars[j]  ;flag information, data.flag
 
+  j = (where(strcmp(cdfi.vars.name, 'info', /fold_case), nj))[0]
+  if nj gt 0 then info = cdfi.vars[j]  ;info information, data.info
+
+
   ;Now create the final data structure using ptrs:
   if ptr_valid(time_unix.dataptr) and ptr_valid(ydata.dataptr) then begin  ;if we have at least UNIX and ydata valid:
         data = {x:time_unix.dataptr, y:ydata.dataptr}
@@ -270,6 +277,7 @@ if nqq eq 1 then begin  ;if we have only one 'data' structure
         if size(ddata, /type) NE 0 then if ptr_valid(ddata.dataptr) then str_element, data, 'dy', ddata.dataptr, /add
         if size(dfreq, /type) NE 0 then if ptr_valid(dfreq.dataptr) then str_element, data, 'dv', dfreq.dataptr, /add
         if size(flag, /type) NE 0 then if ptr_valid(flag.dataptr) then str_element, data, 'flag', flag.dataptr, /add
+        if size(info, /type) NE 0 then if ptr_valid(info.dataptr) then str_element, data, 'info', info.dataptr, /add
         
      ;==================================
      ;Append values to dlimit and limit:
@@ -282,10 +290,10 @@ if nqq eq 1 then begin  ;if we have only one 'data' structure
                Acknowledgement: Acknowledgement, $  ;end of Global atts
                dervin:derivn, sig_digits:sig_digits, SI_conversion:SI_conversion, $
                catdesc:catdesc, x_catdesc:x_catdesc, y_catdesc:y_catdesc, $
-               v_catdesc:v_catdesc, dy_catdesc:dy_catdesc, dv_catdesc:dv_catdesc, flag_catdesc:flag_catdesc, display_type:display_type, $
+               v_catdesc:v_catdesc, dy_catdesc:dy_catdesc, dv_catdesc:dv_catdesc, flag_catdesc:flag_catdesc, info_catdesc:info_catdesc, display_type:display_type, $
                var_notes:var_notes, x_var_notes:x_var_notes, y_var_notes:y_var_notes, v_var_notes:v_var_notes, $
-               dy_var_notes:dy_var_notes, dv_var_notes:dv_var_notes, flag_var_notes:flag_var_notes, $              
-               xfieldname:xfieldnam, yfieldnam:yfieldnam, vfieldnam:vfieldnam, dyfieldnam:dyfieldnam, dvfieldnam:dvfieldnam, flagfieldnam:flagfieldnam, $
+               dy_var_notes:dy_var_notes, dv_var_notes:dv_var_notes, flag_var_notes:flag_var_notes, info_var_notes:info_var_notes, $              
+               xfieldname:xfieldnam, yfieldnam:yfieldnam, vfieldnam:vfieldnam, dyfieldnam:dyfieldnam, dvfieldnam:dvfieldnam, flagfieldnam:flagfieldnam, infofieldnam:infofieldnam, $
                fillval:fillval, form_ptr:form_ptr, lablaxis:lablaxis, monoton:monoton, scalemin:smin, scalemax:smax, units:units, $
                validmin:vmin, validmax:vmax, var_type:var_type,  $
                t_epoch:t_epoch, l0_datafile:l0_datafile, cal_vers:cal_vers, cal_y_const1:cal_y_const1, $

@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-26 09:16:24 -0700 (Tue, 26 Jul 2016) $
-; $LastChangedRevision: 21526 $
+; $LastChangedDate: 2016-08-02 14:26:57 -0700 (Tue, 02 Aug 2016) $
+; $LastChangedRevision: 21593 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -43,7 +43,9 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
         return
     endif
     ; get the sector masks
-    mask_sectors = mms_feeps_sector_masks()
+    ;mask_sectors = mms_feeps_sector_masks()
+    ; egrimes updated to use the CSV files on 8/2/2016
+    mask_sectors = mms_read_feeps_sector_masks_csv()
     
     for data_units_idx = 0, n_elements(data_units)-1 do begin
         these_units = data_units[data_units_idx]

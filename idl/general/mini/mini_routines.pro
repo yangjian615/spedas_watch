@@ -28,8 +28,8 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-06-15 15:11:38 -0700 (Wed, 15 Jun 2016) $
-; $LastChangedRevision: 21329 $
+; $LastChangedDate: 2016-08-02 16:55:11 -0700 (Tue, 02 Aug 2016) $
+; $LastChangedRevision: 21594 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/mini_routines.pro $
 ;- 
 
@@ -1187,7 +1187,7 @@ function function_list
 
   fun = {type:'function',name:'name',value:'idlname',index:0,syntax:'helpsyntax'} 
 
-  f_list = replicate(fun,35)
+  f_list = replicate(fun,36)
   
   i=0
   f_list[i].name = 'log'
@@ -1226,6 +1226,11 @@ function function_list
   i++
  
   f_list[i].name = 'mean'
+  f_list[i].value = 'mini_mean'
+  f_list[i].syntax= '(x,[,dim][,/nan])'
+  i++
+  
+  f_list[i].name = 'average'
   f_list[i].value = 'mini_mean'
   f_list[i].syntax= '(x,[,dim][,/nan])'
   i++

@@ -110,12 +110,12 @@ Function mvn_lpw_cdf_dummy_struct, var
 
   if type eq 1 then begin  ;only depend_0 required for y, dy and flag
     var_attributes = {tplot_name:'NA', product_name:'NA', catdesc:'NA', x_catdesc: 'NA',  $
-      y_catdesc:'NA', v_catdesc:'NA', dy_catdesc:'NA', dv_catdesc:'NA', flag_catdesc:'NA', $
-      depend_0:'depend_0', Display_type:'NA', Fieldnam:'NA', xFieldnam:'NA', yFieldnam:'NA', vFieldnam:'NA', dyFieldnam:'NA', $
-      dvFieldnam:'NA', flagFieldnam:'NA', Fillval:!values.f_nan, $
-      Form_ptr:'form_ptr', Lablaxis:'NA', Monoton:'INCREASE', Scalemin:0., Scalemax:1., Units:'NA', Validmin:(-1.)*1.E38, Validmax:1.E38, $
-      Var_type:'data', Var_notes: 'NA', x_Var_notes: 'NA', $
-      y_Var_notes:'NA', v_Var_notes:'NA', dy_Var_notes:'NA', dv_Var_notes:'NA', flag_Var_notes:'NA', $ ;end of ISTP var_attributes, begin additional LPW fields:
+      y_catdesc:'NA', v_catdesc:'NA', dy_catdesc:'NA', dv_catdesc:'NA', flag_catdesc:'NA', info_catdesc: 'NA', $
+      depend_0:'depend_0', Display_type:'NA', $
+      Fieldnam:'NA', xFieldnam:'NA', yFieldnam:'NA', vFieldnam:'NA', dyFieldnam:'NA', dvFieldnam:'NA', flagFieldnam:'NA', infofieldnam:'NA', $
+      Fillval:!values.f_nan, Form_ptr:'form_ptr', Lablaxis:'NA', Monoton:'INCREASE', Scalemin:0., Scalemax:1., Units:'NA', Validmin:(-1.)*1.E38, Validmax:1.E38, $
+      Var_type:'data', $
+      Var_notes: 'NA', x_Var_notes: 'NA', y_Var_notes:'NA', v_Var_notes:'NA', dy_Var_notes:'NA', dv_Var_notes:'NA', flag_Var_notes:'NA', info_var_notes:'NA', $ ;end of ISTP var_attributes, begin additional LPW fields:
       t_epoch: 1.D, l0_datafile: 'L0_datafile', cal_vers:'NA', cal_y_const1:'NA', cal_y_const2:'NA', cal_datafile:'NA', $
       cal_source:'NA', flag_info:'NA', flag_source:'NA', xsubtitle:'NA', ysubtitle:'NA', zsubtitle:'NA', spec:0., ylog:0., cal_v_const1:'NA', $
       cal_v_const2:'NA', zlog:0., char_size: 1., xtitle:'NA', ytitle:'NA', yrange:[0.,1.], $
@@ -132,12 +132,12 @@ Function mvn_lpw_cdf_dummy_struct, var
 
     ;Both depends:
     var_attributes = {tplot_name:'NA', catdesc:'NA', x_catdesc: 'NA', $
-      y_catdesc:'NA', v_catdesc:'NA', dy_catdesc:'NA', dv_catdesc:'NA', flag_catdesc:'NA', $
+      y_catdesc:'NA', v_catdesc:'NA', dy_catdesc:'NA', dv_catdesc:'NA', flag_catdesc:'NA', info_catdesc:'NA', $
       depend_0:'depend_0', depend_1: 'depend_1', Display_type:'NA', Fieldnam:'NA', xFieldnam:'NA', yFieldnam:'NA', vFieldnam:'NA', $
-      dyFieldnam:'NA', dvFieldnam:'NA', flagFieldnam:'NA', Fillval:!values.f_nan, $
+      dyFieldnam:'NA', dvFieldnam:'NA', flagFieldnam:'NA', infofieldnam:'NA', Fillval:!values.f_nan, $
       Form_ptr:'form_ptr', Lablaxis:'NA', Monoton:'INCREASE', Scalemin:0., Scalemax:1., Units:'NA', Validmin:(-1.)*1.E38, Validmax:1.E38, $
       Var_type:'data', Var_notes: 'NA', x_Var_notes: 'NA', $
-      y_Var_notes:'NA', v_Var_notes:'NA', dy_Var_notes:'NA', dv_Var_notes:'NA', flag_Var_notes:'NA', $ ;end of ISTP var_attributes, begin additional LPW fields:
+      y_Var_notes:'NA', v_Var_notes:'NA', dy_Var_notes:'NA', dv_Var_notes:'NA', flag_Var_notes:'NA', info_var_notes:'NA', $ ;end of ISTP var_attributes, begin additional LPW fields:
       t_epoch: 1.D, l0_datafile: 'L0_datafile', cal_vers:'NA', cal_y_const1:'NA', cal_y_const2:'NA', cal_datafile:'NA', $
       cal_source:'NA', flag_info:'NA', flag_source:'NA', xsubtitle:'NA', ysubtitle:'NA', zsubtitle:'NA', spec:0., ylog:0., cal_v_const1:'NA', $
       cal_v_const2:'NA', zlog:0., char_size: 1., xtitle:'NA', ytitle:'NA', yrange:[0.,1.], $
@@ -190,6 +190,7 @@ Function mvn_lpw_cdf_dummy_struct, var
   has_dy = 0.
   has_flag = 0.
   has_data = 0.
+  has_info = 0.
 
   ;===================
   ;Attach attributes to arrays
@@ -255,6 +256,15 @@ Function mvn_lpw_cdf_dummy_struct, var
       has_flag = 1
       flag = dd.flag
     endif
+
+    if (is_struct(dd) && tag_exist(dd, 'info', /quiet)) then begin
+      ;Create structure:
+      vinfoatt = yvar_attributes1
+      vinfostr = vstr
+      vinfoatt.depend_0 = dtime  ;info depends on time
+      has_info = 1
+      info = dd.info
+    endif
   endif  ;assume no v and dv info for type 1
 
   if type eq 2 then begin
@@ -284,6 +294,14 @@ Function mvn_lpw_cdf_dummy_struct, var
       flag = dd.flag
     endif
 
+    if (is_struct(dd) && tag_exist(dd, 'info', /quiet)) then begin
+      ;Create structure:
+      vinfoatt = yvar_attributes1
+      vinfostr = vstr
+      vinfoatt.depend_0 = dtime  ;info depends on time
+      has_info = 1
+      info = dd.info
+    endif
 
     if (is_struct(dd) && tag_exist(dd, 'v', /quiet)) then begin
       freq = dd.v   ;LPW only produces wave power spectra, no energy spectra
@@ -351,6 +369,7 @@ Function mvn_lpw_cdf_dummy_struct, var
     IF tag_exist(dl, 'dy_catdesc') THEN vatt.dy_catdesc = dl.dy_catdesc
     IF tag_exist(dl, 'dv_catdesc') THEN vatt.dv_catdesc = dl.dv_catdesc
     IF tag_exist(dl, 'flag_catdesc') THEN vatt.flag_catdesc = dl.flag_catdesc
+    IF tag_exist(dl, 'info_catdesc') THEN vatt.info_catdesc = dl.info_catdesc
     IF tag_exist(dl, 'x_tt2000_Var_notes') THEN vatt.x_tt2000_var_notes = dl.x_tt2000_Var_notes  ;Notes on each variable
     IF tag_exist(dl, 'x_Var_notes') THEN vatt.x_var_notes = dl.x_Var_notes  ;Notes on each variable
     IF tag_exist(dl, 'x_met_Var_notes') THEN vatt.x_met_var_notes = dl.x_met_Var_notes  ;Notes on each variable
@@ -359,12 +378,14 @@ Function mvn_lpw_cdf_dummy_struct, var
     IF tag_exist(dl, 'dy_Var_notes') THEN vatt.dy_var_notes = dl.dy_Var_notes
     IF tag_exist(dl, 'dv_Var_notes') THEN vatt.dv_var_notes = dl.dv_Var_notes
     IF tag_exist(dl, 'flag_Var_notes') THEN vatt.flag_var_notes = dl.flag_Var_notes
+    IF tag_exist(dl, 'info_Var_notes') THEN vatt.info_var_notes = dl.info_Var_notes
     If tag_exist(dl, 'xFieldnam') THEN vatt.xFieldnam = dl.xFieldnam
     If tag_exist(dl, 'yFieldnam') THEN vatt.yFieldnam = dl.yFieldnam
     If tag_exist(dl, 'vFieldnam') THEN vatt.vFieldnam = dl.vFieldnam
     If tag_exist(dl, 'dyFieldnam') THEN vatt.dyFieldnam = dl.dyFieldnam
     If tag_exist(dl, 'dvFieldnam') THEN vatt.dvFieldnam = dl.dvFieldnam
     If tag_exist(dl, 'flagFieldnam') THEN vatt.flagFieldnam = dl.flagFieldnam
+    If tag_exist(dl, 'infoFieldnam') THEN vatt.infoFieldnam = dl.infoFieldnam
     If tag_exist(dl, 'Form_ptr') THEN vatt.Form_ptr = dl.Form_ptr
     If tag_exist(dl, 'Units') THEN vatt.Units = dl.Units
     IF tag_exist(dl, 'validmin') THEN vatt.validmin = dl.validmin
@@ -783,6 +804,38 @@ Function mvn_lpw_cdf_dummy_struct, var
     vflagstr.attrptr = ptr_new(vflagatt)
   Endif
 
+  ;info variable
+  If(has_info Eq 1) Then Begin
+    ;Attributes
+    vinfoatt.catdesc = vatt.info_catdesc
+    vinfoatt.Var_notes = vatt.info_Var_notes
+    vinfoatt.fieldnam = vatt.infoFieldnam
+    vinfoatt.lablaxis = 'info'
+    vinfoatt.Units = 'info'
+    ;vars_struct
+    vinfostr.name = 'info'
+    vinfostr.num = n_elements(info[*, 0])
+    Case(size(info, /type)) Of        ;text code for type
+      1: otp = 'CDF_UINT1'
+      2: otp = 'CDF_INT2'
+      3: otp = 'CDF_INT4'
+      4: otp = 'CDF_FLOAT'
+      5: otp = 'CDF_DOUBLE'
+      7: otp = 'CDF_CHAR'
+      12: otp = 'CDF_UINT2'
+      13: otp = 'CDF_UINT4'
+      14: otp = 'CDF_INT8'
+      15: otp = 'CDF_UINT8'
+      Else: otp = 'Undefined format'
+    Endcase
+    vinfoatt.FORM_PTR = otp
+    vinfostr.type = size(info, /type)
+    vinfostr.ndimen = 1
+    vinfostr.d[0] = n_elements(info[0, *])
+    vinfostr.dataptr = ptr_new(info)
+    vinfostr.attrptr = ptr_new(vinfoatt)
+  Endif
+
   ;==========  Over attaching attributes
 
   keep_data = where(has_data Eq 1, vc)
@@ -804,6 +857,8 @@ Function mvn_lpw_cdf_dummy_struct, var
     If(nkeep Gt 0) Then allvars = [allvars, vdystr[keep_dy]]
     keep_flag = where(has_flag Eq 1, nkeep) ;if we have a flag variable
     If(nkeep Gt 0) Then allvars = [allvars, vflagstr[keep_flag]]
+    keep_info = where(has_info Eq 1, nkeep) ;if we have a info variable
+    If(nkeep Gt 0) Then allvars = [allvars, vinfostr[keep_info]]
 
     nvars = n_elements(allvars)
 
