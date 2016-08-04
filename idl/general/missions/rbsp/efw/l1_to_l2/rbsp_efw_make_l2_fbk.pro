@@ -39,16 +39,18 @@
 ;
 ; VERSION:
 ;	$LastChangedBy: aaronbreneman $
-;	$LastChangedDate: 2016-07-08 13:26:39 -0700 (Fri, 08 Jul 2016) $
-;	$LastChangedRevision: 21444 $
+;	$LastChangedDate: 2016-08-03 13:19:15 -0700 (Wed, 03 Aug 2016) $
+;	$LastChangedRevision: 21598 $
 ;	$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_fbk.pro $
 ;
 ;-
 
-pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
+pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing,boom_pair=bp
 
   rbsp_efw_init
   skip_plot = 1                 ;set to skip restoration of cdf file and test plotting at end of program
+
+  if ~KEYWORD_SET(bp) then bp = '12'
 
   dprint,'BEGIN TIME IS ',systime()
 
@@ -129,7 +131,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
                                 ;Get all the flag values
-  flag_str = rbsp_efw_get_flag_values(sc,timevals)
+  flag_str = rbsp_efw_get_flag_values(sc,timevals,boom_pair=bp)
 
 
   flag_arr = flag_str.flag_arr
@@ -186,7 +188,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
   cdf_control, cdfid, get_var_info=info, variable='epoch'
 
   if is_struct(fbk7_pk_fb1) then begin
-     
+
      cdf_varput,cdfid,'epoch',epoch_fbk7
      cdf_varput,cdfid,'epoch_qual',epoch_qual
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
@@ -205,7 +207,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
   if is_struct(fbk7_av_fb1) then begin
-     
+
      cdf_varput,cdfid,'epoch',epoch_fbk7
      cdf_varput,cdfid,'epoch_qual',epoch_qual
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
@@ -224,7 +226,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
   if is_struct(fbk7_pk_fb2) then begin
-     
+
      cdf_varput,cdfid,'epoch',epoch_fbk7
      cdf_varput,cdfid,'epoch_qual',epoch_qual
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
@@ -243,7 +245,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
   if is_struct(fbk7_av_fb2) then begin
-     
+
      cdf_varput,cdfid,'epoch',epoch_fbk7
      cdf_varput,cdfid,'epoch_qual',epoch_qual
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
@@ -262,7 +264,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
   if is_struct(fbk13_pk_fb1) then begin
-     
+
      cdf_varput,cdfid,'epoch',epoch_fbk13
      cdf_varput,cdfid,'epoch_qual',epoch_qual
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
@@ -296,7 +298,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
   if is_struct(fbk13_av_fb1) then begin
-     
+
      cdf_varput,cdfid,'epoch',epoch_fbk13
      cdf_varput,cdfid,'epoch_qual',epoch_qual
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
@@ -332,7 +334,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
   if is_struct(fbk13_pk_fb2) then begin
-     
+
      cdf_varput,cdfid,'epoch',epoch_fbk13
      cdf_varput,cdfid,'epoch_qual',epoch_qual
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
@@ -366,7 +368,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
   if is_struct(fbk13_av_fb2) then begin
-     
+
      cdf_varput,cdfid,'epoch',epoch_fbk13
      cdf_varput,cdfid,'epoch_qual',epoch_qual
      cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
@@ -461,19 +463,19 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
 
 
   if source7_fb1 eq '' and source7_fb2 eq '' then begin
-     
+
      fbk13_vars = ['fbk13_e12dc','fbk13_e12ac','fbk13_e34dc','fbk13_e34ac',$
                    'fbk13_e56dc','fbk13_e56ac','fbk13_scmu',$
                    'fbk13_scmv','fbk13_scmw','fbk13_v1v2v3v4_avg']
-          
+
      goo = where(sources eq source13_fb1)
      if goo[0] ne -1 then sources[goo[0]] = ''
      goo = where(sources eq source13_fb2)
      if goo[0] ne -1 then sources[goo[0]] = ''
-     
+
      for jj=0,n_elements(sources)-1 do if sources[jj] ne '' then cdf_vardelete,cdfid,fbk13_vars[jj]+'_av'
      for jj=0,n_elements(sources)-1 do if sources[jj] ne '' then cdf_vardelete,cdfid,fbk13_vars[jj]+'_pk'
-     
+
   endif else begin
 
      fbk7_vars = ['fbk7_e12dc','fbk7_e12ac','fbk7_e34dc','fbk7_e34ac',$
@@ -485,11 +487,12 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing
      if goo[0] ne -1 then sources[goo[0]] = ''
      goo = where(sources eq source7_fb2)
      if goo[0] ne -1 then sources[goo[0]] = ''
-     
-     for jj=0,n_elements(sources)-1 do if sources[jj] ne '' then cdf_vardelete,cdfid,fbk7_vars[jj]
+
+     for jj=0,n_elements(sources)-1 do if sources[jj] ne '' then cdf_vardelete,cdfid,fbk7_vars[jj] + '_pk'
+     for jj=0,n_elements(sources)-1 do if sources[jj] ne '' then cdf_vardelete,cdfid,fbk7_vars[jj] + '_av'
 
   endelse
-     
+
 
 stop
 
@@ -538,8 +541,3 @@ stop
   endif
 
 end
-
-
-
-
-

@@ -23,7 +23,7 @@
 ;						 (V1dc+V2dc+V3dc+V4dc)/4,
 ;						 Edcprp2, Eacprp2, SCMprp2
 ;
-;	notes: 
+;	notes:
 ;
 ;
 ;	Aaron Breneman, UMN, Feb 2013
@@ -31,17 +31,18 @@
 ;
 ; VERSION:
 ;	$LastChangedBy: aaronbreneman $
-;	$LastChangedDate: 2016-07-08 13:26:46 -0700 (Fri, 08 Jul 2016) $
-;	$LastChangedRevision: 21445 $
+;	$LastChangedDate: 2016-08-03 13:19:08 -0700 (Wed, 03 Aug 2016) $
+;	$LastChangedRevision: 21597 $
 ;	$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_spec.pro $
 ;
 ;-
 
 
 
-pro rbsp_efw_make_l2_spec,sc,date,folder=folder,testing=testing
+pro rbsp_efw_make_l2_spec,sc,date,folder=folder,testing=testing,boom_pair=bp
 
 	skip_plot = 1   ;set to skip restoration of cdf file and test plotting at end of program
+	if ~KEYWORD_SET(bp) then bp = '12'
 
 	dprint,'BEGIN TIME IS ',systime()
 
@@ -78,7 +79,7 @@ pro rbsp_efw_make_l2_spec,sc,date,folder=folder,testing=testing
 
 	; use skeleton from the staging dir until we go live in the main data tree
 	;source_file='/Volumes/DataA/user_volumes/kersten/data/rbsp/'+skeleton
-	
+
 	; make sure we have the skeleton CDF
 	source_file=file_search(source_file,count=found) ; looking for single file, so count will return 0 or 1
 	if ~found then begin
@@ -137,7 +138,7 @@ pro rbsp_efw_make_l2_spec,sc,date,folder=folder,testing=testing
 
 
 ;Get all the flag values
-        flag_str = rbsp_efw_get_flag_values(sc,timevals)
+        flag_str = rbsp_efw_get_flag_values(sc,timevals,boom_pair=bp)
 
 
         flag_arr = flag_str.flag_arr
@@ -165,7 +166,7 @@ pro rbsp_efw_make_l2_spec,sc,date,folder=folder,testing=testing
 
 
 	cdf_varput,cdfid,'epoch',ep0
-	cdf_varput,cdfid,'epoch_qual',epoch_qual			
+	cdf_varput,cdfid,'epoch_qual',epoch_qual
 	cdf_varput,cdfid,'efw_qual',transpose(flag_arr)
 
 	if is_struct(spec0) then cdf_varput,cdfid,'spec'+bins+'_'+chn0,transpose(spec0.y)
@@ -190,10 +191,10 @@ if ~skip_plot then begin
 	cdf_leap_second_init
 	cdf2tplot,files=folder + filename
 
-	zlim,1,1d-3^2,1d-1^2,1						
+	zlim,1,1d-3^2,1d-1^2,1
 	ylim,[1,2,3,4,5,6,7],1,10000,1
 
-	zlim,[1,2,3,4,5,6,7],1d-3^2,1d-1^2,1						
+	zlim,[1,2,3,4,5,6,7],1d-3^2,1d-1^2,1
 
 
 	names = ['global_flag',$
@@ -228,7 +229,3 @@ endif
 
 
 end
-
-
-
-
