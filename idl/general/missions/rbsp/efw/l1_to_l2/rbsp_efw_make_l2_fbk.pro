@@ -39,8 +39,8 @@
 ;
 ; VERSION:
 ;	$LastChangedBy: aaronbreneman $
-;	$LastChangedDate: 2016-08-03 13:19:15 -0700 (Wed, 03 Aug 2016) $
-;	$LastChangedRevision: 21598 $
+;	$LastChangedDate: 2016-08-04 07:46:34 -0700 (Thu, 04 Aug 2016) $
+;	$LastChangedRevision: 21599 $
 ;	$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_fbk.pro $
 ;
 ;-
@@ -494,7 +494,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing,boom_pair=bp
   endelse
 
 
-stop
+
 
   cdf_close, cdfid
 

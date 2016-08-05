@@ -32,14 +32,15 @@
 ; none
 ;KEYWORDS:
 ; varname = if set, only do the timebars for the named variable(s)
+; clear = if set, clear the options for the affected variable
 ;HISTORY:
 ; 2016-07-29, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-08-02 17:17:02 -0700 (Tue, 02 Aug 2016) $
-; $LastChangedRevision: 21595 $
+; $LastChangedDate: 2016-08-04 14:56:35 -0700 (Thu, 04 Aug 2016) $
+; $LastChangedRevision: 21601 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_apply_timebar.pro $
 ;-
-Pro tplot_apply_timebar, varname = varname
+Pro tplot_apply_timebar, varname = varname, clear = clear
 
 @tplot_com ;the tplot_vars.options structure tells us what's on the plot
 
@@ -54,15 +55,16 @@ Pro tplot_apply_timebar, varname = varname
 
   nvn = n_elements(vn)
   For j = 0, nvn-1 Do Begin
-;Check limits for timebar tag, then dlimits
-     get_data, vn[j], dlimits = dl, limits = al
-     tb = 0b
+;Check limits for timebar tag
+     get_data, vn[j], limits = al
      If(is_struct(al) && tag_exist(al, 'timebar')) Then Begin
         tb = al.timebar ;tb can be an array or structure
         If(~is_struct(tb)) Then tb = {time: time_double(tb)}
-     Endif Else If(is_struct(dl) && tag_exist(dl, 'timebar')) Then Begin
-        tb = dl.timebar
-        If(~is_struct(tb)) Then tb = {time: time_double(tb)}
+     Endif Else tb = 0b
+;clear the databar using 'options' if requested
+     If(is_struct(tb) && keyword_set(clear)) Then Begin
+        options, vn[j], 'timebar', ''
+        Continue
      Endif
 ;Call 'timebar' program to add to plot, if needed
      If(is_struct(tb)) Then Begin
