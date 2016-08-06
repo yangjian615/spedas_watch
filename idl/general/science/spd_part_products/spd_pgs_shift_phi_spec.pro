@@ -9,6 +9,10 @@
 ;  
 ;  (requested fix, probably no good solution)
 ;
+;  ^ The other solution would be to snap the new y axis range
+;    to that of the reordered bins rather than plotting exactly
+;    what the user requested.
+;
 ;Arguments:
 ;  data: data structure from tplot, already shifted
 ;  yrange: full range of y data from main routine
@@ -32,15 +36,15 @@ pro spd_pgs_shift_phi_spec_pad, data, yrange
     
     ;assumes finite v values monotonic at each time sample
     v_tmp = fltarr(tsize,ysize+1,/nozero)
-    v_tmp[*,0:ysize-1] = data.v
-    v_tmp[*,ysize] = data.v[*,0] + yrange[1]
+    v_tmp[0,0] = data.v
+    v_tmp[0,ysize] = data.v[*,0] + yrange[1]
     
   endelse
 
-  ;expand data
+  ;copy data to larger array
   y_tmp = fltarr(tsize,dsize+1,/nozero)
-  y_tmp[*,1:*] = data.y
-  y_tmp[*,0] = data.y[*,dsize-1]
+  y_tmp[0,0] = data.y
+  y_tmp[0,dsize] = data.y[*,0]
   
   data = {x:data.x, y:temporary(y_tmp), v:temporary(v_tmp)}
 
@@ -62,6 +66,9 @@ end
 ;  None, alters input tplot variable(s).
 ;
 ;Notes:
+;  -Bins intersected by the start angle will be copied to the top (end)
+;   of the spectrogram to ensure that the portion of those bin that is <
+;   the start angle is still plotted.
 ;  -This procedure assumes that the input variables' y axes are
 ;   monotonic and that any NaNs are at the end of the arrays.
 ;  -NaNs in the y axis are shifted along with valid numbers to
@@ -70,9 +77,9 @@ end
 ;    
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-01-04 15:38:57 -0800 (Mon, 04 Jan 2016) $
-;$LastChangedRevision: 19672 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-08-04 18:15:27 -0700 (Thu, 04 Aug 2016) $
+;$LastChangedRevision: 21602 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_shift_phi_spec.pro $
 ;-
 

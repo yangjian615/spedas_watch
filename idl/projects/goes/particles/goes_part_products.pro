@@ -72,8 +72,8 @@
 ;  
 ;
 ;
-;$LastChangedDate: 2016-08-02 19:05:30 -0700 (Tue, 02 Aug 2016) $
-;$LastChangedRevision: 21596 $
+;$LastChangedDate: 2016-08-04 18:16:31 -0700 (Thu, 04 Aug 2016) $
+;$LastChangedRevision: 21603 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_part_products.pro $
 ;-
 pro goes_part_products, $
@@ -383,9 +383,7 @@ pro goes_part_products, $
     ;phi range may be wrapped about phi=0, this keeps an invalid range from being passed to tplot
     phi_y_range = (undefined(start_angle) ? 0:start_angle) + [0,360]
     spd_pgs_make_tplot, tplot_prefix+'phi'+suffix, x=times, y=phi_y, z=phi_spec, yrange=phi_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
-    ;disable for now as it makes the data asymmetric
-    ;  -an unintended shift occurs even when start_angle=0
-;    spd_pgs_shift_phi_spec, names=tplot_prefix+'phi'+suffix, start_angle=start_angle
+    spd_pgs_shift_phi_spec, names=tplot_prefix+'phi'+suffix, start_angle=start_angle
   endif
   
   ;Pitch Angle Spectrograms
@@ -398,8 +396,7 @@ pro goes_part_products, $
     ;gyro range may be wrapped about gyro=0, this keeps an invalid range from being passed to tplot
     gyro_y_range = (undefined(start_angle) ? 0:start_angle) + [0,360]
     spd_pgs_make_tplot, tplot_prefix+'gyro'+suffix, x=times, y=gyro_y, z=gyro_spec, yrange=gyro_y_range,units=units_lc,datagap=datagap,tplotnames=tplotnames
-    ;disabled for now, see note above
-;    spd_pgs_shift_phi_spec, names=tplot_prefix+'gyro'+suffix, start_angle=start_angle
+    spd_pgs_shift_phi_spec, names=tplot_prefix+'gyro'+suffix, start_angle=start_angle
   endif
   
   ;Field-Aligned Energy Spectrograms
