@@ -10,8 +10,8 @@
 ;  Examples on SST specific sun decontamination options can be found in thm_crib_sst.pro
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-07-09 19:18:42 -0700 (Thu, 09 Jul 2015) $
-;$LastChangedRevision: 18064 $
+;$LastChangedDate: 2016-08-05 18:41:31 -0700 (Fri, 05 Aug 2016) $
+;$LastChangedRevision: 21604 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_products.pro $
 ;-
 
@@ -63,9 +63,9 @@ trange=['2008-02-23','2008-02-24']
 timespan,trange
 
 ;loads particle data for data type
-thm_part_load,probe=probe,trange=trange,datatype=datatype,outputs='energy phi theta'
+thm_part_load,probe=probe,trange=trange,datatype=datatype
 
-thm_part_products,probe=probe,datatype=datatype,trange=trange
+thm_part_products,probe=probe,datatype=datatype,trange=trange,outputs='energy phi theta'
 
 tplot,['tha_peif_eflux_energy','tha_peif_eflux_theta','tha_peif_eflux_phi']
 

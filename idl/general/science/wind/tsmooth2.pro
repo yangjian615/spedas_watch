@@ -11,7 +11,15 @@
 ;	 newname: name to assign to the output tplot variable. Default is name+'_sm'
 ;	 preserve_nans: (Added 20 dec 2011 lphilpott) set this keyword to not smooth over nans in the data. 
 ;  edge_truncate: If set, this keyword is passed to the smooth routine
+;  median: flag to use median instead of arithmetic average (added 2016-08-05)
+;  even: flag to use average of the two middle points when median is requested with
+;        an even width (normally uses larger)
 ;
+;NOTES:
+;  -Finite values larger than 1.9e20 are ignored and replaced with 2.0e20 in the result.
+;   The average of the two adjacent points is used instead when calculating the mean/median.
+;   The adjacent points are not re-checked so multiple adjacent values > 1.9e20 will 
+;   still be used.
 ;
 ;Documentation not complete.... 	
 ;
@@ -20,14 +28,13 @@
 ;Modified by:  D Larson.
 ;LAST MODIFICATION:	%M%
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
-
+; $LastChangedBy: aaflores $
+; $LastChangedDate: 2016-08-05 19:02:36 -0700 (Fri, 05 Aug 2016) $
+; $LastChangedRevision: 21605 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wind/tsmooth2.pro $
 ;-
 
-pro tsmooth2, name_, width, esteps=esteps, newname=newname, preserve_nans=preserve_nans,edge_truncate=edge_truncate, display_object=display_object
+pro tsmooth2, name_, width, esteps=esteps, newname=newname, preserve_nans=preserve_nans,edge_truncate=edge_truncate,even=even,median=median, display_object=display_object
 ; 
 ; Check that width is supplied.
 if n_elements(width) eq 0 then begin
@@ -78,7 +85,11 @@ for i = 0,d-1 do begin
           bad_data=nonnan_data[temp_ind]
           data.y[bad_data,i]=( data.y[bad_data-1,i] + data.y[bad_data+1,i] ) /2.0
       endif
-      data.y[*,i] = smooth(data.y[*,i],w[i],/nan,edge_truncate=edge_truncate) ; this still produces floating operand errors if there are nans for some reason
+      if keyword_set(median) then begin
+          data.y[*,i] = median(data.y[*,i],w[i], even=even)
+      endif else begin
+          data.y[*,i] = smooth(data.y[*,i],w[i],/nan,edge_truncate=edge_truncate) ; this still produces floating operand errors if there are nans for some reason
+      endelse
       if count gt 0 then $
           data.y[bad_data,i]=2.0e20
       if keyword_set(preserve_nans) then begin 
