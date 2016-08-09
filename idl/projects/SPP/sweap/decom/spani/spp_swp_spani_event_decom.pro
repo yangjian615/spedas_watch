@@ -1,5 +1,11 @@
 function spp_swp_spani_event_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.'
+    return,!null
+  endif
+
+
   ccsds_data = spp_swp_ccsds_data(ccsds)
 
   b = ccsds_data
@@ -34,7 +40,7 @@ function spp_swp_spani_event_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
   tdt = tw[w_dt]
 
-  events = replicate( {time:0d, seq_cntr15:ccsds.seq_cntr and 'f'x,  TOF:0u, dt:0u,  channel:0b , gap:0b} , n_dt )
+  events = replicate( {time:0d, seq_cntr15:ccsds.seqn and 'f'x,  TOF:0u, dt:0u,  channel:0b , gap:0b} , n_dt )
   events.time = ccsds.time + (tdt-tdt[0])/ 2.^10 * (2d^17/150000d)
   events.channel = ch[w_dt]
   events.tof = tof[w_dt]

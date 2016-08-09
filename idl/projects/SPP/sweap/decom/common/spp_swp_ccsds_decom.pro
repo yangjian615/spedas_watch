@@ -2,11 +2,11 @@
 ; contained in first 3 words (6 bytes)
 
 
-
-function spp_swp_ccsds_data,ccsds
-  if typename(ccsds) eq 'CCSDS_FORMAT' then data = *ccsds.pdata  else data=ccsds.data
-return,data
-end
+;
+;function spp_swp_ccsds_data,ccsds
+;  if typename(ccsds) eq 'CCSDS_FORMAT' then data = *ccsds.pdata  else data=ccsds.data
+;return,data
+;end
 
 
 

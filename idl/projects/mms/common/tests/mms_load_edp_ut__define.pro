@@ -118,7 +118,7 @@ end
 
 function mms_load_edp_ut::test_load_slow
   mms_load_edp, probe=1, data_rate='slow'
-  assert, spd_data_exists('mms1_edp_dce_dsl_slow_l2 mms1_edp_dce_par_epar_slow_l2', '2015-12-15', '2015-12-16'), 'Problem loading slow edp data'
+  assert, spd_data_exists('mms1_edp_dce_dsl_slow_l2', '2015-12-15', '2015-12-16'), 'Problem loading slow edp data'
   return, 1
 end
 

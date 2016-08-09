@@ -77,7 +77,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
     return
   endif
   ga   = buffer[3:16]
-  sc_id = swap_endian(/swap_if_little_endian, uint(ga,1))   
+  sc_id = swap_endian(/swap_if_little_endian, uint(ga,0))   
   days  = swap_endian(/swap_if_little_endian, uint(ga,2))
   ms    = swap_endian(/swap_if_little_endian, ulong(ga,4))
   us    = swap_endian(/swap_if_little_endian, uint(ga,8))
@@ -94,7 +94,7 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
     return
   endif
   ptp_header ={ ptp_time:utime, ptp_scid: sc_id, ptp_source:source, ptp_spare:spare, ptp_path:path, ptp_size:ptp_size }
-  if sc_id ne 'BB53'x then begin
+  if sc_id ne 'BB'x then begin
     dprint,dlevel=2,'Unknown SC_ID: '+string(sc_id)
     hexprint,buffer
     

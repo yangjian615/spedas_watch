@@ -1,5 +1,11 @@
 function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
+
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.',dlevel=2
+    return,!null
+  endif
+
   ;str = create_struct(ptp_header,ccsds)
   str = 0
   ;dprint,format="('Generic routine for',Z04)",ccsds.apid

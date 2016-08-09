@@ -5,6 +5,13 @@ function spp_swp_spani_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat,pl
   ;;-----------------------------------------
   ;; 1. 16 CCSDS header bytes (should be 10?)
   ;; 2. 512 ADC values, each 2 bytes
+  
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.',dlevel=2
+    return,!null
+  endif
+
+  
   ccsds_data = spp_swp_ccsds_data(ccsds)
   b = ccsds_data
   nb = n_elements(b)

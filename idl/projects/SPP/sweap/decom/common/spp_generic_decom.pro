@@ -1,5 +1,8 @@
 function spp_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
+  if n_params() eq 0 then begin
+    return,!null
+  endif
   str = create_struct(ptp_header,ccsds)
   ;dprint,format="('Generic routine for',Z04)",ccsds.apid                                                                                              
   if debug(4,msg='Generic') then begin

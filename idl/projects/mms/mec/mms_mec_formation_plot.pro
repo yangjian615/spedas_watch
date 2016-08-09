@@ -21,6 +21,7 @@
 ;       quality_factor: include the tetrahedron quality factor
 ;       coord: coordinate system of the formation plot; default is GSE
 ;              valid options are eci, gsm, geo, sm, gse, gse2000
+;       sundir:     direction of the sun in the figure; default is 'left' 
 ;               
 ; EXAMPLES:
 ;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse'
@@ -38,16 +39,17 @@
 ;       and Kim Kokkonen at LASP
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-27 08:14:16 -0700 (Fri, 27 May 2016) $
-; $LastChangedRevision: 21228 $
+; $LastChangedDate: 2016-08-08 14:15:23 -0700 (Mon, 08 Aug 2016) $
+; $LastChangedRevision: 21615 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_mec_formation_plot.pro $
 ;-
 
 pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_factor, $
   xy_projection=xy_projection, xz_projection=xz_projection, yz_projection=yz_projection, $
-  coord=coord, lmn=lmn, xyz=xyz
+  coord=coord, lmn=lmn, xyz=xyz, sundir=sundir
 
   if undefined(coord) then coord='gse' else coord=strlowcase(coord)
+  if undefined(sundir) then sundir = 'right'
   
   ; load one minute of position data
   current_time = [time_double(time), time_double(time)+60.]
@@ -73,9 +75,15 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   if not undefined(lmn) then xyz=lmn
 
   if not undefined(xyz) then begin
-    xes = [(reform(d1.Y[0, *]#xyz))[0], (reform(d2.Y[0, *]#xyz))[0], (reform(d3.Y[0, *]#xyz))[0], (reform(d4.Y[0, *]#xyz))[0]]
-    yes = [(reform(d1.Y[0, *]#xyz))[1], (reform(d2.Y[0, *]#xyz))[1], (reform(d3.Y[0, *]#xyz))[1], (reform(d4.Y[0, *]#xyz))[1]]
-    zes = [(reform(d1.Y[0, *]#xyz))[2], (reform(d2.Y[0, *]#xyz))[2], (reform(d3.Y[0, *]#xyz))[2], (reform(d4.Y[0, *]#xyz))[2]]
+    if not undefined(lmn) then begin
+      zes = [(reform(d1.Y[0, *]#xyz))[0], (reform(d2.Y[0, *]#xyz))[0], (reform(d3.Y[0, *]#xyz))[0], (reform(d4.Y[0, *]#xyz))[0]]
+      yes = [(reform(d1.Y[0, *]#xyz))[1], (reform(d2.Y[0, *]#xyz))[1], (reform(d3.Y[0, *]#xyz))[1], (reform(d4.Y[0, *]#xyz))[1]]
+      xes = [(reform(d1.Y[0, *]#xyz))[2], (reform(d2.Y[0, *]#xyz))[2], (reform(d3.Y[0, *]#xyz))[2], (reform(d4.Y[0, *]#xyz))[2]]
+    endif else begin
+      xes = [(reform(d1.Y[0, *]#xyz))[0], (reform(d2.Y[0, *]#xyz))[0], (reform(d3.Y[0, *]#xyz))[0], (reform(d4.Y[0, *]#xyz))[0]]
+      yes = [(reform(d1.Y[0, *]#xyz))[1], (reform(d2.Y[0, *]#xyz))[1], (reform(d3.Y[0, *]#xyz))[1], (reform(d4.Y[0, *]#xyz))[1]]
+      zes = [(reform(d1.Y[0, *]#xyz))[2], (reform(d2.Y[0, *]#xyz))[2], (reform(d3.Y[0, *]#xyz))[2], (reform(d4.Y[0, *]#xyz))[2]]
+    endelse
   endif else begin
     xes = [d1.Y[0, 0], d2.Y[0, 0], d3.Y[0, 0], d4.Y[0, 0]]
     yes = [d1.Y[0, 1], d2.Y[0, 1], d3.Y[0, 1], d4.Y[0, 1]]
@@ -87,9 +95,15 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   zes = (zes - mean(zes))
 
   ; get ranges
-  xrange = 1.3 * [min(xes), max(xes)]
-  yrange = 1.3 * [min(yes), max(yes)]
-  zrange = 1.3 * [min(zes), max(zes)]
+  if not undefined(lmn) then begin
+    xrange = 1.3 * [max(xes), min(xes)]
+    yrange = 1.3 * [min(yes), max(yes)]
+    zrange = 1.3 * [min(zes), max(zes)]
+  endif else begin
+    xrange = 1.3 * [min(xes), max(xes)]
+    yrange = 1.3 * [min(yes), max(yes)]
+    zrange = 1.3 * [min(zes), max(zes)]
+  endelse
 
   ; edges between vertices
   xes1 = [xes[0], xes[1], xes[2], xes[3], xes[0], xes[3], xes[1], xes[0], xes[2]]
@@ -101,9 +115,6 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   spacecraft_colors = [[40,40,40],[213,94,0],[0,158,115],[86,180,233]]
   spacecraft_names = ['MMS1','MMS2','MMS3','MMS4']
 
-  ;test = plot3d(xes, yes, zes, linestyle='none', color='black', sym_object = orb(), $
-  ;   sym_size=3, /sym_filled, vert_colors=spacecraft_colors, margin=margin)
-
   if undefined(lmn) then begin
     p = plot3d(xes1, yes1, zes1, thick=2, color='dim grey', $
       axis_style=2, xtitle='X, km', ytitle='Y, km', ztitle='Z, km', $
@@ -111,15 +122,15 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
       perspective=perspective, margin=margin)
   endif else begin
     p = plot3d(xes1, yes1, zes1, thick=2, color='dim grey', $
-      axis_style=2, xtitle='L, km', ytitle='M, km', ztitle='N, km', $
+      axis_style=2, xtitle='N, km', ytitle='M, km', ztitle='L, km', $
       xrange=xrange, yrange=yrange, zrange=zrange, $
       perspective=perspective, margin=margin)
   endelse
 
-  plot2 = plot3d(xes, yes, zes, linestyle='none', color='black', sym_object = orb(), $
+  plot2 = plot3d(xes, yes, zes, linestyle='none', color='black', sym_object = orb(lighting=0), $
     sym_size=3, /sym_filled, vert_colors=spacecraft_colors, perspective=1, $
     margin=margin, /overplot)
-    
+
   ; draw spacecraft projections
   sym_transparency = 60
   
@@ -150,7 +161,7 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
     /overplot, perspective=perspective, buffer=buffer, margin=margin)
   p1 = plot3d([0, 0], [-w, w], make_array(2, value=zrange[0]), thick=1, color='black', $
     /overplot, perspective=perspective, buffer=buffer, margin=margin)
-
+    
   ; setup the axes
   ax = p.axes
   ax[0].tickfont_size = 7
@@ -180,7 +191,7 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
   if ~undefined(tqf) then t = text(x1,.81,title_string3,/current,font_size=16, font_color='black')
 
   if undefined(lmn) then begin
-    if coord ne 'geo' and coord ne 'eci' and undefined(xyz) then t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates, Sun to the right', font_size=8, font_color='black') $
+    if coord ne 'geo' and coord ne 'eci' and undefined(xyz) then t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates, Sun to the '+sundir, font_size=8, font_color='black') $
     else if undefined(xyz) then t1 = text(0.5, yl+0.05, strupcase(coord)+' Coordinates', font_size=8, font_color='black')
   endif else begin
     t1 = text(0.5, yl+0.05, 'LMN Coordinates', font_size=8, font_color='black')

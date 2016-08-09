@@ -1,21 +1,27 @@
 ;; Slow Housekeeping
-function spp_swp_spani_slow_hkp_9ex_decom, $
-   ccsds , $
-   ptp_header=ptp_header, $
-   apdat=apdat
+function spp_swp_spani_slow_hkp_9ex_decom,   ccsds ,   ptp_header=ptp_header,   apdat=apdat
 
-  b = ccsds.data
-  
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.'
+    return,!null
+  endif
+
+
+;  b = ccsds.data
+
+  ccsds_data = spp_swp_ccsds_data(ccsds)
+  b = ccsds_data
+
  ; printdat,apdat
- if ptr_valid(apdat.last_ccsds) && keyword_set(*(apdat.last_ccsds)) then  last_ccsds = *(apdat.last_ccsds) else last_ccsds = 0
+; if ptr_valid(apdat.last_ccsds) && keyword_set(*(apdat.last_ccsds)) then  last_ccsds = *(apdat.last_ccsds) else last_ccsds = 0
  
- if keyword_set(last_ccsds) then begin
-  dseq_cntr = (ccsds.seq_cntr - last_ccsds.seq_cntr) and '3fff'xu
-  dtime = ccsds.time - last_ccsds.time
- endif else begin
-   dseq_cntr =  1u
-   dtime = !values.d_nan
- endelse
+; if keyword_set(last_ccsds) then begin
+;  dseqn = (ccsds.seqn - last_ccsds.seq_cntr) and '3fff'xu
+;  dtime = ccsds.time - last_ccsds.time
+; endif else begin
+;   dseq_cntr =  1u
+;   dtime = !values.d_nan
+; endelse
 
  REVNUMBER      =       b[12]
  if REVNUMBER ne '9e'x then begin
@@ -36,7 +42,7 @@ function spp_swp_spani_slow_hkp_9ex_decom, $
      return,0
   endif
   
-  sf0 = ccsds.data[11] and 3
+  sf0 = ccsds_data[11] and 3
   if sf0 ne 0 then dprint, 'Odd time at: ',time_string(ccsds.time)
 
 
@@ -103,13 +109,13 @@ endif
 
   spai = { $
          time:            ccsds.time, $
-         dtime:           dtime/dseq_cntr, $
-         time_mod1:         (ccsds.met) mod 1 , $
-         time2_mod1:      (ccsds.met / (2L^24/19.2d6) ) mod 1, $
+         dtime:           ccsds.time_delta/ccsds.seqn_delta, $
+         met_mod1:         ccsds.met mod 1 , $
+         time_mod1:      (ccsds.met / (2L^24/19.2d6) ) mod 1, $
          met:             ccsds.met,  $
-         delay_time:      ptp_header.ptp_time - ccsds.time, $
-         seq_cntr:        ccsds.seq_cntr, $
-         dseq_cntr:       dseq_cntr   < 15, $
+;         delay_time:      ptp_header.ptp_time - ccsds.time, $
+         seqn:        ccsds.seqn, $
+         seqn_delta:       ccsds.seqn_delta   < 15, $
  
          REVN:            b[12],  $
          CMDS_REC:        spp_swp_word_decom(b,13)  and 'ff'x,  $

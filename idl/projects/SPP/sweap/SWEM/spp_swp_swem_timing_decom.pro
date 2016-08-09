@@ -16,6 +16,12 @@ function spp_swp_swem_timing_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
 common spp_swp_swem_timing_decom_com2,  last_str,  fields_dt
 
+if n_params() eq 0 then begin
+  dprint,'Not working yet.'
+  return,!null
+endif
+
+
 if typename(ccsds) eq 'CCSDS_FORMAT' then data = *ccsds.pdata  else data=ccsds.data
 ;data = ccsds.data
 

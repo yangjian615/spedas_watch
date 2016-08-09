@@ -44,26 +44,30 @@ pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,rem
         ccsds.time_delta = (ccsds.met - last_ccsds.met)
         ccsds.gap = (dseq ne 1)
       endif
+      
       if ccsds.gap ne 0  then begin
         dprint,dlevel=3,format='("Lost ",i5," 0x", Z03, " packets")',  ccsds.seqn_delta,apdat.apid
         store_data,'APIDS_GAP',ccsds.time,ccsds.apid,  /append,dlimit={psym:4,symsize:.4 ,ynozero:1, colors:'r'}
       endif
+      
+;      if ptr_valid(apdat.ccsds_all) then begin
+;        append_array,*apdat.ccsds_all,ccsds,index= *apdat.ccsds_index
+;      endif
+      if isa(apdat.ccsds_array,'dynamicarray') then apdat.ccsds_array.append,ccsds
 
       if keyword_set(apdat.routine) then begin
-        strct = call_function(apdat.routine,ccsds, ptp_header=header,apdat=apdat)
+        strct =  call_function(apdat.routine,ccsds, ptp_header=header,apdat=apdat)
         if  apdat.save && keyword_set(strct) then begin
-          ;if ccsds.gap eq 1 then append_array, *apdat.dataptr,
-          ;fill_nan(strct), index = *apdat.dataindex
-          append_array, *apdat.dataptr, strct, index = *apdat.dataindex
+          if isa(apdat.data_array,'dynamicarray') then apdat.data_array.append, strct
         endif
         if apdat.rt_flag && apdat.rt_tags then begin
           if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-          store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags , append = 1 ;+ strct[0].gap
+          store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags , append = 1 
         endif
       endif else begin
         if debug(2) then begin
           dprint,dlevel=1,'Unknown APID: ',ccsds.apid,format='(a,Z04)'
-          printdat,ccsds
+          if debug(3) then printdat,ccsds
         endif
       endelse
       *apdat.last_ccsds = ccsds

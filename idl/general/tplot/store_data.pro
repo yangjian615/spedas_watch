@@ -37,8 +37,8 @@
 ;
 ;CREATED BY:    Davin Larson
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-07-29 07:46:51 -0700 (Fri, 29 Jul 2016) $
-; $LastChangedRevision: 21567 $
+; $LastChangedDate: 2016-08-08 15:07:11 -0700 (Mon, 08 Aug 2016) $
+; $LastChangedRevision: 21616 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/store_data.pro $
 ;-
 pro store_data,name, time,ydata,values, $
@@ -46,6 +46,7 @@ pro store_data,name, time,ydata,values, $
    append=append, $
    tagnames = tagnames, $
    time_tag = time_tag, $
+   gap_tag  = gap_tag,  $
    limits= limits, $
    dlimits = dlimits, $
    newname = newname, $
@@ -79,6 +80,7 @@ if size(/type,tagnames) eq 7 then begin
     return
   endif
   if size(/type,time_tag) ne 7 then time_tag = 'TIME'
+;  if size(/type,gap_tag) ne 7 then gap_tag = 'GAP'
   tags = tag_names(data)
   str_element,data,time_tag,time    ;  time = data.time
   ok   = strfilter(tags,tagnames,delimiter=' ',/byte)
@@ -87,7 +89,9 @@ if size(/type,tagnames) eq 7 then begin
   for i=0,n_elements(tags)-1 do begin
     if ok[i] eq 0 then continue
     if tags[i] eq time_tag then continue
+    if keyword_set(gap_tag) && tags[i] eq gap_tag then continue
     y = data.(i)
+    if size(/type,y) eq 10 then continue   ; ignore pointers
     dimy = size(/n_dimen,y)
     if dimy eq 2 || nd eq 1 then begin
        y = transpose([y])
@@ -257,7 +261,7 @@ if n_elements(data) ne 0 then begin
     save_ptrs = [save_ptrs, ptr_extract(dlimits)]
     save_ptrs = [save_ptrs, ptr_extract(data)]
     save_ptrs = [save_ptrs, ptr_extract( data_quants[where(data_quants.name ne dq.name)])]
-    dprint,verbose=verbose,dlevel=2,verb+' tplot variable: ',strtrim(index,2),' ',dq.name
+    dprint,verbose=verbose,dlevel=1,verb+' tplot variable: ',strtrim(index,2),' ',dq.name
     dq.create_time = systime(1)
     if size(/type,data) eq 8 then begin  ; structures
         mytags = tag_names(data)

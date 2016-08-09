@@ -1,11 +1,16 @@
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-07-29 07:51:41 -0700 (Fri, 29 Jul 2016) $
-; $LastChangedRevision: 21568 $
+; $LastChangedDate: 2016-08-08 13:56:30 -0700 (Mon, 08 Aug 2016) $
+; $LastChangedRevision: 21610 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/SWEM/spp_swp_swem_unwrapper.pro $
 
 function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
   
-;  str = create_struct(ptp_header,ccsds)
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.'
+    return,!null
+  endif
+
+
   str = {time:ccsds.time, $
          apid:ccsds.apid, $
          seqn:ccsds.seqn, $

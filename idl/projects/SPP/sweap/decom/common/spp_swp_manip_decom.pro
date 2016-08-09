@@ -15,7 +15,16 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ;; First 17 bytes are PTP header
   ;; NO, first 10 bytes are PTP header
   ;;
-  b = ccsds.data
+  
+  
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.',dlevel=2
+    return,!null
+  endif
+
+  
+  b  = spp_swp_ccsds_data(ccsds)
+
   ;print, b
   
   ;dprint,spp_swp_word_decom(b, 17)

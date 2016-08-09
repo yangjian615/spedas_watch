@@ -217,6 +217,12 @@ function spp_swp_spani_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
   ;;-------------------------------------------
   ;; Parse data
   
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.'
+    return,!null
+  endif
+
+  
   pksize = ccsds.pkt_size
   if pksize le 20 then begin
     dprint,dlevel = 2, 'size error - no data'
@@ -233,8 +239,8 @@ function spp_swp_spani_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
   ns = pksize - 20   
   log_flag    = header[12]
   mode1 = header[13]
-  mode2 = (swap_endian(uint(ccsds_data,14,1) ,/swap_if_little_endian ))[0]
-  f0 = (swap_endian(ulong(header,16,1), /swap_if_little_endian))[0]
+  mode2 = (swap_endian(uint(ccsds_data,14) ,/swap_if_little_endian ))
+  f0 = (swap_endian(uint(header,16), /swap_if_little_endian))
   status_flag = header[18]
   peak_bin = header[19]
 
@@ -259,9 +265,11 @@ function spp_swp_spani_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
   str = { $
     time:        ccsds.time, $
     apid:        ccsds.apid, $
-    delta_time:  float(delta_t), $
-    seq_cntr:    ccsds.seq_cntr,  $
+    time_delta:  ccsds.time_delta, $
+    seqn:        ccsds.seqn,  $
+    seqn_delta:  ccsds.seqn_delta,  $
     seq_group:   ccsds.seq_group,  $
+    pkt_size :   ccsds.pkt_size,  $
     ndat:        ndat, $
     datasize:    ns, $
     log_flag:    log_flag, $
@@ -271,8 +279,8 @@ function spp_swp_spani_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
     status_flag: status_flag,$
     peak_bin:    peak_bin, $
     cnts_total:  tcnts,  $
-;    data:        ptr_new(), $
-    gap:         0  }
+    pdata:        ptr_new(data), $
+    gap:         ccsds.gap  }
 
 
 if  ns gt 0 then begin

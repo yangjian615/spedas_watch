@@ -64,8 +64,6 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
     endif
 
 
-
-
     if ptr+6+psize gt bsize then begin
       dprint,dlevel=2,'Buffer has incomplete packet. Saving ',n_elements(buffer)-ptr,' bytes for next call.'
       *info.buffer_ptr = buffer[ptr:*]                   ; store remainder of buffer to be used on the next call to this procedure

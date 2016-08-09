@@ -1,6 +1,11 @@
 
 function spp_swp_spani_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat
 
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.',dlevel=2
+    return,!null
+  endif
+
   ccsds_data = spp_swp_ccsds_data(ccsds)
 
   b = ccsds_data
@@ -24,7 +29,7 @@ function spp_swp_spani_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   rates_str = { $
     time:               time, $
     met:                ccsds.met,  $
-    seq_cntr:           ccsds.seq_cntr, $
+    seq_cntr:           ccsds.seqn, $
     mode:               b[13] , $
     valid_cnts:         reform( rates[0,*]) , $
     multi_cnts:         reform( rates[1,*]), $

@@ -47,6 +47,13 @@
 
 function spp_swp_spane_slow_hkp_v52x_decom,ccsds , ptp_header=ptp_header, apdat=apdat
 
+;  if  ~keyword_set(apdat.data_array) then   apdat.data_array = dynamicarray(name='hkp_')
+;
+;  if n_params() eq 0 then begin    ; This will get called after the file is loaded to save parameters in tplot.
+;    if isa(apdat.data_array,'dynamicarray') then store_data,apdat.tname,data= apdat.data_array.array,tagnames= apdat.tfields
+;    return, !null
+;  endif
+
 
   ccsds_data = spp_swp_ccsds_data(ccsds)  
 
@@ -81,7 +88,7 @@ ulong_array = swap_endian(/swap_if_little_endian, ulong(bschk,0,n_elements(bschk
 chksum3 = total(/preserve, ulong_array)
 chksum3 = ((chksum3 and 'ffff'x)  + ishft(chksum3,-16) ) and 'ffff'x
 
-if debug(4) then begin
+if debug(5) then begin
   hexprint,uint_array
   printdat,/hex,chksum1
   printdat,/hex,chksum2
@@ -184,7 +191,6 @@ endif
     HDR_17:         b[17], $
     HDR_18:         b[18], $
     HDR_19:         b[19], $
-
     RIO_20:         swap_endian(/swap_if_little_endian,  fix(b,20 ) ),$
     RIO_21:         swap_endian(/swap_if_little_endian,  fix(b,22 ) ),$
     RIO_LVPS_TEMP:  MON_LVPS_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,24 ) ),$
@@ -201,7 +207,6 @@ endif
     RIO_1p5I:       swap_endian(/swap_if_little_endian,  fix(b,46 ) ),$
     RIO_P5IA:       swap_endian(/swap_if_little_endian,  fix(b,48 ) ),$
     RIO_M5IA:       swap_endian(/swap_if_little_endian,  fix(b,50 ) ),$
-
     adc_VMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,MCP_VMON_CH ) ) * ref/4095. , $
     adc_VMON_DEF1:  swap_endian(/swap_if_little_endian,  fix(b,54 ) )          * ref*1000./4095. , $
     adc_IMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,MCP_IMON_CH ) ) * ref/4095. , $
@@ -270,8 +275,8 @@ endif
 ;    pkt_csum:       swap_endian(/swap_if_little_endian, uint( b,152 ) ) and 'ffff'x , $
     pkt_csum_diff:  chksum1 - chksum3, $
     edba:           swap_endian(/swap_if_little_endian, uint( b,154 ) ) and 'ffff'x , $
-    GAP:            ccsds.gap, $
-    all_ADC:        ADCarray}
+    all_ADC:        ADCarray, $
+    GAP:            ccsds.gap}
 
 
 

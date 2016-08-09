@@ -4,7 +4,9 @@ pro spp_msg_file_read,files
   
 ;  common spp_msg_file_read, time_status
   t0 = systime(1)
-  spp_apid_data,/clear,rt_flag=0
+  spp_swp_startup,rt_flag=0,save=1,/clear
+  info = {buffer_ptr: ptr_new(/allocate_heap) , time_received:0d}
+
 
   for i=0,n_elements(files)-1 do begin
     file = files[i]
@@ -39,7 +41,8 @@ pro spp_msg_file_read,files
       buffer = bytarr(psize)
       readu,lun,buffer
       
-      spp_msg_stream_read,[sizebuf,buffer] ,time=systime(1)    ; read only a single message and pass it on
+      info.time_received = systime(1)
+      spp_msg_stream_read,[sizebuf,buffer] , info = info    ;,time=systime(1)    ; read only a single message and pass it on
       
 if 0 then begin      
       w= where(buffer ne 0,nw)

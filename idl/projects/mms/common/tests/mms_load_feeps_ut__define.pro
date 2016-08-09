@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21557 $
+; $LastChangedDate: 2016-08-08 09:21:34 -0700 (Mon, 08 Aug 2016) $
+; $LastChangedRevision: 21608 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
 
@@ -209,7 +209,7 @@ function mms_load_feeps_ut::init, _extra=e
                             'mms_feeps_pad_spinavg', 'mms_feeps_pad', $
                             'mms_feeps_remove_sun', 'mms_feeps_smooth', $
                             'mms_feeps_spin_avg', 'mms_feeps_split_integral_ch']
-  self->addTestingRoutine, ['mms_feeps_sector_masks'], /is_function
+  self->addTestingRoutine, ['mms_read_feeps_sector_masks_csv'], /is_function
   return, 1
 end
 

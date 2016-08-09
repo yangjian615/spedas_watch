@@ -5,6 +5,12 @@ function spp_swp_spane_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ;;----------------------
   ;; 1. 20 CCSDS header bytes (should be 10?)
   ;; 2. 512 ADC values, each 2 bytes
+  
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.'
+    return,!null
+  endif
+
 
   b = ccsds.data
   data = swap_endian(/swap_if_little_endian,  uint(b,20,512))

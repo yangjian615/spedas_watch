@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-02-26 12:42:55 -0800 (Fri, 26 Feb 2016) $
-;$LastChangedRevision: 20214 $
+;$LastChangedDate: 2016-08-08 15:20:17 -0700 (Mon, 08 Aug 2016) $
+;$LastChangedRevision: 21617 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_fix_metadata.pro $
 ;-
 
@@ -19,11 +19,113 @@ pro mms_fpi_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
     if undefined(level) then level = ''
     if undefined(data_rate) then data_rate = 'fast'
 
-
     for sc_idx = 0, n_elements(prefix)-1 do begin
       for name_idx = 0, n_elements(tplotnames)-1 do begin
         tplot_name = tplotnames[name_idx]
         case tplot_name of
+          prefix[sc_idx] + '_dis_energyspectr_px_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_py_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_pz_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_mx_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_my_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_mz_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_par_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_anti_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_perp_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_px_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_py_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_pz_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_mx_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_my_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_mz_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_par_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_anti_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_energyspectr_perp_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+
+
+          ; moms
+          prefix[sc_idx] + '_des_numberdensity_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'colors', 2
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES'
+            options, /def, tplot_name, 'labels', 'Ne, electrons'
+          end
+          prefix[sc_idx] + '_dis_numberdensity_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'colors', 4
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS'
+            options, /def, tplot_name, 'labels', 'Ni, ions'
+          end
           prefix[sc_idx] + '_des_numberdensity_dbcs_'+data_rate+suffix: begin
             options, /def, tplot_name, 'colors', 2
             options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES'
@@ -65,6 +167,42 @@ pro mms_fpi_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
             options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS velocity'
           end
           prefix[sc_idx] + '_dis_bulkz_dbcs_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', 'Vz'
+            options, /def, tplot_name, 'colors', 6
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS velocity'
+          end
+          prefix[sc_idx] + '_des_bulkx_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', 'Vx'
+            options, /def, tplot_name, 'colors', 2
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES velocity'
+          end
+          prefix[sc_idx] + '_des_bulky_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', 'Vy'
+            options, /def, tplot_name, 'colors', 4
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES velocity'
+          end
+          prefix[sc_idx] + '_des_bulkz_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', 'Vz'
+            options, /def, tplot_name, 'colors', 6
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES velocity'
+          end
+          prefix[sc_idx] + '_dis_bulkx_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', 'Vx'
+            options, /def, tplot_name, 'colors', 2
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS velocity'
+          end
+          prefix[sc_idx] + '_dis_bulky_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', 'Vy'
+            options, /def, tplot_name, 'colors', 4
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS velocity'
+          end
+          prefix[sc_idx] + '_dis_bulkz_gse_'+data_rate+suffix: begin
             options, /def, tplot_name, 'labels', 'Vz'
             options, /def, tplot_name, 'colors', 6
             options, /def, tplot_name, 'labflag', -1

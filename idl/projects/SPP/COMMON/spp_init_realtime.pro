@@ -1,6 +1,6 @@
 
 
-pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=itf,RM133=RM133
+pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=itf,RM133=RM133,rm320=rm320,rm333=rm333
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
@@ -19,13 +19,19 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
     recorder,title='ROOM 133', port= hub ? 2028 : 2024, host='128.32.13.37', exec_proc='spp_ptp_stream_read'
     return
   endif
-  host = 'localhost'
-  host = '128.32.98.101'
-  host = 'ABIAD-SW.ssl.berkeley.edu'
-  recorder,title='GSEOS PTP ion', port=2028, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
-  recorder,title='GSEOS PTP elec',port=2128, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+  if keyword_set(rm333) then begin
+    recorder,title='ROOM 333', port= hub ? 2028 : 2023, host='ssa333-lab.ssl.berkeley.edu', exec_proc='spp_msg_stream_read'
+    return
+  endif
+  if keyword_set(rm320) then begin
+    host = 'localhost'
+    host = '128.32.98.101'
+    host = 'ABIAD-SW.ssl.berkeley.edu'
+    recorder,title='GSEOS PTP ion', port=2028, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+    recorder,title='GSEOS PTP elec',port=2128, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'    
+  endif
   
-  printdat,recorder_base,filename,exec_base,/value
+;  printdat,recorder_base,filename,exec_base,/value
   
   ;spp_swp_apid_data_init,save=1
   ;spp_apid_data,'3b9'x,name='SWEAP SPAN-I Events',rt_tags='*'

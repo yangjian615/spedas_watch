@@ -34,6 +34,8 @@
 ; 
 ; - newdir: the default directory should be a mirror of SSL. Set this keyword if you want to look at files stored at another location. Note that sub folders within newdir are assumed to have the structure newdir/yyyy/mm/file.cdf. This hasn't been tested much and may break.
 ;
+; - success: set to a named variable. This will return a string: '0': requested date and filetype was not loaded. '1': File load was successful.
+;
 ; EXAMPLES:
 ; 
 ; mvn_lpw_cdf_read, '2014-12-03', vars='lpiv', level='l2'                     ;Load L2 data, just the IV curves
@@ -54,14 +56,16 @@
 ; -2015-01-09: CF: routine changed to accept date. This routine calls upon mvn_lpw_cdf_read_file and provides the filenames to do the loading.
 ; -2015-04-30: CF: previous updates include ability to get EUV data, default is L2, checking input variables for errors.
 ; -2015-08-04: CMF: edited preamble.
+; -2016-06-08: CMF: added success keyword. 
 ;
 ; Version 2.0
 ;-
 
-pro mvn_lpw_cdf_read, date, vars=vars, level=level, newdir=newdir
+pro mvn_lpw_cdf_read, date, vars=vars, level=level, newdir=newdir, success=success
 
 name = 'mvn_lpw_cdf_read: '
 sl = path_sep()
+success = '0'  ;default if routine bails
 
 ;May need password:
 if getenv('MAVENPFP_USER_PASS') eq '' then begin
@@ -77,17 +81,17 @@ IF size(date, /type) EQ 7 THEN BEGIN  ;utc_in must be a string
   IF n_elements(date) NE 1 THEN BEGIN  ;only one date entry
     print, "#### WARNING ####: date entered must be a string in the format 'yyyy-mm-dd'."
     print, "For example: '2014-02-01'. You can only read in one day at a time."
-    retall
+    return
   ENDIF
   IF strmatch(date, '[0123456789][0123456789][0123456789][0123456789]-[0123456789][0123456789]-[0123456789][0123456789]') NE 1 THEN BEGIN
     print, "#### WARNING ####: entered date must be a string in the format 'yyyy-mm-dd'."
     print, "For example: '2014-02-01'. You can only read in one day at a time."
-    retall
+    return
   ENDIF
 ENDIF ELSE BEGIN
   print, "#### WARNING ####:entered date must be a string in the format 'yyyy-mm-dd'."
   print, "For example: '2014-02-01'. You can only read in one day at a time."
-  retall
+  return
 ENDELSE
 
 ;Check vars, levels. Make lower case, as all file names will be lower case.
@@ -116,7 +120,7 @@ if n_elements(notValid) gt 1 then begin
     print,""
     print, "The following are acceptable inputs: ", varsALL
     print, "Please correct and re-run. Returning."
-    retall
+    return
 endif
 
 
@@ -189,6 +193,7 @@ endif else begin
 
     ;Feed found files into read routine:
     mvn_lpw_cdf_read_file, dir=dirs, varlist=names
+    success = '1'  ;Im assuming read_file above will be successful. If a file was found, it should be...
     
     ;mvn_lpw_cdf_read_extras  ;extract Ne, Te, Vsc to separate tplot variables   ;moved into mvn_lpw_cdf_read_file, by CMF on 2015-09-04
    
@@ -212,24 +217,22 @@ endif
 ;======
 ;Some EUV dates have timestamps of zero which causes tplot to crash. Remove them here.
 if euvget eq 1 then begin
-    get_data, 'mvn_euv_calib_bands', data=dd1, dlimit=dl1, limit=ll1, index=j
-    if (j gt 0) then begin
-      i = where(dd1.x gt 0., ni)
-      if ni gt 0. then begin
-          ddnew = create_struct('x'   ,   dd1.x[i]     , $
-                                'y'   ,   dd1.y[i,*]   , $
-                                'dy'  ,   dd1.dy[i,*]  , $
-                                'dv'  ,   dd1.dv[i,*]  , $
-                                'flag',   dd1.flag[i]  )
-      endif
-    
-      store_data, 'mvn_euv_calib_bands', data=ddnew, dlimit=dl1, limit=ll1
-      options, 'mvn_euv_calib_bands', ylog=0
-      ;Set yrange on plot:
-      ymax = max(ddnew.y, /nan)*1.1
-      ymin = min(ddnew.y, /nan)
-      ylim, 'mvn_euv_calib_bands', ymin, ymax
+    get_data, 'mvn_euv_calib_bands', data=dd1, dlimit=dl1, limit=ll1
+    i = where(dd1.x gt 0., ni)
+    if ni gt 0. then begin
+        ddnew = create_struct('x'   ,   dd1.x[i]     , $
+                              'y'   ,   dd1.y[i,*]   , $
+                              'dy'  ,   dd1.dy[i,*]  , $
+                              'dv'  ,   dd1.dv[i,*]  , $
+                              'flag',   dd1.flag[i]  )
     endif
+    
+    store_data, 'mvn_euv_calib_bands', data=ddnew, dlimit=dl1, limit=ll1
+    options, 'mvn_euv_calib_bands', ylog=0
+    ;Set yrange on plot:
+    ymax = max(ddnew.y, /nan)*1.1
+    ymin = min(ddnew.y, /nan)
+    ylim, 'mvn_euv_calib_bands', ymin, ymax
     
 endif
 

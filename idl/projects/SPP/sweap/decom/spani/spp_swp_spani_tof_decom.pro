@@ -1,5 +1,9 @@
 function spp_swp_spani_tof_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
+  if n_params() eq 0 then begin
+    dprint,'Not working yet.'
+    return,!null
+  endif
 
   ;; IMPLEMENT DECOMPRESSION
   ccsds_data = spp_swp_ccsds_data(ccsds)
