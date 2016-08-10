@@ -13,8 +13,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
-; $LastChangedRevision: 21548 $
+; $LastChangedDate: 2016-08-09 15:13:07 -0700 (Tue, 09 Aug 2016) $
+; $LastChangedRevision: 21627 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_hpca_summary_qlplots.pro $
 ;-
 
@@ -27,7 +27,7 @@ timespan, date, 1
 ;   ps: postscript files
 ;   png: png files
 ;   win: creates/opens all of the tplot windows
-send_plots_to = 'png'
+send_plots_to = 'win'
 plot_directory = 'hpca_summary/'+time_string(date, tformat='YYYY/MM/DD/')
 
 tplot_options,'xmargin',[15,15]              ; Set left/right margins to 10 characters

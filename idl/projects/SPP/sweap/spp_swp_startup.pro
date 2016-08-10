@@ -177,6 +177,7 @@ pro spp_swp_startup, spanai   = spanai,$
   if keyword_set(spanae) then begin
 
      decom_routine = 'spp_swp_spane_product_decom2'
+     ttags = '*'
 
      ;;----------------------------------------------------------------------------------------------------------------------------------
      ;; Product Decommutators

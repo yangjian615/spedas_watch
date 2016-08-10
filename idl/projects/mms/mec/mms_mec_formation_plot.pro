@@ -21,26 +21,40 @@
 ;       quality_factor: include the tetrahedron quality factor
 ;       coord: coordinate system of the formation plot; default is GSE
 ;              valid options are eci, gsm, geo, sm, gse, gse2000
-;       sundir:     direction of the sun in the figure; default is 'left' 
+;       xyz: a 3 x 3 rotation matrix for rotating position data to an
+;            arbitrary coordinate system from the coordinate system
+;            defined by coord 
+;       lmn: a 3 x 3 rotation matrix for rotating position data to an
+;            LMN coordinate system from the coordinate system
+;            defined by coord (do not use with xyz keyword)
+;       sundir: direction of the sun (+x) in the figure (right or left); default is 'right'
+;               (+N direction for LMN coordinate)
 ;               
 ; EXAMPLES:
 ;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse'
 ;       
 ;       should create something like:
-;       
 ;       https://lasp.colorado.edu/mms/sdc/public/data/sdc/mms_formation_plots/mms_formation_plot_20160108023624.png
 ;       
-;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse', lmn=[[0.00,0.00,1.00],[0.00,-1.00,0.00],[1.00,0.00,0.00]]
-;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse', xyz=[[0.00,0.00,1.00],[0.00,-1.00,0.00],[1.00,0.00,0.00]]
+;       Sun to the left:
+;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse', sundir='left'
+;       
+;       Specify an LMN transformation:
+;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse', lmn=[[0.00,0.00,1.00],[0.00,-1.00,0.00],[1.00,0.00,0.00]], sundir='left'
+;       
+;       Specify an XYZ transformation:
+;       mms_mec_formation_plot, '2016-1-08/2:36', /xy_projection, coord='gse', xyz=[[0.00,0.00,1.00],[0.00,-1.00,0.00],[1.00,0.00,0.00]], sundir='left'
 ;
 ; HISTORY:
-;       Most of this (the good stuff) comes from the 
+;       August 2016: Lots of updates from Naritoshi Kitamura
+; 
+;       The original copy of this comes from the 
 ;       SDC version, which was written by Kris Larsen 
 ;       and Kim Kokkonen at LASP
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-08 14:15:23 -0700 (Mon, 08 Aug 2016) $
-; $LastChangedRevision: 21615 $
+; $LastChangedDate: 2016-08-09 12:53:09 -0700 (Tue, 09 Aug 2016) $
+; $LastChangedRevision: 21625 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_mec_formation_plot.pro $
 ;-
 
@@ -96,13 +110,25 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
 
   ; get ranges
   if not undefined(lmn) then begin
-    xrange = 1.3 * [max(xes), min(xes)]
-    yrange = 1.3 * [min(yes), max(yes)]
+    if sundir eq 'left' then begin
+      xrange = 1.3 * [max(xes), min(xes)]
+      yrange = 1.3 * [min(yes), max(yes)]
+    endif else begin
+      xrange = 1.3 * [min(xes), max(xes)]
+      yrange = 1.3 * [max(yes), min(yes)]
+    endelse
     zrange = 1.3 * [min(zes), max(zes)]
+    light=0
   endif else begin
-    xrange = 1.3 * [min(xes), max(xes)]
-    yrange = 1.3 * [min(yes), max(yes)]
+    if sundir eq 'left' then begin
+      xrange = 1.3 * [max(xes), min(xes)]
+      yrange = 1.3 * [max(yes), min(yes)]
+    endif else begin
+      xrange = 1.3 * [min(xes), max(xes)]
+      yrange = 1.3 * [min(yes), max(yes)]
+    endelse
     zrange = 1.3 * [min(zes), max(zes)]
+    light=1
   endelse
 
   ; edges between vertices
@@ -127,7 +153,7 @@ pro mms_mec_formation_plot, time, projection=projection, quality_factor=quality_
       perspective=perspective, margin=margin)
   endelse
 
-  plot2 = plot3d(xes, yes, zes, linestyle='none', color='black', sym_object = orb(lighting=0), $
+  plot2 = plot3d(xes, yes, zes, linestyle='none', color='black', sym_object = orb(lighting=light), $
     sym_size=3, /sym_filled, vert_colors=spacecraft_colors, perspective=1, $
     margin=margin, /overplot)
 

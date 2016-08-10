@@ -50,24 +50,31 @@
 ;       minimum variance direction without sign.
 ;
 ;
+; Last updated by:
+; O. Le Contel, LPP, in order to manage data gaps in the waveform
+; using test written by K. Bromund (in thm_cal_scm.pro)
+;   
+; For more informations about SCM data, please contact olivier.lecontel@lpp.polytechnique.fr
 ;
-; Last changed by O. Le Contel and egrimes; For more informations about SCM data, 
-;    please contact olivier.lecontel@lpp.polytechnique.fr
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-06-23 11:26:26 -0700 (Thu, 23 Jun 2016) $
-; $LastChangedRevision: 21355 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-08-09 15:15:30 -0700 (Tue, 09 Aug 2016) $
+; $LastChangedRevision: 21628 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_wavpol_crib.pro $
 ;-
 
+ del_data,'*'
+ 
 ;; =============================
 ;; Select date and time interval
 ;; =============================
 
-trange = ['2015-10-16/13:00', '2015-10-16/13:10']
+trange = ['2016-01-16/00:13:00', '2016-01-16/00:19:14']; example with datagap
+;trange = ['2015-10-16/13:05:40', '2015-10-16/13:07:25']; Burch et al., Science event
 
+;
 ;; =============================
-;; Select probe and mode
+;; Select probe and data type
 ;; =============================
 
 sc = '4'
@@ -102,19 +109,16 @@ fac_matrix_make, mms_fgm_name,other_dim='xgse',newname = mms_fgm_name+'_fac_mat'
 ;transform Bfield vector (or any other) vector into field aligned coordinates
 tvector_rotate, mms_fgm_name+'_fac_mat', mms_scm_name, newname = mms_scm_name+'_fac'
 
-;fill data gaps with regularly spaced(in time) NaNs, wavpol *only* works on regularly gridded data
-;using data with irregular grids will produce incorrect results
-tdegap,mms_scm_name+'_fac',/overwrite
+
 ;; =======================
-;; Calculate polarisation
+;; Calculate polarization
 ;; =======================
 
-;twavpol,mms_scm_name+'_fac'
 ;;; number of points for FFT
-nopfft_input     = 8192
+nopfft_input     = 8192;1024
 
 ;;; number of points for shifting between 2 FFT
-steplength_input = nopfft_input 
+steplength_input = nopfft_input/2
 ;;; number of bins for frequency averaging
 bin_freq_input = 3
 twavpol,mms_scm_name+'_fac' $
@@ -128,7 +132,7 @@ get_data,mms_scm_name+'_fac_waveangle',time_wa,val_wa,val_freq
 val_wa = val_wa*180./!pi
 store_data,mms_scm_name+'_fac_waveangle',data={x:time_wa,y:val_wa,v:val_freq}
 
-;;; only plot polarisation results if the degree of polarisation is larger than 0.7
+;;; only plot polarization results if the degree of polarization is larger than 0.7
 deg_pol_c = 0.7
 
 get_data,mms_scm_name+'_fac_degpol',time,val,val_freq
@@ -152,11 +156,17 @@ store_data,mms_scm_name+'_fac_helict',data={x:time,y:val,v:val_freq}
 ;; =====================
 ;; Plot calculated data
 ;; =====================
-freq_min = 1.
-freq_max = 4096.
+if scm_datatype eq 'scb' then samp_freq = 8192.
+if scm_datatype eq 'scsrvy' then samp_freq = 32.
+
+freq_min = floor(samp_freq/nopfft_input)
+if scm_datatype eq 'scb' then freq_max = 4096.
+if scm_datatype eq 'scsrvy' then freq_max = 16.
+
 nlog_f = 1
 
 
+options, ['*'], 'labflag', -1
 options, mms_scm_name, colors=[2, 4, 6]
 options, mms_scm_name, labels=['X GSE', 'Y GSE', 'Z GSE']
 options, mms_scm_name, labflag=-1
@@ -187,10 +197,13 @@ options,mms_scm_name+'_fac_helict',ytitle='f !C!C [Hz]'
 
 
 zlim,'*_powspec',0.0,0.0,1
-zlim,mms_scm_name+'_fac_degpol',0.7,1.,0
+zlim,'*_degpol',0.7,1.,0
+zlim,'*_waveangle',0.,90.,0
+zlim,'*_elliptict',-1.0,1.0,0
+zlim,'*_helict',-1.0,1.0,0
 
 tplot_options, 'xmargin', [15, 15]
-tplot_options,title= 'MMS'+sc+' '+ scm_data_rate+' period, '+scm_datatype +' SCM data used for polarisation analysis'
+tplot_options,title= 'MMS'+sc+' '+ fgm_data_rate+' FGM data, '+scm_data_rate +' SCM data used for polarisation analysis'
 
 tplot, ['all_b' ,mms_scm_name,mms_scm_name+'_fac'+['','_powspec', '_degpol', '_waveangle', '_elliptict', '_helict']]
 tlimit,trange

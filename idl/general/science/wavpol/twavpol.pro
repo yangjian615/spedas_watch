@@ -23,6 +23,8 @@
 ;  
 ;  steplength(optional) = The amount of overlap between successive FFT intervals
 ;
+;  bin_freq (optional): No. of bins in frequency domain
+;  
 ;OUTPUTS:
 ;          error(optional): named variable in which to return the
 ;          error state of this procedure call. 1 = success, 0 = failure
@@ -79,13 +81,6 @@
 ;	sense of k cannot be determined,  helicity here is
 ;	simply the ratio of the minor to major axis transverse to the
 ;       minimum variance direction without sign.
-;
-;WARNING:
-;  (t)wavpol *only* works on regularly gridded data
-;  using data with irregular grids will produce incorrect results
-;  Calling tdegap on tvarname before using this routine will fill gaps with NANs.
-;  For even better results, fill gaps with NANs using tdegap then interpolate to a regular 
-;  time grid using tinterpol_mxn.pro
 ;  
 ;NOTES:
 ;1. Although the input is in the form of a tplot variable, the
@@ -107,9 +102,9 @@
 ;
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-06-23 11:26:26 -0700 (Thu, 23 Jun 2016) $
-; $LastChangedRevision: 21355 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-08-09 11:17:05 -0700 (Tue, 09 Aug 2016) $
+; $LastChangedRevision: 21621 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wavpol/twavpol.pro $
 ;-
 pro twavpol,tvarname,prefix = prefix, error=error, freqline = freqline, timeline = timeline,$
@@ -117,7 +112,8 @@ nopfft=nopfft,steplength=steplength, bin_freq=bin_freq
 
   error=0
 
-  if not keyword_set(bin_freq) then bin_freq = 7 else bin_freq = bin_freq
+  if not keyword_set(bin_freq) then dprint,'By default bin_freq = 3. (frequency averaging)'
+  if not keyword_set(bin_freq) then bin_freq = 3 else bin_freq = bin_freq
 
   if not keyword_set(tvarname) then begin
     dprint, 'tvarname must be set'

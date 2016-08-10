@@ -20,6 +20,13 @@
 ;     
 ;     
 ; NOTES:
+;         *************** Deprecated in August 2016 ***************
+;         
+;         See the updated file:
+;            mms_read_feeps_sector_masks_csv
+;         to read the sector masks from the CSV files
+;         
+;         ******************************************
 ;     Will only work in IDL 8.0+, due to the hash table data structure
 ;     
 ;     Based on code from Drew Turner, 2/1/2016
@@ -27,9 +34,9 @@
 ;          dindgen -> indgen (egrimes, 2/11/2016)
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-02 14:21:23 -0700 (Tue, 02 Aug 2016) $
-; $LastChangedRevision: 21591 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_sector_masks.pro $
+; $LastChangedDate: 2016-08-09 11:36:07 -0700 (Tue, 09 Aug 2016) $
+; $LastChangedRevision: 21623 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/deprecated/mms_feeps_sector_masks.pro $
 ;-
 
 

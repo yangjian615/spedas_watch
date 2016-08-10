@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21557 $
+; $LastChangedDate: 2016-08-09 14:11:44 -0700 (Tue, 09 Aug 2016) $
+; $LastChangedRevision: 21626 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_hpca_ut__define.pro $
 ;-
 
@@ -174,6 +174,43 @@ function mms_load_hpca_ut::test_load_startaz_nosupp_l2
   mms_hpca_calc_anodes, fov=[0, 360], probe=probes
   mms_hpca_spin_sum, probe=probes, species='hplus',fov=[0,360],datatype='flux'
   assert, spd_data_exists('mms1_hpca_start_azimuth mms1_hpca_hplus_flux_elev_0-360 mms1_hpca_hplus_flux_elev_0-360_spin', '2015-10-22/06:00', '2015-10-22/06:10'), 'Problem loading HPCA data (startaz regression?)'
+  return, 1
+end
+
+function mms_load_hpca_ut::test_load_caps_datatype
+  mms_load_hpca, probes=1, datatype='ION', level='l2', data_rate='srvy'
+  mms_hpca_calc_anodes, fov=[0, 360], probe=1
+  assert, spd_data_exists('mms1_hpca_oplus_flux_elev_0-360 mms1_hpca_hplus_flux_elev_0-360', '2015-10-22/06:00', '2015-10-22/06:10'), 'Problem loading HPCA data (startaz regression?)'
+  return, 1
+end
+
+function mms_load_hpca_ut::test_loading_tplotnames_ion
+  mms_load_hpca, probes=2, datatype='ion', level='l2', data_rate='srvy', tplotnames=tpnames
+  assert, n_elements(tpnames) eq 27, '(potential) Problem with number of tplotnames returned by mms_load_hpca (ion)'
+  return, 1
+end
+
+function mms_load_hpca_ut::test_loading_tplotames_moments
+  mms_load_hpca, probe=3, datatype='moments', level='l2', data_rate='srvy', tplotnames=tpnames
+  assert, n_elements(tpnames) eq 54, '(potential) Problem with number of tplotnames returned by mms_load_hpca (moments)'
+  return, 1
+end
+
+function mms_load_hpca_ut::test_loading_invalid_datarate
+  mms_load_hpca, probe=3, datatype='moments', data_rate='notvalid'
+  assert, ~spd_data_exists('mms3_hpca_hplus_number_density', '2015-10-22/06:00', '2015-10-22/06:10'), $
+    'Was able to load data without a valid data rate in mms_load_hpca??'
+  return, 1
+end
+
+function mms_load_hpca_ut::test_load_with_timeclip
+  mms_load_hpca, probe=4, datatype='moments', /time_clip, trange=['2015-10-22/06:02', '2015-10-22/06:04']
+  assert, spd_data_exists('mms4_hpca_hplus_number_density mms4_hpca_hplus_scalar_temperature mms4_hpca_oplus_ion_bulk_velocity', '2015-10-22/06:02', '2015-10-22/06:04'), $
+    'Problem with time clip in mms_load_hpca'
+  assert, ~spd_data_exists('mms4_hpca_hplus_number_density mms4_hpca_hplus_scalar_temperature mms4_hpca_oplus_ion_bulk_velocity', '2015-10-22/06:00', '2015-10-22/06:02'), $
+    'Problem with time clip in mms_load_hpca'
+  assert, ~spd_data_exists('mms4_hpca_hplus_number_density mms4_hpca_hplus_scalar_temperature mms4_hpca_oplus_ion_bulk_velocity', '2015-10-22/06:04', '2015-10-22/06:06'), $
+    'Problem with time clip in mms_load_hpca'
   return, 1
 end
 

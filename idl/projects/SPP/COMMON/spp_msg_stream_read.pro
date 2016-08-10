@@ -26,7 +26,7 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
     if debug(2) then begin
       dprint,dlevel=2,'Using remainder buffer from previous call'
       dprint,dlevel=2,/phelp, remainder
-      hexprint,remainder[0:31]
+      hexprint,remainder,nbytes=32
     endif
     undefine , *info.buffer_ptr
     if bsize gt 0 then  spp_msg_stream_read, [remainder,buffer],info=info
@@ -92,7 +92,7 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
         spp_msg_pkt_handler,buffer[ptr+6:ptr+6+psize-1],time=time
         if debug(3) then begin
           dprint,dlevel=2
-          hexprint,        buffer[ptr+6:ptr+6+psize-1]
+          hexprint,     buffer[ptr:ptr+6+psize-1]  ;   buffer[ptr+6:ptr+6+psize-1]
         endif
         end
       else:  dprint,dlevel=1,'Unknown code'
