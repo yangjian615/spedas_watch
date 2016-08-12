@@ -1,19 +1,20 @@
 ;+
 ;Procedure:
-;  load_mms_position_and_neutral_sheet_crib
+;     mms_neutral_sheet_crib
 ;
 ;Purpose:
-;  Basic example on how to load MMS position data and retrieve the neutral sheet
+;     Example on how to load MMS position data and retrieve the 
+;     distance from the S/C to the neutral sheet
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-01 10:19:23 -0700 (Fri, 01 Jul 2016) $
-;$LastChangedRevision: 21420 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/load_mms_position_and_neutral_sheet_crib.pro $
+;$LastChangedDate: 2016-08-11 13:30:56 -0700 (Thu, 11 Aug 2016) $
+;$LastChangedRevision: 21633 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_neutral_sheet_crib.pro $
 ;-
 
-pro load_mms_position_and_neutral_sheet_crib
+pro mms_neutral_sheet_crib
 
-  re=6378.
+re=6378.
 
 ;------------------------------
 ; MMS Predicted Data Example
@@ -53,7 +54,7 @@ stop
 ;---------------------------------------
 ; get Z displacement from the spacecraft 
 ;---------------------------------------
-; Set sc2NS flag
+; Set sc2NS flag (spacecraft to neutral sheet)
 neutral_sheet, mms1_predeph_pos_gsm.x, mms1_predeph_pos_gsm.y/re, model='lopez', distance2NS=sc2NS, /sc2NS
 
 ; plot results

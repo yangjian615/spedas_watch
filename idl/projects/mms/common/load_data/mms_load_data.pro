@@ -88,8 +88,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-06 15:40:46 -0700 (Wed, 06 Jul 2016) $
-;$LastChangedRevision: 21431 $
+;$LastChangedDate: 2016-08-11 11:51:08 -0700 (Thu, 11 Aug 2016) $
+;$LastChangedRevision: 21631 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -288,7 +288,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 for local_file_idx = 0, n_elements(local_files)-1 do begin
                     local_file_info[local_file_idx].filename = local_files[local_file_idx]
                 endfor
-                
+
                 ; filter to the requested time range
                 local_files_filtered = mms_files_in_interval(local_file_info, tr)
                 local_files = local_files_filtered.filename
@@ -325,7 +325,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         undefine, files
         undefine, loaded_tnames
 
-    ;end loops over probe, rate, leve, and datatype
+    ;end loo  ps over probe, rate, leve, and datatype
     endfor
     endfor
     endfor
@@ -338,6 +338,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
     ; (this occurs with hpca moments & logicals)
     if ~undefined(tplotnames) then tplotnames = spd_uniq(tplotnames)
 
+    if n_elements(tplotnames) eq 1 && tplotnames[0] eq '' then return ; no data loaded
+    
     ; time clip the data
     if ~undefined(tr) && ~undefined(tplotnames) then begin
         dt_timeclip = 0.0

@@ -7,12 +7,12 @@
 ;         liberal, it regularly grabs an extra file due to special cases
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-02-17 07:45:24 -0800 (Wed, 17 Feb 2016) $
-; $LastChangedRevision: 20028 $
+; $LastChangedDate: 2016-08-11 11:36:41 -0700 (Thu, 11 Aug 2016) $
+; $LastChangedRevision: 21630 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_files_in_interval.pro $
 ;-
 
-function mms_files_in_interval, remote_file_info, trange
+function mms_files_in_interval, remote_file_info, trange, sorted_times = sorted_times
   if ~is_struct(remote_file_info) then begin
     dprint, dlevel = 0, 'Error finding files inside the time interval - need a valid array of structures.'
     return, -1
@@ -20,6 +20,11 @@ function mms_files_in_interval, remote_file_info, trange
   tr = time_double(trange)
   all_files = remote_file_info.filename
 
+  if ~is_array(all_files) && all_files eq '' then begin
+    dprint, dlevel = 0, 'Error, no files found in the interval.'
+    return, -1
+  endif
+  
   for file_idx = 0, n_elements(all_files)-1 do begin
     filename = strsplit(all_files[file_idx], '\', /extract)
     filename = filename[n_elements(filename)-1]
@@ -32,6 +37,8 @@ function mms_files_in_interval, remote_file_info, trange
     endcase
     append_array, all_times, time_double(timeval, tformat=timeformat)
   endfor
+  sorted_times = all_times ; only here to avoid a crash when there's only one time in the array
+  
   ; if there's only one file, return that file
   if n_elements(all_times) eq 1 then return, remote_file_info
   ; more than one file, sort the arrays by time

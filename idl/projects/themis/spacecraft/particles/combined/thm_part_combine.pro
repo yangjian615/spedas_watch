@@ -56,7 +56,7 @@
 ;                     Disables default anode-based background removal
 ;  extrapolate_esa: Flag to extrapolate from ESA data where no valid SST data exists
 ;                   instead of throwing error.  Not recommended - use with caution!
-;  remove_one_count: removes all bins that are less than one count, suggestion from heli hielala(heli@igpp.ucla.edu)
+;  remove_one_count: removes all bins that are less than one count, suggestion from heli hietala(heli@igpp.ucla.edu)
 ;  sst_data_mask:  The name of a tplot variable containing a 1-dimensional, 0-1 array indicating SST samples to exclude(0=exclude,1=include),
 ;                  If values don't match the times of particle data, they'll be nearest neighbor interpolated to match.
 ;  
@@ -105,9 +105,9 @@
 ;  uniformity is assumed as the data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-07-22 16:52:32 -0700 (Fri, 22 Jul 2016) $
-;$LastChangedRevision: 21513 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-08-11 13:34:18 -0700 (Thu, 11 Aug 2016) $
+;$LastChangedRevision: 21634 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-

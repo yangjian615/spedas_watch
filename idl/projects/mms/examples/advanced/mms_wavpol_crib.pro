@@ -58,8 +58,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-09 15:15:30 -0700 (Tue, 09 Aug 2016) $
-; $LastChangedRevision: 21628 $
+; $LastChangedDate: 2016-08-11 13:48:12 -0700 (Thu, 11 Aug 2016) $
+; $LastChangedRevision: 21635 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_wavpol_crib.pro $
 ;-
 
@@ -184,16 +184,16 @@ ylim,mms_scm_name+'_fac_elliptict',freq_min,freq_max,nlog_f
 ylim,mms_scm_name+'_fac_helict',freq_min,freq_max,nlog_f
 
 options,mms_scm_name+'_fac_powspec',ztitle='Arbitrary units'
-options,mms_scm_name+'_fac_powspec',ytitle='f !C!C [Hz]'
+options,mms_scm_name+'_fac_powspec',ytitle='f', ysubtitle='[Hz]'
 options,mms_scm_name+'_fac_degpol',ztitle='Deg. Pol.'
-options,mms_scm_name+'_fac_waveangle',ztitle='Wave !C Angle'
+options,mms_scm_name+'_fac_waveangle',ztitle='Wave !C!CAngle'
 options,mms_scm_name+'_fac_elliptict',ztitle='Ellipticity'
 options,mms_scm_name+'_fac_helict',ztitle='Helicity'
 
-options,mms_scm_name+'_fac_degpol',ytitle='f !C!C [Hz]'
-options,mms_scm_name+'_fac_waveangle',ytitle='f !C!C [Hz]'
-options,mms_scm_name+'_fac_elliptict',ytitle='f !C!C [Hz]'
-options,mms_scm_name+'_fac_helict',ytitle='f !C!C [Hz]'
+options,mms_scm_name+'_fac_degpol',ytitle='f', ysubtitle='[Hz]'
+options,mms_scm_name+'_fac_waveangle',ytitle='f', ysubtitle='[Hz]'
+options,mms_scm_name+'_fac_elliptict',ytitle='f', ysubtitle='[Hz]'
+options,mms_scm_name+'_fac_helict',ytitle='f', ysubtitle='[Hz]'
 
 
 zlim,'*_powspec',0.0,0.0,1

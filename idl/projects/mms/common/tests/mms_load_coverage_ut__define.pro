@@ -10,16 +10,16 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-19 14:43:04 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21142 $
+; $LastChangedDate: 2016-08-11 15:48:37 -0700 (Thu, 11 Aug 2016) $
+; $LastChangedRevision: 21636 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_coverage_ut__define.pro $
 ;-
 
 function mms_load_coverage_ut::test_load_feeps
   for m=0, n_elements(self.months_to_test)-1 do begin
     del_data, '*'
-    mms_load_feeps, probe=1, trange=self.months_to_test[m]+self.days_to_test, level='l2'
-    assert, spd_data_exists('mms1_epd_feeps_ion_intensity_omni', self.months_to_test[m]+self.days_to_test[0], self.months_to_test[m]+self.days_to_test[1]), $
+    mms_load_feeps, probe=1, trange=self.months_to_test[m]+self.days_to_test, level='l2', datatype='ion'
+    assert, spd_data_exists('mms1_epd_feeps_srvy_l2_ion_intensity_omni', self.months_to_test[m]+self.days_to_test[0], self.months_to_test[m]+self.days_to_test[1]), $
       'Problem loading FEEPS data ('+self.months_to_test[m]+')'
   endfor
   return, 1
@@ -113,11 +113,11 @@ function mms_load_coverage_ut::init, _extra=e
   if (~self->MGutTestCase::init(_extra=e)) then return, 0
   ; the following adds code coverage % to the output
   ;self->addTestingRoutine, ['']
-  self.months_to_test = ['2015-09', '2015-10', '2015-11', '2015-12', '2016-01', '2016-02']
-  self.days_to_test = ['-02', '-03']
+  self.months_to_test = ['2015-12', '2016-01', '2016-02']
+  self.days_to_test = ['-15', '-16']
   return, 1
 end
 
 pro mms_load_coverage_ut__define
-  define = { mms_load_coverage_ut, inherits MGutTestCase, days_to_test: ['-01', '-02'], months_to_test: ['2015-09', '2015-10', '2015-11', '2015-12', '2016-01', '2016-02'] }
+  define = { mms_load_coverage_ut, inherits MGutTestCase, days_to_test: ['-15', '-16'], months_to_test: ['2015-12', '2016-01', '2016-02'] }
 end
