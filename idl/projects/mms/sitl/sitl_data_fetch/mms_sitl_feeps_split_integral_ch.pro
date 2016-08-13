@@ -6,8 +6,8 @@
 ;    this function splits the last integral channel from the FEEPS spectra
 ;
 ;$LastChangedBy: rickwilder $
-;$LastChangedDate: 2016-04-07 09:08:39 -0700 (Thu, 07 Apr 2016) $
-;$LastChangedRevision: 20741 $
+;$LastChangedDate: 2016-08-12 14:00:11 -0700 (Fri, 12 Aug 2016) $
+;$LastChangedRevision: 21641 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_feeps_split_integral_ch.pro $
 ;-
 
@@ -29,31 +29,36 @@ pro mms_sitl_feeps_split_integral_ch, types, species, probe, suffix = suffix, da
 
   for type_idx = 0, n_elements(types)-1 do begin
    ; type = level eq 'l2' ? species+'_'+types[type_idx] : types[type_idx]
-    type = species+'_'+types[type_idx]
+    units_type = types[type_idx]
     for sensor_idx = 0, n_elements(sensors)-1 do begin
-      top_name = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx]), /rem)
-      bottom_name = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx]), /rem)
-      top_name = strlowcase(top_name)
-      bottom_name = strlowcase(bottom_name)
-      
+      ; the following 4 lines work for v5.4.x
+      ;top_name = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx]), /rem)
+      ;bottom_name = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx]), /rem)
+      ;top_name = strlowcase(top_name)
+      ;bottom_name = strlowcase(bottom_name)
+      top_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+species+'_top_'+units_type+'_sensorid_'+string(sensors[sensor_idx]), /rem)
+      bottom_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+species+'_bottom_'+units_type+'_sensorid_'+string(sensors[sensor_idx]), /rem)
+
       get_data, top_name+suffix, data=top_data, dlimits=top_dl
       get_data, bottom_name+suffix, data=bottom_data, dlimits=bottom_dl
 
-      top_name_out = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
-      bottom_name_out = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
-      top_name_out = strlowcase(top_name_out)
-      bottom_name_out = strlowcase(bottom_name_out)
-      
+;      top_name_out = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
+;      bottom_name_out = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
+;      top_name_out = strlowcase(top_name_out)
+;      bottom_name_out = strlowcase(bottom_name_out)
+      top_name_out = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+species+'_top_'+units_type+'_sensorid_'+string(sensors[sensor_idx])+'_clean', /rem)
+      bottom_name_out = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+species+'_bottom_'+units_type+'_sensorid_'+string(sensors[sensor_idx])+'_clean', /rem)
+
       store_data, top_name_out+suffix, data={x: top_data.X, y: top_data.Y[*, 0:n_elements(top_data.V)-2], v: top_data.V[0:n_elements(top_data.V)-2]}, dlimits=top_dl
       if level ne 'sitl' then store_data, bottom_name_out+suffix, data={x: bottom_data.X, y: bottom_data.Y[*, 0:n_elements(bottom_data.V)-2], v: bottom_data.V[0:n_elements(bottom_data.V)-2]}, dlimits=bottom_dl
      
       ; limit the lower energy plotted
-      options, top_name_out, ystyle=1
-      options, bottom_name_out, ystyle=1
-      ylim, top_name_out, bottom_en, 510., 1
-      ylim, bottom_name_out, bottom_en, 510., 1
-      zlim, top_name_out, 0, 0, 1
-      zlim, bottom_name_out, 0, 0, 1
+      options, top_name_out+suffix, ystyle=1
+      options, bottom_name_out+suffix, ystyle=1
+      ylim, top_name_out+suffix, bottom_en, 510., 1
+      ylim, bottom_name_out+suffix, bottom_en, 510., 1
+      zlim, top_name_out+suffix, 0, 0, 1
+      zlim, bottom_name_out+suffix, 0, 0, 1
   
       ; store the integral channel
       store_data, top_name+'_500keV_int'+suffix, data={x: top_data.X, y: top_data.Y[*, n_elements(top_data.V)-1]}

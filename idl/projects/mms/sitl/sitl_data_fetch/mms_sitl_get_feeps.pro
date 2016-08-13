@@ -69,8 +69,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: rickwilder $
-;$LastChangedDate: 2016-04-07 14:58:25 -0700 (Thu, 07 Apr 2016) $
-;$LastChangedRevision: 20746 $
+;$LastChangedDate: 2016-08-12 15:41:13 -0700 (Fri, 12 Aug 2016) $
+;$LastChangedRevision: 21642 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_feeps.pro $
 ;-
 pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -116,7 +116,7 @@ pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
           data_rate = data_rate_in, suffix=suffix
 
       ; calculate the spin averages
-      mms_sitl_feeps_spin_avg, probe=this_probe, datatype=datatype_in, suffix = suffix, data_units = data_units
+      mms_sitl_feeps_spin_avg, probe=this_probe, datatype=datatype_in, suffix = suffix, data_units = data_units, level = level_in
     endfor
     
     ; interpolate to account for gaps in data near perigee for srvy data

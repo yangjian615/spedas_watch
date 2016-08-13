@@ -42,9 +42,9 @@
 ;  J. McFadden passed through the NO_CAL kw to THM_CAL_FIT.PRO, WMF, 6/27/2008.
 ;Notes:
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-11 19:27:46 -0700 (Thu, 11 Aug 2016) $
+; $LastChangedRevision: 21637 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fit.pro $
 ;-
 
@@ -87,7 +87,7 @@ pro thm_load_fit_post, sname=probe, datatype=dt, level=level, $
     if size(dt, /n_dim) eq 0 then dt = strsplit(dt, ' ', /extract)
     
     for i = 0, n_elements(dt)-1L do begin
-      if tnames('th'+probe+'_'+dt[i]+'_hed') ne '' then del_data, 'th'+probe+'_'+dt[i]+'_hed'
+      if tnames('th'+probe+'_'+dt[i]+'_hed' + suffix[0]) ne '' then del_data, 'th'+probe+'_'+dt[i]+'_hed' + suffix[0]
     endfor
   endif
   

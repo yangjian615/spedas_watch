@@ -39,13 +39,14 @@
 ;
 ; VERSION:
 ;	$LastChangedBy: aaronbreneman $
-;	$LastChangedDate: 2016-08-04 07:46:34 -0700 (Thu, 04 Aug 2016) $
-;	$LastChangedRevision: 21599 $
+;	$LastChangedDate: 2016-08-12 11:21:58 -0700 (Fri, 12 Aug 2016) $
+;	$LastChangedRevision: 21640 $
 ;	$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_fbk.pro $
 ;
 ;-
 
-pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing,boom_pair=bp
+pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing,boom_pair=bp,$
+    version=version
 
   rbsp_efw_init
   skip_plot = 1                 ;set to skip restoration of cdf file and test plotting at end of program
@@ -54,7 +55,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing,boom_pair=bp
 
   dprint,'BEGIN TIME IS ',systime()
 
-  if n_elements(version) eq 0 then version = 1
+  if ~KEYWORD_SET(version) then version = 1
   vstr = string(version, format='(I02)')
   version = 'v'+vstr
 
@@ -70,9 +71,9 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing,boom_pair=bp
   if strmid(folder,strlen(folder)-1,1) ne path_sep() then folder=folder+path_sep()
   file_mkdir,folder
 
-                                ; Grab the skeleton file.
+  ; Grab the skeleton file (always use V01 skeleton. V02 files have all the unnecesary fields removed in final CDF)
   skeleton=rbspx+'/l2/fbk/0000/'+ $
-           rbspx+'_efw-l2_fbk_00000000_v'+vstr+'.cdf'
+           rbspx+'_efw-l2_fbk_00000000_v01.cdf'
   source_file=file_retrieve(skeleton,_extra=!rbsp_efw)
 
 
@@ -90,7 +91,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing,boom_pair=bp
                                 ; make sure we have the skeleton CDF
   source_file=file_search(source_file,count=found) ; looking for single file, so count will return 0 or 1
   if ~found then begin
-     dprint,'Could not find fbk v'+vstr+' skeleton CDF, returning.'
+     dprint,'Could not find fbk v01 skeleton CDF, returning.'
      return
   endif
                                 ; fix single element source file array
@@ -164,7 +165,7 @@ pro rbsp_efw_make_l2_fbk,sc,date,folder=folder,testing=testing,boom_pair=bp
 
 
                                 ;Rename the skeleton file
-  filename = 'rbsp'+sc+'_efw-l2_fbk_'+strjoin(strsplit(date,'-',/extract))+'_'+version+'.cdf'
+  filename = 'rbsp'+sc+'_efw-l2_fbk_'+strjoin(strsplit(date,'-',/extract))+'_v'+vstr+'.cdf'
   file_copy,source_file,folder+filename,/overwrite
 
 

@@ -8,23 +8,26 @@
 ;       with each measurement)
 ;
 ;$LastChangedBy: rickwilder $
-;$LastChangedDate: 2016-04-07 09:08:39 -0700 (Thu, 07 Apr 2016) $
-;$LastChangedRevision: 20741 $
+;$LastChangedDate: 2016-08-12 15:41:13 -0700 (Fri, 12 Aug 2016) $
+;$LastChangedRevision: 21642 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_feeps_spin_avg.pro $
 ;-
 pro mms_sitl_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
-  suffix = suffix
+  data_rate = data_rate, level = level, suffix = suffix, tplotnames = tplotnames
+  
   if undefined(probe) then probe='1' else probe = strcompress(string(probe), /rem)
   if undefined(datatype) then datatype = 'electron'
   if undefined(data_units) then data_units = 'intensity'
   if undefined(suffix) then suffix=''
+  if undefined(data_rate) then data_rate = 'srvy'
   
   lower_en = datatype eq 'electron' ? 71 : 78 ; keV
 
   prefix = 'mms'+probe+'_epd_feeps_'
 
   ; get the spin sectors
-  get_data, prefix + datatype + '_spinsectnum'+suffix, data=spin_sectors
+  ; v5.5+ = mms1_epd_feeps_srvy_l1b_electron_spinsectnum
+  get_data, prefix + data_rate + '_' + level + '_' + datatype + '_spinsectnum'+suffix, data=spin_sectors
   
   if ~is_struct(spin_sectors) then begin
       dprint, dlevel = 0, 'Error, couldn''t find the tplot variable containing the spin sectors for calculating the spin averages.'
@@ -35,7 +38,8 @@ pro mms_sitl_feeps_spin_avg, probe=probe, data_units = data_units, datatype = da
   spin_starts = where(spin_sectors.Y[0:n_elements(spin_sectors.Y)-2] ge spin_sectors.Y[1:n_elements(spin_sectors.Y)-1])+1
  
   prefix = 'mms'+probe+'_epd_feeps_'
-  var_name = prefix+datatype+'_'+data_units+'_omni'
+  ;var_name = prefix+datatype+'_'+data_units+'_omni'
+  var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+data_units+'_omni', /rem)
 
   get_data, var_name+suffix, data=flux_data, dlimits=flux_dl
 
@@ -59,5 +63,7 @@ pro mms_sitl_feeps_spin_avg, probe=probe, data_units = data_units, datatype = da
   
   ylim, var_name+'_spin'+suffix, lower_en, 600., 1
   zlim, var_name+'_spin'+suffix, 0, 0, 1
+  
+  append_array, tplotnames, var_name+'_spin'+suffix
 
 end

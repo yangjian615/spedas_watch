@@ -21,8 +21,8 @@
 ; 
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-05-11 14:23:33 -0700 (Wed, 11 May 2016) $
-; $LastChangedRevision: 21058 $
+; $LastChangedDate: 2016-08-12 09:12:48 -0700 (Fri, 12 Aug 2016) $
+; $LastChangedRevision: 21638 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear  $
@@ -104,7 +104,8 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
           if (tr[1] gt time_double('2015-07-01')) && (tr[0] le time_double('2015-10-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_150701_151001_v?.bsp',_extra=source,no_update=no_update)
           if (tr[1] gt time_double('2015-10-01')) && (tr[0] le time_double('2016-01-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_151001_160101_v?.bsp',_extra=source,no_update=no_update)
           if (tr[1] gt time_double('2016-01-01')) && (tr[0] le time_double('2016-04-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_160101_160401_v?.bsp',_extra=source,no_update=no_update)
-          if (tr[1] gt time_double('2016-04-01')) && (tr[0] le time_double('2035-04-01'))  then begin
+          if (tr[1] gt time_double('2016-04-01')) && (tr[0] le time_double('2016-07-01'))  then append_array,kernels,  file_retrieve('MAVEN/kernels/spk/maven_orb_rec_160401_160701_v?.bsp',_extra=source,no_update=no_update)
+          if (tr[1] gt time_double('2016-07-01')) && (tr[0] le time_double('2035-07-01'))  then begin
             if keyword_set(reconstruct) then begin
               append_array,kernels, file_retrieve('MAVEN/kernels/spk/maven_orb_rec.bsp',_extra=source,no_update=0)
             endif else begin
