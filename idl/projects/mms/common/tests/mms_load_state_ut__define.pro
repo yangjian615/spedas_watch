@@ -12,6 +12,17 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_state_ut__define.pro $
 ;-
 
+; regression test for the MMS/THEMIS/RBSP orbit plots 
+function mms_load_state_ut::test_orbit_plots
+    ; download the latest orbits plot
+    orbitplot = spd_download(remote_file = 'http://themis.ssl.berkeley.edu/themisdata/thg/l0/asi/'+time_string(systime(1), tformat='YYYY/MM')+'/orbit_plusrbsp_plusmms_'+time_string(systime(1), tformat='YYYY-MM-DD')+'_0024.gif')
+    read_gif, orbitplot[0], orbitimage, r, g, b
+    wherenot255 = where(orbitimage[400:600, 400:500] ne 255) ; should be the part of the plot with the MMS labels
+    ; check if the space where the MMS labels are supposed to be are all white (if so, the MMS labels aren't there)
+    assert, is_array(wherenot255), 'Problem with orbit plots?'
+    return, 1
+end
+
 ; regression test for bug reported by Tai, 5/3/2016
 function mms_load_state_ut::test_coords_correct_for_eci
   mms_load_state, probes=[1, 4], suffix='_teststate'
