@@ -59,8 +59,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
-;$LastChangedRevision: 21430 $
+;$LastChangedDate: 2016-08-16 11:57:48 -0700 (Tue, 16 Aug 2016) $
+;$LastChangedRevision: 21653 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -93,6 +93,11 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(suffix) then suffix = ''
     ; need support data by default to deflag bad data
     if undefined(get_support_data) then get_support_data = 1 
+    
+    if instrument eq 'fgm' && level eq 'l2pre' then begin
+        dprint, dlevel = 0, 'Error, no L2pre data available for the "FGM" instrument; try instrument="dfg" or instrument="afg" for L2pre FGM data'
+        return
+    endif
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

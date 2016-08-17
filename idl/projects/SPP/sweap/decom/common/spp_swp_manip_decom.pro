@@ -27,16 +27,23 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
   ;print, b
   
+  common spp_swp_Manip_decom_common, last_time
+  time = ptp_header.ptp_time
+  if ~keyword_set(last_time) then last_time = time
+  time_delta = time-last_time
+  last_time = time
+  ccsds.gap = time_delta lt 0 || time_delta gt 3
+;  dprint,time_delta
   ;dprint,spp_swp_word_decom(b, 17)
-  
-  
-  dprint,dlevel=2,n_elements(b)
+  ;ccsds.gap=ccsds.tim
+ ; printdat,time_string(ccsds.time);  -1.2623e9
+;  dprint,dlevel=2,n_elements(b)
   if n_elements(b) lt 107 then return,0
 
   manip = {time:       ptp_header.ptp_time, $
           met:        ccsds.met,  $
           delay_time: ptp_header.ptp_time - ccsds.time, $
-          seq_cntr:   ccsds.seq_cntr, $
+          seqn:   ccsds.seqn, $
           sync:       spp_swp_word_decom(b,10), $      ;; ,,, 16
           length:     spp_swp_word_decom(b,12), $      ;; ,,, 16
           mlinmove:   b[14],$                          ;; ,,,  8

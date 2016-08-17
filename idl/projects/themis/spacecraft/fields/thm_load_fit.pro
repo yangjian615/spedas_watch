@@ -43,8 +43,8 @@
 ;Notes:
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-11 19:27:46 -0700 (Thu, 11 Aug 2016) $
-; $LastChangedRevision: 21637 $
+; $LastChangedDate: 2016-08-16 12:31:06 -0700 (Tue, 16 Aug 2016) $
+; $LastChangedRevision: 21657 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fit.pro $
 ;-
 
@@ -108,7 +108,6 @@ pro thm_load_fit,probe=probe, datatype=datatype, trange=trange, $
     downloadonly=1
     no_download=1
   end
-  
   
   valid_probes = ['a','b','c','d','e','f']
   
