@@ -65,8 +65,8 @@ pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,rem
           store_data,apdat.tname,data=strct, tagnames=apdat.rt_tags , append = 1 
         endif
       endif else begin
-        if debug(2) then begin
-          dprint,dlevel=1,'Unknown APID: ',ccsds.apid,format='(a,Z04)'
+        if debug(3) then begin
+          dprint,dlevel=2,'Unknown APID: ',ccsds.apid,format='(a,Z04)'
           if debug(3) then printdat,ccsds
         endif
       endelse

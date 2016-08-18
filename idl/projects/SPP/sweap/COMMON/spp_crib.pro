@@ -389,7 +389,7 @@ if 0 then begin
   spp_apid_data,apdata=ap
   print_struct,ap  
   
-spp_tof_histogram,/ylog  ;,trange,xrange=xrange
+spp_swp_spani_tof_histogram,/ylog  ;,trange,xrange=xrange
 
 spp_swp_reduce
 

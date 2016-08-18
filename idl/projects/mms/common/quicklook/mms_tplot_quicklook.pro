@@ -9,14 +9,14 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-20 09:15:25 -0700 (Wed, 20 Jul 2016) $
-; $LastChangedRevision: 21495 $
+; $LastChangedDate: 2016-08-17 15:37:36 -0700 (Wed, 17 Aug 2016) $
+; $LastChangedRevision: 21667 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/quicklook/mms_tplot_quicklook.pro $
 ;-
 
 pro mms_tplot_quicklook, tplotnames, degap=degap, window=win_idx, $
   xsize=xsize, ysize=ysize, burst_bar=burst_bar, fast_bar=fast_bar, $
-  trange=trange, _extra=ex
+  trange=trange, title=title, _extra=ex
   
 @tplot_com.pro ; tplot common block
 
@@ -98,7 +98,14 @@ pro mms_tplot_quicklook, tplotnames, degap=degap, window=win_idx, $
     ; plot them
     if keyword_set(win_idx) then window, win_idx, xsize=xsize, ysize=ysize else window, xsize=xsize, ysize=ysize
 
-    tplot, tplotnames_with_data, get_plot_pos=positions, window=win_idx, trange=trange, _extra=ex
+    ; get the current plot options, check that title is empty 
+    ; set to '' if not (fixes weird bug on OS X)
+    tplot_options, get_options=opts
+    if tag_exist(opts, 'title') && opts.title ne '' then begin
+      tplot_options, title=''
+    endif
+    
+    tplot, tplotnames_with_data, get_plot_pos=positions, window=win_idx, trange=trange, title=title, _extra=ex
 
     ; add NO DATA labels to plots on the figure without any data
     where_no_data = where(data_or_no_data eq 0, nodatacount)

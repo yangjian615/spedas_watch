@@ -11,8 +11,9 @@ function spp_swp_spane_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     return,!null
   endif
 
+  b = spp_swp_ccsds_data(ccsds)
 
-  b = ccsds.data
+;  b = ccsds.data
   data = swap_endian(/swap_if_little_endian,  uint(b,20,512))
   ;; New York Second
   time = ccsds.time + (0.87*findgen(512)/512.)

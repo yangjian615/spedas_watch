@@ -71,7 +71,6 @@ end
 
 function spp_swp_spane_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
 
-
   if isa(apdat.data_array,'dynamicarray') && apdat.data_array.size eq 0  then begin    ; initialization
     hdr = dynamicarray(name='hdr_')
     a0016 = dynamicarray(name='16A_')

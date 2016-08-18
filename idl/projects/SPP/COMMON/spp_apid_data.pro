@@ -8,6 +8,7 @@ pro spp_apid_data,apid,name=name,$
                   tfields=tfields,$
                   rt_tags=rt_tags,$
                   routine=routine,$
+                  print=print, $
                   increment=increment,$
                   rt_flag=rt_flag
 
@@ -114,7 +115,11 @@ pro spp_apid_data,apid,name=name,$
     all_apdat.counter = 0
     dprint,dlevel=1,'Data Cleared'
   endif
-
+  
+  if keyword_set(print) then begin
+     print_struct,apdat
+     print,heap_refcount(apdat.data_array)
+  endif
 
 end
 

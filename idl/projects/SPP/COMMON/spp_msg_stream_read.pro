@@ -23,7 +23,7 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
   
   if n_elements( *info.buffer_ptr ) ne 0 then begin   ; Handle remainder of buffer from previous call
     remainder =  *info.buffer_ptr
-    if debug(2) then begin
+    if debug(3) then begin
       dprint,dlevel=2,'Using remainder buffer from previous call'
       dprint,dlevel=2,/phelp, remainder
       hexprint,remainder,nbytes=32
@@ -39,6 +39,7 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
   while ptr lt bsize do begin
     if ptr gt bsize-6 then begin
       dprint,dlevel=0,'SWEMulator MSG stream size error ',ptr,bsize
+      *info.buffer_ptr = buffer[ptr:*]                   ; store remainder of buffer to be used on the next call to this procedure
       return
     endif
     msg_header = swap_endian( uint(buffer,ptr,3) ,/swap_if_little_endian) 
@@ -65,7 +66,7 @@ pro spp_msg_stream_read,buffer, info=info  ;,time=time   ;,   fileunit=fileunit 
 
 
     if ptr+6+psize gt bsize then begin
-      dprint,dlevel=2,'Buffer has incomplete packet. Saving ',n_elements(buffer)-ptr,' bytes for next call.'
+      dprint,dlevel=3,'Buffer has incomplete packet. Saving ',n_elements(buffer)-ptr,' bytes for next call.'
       *info.buffer_ptr = buffer[ptr:*]                   ; store remainder of buffer to be used on the next call to this procedure
       return
       break

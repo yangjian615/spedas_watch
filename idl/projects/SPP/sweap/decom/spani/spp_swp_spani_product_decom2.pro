@@ -222,6 +222,24 @@ function spp_swp_spani_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
     return,!null
   endif
 
+  if isa(apdat.data_array,'dynamicarray') && apdat.data_array.size eq 0  then begin    ; initialization
+    hdr = dynamicarray(name='hdr_')
+    a0016 = dynamicarray(name='16A_')
+    a0256 = dynamicarray(name='a0256_')
+    a0512 = dynamicarray(name='16Ax32E_')
+    a2048 = dynamicarray(name='a2048_')
+    a4096 = dynamicarray(name='16Ax8Dx32E_')
+    a8192 = dynamicarray(name='a8192_')
+    apdat.data_array.append, [hdr,a0016,a0256,a0512,a02048,a4096,a8192]
+  endif else if isa(apdat.data_array) then begin
+    darrays = apdat.data_array.array
+    hdr = darrays[0]
+    a0016 = darrays[1]
+    a0512 = darrays[2]
+    a4096 = darrays[3]
+  endif
+
+
   
   pksize = ccsds.pkt_size
   if pksize le 20 then begin

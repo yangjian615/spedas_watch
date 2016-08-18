@@ -28,7 +28,6 @@ function spp_swp_spani_slow_hkp_9ex_decom,   ccsds ,   ptp_header=ptp_header,   
   dprint, dlevel=2, 'Bad Revnumber: ',REVNUMBER
  endif
   
- 
   
   ;;------------------
   ;; Housekeeping Size

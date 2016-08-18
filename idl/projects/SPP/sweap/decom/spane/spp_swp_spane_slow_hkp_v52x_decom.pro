@@ -207,19 +207,19 @@ endif
     RIO_1p5I:       swap_endian(/swap_if_little_endian,  fix(b,46 ) ),$
     RIO_P5IA:       swap_endian(/swap_if_little_endian,  fix(b,48 ) ),$
     RIO_M5IA:       swap_endian(/swap_if_little_endian,  fix(b,50 ) ),$
-    adc_VMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,MCP_VMON_CH ) ) * ref/4095. , $
+    adc_VMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,MCP_VMON_CH ) ) * ref*1000./4095. , $
     adc_VMON_DEF1:  swap_endian(/swap_if_little_endian,  fix(b,54 ) )          * ref*1000./4095. , $
-    adc_IMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,MCP_IMON_CH ) ) * ref/4095. , $
+    adc_IMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,MCP_IMON_CH ) ) * ref*25./4095. , $
     adc_VMON_DEF2:  swap_endian(/swap_if_little_endian,  fix(b,58 ) )          * ref*1000./4095. , $
-    adc_VMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,RAW_HV_VMON_CH ) ) * ref*752.88/4095. , $
+    adc_VMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,RAW_HV_VMON_CH ) ) * ref*1250./4095. , $
     adc_VMON_SPL:   swap_endian(/swap_if_little_endian,  fix(b,62 ) )              * ref*20.12/4095. , $
     adc_IMON_RAW:   swap_endian(/swap_if_little_endian,  fix(b,RAW_HV_IMON_CH ) ) * ref*1000./40.2/4095. , $
-    adc_PCBT:       MON_PCB_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,66 ) )             * ref/4095. , $
-    adc_HEMIV:      swap_endian(/swap_if_little_endian,  fix(b,HEMI_VMON_CH ) )   * ref*1271./4095. , $
+    adc_PCB_TEMP:       MON_PCB_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,66 ) )             * ref/4095. , $
+    adc_VMON_HEM:   swap_endian(/swap_if_little_endian,  fix(b,HEMI_VMON_CH ) )  * ref*1000./4095. , $     ;  * ref*1271./4095. , $
     adc_FPGAT:      MON_FPGA_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,70 ) ) * ref/4095. , $
     adc_ch10:       swap_endian(/swap_if_little_endian,  fix(b,72 ) ) * ref*1000./40.2/4095. , $
     adc_ASICT:      MON_ASIC_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,74 ) ) * ref/4095. , $
-    adc_ch12:       swap_endian(/swap_if_little_endian,  fix(b,76 ) ) * ref*1000./4095. , $
+    adc_ch12:       swap_endian(/swap_if_little_endian,  fix(b,76 ) ) * ref/4095. , $
     adc_ch13:       swap_endian(/swap_if_little_endian,  fix(b,78 ) ) * ref/4095. , $
     adc_ch14:       swap_endian(/swap_if_little_endian,  fix(b,80 ) ) * ref/4095. , $
     adc_ch15:       swap_endian(/swap_if_little_endian,  fix(b,82 ) ) * ref/4095. , $

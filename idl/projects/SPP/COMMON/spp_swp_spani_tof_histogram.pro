@@ -1,6 +1,6 @@
 
 
-pro spp_swp_spani_tof_histogram,trange=trange,xrange=xrange,ylog=ylog,binsize=binsize,noerase=noerase,channels=channels,xlog=xlog
+pro spp_swp_spani_tof_histogram,trange=trange,xrange=xrange,ylog=ylog,binsize=binsize,noerase=noerase,channels=channels,xlog=xlog,yrange=yrange
 
   if ~keyword_set(trange) then ctime,trange,npoints=2
   csize = 2
@@ -31,7 +31,7 @@ pro spp_swp_spani_tof_histogram,trange=trange,xrange=xrange,ylog=ylog,binsize=bi
   endif
 
 
-  plot,/nodata,xb,h * .1,xrange=xrange,$
+  plot,/nodata,xb,h * 1.1,xrange=xrange,$
     charsize=csize,$
     yrange=yrange,$
     ylog=ylog,$
