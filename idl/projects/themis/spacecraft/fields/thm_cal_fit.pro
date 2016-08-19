@@ -29,9 +29,9 @@
 ;   -- time-dependent spinn axis offset implemented Hannes 05/25/2007
 ;   -- fixed trouble reading cal files with extra lines at the end,
 ;      jmm, 8-nov-2007
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-18 11:54:31 -0700 (Thu, 18 Aug 2016) $
+; $LastChangedRevision: 21674 $
 ; $URL $
 ;-
 pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = trange, $
@@ -243,7 +243,7 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
     idx = 1L
     dqd = 'bfit'
     units = cpar.b.units
-    tplot_var_bfit = string(tplot_var, dqd, format = '(A,"_",A)')
+    tplot_var_bfit = string(tplot_var, dqd, format = '(A,"_",A)')+ out_suf[0]
     str_element, dl, 'ytitle', tplot_var_bfit, /add
     str_element, dl, 'ysubtitle', '['+units+']', /add
     str_element, dl, 'labels', ['A', 'B', 'C', 'Sig', '<Bz>'], /add
@@ -264,9 +264,10 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
         data = {x:d.x, y:reform(d.y[*, *, idx])}, $
         lim = l, dlim = dl
     endif
-    dqd = 'fgs'+out_suf
-    tplot_var_fgs = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')
-    str_element, dl, 'ytitle', tplot_var_fgs, /add
+    dqd = 'fgs'
+    tplot_var_fgs = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+out_suf[0]
+    tplot_var_fgs_sigma = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+'_sigma' + out_suf[0]
+    str_element, dl, 'ytitle', tplot_var_fgs+out_suf[0], /add
     str_element, dl, 'ysubtitle', '['+units+']', /add
     str_element, data_att, 'cal_par_time', cpar.b.cal_par_time, /add
     str_element, data_att, 'units', units, /add
@@ -311,12 +312,12 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
       endif
       
       if (where(dt_output eq 'fgs_sigma') ne -1) then begin
-        str_element, dl_sigma, 'ytitle', tplot_var_fgs+'_sigma', /add
+        str_element, dl_sigma, 'ytitle', tplot_var_fgs_sigma, /add
         str_element, dl_sigma, 'ysubtitle', '['+units+']', /add
         str_element, data_att_sigma, 'units', units, /add
         str_element, dl_sigma, 'data_att', data_att_sigma, /add
         ;store_data, tplot_var_fgs+'_sigma', data = {x:d.x, y:d.y[*, 3, idx]}, dl = dl_sigma
-        store_data, tplot_var_fgs+'_sigma', data = {x:fgsx_fixed, y:d.y[fgsx_good, 3, idx]}, dl = dl_sigma
+        store_data, tplot_var_fgs_sigma, data = {x:fgsx_fixed, y:d.y[fgsx_good, 3, idx]}, dl = dl_sigma
       endif
     endif else begin
       dprint,'No valid fgs data found.'
@@ -345,7 +346,7 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
       e34_ss = -1
     Endelse
     units = cpar.e12.units
-    tplot_var_efit = string(tplot_var, dqd, format = '(A,"_",A)')
+    tplot_var_efit = string(tplot_var, dqd, format = '(A,"_",A)')+ out_suf[0]
     str_element, dl, 'ytitle', tplot_var_efit, /add
     str_element, dl, 'ysubtitle', '['+units+']', /add
     str_element, dl, 'labels', ['A', 'B', 'C', 'Sig', '<Ez>'], /add
@@ -395,8 +396,10 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
           data = {x:d.x, y:reform(d.y[*, *, idx])}, $
           lim = l, dlim = dl
       endif
-      dqd = 'efs'+out_suf
-      tplot_var_efs = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')
+      dqd = 'efs'
+      tplot_var_efs = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+out_suf[0]
+      tplot_var_efs_sigma = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+'_sigma'+ out_suf[0]
+      tplot_var_efs_potl = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+'_potl'+ out_suf[0]
       str_element, dl, 'ytitle', tplot_var_efs, /add
       str_element, dl, 'ysubtitle', '['+units+']', /add
       str_element, dl, 'labels', ['Ex', 'Ey', 'Ez'], /add
@@ -479,12 +482,12 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
         endif
       endif                       ; END efs
       if (where(dt_output eq 'efs_sigma') ne -1) then begin
-        str_element, dl_sigma, 'ytitle', tplot_var_efs+'_sigma', /add
+        str_element, dl_sigma, 'ytitle', tplot_var_efs_sigma, /add
         str_element, dl_sigma, 'ysubtitle', '['+units+']', /add
         str_element, data_att_sigma, 'units', units, /add
         str_element, dl_sigma, 'data_att', data_att_sigma, /add
         ;store_data, tplot_var_efs+'_sigma', data = {x:d.x, y:d.y[*, 3, idx]}, dl = dl_sigma
-        store_data, tplot_var_efs+'_sigma', data = {x:efsx_fixed, y:d.y[efsx_good, 3, idx]}, dl = dl_sigma
+        store_data, tplot_var_efs_sigma, data = {x:efsx_fixed, y:d.y[efsx_good, 3, idx]}, dl = dl_sigma
       endif
       if (where(dt_output eq 'efs_potl') ne -1 && is_struct(d_code)) then begin
         sc_potl = where(d_code.y[*, idx] Eq 'e5'x Or d_code.y[*, idx] Eq 'e7'x, nsc_potl)
@@ -499,11 +502,11 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
           ;time values are offset by spin_period*169.0/360.0, data values are
           ;scaled by: 0.00410937 to be consistent with the pxxm_pot variable
           units = 'V'
-          str_element, dl_potl, 'ytitle', tplot_var_efs+'_potl', /add
+          str_element, dl_potl, 'ytitle', tplot_var_efs_potl, /add
           str_element, dl_potl, 'ysubtitle', '['+units+']', /add
           str_element, data_att_potl, 'units', units, /add
           str_element, dl_potl, 'data_att', data_att_potl, /add
-          store_data, tplot_var_efs+'_potl', data = {x:d_code.x[sc_potl], $
+          store_data, tplot_var_efs_potl, data = {x:d_code.x[sc_potl], $
             y:0.00410937*efsz[sc_potl]}, dl = dl_potl
         Endif
       endif

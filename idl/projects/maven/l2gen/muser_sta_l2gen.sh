@@ -17,6 +17,9 @@ endif
 
 setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 
+# Set path for tmp files
+setenv CDF_TMP /mydisks/home/maven
+
 # create a date to append to batch otput
 setenv datestr `date +%Y%m%d%H%M%S`
 set suffix="$datestr"

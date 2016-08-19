@@ -5,14 +5,19 @@
 ; PURPOSE:
 ;         Loads the brst segment intervals into a bar that can be plotted
 ;
+; KEYWORDS:
+;         trange:       time range of interest
+;         suffix:       suffix to append to the tplot variable of the burst segments bar
+;         start_times:  returns an array of unix times (double) containing the start for each burst interval
+;         end_times:    returns an array of unix times (double) containing the end of each burst interval
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-01 08:27:16 -0700 (Fri, 01 Jul 2016) $
-;$LastChangedRevision: 21416 $
+;$LastChangedDate: 2016-08-18 09:26:58 -0700 (Thu, 18 Aug 2016) $
+;$LastChangedRevision: 21668 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_load_brst_segments.pro $
 ;-
 
-pro mms_load_brst_segments, trange=trange, suffix=suffix
+pro mms_load_brst_segments, trange=trange, suffix=suffix, start_times=start_times, end_times=end_times
   if undefined(suffix) then suffix = ''
   if (keyword_set(trange) && n_elements(trange) eq 2) $
     then tr = timerange(trange) $
@@ -50,6 +55,8 @@ pro mms_load_brst_segments, trange=trange, suffix=suffix
       store_data,'mms_bss_burst'+suffix,data={x:bar_x, y:bar_y}
       options,'mms_bss_burst'+suffix,thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
         ticklen=0,panel_size=0.09,colors=4, labels=['Burst'], charsize=2.
+      start_times = unix_start
+      end_times = unix_end
     endif else begin
       dprint, dlevel = 0, 'Error, no brst segments found in this time interval: ' + time_string(tr[0]) + ' to ' + time_string(tr[1])
     endelse

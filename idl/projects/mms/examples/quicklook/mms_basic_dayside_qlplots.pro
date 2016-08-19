@@ -20,8 +20,8 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
-; $LastChangedRevision: 21548 $
+; $LastChangedDate: 2016-08-18 11:46:51 -0700 (Thu, 18 Aug 2016) $
+; $LastChangedRevision: 21673 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_basic_dayside_qlplots.pro $
 ;-
 tplot_options, 'xmargin', [15, 15]
@@ -47,8 +47,9 @@ mms_load_edp, probe=probe, data_rate='srvy', level='l2', datatype=['dce', 'hfesp
 mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd'
 ; older HPCA SITL data seems to have been deleted, switching to L1b (7/7/2016)
 ;mms_load_hpca, probe=probe, data_rate='srvy', level='sitl'
-mms_load_hpca, probe=probe, data_rate='srvy', level='l1b', datatype='ion'
+mms_load_hpca, probe=probe, data_rate='srvy', level='l1b', datatype='rf_corr'
 mms_load_hpca, probe=probe, data_rate='srvy', level='l1b', datatype='moments'
+mms_load_aspoc, probe=probe, level='l2'
 
 ; burst/fast segment bars
 spd_mms_load_bss, /include_labels
@@ -205,7 +206,8 @@ panels = 'mms'+probe+['_dfg_gsm_srvy', $
   '_hpca_oplus_RF_corrected_elev_0-360', $
   '_edp_dce_xyz_dsl', $
   '_edp_hfesp_srvy_l2', $
-  '_dsp_bpsd_omni_fast_l2' $
+  '_dsp_bpsd_omni_fast_l2', $
+  '_aspoc_ionc_l2' $
   ]
 mms_tplot_quicklook, panels, var_label=position_vars, $
                     burst_bar = 'mms_bss_burst', $

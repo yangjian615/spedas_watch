@@ -18,6 +18,9 @@ endif
 
 setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 
+# Set path for tmp files
+setenv CDF_TMP /mydisks/home/maven
+
 #check for lock file here
 if (! -e /tmp/STAL2Rlock.txt) then
     cd /mydisks/home/maven
