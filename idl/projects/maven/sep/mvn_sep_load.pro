@@ -3,7 +3,7 @@
 pro mvn_sep_load,pathnames=pathnames,trange=trange,files=files,RT=RT,download_only=download_only, $
         mag=mag,pfdpu=pfdpu,sep=sep,lpw=lpw,sta=sta,format=format,use_cache=use_cache,  $
         source=source,verbose=verbose,L1=L1,L0=L0,L2=L2,ancillary=ancillary, anc_structure = anc_structure,$
-                 pad = pad, eflux = eflux, lowres=lowres
+                 pad = pad, eflux = eflux, lowres=lowres,units_name=units_name
         
       @mvn_sep_handler_commonblock.pro
 ;common mvn_sep_load_com, last_files
@@ -144,7 +144,7 @@ if keyword_set(L2) then   format = 'L2_CDF'
 if ~keyword_set(format) then format='L1_SAV'
 
 if format eq 'L1_SAV' then begin
-  mvn_sep_var_restore,trange=trange,download_only=download_only,verbose=verbose,lowres=lowres
+  mvn_sep_var_restore,trange=trange,download_only=download_only,verbose=verbose,lowres=lowres,units_name=units_name
   if ~keyword_set(download_only) then begin
     mvn_sep_cal_to_tplot,sepn=1,lowres=lowres
     mvn_sep_cal_to_tplot,sepn=2,lowres=lowres

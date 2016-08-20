@@ -109,9 +109,9 @@
 ;                    called from the command line. Re-tabbed, to find
 ;                    an 'End of file encountered...' bug.
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-19 14:03:49 -0700 (Fri, 19 Aug 2016) $
+; $LastChangedRevision: 21682 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
@@ -258,7 +258,7 @@ pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
   endif
 
   if keyword_set(delete_support_data) then $
-    del_data, 'th'+probe+'_'+dt+'_hed'
+    del_data, 'th'+probe+'_'+dt+'_hed'+suffix[0]
 
 end
 

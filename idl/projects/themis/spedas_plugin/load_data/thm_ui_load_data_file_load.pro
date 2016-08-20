@@ -19,8 +19,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-11-05 10:38:06 -0800 (Thu, 05 Nov 2015) $
-;$LastChangedRevision: 19267 $
+;$LastChangedDate: 2016-08-19 10:13:30 -0700 (Fri, 19 Aug 2016) $
+;$LastChangedRevision: 21680 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_load.pro $
 ;-
 pro thm_ui_load_data_file_load, state, event
@@ -166,6 +166,7 @@ pro thm_ui_load_data_file_load, state, event
                         state.statusText, $
                         state.historyWin,$
                         state.tab_id,$
+                        suffix=state.suffix,$
                         loadedVarList=loadedVarList,$
                         overwrite_selections=overwrite_selections
                        

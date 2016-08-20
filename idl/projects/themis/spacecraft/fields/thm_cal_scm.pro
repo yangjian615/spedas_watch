@@ -114,9 +114,9 @@
 ; in step 6, start_step condition has been commented
 ; in outputs to tplot section, mode has been replaced by strlowcase(mode)
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-07-10 10:08:44 -0700 (Fri, 10 Jul 2015) $
-;$LastChangedRevision: 18073 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-08-19 14:03:49 -0700 (Fri, 19 Aug 2016) $
+;$LastChangedRevision: 21682 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_scm.pro $
 ;-
 
@@ -229,7 +229,7 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
         dt_j_types = strfilter(dts, dt_j+'*', count = n_dt_j_types)
         if n_dt_j_types gt 0 then begin
           in_name = 'th'+p_i+'_'+dt_j
-          hed_name = 'th'+p_i+'_'+dt_j+'_hed'
+          hed_name = 'th'+p_i+'_'+dt_j+'_hed' 
           
           If(obj_valid(progobj)) Then progobj -> update, 0.0, text = 'Calibrating: '+ dt_j_types
           dprint, dlevel = 4,  'Calibrating: ', dt_j_types
@@ -287,6 +287,12 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
 
 ;unpack the header data
   get_data, thx_scx_hed, time_scx_hed, val_scx_hed
+  
+  if out_suff[0] ne '' then begin
+    copy_data, thx_scx_hed, thx_scx_hed + out_suff[0]
+    store_data, thx_scx_hed, /delete 
+    thx_scx_hed= thx_scx_hed + out_suff[0]
+  end
 
 ; test if data is present and in raw form.
   if size(dlim_scx, /type) ne 8 then begin
@@ -789,7 +795,7 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
           wf_scx_despin[*, 0]  = xfo
           wf_scx_despin[*, 1]  = yfo
           wf_scx_despin[*, 2]  = zfo
-          thscs_despin = thx_scx+'_despin'
+          thscs_despin = thx_scx+'_despin'+out_suff[0]
 
           store_data, thscs_despin, $
             data = {x:time_scx[ind0:ind1], y:wf_scx_despin}, dl = dl
@@ -833,11 +839,11 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
 
             ;;storing waveform after spintones cleanup
             
-            thscs_noise_sp = thx_scx+'_noise_sp'
+            thscs_noise_sp = thx_scx+'_noise_sp'+out_suff[0]
             store_data, thscs_noise_sp, $
               data = {x:time_scx_cl_sp, y:wf_noise_sp}, dl = dl
 
-            thscs_cl_sp = thx_scx+ '_cl_sp'
+            thscs_cl_sp = thx_scx+ '_cl_sp'+out_suff[0]
             store_data, thscs_cl_sp, $
               data = {x:time_scx_cl_sp, y:wf_scx_cl_sp}, dl = dl
 
@@ -852,7 +858,7 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
                                           min_num_windows = 2)
 
                  ;;storing waveform after spintones cleaning
-            thscs_cleaned = thx_scx+'cl_sp'
+            thscs_cleaned = thx_scx+'cl_sp'+out_suff[0]
             store_data, thscs_cleaned, data = thscs_cl_sp, dl = dl
 
             xfo      = thscs_cl_sp.y[*, 0]
@@ -920,10 +926,10 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
 
                  ;;storing waveform after spintones cleanup
 
-            thscs_noise_sp = thx_scx+'_noise_sp'
+            thscs_noise_sp = thx_scx+'_noise_sp'+out_suff[0]
             store_data, thscs_noise_sp, $
               data = {x:time_scx_cl_sp, y:wf_noise_sp}, dl = dl
-            thscs_cl_sp = thx_scx+ '_cl_sp'
+            thscs_cl_sp = thx_scx+ '_cl_sp'+out_suff[0]
             store_data, thscs_cl_sp, $
               data = {x:time_scx_cl_sp, y:wf_scx_cl_sp}, dl = dl
 
@@ -936,7 +942,7 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
             
             ;;storing waveform after spintones cleaning
             
-            thscs_cleaned_sp = thx_scx+'_cl_sp'
+            thscs_cleaned_sp = thx_scx+'_cl_sp'+out_suff[0]
             store_data, thscs_cleaned_sp, data = thscs_cl_sp, dl = dl
             
           end
@@ -958,10 +964,10 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
 
                  ;;storing after 8/32 Hz cleaning
             
-            thscs_noise_1s = thx_scx+'_noise_1s'
+            thscs_noise_1s = thx_scx+'_noise_1s'+out_suff[0]
             store_data, thscs_noise_1s, $
               data = {x:time_scx_cl, y:wf_scx_noise_1s}, dl = dl
-            thscs_cl = thx_scx+'_cl'
+            thscs_cl = thx_scx+'_cl'+out_suff[0]
             store_data, thscs_cl, data = {x:time_scx_cl, y:wf_scx_cl}, dl = dl
             
             xfo      = wf_scx_cl[*, 0]
@@ -974,7 +980,7 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
             
             ;;storing after 8/32 Hz cleaning
             
-            thscs_cleaned = thx_scx+'_cl'
+            thscs_cleaned = thx_scx+'_cl'+out_suff[0]
             store_data, thscs_cleaned, data = thscs_cl, dl = dl
             
             xfo      = thscs_cl.y[*, 0]

@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
-; $LastChangedRevision: 21548 $
+; $LastChangedDate: 2016-08-19 09:56:12 -0700 (Fri, 19 Aug 2016) $
+; $LastChangedRevision: 21679 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_hpca_crib_qlplots.pro $
 ;-
 
@@ -126,7 +126,6 @@ if ~postscript then window, iw;, xsize=width, ysize=height
 title= 'Quicklook Plots for HPCA '+sid+' Data'
 mms_tplot_quicklook, panels, title=title, window=iw, var_label=position_vars, $
   fast_bar='mms_bss_fast', burst_bar='mms_bss_burst'
-;xyouts, .33, .96, title, /normal, charsize=2
 
 if postscript then tprint, plot_directory + "mms1_hpca_hplus_RF_corrected"
 

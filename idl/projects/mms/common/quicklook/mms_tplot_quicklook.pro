@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-18 14:45:31 -0700 (Thu, 18 Aug 2016) $
-; $LastChangedRevision: 21676 $
+; $LastChangedDate: 2016-08-19 08:34:58 -0700 (Fri, 19 Aug 2016) $
+; $LastChangedRevision: 21677 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/quicklook/mms_tplot_quicklook.pro $
 ;-
 
@@ -98,13 +98,10 @@ pro mms_tplot_quicklook, tplotnames, degap=degap, window=win_idx, $
     ; plot them
     if keyword_set(win_idx) then window, win_idx, xsize=xsize, ysize=ysize else window, xsize=xsize, ysize=ysize
 
-    ; get the current plot options, check that title is empty 
-    ; set to '' if not (fixes weird bug on OS X)
-    tplot_options, get_options=opts
-    if tag_exist(opts, 'title') && opts.title ne '' then begin
-      tplot_options, title=''
-      wait, .01
-    endif
+
+    ; fixes weird bug with title on OS X, when calling this
+    ; routine repeatedly
+    wait, .01
     
     tplot, tplotnames_with_data, get_plot_pos=positions, window=win_idx, trange=trange, title=title, _extra=ex
 

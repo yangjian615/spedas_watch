@@ -37,9 +37,9 @@
 ; Updated to use thm_load_xxx by KRB, 2007-2-5
 ; Update removed to not use thm_load_xxx by DEL
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-19 11:48:17 -0700 (Fri, 19 Aug 2016) $
+; $LastChangedRevision: 21681 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_load_sst.pro $
 ;-
 
@@ -182,8 +182,8 @@ pro thm_load_sst_l1,datatype=datatype,vdatatypes=vdatatypes,probe=probe,$
       
       valid : 1 }
       
-    store_data,sc+'_isst_config',data={x:*cache.isst_config_time,y:*cache.isst_config}
-    store_data,sc+'_esst_config',data={x:*cache.esst_config_time,y:*cache.esst_config}
+    store_data,sc+'_isst_config' +suffix[0],data={x:*cache.isst_config_time,y:*cache.isst_config}
+    store_data,sc+'_esst_config' +suffix[0],data={x:*cache.esst_config_time,y:*cache.esst_config}
     
     if ptr_valid(cache.sir_006_time) && ptr_valid(cache.sir_001_time) then begin
     
@@ -434,7 +434,7 @@ if size(/type,datatype0) gt 0 then datatype = datatype0 ;keep input vars from be
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 17458 2015-04-30 22:28:49Z aaflores $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 21681 2016-08-19 18:48:17Z nikos $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']

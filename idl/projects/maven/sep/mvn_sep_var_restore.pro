@@ -1,4 +1,4 @@
-pro mvn_sep_var_restore,pathname,trange=trange,verbose=verbose,download_only=download_only,prereq_info=prereq_temp,filename=files,no_finish=no_finish,lowres=lowres
+pro mvn_sep_var_restore,pathname,trange=trange,verbose=verbose,download_only=download_only,prereq_info=prereq_temp,filename=files,no_finish=no_finish,lowres=lowres,units_name=units_name
 
 @mvn_sep_handler_commonblock.pro
 @mvn_pfdpu_handler_commonblock.pro
@@ -50,7 +50,7 @@ for i=0,n_elements(files)-1 do begin
   append_array, source_filenames, source_filename
 endfor
 mvn_pfdpu_handler,finish= ~keyword_set(no_finish)
-mvn_sep_handler,finish= ~keyword_set(no_finish)
+mvn_sep_handler,finish= ~keyword_set(no_finish),units_name=units_name
 end
 
 

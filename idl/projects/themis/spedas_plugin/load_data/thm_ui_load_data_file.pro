@@ -27,8 +27,8 @@
 ;  
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-11-05 11:18:59 -0800 (Thu, 05 Nov 2015) $
-;$LastChangedRevision: 19270 $
+;$LastChangedDate: 2016-08-19 10:13:30 -0700 (Fri, 19 Aug 2016) $
+;$LastChangedRevision: 21680 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file.pro $
 ;
 ;-
@@ -96,6 +96,9 @@ Pro thm_ui_load_data_file_event, event;, info
         ; make sure an observatory is selected - for gmag this is optional
         if ~array_equal(*state.observ, '', /no_typeconv) or (state.instr eq 'gmag') then begin
           widget_control, /hourglass
+          suffix_txt = widget_info(event.top,find_by_uname='SUFFIXTEXT')
+          WIDGET_CONTROL, suffix_txt, GET_VALUE=suffix
+          state.suffix = suffix
           state.statusText->Update, 'Loading data...'
           thm_ui_load_data_file_load, state, event
         endif else begin
@@ -327,25 +330,33 @@ pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
   coordDroplistLabel = Widget_Label(coordBase, Value=' Output Coordinates:  ')
   coordDroplist = Widget_ComboBox(coordBase, Value=validCoords, $ ;XSize=165, $
                                   Sensitive=0, uval='COORD_DLIST')
-  
+                                  
+
+                                 
   getresourcepath,rpath
   
   midRowBase = Widget_Base(dbottomBase, /row)
   
- ttextBase = Widget_Base(midRowBase, /Col, YPad=3)
+ ttextBase = Widget_Base(midRowBase, /Col, YPad=0)
  timeid = spd_ui_time_widget(ttextBase,$
                             statusText,$
                             historyWin,$
                             timeRangeObj=trObj,$
                             uvalue='TIME_WIDGET',$
                             uname='time_widget')
-                            
-  midRowButtonBase = widget_base(midRowBase,/col,ypad=2,space=2,/nonexclusive,/align_center)
+  
+  midRowBase1 = Widget_Base(midRowBase, /col)                         
+  midRowButtonBase = widget_base(midRowBase1,/col,ypad=2,space=2,/nonexclusive,/align_top)
   eclipse_button = widget_button(midRowButtonBase,val='Apply Eclipse Corrections', $
                     uname='eclipse',uvalue='ECLIPSE',sensitive=0, $
                     tooltip='Apply eclipse corrections to calibrated level 1 data')
   raw_button = widget_button(midRowButtonBase,val='Uncalibrated/Raw', $
                  uname='raw_data',uvalue='RAW_DATA',sensitive=0)
+                 
+  ;suffix               
+  suffixBase = widget_base(midRowBase1,/row)
+  suffix_label = Widget_Label(suffixBase, Value="GUI Suffix: ")
+  suffix_txt = Widget_Text(suffixBase, Value="", /editable, uname='SUFFIXTEXT', scr_xsize=70)
   
   ;clear buttons
   clearbuts = Widget_Base(dbottomBase, /Row)
@@ -410,7 +421,8 @@ pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
 
   clearButton = Widget_Button(bottomloadBase, Value='Delete All Data', UValue='CLEAR', $
     ToolTip='Deletes all loaded data')
-
+    
+  WIDGET_CONTROL, suffix_txt, GET_VALUE=suffix
 
   ;main structure for this panel (to be filled in as items are needed)
   state = {tab_id:topbase, $ ;TODO: spd_ui_load_data_file_itype_sel will 
@@ -432,7 +444,7 @@ pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
            loadedData:loadedData, historyWin:historyWin, $
            validData:ptr_new(val_data), $
            statusText:statusText, callSequence:callSequence, $
-           treeCopyPtr:treeCopyPtr}
+           treeCopyPtr:treeCopyPtr, suffix:suffix}
 
 
   Widget_Control, topbase, Set_UValue=state, /No_Copy
