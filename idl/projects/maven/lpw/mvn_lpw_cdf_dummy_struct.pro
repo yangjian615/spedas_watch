@@ -116,7 +116,7 @@ Function mvn_lpw_cdf_dummy_struct, var
       Fillval:!values.f_nan, Form_ptr:'form_ptr', Lablaxis:'NA', Monoton:'INCREASE', Scalemin:0., Scalemax:1., Units:'NA', Validmin:(-1.)*1.E38, Validmax:1.E38, $
       Var_type:'data', $
       Var_notes: 'NA', x_Var_notes: 'NA', y_Var_notes:'NA', v_Var_notes:'NA', dy_Var_notes:'NA', dv_Var_notes:'NA', flag_Var_notes:'NA', info_var_notes:'NA', $ ;end of ISTP var_attributes, begin additional LPW fields:
-      t_epoch: 1.D, l0_datafile: 'L0_datafile', cal_vers:'NA', cal_y_const1:'NA', cal_y_const2:'NA', cal_datafile:'NA', $
+      info_info:'NA', t_epoch: 1.D, l0_datafile: 'L0_datafile', cal_vers:'NA', cal_y_const1:'NA', cal_y_const2:'NA', cal_datafile:'NA', $
       cal_source:'NA', flag_info:'NA', flag_source:'NA', xsubtitle:'NA', ysubtitle:'NA', zsubtitle:'NA', spec:0., ylog:0., cal_v_const1:'NA', $
       cal_v_const2:'NA', zlog:0., char_size: 1., xtitle:'NA', ytitle:'NA', yrange:[0.,1.], $
       ztitle:'NA', zrange:[0.,1.], labels:'NA', colors: '0', labflag: 0., noerrorbars:1., psym:0., no_interp:0., $
@@ -138,7 +138,7 @@ Function mvn_lpw_cdf_dummy_struct, var
       Form_ptr:'form_ptr', Lablaxis:'NA', Monoton:'INCREASE', Scalemin:0., Scalemax:1., Units:'NA', Validmin:(-1.)*1.E38, Validmax:1.E38, $
       Var_type:'data', Var_notes: 'NA', x_Var_notes: 'NA', $
       y_Var_notes:'NA', v_Var_notes:'NA', dy_Var_notes:'NA', dv_Var_notes:'NA', flag_Var_notes:'NA', info_var_notes:'NA', $ ;end of ISTP var_attributes, begin additional LPW fields:
-      t_epoch: 1.D, l0_datafile: 'L0_datafile', cal_vers:'NA', cal_y_const1:'NA', cal_y_const2:'NA', cal_datafile:'NA', $
+      info_info:'NA', t_epoch: 1.D, l0_datafile: 'L0_datafile', cal_vers:'NA', cal_y_const1:'NA', cal_y_const2:'NA', cal_datafile:'NA', $
       cal_source:'NA', flag_info:'NA', flag_source:'NA', xsubtitle:'NA', ysubtitle:'NA', zsubtitle:'NA', spec:0., ylog:0., cal_v_const1:'NA', $
       cal_v_const2:'NA', zlog:0., char_size: 1., xtitle:'NA', ytitle:'NA', yrange:[0.,1.], $
       ztitle:'NA', zrange:[0.,1.], labels:'NA', colors: '0', labflag: 0., noerrorbars:1., psym:0., no_interp:0., $
@@ -397,6 +397,7 @@ Function mvn_lpw_cdf_dummy_struct, var
     IF (is_struct(ll) && tag_exist(ll, 'ytitle')) THEN vatt.lablaxis = ll.ytitle   ;ytitle is stored in limits
     IF tag_exist(dl, 'ysubtitle') THEN vatt.units = dl.ysubtitle   ;also units, stored as dl.units aswell
     IF tag_exist(dl, 'Var_type') THEN vatt.var_type = dl.Var_type
+    IF tag_exist(dl, 'info_info') THEN vatt.info_info = dl.info_info
     ;End of cdf required fields
 
     ;SPICE times: we have up to 6 entries, but we may not have all 6 if we're archiving <L2 data:
