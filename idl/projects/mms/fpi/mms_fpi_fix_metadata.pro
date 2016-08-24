@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-08 15:20:17 -0700 (Mon, 08 Aug 2016) $
-;$LastChangedRevision: 21617 $
+;$LastChangedDate: 2016-08-23 15:41:48 -0700 (Tue, 23 Aug 2016) $
+;$LastChangedRevision: 21699 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_fix_metadata.pro $
 ;-
 
@@ -113,6 +113,33 @@ pro mms_fpi_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
             zlim, tplot_name, 0, 0, 1
             options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
           end
+          prefix[sc_idx] + '_des_energyspectr_omni_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_dis_energyspectr_omni_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 0, 1
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[eV]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          ; PADs
+          prefix[sc_idx] + '_des_pitchangdist_lowen_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 180, 0
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[deg]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_pitchangdist_miden_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 180, 0
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[deg]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+          prefix[sc_idx] + '_des_pitchangdist_highen_'+data_rate+suffix: begin
+            ylim, tplot_name, 0, 180, 0
+            zlim, tplot_name, 0, 0, 1
+            options, tplot_name, ysubtitle='[deg]', ztitle='[keV/(cm^2 s sr keV)]', ystyle=1
+          end
+
 
 
           ; moms

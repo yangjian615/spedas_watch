@@ -54,8 +54,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-08-22 09:30:01 -0700 (Mon, 22 Aug 2016) $
-;   $LastChangedRevision: 21687 $
+;   $LastChangedDate: 2016-08-23 11:30:41 -0700 (Tue, 23 Aug 2016) $
+;   $LastChangedRevision: 21691 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/utils/rbsp_rotate_field_2_vec.pro $
 ;-
 
@@ -205,6 +205,9 @@ function rbsp_rotate_field_2_vec,waveform,vec,vec2=vec2,efa=efa
   nchunks = n_elements(vec.x)
   chsz = n_elements(wf.x)/(nchunks-1) ;size of each chunk
 
+;  ;number of additional times to loop to compensate for rounding error
+;  ;when calculating chsz
+;  remainder = (n_elements(wf.x) - nchunks*chsz)/chsz
 
 
                                 ;The size of each chunk must be greater than 1 for a min variance analysis

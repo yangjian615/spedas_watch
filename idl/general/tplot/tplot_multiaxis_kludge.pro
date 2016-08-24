@@ -23,9 +23,9 @@
 ;  -Existing "ystyle" and "axis" elements of limits struct will be clobbered.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-25 16:37:13 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21212 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-08-23 15:19:19 -0700 (Tue, 23 Aug 2016) $
+;$LastChangedRevision: 21697 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_multiaxis_kludge.pro $
 ;-
 pro tplot_multiaxis_kludge, names, left=left, right=right, reset=reset
@@ -61,11 +61,13 @@ endelse
 for i=0, n_elements(names)-1 do begin
 
   if tnames(names[i]) eq '' then continue
-
+  get_data, names[i], lim=lim, dlim=dlim
+  
   ;use variable name as default y title
   axis = {ytitle: strjoin(strsplit(names[i],'_',/extract),'!c')}
-
-  get_data, names[i], lim=lim, dlim=dlim
+  
+  str_element, lim, 'colors', this_color, success=s
+  if s then str_element, axis, 'color', this_color[0], /add
 
   ;copy & overwrite axis options from metadata into struct
   extract_tags, axis, dlim, /axis
@@ -77,9 +79,10 @@ for i=0, n_elements(names)-1 do begin
   str_element, lim, 'ysubtitle', ysubtitle
   if ~undefined(ysubtitle) then axis.ytitle += '!c'+ysubtitle
   
+  
   ;add options to limits struct
   extract_tags, lim, {ystyle:1+4, axis:axis}
-  
+
   store_data, names[i], lim=lim
 
 endfor

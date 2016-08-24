@@ -256,7 +256,8 @@ endif
          TIMEOUT_RELAX:   b[115],$
          TABLE_CHKSUM:    b[116],$
          RATES_CYCLES:    ishft(b[117],-5), $
-         MRAM_ADDR:       spp_swp_word_decom(b,117), $ ;;;!!!!! CHANGE TO LSB 21 bits !!!!!
+         MRAM_ADDR_HI:    b[117] and '11111'b, $
+         MRAM_ADDR_low:       spp_swp_word_decom(b,118), $ ;;;!!!!! CHANGE TO LSB 21 bits !!!!!
          DACS  :         DAC_VALS,  $
 ;         DACS2  :         ADC_VALS2,  $
          ADCS   :         ADC_VALS2,  $

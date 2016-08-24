@@ -14,7 +14,13 @@
 ;             time:   show the first and last times in the variable
 ;             help:   show the output of help, /structure, data 
 ;                     and help, /structure, dlimits for the variable
-;                     
+; Note:
+;             This procedure assumes that there haven't been any modifications
+;             to the structure of the tplot variable; i.e., if you transpose the order
+;             of the indices in d.Y manually using get_data, store_data, 
+;             this routine will not know that (and will incorrectly report
+;             the 'data format')
+;             
 ; Example:  
 ;             MMS> print_tinfo, 'mms1_hpca_hplus_phase_space_density'
 ;                 *** Variable: mms1_hpca_hplus_phase_space_density
@@ -29,8 +35,8 @@
 ;  
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-19 09:06:43 -0700 (Tue, 19 Jul 2016) $
-; $LastChangedRevision: 21488 $
+; $LastChangedDate: 2016-08-23 15:30:42 -0700 (Tue, 23 Aug 2016) $
+; $LastChangedRevision: 21698 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/print_tinfo.pro $
 ;-
 

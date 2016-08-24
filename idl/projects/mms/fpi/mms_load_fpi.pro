@@ -66,8 +66,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-12 15:36:14 -0700 (Tue, 12 Jul 2016) $
-;$LastChangedRevision: 21451 $
+;$LastChangedDate: 2016-08-23 09:22:42 -0700 (Tue, 23 Aug 2016) $
+;$LastChangedRevision: 21690 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -120,7 +120,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
         spdf = spdf, center_measurement = center_measurement, available = available
-        
+
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return
     
@@ -134,14 +134,14 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'des-moms', get_support_data = 0, $
             tplotnames = tplotnames_errflags_emom, no_color_setup = no_color_setup, time_clip = time_clip, $
-            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags*', cdf_filenames = cdf_filenames, $
+            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
         mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'des-dist', get_support_data = 0, $
             tplotnames = tplotnames_errflags_edist, no_color_setup = no_color_setup, time_clip = time_clip, $
-            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags*', cdf_filenames = cdf_filenames, $
+            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
     endif else begin
@@ -158,14 +158,14 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'dis-moms', get_support_data = 0, $
             tplotnames = tplotnames_errflags_imom, no_color_setup = no_color_setup, time_clip = time_clip, $
-            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags*', cdf_filenames = cdf_filenames, $
+            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags*',  $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
         mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'dis-dist', get_support_data = 0, $
             tplotnames = tplotnames_errflags_idist, no_color_setup = no_color_setup, time_clip = time_clip, $
-            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags*', cdf_filenames = cdf_filenames, $
+            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
     endif else begin

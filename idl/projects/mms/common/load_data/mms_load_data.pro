@@ -88,8 +88,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-11 11:51:08 -0700 (Thu, 11 Aug 2016) $
-;$LastChangedRevision: 21631 $
+;$LastChangedDate: 2016-08-23 11:50:33 -0700 (Tue, 23 Aug 2016) $
+;$LastChangedRevision: 21692 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -325,7 +325,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         undefine, files
         undefine, loaded_tnames
 
-    ;end loo  ps over probe, rate, leve, and datatype
+    ;end loops over probe, rate, level, and datatype
     endfor
     endfor
     endfor

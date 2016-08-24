@@ -259,9 +259,9 @@ end
 ;	-- fixed, nominal calibration pars used (gains and
 ;          frequency responses), rather than proper time-dependent parameters.
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-05-03 13:38:56 -0700 (Tue, 03 May 2016) $
-; $LastChangedRevision: 21011 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-23 11:51:14 -0700 (Tue, 23 Aug 2016) $
+; $LastChangedRevision: 21693 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_efi.pro $
 ;-
 pro thm_cal_efi, probe = probe, datatype = datatype, $
@@ -1179,6 +1179,14 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
         thm_spinfit, tplot_var_nooffset, axis_dim = 2, plane_dim = 1, sun2sensor = 45, $
           build_efi_var = e34_efs
         del_data, tplot_var_nooffset ;not needed anymore?
+        if out_suf[0] ne '' then begin
+          copy_data, e12_efs, e12_efs + out_suf[0]
+          store_data, e12_efs, /delete
+          e12_efs = e12_efs + out_suf[0]
+          copy_data, e34_efs, e34_efs + out_suf[0]
+          store_data, e34_efs, /delete
+          e34_efs = e34_efs + out_suf[0]
+        endif
         options, e12_efs, 'ytitle', e12_efs
         options, e12_efs, 'labels', ['Ex', 'Ey', 'Ez'], /add
         options, e34_efs, 'ytitle', e34_efs
@@ -1199,11 +1207,11 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
           str_element, dl12, 'labels', '', /add
           str_element, dl12, 'labflag', 0, /add
           str_element, dl12, 'colors', 0, /add
-          efi_q_mag = thm_tplot_var(sc, nameraw)+'_q_mag'
+          efi_q_mag = thm_tplot_var(sc, nameraw)+'_q_mag' + out_suf[0]
           store_data, efi_q_mag, data = {x:tim_arr, y:mag_test}, dlimits = dl12
           options, efi_q_mag, 'ytitle', efi_q_mag
           ylim, efi_q_mag, 0, 0, 1
-          efi_q_pha = thm_tplot_var(sc, nameraw)+'_q_pha'
+          efi_q_pha = thm_tplot_var(sc, nameraw)+'_q_pha' + out_suf[0]
           store_data, efi_q_pha, data = {x:tim_arr, y:pha_test}, dlimits = dl12
           options, efi_q_pha, 'ytitle', efi_q_pha
           ylim, efi_q_pha, 0, 0, 1

@@ -38,8 +38,8 @@
 ; Update removed to not use thm_load_xxx by DEL
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-19 11:48:17 -0700 (Fri, 19 Aug 2016) $
-; $LastChangedRevision: 21681 $
+; $LastChangedDate: 2016-08-23 15:04:14 -0700 (Tue, 23 Aug 2016) $
+; $LastChangedRevision: 21696 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_load_sst.pro $
 ;-
 
@@ -74,6 +74,8 @@ pro thm_load_sst_l1,datatype=datatype,vdatatypes=vdatatypes,probe=probe,$
   tn_pre_proc = tnames()
   
   if not keyword_set(datatype) then datatype='*'
+  if not keyword_set(suffix) then suffix=''
+  
   datatype = strfilter(vdatatypes, datatype ,delimiter=' ',/string)
   
   addmaster=0
@@ -434,7 +436,7 @@ if size(/type,datatype0) gt 0 then datatype = datatype0 ;keep input vars from be
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 21681 2016-08-19 18:48:17Z nikos $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 21696 2016-08-23 22:04:14Z nikos $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']

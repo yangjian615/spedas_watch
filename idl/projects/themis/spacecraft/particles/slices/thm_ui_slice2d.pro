@@ -1544,7 +1544,7 @@ pro thm_ui_slice2d_event, event
       str_element, state, 'previous', /add, $
              {probeidx:-1,didx:-1,mag:'',vtype:'',trange:[-1d,-1d], $
               bgnd_remove:-1, bgnd_type:'', bgnd_npoints:-1d, bgnd_scale:-1d, $
-              esa_remove:-1, sst_cal:-1}
+              esa_remove:-1, sst_cal:-1, eclipse:-1}
       str_element, state, 'flags', /add, $
              {forcereload:1b,olinetouched:0b,restouched:0b}
 
@@ -1726,8 +1726,8 @@ end ;----------------------------------------------------
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-06-01 19:27:22 -0700 (Wed, 01 Jun 2016) $
-;$LastChangedRevision: 21258 $
+;$LastChangedDate: 2016-08-23 17:20:55 -0700 (Tue, 23 Aug 2016) $
+;$LastChangedRevision: 21700 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-

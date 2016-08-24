@@ -76,8 +76,8 @@
 ;  This routine is (should be) platform independent.
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-19 14:26:44 -0700 (Fri, 19 Aug 2016) $
-; $LastChangedRevision: 21683 $
+; $LastChangedDate: 2016-08-23 14:56:13 -0700 (Tue, 23 Aug 2016) $
+; $LastChangedRevision: 21695 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fgm.pro $
 ;-
 
@@ -169,18 +169,20 @@ pro thm_load_fgm_post, sname=probe, datatype=dt, level=lvl, $
               store_data, tplot_var_root, data=d_str, limit=l_str, dlimit=dl_str
            endif
           tplot_var = tplot_var_root
-        endif
+        endif  
         ;; save name of support tplot variable for possible deletion
         if tplot_var  then begin
            if size(support_var_list,/type) eq 0 then $
               support_var_list = [tplot_var +suffix[0]] $
            else $
               support_var_list = [support_var_list,tplot_var+suffix[0]]
-              
-            if size(support_var_root_list,/type) eq 0 then $
-              support_var_root_list = [tplot_var_root] $
-            else $
-              support_var_root_list = [support_var_root_list,tplot_var_root]   
+             
+            if size(tplot_var_root,/type) ne 0 then begin  
+                if size(support_var_root_list,/type) eq 0 then $
+                   support_var_root_list = [tplot_var_root] $
+                else $
+                  support_var_root_list = [support_var_root_list,tplot_var_root]   
+            endif
               
         endif
 
@@ -202,12 +204,14 @@ pro thm_load_fgm_post, sname=probe, datatype=dt, level=lvl, $
                      use_eclipse_corrections=use_eclipse_corrections
                     
         ;; delete support data
-        if size(support_var_list, /type) ne 0 && keyword_set(delete_support_data) then begin
-           del_data, support_var_list
-           del_data, support_var_root_list
+        if keyword_set(delete_support_data) then begin
+          if size(support_var_list, /type) ne 0 then del_data, support_var_list
+          if size(support_var_root_list, /type) ne 0 then del_data, support_var_root_list
         endif else begin
-          if keyword_set(suffix) then del_data, support_var_root_list else del_data, support_var_list
-        endelse
+          if keyword_set(suffix) then  begin
+            if size(support_var_root_list, /type) ne 0 then del_data, support_var_root_list
+          endif 
+        endelse           
         
      endif
 
