@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 13:47:11 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17725 $
+; $LastChangedDate: 2016-08-24 08:57:44 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21714 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-01-15
@@ -22,7 +22,7 @@
 pro mvn_swe_init
 
   @mvn_swe_com
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
+  @swe_snap_common
   
   if (size(snap_index,/type) eq 0) then swe_snap_layout,0
 

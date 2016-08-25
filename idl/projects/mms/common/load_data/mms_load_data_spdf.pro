@@ -27,8 +27,8 @@
 ;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-19 11:20:30 -0700 (Thu, 19 May 2016) $
-;$LastChangedRevision: 21141 $
+;$LastChangedDate: 2016-08-24 12:06:24 -0700 (Wed, 24 Aug 2016) $
+;$LastChangedRevision: 21720 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -205,8 +205,7 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
         endfor
 
         files = spd_download(remote_file=relpathnames, remote_path=remote_data_dir, $
-          local_path = local_data_dir, $
-          SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0) ; these keywords ignore certificate warnings
+          local_path = local_data_dir) 
 
         mms_cdf2tplot, files, tplotnames = new_tplotnames, varformat=varformat, $
                 suffix = suffix, get_support_data = get_support_data, /load_labels, $

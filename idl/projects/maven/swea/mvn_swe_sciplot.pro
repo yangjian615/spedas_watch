@@ -59,14 +59,14 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-28 15:15:11 -0700 (Tue, 28 Jun 2016) $
-; $LastChangedRevision: 21385 $
+; $LastChangedDate: 2016-08-24 09:00:26 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21719 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
 pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
-                     sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2
+                     sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2, min_pad_eflux=min_pad_eflux
 
   compile_opt idl2
 
@@ -75,18 +75,28 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   
   if keyword_set(nO1) then doO1 = 1 else doO1 = 0
   if keyword_set(nO2) then doO2 = 1 else doO2 = 0
+  
+  if (size(min_pad_eflux,/type) eq 0) then min_pad_eflux = 6.e4
 
   mvn_swe_sumplot,/loadonly
   mvn_swe_sc_pot,/over,/negpot
   engy_pan = 'swe_a4_pot'
   options,engy_pan,'ytitle','SWEA elec!ceV'
 
-; Try to load resampled PAD data
+; Try to load resampled PAD data - mask noisy data
 
   mvn_swe_pad_restore
   tname = 'mvn_swe_pad_resample'
-  get_data,tname,index=i
-  if (i gt 0) then pad_pan = tname else pad_pan = 'swe_a2_280'
+  get_data, tname, data=pad, index=i, alim=dl
+  if (i gt 0) then begin
+    pad_pan = tname
+    nf = rebin(dl.nfactor, n_elements(pad.x), n_elements(pad.y[0,*]))
+    indx = where(average(pad.y*nf,2,/nan) lt min_pad_eflux, count)
+    if (count gt 0L) then begin
+      pad.y[indx,*] = !values.f_nan
+      store_data, tname, data=pad, dl=dl
+    endif
+  endif else pad_pan = 'swe_a2_280'
 
 ; Spacecraft orientation
 

@@ -6,7 +6,7 @@
 ;         Make error flag bars
 ;         
 ;         For DES/DIS moments
-;          tname+'_flagbars_full': Detailed flag bars (11 bars)
+;          tname+'_flagbars_full': Detailed flag bars (12 bars)
 ;          tname+'_flagbars'     : Standard flag bars (4 bars)
 ;          tname+'_flagbars_mini': Smallest flag bar (1 bars)
 ;
@@ -38,6 +38,7 @@
 ;     bit 8 = onboard magnetic field used instead of brst l2pre magnetic field
 ;     bit 9 = srvy l2pre magnetic field used instead of brst l2pre magnetic field
 ;     bit 10 = no internally generated photoelectron correction applied
+;     bit 11 = compression pipeline error
 ;      
 ;   For DES/DIS moments (Fast):
 ;     bit 0 = manually flagged interval --> contact the FPI team for direction when utilizing this data; further correction is required
@@ -51,14 +52,15 @@
 ;     bit 8 = onboard magnetic field used instead of srvy l2pre magnetic field
 ;     bit 9 = not used
 ;     bit 10 = no internally generated photoelectron correction applied
+;     bit 11 = compression pipeline error
 ;
 ;     Original by Naritoshi Kitamura
 ;     
 ;     June 2016: minor updates by egrimes
 ;     
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-06 12:16:13 -0700 (Wed, 06 Jul 2016) $
-; $LastChangedRevision: 21429 $
+; $LastChangedDate: 2016-08-24 08:53:13 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21704 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_make_errorflagbars.pro $
 ;-
 
@@ -74,13 +76,13 @@ PRO mms_fpi_make_errorflagbars,tname
   if ~is_struct(dl) then return
   
   if strmid(dl.cdf.gatt.data_type,3,4,/rev) eq 'moms' then begin
-    flags=string(d.y,format='(b011)')
-    flagline=fltarr(n_elements(d.x),11)
+    flags=string(d.y,format='(b012)')
+    flagline=fltarr(n_elements(d.x),12)
     flagline_others=fltarr(n_elements(d.x))
     flagline_all=fltarr(n_elements(d.x))
     for j=0l,n_elements(flags)-1l do begin
-      for i=0,10 do begin
-        if fix(strmid(flags[j],10-i,1)) eq 0 then begin
+      for i=0,11 do begin
+        if fix(strmid(flags[j],11-i,1)) eq 0 then begin
           flagline[j,i]=!values.f_nan
           if flagline_all[j] ne 1.0 then flagline_all[j]=!values.f_nan else flagline_all[j]=1.0
           if i ne 1 and i ne 4 and i ne 5 then if flagline_others[j] ne 1.0 then flagline_others[j]=!values.f_nan else flagline_others[j]=1.0
@@ -91,14 +93,14 @@ PRO mms_fpi_make_errorflagbars,tname
         endelse
       endfor
     endfor
-    store_data,tname+'_flagbars_full',data={x:d.x,y:[[flagline[*,0]],[flagline[*,1]-0.1],[flagline[*,2]-0.2],[flagline[*,3]-0.3],[flagline[*,4]-0.4],[flagline[*,5]-0.5],[flagline[*,6]-0.6],[flagline[*,7]-0.7],[flagline[*,8]-0.8],[flagline[*,9]-0.9],[flagline[*,10]-1.0]]}
-    ylim,tname+'_flagbars_full',-0.05,1.05,0
-    options,tname+'_flagbars_full',colors=[0,6,4,3,2,1,3,0,2,4,6],labels=['bit 0','bit 1','bit 2','bit 3','bit 4','bit 5','bit 6','bit 7','bit 8','bit 9','bit 10'],ytitle=inst+'!C'+rate,thick=3,xstyle=4,ystyle=4,ticklen=0,labflag=-1,psym=-6,symsize=0.1,datagap=gap
+    store_data,tname+'_flagbars_full',data={x:d.x,y:[[flagline[*,0]],[flagline[*,1]-0.1],[flagline[*,2]-0.2],[flagline[*,3]-0.3],[flagline[*,4]-0.4],[flagline[*,5]-0.5],[flagline[*,6]-0.6],[flagline[*,7]-0.7],[flagline[*,8]-0.8],[flagline[*,9]-0.9],[flagline[*,10]-1.0],[flagline[*,11]-1.1]]}
+    ylim,tname+'_flagbars_full',-0.15,1.05,0
+    options,tname+'_flagbars_full',colors=[0,6,4,3,2,1,3,0,2,4,6,0],labels=['bit 0','bit 1','bit 2','bit 3','bit 4','bit 5','bit 6','bit 7','bit 8','bit 9','bit 10','bit 11'],ytitle=inst+'!C'+rate,thick=3,xstyle=4,ystyle=4,ticklen=0,labflag=-1,psym=-6,symsize=0.1,datagap=gap
     store_data,tname+'_flagbars_main',data={x:d.x,y:[[flagline[*,1]-0.2],[flagline[*,4]-0.4],[flagline[*,5]-0.6],[flagline_others-0.8]]}
     ylim,tname+'_flagbars_main',0.1,0.9,0
     options,tname+'_flagbars_main',colors=[6,2,1,0],labels=['Saturation','Cold (>25%)','Hot (>25%)','Others'],ytitle=inst+'!C'+rate,xstyle=4,ystyle=4,ticklen=0,thick=4,panel_size=0.5,labflag=-1,psym=-6,symsize=0.2,datagap=gap
-    store_data,tname+'_flagbars_others',data={x:d.x,y:[[flagline[*,7]-0.8],[flagline[*,6]-0.8],[flagline[*,8]-0.8],[flagline[*,9]-0.8],[flagline[*,2]-0.8],[flagline[*,3]-0.8],[flagline[*,10]-0.8],[flagline[*,0]-0.8]]}
-    options,tname+'_flagbars_others',colors=[40,3,255,5,2,1,4,6],xstyle=4,ystyle=4,ticklen=0,thick=3,labflag=-1,psym=-6,symsize=0.15,datagap=gap
+    store_data,tname+'_flagbars_others',data={x:d.x,y:[[flagline[*,7]-0.8],[flagline[*,6]-0.8],[flagline[*,8]-0.8],[flagline[*,9]-0.8],[flagline[*,2]-0.8],[flagline[*,3]-0.8],[flagline[*,10]-0.8],[flagline[*,0]-0.8],[flagline[*,11]-0.8]]}
+    options,tname+'_flagbars_others',colors=[40,3,255,5,2,1,4,6,200],xstyle=4,ystyle=4,ticklen=0,thick=3,labflag=-1,psym=-6,symsize=0.15,datagap=gap
     store_data,tname+'_flagbars',data=[tname+'_flagbars_main',tname+'_flagbars_others']
     ylim,tname+'_flagbars',0.1,0.9,0
     options,tname+'_flagbars',xstyle=4,ystyle=4,ticklen=0,panel_size=0.5,labsize=1
@@ -112,11 +114,11 @@ PRO mms_fpi_make_errorflagbars,tname
     options, tname+'_flagbars_mini', axis={yaxis: 0, ytitle: inst, yticks: 1, yminor: 1, ystyle: 0, yticklayout: 1, ytickv: [-1, 2]}
   endif else begin
     if strmid(dl.cdf.gatt.data_type,3,4,/rev) eq 'dist' then begin
-      flags=string(d.y,format='(b011)')
+      flags=string(d.y,format='(b012)')
       flagline=fltarr(n_elements(d.x),2)
       for i=0,1 do begin
         for j=0l,n_elements(flags)-1l do begin
-          if fix(strmid(flags[j],10-i,1)) eq 0 then flagline[j,i]=!values.f_nan else flagline[j,i]=1.0
+          if fix(strmid(flags[j],11-i,1)) eq 0 then flagline[j,i]=!values.f_nan else flagline[j,i]=1.0
         endfor
       endfor
       store_data,tname+'_flagbars_dist',data={x:d.x,y:[[flagline[*,0]-0.25],[flagline[*,1]-0.75]]}

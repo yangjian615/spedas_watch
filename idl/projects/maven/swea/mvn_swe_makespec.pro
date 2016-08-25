@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:22:18 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21028 $
+; $LastChangedDate: 2016-08-24 08:57:29 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21713 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -137,6 +137,18 @@ pro mvn_swe_makespec, sum=sum, units=units
 ; Validate the data
     
     mvn_swe_engy.valid = 1B               ; Yep, it's valid.
+
+; Flag data at boundaries when sweep table changes
+
+  dlut = mvn_swe_engy.chksum - shift(mvn_swe_engy.chksum,1)
+  dlut[0] = 0B
+  indx = where(dlut ne 0B, count)
+  if (count gt 0L) then begin
+    mvn_swe_engy[indx].data[*] = !values.f_nan
+    mvn_swe_engy[indx].valid = 0B
+  endif
+
+; Convert to the default or requested units
   
     mvn_swe_convert_units, mvn_swe_engy, units
 
@@ -243,6 +255,18 @@ pro mvn_swe_makespec, sum=sum, units=units
 ; Validate the data
     
     mvn_swe_engy_arc.valid = 1B               ; Yep, it's valid.
+
+; Flag data at boundaries when sweep table changes
+
+    dlut = mvn_swe_engy_arc.chksum - shift(mvn_swe_engy_arc.chksum,1)
+    dlut[0] = 0B
+    indx = where(dlut ne 0B, count)
+    if (count gt 0L) then begin
+      mvn_swe_engy_arc[indx].data[*] = !values.f_nan
+      mvn_swe_engy_arc[indx].valid = 0B
+    endif
+
+; Convert to the default or requested units
   
     if (size(units,/type) eq 7) then mvn_swe_convert_units, mvn_swe_engy_arc, units
 

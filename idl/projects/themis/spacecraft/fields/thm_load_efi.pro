@@ -50,9 +50,9 @@
 ;    through to THM_CAL_EFI.PRO, W.M.Feuerstein, 4/7/2008 (M).
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;  Added _extra keyword to ease the passing of keywords to thm_cal_efi
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-05-19 14:26:27 -0700 (Tue, 19 May 2015) $
-; $LastChangedRevision: 17650 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-24 15:45:52 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21723 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi.pro $
 ;-
 
@@ -383,14 +383,32 @@ pro thm_load_efi, probe = probe, datatype = datatype, trange = trange, $
 
   if vb ge 8 && arg_present(relpathnames_all) then dprint,  'relpathnames_all: ', relpathnames_all
 
-  if keyword_set(delete_support_data) then begin
-     if not size(dts, /n_dim) gt 0 then dt = strsplit(dt, ' ', /extract)
-
-     for i = 0, n_elements(dt)-1L do begin
-        if tnames('th'+probe+'_'+dts[i]+'_hed') ne '' then del_data, 'th'+probe+'_'+dts[i]+'_hed'
-     endfor
-  endif
-
+  ;hed variables: add suffix or delete them if get_support_data was not set
+  for i = 0, n_elements(vl1datatypes)-1L do begin
+    th_name_hed = 'th'+probe+'_'+vl1datatypes[i]+'_hed'
+    if tnames(th_name_hed) ne '' then begin          
+      if keyword_set(delete_support_data) then begin  
+        del_data, th_name_hed
+      endif else begin
+        if keyword_set(suffix) && suffix[0] ne '' then begin 
+          copy_data, th_name_hed, th_name_hed +suffix[0]
+          del_data, th_name_hed
+        endif
+      endelse
+    endif
+    th_name_hed = 'th'+probe+'_'+vl1datatypes[i]+'_hed_ac'
+    if tnames(th_name_hed) ne '' then begin
+      if keyword_set(delete_support_data) then begin
+        del_data, th_name_hed
+      endif else begin
+        if keyword_set(suffix) && suffix[0] ne '' then begin
+          copy_data, th_name_hed, th_name_hed +suffix[0]
+          del_data, th_name_hed
+        endif
+      endelse
+    endif
+  endfor
+  
   ;print accumulated error messages now that loading is complete
   if keyword_set(msg_l2) then begin
     msg_out = keyword_set(msg_out) ? [msg_out,msg_l2]:msg_l2

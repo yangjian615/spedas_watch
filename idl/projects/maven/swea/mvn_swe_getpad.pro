@@ -27,8 +27,8 @@
 ;                      Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:22:42 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21029 $
+; $LastChangedDate: 2016-08-24 08:58:22 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21715 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -382,7 +382,7 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 ; fits are used to track slow drift of MCP gain between adjustments.  See 
 ; mvn_swe_crosscal.
 
-  cc = mvn_swe_crosscal(pad.time)
+  cc = mvn_swe_crosscal(pad.time,/silent)
   scale = reform((replicate(1., 64*16) # cc), 64, 16, npts)
 
   pad.gf /= scale

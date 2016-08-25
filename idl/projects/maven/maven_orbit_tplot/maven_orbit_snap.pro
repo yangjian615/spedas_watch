@@ -68,7 +68,7 @@
 ;       TIMES:    An array of times for snapshots.  Snapshots are overlain onto
 ;                 a single version of the plot.  For evenly spaced times, this
 ;                 produces a "spirograph" effect.  This overrides the interactive
-;                 entry of times with the cursor.  Sets KEEP = 1.
+;                 entry of times with the cursor.  Sets KEEP, NOERASE, and RESET.
 ;
 ;       BDIR:     Set keyword to show magnetic field direction in three planes,
 ;                 In each plane, the same two components of B in MSO coordinates 
@@ -82,19 +82,18 @@
 ;       THICK:    Line thickness.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-04-25 19:59:24 -0700 (Mon, 25 Apr 2016) $
-; $LastChangedRevision: 20920 $
+; $LastChangedDate: 2016-08-24 08:52:28 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21703 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
-    nodot=nodot, terminator=terminator, thick=thick, Bdir=Bdir, scale=scale
+    nodot=nodot, terminator=terminator, thick=thick, Bdir=Bdir, scale=scale, scsym=scsym
 
   @maven_orbit_common
-
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Eopt, Hopt
+  @swe_snap_common
 
   if (size(time,/type) ne 5) then begin
     print, "You must run maven_orbit_tplot first!"
@@ -105,6 +104,8 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   phi = findgen(49)*(2.*!pi/49)
   usersym,a*cos(phi),a*sin(phi),/fill
   if (size(thick,/type) eq 0) then thick = 1
+  
+  if not keyword_set(scsym) then scsym = 1
 
   tplot_options, get_opt=topt
   delta_t = abs(topt.trange[1] - topt.trange[0])
@@ -787,7 +788,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       if (cflg) then j = color else j = 2
       if (doterm) then ttime = trange[0] else ttime = 0
       mag_mola_orbit, lon[i], lat[i], big=mbig, noerase=noerase, title=title, color=j, $
-                      terminator=ttime
+                      terminator=ttime, psym=scsym
     endif
 
 ; Put up Mars North polar plot

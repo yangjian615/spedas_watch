@@ -115,8 +115,8 @@
 ;                      potentials on parallel and anti-parallel directions
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-27 10:37:27 -0700 (Mon, 27 Jun 2016) $
-; $LastChangedRevision: 21368 $
+; $LastChangedDate: 2016-08-24 08:59:49 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21718 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -132,7 +132,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   shiftpot=shiftpot,popen=popen, indspec=indspec, twopot=twopot
 
   @mvn_swe_com
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
+  @swe_snap_common
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(burst) then aflg = 1
@@ -716,7 +716,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         
         plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
           xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-          charsize=1.4,xmargin=[10,0]
+          charsize=1.4
         oplot, x1, Fp, psym=10, color=6
         oplot, x2, Fm, psym=10, color=2
         if (domid) then oplot, x, Fz, psym=10, color=4
@@ -779,7 +779,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         ;first half of the PAD
         plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-            charsize=1.4,xmargin=[10,0]
+            charsize=1.4
                     
         xs = 0.36
         ys = 0.90
@@ -827,7 +827,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         ;second half of the PAD
         plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-            charsize=1.4,xmargin=[10,0]
+            charsize=1.4
 
         xs = 0.68
         ys = 0.90

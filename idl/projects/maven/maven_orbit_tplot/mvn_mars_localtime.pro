@@ -23,8 +23,8 @@
 ;                    s_lat : sub-solar point latitude (deg)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:39:10 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18563 $
+; $LastChangedDate: 2016-08-24 08:50:15 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21701 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mvn_mars_localtime.pro $
 ;
 ;CREATED BY:	David L. Mitchell
@@ -38,18 +38,10 @@ pro mvn_mars_localtime, result=result
 
   if (size(state,/type) eq 0) then maven_orbit_tplot, /current, /loadonly
 
-  tplot_options, get=topt
-  tsp = topt.trange_full
-  indx = where((time ge tsp[0]) and (time le tsp[1]), count)
-  if (count eq 0L) then begin
-    print,"Tplot time range contains no ephemeris data!"
-    return
-  endif
-
 ; Sun is at MSO coordinates of [X, Y, Z] = [1, 0, 0]
 
-  s_mso = [1D, 0D, 0D] # replicate(1D, n_elements(count))
-  s_geo = spice_vector_rotate(s_mso, time[indx], from_frame, to_frame)
+  s_mso = [1D, 0D, 0D] # replicate(1D, n_elements(time))
+  s_geo = spice_vector_rotate(s_mso, time, from_frame, to_frame)
   s_lon = reform(atan(s_geo[1,*], s_geo[0,*])*!radeg)
   s_lat = reform(asin(s_geo[2,*])*!radeg)
   
@@ -58,24 +50,24 @@ pro mvn_mars_localtime, result=result
 
 ; Local time is IAU_MARS longitude relative to sub-solar longitude
 
-  lst = (lon[indx] - s_lon)*(12D/180D)
+  lst = (lon - s_lon)*(12D/180D)
 
   jndx = where(lst lt 0., count)
   if (count gt 0L) then lst[jndx] = lst[jndx] + 24.
   jndx = where(lst gt 24., count)
   if (count gt 0L) then lst[jndx] = lst[jndx] - 24.
   
-  store_data,'lst',data={x:time[indx], y:lst}
+  store_data,'lst',data={x:time, y:lst}
   ylim,'lst',0,24,0
   options,'lst','yticks',4
   options,'lst','yminor',6
   options,'lst','psym',3
   options,'lst','ytitle','LST (hrs)'
   
-  store_data,'Lss',data={x:time[indx], y:s_lat}
+  store_data,'Lss',data={x:time, y:s_lat}
   options,'Lss','ytitle','Sub-solar!CLat (deg)'
   
-  result = {time:time[indx], lst:lst, slon:s_lon, slat:s_lat}
+  result = {time:time, lst:lst, slon:s_lon, slat:s_lat}
 
   return
 

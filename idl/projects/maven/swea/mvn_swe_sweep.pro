@@ -80,8 +80,8 @@
 ;                     PFDPU EEPROM dump.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedDate: 2016-08-24 08:56:16 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21711 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sweep.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-01-03
@@ -97,7 +97,7 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
   if (size(tabnum,/type) eq 0) then tabnum = 0
   if (size(chksum,/type) ne 0) then tabnum = mvn_swe_tabnum(chksum)
   if keyword_set(old_def) then old_def = 1 else old_def = 0
-  if not keyword_set(V0tweak) then V0tweak = {gain:1.04, offset:0.}
+  if not keyword_set(V0tweak) then V0tweak = {gain:1.00, offset:0.}
 
   Ka = swe_Ka   ; analyzer constant
 
@@ -350,7 +350,9 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
   dE_E = (0.17*E_in)/E    ; effective energy resolution (FWHM)
                           ; = 0.17*f, as defined below
 
-; The geometric factor is reduced when using V0 by the factor "gfw"
+; The geometric factor is reduced when using V0 by the factor "gfw".  This is
+; simply the conservation of phase space density between the inner and outer
+; toroidal grids.
 
   f = 1./(1. + V0/E_in)
   gfw = f*f

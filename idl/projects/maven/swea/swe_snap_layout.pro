@@ -22,15 +22,15 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 09:17:14 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19392 $
+; $LastChangedDate: 2016-08-24 08:54:23 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21706 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_snap_layout.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_snap_layout, layout
 
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
+  @swe_snap_common
   
   if (size(layout,/type) eq 0) then begin
     print,"Hardware-dependent positions for snapshot windows (optional)."

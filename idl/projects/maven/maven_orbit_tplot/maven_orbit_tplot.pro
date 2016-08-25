@@ -41,6 +41,10 @@
 ;       IALT:     Ionopause altitude.  Highly variable, but nominally ~400 km.
 ;                 For display only - not included in statistics.  Default is NaN.
 ;
+;       SEGMENTS: Plot nominal altitudes for orbit segment boundaries as dotted
+;                 horizontal lines.  Closely spaced lines are transitions, during
+;                 which time the spacecraft is reorienting.
+;
 ;       RESULT:   Named variable to hold the MSO ephemeris with some calculated
 ;                 quantities.
 ;
@@ -97,8 +101,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:20:01 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21025 $
+; $LastChangedDate: 2016-08-24 08:51:29 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21702 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -122,6 +126,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   tplot_options, get=topt
   if (max(topt.trange_full) eq 0D) then treset = 1
   if keyword_set(reset_trange) then treset = 1
+  if (treset) then nocrop = 1
 
   if keyword_set(domex) then domex = 1 else domex = 0
   if not keyword_set(ialt) then ialt = !values.f_nan
@@ -522,6 +527,9 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   store_data,'alt2',data=['alt_lab','alt','sheath','pileup','wake','wind','iono']
   ylim, 'alt2', 0, 0, 0
   options,'alt2','ytitle','Altitude (km)'
+
+  if keyword_set(segments) then options,'alt2','constant',[500,1200,4970,5270] $
+                           else options,'alt2','constant',-1
 
 ; Calculate statistics (orbit by orbit)
 

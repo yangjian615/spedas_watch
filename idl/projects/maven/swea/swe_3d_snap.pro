@@ -75,8 +75,8 @@
 ;                      field of view.  FOV masking, if any, will be shown.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:21:23 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21026 $
+; $LastChangedDate: 2016-08-24 08:55:37 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21710 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -90,7 +90,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  labsize=labsize
 
   @mvn_swe_com
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
+  @swe_snap_common
 
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)

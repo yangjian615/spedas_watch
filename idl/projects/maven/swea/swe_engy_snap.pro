@@ -18,7 +18,7 @@
 ;       UNITS:         Plot the data in these units.  See mvn_swe_convert_units.
 ;                      Default = 'eflux'.
 ;
-;       TIMES:         Make a plot for these times.
+;       TIMES:         Make a plot for these times.  (Placeholder only.)
 ;
 ;       TPLOT:         Get energy spectra from tplot variable instead of SWEA
 ;                      common block.
@@ -41,6 +41,9 @@
 ;
 ;       SCP:           Override any other estimates of the spacecraft potential and
 ;                      force it to be this value.
+;
+;       SHIFTPOT:      Correct for the spacecraft potential.  Spectra are shifted from
+;                      the spacecraft frame to the plasma frame.
 ;
 ;       DEMAX:         Maximum width of spacecraft potential signature.
 ;
@@ -71,6 +74,9 @@
 ;       ERANGE:        Energy range for computing the moment.  Only effective when
 ;                      keyword MOM is set.
 ;
+;       FLEV:          Calculate the signal level at this energy, using interpolation
+;                      as needed.
+;
 ;       SCAT:          Plot the scattered photoelectron population, which is defined
 ;                      as the low-energy residual after subtracting the best-fit
 ;                      Maxwell-Boltzmann.
@@ -98,8 +104,8 @@
 ;       POPEN:         Set this to the name of a postscript file for output.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-12-09 21:30:59 -0800 (Wed, 09 Dec 2015) $
-; $LastChangedRevision: 19564 $
+; $LastChangedDate: 2016-08-24 08:55:09 -0700 (Wed, 24 Aug 2016) $
+; $LastChangedRevision: 21708 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -110,10 +116,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
                    dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
-                   xrange=xrange,sscale=sscale, popen=popen, times=times
+                   xrange=xrange,yrange=frange,sscale=sscale, popen=popen, times=times, $
+                   flev=flev
 
   @mvn_swe_com
-  common snap_layout, snap_index, Dopt, Sopt, Popt, Nopt, Copt, Fopt, Eopt, Hopt
+  @swe_snap_common
 
   mass = 5.6856297d-06             ; electron rest mass [eV/(km/s)^2]
   c1 = (mass/(2D*!dpi))^1.5
@@ -128,7 +135,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(noerase) then oflg = 0 else oflg = 1
   if (size(scp,/type) eq 0) then scp = !values.f_nan else scp = float(scp[0])
   if (size(thresh,/type) eq 0) then thresh = 0.05
-  if (size(dEmax,/type) eq 0) then dEmax = 4.
+  if (size(dEmax,/type) eq 0) then dEmax = 6.
   if (size(fixy,/type) eq 0) then fixy = 1
   if keyword_set(fixy) then fflg = 1 else fflg = 0
   if keyword_set(rainbow) then rflg = 1 else rflg = 0
@@ -281,30 +288,34 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   endif
 
   if (tflg) then begin
+    if (finite(scp)) then pot = scp else pot = 0.
+
     if (npts eq 1) then begin
       dt = min(abs(trange[0] - tspec.time), i)
       spec = {time:tspec.time[i], data:reform(tspec.data[i,*]), $
               energy:tspec.energy, units_name:tspec.units_name, $
-              sc_pot:0.}
+              sc_pot:pot}
     endif else begin
       tmin = min(trange, max=tmax)
       i = where((tspec.time ge tmin) and (tspec.time le tmax), count)
       if (count gt 0L) then begin
         spec = {time:mean(tspec.time[i]), data:average(tspec.data[i,*],1,/nan), $
-                energy:tspec.energy, units_name:tspec.units_name, sc_pot:0.}
+                energy:tspec.energy, units_name:tspec.units_name, sc_pot:pot}
       endif
     endelse
   endif else begin
     spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
-  endelse
-  if (fflg) then yrange = drange
-  
-  if (spflg) then begin
     if (finite(scp)) then pot = scp $
                      else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
-    spec = conv_units(spec,'df')
+    spec.sc_pot = pot
+  endelse
+  if (fflg) then yrange = drange
+  if keyword_set(frange) then yrange = frange
+  
+  if (spflg) then begin
+    mvn_swe_convert_units, spec, 'df'
     spec.energy -= pot
-    spec = conv_units(spec,units)
+    mvn_swe_convert_units, spec, units
   endif
   
   case strupcase(spec.units_name) of
@@ -321,7 +332,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if (hflg) then dt = min(abs(swe_hsk.time - spec.time), jref)  ; closest HSK
   
   nplot = 0
-  xs = 0.71
+  xs = 0.68
   dys = 0.03
   
   while (ok) do begin
@@ -364,7 +375,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
     if (dosec) then begin
       units = spec.units_name
-      odat = conv_units(spec,'crate')
+      odat = spec
+      mvn_swe_convert_units, odat, 'crate'
 
       energy = odat.energy
       nenergy = odat.nenergy
@@ -391,7 +403,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       for k=1,kmax-1 do sec_spec[k:kmax] += eff[k]*odat.data[k]/energy[k:kmax]^2.0
 
       odat.data = sec_spec
-      sec_dat = conv_units(odat, units)
+      sec_dat = odat
+      mvn_swe_convert_units, sec_dat, units
       dif_dat = spec
       dif_dat.data = (spec.data - sec_dat.data) > 1.
       oplot,sec_dat.energy[kndx],sec_dat.data[kndx],color=5,line=2
@@ -404,7 +417,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
     if (dobkg) then begin
       units = spec.units_name
-      odat = conv_units(spec,'crate')
+      odat = spec
+      mvn_swe_convert_units, odat, 'crate'
 
       energy = odat.energy
       nenergy = odat.nenergy
@@ -427,7 +441,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         bkg_spec[kndx] = !values.f_nan
 
         odat.data = bkg_spec
-        bkg_dat = conv_units(odat, units)
+        bkg_dat = odat
+        mvn_swe_convert_units, bkg_dat, units
         dif_dat = spec
         dif_dat.data = (spec.data - bkg_dat.data) > 1.
         oplot,bkg_dat.energy,bkg_dat.data,color=5,line=2
@@ -449,16 +464,12 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       oplot, bck.energy, bck.data, line=2, color=4
     endif
 
-    if (dopot) then begin
-      if (finite(scp)) then pot = scp $
-                       else if (finite(phi)) then pot = phi else pot = 0.
-     
-      oplot,[pot,pot],yrange,line=2,color=6
-    endif
+    if (dopot and not spflg) then oplot,[pot,pot],yrange,line=2,color=6
     
     if (dopep) then begin
       oplot,[23.,23.],yrange,line=2,color=1
       oplot,[27.,27.],yrange,line=2,color=1
+      oplot,[60.,60.],yrange,line=2,color=1
     endif
     
     if (doalt) then begin
@@ -494,7 +505,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       E1 = spec.energy
       F1 = spec.data - spec.bkg
       
-      counts = conv_units(spec,'counts')
+      counts = spec
+      mvn_swe_convert_units, counts, 'counts'
       cnts = counts.data
       sig2 = counts.var  ; variance w/ digitization noise
       sdev = F1 * (sqrt(sig2)/(cnts > 1.))
@@ -557,7 +569,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         N_tot = N_core + N_halo
       endelse
 
-      jndx = where(E1 gt p.pot)
+      if (spflg) then jndx = indgen(64) else jndx = where(E1 gt p.pot)
       col = 4
       oplot,E1[jndx],swe_maxbol(E1[jndx],par=p),thick=2,color=col,line=1
       oplot,E1[imb],swe_maxbol(E1[imb],par=p),color=col,thick=2
@@ -595,9 +607,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     endif
 
     if (mom) then begin
-      eflux = conv_units(spec,'eflux')
+      eflux = spec
+      mvn_swe_convert_units, eflux, 'eflux'
       E1 = eflux.energy
       F1 = eflux.data - eflux.bkg
+      S1 = sqrt(eflux.var)
 
       dE = E1
       dE[0] = abs(E1[1] - E1[0])
@@ -618,9 +632,24 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       oplot,spec.energy[j],spec.data[j],color=1,psym=10
 
       prat = (pot/E1[j]) < 1.
-      N_tot = c3*total(dE[j]*sqrt(1. - prat)*(E1[j]^(-1.5))*F1[j])      
-      P_tot = (2./3.)*c3*total(dE[j]*((1. - prat)^1.5)*(E1[j]^(-0.5))*F1[j])
-      temp = P_tot/N_tot  ; temperature corresponding to kinetic energy density
+      Enorm = c3*dE[j]*sqrt(1. - prat)*(E1[j]^(-1.5))
+      N_j = Enorm*F1[j]
+      S_j = Enorm*S1[j]
+
+      N_tot = total(N_j)
+      N_sig = sqrt(total(S_j^2.))
+      print,"Density = ",N_tot," +/- ",N_sig,format='(a,f6.3,a,f6.3)'
+      
+      Enorm = (2./3.)*c3*dE[j]*((1. - prat)^1.5)*(E1[j]^(-0.5))
+      P_j = Enorm*F1[j]
+      S_j = Enorm*S1[j]
+
+      pres = total(P_j)
+      psig = sqrt(total(S_j^2.))
+
+      temp = pres/N_tot  ; temperature corresponding to kinetic energy density
+      tsig = temp*sqrt((N_sig/N_tot)^2. + (psig/pres)^2.)
+      print,"Temperature = ",temp," +/- ",tsig,format='(a,f6.3,a,f6.3)'
 
       xyouts,xs,ys,string(N_tot,format='("N = ",f6.3)'),color=1,charsize=csize1,/norm
       ys -= dys
@@ -629,7 +658,27 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
       ys -= dys
     endif
-     
+    
+    if (~mb and ~mom) then begin
+      xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
+    endif
+    
+    if keyword_set(flev) then begin
+      logE0 = alog10((float(flev) > min(spec.energy)) < max(spec.energy))
+      logE = alog10(spec.energy)
+      logF = alog10(spec.data)
+
+      E0 = 10.^logE0
+      F0 = 10.^interpol(logF, logE, logE0)
+      oplot,[E0],[F0],psym=4,color=6,symsize=1.5,thick=2
+      
+      xyouts,xs,ys,string(F0,format='("F = ",e8.2)'),color=6,charsize=csize1,/norm
+      ys -= dys
+
+      Emsg = strtrim(string(E0,format='(f7.1)'),2)
+      print,"Flux (",Emsg," eV) = ",F0,format='(a,a,a,e8.2)'
+    endif
+
     if (dflg) then begin
       xyouts,xs,ys,'3D',charsize=csize1,/norm,color=4
       ys -= dys
@@ -670,20 +719,25 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       oplot,xlim,[thresh,thresh],line=2,color=5      
 
       if (ncross gt 0L) then begin
-        k = max(indx)  ; lowest energy feature above threshold
-        pymax = py[k]
+;        k = max(indx)      ; lowest energy feature above threshold
+;        pymax = py[k]
+        pymax = max(py,k0)  ; largest slope feature above threshold
+        k = k0
         pymin = pymax/3.
+        
 
         while ((py[k] gt pymin) and (k lt n_e-1)) do k++
         kmax = k
-        k = max(indx)
+;        k = max(indx)
+        k = k0
         while ((py[k] gt pymin) and (k gt 0)) do k--
         kmin = k
       
         dE = px[kmin] - px[kmax]
         if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
       
-        if (dE lt dEmax) then k = max(indx) else k = -1  ; only accept narrow features
+;        if (dE lt dEmax) then k = max(indx) else k = -1  ; only accept narrow features
+        if (dE lt dEmax) then k = k0 else k = -1  ; only accept narrow features
 
         for j=0,(ncross-1) do oplot,[px[indx[j]],px[indx[j]]],ylim,color=2
 
@@ -773,32 +827,38 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
 
     if (size(trange,/type) eq 5) then begin
+
       if (tflg) then begin
+        if (finite(scp)) then pot = scp else pot = 0.
+
         if (npts eq 1) then begin
           dt = min(abs(trange[0] - tspec.time), i)
           spec = {time:tspec.time[i], data:reform(tspec.data[i,*]), $
                   energy:tspec.energy, units_name:tspec.units_name, $
-                  sc_pot:0.}
+                  sc_pot:pot}
         endif else begin
           tmin = min(trange, max=tmax)
           i = where((tspec.time ge tmin) and (tspec.time le tmax), count)
           if (count gt 0L) then begin
             spec = {time:mean(tspec.time[i]), data:average(tspec.data[i,*],1,/nan), $
-                    energy:tspec.energy, units_name:tspec.units_name, sc_pot:0.}
+                    energy:tspec.energy, units_name:tspec.units_name, sc_pot:pot}
           endif
         endelse
       endif else begin
         spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
-  
-        if (spflg) then begin
-          if (finite(scp)) then pot = scp $
-                           else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
-          spec = conv_units(spec,'df')
-          spec.energy -= pot
-          spec = conv_units(spec,units)
-        endif
+        if (finite(scp)) then pot = scp $
+                         else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
+        spec.sc_pot = pot
       endelse
+  
+      if (spflg) then begin
+        mvn_swe_convert_units, spec, 'df'
+        spec.energy -= pot
+        mvn_swe_convert_units, spec, units
+      endif
+
       if (fflg) then yrange = drange
+      if keyword_set(frange) then yrange = frange
       if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)
     endif else ok = 0
 
