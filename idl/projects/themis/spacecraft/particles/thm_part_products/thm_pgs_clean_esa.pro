@@ -37,13 +37,13 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-06-27 18:32:34 -0700 (Mon, 27 Jun 2016) $
-;$LastChangedRevision: 21378 $
+;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
+;$LastChangedRevision: 21724 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_esa.pro $
 ;-
 
 ;Note: Keep options for vectorizing open
-pro thm_pgs_clean_esa,data,units,output=output,_extra=ex,esa_max_energy=esa_max_energy,esa_bgnd_advanced=esa_bgnd_advanced
+pro thm_pgs_clean_esa,data,units,output=output,_extra=ex,esa_max_energy=esa_max_energy,esa_bgnd_advanced=esa_bgnd_advanced, remove_counts=remove_counts
 
   compile_opt idl2,hidden
   
@@ -52,16 +52,25 @@ pro thm_pgs_clean_esa,data,units,output=output,_extra=ex,esa_max_energy=esa_max_
   ;background must be calculated prior to this step
   ;see thm_load_esa_bkg and thm_pse_bkg_auto for more info
   if keyword_set(esa_bgnd_advanced) then begin
-    ;data must be in counts, will just return if it already is 
+    ;data must be in counts, will return if it already is 
     data = conv_units(data,'counts',_extra=ex)
     if data.charge gt 0 then begin
       data = thm_pei_bkg_sub(data)
     endif else begin
       data = thm_pee_bkg_sub(data)
     endelse
+  endif else begin
+    thm_esa_bgnd_remove, data, _extra = ex
+  endelse
+
+
+  ;allow user to set threshold of N counts after background removal
+  ;this is not recommended but could be useful
+  if keyword_set(remove_counts) then begin
+    thm_part_remove, data, threshold=remove_counts, /zero
   endif
   
-  
+
   ;convert to requested units
   ;get scaling coefficient used to convert from counts->units
   ;  NOTE: for ESA the value of SCALE does not reflect dead time correction

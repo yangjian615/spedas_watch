@@ -85,10 +85,12 @@
 ;       may be passed in through the _extra keyword please see:
 ;       thm_remove_sunpulse.pro or thm_crib_sst_contamination.pro
 ;
+;HISTORY:
+;  2016-08-23  background removal moved to thm_pgs_clean_esa
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-09 14:11:06 -0700 (Fri, 09 May 2014) $
-;$LastChangedRevision: 15085 $
+;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
+;$LastChangedRevision: 21724 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_dist.pro $
 ;-
 function thm_part_dist, format, time, type = type, probe = probe, $
@@ -146,13 +148,6 @@ if n_elements(time) gt 1 then begin
        'psi'  :      dat0 = call_function('thm_sst_'+type,index=indexs[i],probe=probe, err_msg=err_msg, _extra=ex)   ; thm_sst_sif thm_sst_sir
        'pse'  :      dat0 = call_function('thm_sst_'+type,index=indexs[i],probe=probe, err_msg=err_msg, _extra=ex)
     endcase
-    If(keyword_set(bgnd_remove) && strmid(type, 0, 2) Eq 'pe') Then Begin
-      If(is_struct(dat0) && dat0.valid Gt 0) Then Begin
-        dat0_b = dat0.data       ;this is overwritten in the bgnd_remove process
-        thm_esa_bgnd_remove, dat0_b, dat0.gf, dat0.eff, dat0.nenergy, dat0.nbins, dat0.theta, _extra = ex
-        dat0.data = temporary(dat0_b)
-      Endif
-    Endif
     dat = sum3d(dat,dat0)
     ;if strmid(type,0,2) eq 'pe' then dat.energy[31,*] = !values.f_nan
   endfor
@@ -164,14 +159,16 @@ endif else begin
      'psi'  :      dat = call_function('thm_sst_'+type,time,probe=probe, err_msg=err_msg, _extra=ex)   ; thm_sst_sif thm_sst_sir
      'pse'  :      dat = call_function('thm_sst_'+type,time,probe=probe, err_msg=err_msg, _extra=ex)
   endcase
-  If(keyword_set(bgnd_remove) && strmid(type, 0, 2) Eq 'pe') Then Begin
-    If(is_struct(dat) && dat.valid Gt 0) Then Begin
-      dat_b = dat.data  ;this is overwritten in the bgnd_remove process
-      thm_esa_bgnd_remove, dat_b, dat.gf, dat.eff, dat.nenergy, dat.nbins, dat.theta, _extra = ex
-      dat.data = temporary(dat_b)
-    Endif
-  Endif
 endelse
+
+;backward compatibility
+; -add background removal options to struct so that they can be applied later
+; -technically this moves when removal is applied to sum3d case above but that feature is not used (and could be moved) 
+if keyword_set(bgnd_remove) && is_struct(dat) && strmid(type,0,2) eq 'pe' then begin
+  default = {bgnd_remove:1, bgnd_type:'anode', bgnd_npoints:3, bgnd_scale:1.0}
+  struct_assign, ex, default, /nozero
+  dat = create_struct('esa_bgnd',default,dat)
+endif
 
 return,dat
 

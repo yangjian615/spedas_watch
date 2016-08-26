@@ -17,8 +17,7 @@
 ;          data. A string (e.g., 'l2') or an integer can be used. 'all'
 ;          can be passed in also, to get all levels.
 ;  type=   'raw' or 'calibrated'. default is calibrated.
-;  suffix= suffix to add to output data quantity (not added to support
-;  data)
+;  suffix= suffix to add to output data quantity 
 ;  relpathnames_all: named variable in which to return all files that are
 ;          required for specified timespan, probe, datatype, and level.
 ;          If present, no files will be downloaded, and no data will be loaded.
@@ -40,9 +39,9 @@
 ;   thg_load_fbk,/get_suppport_data,probe=['a', 'b']
 ;Notes:
 ; Added the new frequency center values, 24-oct-2008, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-25 16:24:45 -0700 (Thu, 25 Aug 2016) $
+; $LastChangedRevision: 21728 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fbk.pro $
 ;-
 
@@ -74,17 +73,6 @@ pro thm_load_fbk_post, sname = probe, datatype = dt, level = lvl, $
       store_data, tplot_var, data = d_str, limit = l_str, dlimit = dl_str
     endif else begin
       
-      ;; for support data,
-      ;; rename original variable to exclude suffix
-      if keyword_set(suffix) then begin
-        tplot_var_root = strmid(tplot_var, 0, $
-                                strpos(tplot_var, suffix, /reverse_search))
-        store_data, delete = tplot_var
-        if tplot_var_root then begin
-          store_data, tplot_var_root, data = d_str, limit = l_str, dlimit = dl_str
-        endif 
-        tplot_var = tplot_var_root
-      endif
       ;; save name of support tplot variable for possible deletion
       if tplot_var && keyword_set(delete_support_data) then begin
         if size(support_var_list, /type) eq 0 then $

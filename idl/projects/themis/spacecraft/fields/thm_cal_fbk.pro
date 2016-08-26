@@ -31,9 +31,9 @@
 ;--must include raw types in datatype input for calibration to
 ;work properly(hopefully will be fixed post-release)
 ;--support data must be loaded to function properly
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-25 16:24:45 -0700 (Thu, 25 Aug 2016) $
+; $LastChangedRevision: 21728 $
 ; $URL $
 ;-
 
@@ -109,8 +109,9 @@ for s=0L,n_elements(myprobe)-1L do begin
 		switch strlowcase( name) of
 			'fb1':
 			'fb2':	begin
-				tplot_var_src = tplot_var + '_src'
-				get_data, tplot_var_src, data=d_src, limit=l_src, dlim=dl_src
+			  tplot_var_src_root = tplot_var + '_src'  
+				tplot_var_src = tplot_var_src_root + in_suffix
+				get_data, tplot_var_src, data=d_src, limit=l_src, dlim=dl_src	
 
 				; check that returned data and hed structures are structures (get_data returns 0 if no TPLOT variable exists).
 				if (size( d, /type) eq 8) and (size( d_src, /type) eq 8) then begin
@@ -226,6 +227,13 @@ for s=0L,n_elements(myprobe)-1L do begin
 							string( tplot_var+in_suffix, tplot_var_src, $
 							format='("necessary TPLOT variables (",A,X,A,") not present for RAW->PHYS transformation.")')
 				endelse
+				
+				; change suffix to support data
+				if in_suffix ne out_suffix then begin
+          tplot_var_src_out = tplot_var_src_root + out_suff
+          copy_data, tplot_var_src, tplot_var_src_out
+          del_data, tplot_var_src 
+				endif
 				break
 			end	; end of { FB1, FB2} calibration clause.
 		'fbh':	begin	; FBH (HF or AKR band filter).

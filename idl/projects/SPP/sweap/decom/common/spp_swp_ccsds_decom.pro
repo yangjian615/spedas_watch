@@ -162,6 +162,13 @@ endif else begin
     endif
     return ,0
   endif else begin
+    if ccsds.pkt_size lt 10 then begin
+      dprint,'Invalid Packet size:' , ccsds.pkt_size
+      return,0
+    endif
+    if ccsds.pkt_size ne buffer_length-offset then begin
+      dprint,'PTP size and CCSDS size mismatch'
+    endif
     pktbuffer = buffer[offset+0:offset+ccsds.pkt_size-1]
     ccsds.pdata = ptr_new(pktbuffer,/no_copy)
   endelse

@@ -105,9 +105,9 @@
 ;  uniformity is assumed as the data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-08-11 13:34:18 -0700 (Thu, 11 Aug 2016) $
-;$LastChangedRevision: 21634 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-08-25 13:12:01 -0700 (Thu, 25 Aug 2016) $
+;$LastChangedRevision: 21726 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -134,6 +134,7 @@ function thm_part_combine, probe=probe, $
                       esa_bgnd_advanced=esa_bgnd_advanced, $
                       extrapolate_esa=extrapolate_esa, $
                       remove_one_count=remove_one_count,$
+                      remove_counts=remove_counts, $
                       sst_data_mask=sst_data_mask,$
                       _extra=_extra
 
@@ -197,6 +198,11 @@ function thm_part_combine, probe=probe, $
   ;ensure only one background removal method is used  
   esa_bgnd_remove = ~keyword_set(esa_bgnd_advanced)
 
+  ;minimum count threshold will be applied in cleaning routines
+  if ~undefined(remove_one_count) && undefined(remove_counts) then begin
+    remove_counts=1.
+  endif
+
   if ~undefined(energies) then begin
     energies=energies
   endif else begin
@@ -245,15 +251,10 @@ function thm_part_combine, probe=probe, $
     thm_part_set_counts, esa, set_counts
   endif
 
-  if ~undefined(remove_one_count) then begin
-    thm_part_remove, esa, threshold=1., /zero
-    thm_part_remove, sst, threshold=1., /zero
-  endif
-
   ;convert to flux and remove unnecessary fields from structures
   ;(energy interpolation should be perfomed in flux)
-  thm_cmb_clean_sst, sst, units='flux', sst_sun_bins=sst_sun_bins,sst_min_energy=sst_min_energy,sst_data_mask=sst_data_mask,method_clean=method_clean ;<-unused keyword
-  thm_cmb_clean_esa, esa, units='flux', esa_max_energy=esa_max_energy, esa_bgnd_advanced=esa_bgnd_advanced
+  thm_cmb_clean_sst, sst, units='flux', sst_sun_bins=sst_sun_bins,sst_min_energy=sst_min_energy,sst_data_mask=sst_data_mask, remove_counts=remove_counts
+  thm_cmb_clean_esa, esa, units='flux', esa_max_energy=esa_max_energy, esa_bgnd_advanced=esa_bgnd_advanced, remove_counts=remove_counts
   
   
   ;-------------------------------------------------------------------------------------------

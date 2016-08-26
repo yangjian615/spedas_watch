@@ -63,8 +63,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 19:09:51 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21104 $
+;$LastChangedDate: 2016-08-25 13:12:48 -0700 (Thu, 25 Aug 2016) $
+;$LastChangedRevision: 21727 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_slice2d.pro $
 ;
 ;-
@@ -148,23 +148,23 @@ stop
 
 
 ;--------------------------------------------------------------------------------------
-;ESA background removal
+;Basic ESA background removal
 ;--------------------------------------------------------------------------------------
 
 ;set time range
 trange = '2008-02-26/' + ['04:54','04:55']
 
-;Background removal keywords can be specified when loading particle data.
-;See thm_crib_esa_bgnd_remove for more.  Values shown are the defaults.
-;  bgnd_remove:  Flag to switch on background removal
+;esa ion burst data
+dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
+
+;Background removal is enabled by default with the options listed below.
+;See thm_crib_esa_bgnd_remove for more info.
+;  bgnd_remove/esa_bgnd_remove:  Flag to switch background removal on/off (set to 0 to disable)
 ;  bgnd_type:  Type of removal ('anode', 'omni', 'angle')
 ;  bgnd_npoints:  Number of points used to calculate background
 ;  bgnd_scale:  Factor to multiply calculated background by
-dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange, $
-             /bgnd_remove, bgnd_type='anode', bgnd_npoints=3, bgnd_scale=1)
-
-;generate an identical cut using 3D interpolation
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
+                  /bgnd_remove, bgnd_type='anode', bgnd_npoints=3, bgnd_scale=1.0, $
                   /three_d_interp
 
 thm_part_slice2d_plot, slice

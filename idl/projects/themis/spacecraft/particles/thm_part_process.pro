@@ -9,10 +9,11 @@
 ;  call the standard processing routines.
 ;
 ;Calling Sequence:
-;  thm_part_process, in, out [,units=units] [,sst_sun_bins=sst_sun_bins]
+;  thm_part_process, in, out [,trange=trange] [,units=units] [,sst_sun_bins=sst_sun_bins]
 ;
 ;Input:
 ;  in:  Pointer array from thm_part_dist_array
+;  trange:  Two element time range, only overlapping data will be returned
 ;  units:  String specifying new units
 ;  _extra: Passed to sanitization routines
 ;
@@ -23,11 +24,11 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-11 16:06:10 -0700 (Fri, 11 Sep 2015) $
-;$LastChangedRevision: 18774 $
+;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
+;$LastChangedRevision: 21724 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_process.pro $
 ;-
-pro thm_part_process, in, out, units=units, _extra=_extra
+pro thm_part_process, in, out, trange=trange, units=units, _extra=_extra
 
     compile_opt idl2, hidden
 
@@ -43,6 +44,10 @@ for i=0, n_elements(in)-1 do begin
   thm_pgs_get_datatype, in[i], instrument=instrument
 
   for j=0, n_elements(*in[i])-1 do begin
+
+    if n_elements(trange) eq 2 then begin
+      if (*in[i])[j].time gt trange[1] or (*in[i])[j].end_time lt trange[0] then continue
+    endif 
 
     dist = (*in[i])[j]
 
@@ -76,9 +81,17 @@ for i=0, n_elements(in)-1 do begin
 
   endfor
 
-  out[i] = ptr_new(array, /no_copy)
+  if ~undefined(array) then begin
+    out[i] = ptr_new(array, /no_copy)
+  endif
 
 endfor
 
+idx = where(ptr_valid(out),n)
+if n gt 0 then begin
+  out = out[idx]
+endif else begin
+  dprint,dlevel=0,'WARNING: No data found within specified time range'
+endelse
 
 end

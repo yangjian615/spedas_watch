@@ -200,8 +200,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-02 19:02:41 -0800 (Wed, 02 Dec 2015) $
-;$LastChangedRevision: 19515 $
+;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
+;$LastChangedRevision: 21724 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d.pro $
 ;-
 pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
@@ -351,7 +351,7 @@ if keyword_set(fail) then return
 ;------------------------------------------------------------
 
 ; perform unit conversion, remove sst contamination, apply eclipse corrections, etc
-thm_part_process, ds, processed, units=units, _extra=_extra 
+thm_part_process, ds, processed, trange=trange, units=units, _extra=_extra 
 
 
 slice = spd_slice2d(processed, $
@@ -410,7 +410,7 @@ if keyword_set(count_threshold) or keyword_set(subtract_counts) then begin
 
   thm_part_set_counts, fixed, fix_counts, /set_units
 
-  thm_part_process, fixed, fixed_processed, units=units, _extra=extra
+  thm_part_process, fixed, fixed_processed, units=units, _extra=_extra
 
   mask = spd_slice2d(fixed_processed, $
                   ; Time options

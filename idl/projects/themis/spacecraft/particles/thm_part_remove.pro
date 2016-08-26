@@ -28,7 +28,10 @@
 ;NOTES:
 ;   
 ;
-;
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
+;$LastChangedRevision: 21724 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_remove.pro $
 ;-
 
 pro thm_part_remove, dist, threshold=threshold, remove=remove, zero=zero
@@ -39,7 +42,8 @@ pro thm_part_remove, dist, threshold=threshold, remove=remove, zero=zero
   ;check distribution type
   if is_struct(dist) then begin
     ;create pointer to structure to allow for uniform handling below
-    ptrs = ptr_new(dist)
+    ;avoid creating copy
+    ptrs = ptr_new(dist,/no_copy)
   endif else if total(~ptr_valid(dist)) eq 0 then begin
     ptrs = dist
   endif else begin
@@ -78,6 +82,11 @@ pro thm_part_remove, dist, threshold=threshold, remove=remove, zero=zero
       
   endfor
 
+  ;unfortunately IDL can't create a pointer without either
+  ;copying the target or leaving it undefined...
+  if undefined(dist) then begin
+    dist = temporary(*ptrs)
+  endif
 
   return
 

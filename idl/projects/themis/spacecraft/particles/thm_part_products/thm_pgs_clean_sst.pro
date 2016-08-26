@@ -35,15 +35,15 @@
 ;  sst_sun_bins:  The bin numbers that should be flagged as contaminated by sun and interpolated
 ;  sst_method_clean: how to decontaminate the sst data.  Right now the only option is 'manual', but selects a good set of default sst_sun_bins, if not user specified.
 ;  sst_min_energy: Set to minimum energy to toss bins that are having problems from instrument degradation. 
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-04-15 11:37:22 -0700 (Fri, 15 Apr 2016) $
-;$LastChangedRevision: 20838 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
+;$LastChangedRevision: 21724 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_clean_sst.pro $
 ;-
 
 
 ;Note: Keep options for vectorizing open
-pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_method_clean=sst_method_clean,sst_min_energy=sst_min_energy,_extra=ex
+pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_method_clean=sst_method_clean,sst_min_energy=sst_min_energy,remove_counts=remove_counts,_extra=ex
 
   compile_opt idl2,hidden
   
@@ -62,6 +62,11 @@ pro thm_pgs_clean_sst,data,units,output=output,sst_sun_bins=sst_sun_bins,sst_met
       ;Additional bins: 2,34,49,50
     endelse 
 
+  endif
+
+  ;allow user to set threshold of N counts
+  if keyword_set(remove_counts) then begin
+    thm_part_remove, data, threshold=remove_counts, /zero
   endif
 
   ;convert to requested units

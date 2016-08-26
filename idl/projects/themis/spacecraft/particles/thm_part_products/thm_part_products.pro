@@ -95,8 +95,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-07-21 17:30:51 -0700 (Thu, 21 Jul 2016) $
-;$LastChangedRevision: 21510 $
+;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
+;$LastChangedRevision: 21724 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -219,7 +219,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     dprint,"Warning, new SST calibrations do not work with reduced distribution data",dlevel=1 
   endif
   
-  if esa && size(dist_array,/type) ne 10 then begin
+  if esa then begin
     if keyword_set(esa_bgnd_advanced) then begin
       if keyword_set(esa_bgnd_remove) then $
         dprint, 'Disabling default ESA background subtraction', dlevel=1
@@ -348,7 +348,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     ;extract 1-d time_array from dist_array
     thm_pgs_dist_array_times,dist_array,times=times
   endif else begin
-    times= thm_part_dist(inst_format,/times,sst_cal=sst_cal,bgnd_remove=esa_bgnd_remove,_extra=ex)
+    times= thm_part_dist(inst_format,/times,sst_cal=sst_cal,_extra=ex)
   endelse
 
   if size(times,/type) ne 5 then begin
@@ -426,7 +426,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
       ;get the data from the dist_array for current index
       thm_pgs_dist_array_data,dist_array,data=data,dist_ptr_idx=dist_ptr_idx,dist_seg_idx=dist_seg_idx
     endif else begin
-      data = thm_part_dist(inst_format,index=time_idx[i],sst_cal=sst_cal,bgnd_remove=esa_bgnd_remove,_extra=ex)
+      data = thm_part_dist(inst_format,index=time_idx[i],sst_cal=sst_cal,_extra=ex)
     endelse
     
     ;Apply eclipse corrections if present
@@ -437,7 +437,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     ;#2 performs some basic transforms so that esa and sst are represented more consistently
     ;#3 converts to physical units
     if esa then begin
-      thm_pgs_clean_esa,data,units_lc,output=clean_data,esa_bgnd_advanced=esa_bgnd_advanced,_extra=ex ;output is anonymous struct of goodies
+      thm_pgs_clean_esa,data,units_lc,output=clean_data,esa_bgnd_advanced=esa_bgnd_advanced,bgnd_remove=esa_bgnd_remove,_extra=ex ;output is anonymous struct of goodies
     endif else if sst then begin
       thm_pgs_clean_sst,data,units_lc,output=clean_data,sst_sun_bins=sst_sun_bins,sst_method_clean=sst_method_clean,_extra=ex
     endif else if combined then begin

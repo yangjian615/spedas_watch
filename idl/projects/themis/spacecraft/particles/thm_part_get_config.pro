@@ -375,7 +375,15 @@ pro thm_part_get_config_457, u
     
     ; Low energy magnetospheric mode  - Added 2013-07-26
     '34'xu:thm_part_get_config_setvalue, u, $
-            angle_mode=0, angle_bins=88, energy_bins=15, nspins=1, sweep_mode=5
+            angle_mode=1, angle_bins=88, energy_bins=15, nspins=1, sweep_mode=5
+
+    ; Revised magnetospheric mode  - added 2014-03-26
+    '15'xu:thm_part_get_config_setvalue, u, $
+            angle_mode=0, angle_bins=88, energy_bins=32, nspins=128, sweep_mode=6
+
+    ; Revised magnetospheric mode  - added 2014-03-26
+    '25'xu:thm_part_get_config_setvalue, u, $
+            angle_mode=0, angle_bins=88, energy_bins=32, nspins=1, sweep_mode=6
 
     ;Msph SS 1 - low-E   - added 2016-03-18
     '16'xu:thm_part_get_config_setvalue, u, $
@@ -384,7 +392,7 @@ pro thm_part_get_config_457, u
     ;Msph FS 1 - low-E   - added 2016-03-18
     '26'xu:thm_part_get_config_setvalue, u, $
             angle_mode=0, angle_bins=88, energy_bins=32, nspins=32, sweep_mode=7
-    
+
     else:
   endcase
 
@@ -420,7 +428,7 @@ pro thm_part_get_config_458, u
             angle_mode=2, angle_bins=6, energy_bins=32, nspins=1, sweep_mode=1
 
     '31'xu:thm_part_get_config_setvalue, u, $
-            angle_mode=1, angle_bins=1, energy_bins=32, nspins=1, sweep_mode=1
+            angle_mode=1, angle_bins=32, energy_bins=32, nspins=1, sweep_mode=1
 
     '12'xu:thm_part_get_config_setvalue, u, $
             angle_mode=1, angle_bins=1, energy_bins=32, nspins=1, sweep_mode=2
@@ -439,6 +447,14 @@ pro thm_part_get_config_458, u
     ; Low energy magnetospheric mode  - Added 2013-07-26
     '34'xu:thm_part_get_config_setvalue, u, $
             angle_mode=1, angle_bins=1, energy_bins=32, nspins=1, sweep_mode=3
+
+    ; Revised low-energy magnetospheric modes
+    '15'xu:thm_part_get_config_setvalue, u, $
+            angle_mode=1, angle_bins=1, energy_bins=32, nspins=1, sweep_mode=4
+
+    ; Revised low-energy magnetospheric modes
+    '25'xu:thm_part_get_config_setvalue, u, $
+            angle_mode=1, angle_bins=1, energy_bins=32, nspins=1, sweep_mode=4
 
     ;Msph SS 1 - low-E   - added 2016-03-18
     '16'xu:thm_part_get_config_setvalue, u, $
@@ -502,6 +518,14 @@ pro thm_part_get_config_459, u
     ; Low energy magnetospheric mode  - Added 2013-07-26
     '34'xu:thm_part_get_config_setvalue, u, $
             angle_mode=0, angle_bins=88, energy_bins=32, nspins=1, sweep_mode=3
+
+    ; Revised low-energy magnetospheric modes
+    '16'xu:thm_part_get_config_setvalue, u, $
+            angle_mode=0, angle_bins=88, energy_bins=32, nspins=1, sweep_mode=4
+
+    ; Revised low-energy magnetospheric modes
+    '26'xu:thm_part_get_config_setvalue, u, $
+            angle_mode=0, angle_bins=88, energy_bins=32, nspins=1, sweep_mode=4
 
     ;Msph SS 1 - low-E    - added 2016-03-18
     '16'xu:thm_part_get_config_setvalue, u, $
@@ -792,8 +816,8 @@ end
 ;       esa_solar_wind:  Solar wind flag for ESA
 ;     }
 ;
-;NOTES
-;
+;NOTES:
+;  2016-08 - This routine is not currently used but could be useful.
 ;
 ;-
 function thm_part_get_config, apid0, config_word0, config_word1
