@@ -43,6 +43,7 @@
 ;         available:    returns a list of files available at the SDC for the requested parameters
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
+;         versions:     this keyword returns the version #s of the CDF files used when loading the data
 ; 
 ; OUTPUT:
 ; 
@@ -68,8 +69,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
-;$LastChangedRevision: 21430 $
+;$LastChangedDate: 2016-08-26 14:54:45 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21758 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/scm/mms_load_scm.pro $
 ;-
 
@@ -81,7 +82,7 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
                   no_update = no_update, suffix = suffix, varformat = varformat, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
-                  spdf = spdf, available = available
+                  spdf = spdf, available = available, versions = versions
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = ''
@@ -100,7 +101,7 @@ pro mms_load_scm, trange = trange, probes = probes, datatype = datatype, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf, available = available
+        spdf = spdf, available = available, versions = versions
 
     if level eq 'l1a' then coord = '123'
     if level eq 'l1b' then coord = 'scm123'

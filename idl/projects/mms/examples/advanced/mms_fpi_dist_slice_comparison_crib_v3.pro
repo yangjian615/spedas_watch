@@ -1,15 +1,17 @@
 ;+
-; mms_fpi_dist_slice_comparison_crib_l2.pro
+; mms_fpi_dist_slice_comparison_crib_l2_v3.pro
+;
+; This version is meant to work with v3.0.0+ of the FPI CDFs
+;
 ;
 ; do you have suggestions for this crib sheet?
 ;   please send them to egrimes@igpp.ucla.edu
-;   
 ;  changed ion burst mode time range   SAB
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-26 09:35:39 -0700 (Fri, 26 Aug 2016) $
-; $LastChangedRevision: 21732 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_fpi_dist_slice_comparison_crib_l2.pro $
+; $LastChangedDate: 2016-08-26 13:25:40 -0700 (Fri, 26 Aug 2016) $
+; $LastChangedRevision: 21750 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_fpi_dist_slice_comparison_crib_v3.pro $
 ;-
 
 start_time = systime(/sec)
@@ -53,17 +55,18 @@ folder = 'slice_test/'
 
 ;trange = ['2015-09-1/12:20:09', '2015-09-1/12:20:09.05'] 
 
-coord_sys = 'dbcs'
+coord_sys = 'gse'
 
-level = 'l2'
+level = 'l1b'
 
 ;load particle, field & support data
 ;---------------------------------------------
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-dist', $
-              probe=probe, trange=trange
-mms_load_fgm, probe=probe, trange=trange, level=level, data_rate=fgm_data_rate
+              probe=probe, trange=trange, min_version='2.2.0' ; don't allow this routine to run on v2.1 CDFs
+mms_load_fgm, probe=probe, trange=trange, level='l2', data_rate=fgm_data_rate
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $
-              probe=probe, trange=trange
+              probe=probe, trange=trange, min_version='2.2.0' ; don't allow this routine to run on v2.1 CDFs
+
 
 ; b-field vector for data within the last 2 weeks (ql)
 ; bname = 'mms'+probe+'_dfg_srvy_gse_bvec'
@@ -71,8 +74,7 @@ mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $
 ; bname = 'mms'+probe+'_dfg_srvy_l2pre_gse_bvec'
 ;  b-field vector for L2 data
 bname = 'mms'+probe+'_fgm_b_gse_'+fgm_data_rate+'_l2_bvec'
-vname = 'mms'+probe+'_d'+species+'s_bulk'
-join_vec, level eq 'l2' ? vname + ['x','y','z'] + '_' + coord_sys + '_' + data_rate : vname + ['X','Y','Z'], vname
+vname = 'mms'+probe+'_d'+species+'s_bulkv_'+coord_sys+'_'+data_rate
 
 ;convert particle data to 3D structures
 ;     'BV':  The x axis is parallel to B field; the bulk velocity defines the x-y plane
@@ -89,22 +91,11 @@ dist = mms_get_fpi_dist(name, trange=time_double(trange), probe = probe, species
 errname =  'mms'+probe+'_d'+species+'s_disterr_'+data_rate
 distErr = mms_get_fpi_dist(errname, trange=time_double(trange), probe = probe, species = species)
 
-get_data, 'mms'+probe+'_d'+species+'s_numberdensity_'+coord_sys+'_'+data_rate, data=density_struct
-get_data, 'mms'+probe+'_d'+species+'s_bulkx_'+coord_sys+'_'+data_rate, data=vel_x
-get_data, 'mms'+probe+'_d'+species+'s_bulky_'+coord_sys+'_'+data_rate, data=vel_y
-get_data, 'mms'+probe+'_d'+species+'s_bulkz_'+coord_sys+'_'+data_rate, data=vel_z
-get_data, 'mms'+probe+'_d'+species+'s_tempxx_'+coord_sys+'_'+data_rate, data=tempXX
-get_data, 'mms'+probe+'_d'+species+'s_tempxy_'+coord_sys+'_'+data_rate, data=tempXY
-get_data, 'mms'+probe+'_d'+species+'s_tempxz_'+coord_sys+'_'+data_rate, data=tempXZ
-get_data, 'mms'+probe+'_d'+species+'s_tempyy_'+coord_sys+'_'+data_rate, data=tempYY
-get_data, 'mms'+probe+'_d'+species+'s_tempyz_'+coord_sys+'_'+data_rate, data=tempYZ
-get_data, 'mms'+probe+'_d'+species+'s_tempzz_'+coord_sys+'_'+data_rate, data=tempZZ
-get_data, 'mms'+probe+'_d'+species+'s_presxx_'+coord_sys+'_'+data_rate, data=presXX
-get_data, 'mms'+probe+'_d'+species+'s_presxy_'+coord_sys+'_'+data_rate, data=presXY
-get_data, 'mms'+probe+'_d'+species+'s_presxz_'+coord_sys+'_'+data_rate, data=presXZ
-get_data, 'mms'+probe+'_d'+species+'s_presyy_'+coord_sys+'_'+data_rate, data=presYY
-get_data, 'mms'+probe+'_d'+species+'s_presyz_'+coord_sys+'_'+data_rate, data=presYZ
-get_data, 'mms'+probe+'_d'+species+'s_preszz_'+coord_sys+'_'+data_rate, data=presZZ
+
+get_data, 'mms'+probe+'_d'+species+'s_numberdensity_'+data_rate, data=density_struct
+get_data, 'mms'+probe+'_d'+species+'s_bulkv_'+coord_sys+'_'+data_rate, data=velocity_struct
+get_data, 'mms'+probe+'_d'+species+'s_prestensor_'+coord_sys+'_'+data_rate, data=pressure_struct
+get_data, 'mms'+probe+'_d'+species+'s_temptensor_'+coord_sys+'_'+data_rate, data=temp_struct
 
 ;set slice orientation
 ; (x parallel to B, y defined by vbulk)
@@ -214,7 +205,7 @@ for i=0, n_elements(*dist)-1 do begin
 
   plot,[0,1],[0,1],/nodata,/noerase,pos = [min(x0),min(y0[0]),max(x1),max(y1)],xstyle=5,ystyle=5    
   plot,[0,1],[0,1],/nodata,/noerase,pos = [0., 0.,1.,1.],xstyle=5,ystyle=5
-  xyouts,/norm,0.02,0.01,'created by mms_slice_comparison_crib_l2.pro data_rate='+data_rate
+  xyouts,/norm,0.02,0.01,'created by mms_slice_comparison_crib_v3.pro data_rate='+data_rate
 
   ;place title
   xyouts, x0[0],y1[0]+0.025, align=0.0, charsize=1.5, /normal, $
@@ -228,36 +219,37 @@ for i=0, n_elements(*dist)-1 do begin
   density_at_this_time = density_struct.Y[closest_idx]
   
   ; bulk velocity closest to this time
-  closest_time_x = find_nearest_neighbor(vel_x.X, time)
-  closest_idx_x = where(vel_x.X eq closest_time_x)
-  closest_time_y = find_nearest_neighbor(vel_y.X, time)
-  closest_idx_y = where(vel_y.X eq closest_time_y)
-  closest_time_z = find_nearest_neighbor(vel_z.X, time)
-  closest_idx_z = where(vel_z.X eq closest_time_z)
+  closest_time = find_nearest_neighbor(velocity_struct.X, time)
+  closest_idx_vel = where(velocity_struct.X eq closest_time)
+  velocity_at_this_time = velocity_struct.Y[closest_idx_vel, *]
   
+  ; pressure/temperature closest to this time
+  temp_at_this_time = reform(temp_struct.Y[closest_idx_vel, *, *])
+  pres_at_this_time = reform(pressure_struct.Y[closest_idx_vel, *, *])
+
   ; plot density
   xyouts, 0.85, 0.9, align=0.5, charsize=1.5, /normal, 'Density: '+$
     strcompress(string(density_at_this_time),/rem) + ' [cm^-3]'
   
   ; plot temperature tensor
-  xyouts, 0.85, 0.85, align=0.5, charsize=1.5, /normal, 'Txx: '+strcompress(string(tempXX.Y[closest_idx_x]),/rem)+'  Tyy: '+strcompress(string(tempYY.Y[closest_idx_x]),/rem)
-  xyouts, 0.85, 0.80, align=0.5, charsize=1.5, /normal, 'Txy: '+strcompress(string(tempXY.Y[closest_idx_x]),/rem)+'  Tyz: '+strcompress(string(tempYZ.Y[closest_idx_x]),/rem)
-  xyouts, 0.85, 0.75, align=0.5, charsize=1.5, /normal, 'Txz: '+strcompress(string(tempXZ.Y[closest_idx_x]),/rem)+'  Tzz: '+strcompress(string(tempZZ.Y[closest_idx_x]),/rem)
+  xyouts, 0.85, 0.85, align=0.5, charsize=1.5, /normal, 'Txx: '+strcompress(string(temp_at_this_time[0, 0]),/rem)+'  Tyy: '+strcompress(string(temp_at_this_time[1, 1]),/rem)
+  xyouts, 0.85, 0.80, align=0.5, charsize=1.5, /normal, 'Txy: '+strcompress(string(temp_at_this_time[0, 1]),/rem)+'  Tyz: '+strcompress(string(temp_at_this_time[1, 2]),/rem)
+  xyouts, 0.85, 0.75, align=0.5, charsize=1.5, /normal, 'Txz: '+strcompress(string(temp_at_this_time[0, 2]),/rem)+'  Tzz: '+strcompress(string(temp_at_this_time[2, 2]),/rem)
   
   ; plot pressure tensor
-  xyouts, 0.85, 0.7, align=0.5, charsize=1.5, /normal, 'Pxx: '+strcompress(string(presXX.Y[closest_idx_x]),/rem)+'  Pyy: '+strcompress(string(presYY.Y[closest_idx_x]),/rem)
-  xyouts, 0.85, 0.65, align=0.5, charsize=1.5, /normal, 'Pxy: '+strcompress(string(presXY.Y[closest_idx_x]),/rem)+'  Pyz: '+strcompress(string(presYZ.Y[closest_idx_x]),/rem)
-  xyouts, 0.85, 0.6, align=0.5, charsize=1.5, /normal, 'Pxz: '+strcompress(string(presXZ.Y[closest_idx_x]),/rem)+'  Pzz: '+strcompress(string(presZZ.Y[closest_idx_x]),/rem)
+  xyouts, 0.85, 0.7, align=0.5, charsize=1.5, /normal, 'Pxx: '+strcompress(string(pres_at_this_time[0, 0]),/rem)+'  Pyy: '+strcompress(string(pres_at_this_time[1, 1]),/rem)
+  xyouts, 0.85, 0.65, align=0.5, charsize=1.5, /normal, 'Pxy: '+strcompress(string(pres_at_this_time[0, 1]),/rem)+'  Pyz: '+strcompress(string(pres_at_this_time[1, 2]),/rem)
+  xyouts, 0.85, 0.6, align=0.5, charsize=1.5, /normal, 'Pxz: '+strcompress(string(pres_at_this_time[0, 2]),/rem)+'  Pzz: '+strcompress(string(pres_at_this_time[2, 2]),/rem)
   
     
   ; plot components of bulk velocity   
   xyouts, 0.85, 0.55, align=0.5, charsize=1.5, /normal, slice.data_name + ' bulk velocity'
   xyouts, 0.85, 0.50, align=0.5, charsize=1.5, /normal, 'Vx: '+$
-    strcompress(string(vel_x.Y[closest_idx_x]),/rem) + ' [km/s]'
+    strcompress(string(velocity_at_this_time[0]),/rem) + ' [km/s]'
   xyouts, 0.85, 0.45, align=0.5, charsize=1.5, /normal, 'Vy: '+$
-    strcompress(string(vel_y.Y[closest_idx_y]),/rem) + ' [km/s]'
+    strcompress(string(velocity_at_this_time[1]),/rem) + ' [km/s]'
   xyouts, 0.85, 0.40, align=0.5, charsize=1.5, /normal, 'Vz: '+$
-    strcompress(string(vel_z.Y[closest_idx_z]),/rem) + ' [km/s]'
+    strcompress(string(velocity_at_this_time[2]),/rem) + ' [km/s]'
 
   ;write png
   makepng, folder+'mms'+probe+'_'+species+'_'+data_rate+'_'+rotation+'_'+ $

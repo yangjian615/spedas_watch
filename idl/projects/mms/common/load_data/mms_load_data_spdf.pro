@@ -27,8 +27,8 @@
 ;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-24 12:06:24 -0700 (Wed, 24 Aug 2016) $
-;$LastChangedRevision: 21720 $
+;$LastChangedDate: 2016-08-26 14:03:22 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21754 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -41,7 +41,7 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
                    center_measurement=center_measurement, cdf_filenames = cdf_filenames, $
                    cdf_records = cdf_records, min_version = min_version, $
                    cdf_version = cdf_version, latest_version = latest_version, $
-                   time_clip = time_clip, suffix = suffix
+                   time_clip = time_clip, suffix = suffix, versions = versions
 
     if not keyword_set(datatype) then datatype = '*'
     if not keyword_set(level) then level = 'l2'
@@ -210,15 +210,20 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
         mms_cdf2tplot, files, tplotnames = new_tplotnames, varformat=varformat, $
                 suffix = suffix, get_support_data = get_support_data, /load_labels, $
                 min_version=min_version,version=cdf_version,latest_version=latest_version, $
-                number_records=cdf_records, center_measurement=center_measurement
+                number_records=cdf_records, center_measurement=center_measurement, $
+                loaded_versions = the_loaded_versions
         append_array, tplotnames, new_tplotnames
         
         ; add the loaded files to the cdf_filenames keyword
         append_array, cdf_filenames, files
         
+        ; add the loaded version #s
+        append_array, versions, the_loaded_versions
+        
         ; forget about the daily files for this probe
         undefine, files
         undefine, new_tplotnames
+        undefine, the_loaded_versions
         
         data_count += 1
       endfor

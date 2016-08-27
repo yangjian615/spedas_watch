@@ -6,6 +6,7 @@
 ; updated to v4 by Eric Grimes, 4/1/2016 (now works for public access, uses L2 data)
 ; updated to include omni-directional FEEPS electron data by Eric Grimes, April 12, 2016
 ; updated variable name for omni-directional FEEPS electron data by Eric Grimes, July 26, 2016
+; updated variable names for v3.x.x of the FPI CDFs by Eric Grimes, August 26, 2016
 
 ; to run this script, in IDL session, type: .r crib_master_v4 (or click the run button)
 
@@ -25,7 +26,7 @@ timespan,'2015-10-16/13:00', 1, /hour ; (other often-used options are /day or /m
 ;timespan,'2015-08-28/11:00', 8.2, /hour ; (other often-used options are /day or /min)
 
 
-sc_id='mms4' ; specify spacecraft
+sc_id='mms1' ; specify spacecraft
 
 probe_id=strmid(sc_id,3,1) ; extract the spacecraft number out of the sc_id string
 
@@ -43,7 +44,7 @@ window, xsize=800, ysize=1024
 if i_load eq 1 then begin
 
 ; loading FPI, HPCA, FGM, and FEEPS data
-mms_load_fpi, probes=probe_id,level=level,data_rate='fast', datatype=['des-moms', 'dis-moms']
+mms_load_fpi, probes=probe_id,level='l1b',data_rate='fast', datatype=['des-moms', 'dis-moms'], min_version='2.2.0'
 
 ; Load E
 mms_load_edp, probes = probe_id, level='l2', data_rate='fast', datatype='dce'
@@ -103,15 +104,15 @@ options, sc_id+'_r', 'ytitle', sc_id+' R'
 ;*********************************************************
 
 ;  options, sc_id+'_fpi_iEnergySpectr_omni', 'spec', 1 ; 1= spectrogram, 0= line plot
-options, sc_id+'_dis_energyspectr_omni_avg', 'no_interp', 1
-options, sc_id+'_dis_energyspectr_omni_avg', 'ytitle', 'ion E' ; define y label. tplot name used if not defined.
-options, sc_id+'_dis_energyspectr_omni_avg', 'ysubtitle', '[eV]'
+options, sc_id+'_dis_energyspectr_omni_fast', 'no_interp', 1
+options, sc_id+'_dis_energyspectr_omni_fast', 'ytitle', 'ion E' ; define y label. tplot name used if not defined.
+options, sc_id+'_dis_energyspectr_omni_fast', 'ysubtitle', '[eV]'
 
 ; define y axis limits (optional)
-ylim, sc_id+'_dis_energyspectr_omni_avg', 10, 26000,1 ; or 0,0,1 if auto-scaling (log) and 0,0,0 for linear y axis
+ylim, sc_id+'_dis_energyspectr_omni_fast', 10, 26000,1 ; or 0,0,1 if auto-scaling (log) and 0,0,0 for linear y axis
 ; define color range limits (optional)
-zlim, sc_id+'_dis_energyspectr_omni_avg', 0, 0, 1 ; or 0,0,1 if auto-scaling (log) and 0,0,0 for linear
-;  zlim, sc_id+'_dis_energyspectr_omni_avg', .1, 2000, 1 ; or 0,0,1 if auto-scaling (log) and 0,0,0 for linear
+zlim, sc_id+'_dis_energyspectr_omni_fast', 0, 0, 1 ; or 0,0,1 if auto-scaling (log) and 0,0,0 for linear
+;  zlim, sc_id+'_dis_energyspectr_omni_fast', .1, 2000, 1 ; or 0,0,1 if auto-scaling (log) and 0,0,0 for linear
 
 
 options, sc_id+'_des_energyspectr_omni_avg', 'spec', 1
@@ -148,7 +149,7 @@ zlim, sc_id+'_des_energyspectr_omni_avg', 0,0, 1 ; the 3rd number specifies log 
 ;options, sc_id+'_fpi_DIStemp', 'colors', [6,2]
 ;ylim,sc_id+'_fpi_DIStemp',0,0,1
 
-join_vec, sc_id+'_dis_bulk'+['x', 'y', 'z']+'_dbcs_fast',  sc_id+'_dis_bulkv_dbcs_fast'
+
 ;*********************************************************
 ; HPCA
 ;*********************************************************
@@ -258,8 +259,8 @@ name_edp= sc_id+'_edp_dce_gse_fast_l2'
 
 name_dfg=[sc_id+'_fgm_b_gsm_srvy_l2_btot',sc_id+'_fgm_b_gsm_srvy_clipped']
 
-;name_fpi=[sc_id+'_dis_energyspectr_omni_avg',sc_id+'_des_energyspectr_omni_avg',sc_id+'_dis_numberdensity_dbcs_fast', sc_id+'_dis_bulkv_dbcs_fast ',sc_id+'_fpi_DIStemp',sc_id+'_fpi_DEStemp']
-name_fpi=[sc_id+'_dis_energyspectr_omni_avg',sc_id+'_des_energyspectr_omni_avg',sc_id+'_dis_numberdensity_dbcs_fast', sc_id+'_dis_bulkv_dbcs_fast']
+;name_fpi=[sc_id+'_dis_energyspectr_omni_fast',sc_id+'_des_energyspectr_omni_fast',sc_id+'_dis_numberdensity_fast', sc_id+'_dis_bulkv_gse_fast ',sc_id+'_fpi_DIStemp',sc_id+'_fpi_DEStemp']
+name_fpi=[sc_id+'_dis_energyspectr_omni_fast',sc_id+'_des_energyspectr_omni_fast',sc_id+'_dis_numberdensity_fast', sc_id+'_dis_bulkv_gse_fast']
 
 name_dsp = [sc_id+'_dsp_epsd_omni',sc_id+'_dsp_bpsd_omni_fast_l2']
 

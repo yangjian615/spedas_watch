@@ -45,6 +45,7 @@
 ;         available:    returns a list of files available at the SDC for the requested parameters
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
+;         versions:     this keyword returns the version #s of the CDF files used when loading the data
 ; 
 ; 
 ; EXAMPLE:
@@ -66,8 +67,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-23 09:22:42 -0700 (Tue, 23 Aug 2016) $
-;$LastChangedRevision: 21690 $
+;$LastChangedDate: 2016-08-26 16:15:17 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21761 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -81,7 +82,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
                   spdf = spdf, center_measurement=center_measurement, $
-                  available = available
+                  available = available, versions = versions
 
     if undefined(probes) then probes = ['3'] ; default to MMS 3
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
@@ -119,60 +120,77 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf, center_measurement = center_measurement, available = available
+        spdf = spdf, center_measurement = center_measurement, available = available, $
+        versions = versions
 
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return
-    
+
     ; the following kludge is due to the errorflags variable in the dist and moments files having the
     ; same variable name, so loading d?s-dist and d?s-moms files at the same time will overwrite
     ; one of the vars containing errorflags
     if array_contains(datatype, 'des-dist') && array_contains(datatype, 'des-moms') then begin
         ; delete the old errorflags var first
         del_data, '*_des_errorflags_*'
+        del_data, '*_des_compressionloss_*'
         mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'des-moms', get_support_data = 0, $
             tplotnames = tplotnames_errflags_emom, no_color_setup = no_color_setup, time_clip = time_clip, $
-            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags*', $
+            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags* *compressionloss*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
         mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'des-dist', get_support_data = 0, $
             tplotnames = tplotnames_errflags_edist, no_color_setup = no_color_setup, time_clip = time_clip, $
-            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags*', $
+            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags* *compressionloss*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
     endif else begin
         for probe_idx = 0, n_elements(probes)-1 do begin
             this_probe = strcompress(string(probes[probe_idx]), /rem)
-            if array_contains(datatype, 'des-dist') then tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist'
-            if array_contains(datatype, 'des-moms') then tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms'
+            if array_contains(datatype, 'des-dist') then begin
+              tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist'
+              tplot_rename, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_dist'
+            endif
+            if array_contains(datatype, 'des-moms') then begin
+              tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms'
+              tplot_rename, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms'
+            endif
         endfor
     endelse
+
     if array_contains(datatype, 'dis-dist') && array_contains(datatype, 'dis-moms') then begin
         ; delete the old errorflags var first
         del_data, 'mms?_dis_errorflags_*'
+        del_data, '*_dis_compressionloss_*'
         mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'dis-moms', get_support_data = 0, $
             tplotnames = tplotnames_errflags_imom, no_color_setup = no_color_setup, time_clip = time_clip, $
-            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags*',  $
+            no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags* *compressionloss*',  $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
         mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'dis-dist', get_support_data = 0, $
             tplotnames = tplotnames_errflags_idist, no_color_setup = no_color_setup, time_clip = time_clip, $
-            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags*', $
+            no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags* *compressionloss*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
     endif else begin
         for probe_idx = 0, n_elements(probes)-1 do begin
             this_probe = strcompress(string(probes[probe_idx]), /rem)
-            if array_contains(datatype, 'dis-dist') then tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist'
-            if array_contains(datatype, 'dis-moms') then tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms'
+            if array_contains(datatype, 'dis-dist') then begin
+              tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist'
+              tplot_rename, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist'
+            endif
+            if array_contains(datatype, 'dis-moms') then begin
+              tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms'
+              tplot_rename, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms'
+            endif
+            
         endfor
     endelse
     ; add the errorflags variables to variables loaded
@@ -190,27 +208,48 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     ; correct the energies in the spectra for each probe
     if ~undefined(tplotnames) && n_elements(tplotnames) ne 0 then begin
         for probe_idx = 0, n_elements(probes)-1 do begin
-            mms_load_fpi_fix_spectra, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $
-                level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
-            mms_load_fpi_fix_dist, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $
-                level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
-            mms_load_fpi_fix_angles, tplotnames, probe = strcompress(string(probes[probe_idx]), /rem), $ 
-                level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
-            mms_load_fpi_calc_omni, probes[probe_idx], autoscale = autoscale, level = level, $
-                datatype = datatype, data_rate = data_rate, suffix = suffix
+            this_probe = strcompress(string(probes[probe_idx]), /rem)
+            if ~undefined(versions) && float(strcompress(string(versions[0,0])+'.'+string(versions[0,1]), /rem)) le 2.101 then begin
+                ; fix the energy table for spectra in v2.1 and below moments CDFs
+                mms_load_fpi_fix_spectra, tplotnames, probe = this_probe, $
+                    level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
+                
+                ; fix the energy table for distributions in v2.1 and below dist CDFs
+                mms_load_fpi_fix_dist, tplotnames, probe = this_probe, $
+                    level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
+                    
+                ; fix the angles in the PADs in v2.1 and below moments CDFs
+                mms_load_fpi_fix_angles, tplotnames, probe = this_probe, $ 
+                    level = level, data_rate = data_rate, datatype = datatype, suffix = suffix
+                    
+                ; calculate the omni-directional energy spectra (summed and averaged) for
+                ; v2.1 and below moments CDFs (omni-directional provided in v3.0+)
+                mms_load_fpi_calc_omni, probes[probe_idx], autoscale = autoscale, level = level, $
+                    datatype = datatype, data_rate = data_rate, suffix = suffix
+            endif
+            ; calculate the averaged PAD from the low, mid, high-energy PAD variables
             mms_load_fpi_calc_pad, probes[probe_idx], level = level, datatype = datatype, $
                 suffix = suffix, data_rate = data_rate
+                
             ; fix some metadata
             mms_fpi_fix_metadata, tplotnames, prefix='mms'+probes[probe_idx], level = level, $
                 suffix = suffix, data_rate = data_rate
 
             ; create the error bars
             ; moms
-            mms_fpi_make_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_dis_errorflags_'+data_rate+suffix+'_moms' ; ions
-            mms_fpi_make_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_des_errorflags_'+data_rate+suffix+'_moms' ; electrons
+            mms_fpi_make_errorflagbars,'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms' ; ions
+            mms_fpi_make_errorflagbars,'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms' ; electrons
             ; dist
-            mms_fpi_make_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_dis_errorflags_'+data_rate+suffix+'_dist' ; ions
-            mms_fpi_make_errorflagbars,'mms'+strcompress(string(probes[probe_idx]))+'_des_errorflags_'+data_rate+suffix+'_dist' ; electrons
+            mms_fpi_make_errorflagbars,'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist' ; ions
+            mms_fpi_make_errorflagbars,'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist' ; electrons
+        
+            ; do not need this bar for survey data, since all data are lossy compressed
+            if data_rate eq 'brst' then begin
+              mms_fpi_make_compressionlossbars,'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_dist'
+              mms_fpi_make_compressionlossbars,'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms'
+              mms_fpi_make_compressionlossbars,'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist'
+              mms_fpi_make_compressionlossbars,'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms'
+            endif
         endfor
     endif
 end

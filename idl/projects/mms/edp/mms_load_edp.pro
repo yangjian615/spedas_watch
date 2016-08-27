@@ -42,6 +42,7 @@
 ;         available:    returns a list of files available at the SDC for the requested parameters
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
+;         versions:     this keyword returns the version #s of the CDF files used when loading the data
 ;
 ; NOTES:
 ;     Please always use error bars on E-field data 
@@ -65,8 +66,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-26 14:22:54 -0700 (Tue, 26 Jul 2016) $
-;$LastChangedRevision: 21544 $
+;$LastChangedDate: 2016-08-26 14:54:45 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21758 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
@@ -77,7 +78,7 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
     latest_version = latest_version, min_version = min_version, spdf = spdf, $
-    available = available
+    available = available, versions = versions
 
     if undefined(probes) then probes = [1, 2, 3, 4] 
     if undefined(datatype) then datatype = ['dce']
@@ -93,7 +94,7 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, $
         cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
         latest_version = latest_version, min_version = min_version, spdf = spdf, $
-        available = available
+        available = available, versions = versions
 
     for level_idx = 0, n_elements(level)-1 do begin
       ; set some of the metadata

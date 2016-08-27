@@ -31,6 +31,7 @@
 ;         suffix: append a suffix to tplot variables names
 ;         varformat: should be a string (wildcards accepted) that will match the CDF variables
 ;             that should be loaded into tplot variables
+;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
 ;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;             (e.g., /latest_version)
@@ -41,6 +42,7 @@
 ;         available: returns a list of files available at the SDC for the requested parameters
 ;             this is useful for finding which files would be downloaded (along with their sizes) if 
 ;             you didn't specify this keyword (also outputs total download size)
+;         versions: this keyword returns the version #s of the CDF files used when loading the data
 ;         
 ; EXAMPLE:
 ;     See the instrument specific crib sheets in the examples/ folder for usage examples
@@ -88,8 +90,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-23 11:50:33 -0700 (Tue, 23 Aug 2016) $
-;$LastChangedRevision: 21692 $
+;$LastChangedDate: 2016-08-26 14:03:22 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21754 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -101,7 +103,8 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   suffix = suffix, time_clip = time_clip, no_update = no_update, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version, cdf_records = cdf_records, spdf = spdf, $
-                  center_measurement = center_measurement, available = available
+                  center_measurement = center_measurement, available = available, $
+                  versions = versions
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -181,7 +184,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
           no_server = no_server, data_rate = data_rates, get_support_data = get_support_data, $
           varformat = varformat, center_measurement=center_measurement, cdf_filenames = cdf_filenames, $
           cdf_records = cdf_records, min_version = min_version, cdf_version = cdf_version, $
-          latest_version = latest_version, time_clip = time_clip, suffix = suffix
+          latest_version = latest_version, time_clip = time_clip, suffix = suffix, versions = versions
         return
     endif
         
@@ -314,16 +317,19 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             mms_cdf2tplot, files, tplotnames = loaded_tnames, varformat=varformat, $
                 suffix = suffix, get_support_data = get_support_data, /load_labels, $
                 min_version=min_version,version=cdf_version,latest_version=latest_version, $
-                number_records=cdf_records, center_measurement=center_measurement
+                number_records=cdf_records, center_measurement=center_measurement, $
+                loaded_versions = the_loaded_versions
             dt_load += systime(/sec) - lt0 ;temporary
         endif
-        
+
         append_array, cdf_filenames, files
         if ~undefined(loaded_tnames) then append_array, tplotnames, loaded_tnames
+        if ~undefined(the_loaded_versions) then append_array, versions, the_loaded_versions
         
         ; forget about the daily files for this probe
         undefine, files
         undefine, loaded_tnames
+        undefine, the_loaded_versions
 
     ;end loops over probe, rate, level, and datatype
     endfor

@@ -192,6 +192,12 @@ function mms_load_fpi_ut::test_load_errorflags_moms_and_dist_suffix
   return, 1
 end
 
+; check that we don't crash when the version # isn't valid
+function mms_load_fpi_ut::test_load_local_file_badversion
+  mms_load_fpi, datatype='des-moms', trange=['2015-12-5', '2015-12-6'], cdf_version='2.32.0', /no_update
+  return, 1
+end
+
 ; end of regression tests <------
 
 ; check multiple data rates
@@ -311,6 +317,14 @@ function mms_load_fpi_ut::test_load_future_time
   stop_date = start_date + 86400.
   mms_load_fpi, trange=[start_date, stop_date], probe=1, datatype=['des-moms']
   assert, ~spd_data_exists('mms1_*', '2040-07-30', '2040-07-31'), 'Problem loading fpi data for date in future'
+  return, 1
+end
+
+; regression test for bug fixed by updated CDFs (v3)
+function mms_load_fpi_ut::test_load_energies_no_support
+  mms_load_fpi, datatype='des-moms', varformat='*energys*', probe=1
+  get_data, 'mms1_des_energyspectr_mx_fast', data=d
+  assert, n_elements(d.V[0, *]) eq 32 and d.V[0, 31] ne 31, 'Problem with energy table in FPI energy spectra variables'
   return, 1
 end
 

@@ -11,9 +11,9 @@
 ;
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-01 11:26:04 -0700 (Fri, 01 Apr 2016) $
-;$LastChangedRevision: 20693 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-08-26 11:45:19 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21737 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi_fix_dist.pro $
 ;-
 pro mms_load_fpi_fix_dist, tplotnames, probe = probe, level = level, data_rate = data_rate, $
@@ -62,12 +62,14 @@ pro mms_load_fpi_fix_dist, tplotnames, probe = probe, level = level, data_rate =
     
     ;replace energies
     if n_elements(energies) gt 1 then begin
-      *data.v1 = energies
+      ;*data.v1 = energies ; egrimes flipped v1 and v3, 8/26/2016
+      *data.v3 = energies
     endif
 
     ;replace azimuths
     if ~undefined(phi) then begin
-      *data.v3 = phi
+     ; *data.v3 = phi
+      *data.v1 = phi ; egrimes flipped v1 and v3, 8/26/2016
     endif
 
     ;replace elevations (colat)

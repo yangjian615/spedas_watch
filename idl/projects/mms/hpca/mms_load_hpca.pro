@@ -42,6 +42,7 @@
 ;         available: returns a list of files available at the SDC for the requested parameters
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
+;         versions:     this keyword returns the version #s of the CDF files used when loading the data
 ; 
 ; 
 ; EXAMPLE:
@@ -73,8 +74,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-06 12:34:17 -0700 (Wed, 06 Jul 2016) $
-;$LastChangedRevision: 21430 $
+;$LastChangedDate: 2016-08-26 14:54:45 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21758 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -86,7 +87,8 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
-                  spdf = spdf, center_measurement = center_measurement, available = available
+                  spdf = spdf, center_measurement = center_measurement, available = available, $
+                  versions = versions
                 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'moments'
@@ -135,7 +137,8 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf, center_measurement = center_measurement, available = available
+        spdf = spdf, center_measurement = center_measurement, available = available, $
+        versions = versions
     
     if undefined(tplotnames) then return
 

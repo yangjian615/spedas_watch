@@ -1,17 +1,18 @@
 
 ;+
 ;Procedure:
-;  mms_part_products_crib
+;  mms_part_products_crib_v3
+;  
+;  This version is meant to work with v3.0.0+ of the FPI CDFs
 ;
 ;Purpose:
 ;  Basic example on how to use mms_part_products to generate particle
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 12:32:40 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21740 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib.pro $
-;
+;$LastChangedDate: 2016-08-26 12:34:13 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21742 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib_v3.pro $
 ;-
 
 
@@ -26,7 +27,7 @@
   probe='1'      ;1, 2, 3, 4
   species='e'    ;e, i
   rate='brst'    ;brst, fast
-  level = 'l2'
+  level = 'l1b'
 
   ;use short time range for data due to high resolution
   ;use longer time range for support data to ensure we have enough to work with
@@ -35,13 +36,13 @@
   support_trange = trange + [-60,60]
  
   ;load particle data
-  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-dist'
+  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-dist', /no_update, min_version='2.2.0'
                 
   ;load state data (needed for coordinate transforms and field aligned coordinates)
   mms_load_state, probes=probe, trange=support_trange
 
   ;load magnetic field data
-  mms_load_fgm, probe=probe, trange=support_trange, level=level
+  mms_load_fgm, probe=probe, trange=support_trange, level='l2'
  
   ;tplot names for L2 particle data, magnetic field vector, and spacecraft position
   name = 'mms'+probe+'_d'+species+'s_dist_'+rate
@@ -72,8 +73,8 @@
   ; 
   ;  The following example shows how to load the FPI moments 
   ;  released by the team (des-moms, dis-moms datatypes)
-  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-moms'
-  tplot, 'mms' + probe + '_d'+species+'s_numberdensity_dbcs_brst'
+  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-moms', /no_update, min_version='2.2.0'
+  tplot, 'mms' + probe + '_d'+species+'s_numberdensity_brst'
 
   stop
 

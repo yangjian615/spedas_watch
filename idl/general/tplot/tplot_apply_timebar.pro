@@ -36,8 +36,8 @@
 ;HISTORY:
 ; 2016-07-29, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-08-04 14:56:35 -0700 (Thu, 04 Aug 2016) $
-; $LastChangedRevision: 21601 $
+; $LastChangedDate: 2016-08-26 11:36:33 -0700 (Fri, 26 Aug 2016) $
+; $LastChangedRevision: 21733 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_apply_timebar.pro $
 ;-
 Pro tplot_apply_timebar, varname = varname, clear = clear
@@ -56,16 +56,27 @@ Pro tplot_apply_timebar, varname = varname, clear = clear
   nvn = n_elements(vn)
   For j = 0, nvn-1 Do Begin
 ;Check limits for timebar tag
-     get_data, vn[j], limits = al
+     get_data, vn[j], limits = al, dlimits = dl
+;clear the timebar if requested
+     If(keyword_set(clear)) Then Begin
+        If(is_struct(al) && tag_exist(al, 'timebar')) Then Begin
+           str_element, al, 'timebar', /delete
+           store_data, vn[j], limits = al
+        Endif        
+        If(is_struct(dl) && tag_exist(dl, 'timebar')) Then Begin
+           str_element, dl, 'timebar', /delete
+           store_data, vn[j], dlimits = dl
+        Endif
+        Continue
+     Endif
+;Otherwise apply timebar
      If(is_struct(al) && tag_exist(al, 'timebar')) Then Begin
         tb = al.timebar ;tb can be an array or structure
         If(~is_struct(tb)) Then tb = {time: time_double(tb)}
+     Endif Else If(is_struct(dl) && tag_exist(dl, 'timebar')) Then Begin
+        tb = dl.timebar ;tb can be an array or structure
+        If(~is_struct(tb)) Then tb = {time: time_double(tb)}
      Endif Else tb = 0b
-;clear the databar using 'options' if requested
-     If(is_struct(tb) && keyword_set(clear)) Then Begin
-        options, vn[j], 'timebar', ''
-        Continue
-     Endif
 ;Call 'timebar' program to add to plot, if needed
      If(is_struct(tb)) Then Begin
         If(tag_exist(tb, 'color')) Then clr = tb.color Else clr = 0

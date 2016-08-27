@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-08-26 11:45:19 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21737 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -184,22 +184,21 @@ dist.end_time = (*p.x)[index] + integ_time
 ;shuffle data to be energy-azimuth-elevation-time
 dist.data = transpose((*p.y)[index,*,*,*],[3,1,2,0])
 
-;get energy values for each time sample and copy into
-;structure array with the correct dimensions
-if size(/n_dim, *p.v1) eq 1 then begin
-  e0 = *p.v1 ;fast data uses constant table
+if size(/n_dim, *p.v3) eq 1 then begin
+  e0 = *p.v3 ;fast data uses constant table
 endif else begin
-  e0 = reform( transpose((*p.v1)[index,*]), [dim[0],1,1,n_times])
+  e0 = reform( transpose((*p.v3)[index,*]), [dim[0],1,1,n_times])
 endelse
 dist.energy = rebin( e0, [dim,n_times] )
 
 ;get azimuth values for each time sample and copy into
 ;structure array with the correct dimensions
-if size(/n_dim, *p.v3) eq 1 then begin
-  phi0 = transpose(*p.v3) ;fast data uses constant table
+if size(/n_dim, *p.v1) eq 1 then begin
+  phi0 = transpose(*p.v1) ;fast data uses constant table
 endif else begin
-  phi0 = reform( transpose((*p.v3)[index,*]), [1,dim[1],1,n_times])
+  phi0 = reform( transpose((*p.v1)[index,*]), [1,dim[1],1,n_times])
 endelse
+
 dist.phi = rebin( phi0, [dim,n_times] )
 
 ;phi must be in [0,360)

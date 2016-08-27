@@ -44,6 +44,7 @@
 ;         available:    returns a list of files available at the SDC for the requested parameters
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
+;         versions:     this keyword returns the version #s of the CDF files used when loading the data
 ;
 ; OUTPUT:
 ;
@@ -60,8 +61,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-19 13:42:05 -0700 (Tue, 19 Jul 2016) $
-;$LastChangedRevision: 21490 $
+;$LastChangedDate: 2016-08-26 14:54:45 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21758 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
 
@@ -73,7 +74,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
     latest_version = latest_version, min_version = min_version, spdf = spdf, $
-    available = available
+    available = available, versions = versions
 
     if undefined(probes) then probes = [1, 2, 3, 4] ; default to MMS 1
     if undefined(datatype) then datatype = ['epsd', 'bpsd','tdn', 'swd']
@@ -93,9 +94,11 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                     tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
                     cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
-                    latest_version = latest_version, min_version = min_version, spdf = spdf, available = available
+                    latest_version = latest_version, min_version = min_version, spdf = spdf, available = available, $
+                    versions = cdf_versions_out
                 append_array, tplot_names_full, tplotnames_out
                 append_array, cdf_filenames_full, cdf_filenames_out
+                append_array, versions_full, cdf_versions_out
             endfor
         endif
         if array_contains(datatype, 'epsd') then begin
@@ -112,9 +115,11 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                     tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
                     cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
-                    latest_version = latest_version, min_version = min_version, spdf = spdf, available = available
+                    latest_version = latest_version, min_version = min_version, spdf = spdf, available = available, $
+                    versions = cdf_versions_out
                 append_array, tplot_names_full, tplotnames_out
                 append_array, cdf_filenames_full, cdf_filenames_out
+                append_array, versions_full, cdf_versions_out
             endfor
         endif
     endif
@@ -126,14 +131,17 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                 tplotnames = tplotnames_out, no_color_setup = no_color_setup, time_clip = time_clip, $
                 no_update = no_update, suffix = suffix, varformat = varformat, $
                 cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
-                latest_version = latest_version, min_version = min_version, spdf = spdf, available = available
+                latest_version = latest_version, min_version = min_version, spdf = spdf, available = available, $
+                versions = cdf_versions_out
             append_array, tplot_names_full, tplotnames_out
             append_array, cdf_filenames_full, cdf_filenames_out
+            append_array, versions_full, cdf_versions_out
         endfor
         
     endif
     if ~undefined(tplot_names_full) then tplotnames = tplot_names_full
     if ~undefined(cdf_filenames_full) then cdf_filenames = cdf_filenames_full
+    if ~undefined(versions_full) then versions = versions_full
 
     for level_idx = 0, n_elements(level)-1 do begin
       ; set some of the metadata

@@ -18,20 +18,20 @@
 ; Forked for MMS, 10/22/2015, egrimes@igpp
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-10 10:05:31 -0800 (Thu, 10 Mar 2016) $
-; $LastChangedRevision: 20384 $
+; $LastChangedDate: 2016-08-26 13:53:36 -0700 (Fri, 26 Aug 2016) $
+; $LastChangedRevision: 21752 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/mms_cdf2tplot.pro $
 ;-
 
 pro mms_cdf2tplot,files,files=files2,prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix ,newname=newname $
    ,varformat=varformat ,varnames=varnames2 $
    ,all=all,verbose=verbose, get_support_data=get_support_data, convert_int1_to_int2=convert_int1_to_int2 $
-   ,record=record, tplotnames=tplotnames,load_labels=load_labels $
+   ,record=record, tplotnames=tplotnames,load_labels=load_labels, loaded_versions=loaded_versions $
    ,min_version=min_version,version=version,latest_version=latest_version $
    ,number_records=number_records, center_measurement=center_measurement
 
 
-dprint,dlevel=4,verbose=verbose,'$Id: mms_cdf2tplot.pro 20384 2016-03-10 18:05:31Z egrimes $'
+dprint,dlevel=4,verbose=verbose,'$Id: mms_cdf2tplot.pro 21752 2016-08-26 20:53:36Z egrimes $'
 vb = keyword_set(verbose) ? verbose : 0
 
 if keyword_set(files2) then files=files2    ; added for backward compatibility  and to make it match the documentation
@@ -43,7 +43,8 @@ if not keyword_set(varformat) then var_type = 'data'
 if keyword_set(get_support_data) then var_type = ['data','support_data']
 
 ;;;; the following is a filter for CDF file versions (specific to MMS)
-files = unh_mms_file_filter(files, min_version=min_version, version=version, latest_version=latest_version, /no_time)
+files = unh_mms_file_filter(files, min_version=min_version, version=version, $
+  latest_version=latest_version, loaded_versions = loaded_versions, /no_time)
 
 cdfi = mms_cdf_load_vars(files,varformat=varformat,var_type=var_type,/spdf_depend, $
      varnames=varnames2,verbose=verbose,record=record, convert_int1_to_int2=convert_int1_to_int2, $

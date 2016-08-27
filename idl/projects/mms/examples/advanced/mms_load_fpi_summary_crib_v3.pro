@@ -28,8 +28,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-24 12:38:16 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21721 $
+; $LastChangedDate: 2016-08-26 13:25:40 -0700 (Fri, 26 Aug 2016) $
+; $LastChangedRevision: 21750 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib_v3.pro $
 ;-
 
@@ -90,11 +90,8 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
     local_data_dir = local_data_dir, source = source, $
     get_support_data = get_support_data, $
     tplotnames = tplotnames, no_color_setup = no_color_setup, $
-    autoscale = autoscale, /no_update, /latest
+    autoscale = autoscale, min_version='2.2.0'
 
-; note, stopping until I remove the /no_update and cdf_version from the above
-; second note: version 2.3.4 is essentially v3.0 (or an early version of 3.0)
-stop
 ; load ephemeris data for all 4 probes
 ; as of 3/14/16, we no longer use the S/C position data loaded from the FGM files
 mms_load_mec, trange = trange, probes = probes
@@ -302,7 +299,7 @@ ENDFOR
 panels=['mms_bss_burst', 'mms_bss_fast', quality_bar]
 FOR i=1,4 DO BEGIN
    obsstr = 'mms'+STRING(i,FORMAT='(I1)')
-   panels=[panels,obsstr+'_fgm_dmpa_srvy_clipped',obsstr+'_des_energyspectr_omni_avg',obsstr+'_dis_energyspectr_omni_avg'] 
+   panels=[panels,obsstr+'_fgm_dmpa_srvy_clipped',obsstr+'_des_energyspectr_omni_'+data_rate,obsstr+'_dis_energyspectr_omni_'+data_rate] 
 ENDFOR
 window_caption="MMS FPI Observatory Summary: MMS1, MMS2, MMS3, MMS4"
 if ~postscript then window, iw, xsize=width, ysize=height

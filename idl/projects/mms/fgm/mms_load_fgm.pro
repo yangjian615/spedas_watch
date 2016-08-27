@@ -46,6 +46,7 @@
 ;         available:    returns a list of files available at the SDC for the requested parameters
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
+;         versions:     this keyword returns the version #s of the CDF files used when loading the data
 ;
 ; 
 ; EXAMPLE:
@@ -59,8 +60,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-16 11:57:48 -0700 (Tue, 16 Aug 2016) $
-;$LastChangedRevision: 21653 $
+;$LastChangedDate: 2016-08-26 14:54:45 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21758 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -75,7 +76,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
                   spdf = spdf, no_split_vars=no_split_vars, keep_flagged = keep_flagged, $
-                  get_fgm_ephemeris = get_fgm_ephemeris, available = available
+                  get_fgm_ephemeris = get_fgm_ephemeris, available = available, $
+                  versions = versions
 
     if ~undefined(trange) && n_elements(trange) eq 2 $
       then tr = timerange(trange) $
@@ -105,7 +107,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf, available = available
+        spdf = spdf, available = available, versions = versions
 
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return

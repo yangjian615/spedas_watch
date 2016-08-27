@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-23 15:41:48 -0700 (Tue, 23 Aug 2016) $
-;$LastChangedRevision: 21699 $
+;$LastChangedDate: 2016-08-26 12:50:18 -0700 (Fri, 26 Aug 2016) $
+;$LastChangedRevision: 21743 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_fix_metadata.pro $
 ;-
 
@@ -143,6 +143,30 @@ pro mms_fpi_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
 
 
           ; moms
+          prefix[sc_idx] + '_des_bulkv_dbcs_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', ['Vx DBCS', 'Vy DBCS', 'Vz DBCS']
+            options, /def, tplot_name, 'colors', [2, 4, 6]
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES velocity'
+          end
+          prefix[sc_idx] + '_des_bulkv_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', ['Vx GSE', 'Vy GSE', 'Vz GSE']
+            options, /def, tplot_name, 'colors', [2, 4, 6]
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES velocity'
+          end
+          prefix[sc_idx] + '_dis_bulkv_dbcs_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', ['Vx DBCS', 'Vy DBCS', 'Vz DBCS']
+            options, /def, tplot_name, 'colors', [2, 4, 6]
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS velocity'
+          end
+          prefix[sc_idx] + '_dis_bulkv_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', ['Vx GSE', 'Vy GSE', 'Vz GSE']
+            options, /def, tplot_name, 'colors', [2, 4, 6]
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS velocity'
+          end
           prefix[sc_idx] + '_des_numberdensity_'+data_rate+suffix: begin
             options, /def, tplot_name, 'colors', 2
             options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES'
