@@ -46,6 +46,8 @@
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
 ;         versions:     this keyword returns the version #s of the CDF files used when loading the data
+;         always_prompt: set this keyword to always prompt for the user's username and password;
+;                       useful if you accidently save an incorrect password, or if your SDC password has changed
 ; 
 ; 
 ; EXAMPLE:
@@ -67,8 +69,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 16:15:17 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21761 $
+;$LastChangedDate: 2016-08-29 09:36:13 -0700 (Mon, 29 Aug 2016) $
+;$LastChangedRevision: 21764 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -82,7 +84,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
                   spdf = spdf, center_measurement=center_measurement, $
-                  available = available, versions = versions
+                  available = available, versions = versions, always_prompt = always_prompt
 
     if undefined(probes) then probes = ['3'] ; default to MMS 3
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
@@ -121,7 +123,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
         spdf = spdf, center_measurement = center_measurement, available = available, $
-        versions = versions
+        versions = versions, always_prompt = always_prompt
 
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return

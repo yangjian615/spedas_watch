@@ -44,6 +44,8 @@
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
 ;         versions:     this keyword returns the version #s of the CDF files used when loading the data
+;         always_prompt: set this keyword to always prompt for the user's username and password;
+;                       useful if you accidently save an incorrect password, or if your SDC password has changed
 ;
 ; EXAMPLES:
 ;         to load/plot the S/C position data for probe 3 on 2/20/2016:
@@ -57,8 +59,8 @@
 ;          
 ;          
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 14:54:45 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21758 $
+;$LastChangedDate: 2016-08-29 09:36:13 -0700 (Mon, 29 Aug 2016) $
+;$LastChangedRevision: 21764 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 
@@ -71,7 +73,8 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
     varformat = varformat, cdf_filenames = cdf_filenames, $
     cdf_version = cdf_version, latest_version = latest_version, $
     min_version = min_version, cdf_records = cdf_records, $
-    spdf = spdf, available = available, versions = versions
+    spdf = spdf, available = available, versions = versions, $
+    always_prompt = always_prompt
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'ephts04d'
@@ -85,7 +88,8 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        cdf_records = cdf_records, spdf = spdf, available = available, versions = versions
+        cdf_records = cdf_records, spdf = spdf, available = available, versions = versions, $
+        always_prompt = always_prompt
         
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return

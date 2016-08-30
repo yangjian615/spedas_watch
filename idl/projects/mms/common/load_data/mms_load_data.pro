@@ -43,6 +43,9 @@
 ;             this is useful for finding which files would be downloaded (along with their sizes) if 
 ;             you didn't specify this keyword (also outputs total download size)
 ;         versions: this keyword returns the version #s of the CDF files used when loading the data
+;         always_prompt: set this keyword to always prompt for the user's username and password;
+;             useful if you accidently save an incorrect password, or if your SDC password has changed
+;         
 ;         
 ; EXAMPLE:
 ;     See the instrument specific crib sheets in the examples/ folder for usage examples
@@ -90,8 +93,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 14:03:22 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21754 $
+;$LastChangedDate: 2016-08-29 09:29:27 -0700 (Mon, 29 Aug 2016) $
+;$LastChangedRevision: 21763 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -104,7 +107,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version, cdf_records = cdf_records, spdf = spdf, $
                   center_measurement = center_measurement, available = available, $
-                  versions = versions
+                  versions = versions, always_prompt = always_prompt
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -162,7 +165,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
     ; only prompt the user if they're going to download data
     if no_download eq 0 then begin
-        status = mms_login_lasp(login_info = login_info, username=username)
+        status = mms_login_lasp(login_info = login_info, username=username, always_prompt=always_prompt)
         
         if status ne 1 then no_download = 1
         if username eq '' || username eq 'public' then public=1

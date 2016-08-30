@@ -12,8 +12,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-08-29 13:56:07 -0700 (Mon, 29 Aug 2016) $
+;$LastChangedRevision: 21766 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_dist_angles.pro $
 ;-
 
@@ -38,8 +38,8 @@ pro mms_fpi_dist_angles, probe=probe, level=level, data_rate=data_rate, species=
   endif
 
   ;get l2 angles
-  get_data, 'mms'+probe+'_d'+species+'s_phi_'+data_rate, ptr=phi_ptr
-  get_data, 'mms'+probe+'_d'+species+'s_theta_'+data_rate, ptr=theta_ptr
+  get_data, 'mms'+probe+'_d'+species+'s_phi_'+data_rate+suffix, ptr=phi_ptr
+  get_data, 'mms'+probe+'_d'+species+'s_theta_'+data_rate+suffix, ptr=theta_ptr
 
   if ~is_struct(phi_ptr) || ~is_struct(theta_ptr) then begin
     dprint, dlevel=0, 'Cannot find tplot variables containing azimuth/elevation data'

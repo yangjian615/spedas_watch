@@ -43,6 +43,8 @@
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
 ;         versions:     this keyword returns the version #s of the CDF files used when loading the data
+;         always_prompt: set this keyword to always prompt for the user's username and password;
+;                       useful if you accidently save an incorrect password, or if your SDC password has changed
 ;
 ; NOTES:
 ;     Please always use error bars on E-field data 
@@ -66,8 +68,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 14:54:45 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21758 $
+;$LastChangedDate: 2016-08-29 09:36:13 -0700 (Mon, 29 Aug 2016) $
+;$LastChangedRevision: 21764 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
@@ -78,7 +80,7 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
     latest_version = latest_version, min_version = min_version, spdf = spdf, $
-    available = available, versions = versions
+    available = available, versions = versions, always_prompt = always_prompt
 
     if undefined(probes) then probes = [1, 2, 3, 4] 
     if undefined(datatype) then datatype = ['dce']
@@ -94,7 +96,7 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, $
         cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
         latest_version = latest_version, min_version = min_version, spdf = spdf, $
-        available = available, versions = versions
+        available = available, versions = versions, always_prompt = always_prompt
 
     for level_idx = 0, n_elements(level)-1 do begin
       ; set some of the metadata

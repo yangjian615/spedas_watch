@@ -45,6 +45,8 @@
 ;                       this is useful for finding which files would be downloaded (along with their sizes) if
 ;                       you didn't specify this keyword (also outputs total download size)
 ;         versions:     this keyword returns the version #s of the CDF files used when loading the data
+;         always_prompt: set this keyword to always prompt for the user's username and password;
+;                       useful if you accidently save an incorrect password, or if your SDC password has changed
 ;
 ; OUTPUT:
 ;
@@ -61,8 +63,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 14:54:45 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21758 $
+;$LastChangedDate: 2016-08-29 09:36:13 -0700 (Mon, 29 Aug 2016) $
+;$LastChangedRevision: 21764 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/dsp/mms_load_dsp.pro $
 ;-
 
@@ -74,7 +76,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
     time_clip = time_clip, no_update = no_update, suffix = suffix, $
     varformat = varformat, cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
     latest_version = latest_version, min_version = min_version, spdf = spdf, $
-    available = available, versions = versions
+    available = available, versions = versions, always_prompt = always_prompt
 
     if undefined(probes) then probes = [1, 2, 3, 4] ; default to MMS 1
     if undefined(datatype) then datatype = ['epsd', 'bpsd','tdn', 'swd']
@@ -95,7 +97,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
                     cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
                     latest_version = latest_version, min_version = min_version, spdf = spdf, available = available, $
-                    versions = cdf_versions_out
+                    versions = cdf_versions_out, always_prompt = always_prompt
                 append_array, tplot_names_full, tplotnames_out
                 append_array, cdf_filenames_full, cdf_filenames_out
                 append_array, versions_full, cdf_versions_out
@@ -116,7 +118,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                     no_update = no_update, suffix = suffixes[datatype_idx], varformat = varformat, $
                     cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
                     latest_version = latest_version, min_version = min_version, spdf = spdf, available = available, $
-                    versions = cdf_versions_out
+                    versions = cdf_versions_out, always_prompt = always_prompt
                 append_array, tplot_names_full, tplotnames_out
                 append_array, cdf_filenames_full, cdf_filenames_out
                 append_array, versions_full, cdf_versions_out
@@ -132,7 +134,7 @@ pro mms_load_dsp, trange = trange, probes = probes, datatype = datatype, $
                 no_update = no_update, suffix = suffix, varformat = varformat, $
                 cdf_filenames = cdf_filenames_out, cdf_version = cdf_version, $
                 latest_version = latest_version, min_version = min_version, spdf = spdf, available = available, $
-                versions = cdf_versions_out
+                versions = cdf_versions_out, always_prompt = always_prompt
             append_array, tplot_names_full, tplotnames_out
             append_array, cdf_filenames_full, cdf_filenames_out
             append_array, versions_full, cdf_versions_out

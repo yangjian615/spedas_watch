@@ -17,17 +17,19 @@
 ;         username: this keyword returns the name of the logged in user, or 'public' for public users
 ;         
 ;         widget_note: text of note to add to the bottom of the login widget
+;         
+;         always_prompt: do not use the saved login information
 ;
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-19 15:08:53 -0700 (Thu, 19 May 2016) $
-;$LastChangedRevision: 21144 $
+;$LastChangedDate: 2016-08-29 09:29:27 -0700 (Mon, 29 Aug 2016) $
+;$LastChangedRevision: 21763 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_login_lasp.pro $
 ;-
 
 function mms_login_lasp, login_info = login_info, save_login_info = save_login_info, $
-    username = username, widget_note = widget_note
+    username = username, widget_note = widget_note, always_prompt = always_prompt
     common mms_sitl_connection, netUrl, connection_time, login_source
     username = ''
     if undefined(widget_note) then widget_note = 'Note: blank username/password for public access'
@@ -47,34 +49,35 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
       duration = systime(/seconds) - connection_time
       if (duration gt expire_duration) then mms_sitl_logout
     endif
-
-    ; restore the login info
-    if undefined(login_info) then login_info = 'mms_auth_info.sav'
     
-    ; check that the auth file exists before trying to restore it
-    file_exists = file_test(login_info, /regular)
+    if undefined(login_info) then login_info = 'mms_auth_info.sav'
 
-    if file_exists eq 1 then begin
-        restore, login_info
-        if is_struct(auth_info) then begin
-            username = auth_info.user
-            password = auth_info.password
+    if ~keyword_set(always_prompt) then begin ; restore the login info, if not always prompting
+        ; check that the auth file exists before trying to restore it
+        file_exists = file_test(login_info, /regular)
+    
+        if file_exists eq 1 then begin
+            restore, login_info
+            if is_struct(auth_info) then begin
+                username = auth_info.user
+                password = auth_info.password
+            endif else begin
+                dprint, dlevel=1, 'No valid credentials found in '+file_expand_path(login_info)
+            endelse
         endif else begin
-            dprint, dlevel=1, 'No valid credentials found in '+file_expand_path(login_info)
+            ; look for the SITL login info
+            save_file = getenv('HOME') + '/.mms_sitl_login.sav'
+            if file_test(save_file) then begin 
+              restore, save_file
+              ; user/pass stored in a struct named 'login'
+              if is_struct(login) then begin
+                username = login.username
+                password = login.password
+                dprint, dlevel = 1, 'Using login info from SITL file'
+              endif
+            endif
         endelse
-    endif else begin
-        ; look for the SITL login info
-        save_file = getenv('HOME') + '/.mms_sitl_login.sav'
-        if file_test(save_file) then begin 
-          restore, save_file
-          ; user/pass stored in a struct named 'login'
-          if is_struct(login) then begin
-            username = login.username
-            password = login.password
-            dprint, dlevel = 1, 'Using login info from SITL file'
-          endif
-        endif
-    endelse
+    endif
     
     
     ; prompt the user for their SDC username/password none was found in file
