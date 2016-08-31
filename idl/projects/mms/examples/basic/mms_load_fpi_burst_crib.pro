@@ -7,8 +7,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-10 07:28:14 -0700 (Fri, 10 Jun 2016) $
-; $LastChangedRevision: 21302 $
+; $LastChangedDate: 2016-08-30 13:36:49 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21772 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fpi_burst_crib.pro $
 ;-
 
@@ -28,6 +28,9 @@ tplot, prefix+'_des_pitchangdist_avg'
 ; add the omni-directional electron spectra
 tplot, prefix+'_des_energyspectr_omni_avg', /add
 
+; add the ion compressionloss bar to the figure
+tplot, prefix+'_des_compressionloss_brst_moms_flagbars', /add
+
 ; add the errorflag bars for electron data
 tplot, prefix+'_des_errorflags_brst_moms_flagbars', /add
 ;tplot, prefix+'_des_errorflags_brst_moms_flagbars_full', /add
@@ -39,6 +42,9 @@ stop
 
 ; add the omni-directional ion spectra
 tplot, prefix+'_dis_energyspectr_omni_avg', /add
+
+; add the ion compressionloss bar to the figure
+tplot, prefix+'_dis_compressionloss_brst_moms_flagbars', /add
 
 ; add the errorflag bars for ion data
 tplot, prefix+'_dis_errorflags_brst_moms_flagbars', /add

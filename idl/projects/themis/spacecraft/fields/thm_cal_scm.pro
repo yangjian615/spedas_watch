@@ -115,8 +115,8 @@
 ; in outputs to tplot section, mode has been replaced by strlowcase(mode)
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-08-19 14:03:49 -0700 (Fri, 19 Aug 2016) $
-;$LastChangedRevision: 21682 $
+;$LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
+;$LastChangedRevision: 21775 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_scm.pro $
 ;-
 
@@ -1295,7 +1295,7 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
 ;------------------
 ; outputs to tplot
 ;------------------
-  thx_scx_out = thx_scx+out_suff
+  thx_scx_out = thx_scx+out_suff[0]
 
 ; diagnostic outputs:
   dprint, dlevel = 4,  'datatype = ', datatype
@@ -1370,8 +1370,9 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
   str_element, data_att, 'str_CorADB', str_CorADB, /add
   str_element, data_att, 'str_cal_param', str_param, /add
   str_element, dl, 'data_att', data_att, /add
-  str_element, dl, 'ytitle', string( 'th'+probe+' '+mode, str_Fsamp[0], units, $
-                                     format = '(A,"!C",A,"!C[",A,"]")'), /add
+  ;str_ytitle_original = strmid(tplot_var, 0, $
+  ;  strpos(tplot_var, suffix, /reverse_search))
+  str_element, dl, 'ytitle', string( 'th'+probe+' '+mode, str_Fsamp[0], units, format = '(A,"!C",A,"!C[",A,"]")'), /add
   str_element, dl, 'ysubtitle', /delete
   str_element, dl, 'labels', [ 'x', 'y', 'z'], /add
   str_element, dl, 'labflag', 1, /add

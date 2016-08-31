@@ -110,8 +110,8 @@
 ;                    an 'End of file encountered...' bug.
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-19 14:03:49 -0700 (Fri, 19 Aug 2016) $
-; $LastChangedRevision: 21682 $
+; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21775 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
@@ -154,7 +154,11 @@ pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
       str_element, dl_str, 'colors', colors, /add
       str_element, dl_str, 'labels', labels, /add
       str_element, dl_str, 'labflag', 1, /add
-      str_element, dl_str, 'ytitle', tplot_var, /add
+      if keyword_set(suffix) then begin
+        tplot_var_root = strmid(tplot_var, 0, $
+          strpos(tplot_var, suffix, /reverse_search))
+      endif else    tplot_var_root=tplot_var 
+      str_element, dl_str, 'ytitle', tplot_var_root, /add
       If(strmatch(lvl, 'l1')) Then str_element, dl_str, 'ysubtitle', unit, /add
       store_data, tplot_var, data = d_str, limit = l_str, dlimit = dl_str
     endif else begin
@@ -164,8 +168,9 @@ pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
         tplot_var_root = strmid(tplot_var, 0, $
                                 strpos(tplot_var, suffix, /reverse_search))
         store_data, delete = tplot_var
-        if tplot_var_root then $
+        if tplot_var_root then begin 
           store_data, tplot_var_root, data = d_str, limit = l_str, dlimit = dl_str
+        endif
       endif
     endelse
   endfor

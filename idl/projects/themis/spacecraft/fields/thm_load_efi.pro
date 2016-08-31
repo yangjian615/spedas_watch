@@ -51,8 +51,8 @@
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;  Added _extra keyword to ease the passing of keywords to thm_cal_efi
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-24 15:45:52 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21723 $
+; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21775 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi.pro $
 ;-
 
@@ -305,7 +305,7 @@ pro thm_load_efi, probe = probe, datatype = datatype, trange = trange, $
            str_element, dl_str, 'colors', colors, /add
            str_element, dl_str, 'labels', labels, /add
            str_element, dl_str, 'labflag', 1, /add
-           str_element, dl_str, 'ytitle', string( tplot_var_raw, 'ADC', format='(A,"!C!C[",A,"]")'), /add
+           str_element, dl_str, 'ytitle', string( tplot_var, 'ADC', format='(A,"!C!C[",A,"]")'), /add
 
 
            store_data, delete=tplot_var

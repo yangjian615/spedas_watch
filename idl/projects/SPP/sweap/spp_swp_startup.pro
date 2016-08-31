@@ -13,9 +13,9 @@ pro spp_swp_startup, spanai   = spanai,$
 
   ;
   ;if rt_flag eq !null then rt_flag = 1
-  if save eq !null then save = 0
+  if save eq !null then save = 1
   
-  if rt_flag eq !null then rt_flag = ~save
+;  if rt_flag eq !null then rt_flag = ~save
 
   printdat,rt_flag,save
 
@@ -83,7 +83,7 @@ pro spp_swp_startup, spanai   = spanai,$
         spp_apid_data,'3b9'x,routine='spp_swp_spani_event_decom',        tname='spp_spani_events_',  tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3ba'x,routine='spp_swp_spani_tof_decom',          tname='spp_spani_tof_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3bb'x,routine='spp_swp_spani_rates_decom',        tname='spp_spani_rates_',   tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
-        spp_apid_data,'3be'x,routine='spp_swp_spani_slow_hkp_9ex_decom', tname='spp_spani_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
+        spp_apid_data,'3be'x,name='spi_hkp',routine='spp_swp_spani_slow_hkp_9ex_decom', tname='spp_spani_hkp_',     tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
         spp_apid_data,'3bf'x,routine='spp_swp_spani_fast_hkp_decom',     tname='spp_spani_fhkp_',    tfields='*',rt_tags='*',save=save,rt_flag=rt_flag
      endif
 
@@ -98,7 +98,7 @@ pro spp_swp_startup, spanai   = spanai,$
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      decom_routine_i = 'spp_swp_spani_product_decom2'
      ;decom_routine_i = 'spp_swp_spani_product_decom'
-     ttags = '*SPEC* *CNT* SEQN'
+     ttags = '*SPEC* *CNTS* *DATASIZE'
 
      spp_apid_data,'380'x,routine=decom_routine_i,tname='spp_spani_ar_full_p0_m0_',tfields=ttags,rt_tags=ttags,save=save,rt_flag=rt_flag
      spp_apid_data,'381'x,routine=decom_routine_i,tname='spp_spani_ar_full_p0_m1_',tfields=ttags,rt_tags=ttags,save=save,rt_flag=rt_flag
@@ -250,9 +250,13 @@ pro spp_swp_startup, spanai   = spanai,$
   ;;############################################
   ;; SETUP GSE APID
   ;;############################################
-  spp_apid_data,'7c1'x,routine='spp_power_supply_decom',tname='HV_',       tfields='*',     save=save,rt_tags='*_?',   rt_flag=rt_flag
+  spp_apid_data,'751'x,routine='spp_power_supply_decom',tname='APS1_',       tfields='*P25?',     save=save,rt_tags='*P25?',   rt_flag=rt_flag
+  spp_apid_data,'752'x,routine='spp_power_supply_decom',tname='APS2_',       tfields='*P25?',     save=save,rt_tags='*P25?',   rt_flag=rt_flag
+  spp_apid_data,'753'x,routine='spp_power_supply_decom',tname='APS3_',       tfields='*P6? *N25V',     save=save,rt_tags='*P6? *N25V',   rt_flag=rt_flag
+  spp_apid_data,'761'x,routine='spp_power_supply_decom',tname='Igun_',       tfields='*VOLTS *CURRENT',     save=save,rt_tags='*VOLTS *CURRENT',   rt_flag=rt_flag
+  spp_apid_data,'762'x,routine='spp_power_supply_decom',tname='Egun_',       tfields='*VOLTS *CURRENT',     save=save,rt_tags='*VOLTS *CURRENT',   rt_flag=rt_flag
   spp_apid_data,'7c0'x,routine='spp_log_msg_decom',     tname='log_',      tfields='MSG',   save=save,rt_tags='MSG',   rt_flag=rt_flag
-  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='SWEAP SPAN-I Manip',rt_tags='M???POS',save=save,rt_flag=rt_flag
+  spp_apid_data,'7c3'x,routine='spp_swp_manip_decom',tname='spp_manip_',tfields='*',name='manip',rt_tags='M???POS',save=save,rt_flag=rt_flag
 
 
   ;;############################################
@@ -274,7 +278,7 @@ pro spp_swp_startup, spanai   = spanai,$
 
   ;;------------------------------
   ;; Connect to GSEOS
-  if keyword_set(rt_flag) then spp_init_realtime,swem=swem,itf=itf,rm133=rm133,rm320=rm320
+  ;if keyword_set(rt_flag) then spp_init_realtime,swem=swem,itf=itf,rm133=rm133,rm320=rm320
   
   store_data,'APID',data='APIDS_*'
   ylim,'APID',820,960

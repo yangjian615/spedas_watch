@@ -85,16 +85,20 @@ function spp_swp_spani_8Dx32Ex16A, data, header_str=header_str, apdat=apdat   ; 
     return,0
   endif
   pname = '8Dx32Ex16A_'
-  spec1 = total(reform(data,16,8*32),2)
-  spec2 = total( total(data,1) ,2 )
-  spec3 = total(reform(data,16*8,32),1)
-  spec23 = total(reform(data,16,8*32),1)
+  spec1 = total(reform(data,16,8*32),2)   ; This is wrong
+  spec2 = total( total(data,1) ,2 )      ;  This is wrong
+  spec3 = total(reform(data,16*8,32),1)    ; This is wrong
+  spec23 = total(reform(data,16,8*32),1)   ; this is wrong
+  spec12 = total(reform(data,8*32,16),2)
+  spec123 = reform(data,8*32*16) 
   
   strct = {time:header_str.time, $
     spec1:spec1, $
     spec2:spec2, $
     spec3:spec3, $
     spec23:spec23, $
+    spec12:spec12, $
+    spec123:spec123, $
     gap: 0}
 
   if apdat.rt_flag && apdat.rt_tags then begin
@@ -204,6 +208,7 @@ function spp_swp_spani_16Ax16M, data, header_str=header_str, apdat=apdat   ; thi
     gap: 0}
 
   if apdat.rt_flag && apdat.rt_tags then begin
+ ;   printdat,apdat.rt_tags
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
     store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
   endif
@@ -230,13 +235,16 @@ function spp_swp_spani_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
     a2048 = dynamicarray(name='a2048_')
     a4096 = dynamicarray(name='16Ax8Dx32E_')
     a8192 = dynamicarray(name='a8192_')
-    apdat.data_array.append, [hdr,a0016,a0256,a0512,a02048,a4096,a8192]
+    apdat.data_array.append, [hdr,a0016,a0256,a0512,a2048,a4096,a8192]
   endif else if isa(apdat.data_array) then begin
     darrays = apdat.data_array.array
     hdr = darrays[0]
     a0016 = darrays[1]
-    a0512 = darrays[2]
-    a4096 = darrays[3]
+    a0256 = darrays[2]
+    a0512 = darrays[3]
+    a2048 = darrays[4]
+    a4096 = darrays[5]
+    a8192 = darrays[6]
   endif
 
 
@@ -301,16 +309,18 @@ function spp_swp_spani_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
     gap:         ccsds.gap  }
 
 
+hdr.append ,str
+
 if  ns gt 0 then begin
 
   res = 0
   case ndat  of
-    16:   res = spp_swp_spani_16A(data, header_str=str, apdat=apdat)
-    256:  res = spp_swp_spani_16Ax16M(data,header_str=str, apdat = apdat)
-    512:  res = spp_swp_spani_32Ex16A(data, header_str=str, apdat=apdat)
-    2048: res = spp_swp_spani_32Ex16Ax4M(data, header_str=str, apdat=apdat)
-    4096: res = spp_swp_spani_8Dx32Ex16A(data, header_str=str, apdat=apdat)
-    8192: res = spp_swp_spani_8Dx32EX16Ax2M(data, header_str=str, apdat=apdat)
+    16:   a0016.append,  spp_swp_spani_16A(data, header_str=str, apdat=apdat)
+    256:  a0256.append,  spp_swp_spani_16Ax16M(data,header_str=str, apdat = apdat)
+    512:  a0512.append,   spp_swp_spani_32Ex16A(data, header_str=str, apdat=apdat)
+    2048: a2048.append,   spp_swp_spani_32Ex16Ax4M(data, header_str=str, apdat=apdat)
+    4096: a4096.append,   spp_swp_spani_8Dx32Ex16A(data, header_str=str, apdat=apdat)
+    8192: a8192.append,  spp_swp_spani_8Dx32EX16Ax2M(data, header_str=str, apdat=apdat)
     else:  dprint,dlevel=3,'Size not recognized: ',ndat
   endcase
   
@@ -318,7 +328,7 @@ if  ns gt 0 then begin
   
 endif
 
-  return, str
+  return, 0
 
 
 end

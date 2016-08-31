@@ -45,7 +45,10 @@ function spp_swp_spani_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat
     dprint,dlevel=2,rates_str.starts_cnts[anode],rates_str.stops_cnts[anode],rates_str.valid_cnts[anode],rates_str.multi_cnts[anode]
     
   endif
-
+  
+  ;dprint,sf0
+  ;printdat,ccsds,/hex
+  if sf0 and 1 then return,0
 
   return,rates_str
 

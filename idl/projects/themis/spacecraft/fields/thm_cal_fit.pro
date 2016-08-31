@@ -30,8 +30,8 @@
 ;   -- fixed trouble reading cal files with extra lines at the end,
 ;      jmm, 8-nov-2007
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-18 11:54:31 -0700 (Thu, 18 Aug 2016) $
-; $LastChangedRevision: 21674 $
+; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21775 $
 ; $URL $
 ;-
 pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = trange, $
@@ -243,8 +243,9 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
     idx = 1L
     dqd = 'bfit'
     units = cpar.b.units
-    tplot_var_bfit = string(tplot_var, dqd, format = '(A,"_",A)')+ out_suf[0]
-    str_element, dl, 'ytitle', tplot_var_bfit, /add
+    tplot_var_bfit_orig = string(tplot_var, dqd, format = '(A,"_",A)')
+    tplot_var_bfit = tplot_var_bfit_orig + out_suf[0]
+    str_element, dl, 'ytitle', tplot_var_bfit_orig, /add
     str_element, dl, 'ysubtitle', '['+units+']', /add
     str_element, dl, 'labels', ['A', 'B', 'C', 'Sig', '<Bz>'], /add
     str_element, dl, 'labflag', 1, /add
@@ -265,9 +266,11 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
         lim = l, dlim = dl
     endif
     dqd = 'fgs'
-    tplot_var_fgs = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+out_suf[0]
-    tplot_var_fgs_sigma = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+'_sigma' + out_suf[0]
-    str_element, dl, 'ytitle', tplot_var_fgs+out_suf[0], /add
+    tplot_var_fgs_orig = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)') 
+    tplot_var_fgs = tplot_var_fgs_orig +out_suf[0]
+    tplot_var_fgs_sigma_orig = tplot_var_fgs_orig +'_sigma' 
+    tplot_var_fgs_sigma = tplot_var_fgs_sigma_orig + out_suf[0]
+    str_element, dl, 'ytitle', tplot_var_fgs_orig, /add
     str_element, dl, 'ysubtitle', '['+units+']', /add
     str_element, data_att, 'cal_par_time', cpar.b.cal_par_time, /add
     str_element, data_att, 'units', units, /add
@@ -307,12 +310,12 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
         if keyword_set(coord) && strlowcase(coord) ne 'dsl' then begin
           thm_cotrans, tplot_var_fgs, out_coord = coord, use_spinaxis_correction = 1, use_spinphase_correction = 1
           options, tplot_var_fgs, 'ytitle', /def, $
-            string(tplot_var_fgs, units, format = '(A,"!C!C[",A,"]")'), /add
+            string(tplot_var_fgs_orig, units, format = '(A,"!C!C[",A,"]")'), /add
         endif
       endif
       
       if (where(dt_output eq 'fgs_sigma') ne -1) then begin
-        str_element, dl_sigma, 'ytitle', tplot_var_fgs_sigma, /add
+        str_element, dl_sigma, 'ytitle', tplot_var_fgs_sigma_orig, /add
         str_element, dl_sigma, 'ysubtitle', '['+units+']', /add
         str_element, data_att_sigma, 'units', units, /add
         str_element, dl_sigma, 'data_att', data_att_sigma, /add
@@ -346,8 +349,9 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
       e34_ss = -1
     Endelse
     units = cpar.e12.units
-    tplot_var_efit = string(tplot_var, dqd, format = '(A,"_",A)')+ out_suf[0]
-    str_element, dl, 'ytitle', tplot_var_efit, /add
+    tplot_var_efit_orig = string(tplot_var, dqd, format = '(A,"_",A)')
+    tplot_var_efit = tplot_var_efit_orig + out_suf[0]
+    str_element, dl, 'ytitle', tplot_var_efit_orig, /add
     str_element, dl, 'ysubtitle', '['+units+']', /add
     str_element, dl, 'labels', ['A', 'B', 'C', 'Sig', '<Ez>'], /add
     str_element, dl, 'labflag', 1, /add
@@ -397,10 +401,13 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
           lim = l, dlim = dl
       endif
       dqd = 'efs'
-      tplot_var_efs = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+out_suf[0]
-      tplot_var_efs_sigma = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+'_sigma'+ out_suf[0]
-      tplot_var_efs_potl = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+'_potl'+ out_suf[0]
-      str_element, dl, 'ytitle', tplot_var_efs, /add
+      tplot_var_efs_orig = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')
+      tplot_var_efs = tplot_var_efs_orig +out_suf[0]
+      tplot_var_efs_sigma_orig = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+'_sigma'
+      tplot_var_efs_sigma = tplot_var_efs_sigma_orig+ out_suf[0]
+      tplot_var_efs_potl_orig = string(strmid(tplot_var, 0, 3), dqd, format = '(A,"_",A)')+'_potl'
+      tplot_var_efs_potl = tplot_var_efs_potl_orig+ out_suf[0]
+      str_element, dl, 'ytitle', tplot_var_efs_orig, /add
       str_element, dl, 'ysubtitle', '['+units+']', /add
       str_element, dl, 'labels', ['Ex', 'Ey', 'Ez'], /add
       str_element, dl, 'colors', [2, 4, 6], /add
@@ -482,7 +489,7 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
         endif
       endif                       ; END efs
       if (where(dt_output eq 'efs_sigma') ne -1) then begin
-        str_element, dl_sigma, 'ytitle', tplot_var_efs_sigma, /add
+        str_element, dl_sigma, 'ytitle', tplot_var_efs_sigma_orig, /add
         str_element, dl_sigma, 'ysubtitle', '['+units+']', /add
         str_element, data_att_sigma, 'units', units, /add
         str_element, dl_sigma, 'data_att', data_att_sigma, /add
@@ -502,7 +509,7 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
           ;time values are offset by spin_period*169.0/360.0, data values are
           ;scaled by: 0.00410937 to be consistent with the pxxm_pot variable
           units = 'V'
-          str_element, dl_potl, 'ytitle', tplot_var_efs_potl, /add
+          str_element, dl_potl, 'ytitle', tplot_var_efs_potl_orig, /add
           str_element, dl_potl, 'ysubtitle', '['+units+']', /add
           str_element, data_att_potl, 'units', units, /add
           str_element, dl_potl, 'data_att', data_att_potl, /add

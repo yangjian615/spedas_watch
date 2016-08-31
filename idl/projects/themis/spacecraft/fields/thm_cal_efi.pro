@@ -260,8 +260,8 @@ end
 ;          frequency responses), rather than proper time-dependent parameters.
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-23 11:51:14 -0700 (Tue, 23 Aug 2016) $
-; $LastChangedRevision: 21693 $
+; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21775 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_efi.pro $
 ;-
 pro thm_cal_efi, probe = probe, datatype = datatype, $
@@ -419,6 +419,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
 ;Define tplot var. names and get raw data:
 ;*****************************************
       tplot_var_raw = thm_tplot_var(sc, nameraw)+in_suf
+      tplot_var_orig = thm_tplot_var(sc, name)
       if n_elements(out_suf) le 1 then begin ; If COORD has multiple elements, then the output suffixes will be handled on-the-fly.
         tplot_var = thm_tplot_var(sc, name)+out_suf[0]
       endif else begin
@@ -529,7 +530,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
             
             str_element, dl, 'data_att', data_att, /add
   
-            str_element, dl, 'ytitle', string(tplot_var, units[0], $ ;Only units of first interval are shown!
+            str_element, dl, 'ytitle', string(tplot_var_orig, units[0], $ ;Only units of first interval are shown!
                                               format = '(A,"!C!C[",A,"]")'), /add
             str_element, dl, 'units', units[0], /add ;Only units of first interval are shown!
             str_element, dl, 'labels', ['V1', 'V2', 'V3', 'V4', 'V5', 'V6'], /add
@@ -930,7 +931,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
               Endif
   
               str_element, dl, 'data_att', data_att, /add
-              str_element, dl, 'ytitle', string(tplot_var, units[0], format = $ ;Only units of first interval are shown!
+              str_element, dl, 'ytitle', string(tplot_var_orig, units[0], format = $ ;Only units of first interval are shown!
                                                 '(A,"!C!C[",A,"]")'), /add
   
               str_element, dl, 'labels', ['E12', 'E34', 'E56'], /add
@@ -1006,7 +1007,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
         if size(d, /type) ne 8 then continue
         d.y[*, 2] = 0.0         ;just set the z component to zero
 ;reset the ytitle
-        str_element, dl, 'ytitle', string(tplot_var, units[0], format = $ ;Only units of first interval are shown!
+        str_element, dl, 'ytitle', string(tplot_var_orig, units[0], format = $ ;Only units of first interval are shown!
                                           '(A,"!C!C[",A,"]")'), /add
         store_data, tplot_var, data = {x:d.x, y: d.y, v:d.v}, lim = l, dlim = dl
         undefine, d
@@ -1123,7 +1124,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
 ;Store result:
 ;=============
 ;reset the ytitle
-        str_element, dl, 'ytitle', string(tplot_var, units[0], format = $ ;Only units of first interval are shown!
+        str_element, dl, 'ytitle', string(tplot_var_orig, units[0], format = $ ;Only units of first interval are shown!
                                           '(A,"!C!C[",A,"]")'), /add
         store_data, tplot_var, data = {x:d.x, y: d.y, v:d.v}, lim = l, dlim = dl
         if ~(~size(stored_tnames, /type)) then stored_tnames = [stored_tnames, tplot_var] $
@@ -1179,17 +1180,20 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
         thm_spinfit, tplot_var_nooffset, axis_dim = 2, plane_dim = 1, sun2sensor = 45, $
           build_efi_var = e34_efs
         del_data, tplot_var_nooffset ;not needed anymore?
+        e12_efs_orig = e12_efs
+        e34_efs_orig = e34_efs
         if out_suf[0] ne '' then begin
-          copy_data, e12_efs, e12_efs + out_suf[0]
-          store_data, e12_efs, /delete
-          e12_efs = e12_efs + out_suf[0]
-          copy_data, e34_efs, e34_efs + out_suf[0]
-          store_data, e34_efs, /delete
-          e34_efs = e34_efs + out_suf[0]
+          e12_efs = e12_efs_orig + out_suf[0]
+          copy_data, e12_efs_orig, e12_efs
+          store_data, e12_efs_orig, /delete
+          
+          e34_efs = e34_efs_orig + out_suf[0]
+          copy_data, e34_efs_orig, e34_efs
+          store_data, e34_efs_orig, /delete
         endif
-        options, e12_efs, 'ytitle', e12_efs
+        options, e12_efs, 'ytitle', e12_efs_orig
         options, e12_efs, 'labels', ['Ex', 'Ey', 'Ez'], /add
-        options, e34_efs, 'ytitle', e34_efs
+        options, e34_efs, 'ytitle', e34_efs_orig
         options, e34_efs, 'labels', ['Ex', 'Ey', 'Ez'], /add
 ;get the data to create Q flags
         get_data, e12_efs, data = de12, dlimits = dl12
@@ -1207,13 +1211,15 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
           str_element, dl12, 'labels', '', /add
           str_element, dl12, 'labflag', 0, /add
           str_element, dl12, 'colors', 0, /add
-          efi_q_mag = thm_tplot_var(sc, nameraw)+'_q_mag' + out_suf[0]
+          efi_q_mag_orig = thm_tplot_var(sc, nameraw)+'_q_mag' 
+          efi_q_mag = efi_q_mag_orig + out_suf[0]
           store_data, efi_q_mag, data = {x:tim_arr, y:mag_test}, dlimits = dl12
-          options, efi_q_mag, 'ytitle', efi_q_mag
+          options, efi_q_mag, 'ytitle', efi_q_mag_orig
           ylim, efi_q_mag, 0, 0, 1
-          efi_q_pha = thm_tplot_var(sc, nameraw)+'_q_pha' + out_suf[0]
+          efi_q_pha_orig = thm_tplot_var(sc, nameraw)+'_q_pha' 
+          efi_q_pha = efi_q_pha_orig + out_suf[0]
           store_data, efi_q_pha, data = {x:tim_arr, y:pha_test}, dlimits = dl12
-          options, efi_q_pha, 'ytitle', efi_q_pha
+          options, efi_q_pha, 'ytitle', efi_q_pha_orig
           ylim, efi_q_pha, 0, 0, 1
         Endif
       endif

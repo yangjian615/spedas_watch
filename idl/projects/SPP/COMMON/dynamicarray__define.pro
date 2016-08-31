@@ -1,5 +1,21 @@
 ;+
-; DynamicArray()
+; da= DynamicArray([InitialArray][,name='name1')
+; Purpose:  Returns a "dynamic array" object.  This dynamic array can have any number of elements and can be efficiently 
+; appended to.  Because one can produce arrays of objects, it is a conveniant way of constructing arrays of arrays 
+; containing different things.
+; 
+; This routine is particularly useful when appending to large arrays on multiple occassions.  This is especially useful
+; when the final size of the array is not known when first initialized.
+; 
+; USAGE:
+;   da = dynamicarray(name='Test1')
+;   da.append,  findgen(1000000)  ;
+;   da.append, !values.f_nan      ; add a NAN at the end.
+;   
+;   a = da.array   ; retrieve a copy of the array
+;   print,da.size   ; print the number of elements in the array
+;   help,da.name   ; display the optional user name
+;   
 ;-
 
 
@@ -19,6 +35,7 @@ END
 PRO DynamicArray::Cleanup
 COMPILE_OPT IDL2
 ; Call our superclass Cleanup method
+*self.ptr_array = !null
 ptr_free,self.ptr_array
 self->IDL_Object::Cleanup
 END

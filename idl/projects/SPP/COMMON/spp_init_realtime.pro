@@ -1,6 +1,6 @@
 
 
-pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=itf,RM133=RM133,rm320=rm320,rm333=rm333
+pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=itf,RM133=RM133,rm320=rm320,rm333=rm333,tent=tent
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
@@ -30,6 +30,13 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
     recorder,title='GSEOS PTP ion', port=2028, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
     recorder,title='GSEOS PTP elec',port=2128, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'    
   endif
+  if keyword_set(tent) then begin
+;    recorder,title='GSEOS PTP ion', port=2028, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+    recorder,title='GSEOS PTP elec tent',port=2128, host='mgse2.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
+
+  endif
+  
+  spp_swp_startup,/rt_flag
   
 ;  printdat,recorder_base,filename,exec_base,/value
   

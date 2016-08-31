@@ -39,9 +39,9 @@
 ;   thm_load_fft,/get_suppport_data,probe=['a', 'b']
 ;Notes:
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21775 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fft.pro $
 ;-
 
@@ -82,22 +82,26 @@ pro thm_load_fft_post, sname=probe, datatype=dt, level=lvl, $
      endif else begin
         ;; for support data,
         ;; rename original variable to exclude suffix
+        if n_elements(tplot_var_list) gt 0 then begin
+          tplot_var_list = [tplot_var_list,tplot_var]
+        endif else begin
+          tplot_var_list = [tplot_var]
+        endelse       
         if keyword_set(suffix) then begin
            tplot_var_root = strmid(tplot_var, 0, $
                                    strpos(tplot_var, suffix, /reverse_search))
-           store_data, delete=tplot_var
+          ; store_data, delete=tplot_var
            if tplot_var_root then begin
              store_data, tplot_var_root, data = d_str, limit = l_str, dlimit = dl_str
+             if n_elements(tplot_var_root_list) gt 0 then begin
+               tplot_var_root_list = [tplot_var_root_list,tplot_var_root]
+             endif else begin
+               tplot_var_root_list = [tplot_var_root]
+             endelse
            endif
            tplot_var = tplot_var_root
          endif
-;           ;; save name of support tplot variable for possible deletion
-;         if tplot_var && keyword_set(delete_support_data) then begin
-;           if size(support_var_list, /type) eq 0 then $
-;             support_var_list = [tplot_var] $
-;           else $
-;             support_var_list = [support_var_list, tplot_var] 
-;         endif
+
      endelse
   endfor
 
@@ -108,8 +112,12 @@ pro thm_load_fft_post, sname=probe, datatype=dt, level=lvl, $
           in_suffix = suffix, out_suffix = suffix
 
         ;delete original
-;        if size(support_var_list, /type) ne 0 then $
-;          del_data, support_var_list
+        if keyword_set(delete_support_data) then begin
+          if n_elements(tplot_var_list) gt 0 then del_data, tplot_var_list
+          if n_elements(tplot_var_root_list) gt 0 then del_data, tplot_var_root_list
+        endif else begin  
+          if keyword_set(suffix) && n_elements(tplot_var_root_list) gt 0 then del_data, tplot_var_root_list  
+        endelse
      endif
   endif
   
@@ -134,6 +142,8 @@ pro thm_load_fft_post, sname=probe, datatype=dt, level=lvl, $
       Endif
     Endfor
   endif
+
+  
 end
 
 ;the main proc

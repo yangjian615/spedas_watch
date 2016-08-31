@@ -40,8 +40,8 @@
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-08-19 15:11:32 -0700 (Fri, 19 Aug 2016) $
-;$LastChangedRevision: 21684 $
+;$LastChangedDate: 2016-08-30 17:48:41 -0700 (Tue, 30 Aug 2016) $
+;$LastChangedRevision: 21776 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data2obj.pro $
 ;
 ;-
@@ -669,29 +669,29 @@ pro thm_ui_load_data2obj,$
         thm_load_state,probe=observ[i],trange=[st_time, en_time],/get_support, suffix=suffix[0] 
       endif
 
-      if in_set('pos',iname) && is_string(tnames('th'+observ[i]+'_state_pos')) then begin
-        thm_cotrans,'th'+observ[i]+'_state_pos','th'+observ[i]+'_state_pos',out_coord=out_coord
-        get_data,'th'+observ[i]+'_state_pos',limit=l
+      if in_set('pos',iname) && is_string(tnames('th'+observ[i]+'_state_pos'+suffix[0])) then begin
+        thm_cotrans,'th'+observ[i]+'_state_pos','th'+observ[i]+'_state_pos'+suffix[0],out_coord=out_coord
+        get_data,'th'+observ[i]+'_state_pos'+suffix[0],limit=l
         str_element,l,'labels',['x_'+strlowcase(out_coord),'y_'+strlowcase(out_coord),'z_'+strlowcase(out_coord)],/add
-        store_data,'th'+observ[i]+'_state_pos',limit=l
+        store_data,'th'+observ[i]+'_state_pos'+suffix[0],limit=l
       endif
       
       ;create velocity, may require transform pos
-      if in_set('vel',iname) && is_string(tnames('th'+observ[i]+'_state_pos')) then begin
-        thm_cotrans,'th'+observ[i]+'_state_pos','th'+observ[i]+'_state_pos',out_coord=out_coord
-        deriv_data,'th'+observ[i]+'_state_pos',newname='th'+observ[i]+'_state_vel'
-        get_data,'th'+observ[i]+'_state_vel',limit=l,dlimit=dl
+      if in_set('vel',iname) && is_string(tnames('th'+observ[i]+'_state_pos'+suffix[0])) then begin
+        thm_cotrans,'th'+observ[i]+'_state_pos','th'+observ[i]+'_state_pos'+suffix[0],out_coord=out_coord
+        deriv_data,'th'+observ[i]+'_state_pos'+suffix[0],newname='th'+observ[i]+'_state_vel'+suffix[0]
+        get_data,'th'+observ[i]+'_state_vel'+suffix[0],limit=l,dlimit=dl
         str_element,l,'labels',['x_'+strlowcase(out_coord),'y_'+strlowcase(out_coord),'z_'+strlowcase(out_coord)],/add
         str_element,l,'ysubtitle','[km/s]',/add
         str_element,dl,'labels',['x_'+strlowcase(out_coord),'y_'+strlowcase(out_coord),'z_'+strlowcase(out_coord)],/add
         str_element,dl,'ysubtitle','[km/s]',/add
         str_element,dl,'data_att.units','km/s',/add
         str_element,dl,'data_att.st_type','vel',/add
-        store_data,'th'+observ[i]+'_state_vel',limit=l,dlimit=dl
+        store_data,'th'+observ[i]+'_state_vel'+suffix[0],limit=l,dlimit=dl
       endif
        
       ;delete all the support crap that gets loaded
-      state_to_delete = ssl_set_complement(ssl_set_union([state_tn_before],[state_rq_tn]),ssl_set_union([tnames('*')],['']))
+      state_to_delete = ssl_set_complement(ssl_set_union([state_tn_before],[state_rq_tn]+suffix[0]),ssl_set_union([tnames('*')],['']))
       if is_string(state_to_delete) then begin
         store_data,state_to_delete,/delete
       endif
@@ -747,7 +747,7 @@ pro thm_ui_load_data2obj,$
             endelse
            
             ;doesn't load state if available type is not requested type(extending this check to other data types would eliminate the need for a lot of the special rules in this routine.)
-            if ~in_set(tvar_name_type,iname) then begin
+            if ~in_set(tvar_name_type,iname+suffix[0]) then begin
               continue
             endif
           endif

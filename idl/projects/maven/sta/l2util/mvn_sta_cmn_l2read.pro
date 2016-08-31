@@ -63,13 +63,13 @@
 ; trange = if set, then only input data for that time range, the first
 ;          step would be to input the record times and then obtain a
 ;          record range to input.
-; cdf_info = the full structure from CDF_LOAD_VARS, not everything in
+; cdf_info = the full structure from CDF_LOAD_VARS2, not everything in
 ;            here ends up in the structure for the common blocks
 ;HISTORY:
 ; 2014-05-12, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-09 10:12:13 -0800 (Fri, 09 Jan 2015) $
-; $LastChangedRevision: 16611 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2016-08-30 13:54:44 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21774 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2read.pro $
 ;-
 Function mvn_sta_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra = _extra
@@ -85,8 +85,8 @@ Function mvn_sta_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra 
   If(n_elements(trange) Eq 2) Then Begin
      tr0 = time_double(trange)
 ;Read in the time_unix array
-     tstr = cdf_load_vars(filename, varformat = 'time_unix', spdf_dependencies = 0)
-     ss_tvar = where(tstr.names Eq 'time_unix', nss_tvar)
+     tstr = cdf_load_vars2(filename, varformat = 'time_unix', spdf_dependencies = 0)
+     ss_tvar = where(tstr.vars.name Eq 'time_unix', nss_tvar)
      If(nss_tvar Eq 0) Then Begin
         dprint, 'Oops, no time_unix variable in: '+filename
         Return, otp
@@ -104,10 +104,11 @@ Function mvn_sta_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra 
      record = ss_t[0]
      number_records = nss_t
 ;Read in all of the variables now
-     cdfi = cdf_load_vars(filename, /all, record = record, number_records = number_records)
+     cdfi = cdf_load_vars2(filename, /all, record = record, $
+                           number_records = number_records)
   Endif Else Begin
 ;Just read everything
-     cdfi = cdf_load_vars(filename, /all)
+     cdfi = cdf_load_vars2(filename, /all)
   Endelse
 
 ;The vars array will be 2Xnvariables, the first column is the name in

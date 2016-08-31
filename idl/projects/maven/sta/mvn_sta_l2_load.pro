@@ -27,11 +27,12 @@
 ;HISTORY:
 ; 16-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-23 11:07:39 -0800 (Fri, 23 Jan 2015) $
-; $LastChangedRevision: 16715 $
+; $LastChangedDate: 2016-08-30 11:38:10 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21770 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_l2_load.pro $
 ;-
-Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_pass = user_pass, no_time_clip = no_time_clip, _extra = _extra
+Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, $
+                     user_pass = user_pass, no_time_clip = no_time_clip, _extra = _extra
 
 ;Keep track of software versioning here
   sw_vsn = mvn_sta_current_sw_version()
@@ -41,6 +42,8 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
   If(keyword_set(files)) Then Begin
      filex = files 
   Endif Else Begin
+; If trange is set, do not time clip
+     If(keyword_set(trange)) Then no_time_clip = 1
      tr0 = timerange(trange)
 ;Need number of days and app_ids
      start_day_dbl = time_double(time_string(tr0[0], precision = -3)) ;start day in seconds
@@ -120,7 +123,7 @@ Pro mvn_sta_l2_load, files = files, trange = trange, sta_apid = sta_apid, user_p
      Endif Else Begin
         ck = 0
         For k = 0, nssj-1 Do Begin
-           datk = mvn_sta_cmn_l2read(filex[ssj[k]])
+           datk = mvn_sta_cmn_l2read(filex[ssj[k]], trange = trange)
            If(is_struct(datk)) Then Begin
               If(~is_struct(datj)) Then datj = temporary(datk) $
               Else datj = mvn_sta_cmn_concat(temporary(datj), temporary(datk))

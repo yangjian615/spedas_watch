@@ -37,9 +37,9 @@
 ;work properly(hopefully will be fixed post-release)
 ;--support data must be loaded to function properly
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21775 $
 ; $URL $
 ;-
 
@@ -169,7 +169,8 @@ pro thm_cal_fft, probe=probe, datatype=datatype,trange=trange, in_suffix = in_su
 
             ;output name
             dqd = tplot_var + '_' + sel[i] + out_suffix
-
+            dqd_orig = tplot_var + '_' + sel[i] 
+            
             ;update the DLIMIT elements to reflect
             ;RAW->PHYS transformation, coordinate
             ;system, etc.
@@ -185,7 +186,7 @@ pro thm_cal_fft, probe=probe, datatype=datatype,trange=trange, in_suffix = in_su
             str_element, data_att, 'source_var', tplot_var, /add
             str_element, data_att, 'source_num', jj, /add
             str_element, dl, 'data_att', data_att, /add
-            str_element, dl, 'ytitle', string( dqd, format = '(A,"!C!C[Hz]")'), /add
+            str_element, dl, 'ytitle', string( dqd_orig, format = '(A,"!C!C[Hz]")'), /add
             str_element, dl, 'spec', 1, /add
             str_element, dl, 'ztitle', string( cp[i].units, format = '(A)'), /add
             str_element, dl, 'zlog', 1, /add

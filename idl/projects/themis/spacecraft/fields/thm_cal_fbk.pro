@@ -32,8 +32,8 @@
 ;work properly(hopefully will be fixed post-release)
 ;--support data must be loaded to function properly
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-25 16:24:45 -0700 (Thu, 25 Aug 2016) $
-; $LastChangedRevision: 21728 $
+; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
+; $LastChangedRevision: 21775 $
 ; $URL $
 ;-
 
@@ -186,7 +186,7 @@ for s=0L,n_elements(myprobe)-1L do begin
 
             units = '<|nT|>,<|V|>, or <|mV/m|>'
 
-            out_name = 'th' + sc + '_fb_' + sel[i] + out_suffix
+            out_name = 'th' + sc + '_fb_' + sel[i] 
 
             ; update the DLIMIT elements to reflect RAW->PHYS transformation, coordinate system, etc.
 
@@ -199,7 +199,7 @@ for s=0L,n_elements(myprobe)-1L do begin
             str_element, data_att, 'cal_par_time', cp[i].cal_par_time, /add
             str_element, data_att, 'source_var', tplot_var, /add
             str_element, dl, 'data_att', data_att, /add
-            str_element, dl, 'ytitle', string( out_name+out_suffix, cp[i].units, format = '(A,"!C!C[",A,"]")'), /add
+            str_element, dl, 'ytitle', string( out_name, cp[i].units, format = '(A,"!C!C[",A,"]")'), /add
             str_element, dl, 'labels', ['3072 Hz','768 Hz','192 Hz','48 Hz','12 Hz', '3 Hz'], /add
             str_element, dl, 'labflag', 1, /add
             str_element, dl, 'colors', [ 1, 2, 3, 4, 5, 6], /add
@@ -215,7 +215,7 @@ for s=0L,n_elements(myprobe)-1L do begin
             if(bar eq 1) then begin
               valid_idx = where(finite(out_data[*,0,i]),bar)
               if bar gt 0 then $
-                store_data, out_name, $
+                store_data, out_name+ out_suffix, $
                 data = {x:d.x[valid_idx], y:out_data[valid_idx, *, i], $
                         v:[2048., 512., 128., 32., 8., 2.] }, lim = l, dlim = dl
             endif
@@ -263,7 +263,7 @@ for s=0L,n_elements(myprobe)-1L do begin
           str_element, data_att, 'units', units, /add
           str_element, data_att, 'cal_par_time', cp.cal_par_time, /add
           str_element, dl, 'data_att', data_att, /add
-          str_element, dl, 'ytitle', string( 'th'+sc+'_fb_hff'+out_suffix, units, format='(A,"!C!C[",A,"]")'), /add
+          str_element, dl, 'ytitle', string( 'th'+sc+'_fb_hff', units, format='(A,"!C!C[",A,"]")'), /add
           str_element, dl, 'labels', ['pk','avg'], /add
           str_element, dl, 'labflag', 1, /add
           str_element, dl, 'colors', [ 1, 2]

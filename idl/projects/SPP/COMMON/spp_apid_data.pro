@@ -59,7 +59,7 @@ pro spp_apid_data,apid,name=name,$
                 store_data,ap.tname+foo.name,data=foo.array, tagnames=ap.rt_tags
               endfor
             endif else  begin
-              store_data,ap.tname+da.name,data=da.array, tagnames=ap.rt_tags
+              store_data,ap.tname,data=da.array, tagnames=ap.rt_tags
             endelse            
           endif
         endif
