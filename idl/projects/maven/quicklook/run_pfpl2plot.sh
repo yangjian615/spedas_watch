@@ -14,6 +14,7 @@ if !( $?IDL_PATH ) then
 endif
 
 setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
+setenv CDF_TMP /mydisks/home/maven
 
 #check for lock file here
 if (! -e /tmp/PFPL2PLOTlock.txt) then
