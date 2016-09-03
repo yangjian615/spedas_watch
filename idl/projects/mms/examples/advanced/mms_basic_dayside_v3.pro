@@ -4,8 +4,8 @@
 ;  This version is meant to work with v3.0.0+ of the FPI CDFs
 ;  
 ; Plots on the figure include:
-;   1: DFG, srvy, GSM
-;   2. DFG magnitude
+;   1: FGM, srvy, GSM
+;   2. FGM magnitude
 ;   3. FPI ion spectra
 ;   4. FPI electron spectra
 ;   5. FPI Ni (ion density)
@@ -19,8 +19,8 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-26 12:53:45 -0700 (Fri, 26 Aug 2016) $
-; $LastChangedRevision: 21744 $
+; $LastChangedDate: 2016-09-02 09:09:34 -0700 (Fri, 02 Sep 2016) $
+; $LastChangedRevision: 21783 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_basic_dayside_v3.pro $
 ;-
 start_time = systime(/sec)
@@ -132,7 +132,6 @@ eph_variable = 'mms'+strcompress(string(probe), /rem)+'_mec_r_gsm'
 b_variable = '_fgm_b_gsm_srvy_l2'
 suffix_kludge = ['x', 'y', 'z'] ; because the suffix is different depending on the level...
 
-; eph_variable = 'mms'+strcompress(string(i), /rem)+'_dfg_srvy_gsm_dmpa'
 calc,'"'+eph_variable+'_re" = "'+eph_variable+'"/6371.2'
 
 ; split the position into its components

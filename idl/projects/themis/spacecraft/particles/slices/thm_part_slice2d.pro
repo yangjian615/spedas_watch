@@ -200,8 +200,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
-;$LastChangedRevision: 21724 $
+;$LastChangedDate: 2016-09-02 14:30:38 -0700 (Fri, 02 Sep 2016) $
+;$LastChangedRevision: 21792 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_part_slice2d.pro $
 ;-
 pro thm_part_slice2d, ptrArray, ptrArray2, ptrArray3, ptrArray4, $
@@ -401,6 +401,9 @@ slice.coord=coord
 
 
 ; Apply N-count threshold/subtraction if requested
+;  -create copy of the data set to N counts
+;  -produce identical slice from the synthetic data
+;  -use new slice as mask 
 ;------------------------------------------------------------
 if keyword_set(count_threshold) or keyword_set(subtract_counts) then begin
 
@@ -410,7 +413,8 @@ if keyword_set(count_threshold) or keyword_set(subtract_counts) then begin
 
   thm_part_set_counts, fixed, fix_counts, /set_units
 
-  thm_part_process, fixed, fixed_processed, units=units, _extra=_extra
+  ;no background or contamination removal should be performed here!
+  thm_part_process, fixed, fixed_processed, units=units, esa_bgnd_remove=0
 
   mask = spd_slice2d(fixed_processed, $
                   ; Time options

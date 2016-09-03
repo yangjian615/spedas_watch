@@ -13,7 +13,7 @@
 ;                [,in_coord=in_coord] [,in_suffix=in_suffix] ...
 ;
 ;Example Usage:
-;  mms_cotrans, 'mms1_dfg_srvy_gse_bvec', in_coord='gse', out_coord='gsm', $
+;  mms_qcotrans, 'mms1_fgm_b_gse_srvy_l2_bvec', in_coord='gse', out_coord='gsm', $
 ;                out_suffix='_gsm'
 ;
 ;
@@ -50,9 +50,9 @@
 ;  This is a near clone of mms_cotrans and maybe be temporary
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-25 18:22:33 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21214 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-09-02 10:58:42 -0700 (Fri, 02 Sep 2016) $
+;$LastChangedRevision: 21791 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_qcotrans.pro $
 ;-
 

@@ -2,8 +2,8 @@
 ; script for basic dayside science (from EVA, first plot)
 ; 
 ; Plots on the figure include:
-;   1: DFG, srvy, GSM
-;   2. DFG magnitude
+;   1: FGM, srvy, GSM
+;   2. FGM magnitude
 ;   3. FPI ion spectra
 ;   4. FPI electron spectra
 ;   5. FPI Ni (ion density)
@@ -17,8 +17,8 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-23 11:17:20 -0700 (Mon, 23 May 2016) $
-; $LastChangedRevision: 21177 $
+; $LastChangedDate: 2016-09-02 09:09:34 -0700 (Fri, 02 Sep 2016) $
+; $LastChangedRevision: 21783 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_basic_dayside.pro $
 ;-
 start_time = systime(/sec)
@@ -133,7 +133,6 @@ eph_variable = 'mms'+strcompress(string(probe), /rem)+'_mec_r_gsm'
 b_variable = '_fgm_b_gsm_srvy_l2'
 suffix_kludge = ['x', 'y', 'z'] ; because the suffix is different depending on the level...
 
-; eph_variable = 'mms'+strcompress(string(i), /rem)+'_dfg_srvy_gsm_dmpa'
 calc,'"'+eph_variable+'_re" = "'+eph_variable+'"/6371.2'
 
 ; split the position into its components

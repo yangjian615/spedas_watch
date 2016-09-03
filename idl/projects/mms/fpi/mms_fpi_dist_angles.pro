@@ -3,17 +3,16 @@
 ;         mms_fpi_dist_angles
 ;
 ; PURPOSE:
-;         Returns the azimuth/elevation for FPI distributions.
+;         Returns the azimuth/colatitude for FPI sky maps.
 ;
 ; NOTE:
-;         Azimuth/elevation should be fetched together because of differences in  
-;         convention between the tables in mms_get_fpi_info and the supplementary vars.
+;         Angle values describe the instrument look directions.
 ;         This routine might be obsolete once the angles are added to the data CDFs.
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-29 13:56:07 -0700 (Mon, 29 Aug 2016) $
-;$LastChangedRevision: 21766 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-09-02 17:52:09 -0700 (Fri, 02 Sep 2016) $
+;$LastChangedRevision: 21796 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_dist_angles.pro $
 ;-
 
@@ -33,7 +32,7 @@ pro mms_fpi_dist_angles, probe=probe, level=level, data_rate=data_rate, species=
   if level ne 'l2' then begin
     info = mms_get_fpi_info()
     phi = info.azimuth
-    theta = 90 - info.elevation ;expected to be in colatitude
+    theta = info.elevation ;colatitude
     return
   endif
 
@@ -46,11 +45,8 @@ pro mms_fpi_dist_angles, probe=probe, level=level, data_rate=data_rate, species=
     return
   endif
 
-  ;azimuths appear off by 180° compared to hard coded table and moments/phi spec output
-  phi = (*phi_ptr.y + 180.) mod 360
+  phi = *phi_ptr.y
 
-  ;elevations appear to be in reverse order
-  ; (i.e. 0th element corresponds to element N-1 along corresponding data dimension)
-  theta = reverse( *theta_ptr.y, size( *theta_ptr.y, /n_dim) ) 
+  theta = *theta_ptr.y 
 
 end

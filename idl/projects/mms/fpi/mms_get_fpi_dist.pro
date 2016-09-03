@@ -4,7 +4,7 @@
 ;
 ;Purpose:
 ;  Returns 3D particle data structures containing MMS FPI
-;  data for use with spd_slice2d. 
+;  data for use with SPEDAS particle routines. 
 ;
 ;Calling Sequence:
 ;  data = mms_get_fpi_dist(tname [,index] [,trange=trange] [,/times] [,/structure]
@@ -25,11 +25,13 @@
 ;                or 0 in case of error
 ;
 ;Notes:
+;  -FPI angles stored in tplot describe instrument look directions, 
+;   this converts those to presumed trajectories (swaps direction).
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 11:45:19 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21737 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-09-02 17:52:09 -0700 (Fri, 02 Sep 2016) $
+;$LastChangedRevision: 21796 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -201,8 +203,12 @@ endelse
 
 dist.phi = rebin( phi0, [dim,n_times] )
 
-;phi must be in [0,360)
-dist.phi = dist.phi mod 360
+;convert angles to SPEDAS convention
+;  -MMS convention stores angles as look direction of instrument whereas
+;   SPEDAS uses presumed particle trajectories
+;ensure phi is in [0,360) 
+dist.phi = (dist.phi + 180) mod 360
+dist.theta = -dist.theta
 
 ;spd_slice2d accepts pointers or structures
 ;pointers are more versatile & efficient, but less user friendly

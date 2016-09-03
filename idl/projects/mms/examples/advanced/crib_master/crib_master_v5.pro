@@ -35,12 +35,6 @@ level = 'l2' ; (current options are 'l2', 'sitl' or 'l1b' for HPCA)
 
 ;level = 'l1b' ; (current options are 'l2', 'sitl' or 'l1b' for HPCA)
 
-; To change the font size of plot labels, use "!p.charsize= 1 or 0.5 or ...". 1 is the default. 
-!p.charsize=1
-
-; To change the plot size, change the xsize, ysize options in the call to window
-window, xsize=800, ysize=1024
-
 if i_load eq 1 then begin
 
 ; loading FPI, HPCA, FGM, and FEEPS data
@@ -224,12 +218,6 @@ tclip, sc_id+'_fgm_b_gsm_srvy_l2_btot', -200, 200, /overwrite
 store_data, sc_id+'_fgm_b_gsm_srvy_clipped', data=sc_id+['_fgm_b_gsm_srvy_l2_bvec_'+['x', 'y', 'z']]
 options, sc_id+'_fgm_b_gsm_srvy_clipped', 'labflag',-1
 
-;get_data,sc_id+'_dfg_srvy_gsm_dmpa',data=d
-;store_data,sc_id+'_dfg_srvy_mag',data={x:d.x,y:sqrt(d.y(*,0)^2+d.y(*,1)^2+d.y(*,2)^2)}
-
-;options, sc_id+'_dfg_srvy_gsm_dmpa', labels=['B!DX!N', 'B!DY!N', 'B!DZ!N']
-;options, sc_id+'_dfg_srvy_gsm_dmpa', 'labflag',-1
-
 ;*********************************************************
 ; E field: EDP
 ;*********************************************************
@@ -257,7 +245,7 @@ name_hpca=[sc_id+'_hpca_hplus_flux_elev_0-360', sc_id+'_hpca_heplusplus_flux_ele
 
 name_edp= sc_id+'_edp_dce_gse_fast_l2'
 
-name_dfg=[sc_id+'_fgm_b_gsm_srvy_l2_btot',sc_id+'_fgm_b_gsm_srvy_clipped']
+name_fgm=[sc_id+'_fgm_b_gsm_srvy_l2_btot',sc_id+'_fgm_b_gsm_srvy_clipped']
 
 ;name_fpi=[sc_id+'_dis_energyspectr_omni_fast',sc_id+'_des_energyspectr_omni_fast',sc_id+'_dis_numberdensity_fast', sc_id+'_dis_bulkv_gse_fast ',sc_id+'_fpi_DIStemp',sc_id+'_fpi_DEStemp']
 name_fpi=[sc_id+'_dis_energyspectr_omni_fast',sc_id+'_des_energyspectr_omni_fast',sc_id+'_dis_numberdensity_fast', sc_id+'_dis_bulkv_gse_fast']
@@ -272,7 +260,13 @@ tplot_options,'ygap',0.3 ; set vertical gap size between panels (the default gap
 
 ;plotting
 
-tplot,[name_dfg,name_fpi,name_hpca,name_edp,name_dsp,name_feeps],var_label=[sc_id+'_z',sc_id+'_y',sc_id+'_x']
+; To change the font size of plot labels, use "!p.charsize= 1 or 0.5 or ...". 1 is the default.
+!p.charsize=1
+
+; To change the plot size, change the xsize, ysize options in the call to window
+window, xsize=800, ysize=1024
+
+tplot,[name_fgm,name_fpi,name_hpca,name_edp,name_dsp,name_feeps],var_label=[sc_id+'_z',sc_id+'_y',sc_id+'_x']
 
 ;create postscript file
 if i_print eq 1 then begin

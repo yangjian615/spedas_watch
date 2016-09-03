@@ -1,8 +1,15 @@
 ; KEYWORD
+; 
+; *** A note on 2016-09-02 ***
+; THis keyword should NOT be used for a while because LaTis returns
+; an erratic data when the trange is expanded to a longer period.
+; ****************************
+; 
 ;   FIN: Set this keyword to find segments that 'finished' within trange
 ;        instead of querying segments that were defined within trange. 
 ;        Because a segment can take many tens of days, 
 ;        trange is expand to [tlaunch,tnow] when retrieving segment info.
+;
 ;
 FUNCTION mms_bss_load, trange=trange, fin=fin
   compile_opt idl2
@@ -17,7 +24,7 @@ FUNCTION mms_bss_load, trange=trange, fin=fin
   tr = (n_elements(trange) eq 2) ? timerange(trange) : [tlaunch,tnow]
   ts = tr[0]
   if keyword_set(fin) then begin
-    ;tr[0] -= 30.d0*86400.d0
+    ;tr[0] -= 30.d0*86400.d0; Extends the time range by one more month.
     tr[0] = tlaunch
   endif
   print,' Executing query: '

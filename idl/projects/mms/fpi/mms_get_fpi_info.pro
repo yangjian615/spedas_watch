@@ -3,14 +3,26 @@
 ;  Returns structure containing supplementary information 
 ;  for analysis of FPI data.  
 ;
+;Return value:
+;  Info structure containing tables to be indexed by energy table
+;  and energy/angle bin index.
+;      { 
+;        electron_energy: 3 x 32 array of electron energy tables
+;        ion_energy:      3 x 32 array of ion energy tables
+;        azimuth:         Azimuth of instrument look direction
+;        elevation:       Colatitude of instrument look direction
+;       }
+;
 ;Notes:
+;  These values are approximate and should only be used in the absense of official support data!
 ;  Energies are in eV from stepper tables.
 ;  The first two columns of energies correspond to stepperTableParity = 0,1 for burst data (may be indexed).
 ;  The last energy row is a geometric average of first two and is applicable to fast survey data.
+;  
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-01-29 15:22:13 -0800 (Fri, 29 Jan 2016) $
-;$LastChangedRevision: 19853 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-09-02 17:52:09 -0700 (Fri, 02 Sep 2016) $
+;$LastChangedRevision: 21796 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_info.pro $
 ;-
 function mms_get_fpi_info
@@ -92,13 +104,13 @@ electron_energy = [ $
 
 ;elevation grid in latitude by index
 ;(0th index see particles moving towards -z) 
-elevation = ( findgen(16) * 11.25 + 5.625 ) - 90
+elevation =  findgen(16) * 11.25 + 5.625 
 
 
 ;azimuth grid by index
 ;(0th index see particles moving towards -x) 
 ;(8th index see particles moving towards -y)
-azimuth = findgen(32) * 11.25 + 5.625 + 180.
+azimuth = findgen(32) * 11.25 + 5.625
 azimuth = azimuth mod 360
 
 s = { $

@@ -36,18 +36,20 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-11-11 08:43:26 -0800 (Wed, 11 Nov 2015) $
-; $LastChangedRevision: 19336 $
+; $LastChangedDate: 2016-09-02 14:44:25 -0700 (Fri, 02 Sep 2016) $
+; $LastChangedRevision: 21795 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_table.pro $
 ;-
 PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
   console=console, json=json, dir=dir, _extra=_extra
   compile_opt idl2
   
+  clock=tic('mms_bss_table')
   mms_init
   if n_elements(console) eq 0 then console = 1
   if n_elements(json) eq 0 then json = 0
-  if n_elements(dir) eq 1 then dir = thm_addslash(dir)
+  if undefined(dir) then dir = '/Volumes/moka/public_html/eva/'
+  dir = thm_addslash(dir)
   
   ;----------------
   ; CATCH
@@ -59,6 +61,20 @@ PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
     message, /reset
     return
   endif
+  
+  ;----------------
+  ; TIME
+  ;----------------
+  tnow = systime(/utc,/seconds)
+  tlaunch = time_double('2015-03-12/22:44')
+  t3m = tnow - 180.d0*86400.d0; 180 days
+  if n_elements(trange) eq 2 then begin
+    tr = timerange(trange)
+  endif else begin
+    tr = [t3m,tnow]
+    ;tr = [tlaunch,tnow]
+    trange = time_string(tr)
+  endelse
   
   ;----------------
   ; LOAD DATA
@@ -90,6 +106,7 @@ PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
   wNbuffs = lindgen(pmax)
   wTmin = dindgen(pmax)
   wstrTlast = sindgen(pmax)
+  wSegID  = lindgen(pmax)
   for p=0,pmax-1 do begin
     b = mms_bss_query(bss=bss,cat=p)
     ct = (n_tags(b) eq 0) ? 0: n_elements(b.FOM)
@@ -98,11 +115,13 @@ PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
       wNbuffs[p] = 0L
       wTmin[p] = 0.d0
       wstrTlast[p] = ''
+      wSegID[p] = 0L
     endif else begin
       wNsegs[p] = ct; total number of segments
       wNbuffs[p] = total(b.SEGLENGTHS); total number of buffers
       wTmin[p] = double(wNbuffs[p])/6.d0; total number of minutes
-      wstrTlast[p] = time_string(min(b.START))
+      wstrTlast[p] = time_string(min(b.START,nmin))
+      wSegID[p] = b.DATASEGMENTID[nmin]
     endelse
   endfor
 
@@ -112,11 +131,11 @@ PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
   if console then begin
     print,' As of '+time_string(systime(/utc,/seconds))+' UTC'
     print,' -------------------------------------------------------------------'
-    print,'           ,   Nsegs,  Nbuffs,   [min],      %,  Oldest segment'
+    print,'           ,   Nsegs,  Nbuffs,   [min],      %,  SegID, Oldest segment'
     print,' -------------------------------------------------------------------'
     for p=0,pmax-1 do begin
       ttlPrcnt = 100.*wTmin[p]/wTmin[pmax-1]
-      print, title[p],wNsegs[p],wNbuffs[p],wTmin[p],ttlPrcnt,wstrTlast[p], format='(A11," ",I8," ",I8," ",I8," ",F7.1," ",A20)'
+      print, title[p],wNsegs[p],wNbuffs[p],wTmin[p],ttlPrcnt, wSegID[p], wstrTlast[p], format='(A11," ",I8," ",I8," ",I8," ",F7.1," ",I12," ",A20)'
     endfor
   endif; if console
 
@@ -138,8 +157,10 @@ PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
       strNbuffs = strtrim(string(wNbuffs[p]),2)
       strTminu = string(wTmin[p],format='(I6)')
       strPrcnt = string(100.*wTmin[p]/wTmin[pmax-1], format='(F5.1)')
+      strSegID = strtrim(string(wSegID[p]),2)
+      if wSegID[p] eq 0 then strSegID = 'N/A'
       strct = {title:title[p],Nsegs:strNsegs, Nbuffs:strNbuffs, Tminu:strTminu, $
-        ttlPrcnt: strPrcnt, strTlast:wstrTlast[p]}
+        ttlPrcnt: strPrcnt, strTlast:wstrTlast[p], strSegID:strSegID}
       jarr[p] = json_serialize(strct)
     endfor
         
@@ -155,5 +176,5 @@ PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
     printf,nf,']'
     free_lun, nf
   endif; if json
-  
+  toc, clock
 END 

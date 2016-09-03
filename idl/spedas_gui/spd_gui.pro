@@ -23,9 +23,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-20 15:12:54 -0700 (Mon, 20 Jul 2015) $
-;$LastChangedRevision: 18182 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2016-09-02 10:18:25 -0700 (Fri, 02 Sep 2016) $
+;$LastChangedRevision: 21788 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1340,6 +1340,10 @@ PRO spd_gui_event, event
         spd_ui_field_models, info
     end
       
+    ; neutral sheet models widget
+    'NEUTRALSHEETMODELS': begin
+      spd_ui_neutral_sheet_models, info
+    end
     
     ELSE: info.statusBar->Update, 'Feature Not Yet Implemented: ' + uservalue
 
@@ -1569,6 +1573,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   dprocMenu = Widget_Button(analysisMenu, Value = 'Data Processing... ', UValue = 'DPROC', $
                             sensitive = 1)
   tsyMenu = widget_button(analysisMenu, value='Magnetic Field Models...', uval='FIELDMODELS')
+  tsyMenu = widget_button(analysisMenu, value='Neutral Sheet Models...', uval='NEUTRALSHEETMODELS')
   
   ; Tools Pull Down Menu (general plugins)
   
@@ -1862,6 +1867,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   yAxisSettings = Obj_New('SPD_UI_AXIS_SETTINGS')
   zAxisSettings = Obj_New('SPD_UI_ZAXIS_SETTINGS')
   fieldModelSettings = obj_new('SPD_UI_FIELDMODELS_SETTINGS')
+  neutralSheetSettings = obj_new('SPD_UI_NEUTRALSHEET_SETTINGS')
 
   ; Make sure that the device and color table are always loaded and the same
  ; Device, decomposed=0
@@ -1959,6 +1965,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
           dataLoadSelectPtr:ptr_new(), $ ; stores users selections from the load data window so that they don't have to re-click every time they open the window.
           saveDataDirPtr:ptr_new(''),$; stores path to last directory data was save to so user doesn't have to renavigate 
           fieldModelSettings:fieldModelSettings, $ ; used to keep track of field model inputs
+          neutralSheetSettings:neutralSheetSettings, $ ; used to keep track of neutral sheet model inputs
           pluginManager: pluginManager, $ ; the plugin manager
           toolbar_ysize:0,$; store the size of the toolbar along top of gui
           toolbar_xsize:0 $; store the x size of the toolbar along top of gui

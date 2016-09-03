@@ -1,10 +1,10 @@
 FUNCTION mms_bss_fom_read, s
   compile_opt idl2
-  
+
   if n_tags(s) eq 0 then begin
     return, {x:0, y:0, z:0, nmax:0, Nsegs:0}
   endif
-  
+
   ; FOM vs time plot
   strFinish = s.FINISHTIME
   i = where(strlen(strFinish) eq 0,c)
@@ -33,13 +33,15 @@ END
 
 PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
   compile_opt idl2
+
+  clock=tic('mms_bss_fom')
   
   mms_init
 
   if undefined(plot) then plot=1
   if undefined(dir) then dir = '' else dir = thm_addslash(dir)
   if undefined(csv) then csv = 0
-  
+
   ;----------------
   ; CATCH
   ;----------------
@@ -50,17 +52,17 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
     message, /reset
     return
   endif
-  
+
   ;----------------
   ; TIME
   ;----------------
   tnow = systime(/utc,/seconds)
   tlaunch = time_double('2015-03-12/22:44')
-  t30d = tnow - 60.d0*86400.d0; 30 days
+  t3m = tnow - 180.d0*86400.d0; 180 days
   if n_elements(trange) eq 2 then begin
     tr = timerange(trange)
   endif else begin
-    tr = [t30d,tnow]
+    tr = [t3m,tnow]
     ;tr = [tlaunch,tnow]
     trange = time_string(tr)
   endelse
@@ -68,25 +70,25 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
   ;----------------
   ; LOAD DATA
   ;----------------
-  if n_elements(bss) eq 0 then bss = mms_bss_query(trange=trange,/fin)
+  if n_elements(bss) eq 0 then bss = mms_bss_query(trange=trange);,/fin)
 
   ; COMPLETE
   bse = mms_bss_query(bss=bss, exclude='INCOMPLETE')
   bsc = mms_bss_query(bss=bse, status='COMPLETE')
   d_comp = mms_bss_fom_read(bsc)
   print, 'complete', d_comp.NSEGS
-  
+
   ; PENDING
   bsp = mms_bss_query(bss=bss, isPending=1)
   d_pend = mms_bss_fom_read(bsp)
   print, 'pending: ',d_pend.NSEGS
-  
+
   ; OVERWRITTEN
   bsi = mms_bss_query(bss=bss, exclude='INCOMPLETE')
   bso = mms_bss_query(bss=bsi, status='DEMOTED DERELICT')
   d_over = mms_bss_fom_read(bso)
   print, 'overwritten: ', d_over.NSEGS
-  
+
   ; INCOMPLETE
   bsa = mms_bss_query(bss=bss, status='INCOMPLETE')
   if n_tags(bsa) gt 0 then begin
@@ -98,18 +100,18 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
     d_icmp = {x:0, y:0, z:0, nmax: 0, Nsegs: 0}
   endelse
   print, 'incomplete', d_icmp.NSEGS
-  
+
   ;---------------
   ; PLOT
   ;---------------
   if plot then begin
-    
+
     ; PREPARATION
     A = FINDGEN(17) * (!PI*2/16.); Make a vector of 16 points, A[i] = 2pi/16:
     USERSYM, COS(A), SIN(A), /FILL; Define the symbol, unit circle, filled
     char = 1.2
     plot,[0,30],[0,255],/nodata,xtitle='Number of days to FINISH',ytitle='FOM', color=0,ystyle=1
-    
+
     ; COMPLETE
     oplot, d_comp.x, d_comp.y, psym=8,color=4
     xyouts, 20,200, 'TRANSMITTED: '+string(d_comp.NSEGS,format='(I8)'), charsize=char, color=4,/data
@@ -134,4 +136,5 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
     write_csv, dir+'mms_bss_fom_over.txt', d_over.x, d_over.y, d_over.z, HEADER=['x','y','z']
     write_csv, dir+'mms_bss_fom_icmp.txt', d_icmp.x, d_icmp.y, d_icmp.z, HEADER=['x','y','z']
   endif
+  toc,clock
 END

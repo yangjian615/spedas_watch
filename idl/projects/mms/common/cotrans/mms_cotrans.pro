@@ -14,7 +14,7 @@
 ;
 ;
 ;Example Usage:
-;  mms_cotrans, 'mms1_dfg_srvy_dmpa_bvec', in_coord='dmpa', out_coord='gsm', $
+;  mms_cotrans, 'mms1_fgm_b_gse_srvy_l2_bvec', in_coord='dmpa', out_coord='gsm', $
 ;                out_suffix='_gsm', /ignore_dlimits
 ;
 ;
@@ -58,8 +58,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21208 $
+;$LastChangedDate: 2016-09-02 10:58:42 -0700 (Fri, 02 Sep 2016) $
+;$LastChangedRevision: 21791 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans.pro $
 ;-
 

@@ -16,15 +16,15 @@
 ; HISTORY: Created by Aaron W Breneman, May 2014
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-07-08 13:26:20 -0700 (Fri, 08 Jul 2016) $
-;   $LastChangedRevision: 21442 $
+;   $LastChangedDate: 2016-09-02 06:56:49 -0700 (Fri, 02 Sep 2016) $
+;   $LastChangedRevision: 21782 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l3.pro $
 ;-
 
 
 pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
                      type=type,testing=testing,script=script,$
-                     boom_pair=bp
+                     boom_pair=bp,density_min=density_min
 
   print,date
 
@@ -47,6 +47,7 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
   rbsp_efw_init
   if ~keyword_set(type) then type = 'L3'
   if ~keyword_set(bp) then bp = '12'
+
 
   skip_plot = 1                 ;set to skip restoration of cdf file and test plotting at end of program
 
@@ -111,7 +112,24 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
   ;Load both the spinfit data and also the E*B=0 version
   rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,/noplot,suffix='edotb',$
-                              boom_pair=bp
+                              boom_pair=bp,/noremove
+
+
+
+;Get By/Bx and Bz/Bx from E*B=0 calculation
+get_data,'B2Bx_ratio',data=b2bx_ratio
+badyx = where(b2bx_ratio.y[*,0] gt 3.732)
+badzx = where(b2bx_ratio.y[*,1] gt 3.732)
+
+;Get spinaxis component
+get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb',data=diagEx
+diagEx = diagEx.y[*,0]
+
+;Have two versions. First has all E*B=0 data, second has E*B=0 bad data removed
+diagEx1 = diagEx
+diagEx2 = diagEx
+if badyx[0] ne -1 then diagEx2[badyx,0] = !values.f_nan
+if badzx[0] ne -1 then diagEx2[badzx,0] = !values.f_nan
 
 
 ;Get the official times to which all quantities are interpolated to
@@ -121,12 +139,13 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 
 
 ;Get all the flag values
-  flag_str = rbsp_efw_get_flag_values(sc,times,boom_pair=bp)
+  flag_str = rbsp_efw_get_flag_values(sc,times,boom_pair=bp,density_min=density_min)
 
   flag_arr = flag_str.flag_arr
   bias_sweep_flag = flag_str.bias_sweep_flag
   ab_flag = flag_str.ab_flag
   charging_flag = flag_str.charging_flag
+  charging_flag_extreme = flag_str.charging_flag_extreme
   ibias = flag_str.ibias
 
   if bp eq '12' then copy_data,'rbsp'+sc+'_density12','rbsp'+sc+'_density'
@@ -179,8 +198,8 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
 ;Set a 3D flag variable for the survey plots
 ;--------------------------------------------------
 
-  ;charging, autobias and eclipse flags all in one variable for convenience
-  flags = [[flag_arr[*,15]],[flag_arr[*,14]],[flag_arr[*,1]]]
+  ;charging, extreme charging, autobias and eclipse flags all in one variable for convenience
+  flags = [[flag_arr[*,15]],[flag_arr[*,16]],[flag_arr[*,14]],[flag_arr[*,1]]]
 
 
 ;the times for the mag spinfit can be slightly different than the times for the
@@ -344,6 +363,10 @@ pro rbsp_efw_make_l3,sc,date,folder=folder,version=version,$
      cdf_varput,cdfid,'pos_gse',transpose(pos_gse.y)
      cdf_varput,cdfid,'vel_gse',transpose(vel_gse.y)
      cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
+     cdf_varput,cdfid,'diagEx1',diagEx1
+     cdf_varput,cdfid,'diagEx2',diagEx2
+     cdf_varput,cdfid,'diagBratio',transpose(b2bx_ratio.y)
+
 
      cdf_vardelete,cdfid,'efield_inertial_frame_mgse_edotb_zero'
      cdf_vardelete,cdfid,'efield_corotation_frame_mgse_edotb_zero'

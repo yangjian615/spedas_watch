@@ -90,8 +90,8 @@
 ;*****************************************************************************************
 ; VERSION: 
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2014-02-26 13:47:00 -0800 (Wed, 26 Feb 2014) $
-;   $LastChangedRevision: 14449 $
+;   $LastChangedDate: 2016-09-02 10:42:46 -0700 (Fri, 02 Sep 2016) $
+;   $LastChangedRevision: 21790 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/utils/rbsp_min_var_rot.pro $
 ;-
 
@@ -250,7 +250,7 @@ JUMP_SKIP:
 ;=========================================================================================
 mymin = CREATE_STRUCT('FIELD',field,'MV_FIELD',mvmfi,'THETA_Kb',theta_kb,     $
                       'DTHETA',dthetakb,'EIGENVALUES',lams,'DEIG_VALS',dlams, $
-                      'EIGENVECTORS',rotmat,'DMIN_VEC',dmin_eig)
+                      'EIGENVECTORS',rotmat,'DMIN_VEC',dmin_eig,'K_HAT',khat)
 
 RETURN,mymin
 END

@@ -23,8 +23,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-27 12:14:56 -0700 (Mon, 27 Jun 2016) $
-; $LastChangedRevision: 21371 $
+; $LastChangedDate: 2016-09-02 09:09:34 -0700 (Fri, 02 Sep 2016) $
+; $LastChangedRevision: 21783 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
 ;-
 
@@ -91,7 +91,7 @@ mms_load_fpi, trange = trange, probes = probes, datatype = datatype, $
 ; as of 3/14/16, we no longer use the S/C position data loaded from the FGM files
 mms_load_mec, trange = trange, probes = probes
 
-; load DFG data for all 4 probes
+; load FGM data for all 4 probes
 mms_load_fgm, trange = trange, probes = probes, level = fgm_level
 
 FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
