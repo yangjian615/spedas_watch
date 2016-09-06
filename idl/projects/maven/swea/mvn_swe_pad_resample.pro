@@ -120,8 +120,8 @@
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-28 17:09:22 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20611 $
+; $LastChangedDate: 2016-09-05 11:20:07 -0700 (Mon, 05 Sep 2016) $
+; $LastChangedRevision: 21797 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -636,7 +636,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
         FOR j=0, nene-1 DO BEGIN
            jdx = WHERE(pa.nbins[j, *] GT 0, cnt)
            IF cnt GT 0 THEN BEGIN
-              data[j, MIN(jdx):MAX(jdx)] = INTERPOL(REFORM(pa.avg[j, jdx]), xax[jdx], xax[MIN(jdx):MAX(jdx)])
+              data[j, MIN(jdx):MAX(jdx)] = INTERPOL(REFORM(pa.avg[j, jdx]), xax[jdx], xax[MIN(jdx):MAX(jdx)],/nan)
               pa.index[j, MIN(jdx):MAX(jdx)] = 1.
            ENDIF 
            undefine, jdx, cnt
