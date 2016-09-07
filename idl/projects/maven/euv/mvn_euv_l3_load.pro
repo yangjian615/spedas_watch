@@ -1,6 +1,5 @@
 ;+
-; NAME: 
-;       mvn_euv_l3_load
+; NAME: mvn_euv_l3_load
 ; SYNTAX: 
 ;       mvn_euv_l3_load,/daily
 ;       or
@@ -10,8 +9,12 @@
 ; KEYWORDS: daily, minute 
 ; HISTORY:      
 ; VERSION: 
-;  $LastChangedBy: davin-mac $
-;  $LastChangedDate: 2016-04-22 18:26:36 -0700 (Fri, 22 Apr 2016) $
+;  $LastChangedBy: ali $
+;  $LastChangedDate: 2016-09-06 12:39:12 -0700 (Tue, 06 Sep 2016) $
+;  $LastChangedRevision: 21800 $
+;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/euv/mvn_euv_l3_load.pro $
+;CREATED BY:  ali 20150401
+;FILE: mvn_euv_l3_load.pro
 ;-
 
 pro mvn_euv_l3_load,trange=trange,daily=daily,minute=minute,tplot=tplot

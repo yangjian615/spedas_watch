@@ -8,8 +8,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-13 14:31:03 -0700 (Wed, 13 Jul 2016) $
-; $LastChangedRevision: 21457 $
+; $LastChangedDate: 2016-09-06 15:00:12 -0700 (Tue, 06 Sep 2016) $
+; $LastChangedRevision: 21802 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fast_segments_ut__define.pro $
 ;-
 function mms_load_fast_segments_ut::test_overlap_start
@@ -37,6 +37,47 @@ function mms_load_fast_segments_ut::test_multi_days
   mms_load_fast_segments, trange=['2015-12-1', '2015-12-16']
   assert, spd_data_exists('mms_bss_fast', '2015-12-1', '2015-12-16'), $
     'Problem loading fast bar for multiple days'
+  return, 1
+end
+
+function mms_load_fast_segments_ut::test_start_end_keywords
+  mms_load_fast_segments, trange=['2015-12-1', '2015-12-16'], start_times=start_times, end_times=end_times
+  starts = ['2015-11-30/23:55:34', $
+            '2015-12-01/23:48:54', $
+            '2015-12-02/23:42:14', $
+            '2015-12-03/23:35:34', $
+            '2015-12-04/23:28:44', $
+            '2015-12-05/23:21:54', $
+            '2015-12-06/23:15:14', $
+            '2015-12-07/23:08:25', $
+            '2015-12-08/23:01:54', $
+            '2015-12-09/22:55:24', $
+            '2015-12-10/22:48:54', $
+            '2015-12-11/22:42:24', $
+            '2015-12-12/22:36:04', $
+            '2015-12-13/22:29:24', $
+            '2015-12-14/22:45:54', $
+            '2015-12-15/22:39:14', $
+            '2015-12-16/22:32:24']
+  ends = ['2015-12-01/13:50:04', $
+          '2015-12-02/13:43:24', $
+          '2015-12-03/13:36:34', $
+          '2015-12-04/13:29:54', $
+          '2015-12-05/13:23:14', $
+          '2015-12-06/13:16:34', $
+          '2015-12-07/13:10:04', $
+          '2015-12-08/13:03:35', $
+          '2015-12-09/12:57:04', $
+          '2015-12-10/12:50:34', $
+          '2015-12-11/12:44:04', $
+          '2015-12-12/12:37:34', $
+          '2015-12-13/12:30:54', $
+          '2015-12-14/12:24:04', $
+          '2015-12-15/12:31:14', $
+          '2015-12-16/12:24:24', $
+          '2015-12-17/12:17:34']
+  assert, array_equal(time_string(start_times), starts) && array_equal(time_string(end_times), ends), $
+    'Problem loading fast intervals using keywords'
   return, 1
 end
 

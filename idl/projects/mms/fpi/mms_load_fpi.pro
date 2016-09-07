@@ -69,8 +69,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-29 09:36:13 -0700 (Mon, 29 Aug 2016) $
-;$LastChangedRevision: 21764 $
+;$LastChangedDate: 2016-09-06 11:41:29 -0700 (Tue, 06 Sep 2016) $
+;$LastChangedRevision: 21799 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -106,7 +106,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     if ~undefined(center_measurement) && ~undefined(varformat) && varformat ne '*' then begin
         dprint, dlevel = 0, 'Error, cannot specify both the varformat keyword and center measurement keyword in the same call (measurements won''t be centered).'
         return
-   endif
+    endif
     
     ; different datatypes for burst mode files
     if data_rate eq 'brst' && (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
@@ -150,17 +150,19 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
     endif else begin
-        for probe_idx = 0, n_elements(probes)-1 do begin
-            this_probe = strcompress(string(probes[probe_idx]), /rem)
-            if array_contains(datatype, 'des-dist') then begin
-              tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist'
-              tplot_rename, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_dist'
-            endif
-            if array_contains(datatype, 'des-moms') then begin
-              tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms'
-              tplot_rename, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms'
-            endif
-        endfor
+        if ~undefined(tplotnames) then begin
+          for probe_idx = 0, n_elements(probes)-1 do begin
+              this_probe = strcompress(string(probes[probe_idx]), /rem)
+              if array_contains(datatype, 'des-dist') then begin
+                tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist'
+                tplot_rename, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_dist'
+              endif
+              if array_contains(datatype, 'des-moms') then begin
+                tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms'
+                tplot_rename, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms'
+              endif
+          endfor
+        endif
     endelse
 
     if array_contains(datatype, 'dis-dist') && array_contains(datatype, 'dis-moms') then begin
@@ -182,18 +184,19 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
             spdf = spdf, center_measurement=center_measurement
     endif else begin
-        for probe_idx = 0, n_elements(probes)-1 do begin
-            this_probe = strcompress(string(probes[probe_idx]), /rem)
-            if array_contains(datatype, 'dis-dist') then begin
-              tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist'
-              tplot_rename, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist'
-            endif
-            if array_contains(datatype, 'dis-moms') then begin
-              tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms'
-              tplot_rename, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms'
-            endif
-            
-        endfor
+        if ~undefined(tplotnames) then begin
+          for probe_idx = 0, n_elements(probes)-1 do begin
+              this_probe = strcompress(string(probes[probe_idx]), /rem)
+              if array_contains(datatype, 'dis-dist') then begin
+                tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist'
+                tplot_rename, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist'
+              endif
+              if array_contains(datatype, 'dis-moms') then begin
+                tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms'
+                tplot_rename, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms'
+              endif
+          endfor
+        endif
     endelse
     ; add the errorflags variables to variables loaded
     append_array, tplotnames, tplotnames_errflags_emom

@@ -12,8 +12,8 @@
 ;   2015-10-16: 13:03:34.000 - 13:04:54.000
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-13 14:31:03 -0700 (Wed, 13 Jul 2016) $
-; $LastChangedRevision: 21457 $
+; $LastChangedDate: 2016-09-06 15:00:12 -0700 (Tue, 06 Sep 2016) $
+; $LastChangedRevision: 21802 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_brst_segments_ut__define.pro $
 ;-
 function mms_load_brst_segments_ut::test_load_suffix
@@ -76,6 +76,33 @@ function mms_load_brst_segments_ut::test_exact_range
   mms_load_brst_segments, trange=['2015-10-16/13:02:24', '2015-10-16/13:03:04']
   assert, spd_data_exists('mms_bss_burst', '2015-10-16/13:02:24', '2015-10-16/13:03:04'), $
     'Problem loading burst bar when using the exact trange of the burst interval'
+  return, 1
+end
+
+function mms_load_brst_segments_ut::test_start_end_keywords
+  mms_load_brst_segments, trange=['2015-10-16/13:00', '2015-10-16/14:00'], start_times = start_bursts, end_times = end_bursts
+  starts = ['2015-10-16/12:56:04', $
+            '2015-10-16/13:02:24', $
+            '2015-10-16/13:03:34', $
+            '2015-10-16/13:05:24', $
+            '2015-10-16/13:09:04', $
+            '2015-10-16/13:33:44', $
+            '2015-10-16/13:39:04', $
+            '2015-10-16/13:54:04', $
+            '2015-10-16/13:55:34', $
+            '2015-10-16/13:57:14']
+  ends = ['2015-10-16/12:58:24', $
+          '2015-10-16/13:03:04', $
+          '2015-10-16/13:04:54', $
+          '2015-10-16/13:07:34', $, $
+          '2015-10-16/13:09:34', $
+          '2015-10-16/13:35:14', $
+          '2015-10-16/13:41:34', $
+          '2015-10-16/13:55:24', $
+          '2015-10-16/13:57:04', $
+          '2015-10-16/13:58:34']
+  assert, array_equal(time_string(start_bursts), starts) && array_equal(time_string(end_bursts), ends), $
+    'Problem with start/end interval keywords in mms_load_brst_segments'
   return, 1
 end
 
