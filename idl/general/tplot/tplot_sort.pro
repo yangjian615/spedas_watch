@@ -9,8 +9,8 @@
 ;CREATED BY:    Peter Schroeder
 ;LAST MODIFICATION:     %W% %E%
 ; $LastChangedBy: lbwilsoniii_desk $
-; $LastChangedDate: 2016-07-19 10:33:39 -0700 (Tue, 19 Jul 2016) $
-; $LastChangedRevision: 21489 $
+; $LastChangedDate: 2016-09-07 11:53:13 -0700 (Wed, 07 Sep 2016) $
+; $LastChangedRevision: 21803 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_sort.pro $
 ;
 ;-
@@ -24,10 +24,12 @@ sepname = str_sep(name,'.')
 if (n_elements(sepname) eq 1) then begin
 ;if n_elements(sepname) eq 1 then begin
 	get_data,name,ptr=pdata
-	test = (size(pdata,/type) ne 10)
+;	test = (size(pdata,/type) ne 10)
+	test = (size(pdata,/type) ne 8)
 	if (test[0]) then return  ;;  Not a time-varying data quantity --> exit
 	str_element,pdata,'X',foo,success=ok
 	if ok then begin
+;	  PRINT,'sorting TPLOT handle:  '+name[0]
 		newind = sort(*(pdata.x))
 		*(pdata.x) = (*(pdata.x))[newind]
 ;		*(pdata.x) = (*(pdata.x))(newind)
