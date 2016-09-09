@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-29 09:29:27 -0700 (Mon, 29 Aug 2016) $
-;$LastChangedRevision: 21763 $
+;$LastChangedDate: 2016-09-08 16:53:14 -0700 (Thu, 08 Sep 2016) $
+;$LastChangedRevision: 21808 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_login_lasp.pro $
 ;-
 
@@ -77,11 +77,14 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
               endif
             endif
         endelse
-    endif
+    endif else begin
+      if obj_valid(netUrl) then obj_destroy, netUrl
+      netUrl = 0
+    endelse
     
     
     ; prompt the user for their SDC username/password none was found in file
-    if undefined(password) &&  ~obj_valid(netUrl) then begin
+    if undefined(password) && ~obj_valid(netUrl) then begin
         ; catch errors from widget and ignore
         ;   -this is primarily to catch cases where no X server is running on linux
         ;   -login_widget has it's own handler that calls dialog_message, so

@@ -22,17 +22,22 @@ if n_params() eq 0 then begin
 endif
 
 
-if typename(ccsds) eq 'CCSDS_FORMAT' then data = *ccsds.pdata  else data=ccsds.data
+ccsds_data = spp_swp_ccsds_data(ccsds)
+
+;if typename(ccsds) eq 'CCSDS_FORMAT' then data = *ccsds.pdata  else data=ccsds.data
 ;data = ccsds.data
 
 if ccsds.pkt_size lt 72 then begin
-  dprint,'error',ccsds.pkt_size
-  return,0
+  if debug(2) then begin
+    dprint,'error',ccsds.pkt_size,dlevel=2
+    hexprint,ccsds_data
+    return,0    
+  endif
 endif
 
-values = swap_endian(ulong(data,10,11) )
-values2 = swap_endian(ulong(data,448/8,4) )
-sc_time_subsecs =  (swap_endian(uint(data,432/8,1) ,/swap_if_little_endian ))[0]
+values = swap_endian(ulong(ccsds_data,10,11) )
+values2 = swap_endian(ulong(ccsds_data,448/8,4) )
+sc_time_subsecs =  (swap_endian(uint(ccsds_data,432/8,1) ,/swap_if_little_endian ))[0]
 
 sample_clk_per = double(values[0])
 scpps_met_time = double(values[1])
@@ -148,8 +153,8 @@ str = {time:   ccsds.time  ,$
 ;tploprintdat,str
 
   if debug(4,msg='SWEM Timing') then begin
-     dprint,dlevel=2,'generic:',ccsds.apid,ccsds.size+7, n_elements(ccsds.data)
-     hexprint,ccsds.data
+     dprint,dlevel=2,'generic:',ccsds.apid,ccsds.size+7, n_elements(ccsds_data)
+     hexprint,ccsds_data
   endif
 
   last_str = str

@@ -9,7 +9,7 @@ if keyword_set(setlim) then begin
   options,'*rates*CNTS',spec=1,zrange=[1,1],/zlog,yrange=[0,0],ylog=0
   options,'*rates*CNTS',spec=0,yrange=[1,1],ylog=1
   options,'*hkp_HV_MODE',tplot_routine= 'bitplot'
-  
+  options,'*TEMPS',/ynozero
   
   
 endif
