@@ -25,8 +25,8 @@
 ;HISTORY:
 ; 2016-04-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-04-25 12:55:28 -0700 (Mon, 25 Apr 2016) $
-; $LastChangedRevision: 20914 $
+; $LastChangedDate: 2016-09-09 14:13:06 -0700 (Fri, 09 Sep 2016) $
+; $LastChangedRevision: 21812 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_edist.pro $
 ;-
 Function fa_esa_l2_edist, type, $
@@ -117,7 +117,7 @@ Function fa_esa_l2_edist, type, $
      nbj = all_dat.nenergy[ss[j]]
      nabj = all_dat.nbins[ss[j]]
      For k = 0, nbj-1 Do Begin
-        If(keyword_set(parange)) Then Begin
+        If(keyword_set(parange) && (parange[1]-parange[0]) Lt 360) Then Begin
            wt[k, *] = 0.0
            pajk = reform(all_dat.pitch_angle[ss[j], k, 0:nabj-1])
 ;pitch angle wraps, so sort
@@ -175,11 +175,15 @@ Function fa_esa_l2_edist, type, $
               Endif
 ;contract wtf
               wtf = wtf[0:nabj-1]+wtf[nabj:*]
-              wt[k, ssjk] = wtf              
+              wt[k, ssjk] = wtf
            Endelse
         Endif
      Endfor
-     oops = where(wt Gt 1.0) & if(oops[0] Ne -1) then stop
+     oops = where(wt Gt 1.0, noops)
+     If(oops[0] Ne -1) Then Begin
+        dprint, 'Wt factor is too large for: '+strcompress(string(noops))+' Points'
+        wt = wt < 1.0
+     Endif
 ;contract eflux variable
      eflux_otmp = reform(all_dat.eflux[ss[j], 0:nbj-1, 0:nabj-1])
      domega_otmp = reform(all_dat.domega[ss[j], 0:nbj-1, 0:nabj-1])

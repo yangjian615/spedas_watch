@@ -55,8 +55,8 @@
 ;HISTORY:
 ; 19-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-05-09 12:37:23 -0700 (Mon, 09 May 2016) $
-; $LastChangedRevision: 21044 $
+; $LastChangedDate: 2016-09-09 11:43:35 -0700 (Fri, 09 Sep 2016) $
+; $LastChangedRevision: 21811 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_concat.pro $
 ;-
 Function fa_esa_cmn_concat, dat1, dat2
@@ -101,7 +101,7 @@ Function fa_esa_cmn_concat, dat1, dat2
               Endif
               If(count Eq 0) Then undefine, dat
               count = count+1
-              If(n_elements(dat1.(x1) Gt n_elements(dat2.(x2)))) Then Begin
+              If(n_elements(dat1.(x1)) Gt n_elements(dat2.(x2))) Then Begin
                  str_element, dat, rv_arr[0, j], dat1.(x1), /add_replace
               Endif Else Begin
                  str_element, dat, rv_arr[0, j], dat2.(x2), /add_replace
