@@ -11,7 +11,7 @@ function spp_swp_spani_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   b = ccsds_data
   psize = 105+7
   if n_elements(b) ne psize then begin
-     dprint,dlevel=1, 'Size error ',ccsds.size,ccsds.apid
+     dprint,dlevel=1, 'Size error ',ccsds.pkt_size,ccsds.apid
      return,0
   endif
 
