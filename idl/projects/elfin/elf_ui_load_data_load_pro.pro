@@ -75,7 +75,7 @@ pro elf_ui_load_data_load_pro,$
   datalevel=loadStruc.datalevels
   datatype=loadStruc.datatypes
   timeRange=loadStruc.timerange
-  
+
   ; **** Specify the starting and ending time ranges for this mission *****
   ; **** this should be modified for each new mission *****
   elfmintime = '1970-01-01'
@@ -93,17 +93,21 @@ pro elf_ui_load_data_load_pro,$
   elf_load_data, instrument=instrument, datatype=datatype, level=level, $
                     trange=timeRange 
 
+  ;if instrument EQ 'epd' then del_data, 'ell_epdi'
   ; determine which tplot variables to delete and which ones are the new temporary 
   ; variables
   spd_ui_cleanup_tplot, tn_before, create_time_before=cn_before, del_vars=to_delete,$
                         new_vars=new_vars
- 
+
+  idx=where(new_vars EQ 'ell_epdi', ncnt)
+  if ncnt GT 0 then new_vars='ell_epde'
+
   if new_vars[0] ne '' then begin
     loaded = 1
-    
+  
     ; loop over loaded data
     for i = 0,n_elements(new_vars)-1 do begin
-      
+     
       ; check if data is already loaded, if so query the user on whether they want to overwrite data
       spd_ui_check_overwrite_data,new_vars[i],loadedData,parent_widget_id,statusBar,historyWin, $
         overwrite_selection,overwrite_count,replay=replay,overwrite_selections=overwrite_selections
@@ -112,7 +116,7 @@ pro elf_ui_load_data_load_pro,$
       ; this statement adds the variable to the loadedData object
       result = loadedData->add(new_vars[i],mission='elf', $            ;,observatory=probe, $
                                instrument=instrument)
-        
+      
       ; report errors to the status bar and add them to the history window
       if ~result then begin
         statusBar->update,'Error loading: ' + new_vars[i]
@@ -121,7 +125,7 @@ pro elf_ui_load_data_load_pro,$
       endif
     endfor
   endif
-    
+   
   ; here's where the temporary tplot variables are removed
   if to_delete[0] ne '' then begin
      store_data,to_delete,/delete
@@ -132,7 +136,7 @@ pro elf_ui_load_data_load_pro,$
      statusBar->update,'elf Data Loaded Successfully'
      historyWin->update,'elf Data Loaded Successfully'
   endif else begin
-  
+ 
      ; if the time range specified by the user is not within the time range 
      ; of available data for this mission and instrument then inform the user 
      if time_double(elfmaxtime) lt time_double(timerange[0]) || $

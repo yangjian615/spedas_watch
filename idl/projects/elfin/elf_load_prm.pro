@@ -47,6 +47,7 @@ PRO elf_load_prm, datatype=datatype, level=level, trange=trange, $
   if undefined(source) then source=!elf
   if undefined(level) then level = 'l1' else level=strlowcase(level)
   if undefined(datatype) then datatype=validtypes
+  if undefined(suffix) then suffix=''
   if datatype[0] EQ '*' then $
     datatype=validtypes $
     else datatype=strlowcase(datatype)
@@ -74,39 +75,47 @@ PRO elf_load_prm, datatype=datatype, level=level, trange=trange, $
   yr = strmid(trange[0],0,4)
   mo = strmid(trange[0],5,2)
   day = strmid(trange[0],8,2)
-
+  
   local_file = !elf.local_data_dir + level+'/prm/'+yr+'/lomo_'+level+'_'+yr+mo+day+'_prm_v01.cdf'
 
   no_download = !elf.no_download or !elf.no_server or ~undefined(no_update) 
   if no_download eq 0 then begin
-    
-      ; Construct file name
-      ; temporary kluge for l2 data
-      ; for now use level 1 and calibrate on the fly.
-      level1='l1'   ; remove this when l2 cdf files are available.
-      remote_file = !elf.remote_data_dir + level1+'/prm/'+yr+'/lomo_'+level1+'_'+yr+mo+day+'_prm_v01.cdf'
-      paths=spd_download(remote_file=remote_file, local_file=local_file)
-      
-   endif 
-
-  init_time=systime(/sec)
-  cdf2tplot, file=local_file, get_support_data=1
-  
-  get_data, 'ell_prm', data=d, dlimits=dl
-
-   ; for now calibrate on the fly
-  if level EQ 'l2' then begin
-     d.y[*,0]=d.y[*,0]/106.4   ;27238.4
-     d.y[*,1]=d.y[*,1]/97.9    ;25062.4
-     d.y[*,2]=d.y[*,2]/104.5   ;26572.
+        
+          ; Construct file name
+          ; temporary kluge for l2 data
+          ; for now use level 1 and calibrate on the fly.
+          level1='l1'   ; remove this when l2 cdf files are available.
+          remote_file = !elf.remote_data_dir + level1+'/prm/'+yr+'/lomo_'+level1+'_'+yr+mo+day+'_prm_v01.cdf'
+          paths=spd_download(remote_file=remote_file, local_file=local_file)
+          
   endif 
+    
+      init_time=systime(/sec)
+      cdf2tplot, file=local_file, get_support_data=1
+      
+;      get_data, 'ell_prm', data=d, dlimits=dl
+    
+       ; for now calibrate on the fly
+;      if level EQ 'l2' then begin
+;         d.y[*,0]=d.y[*,0]/106.4   ;27238.4
+;         d.y[*,1]=d.y[*,1]/97.9    ;25062.4
+;         d.y[*,2]=d.y[*,2]/104.5   ;26572.
+;      endif 
+    
+;      if i EQ 0 then begin
+;        alld=d
+;      endif else begin
+;        append_array, alld.x, alld.x
+;        append_array, alld.y[*,k]=
+;      endelse
 
   ; update attributes
-  miny=min(d.y[*,1])
-  maxy=max(d.y[*,0])
-  newdl={spec:0, log:0, colors:[2,4,6], labels:['x','y','z'], labflag:1, ytitle:'[nT]', $
-    color_table:39, yrange:[miny,maxy]}            
-  store_data, 'ell_prm', data=d, dlimits=newdl
+;  miny=min(d.y[*,1])
+;  maxy=max(d.y[*,0])
+;  newdl={spec:0, log:0, colors:[2,4,6], labels:['x','y','z'], labflag:1, ytitle:'[nT]', $
+;    color_table:39, yrange:[miny,maxy]}
+
+;  store_data, 'ell_prm'+suffix, data=d, dlimits=newdl
 
 ;   all_prm=tnames('ell_prm*')
 ;   req_prm=['ell_prm']

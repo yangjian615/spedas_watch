@@ -78,6 +78,8 @@ pro elf_ui_load_data_event,event
         if event.index eq 2 then typeArray = state.engTypeArray
         widget_control, typelist, set_value=typeArray
       end    
+      'TYPELIST': begin
+      end
       'CLEARPARAMS': begin
         ;clear the level and type list widget of all selections
         levellist = widget_info(event.handler,find_by_uname='levellist')
@@ -150,6 +152,7 @@ pro elf_ui_load_data_event,event
         instlist = widget_info(event.handler,find_by_uname='instrument')
         instrument = widget_info(instlist,/combobox_gettext)        
         instNum = widget_info(instlist,/combobox_number)        
+
         if instrument eq 'prm' then levelArray = state.prmLevelArray
         if instrument eq 'epd' then levelArray = state.epdLeveLArray
         if instrument eq 'eng' then levelArray = state.engLeveLArray
@@ -180,7 +183,7 @@ pro elf_ui_load_data_event,event
         
         ;turn on the hour glass while the data is being loaded
         widget_control, /hourglass
-        
+       
         ;create a load structure to pass the parameters needed by the load
         ;procedure
         loadStruc = { instrument:instrument, $
@@ -318,6 +321,7 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
                          value=prmlevelArray,$
                          /multiple,$
                          uname='levellist',$
+                         uvalue='LEVELLIST',$
                          xsize=16,$
                          ysize=15)                         
 ;  clearLevelButton = widget_button(levelBase,value='Clear Level',uvalue='CLEARLEVEL',ToolTip='Deselect level')
@@ -325,7 +329,7 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   ;create the list box and a clear all button for the data types for a given
   ;instrument
   prmtypeArray = ['mag']
-  epdtypeArray = ['epde', 'epdi']
+  epdtypeArray = ['epde']
   engtypeArray = ['*', 'bias_temp', '23v_temp', '8v6_temp', '5v7_temp', '5v0_dig_temp', '3v3_temp', '1v5_dig_temp', $
                   '1v5_epd_temp', '1v5_prm_temp', '30v_volt_mon','23v_volt_mon', '22v_volt_mon', $
                   '8v6_volt_mon', '8v_volt_mon', '5v_dig_volt_mon', '5v_epd_volt_mon', '4v5_volt_mon', $
@@ -337,6 +341,7 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
     value=prmtypeArray,$
     /multiple,$
     uname='typelist',$
+    uvalue='TYPELIST',$
     xsize=16,$
     ysize=15)
 

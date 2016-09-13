@@ -21,12 +21,14 @@
 ;			(default 200 sec, 8 sec for FAST)
 ;	NO_DATA: 	returns 1 if no_data else returns 0
 ;	NAME:  		New name of the Data Quantity
+;       SUFFIX:         Append this suffix to the tplot variable name,
+;                       only used if the NAME keyword is not set.
 ;
 ;HISTORY:
 ; 2016-04-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-09 14:13:06 -0700 (Fri, 09 Sep 2016) $
-; $LastChangedRevision: 21812 $
+; $LastChangedDate: 2016-09-12 13:04:26 -0700 (Mon, 12 Sep 2016) $
+; $LastChangedRevision: 21815 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_edist.pro $
 ;-
 Function fa_esa_l2_edist, type, $
@@ -37,6 +39,7 @@ Function fa_esa_l2_edist, type, $
                           gap_time=gap_time, $ 
                           no_data=no_data, $
                           name = name, $
+                          suffix = suffix, $
                           _extra=_extra
 ;next define the common blocks
   common fa_information, info_struct
@@ -195,7 +198,11 @@ Function fa_esa_l2_edist, type, $
 
 ;setup tplot variable
   If(is_string(name)) Then name_o_tplot = name $
-  Else name_o_tplot = 'fa_'+typex+'_l2_edist'
+  Else Begin
+     name_o_tplot = 'fa_'+typex+'_l2_edist'
+     If(is_string(suffix)) Then name_o_tplot = name_o_tplot+suffix
+  Endelse
+
   store_data, name_o_tplot, data = {x:(all_dat.time[ss]+all_dat.end_time[ss])/2,y:eflux_out,v:energy_out}
 ;  zlim,name_o_tplot, 1.e1, 1.e6, 1
   ylim,name_o_tplot, 5., 40000., 1

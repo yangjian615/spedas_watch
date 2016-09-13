@@ -46,8 +46,8 @@ pro elf_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
 
   !elf.local_data_dir = !elf.local_data_dir + 'lomo/elfin/'
   !elf.remote_data_dir = 'http://themis-data.igpp.ucla.edu/ell/'   ; use as backup web server
-
-  elf_config
+;  !elf.no_download=1
+;  elf_config
     
   return
 END

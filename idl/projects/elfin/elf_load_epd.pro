@@ -39,11 +39,13 @@ PRO elf_load_epd, datatype=datatype, level=level, trange=trange, $
   defsysv, '!elf', exists=exists
   if not(exists) then elf_init
 
-  validtypes=['epdi', 'epde']
+  validtypes=['epde']
   validlevels=['l1']
   
   if undefined(source) then source=!elf
   if undefined(datatype) then datatype=validtypes else datatype=strlowcase(datatype)
+  ; for now only epde is available
+  datatype=validtypes
   if undefined(level) then level='l1' else level=strlowcase(level)
   if datatype[0] EQ '*' then datatype=validtypes
   if undefined(local_data_dir) then local_data_dir = !elf.local_data_dir
@@ -90,7 +92,6 @@ PRO elf_load_epd, datatype=datatype, level=level, trange=trange, $
 
 ;  requested_epd_tvars='ell_'+datatype
 ;  all_epd_tvars=tnames('ell_epd*')
-;stop
 ;  tvar_to_delete = ssl_set_complement(requested_epd_tvars, all_epd_tvars)
   ;store_data, delete=tvar_to_delete
   ; temporary kluge till mastercdf is changed

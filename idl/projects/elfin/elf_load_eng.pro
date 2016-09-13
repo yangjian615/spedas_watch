@@ -77,8 +77,8 @@ PRO elf_load_eng, datatype=datatype, level=level, trange=trange, $
   day = strmid(trange[0],8,2)
 
   local_file = !elf.local_data_dir + level+'/eng/'+yr+'/lomo_'+level+'_'+yr+mo+day+'_eng_v01.cdf'
-
   no_download = !elf.no_download or !elf.no_server or ~undefined(no_update)
+
   if no_download eq 0 then begin
 
     ; Construct file name
@@ -98,6 +98,5 @@ PRO elf_load_eng, datatype=datatype, level=level, trange=trange, $
 ;  req_eng='ell_hsk_'+datatype
 ;  tvar_to_delete = ssl_set_complement(req_eng, all_eng)
 ;  store_data, delete=tvar_to_delete
- stop
 
 END

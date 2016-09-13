@@ -1,6 +1,6 @@
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-08-08 13:56:30 -0700 (Mon, 08 Aug 2016) $
-; $LastChangedRevision: 21610 $
+; $LastChangedDate: 2016-09-12 15:02:05 -0700 (Mon, 12 Sep 2016) $
+; $LastChangedRevision: 21816 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/SWEM/spp_swp_swem_unwrapper.pro $
 
 function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
@@ -22,13 +22,16 @@ function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
 
   if debug(5) then begin
     if ccsds_data[13] ne '00'x then   dprint,dlevel=1,'swem',ccsds.pkt_size, ccsds.apid
-    hexprint,ccsds_data,nbytes=32
+;    hexprint,ccsds_data,nbytes=32
   endif
   
 
   if ccsds.seq_group eq 3 && keyword_set(ccsds_data) then begin   ; Loner packets
     spp_ccsds_pkt_handler,ccsds_data[12:*],remainder=remainder,ptp_header=ptp_header
-    if keyword_set(remainder) then dprint,'error'
+    if keyword_set(remainder) then begin
+      dprint,'error'
+      hexprint,remainder
+    endif
   endif
   
   if ccsds.seq_group eq 5 then begin
