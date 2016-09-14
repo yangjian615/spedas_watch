@@ -12,8 +12,8 @@
 ;         end_times:    returns an array of unix times (double) containing the end of each burst interval
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-18 09:26:58 -0700 (Thu, 18 Aug 2016) $
-;$LastChangedRevision: 21668 $
+;$LastChangedDate: 2016-09-13 15:36:26 -0700 (Tue, 13 Sep 2016) $
+;$LastChangedRevision: 21831 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_load_brst_segments.pro $
 ;-
 
@@ -51,7 +51,10 @@ pro mms_load_brst_segments, trange=trange, suffix=suffix, start_times=start_time
           append_array, bar_y, [!values.f_nan, 0.,0., !values.f_nan]
         endif
       endfor
-      
+      if undefined(bar_x) then begin
+        dprint, dlevel = 0, 'Error, no burst intervals within the requested time range'
+        return
+      endif
       store_data,'mms_bss_burst'+suffix,data={x:bar_x, y:bar_y}
       options,'mms_bss_burst'+suffix,thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
         ticklen=0,panel_size=0.09,colors=4, labels=['Burst'], charsize=2.

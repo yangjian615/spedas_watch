@@ -49,8 +49,8 @@ FUNCTION eva_sitl_pref_event, ev
 ;      widget_control, state.STATE_SITL.btnAllAuto, SENSITIVE=(~ev.SELECT)
       widget_control, state.STATE_SITL.cbMulti, SENSITIVE=(~ev.SELECT)
       widget_control, state.STATE_SITL.cbWTrng, SENSITIVE=(~ev.SELECT)
-      widget_control, state.STATE_SITL.btnSplit, SENSITIVE=(~ev.SELECT)
-      widget_control, state.STATE_SITL.btnFill, SENSITIVE=(~ev.SELECT)
+;      widget_control, state.STATE_SITL.btnSplit, SENSITIVE=(~ev.SELECT)
+;      widget_control, state.STATE_SITL.btnFill, SENSITIVE=(~ev.SELECT)
 ;      widget_control, state.STATE_SITL.drpHighlight, SENSITIVE=ev.SELECT
       end
     state.bgTestmode:  begin;{ID:0L, TOP:0L, HANDLER:0L, SELECT:0, VALUE:0 }

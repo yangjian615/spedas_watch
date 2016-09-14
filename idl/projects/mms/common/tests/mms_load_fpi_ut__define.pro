@@ -29,7 +29,7 @@ end
 
 function mms_load_fpi_ut::test_loading_tplotnames_des
   mms_load_fpi, trange=['2015-10-15', '2015-10-16'], datatype=['des-moms', 'des-dist'], tplotnames = tplotnames
-  assert, n_elements(tplotnames) eq 105, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
+  assert, n_elements(tplotnames) eq 107, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
   return, 1
 end
 

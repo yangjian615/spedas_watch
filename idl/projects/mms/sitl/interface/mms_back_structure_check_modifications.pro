@@ -112,8 +112,11 @@ fom_error_txt = 'ERROR: FOM value at following times out of bounds (' + fom_min_
 
 if count_fom_errors gt 0 then begin
    fom_error_times = strarr(count_fom_errors)
-   ; ALERT - need to change this!!!
-   create_time_strings, new_backstr.start(loc_fom_error), fom_error_times
+   for c=0,count_fom_errors-1 do begin
+    ; ALERT - need to change this!!!
+    create_time_strings, new_backstr.start[loc_fom_error[c]], stemp
+    fom_error_times[c] = stemp
+   endfor
 endif else begin
    fom_error_times = ''
 endelse
@@ -134,14 +137,18 @@ mod_warning_text = 'WARNING: The segments at the following times have a modified
                     
 if count_del_warnings gt 0 then begin
   del_warning_times = strarr(count_del_warnings)
-  create_time_strings, new_backstr.start(loc_del_warning), del_warning_times
+  create_time_strings, new_backstr.start[loc_del_warning[c]], stemp
+  del_warning_times[c] = stemp
 endif else begin
   del_warning_times = ''
 endelse
 
 if count_mod_percent gt 0 then begin
   mod_percent_times = strarr(count_mod_percent)
-  create_time_strings, new_backstr.start(loc_mod_percent), mod_percent_times
+  for c=0,count_mod_percent-1 do begin
+    create_time_strings, new_backstr.start[loc_mod_percent[c]], stemp
+    mod_percent_times[c] = stemp
+  endfor
 endif else begin
   mod_percent_times = ''
 endelse

@@ -8,8 +8,8 @@
 ;     taken from v2.1.0 of the FPI CDFs, 3/10/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-29 08:29:38 -0700 (Tue, 29 Mar 2016) $
-; $LastChangedRevision: 20618 $
+; $LastChangedDate: 2016-09-13 09:08:44 -0700 (Tue, 13 Sep 2016) $
+; $LastChangedRevision: 21818 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_cdf2tplot_ut__define.pro $
 ;-
 
@@ -40,7 +40,7 @@ end
 ; DELTA_PLUS_VAR/DELTA_MINUS_VAR for L2 FPI Burst (shifted)
 function mms_cdf2tplot_ut::test_fpi_burst_shifted
   mms_load_fpi, trange=['2016-01-21', '2016-01-22'], datatype='des-moms', probe=3, data_rate='brst', /center, suffix='_shifted'
-  get_data, 'mms3_des_numberdensity_dbcs_brst_shifted', data=d
+  get_data, 'mms3_des_numberdensity_brst_shifted', data=d
   valid_times_shifted = ['20160121/01:06:24.024', '20160121/01:06:24.054', '20160121/01:06:24.084', '20160121/01:06:24.114']
   for vi = 0, n_elements(valid_times_shifted)-1 do begin
     assert, time_string(d.X[vi], tformat='YYYYMMDD/hh:mm:ss.fff') eq valid_times_shifted[vi], 'Problem with the FPI L2 burst shifted data'
@@ -51,7 +51,7 @@ end
 ; DELTA_PLUS_VAR/DELTA_MINUS_VAR for L2 FPI Burst (unshifted)
 function mms_cdf2tplot_ut::test_fpi_burst_unshifted
   mms_load_fpi, trange=['2016-01-21', '2016-01-22'], datatype='des-moms', probe=3, data_rate='brst'
-  get_data, 'mms3_des_numberdensity_dbcs_brst', data=d
+  get_data, 'mms3_des_numberdensity_brst', data=d
   valid_times_noshift = ['20160121/01:06:24.009', '20160121/01:06:24.039', '20160121/01:06:24.069', '20160121/01:06:24.099']
   for vi = 0, n_elements(valid_times_noshift)-1 do begin
     assert, time_string(d.X[vi], tformat='YYYYMMDD/hh:mm:ss.fff') eq valid_times_noshift[vi], 'Problem with the FPI L2 burst unshifted data'

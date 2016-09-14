@@ -8,9 +8,9 @@
 ; and mgunit in the local path.
 ;
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-06-07 17:36:55 -0700 (Tue, 07 Jun 2016) $
-; $LastChangedRevision: 21278 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-09-13 12:57:57 -0700 (Tue, 13 Sep 2016) $
+; $LastChangedRevision: 21827 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_products_ut__define.pro $
 ;-
 
@@ -327,10 +327,10 @@ function mms_part_products_ut::test_fpi_vs_cdf
   
     mms_part_products, self.data, outputs='moments', trange=self.trange, /silent
 
-    vel_name = 'mms1_d'+species[i]+'s_bulk'
-    join_vec, vel_name + ['x','y','z'] +'_dbcs_brst', vel_name
+    vel_name = 'mms1_d'+species[i]+'s_bulkv_dbcs_brst'
+   ; join_vec, vel_name + ['x','y','z'] +'_dbcs_brst', vel_name
     
-    names = ['mms1_d'+species[i]+'s_numberdensity_dbcs_brst', self.data+'_density', $
+    names = ['mms1_d'+species[i]+'s_numberdensity_brst', self.data+'_density', $
              vel_name, self.data+'_velocity']
     
     assert, spd_data_exists(names,self.trange[0],self.trange[1]), 'Failed to load/produce data for comparison'

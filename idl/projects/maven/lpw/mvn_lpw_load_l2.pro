@@ -106,6 +106,7 @@ proname = 'mvn_lpw_load_l2'
 if size(trange,/type) ne 0. then trange2=trange  ;copy trange, as will convert it to a dbl. Don't want to edit the input as the output will change as it's a keyword.
 if size(vars,/type) eq 0. then vars=['lpnt', 'wspecact', 'wspecpas']  ;default variables if non set.
 NaN = !values.f_nan ; for convenience
+varsCOPY = vars  ;make a copy for later
 
 ;Acceptable vars:
 varsALL=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'wn', 'lpiv', 'lpnt', 'mrgexb', 'mrgscpot', 'we12', 'euv']
@@ -178,7 +179,7 @@ if keyword_set(trange) then begin
         maxTR = max(trange2,/nan)
         lengthTR = (maxTR-minTR) / (24.*60.*60.)  ;the length of trange2, in days.
         
-        timespan, minTR, lengthTR  ;set timerange     
+        timespan, minTR, lengthTR  ;set timerange            
     endif 
     
     
@@ -293,7 +294,7 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
     
     for tt = 0., neleD-1. do begin   ;go over requested dates
         dateTMP = dates[tt]  ;current date to load.
-                        
+                     
         mvn_lpw_cdf_read, dateTMP, vars=varTMP, level='l2', success=ReadSuccess  ;this routine will check if varTMP is applicable. If incorrect terms are entered this routine will retall. I could probably make this ignore incorrect terms, I'll edit at a later date, maybe...
         ReadSuccessTot += ReadSuccess
         
@@ -393,9 +394,18 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
     
     ;Note that here we have looked at one variable, for (possible) multiple dates. We may have no data, or we may have data for just a few requested dates. If no data, move on to
     ;next vv.   
-    data1 = 0
+    data1 = 0  
     indx = where(finite(x), xcount)
     indx = where(finite(y), ycount)
+    if size(x,/type) eq 0. then xcount = 0.  ;if x does not exist, xcount seems to retain the value from the last variable iteration.
+    if size(y,/type) eq 0. then ycount = 0.
+    
+    ;Make sure data is not all NaNs (can sometimes happen):
+    if size(x,/type) ne 0. then begin
+        if total(finite(x,/nan)) eq n_elements(x) then xcount = 0l
+        if total(finite(y,/nan)) eq n_elements(y) then ycount = 0l
+    endif
+    
     if ((xcount eq 0L) or (ycount eq 0L)) then begin  ; if no time or no data, then no point
       undefine, x
       undefine, y
@@ -403,6 +413,8 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
       undefine, flag
       undefine, v
       undefine, dv
+      xcount = 0l  ;make sure both are zero so we jump out below
+      ycount = 0l  
     endif else begin
       indx = where(finite(v), count)
       if (count eq 0L) then undefine, v
@@ -430,6 +442,7 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
           if (size(x,/type) ne 0.) and (size(y,/type) ne 0.) and (size(dy,/type) ne 0.) and (size(flag,/type) ne 0.) and (size(v,/type) eq 0.) and (size(dv,/type) ne 0.) then scode = 2.
           if (size(x,/type) ne 0.) and (size(y,/type) ne 0.) and (size(dy,/type) ne 0.) and (size(flag,/type) ne 0.) and (size(v,/type) ne 0.) and (size(dv,/type) ne 0.) then scode = 3.
           
+          
           ;Trim data based on timespan:
           indsKP = where(x ge trange2[0] and x le trange2[1], nindsKP)  ;indsKP are the indices to keep that lie within timespan. These are the same for each tag field. Apply below.
       
@@ -441,11 +454,6 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
             if (size(dv,/type) ne 0) then str_element, dataSTR, 'dv', dv[indsKP,*], /add
           endif
           
-      ;    case scode of 
-      ;        1.:   dataSTR = create_struct('x', x[indsKP], 'y', y[indsKP,*], 'dy', dyTMP[indsKP,*], 'flag', flagTMP[indsKP])    ;here select data that lies between timespan
-      ;        2.:   dataSTR = create_struct('x', x[indsKP], 'y', y[indsKP,*], 'dy', dyTMP[indsKP,*], 'dv', dvTMP[indsKP,*], 'flag', flagTMP[indsKP])
-      ;        3.:   dataSTR = create_struct('x', x[indsKP], 'y', y[indsKP,*], 'v', vTMP, 'dy', dyTMP[indsKP,*], 'dv', dvTMP[indsKP,*], 'flag', flagTMP[indsKP])
-      ;    endcase
           
           if scode eq 0. then begin  ;If data tags don't match
               print, ""
@@ -476,22 +484,30 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
 endfor  ;vv, variables
 
 ;If lpnt was called, copy TMP variables and then remove them. This is required to prevent variables being overwritten when a new date is called (due to how the data are stored).
-if total(strmatch(vars, 'lpnt_n')) eq 1. and ReadSuccessTot gt 0. then begin
-    get_data, 'mvn_lpw_lp_ne_l2_TMP', data=dd1, dlimit=dl1, limit=ll1
-    get_data, 'mvn_lpw_lp_te_l2_TMP', data=dd2, dlimit=dl2, limit=ll2
-    get_data, 'mvn_lpw_lp_vsc_l2_TMP', data=dd3, dlimit=dl3, limit=ll3
-    
-    store_data, 'mvn_lpw_lp_ne_l2', data=dd1, dlimit=dl1, limit=ll1
-    store_data, 'mvn_lpw_lp_te_l2', data=dd2, dlimit=dl2, limit=ll2
-    store_data, 'mvn_lpw_lp_vsc_l2', data=dd3, dlimit=dl3, limit=ll3
-    
-    store_data, 'mvn_lpw_lp_ne_l2_TMP', /delete  ;remove temp variables
-    store_data, 'mvn_lpw_lp_te_l2_TMP', /delete
-    store_data, 'mvn_lpw_lp_vsc_l2_TMP', /delete
-    store_data, 'mvn_lpw_lp_n_t_l2', /delete
+;2016-09-13: CMF: bug fix, if we request ['lpnt', 'wn'], and lpnt works but there is no data for 'wn', then the dat reads in ok, but because ReadSuccessTot is 0 after failing 
+;to find wn data, the following loop does not execute, and the lpnt TMP variables are left in memory, which screws up the plotting range. Timespan itself is not changed,
+;but I think because these are the last variables loaded in to tplot, it affects the next plotting, unless they are removed.
+if total(strmatch(varsCOPY, 'lpnt')) eq 1. then begin  ;did user ask for lpnt?
+    iFIND = where(varsCOPY eq 'lpnt')  ;find which variable was lpnt
+    if success[iFIND] gt 0. then begin  ;if the matching success variable is > 0, we loaded some data, so remove the tmp files below
+        get_data, 'mvn_lpw_lp_ne_l2_TMP', data=dd1, dlimit=dl1, limit=ll1
+        get_data, 'mvn_lpw_lp_te_l2_TMP', data=dd2, dlimit=dl2, limit=ll2
+        get_data, 'mvn_lpw_lp_vsc_l2_TMP', data=dd3, dlimit=dl3, limit=ll3
+  
+        store_data, 'mvn_lpw_lp_ne_l2', data=dd1, dlimit=dl1, limit=ll1
+        store_data, 'mvn_lpw_lp_te_l2', data=dd2, dlimit=dl2, limit=ll2
+        store_data, 'mvn_lpw_lp_vsc_l2', data=dd3, dlimit=dl3, limit=ll3
+  
+        store_data, 'mvn_lpw_lp_ne_l2_TMP', /delete  ;remove temp variables
+        store_data, 'mvn_lpw_lp_te_l2_TMP', /delete
+        store_data, 'mvn_lpw_lp_vsc_l2_TMP', /delete
+        store_data, 'mvn_lpw_lp_n_t_l2', /delete
+  
+    endif
 endif
 
-if not keyword_set(noTPLOT) and ReadSuccessTot gt 0. then tplot, tplotvars  ;tplot loaded vars
+iTMP = where(success gt 0., niTMP)   ;number of variables successfully loaded
+if not keyword_set(noTPLOT) and niTMP gt 0. then tplot, tplotvars  ;tplot loaded vars
 
 if euvPRT eq 1. then begin  ;if user requested EUV and LPW, LPW has been retrieved, user must call EUV separately.
   print, ""

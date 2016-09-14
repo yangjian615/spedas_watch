@@ -8,8 +8,8 @@
 ;   (add, split/combine,etc) to the FOM/BAK structure file. 
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-04-14 13:51:34 -0700 (Thu, 14 Apr 2016) $
-; $LastChangedRevision: 20818 $
+; $LastChangedDate: 2016-09-13 10:28:52 -0700 (Tue, 13 Sep 2016) $
+; $LastChangedRevision: 21824 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_strct_update.pro $
 ;
 PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVERRIDE
@@ -18,7 +18,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
   if n_elements(user_flag) eq 0 then user_flag = 0
 
   defSourceID = eva_sourceid()
-  
+
   get_data,'mms_stlm_fomstr',data=D,lim=lim,dl=dl
   s = lim.UNIX_FOMSTR_MOD
   tfom = eva_sitl_tfom(s)
@@ -186,7 +186,7 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
       endfor
       if ~matched then begin;..................... ADD
         str_element,/add,s,'START',[s.START, long(segSelect.TS)]
-        str_element,/add,s,'STOP', [s.STOP,  long(segSelect.TE)]
+        str_element,/add,s,'STOP', [s.STOP,  long(segSelect.TE-10.d0)]
         str_element,/add,s,'FOM',  [s.FOM,   segSelect.FOM]
         str_element,/add,s,'SEGLENGTHS',[s.SEGLENGTHS, floor((segSelect.TE-segSelect.TS)/10.d)]
         str_element,/add,s,'CHANGESTATUS',[s.CHANGESTATUS, 0L]; REQUIRED BY RICK (signifies the segment was added)
@@ -205,6 +205,29 @@ PRO eva_sitl_strct_update, segSelect, user_flag=user_flag, BAK=BAK, OVERRIDE=OVE
         str_element,/add,s,'DISCUSSION',[s.DISCUSSION,segSelect.DISCUSSION]
       endif
 
+      ; cleanup (added on 2016-09-12)
+      for N=0, Nsegs-1 do begin; scan all segment
+        idx = where(s.CHANGESTATUS eq 2L and s.DATASEGMENTID eq -1L, ct, comp=comp, ncomp=ncomp)
+        if ct gt 0 then begin
+          str_element,/add,s,'CHANGESTATUS' ,s.CHANGESTATUS[comp]
+          str_element,/add,s,'CREATETIME'   ,s.CREATETIME[comp]
+          str_element,/add,s,'DATASEGMENTID',s.DATASEGMENTID[comp]
+          str_element,/add,s,'DISCUSSION'   ,s.DISCUSSION[comp]
+          str_element,/add,s,'FINISHTIME'   ,s.FINISHTIME[comp]
+          str_element,/add,s,'FOM'          ,s.FOM[comp]
+          str_element,/add,s,'INPLAYLIST'   ,s.INPLAYLIST[comp]
+          str_element,/add,s,'ISPENDING'    ,s.ISPENDING[comp]
+          str_element,/add,s,'NBUFFS'       ,long(total(s.SEGLENGTHS[comp]))
+          str_element,/add,s,'NUMEVALCYCLES',s.NUMEVALCYCLES[comp]
+          str_element,/add,s,'PARAMETERSETID',s.PARAMETERSETID[comp]
+          str_element,/add,s,'SEGLENGTHS'   ,s.SEGLENGTHS[comp]
+          str_element,/add,s,'SOURCEID'     ,s.SOURCEID[comp]
+          str_element,/add,s,'START'        ,s.START[comp]
+          str_element,/add,s,'STATUS'       ,s.STATUS[comp]
+          str_element,/add,s,'STOP'         ,s.STOP[comp]
+        endif
+      endfor
+      
       ;update 'mms_sitl_bakstr'
       D = eva_sitl_strct_read(s,min(s.START,/nan),/quiet)
       store_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl; update data points

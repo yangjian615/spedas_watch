@@ -126,7 +126,11 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     endfor
     NOTOK = (ct_overlap gt 0)
     if NOTOK then begin
-      rst = dialog_message('A new segment must not overlap with existing segments.',/info,/center)
+      msg = 'A new segment must not overlap with existing segments.'
+      print, msg
+      print,' Selected: ',time_string(trange)
+      print,' ct_overlap = ', ct_overlap
+      rst = dialog_message(msg,/info,/center)
       return
     endif
     wgrid = [0];s.TIMESTAMPS
@@ -236,8 +240,25 @@ PRO eva_sitl_seg_fill, t, state=state, var=var
 
     if n_elements(tnew) ne 2 then message,'Something is wrong'
   endif else begin
-    result = dialog_message("This feature is not needed in the back-structure mode.",/info,/center)
-    return
+;    result = dialog_message("This feature is not needed in the back-structure mode.",/info,/center)
+;    return
+    
+    get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
+    s = lim.unix_BAKstr_mod
+    tnew = -1
+    Nsegs = n_elements(s.FOM)
+ 
+    for N=0,Nsegs-2 do begin
+      ts = s.STOP[N]+10.d0
+      te = s.START[N+1]
+      if (ts lt t) and (t lt te) then tnew = [ts,te]
+    endfor
+
+    if n_elements(tnew) ne 2 then begin
+      msg = 'Please click an open space between two segments.'
+      result = dialog_message(msg,/center)
+      return
+    endif
   endelse
 
   eva_sitl_seg_add, tnew, state=state, var=var
@@ -475,9 +496,20 @@ FUNCTION eva_sitl_event, ev
       end
     state.btnSplit: begin
       print,'EVA: ***** EVENT: btnSplit *****'
-      str_element,/add,state,'group_leader',ev.top
-      eva_ctime,/silent,routine_name='eva_sitl_seg_split',state=state,occur=1,npoints=1;npoints
-      sanitize_fpi=0
+      result = 'Yes'
+      if state.PREF.EVA_BAKSTRUCT then begin
+        msg = 'Please DO NOT SPLIT pre-existing segments. '
+        msg = [msg, 'You can only split a segment that was newly created during']
+        msg = [msg, 'this EVA session (by you) and has not been processed at SDC.']
+        msg = [msg, ' ']
+        msg = [msg, 'Would you still like to proceed and split?'] 
+        result = dialog_message(msg,/center,/question)
+      endif
+      if result eq 'Yes' then begin
+        str_element,/add,state,'group_leader',ev.top
+        eva_ctime,/silent,routine_name='eva_sitl_seg_split',state=state,occur=1,npoints=1;npoints
+        sanitize_fpi=0
+      endif
       end
     state.btnUndo: begin
       print,'EVA: ***** EVENT: btnUndo *****'
@@ -512,10 +544,13 @@ FUNCTION eva_sitl_event, ev
           tai_BAKStr_mod = lmod.unix_BAKStr_mod
           str_element,/add,tai_BAKStr_mod,'START', mms_unix2tai(lmod.unix_BAKStr_mod.START); LONG
           str_element,/add,tai_BAKStr_mod,'STOP',  mms_unix2tai(lmod.unix_BAKStr_mod.STOP) ; LONG
+          
+          header = eva_sitl_text_selection(lmod.unix_BAKStr_mod,/bak)
+          
           vsp = '////////////////////////////'
-          header = [vsp+' NEW SEGMENTS '+vsp]
+          header = [header, vsp+' VALIDATION RESTULT (NEW SEGMENTS) '+vsp]
           r = eva_sitl_validate(tai_BAKStr_mod, -1, vcase=1, header=header, /quiet, valstruct=state.val); Validate New Segs
-          header = [r.msg,' ', vsp+' MODIFIED SEGMENTS '+vsp]
+          header = [r.msg,' ', vsp+' VALIDATION RESULT (MODIFIED SEGMENTS) '+vsp]
           r2 = eva_sitl_validate(tai_BAKStr_mod, tai_BAKStr_org, vcase=2, header=header, valstruct=state.val); Validate Modified Seg
         endelse; if ct eq 0
       endif else begin
