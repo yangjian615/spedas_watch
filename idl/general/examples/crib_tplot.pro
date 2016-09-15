@@ -25,8 +25,8 @@
 ;   these cribs can help double as documentation for tplot.
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2014-12-08 17:28:11 -0800 (Mon, 08 Dec 2014) $
-; $LastChangedRevision: 16413 $
+; $LastChangedDate: 2016-09-14 12:57:40 -0700 (Wed, 14 Sep 2016) $
+; $LastChangedRevision: 21832 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot.pro $
 ;-
 
@@ -136,7 +136,7 @@ print,'Type ".c" to continue'
 stop
 
 ;---------------------------------------------------------------------------------------------------
-; Other Options and Features
+; Options and Features
 ;---------------------------------------------------------------------------------------------------
 
 ;--------------------------------------------------------------------------
@@ -144,29 +144,6 @@ stop
 ;  Use the "options" routine to set a property of an indivitual variable
 ;  and the "tplot_options" routine to set the property for all plots.
 ;--------------------------------------------------------------------------
-
-;turn off interpolation on spectrograms to show hard bin edges
-options, 'sta_SWEA_en', no_interp=1
-
-tplot, 'sta_SWEA_en'
-
-options, 'sta_SWEA_en', no_interp=0 ;reset
-
-print,'Example of how to turn off interpolation on spectrograms.'
-print,'type ".c" to continue'
-stop
-
-
-;globally turn off interpolation on spectrograms
-tplot_options, 'no_interp', 1
-
-tplot, 'sta_SWEA_en'
-
-tplot_options, 'no_interp', 0 ;reset
-
-print,'Example of how to globally turn off interpolation on spectrograms.'
-print,'type ".c" to continue'
-stop
 
 
 ;You can bring the plot window to the front with the WSHOW keyword 
@@ -202,12 +179,99 @@ print,'Type ".c" to continue'
 stop
 
 
-;you can zoom in without clicking using this command
+;you can change the time range without clicking using this command
 tlimit,'2008-03-23/12:00:00','2008-03-23/20:00:00'
 
 print,"Use 'tlimit,starttime,stoptime' to select a specific range without clicking"
 print,'Type ".c" to continue'
 stop
+
+
+;revert to the previous time range
+tlimit, /last
+
+print,'Use tlimit, /last to revert to the previous time range'
+print,'Type ".c" to continue'
+stop
+
+
+;use full time range of loaded data
+tlimit, /full
+
+print,'Use tlimit, /full to use the full time range of loaded data'
+print,'Type ".c" to continue'
+stop
+
+
+;Spectrogram interpolation can be controlled with 3 options.
+;These options can be set on a specific variables or globally.
+;  x_no_interp:  disables interpolation along the x axis
+;  y_no_interp:  disables interpolation along the y axis
+;    no_interp:  disables all interpolation (overrides x/y options if set) 
+
+;Note:  Some missions will set no_interp globally and set [xy]_no_interp
+;       when creating spectrograms of their data.
+
+;plot interpolated spectrogram
+tplot_options, 'no_interp', 0   ;ensure global is off 
+
+options, 'sta_SWEA_en', no_interp=0
+
+tplot, 'sta_SWEA_en'
+
+print,'Example of how to turn off interpolation on spectrograms.'
+print,'type ".c" to continue'
+stop
+
+;plot spectrogram without interpolation
+options, 'sta_SWEA_en', no_interp=1
+
+tplot, 'sta_SWEA_en'
+
+print,'Example of how to globally turn off interpolation on spectrograms.'
+print,'type ".c" to continue'
+stop
+
+
+;To delete an option call the routine with the option named but no argument.
+
+;remove inteprolation option set in previous example
+options, 'sta_SWEA_en', 'no_interp'
+
+;remove default option from variable
+options, 'sta_SWEA_en', 'ylog', /default
+
+;remove global interpolation option set in previous example
+tplot_options, 'no_interp'
+
+tplot, 'sta_SWEA_en'
+
+print, 'Example of how to delete options'
+print,'type ".c" to continue'
+stop
+
+
+;Use the /default keyword to set as option as a variable's default.
+
+;add ylog option removed in previous example
+options, 'sta_SWEA_en', ylog=1, /default
+
+tplot, 'sta_SWEA_en'
+
+print, 'Example of how to add default options to variable'
+print,'type ".c" to continue'
+stop
+
+;if the option is set normally that value will be used instead 
+;of the default until it is removed
+options, 'sta_SWEA_en', ylog=0
+
+tplot, 'sta_SWEA_en'
+
+print, 'Example of how to delete options'
+print,'type ".c" to continue'
+stop
+
 
 ;---------------------------------------------------------------------------------------------------
 ; Retrieving Data
