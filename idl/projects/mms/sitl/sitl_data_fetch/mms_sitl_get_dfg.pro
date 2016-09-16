@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-01-22 08:56:40 -0800 (Fri, 22 Jan 2016) $
-;  $LastChangedRevision: 19788 $
+;  $LastChangedDate: 2016-09-15 13:14:53 -0700 (Thu, 15 Sep 2016) $
+;  $LastChangedRevision: 21835 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_dfg.pro $
 
 
@@ -58,7 +58,7 @@ pro mms_sitl_get_dfg, sc_id=sc_id, no_update = no_update, reload = reload, level
   endelse
   
   mode = 'srvy'
-
+  
   ; See if spacecraft id is set
   if ~keyword_set(sc_id) then begin
     print, 'Spacecraft ID not set, defaulting to mms1'
@@ -80,11 +80,11 @@ pro mms_sitl_get_dfg, sc_id=sc_id, no_update = no_update, reload = reload, level
       sc_id=sc_id(where(ivalid eq 0))
     endif
   endelse
-
+  
   ;----------------------------------------------------------------------------------------------------------
   ; Check for AFG data first
   ;----------------------------------------------------------------------------------------------------------
-
+  
   for j = 0, n_elements(sc_id)-1 do begin
 
     if keyword_set(no_update) then begin
@@ -160,35 +160,45 @@ pro mms_sitl_get_dfg, sc_id=sc_id, no_update = no_update, reload = reload, level
 ;
 ;      store_data, varname, data = {x: times, y:b_field}
 
-      mag_struct = mms_sitl_open_dfg_cdf(files_open(0))
-      times = mag_struct.x
-      b_field_pgsm = mag_struct.y_pgsm
-      pgsm_varname = mag_struct.pgsm_varname
-      b_field_dmpa = mag_struct.y_dmpa
-      dmpa_varname = mag_struct.dmpa_varname
-      etimes = mag_struct.ephemx
-      pos_vect = mag_struct.ephemy
-      evarname = mag_struct.ephem_varname
-
-      if n_elements(files_open) gt 1 then begin
-        for i = 1, n_elements(files_open)-1 do begin
-          temp_struct = mms_sitl_open_afg_cdf(files_open(i))
-          times = [times, temp_struct.x]
-          etimes = [etimes, temp_struct.ephemx]
-          pos_vect = [pos_vect, temp_struct.ephemy]
-          b_field_pgsm = [b_field_pgsm, temp_struct.y_pgsm]
-          b_field_dmpa = [b_field_dmpa, temp_struct.y_dmpa]
-        endfor
-      endif
-
-      store_data, pgsm_varname, data = {x: times, y:b_field_pgsm}
-      store_data, dmpa_varname, data = {x: times, y:b_field_dmpa}
-
-      if evarname ne '' then begin
-        store_data, evarname, data = {x: etimes, y:pos_vect}
-      endif else begin
-        print, 'No QL ephemeris in DFG file for ' + sc_id[j]
-      endelse
+;      mag_struct = mms_sitl_open_dfg_cdf(files_open(0))
+;      times = mag_struct.x
+;      b_field_pgsm = mag_struct.y_pgsm
+;      pgsm_varname = mag_struct.pgsm_varname
+;      b_field_dmpa = mag_struct.y_dmpa
+;      dmpa_varname = mag_struct.dmpa_varname
+;      etimes = mag_struct.ephemx
+;      pos_vect = mag_struct.ephemy
+;      evarname = mag_struct.ephem_varname
+;
+;      if n_elements(files_open) gt 1 then begin
+;        for i = 1, n_elements(files_open)-1 do begin
+;          temp_struct = mms_sitl_open_dfg_cdf(files_open(i))
+;          times = [times, temp_struct.x]
+;          etimes = [etimes, temp_struct.ephemx]
+;          pos_vect = [pos_vect, temp_struct.ephemy]
+;          b_field_pgsm = [b_field_pgsm, temp_struct.y_pgsm]
+;          b_field_dmpa = [b_field_dmpa, temp_struct.y_dmpa]
+;        endfor
+;      endif
+;
+;      store_data, pgsm_varname, data = {x: times, y:b_field_pgsm}
+;      store_data, dmpa_varname, data = {x: times, y:b_field_dmpa}
+;
+;      if evarname ne '' then begin
+;        store_data, evarname, data = {x: etimes, y:pos_vect}
+;      endif else begin
+;        print, 'No QL ephemeris in DFG file for ' + sc_id[j]
+;      endelse
+    
+    mms_cdf2tplot, files_open
+    
+    dfg_vecname = sc_id(j) + '_dfg_srvy_dmpa'
+    split_vec, dfg_vecname
+        
+    join_vec, [dfg_vecname + '_0', dfg_vecname + '_1', dfg_vecname + '_2'], dfg_vecname
+    tplot_rename, dfg_vecname + '_3', dfg_vecname + '_btot'
+    
+    store_data, [dfg_vecname + '_0', dfg_vecname + '_1', dfg_vecname + '_2'], /delete
 
     endif else begin
       print, 'No DFG data available locally or at SDC or invalid query!'

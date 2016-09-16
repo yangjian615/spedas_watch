@@ -31,8 +31,8 @@
 ;       Mostly copied from 'mvn_pfp_file_retrieve'
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-09-09 11:33:47 -0700 (Fri, 09 Sep 2016) $
-; $LastChangedRevision: 21810 $
+; $LastChangedDate: 2016-09-14 22:09:58 -0700 (Wed, 14 Sep 2016) $
+; $LastChangedRevision: 21834 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/kaguya/general/kgy_file_retrieve.pro $
 ;-
 
@@ -101,11 +101,12 @@ if ~keyword_set(files) then begin
                ;;; untar files
                if file_test(outtar) then begin
                   if tag_exist(source,'file_mode') then file_chmod,outtar,source.file_mode
-                  dprint,'untar '+outtar
-                  if float(!version.release) ge 8.3 then $
-                     s = execute('file_untar,outtar,dirs[i]') $
-                  else begin
-                     untarcmd = 'tar xvf '+outtar ;- doesn't work in Windows?
+                  if float(!version.release) ge 8.3 then begin
+                     dprint,'file_untar '+outtar
+                     s = execute('file_untar,outtar,dirs[i]')
+                  endif else begin
+                     untarcmd = 'tar xvf '+outtar+' -C '+dirs[i] ;- doesn't work in Windows?
+                     dprint,'untar cmd: '+untarcmd
                      s = execute('spawn,untarcmd')
                   endelse
                   outfiles = file_search(dirs[i]+pathnames[i]+'*')
