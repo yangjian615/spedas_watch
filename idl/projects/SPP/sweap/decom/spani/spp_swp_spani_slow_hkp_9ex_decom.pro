@@ -102,10 +102,11 @@ endif
     DAC_DEF2=        spp_swp_word_decom(b,126)
   DAC_VALS  =  [DAC_MCP,DAC_ACC,DAC_RAW,DAC_HEM,DAC_SPOILER,DAC_DEF1,DAC_DEF2]
 
- ADC_VALS2 = spp_swp_word_decom(b,384/8,12,mask = 'fff'x)
+  ;ADC_VALS2 = spp_swp_word_decom(b,384/8,12,mask = 'fff'x)
 ; hexprint,ADC_VALS2
-
-
+  tmp = ulong(b,117)
+  rate = ishft(tmp,-29)
+  
   spai = { $
          time:            ccsds.time, $
          dtime:           ccsds.time_delta/ccsds.seqn_delta, $
@@ -170,7 +171,7 @@ endif
          MON_DEF2_V:      (spp_swp_word_decom(b,54) AND 'FFF'x) * 0.9768,$ ; Last 12 bits of word
          
          FSM_ERR_CNT:     ishft(b[56],-4),$                                ; First 4 bits
-         MON_MCP_V:       (spp_swp_word_decom(b,56) AND 'FFF'x) * 0.9162,$ ; Last 12 bits of word
+         MON_MCP_V:       (spp_swp_word_decom(b,56) AND 'FFF'x) * (850.*4./4095),$ ; Last 12 bits of word
 
          MEM_ERR_CNT:     ishft(b[58],-4),$                                ; First 4 bits
          MON_SPOIL_V:     (spp_swp_word_decom(b,58) AND 'FFF'x) * 0.0195,$ ; Last 12 bits of word 
@@ -258,9 +259,9 @@ endif
          RATES_CYCLES:    ishft(b[117],-5), $
          MRAM_ADDR_HI:    b[117] and '11111'b, $
          MRAM_ADDR_low:       spp_swp_word_decom(b,118), $ ;;;!!!!! CHANGE TO LSB 21 bits !!!!!
-         DACS  :         DAC_VALS,  $
+         DACS:         DAC_VALS,  $
 ;         DACS2  :         ADC_VALS2,  $
-         ADCS   :         ADC_VALS2,  $
+         ;ADCS   :         ADC_VALS2,  $
 ;         DAC_MCP:         DAC_MCP, $
 ;         DAC_ACC:         DAC_ACC, $
 ;         DAC_RAW:         DAC_RAW,  $     ;spp_swp_word_decom(b,108), $

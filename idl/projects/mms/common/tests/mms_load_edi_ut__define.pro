@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 11:07:11 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21555 $
+; $LastChangedDate: 2016-09-16 08:38:14 -0700 (Fri, 16 Sep 2016) $
+; $LastChangedRevision: 21840 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_edi_ut__define.pro $
 ;-
 
@@ -90,7 +90,7 @@ end
 
 function mms_load_edi_ut::test_load_tplotnames
   mms_load_edi, level='l2', probe=2, datatype='efield', tplotnames=tn
-  assert, n_elements(tn) eq 7, 'Problem with tplotnames keyword in EDI load routine'
+  assert, n_elements(tn) eq 22, 'Problem with tplotnames keyword in EDI load routine'
   return, 1
 end
 

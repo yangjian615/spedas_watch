@@ -10,14 +10,18 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-29 13:23:49 -0700 (Wed, 29 Jun 2016) $
-;$LastChangedRevision: 21394 $
+;$LastChangedDate: 2016-09-16 07:39:28 -0700 (Fri, 16 Sep 2016) $
+;$LastChangedRevision: 21838 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_omni.pro $
 ;
 ; REVISION HISTORY:
 ;       + 2016-02-26, I. Cohen      : changed 'cps' units_label from 'Counts/s' to '1/s' for compliance with mission standards
 ;       + 2016-03-09, I. Cohen      : altered ylabel for new omni variables
 ;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-09-16 07:39:28 -0700 (Fri, 16 Sep 2016) $
+;$LastChangedRevision: 21838 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_omni.pro $
 ;-
 
 pro mms_eis_omni, probe, species = species, datatype = datatype, tplotnames = tplotnames, suffix = suffix, data_units = data_units, data_rate = data_rate

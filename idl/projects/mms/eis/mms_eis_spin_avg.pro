@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-09-16 07:36:01 -0700 (Fri, 16 Sep 2016) $
+;$LastChangedRevision: 21837 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_spin_avg.pro $
 ;-
 
@@ -41,6 +41,8 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, $
   if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_'+datatype+'_' else prefix = 'mms'+probe+'_epd_eis_'+datatype+'_'
   ; get the spin #s associated with each measurement
   get_data, prefix + 'spin'+suffix, data=spin_nums
+  
+  if ~is_struct(spin_nums) then return ; gracefully handle the case of no spin # variable found
 
   ; find where the spins start
   spin_starts = uniq(spin_nums.Y)
