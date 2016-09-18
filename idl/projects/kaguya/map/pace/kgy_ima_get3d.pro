@@ -15,14 +15,13 @@
 ;       cntcorr: conducts count correction (event & trash correction)
 ;       sabin: sorts into solid angle bins instead of (Npol,Naz)
 ;                compatible with the SSL infrastructure (Def: sabin=1)
-;       INFOangle: uses angles in the INFO files
-;                  (Def: uses angles in the FOV files)
+;       INFOangle: uses angles in the INFO files (Def: INFOangle = 1)
 ; CREATED BY:
 ;       Yuki Harada on 2014-07-02
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-09-09 11:33:47 -0700 (Fri, 09 Sep 2016) $
-; $LastChangedRevision: 21810 $
+; $LastChangedDate: 2016-09-17 14:37:45 -0700 (Sat, 17 Sep 2016) $
+; $LastChangedRevision: 21850 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/kaguya/map/pace/kgy_ima_get3d.pro $
 ;-
 
@@ -32,6 +31,7 @@ function kgy_ima_get3d, time, index=index, cntcorr=cntcorr, sabin=sabin, infoang
 @kgy_lmag_com
 
 if size(sabin,/type) eq 0 then sabin = 1
+if size(infoangle,/type) eq 0 then infoangle = 1
 
 if keyword_set(gettimes) then begin
    times = $
@@ -561,6 +561,7 @@ dat = { $
       sc_pot:!values.f_nan, $
       magf:magf, $
       vsw:[!values.f_nan,!values.f_nan,!values.f_nan], $
+      spice_frame:'SELENE_M_SPACECRAFT', $
 
       data:data $
       }

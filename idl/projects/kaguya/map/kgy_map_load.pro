@@ -23,8 +23,8 @@
 ;     Yuki Harada on 2014-07-02
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-09-09 11:33:47 -0700 (Fri, 09 Sep 2016) $
-; $LastChangedRevision: 21810 $
+; $LastChangedDate: 2016-09-17 13:13:44 -0700 (Sat, 17 Sep 2016) $
+; $LastChangedRevision: 21849 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/kaguya/map/kgy_map_load.pro $
 ;-
 
@@ -110,11 +110,9 @@ if keyword_set(public) then begin
          bgse = lmag_pub.bgse
 
          cart_to_sphere,rme[0,*],rme[1,*],rme[2,*],rrr,lat,lon
-         alt = reform(rrr-rL)
+         alt = reform(rrr-rL)   ;- not very precise
          lat = reform(lat)
          lon = reform(lon)
-         store_data,'kgy_lmag_alt',data={x:ttt,y:alt}, $
-                    dlim={ytitle:'Altitude!c[km]'}
          store_data,'kgy_lmag_lat',data={x:ttt,y:lat}, $
                     dlim={ytitle:'Latitude!c[deg.]',colors:'r', $
                           yrange:[-90,90],ystyle:1,yticks:4,yminor:3}
@@ -145,6 +143,9 @@ if keyword_set(public) then begin
                     dlim={ytitle:'Rsse!c[km]',colors:['b','g','r'], $
                           labels:['X','Y','Z'],labflag:1,constant:0, $
                           spice_frame:'SSE'}
+         alt = total(rsse^2,1)^.5-rL ;- alt from SPICE
+         store_data,'kgy_lmag_alt',data={x:ttt,y:alt}, $
+                    dlim={ytitle:'Altitude!c[km]'}
          sza = reform( acos(rsse[0,*]/total(rsse^2,1)^.5)*!radeg )
          store_data,'kgy_lmag_sza',data={x:ttt,y:sza}, $
                     dlim={yrange:[0,180],ystyle:1,yticks:4,yminor:3, $
