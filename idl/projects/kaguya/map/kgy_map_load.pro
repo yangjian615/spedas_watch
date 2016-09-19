@@ -23,8 +23,8 @@
 ;     Yuki Harada on 2014-07-02
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-09-17 13:13:44 -0700 (Sat, 17 Sep 2016) $
-; $LastChangedRevision: 21849 $
+; $LastChangedDate: 2016-09-18 17:19:45 -0700 (Sun, 18 Sep 2016) $
+; $LastChangedRevision: 21853 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/kaguya/map/kgy_map_load.pro $
 ;-
 
@@ -36,7 +36,7 @@ if size(sensor,/type) eq 0 then sensor = [0,1,2,3,4] else sensor = long(sensor)
 if ~keyword_set(append) then kgy_clear_com,/onlydata ;- overwrite old data by default
 if ~keyword_set(pbfpubversion) then pbfpubversion='003' ;- incapable of version search
 
-rL = 1738.
+rL = 1737.4
 
 ;;; public version
 if keyword_set(public) then begin

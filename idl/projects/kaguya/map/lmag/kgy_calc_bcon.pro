@@ -25,8 +25,8 @@
 ;         (time interpolation not included)
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-09-09 11:33:47 -0700 (Fri, 09 Sep 2016) $
-; $LastChangedRevision: 21810 $
+; $LastChangedDate: 2016-09-18 17:19:45 -0700 (Sun, 18 Sep 2016) $
+; $LastChangedRevision: 21853 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/kaguya/map/lmag/kgy_calc_bcon.pro $
 ;-
 
@@ -36,7 +36,7 @@ if ~keyword_set(suffix) then suffix = ''
 if ~keyword_set(tvar_Rme) then tvar_Rme = 'kgy_lmag_Rme'
 if ~keyword_set(tvar_Bme) then tvar_Bme = 'kgy_lmag_Bme'
 
-rL = 1738.                    ;- km
+rL = 1737.4                     ;- km
 
 ;----- calc Bcon -----------------------------------------
 get_data,tvar_Rme,data=dRme
