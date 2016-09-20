@@ -26,8 +26,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:58:36 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21716 $
+; $LastChangedDate: 2016-09-19 17:09:19 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21875 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -232,6 +232,13 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
     dgf = swe_dgf[*,*,g]  ; elevation-dependent term
 
     for i=0,95 do ddd[n].gf[*,i] = egf[*,(i mod 16)] * dgf[*,(i/16)]
+
+; Electron suppression correction
+
+    Ke = mvn_swe_esuppress(ddd[n].time,/silent)
+    dg = exp(-((1./swe_Ein) # Ke)^2.)
+
+    ddd[n].gf *= (dg # replicate(1.,96))
 
 ; Relative MCP efficiency.  Depends on energy and azimuth (anode).
 ;   Energy term is MCP efficiency (from literature); azimuth term

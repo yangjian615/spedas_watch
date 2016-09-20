@@ -34,8 +34,8 @@
 ;       POT:           Overplot an estimate of the spacecraft potential.  Must run
 ;                      mvn_swe_sc_pot first.
 ;
-;       SCP:           Override any other estimates of the spacecraft potential and
-;                      force it to be this value.
+;       SCP:           Temporarily override any other estimates of the spacecraft
+;                      potential and force it to be this value.
 ;
 ;       SHIFTPOT:      Correct for the spacecraft potential.  Spectra are shifted from
 ;                      the spacecraft frame to the plasma frame.
@@ -115,8 +115,8 @@
 ;                      potentials on parallel and anti-parallel directions
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:59:49 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21718 $
+; $LastChangedDate: 2016-09-19 17:00:04 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21865 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12

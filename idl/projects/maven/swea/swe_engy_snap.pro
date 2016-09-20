@@ -39,8 +39,8 @@
 ;       POT:           Overplot an estimate of the spacecraft potential.  Must run
 ;                      mvn_swe_sc_pot first.
 ;
-;       SCP:           Override any other estimates of the spacecraft potential and
-;                      force it to be this value.
+;       SCP:           Temporarily override any other estimates of the spacecraft 
+;                      potential and force it to be this value.
 ;
 ;       SHIFTPOT:      Correct for the spacecraft potential.  Spectra are shifted from
 ;                      the spacecraft frame to the plasma frame.
@@ -49,6 +49,8 @@
 ;
 ;       PEPEAKS:       Overplot the nominal energies of the photoelectron energy peaks
 ;                      at 23 and 27 eV.
+;
+;       PEREF:         Overplot photoelectron reference spectra
 ;
 ;       BCK:           Plot background level (Potassium-40 decay and penetrating
 ;                      particles only).
@@ -84,6 +86,9 @@
 ;       SEC:           Calculate secondary electron spectrum using McFadden's
 ;                      semi-empirical approach.
 ;
+;       SSCALE:        Scale factor for secondary electron spectrum.  Default = 5.
+;                      This scales the secondary electron production efficiency.
+;
 ;       DDD:           Create an energy spectrum from the nearest 3D spectrum and
 ;                      plot for comparison.
 ;
@@ -104,8 +109,8 @@
 ;       POPEN:         Set this to the name of a postscript file for output.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:55:09 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21708 $
+; $LastChangedDate: 2016-09-19 17:01:13 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21866 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -117,7 +122,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
                    xrange=xrange,yrange=frange,sscale=sscale, popen=popen, times=times, $
-                   flev=flev
+                   flev=flev, pylim=pylim, k_e=k_e, peref=peref
 
   @mvn_swe_com
   @swe_snap_common
@@ -140,7 +145,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(fixy) then fflg = 1 else fflg = 0
   if keyword_set(rainbow) then rflg = 1 else rflg = 0
   if keyword_set(sec) then dosec = 1 else dosec = 0
-  if not keyword_set(sscale) then sscale = 5D
+  if not keyword_set(sscale) then sscale = 5D else sscale = double(sscale[0])
   if keyword_set(bkg) then dobkg = 1 else dobkg = 0
   if keyword_set(shiftpot) then spflg = 1 else spflg = 0
   if (n_elements(xrange) ne 2) then xrange = [1.,1.e4]
@@ -192,6 +197,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   
   if keyword_set(pot) then dopot = 1 else dopot = 0
   if keyword_set(pepeaks) then dopep = 1 else dopep = 0
+  if (size(peref,/type) eq 8) then doper = 1 else doper = 0
   if keyword_set(scat) then scat = 1 else scat = 0
 
   if keyword_set(mb) then begin
@@ -409,6 +415,9 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       dif_dat.data = (spec.data - sec_dat.data) > 1.
       oplot,sec_dat.energy[kndx],sec_dat.data[kndx],color=5,line=2
       oplot,dif_dat.energy,dif_dat.data,color=5,psym=10
+      
+      str_element, spec, 'sec_spec', sec_dat.data, /add  ; secondary spectrum
+      str_element, spec, 'dif_spec', dif_dat.data, /add  ; primary spectrum
     endif
 
 ; Background counts resulting from the wings of the energy response function.
@@ -470,6 +479,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       oplot,[23.,23.],yrange,line=2,color=1
       oplot,[27.,27.],yrange,line=2,color=1
       oplot,[60.,60.],yrange,line=2,color=1
+    endif
+    
+    if (doper) then begin
+      oplot, peref.x, peref.y
+      oplot, peref.x, peref.y2
     endif
     
     if (doalt) then begin
@@ -661,6 +675,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     
     if (~mb and ~mom) then begin
       xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
+      ys -= dys
     endif
     
     if keyword_set(flev) then begin
@@ -684,6 +699,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       ys -= dys
     endif
     
+    if keyword_set(k_e) then begin
+      xyouts,xs,ys,string(swe_Ke[0],format='("Ke = ",f4.2)'),charsize=csize1,/norm
+      ys -= dys
+    endif
+    
     if (psflg) then pclose
 
     if (pflg) then begin
@@ -694,11 +714,12 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       dys = 0.03
 
       if not keyword_set(pxlim) then xlim = [0.,30.] else xlim = minmax(pxlim)
-
-      indx = where((df.v ge xlim[0]) and (df.v le xlim[1]))
-      ymin = min(df.y[indx],/nan) < min(d2f.y[indx],/nan)
-      ymax = max(df.y[indx],/nan) > max(d2f.y[indx],/nan)
-      ylim = [floor(100.*ymin), ceil(100.*ymax)]/100.
+      if not keyword_set(pylim) then begin
+        indx = where((df.v ge xlim[0]) and (df.v le xlim[1]))
+        ymin = min(df.y[indx],/nan) < min(d2f.y[indx],/nan)
+        ymax = max(df.y[indx],/nan) > max(d2f.y[indx],/nan)
+        ylim = [floor(100.*ymin), ceil(100.*ymax)]/100.
+      endif else ylim = minmax(pylim)
 
       dt = min(abs(d2f.x - trange[0]), kref)
       px = reform(d2f.v[kref,*])
@@ -743,11 +764,12 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
         if (k gt 0) then begin
           xyouts,xs,ys,string(px[k],format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
+          ys -= dys
           oplot,[px[k],px[k]],ylim,color=6,line=2
         endif
 
-        ys = ys - dys
         xyouts,xs,ys,string(dE,format='("dE = ",f6.2)'),charsize=csize1,/norm
+        ys -= dys
 
       endif
     endif

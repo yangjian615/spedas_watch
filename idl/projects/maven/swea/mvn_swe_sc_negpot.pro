@@ -33,8 +33,8 @@
 ;   None - Result is stored as a TPLOT variable 'neg_pot'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-11 16:56:26 -0700 (Sat, 11 Jun 2016) $
-; $LastChangedRevision: 21310 $
+; $LastChangedDate: 2016-09-19 17:04:47 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21872 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_negpot.pro $
 ;
 ;-
@@ -172,7 +172,7 @@ pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
     endif
     
     if keyword_set(fill) then begin
-        indx = where(finite(pot1), cts)
+        indx = where((finite(pot1) and (alt1 le altcut)), cts)
         if (cts gt 0) then begin
           mvn_swe_engy[indx].sc_pot  = pot1[indx]
           swe_sc_pot[indx].potential = pot1[indx]

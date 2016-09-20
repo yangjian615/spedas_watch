@@ -22,17 +22,21 @@
 ;
 ;       OFF:          Turn cross calibration switch off.
 ;
+;       EXTRAPOLATE:  If set, extrapolate the calibration polynomial
+;                     outside the range of measurements.  Otherwise,
+;                     use the last measurement.
+;
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:58:57 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21717 $
+; $LastChangedDate: 2016-09-19 17:10:15 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21876 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crosscal.pro $
 ;
 ;CREATED BY:    David L. Mitchell  05-04-16
 ;FILE: mvn_swe_crosscal.pro
 ;-
-function mvn_swe_crosscal, time, on=on, off=off, silent=silent
+function mvn_swe_crosscal, time, on=on, off=off, extrapolate=extrapolate, silent=silent
 
   @mvn_swe_com
 
@@ -72,14 +76,20 @@ function mvn_swe_crosscal, time, on=on, off=off, silent=silent
   if (count gt 0L) then cc[indx] = 4.0071D - day[indx]*(1.3221d-2 - day[indx]*2.6014d-5)
   
   indx = where((t ge t_mcp[5]) and (t lt t_mcp[6]), count)
-  if (count gt 0L) then cc[indx] = 1.2379D + day[indx]*1.5413d-3
+  if (count gt 0L) then cc[indx] = 7.5293D - day[indx]*(1.7454d-2 - day[indx]*1.4300d-5)
   
   indx = where(t ge t_mcp[6], count)
   if (count gt 0L) then begin
-    day = (t_mcp[6] - t_mcp[0])/86400D
-    cc[indx] = 1.2379D + day*1.5413d-3
-    if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
-                           time_string(t_mcp[6],prec=-3)
+    if keyword_set(extrapolate) then begin
+      cc[indx] = 7.5293D - day[indx]*(1.7454d-2 - day[indx]*1.4300d-5)
+      if (domsg) then print,"Warning: SWE-SWI cross calibration extrapolated after ", $
+                             time_string(t_mcp[6],prec=-3)
+    endif else begin
+      day = (t_mcp[6] - t_mcp[0])/86400D
+      cc[indx] = 7.5293D - day[indx]*(1.7454d-2 - day[indx]*1.4300d-5)
+      if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
+                             time_string(t_mcp[6],prec=-3)
+    endelse
   endif
 
   return, cc

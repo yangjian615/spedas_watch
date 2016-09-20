@@ -88,8 +88,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-27 10:39:22 -0700 (Mon, 27 Jun 2016) $
-; $LastChangedRevision: 21370 $
+; $LastChangedDate: 2016-09-19 17:04:13 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21871 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -243,17 +243,19 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
 
 ; Filter out bad spectra
 
-  gndx = round(total(finite(f),1))
-  gndx = where(gndx eq n_e, npts)
-  if (npts gt 0L) then begin
-    t = t[gndx]
-    e = e[*,gndx]
-    f = f[*,gndx]
-    potential[gndx].flg = 1
-  endif else begin
+  potential.flg = 1
+  n_f = round(total(finite(f),1))
+  gndx = where(n_f eq n_e, ngud, complement=bad, ncomplement=nbad)
+
+  if (ngud eq 0L) then begin
     print,"No good spectra!"
     return
-  endelse
+  endif
+
+  if (nbad gt 0L) then begin
+    f[*,bad] = !values.f_nan
+    potential[bad].flg = 0
+  endif
 
 ; Take first and second derivatives of log(eflux) w.r.t. log(E)
 
@@ -276,7 +278,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
   d2fs = fltarr(n_es,npts)
   for i=0L,(npts-1L) do d2fs[*,i] = interpol(d2f[*,i],n_es)
 
-; Trim to the desired search range
+; Trim to the desired energy search range
 
   indx = where((ee[*,0] gt erange[0]) and (ee[*,0] lt erange[1]), n_e)
   ee = ee[indx,*]
@@ -313,18 +315,18 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
       
       if (dE lt dEmax) then phi[i] = ee[max(indx),i]  ; only accept narrow features
       
-      potential[gndx[i]].dE = dE
-      potential[gndx[i]].amp = dfsmax
+      potential[i].dE = dE
+      potential[i].amp = dfsmax
     endif
   endfor
 
 ; Filter for low flux
 
-  fmax = max(mvn_swe_engy[gndx].data, dim=1)
+  fmax = max(mvn_swe_engy.data, dim=1)
   indx = where(fmax lt minflux, count)
   if (count gt 0L) then begin
     phi[indx] = badval
-    potential[gndx[indx]].flg = -1
+    potential[indx].flg = -1
   endif
 
 ; Filter out shadow regions
@@ -335,11 +337,11 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
     get_data, 'wake', data=wake, index=i
   endif
   if (i gt 0) then begin
-    shadow = interpol(float(finite(wake.y)), wake.x, mvn_swe_engy[gndx].time)
+    shadow = interpol(float(finite(wake.y)), wake.x, mvn_swe_engy.time)
     indx = where(shadow gt 0., count)
     if (count gt 0L) then begin
       phi[indx] = badval
-      potential[gndx[indx]].flg = -2
+      potential[indx].flg = -2
     endif
   endif
 
@@ -351,21 +353,21 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
     get_data, 'alt', data=alt, index=i
   endif
   if (i gt 0) then begin
-    altitude = interpol(alt.y, alt.x, mvn_swe_engy[gndx].time)
+    altitude = interpol(alt.y, alt.x, mvn_swe_engy.time)
     indx = where(altitude lt 250., count)
     if (count gt 0L) then begin
       phi[indx] = badval
-      potential[gndx[indx]].flg = -3
+      potential[indx].flg = -3
     endif
   endif
 
 ; Apply fudge factor, and store the result in the SWEA common block.
 
   phi = phi*fudge
-  potential[gndx].pot = phi
+  potential.pot = phi
 
   if (not dflg) then begin
-    mvn_swe_engy[gndx].sc_pot = phi
+    mvn_swe_engy.sc_pot = phi
     mvn_swe_convert_units, mvn_swe_engy, old_units
   endif else begin
     mvn_swe_engy.sc_pot = interpol(phi,t,mvn_swe_engy.time)

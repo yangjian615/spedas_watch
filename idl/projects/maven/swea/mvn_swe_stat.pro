@@ -11,8 +11,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-06 15:07:07 -0800 (Sun, 06 Mar 2016) $
-; $LastChangedRevision: 20337 $
+; $LastChangedDate: 2016-09-19 17:03:30 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21870 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_stat.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -65,7 +65,17 @@ pro mvn_swe_stat, npkt=npkt, silent=silent
     print,n_a5," ENGY Spectra (archive)"
     print,mvn_swe_tabnum(swe_active_chksum),format='("Sweep Table: ",i2)'
     print,""
+
+    if (swe_cc_switch) then print,"SWE-SWI cross calibration enabled" $
+                       else print,"SWE-SWI cross calibration disabled"
+
+    if (swe_cc_switch) then begin
+      print,swe_Ke[0],format='("Electron suppression correction enabled: Ke = ",f4.2)'
+    endif else print,"Electron suppression correction disabled"
+
+    print,""
   endif
+
 
   return
 

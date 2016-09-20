@@ -18,8 +18,8 @@
 ;                   changes in a tplot window (assumed to exist).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-01 17:35:40 -0700 (Wed, 01 Jun 2016) $
-; $LastChangedRevision: 21254 $
+; $LastChangedDate: 2016-09-19 17:12:16 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21877 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -81,14 +81,16 @@ pro mvn_swe_config, list=list, timebar=timebar
   t_mcp = [t_mcp, time_double('2014-10-17/02:26:41')]  ; bias adjustment (2500 -> 2600 V)
   t_mcp = [t_mcp, time_double('2014-11-12/00:00:00')]  ; bias = 2600 V (beginning of poly fit)
 ; 2014-11-15/00:00                                     ; beginning of science phase
+  t_sup = time_double('2014-10-14/00:00:00')           ; first suppression calibration
   t_mcp = [t_mcp, time_double('2015-12-18/23:39:09')]  ; bias adjustment (2600 -> 2700 V)
   t_mcp = [t_mcp, time_double('2015-12-22/20:01:45')]  ; revert to 2600 V after HV reset
   t_mcp = [t_mcp, time_double('2015-12-30/02:28:57')]  ; back to correct bias (2700 V)
-  t_mcp = [t_mcp, time_double('2016-04-02/00:00:00')]  ; last cross calibration measurement
+  t_sup = [t_sup, time_double('2016-09-02/00:00:00')]  ; last suppression calibration
+  t_mcp = [t_mcp, time_double('2016-09-06/00:00:00')]  ; last cross calibration measurement
 
 ; Gather all the configuration change times into one variable (for timebar).
 
-  t_cfg = [t_swp, t_mtx, t_dsf, t_mcp]
+  t_cfg = [t_swp, t_mtx, t_dsf, t_mcp, t_sup]
 
 ; List configuration changes
 

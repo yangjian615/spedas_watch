@@ -27,6 +27,13 @@ mms*_hpca_hplus_ion_bulk_velocity
 ;mms*_dis_bulk;........... FPI
 ;mms*_exbql_vperp_z;....  FPI comparison between (ExB)z and FPI Vperp,z
 
+;-----------------------
+; Current enhancements 
+;-----------------------
+mms_sitl_jtot_curl_b;... Jtot from Curl-B
+mms_sitl_diffB ;.... diffB 
+
+
 ;--------------------
 ; Spectrograms
 ;--------------------

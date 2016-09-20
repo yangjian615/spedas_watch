@@ -16,8 +16,8 @@
 ;       UNITS:    Convert data to these units.  Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:57:29 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21713 $
+; $LastChangedDate: 2016-09-19 17:08:45 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21873 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makespec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -77,7 +77,10 @@ pro mvn_swe_makespec, sum=sum, units=units
         mvn_swe_engy[j0+j].energy = swe_energy                      ; avg. over 6 deflections
         mvn_swe_engy[j0+j].denergy = swe_denergy                    ; avg. over 6 deflections
 
-        mvn_swe_engy[j0+j].gf = gf                                  ; avg. over 16 anodes
+        Ke = mvn_swe_esuppress(mvn_swe_engy[j0+j].time,/silent)     ; electron suppression
+        dg = exp(-((1./swe_Ein) # Ke)^2.)                           ; use internal energy
+
+        mvn_swe_engy[j0+j].gf = gf*dg                               ; avg. over 16 anodes
         mvn_swe_engy[j0+j].eff = eff                                ; avg. over 16 anodes
 
         mvn_swe_engy[j0+j].data = a4[i].data[*,j]                   ; raw counts
@@ -196,7 +199,10 @@ pro mvn_swe_makespec, sum=sum, units=units
         mvn_swe_engy_arc[j0+j].energy = swe_energy                      ; avg. over 6 deflections
         mvn_swe_engy_arc[j0+j].denergy = swe_denergy                    ; avg. over 6 deflections
 
-        mvn_swe_engy_arc[j0+j].gf = gf                                  ; avg. over 16 anodes
+        Ke = mvn_swe_esuppress(mvn_swe_engy_arc[j0+j].time,/silent)     ; electron suppression
+        dg = exp(-((1./swe_Ein) # Ke)^2.)                               ; use internal energy
+
+        mvn_swe_engy_arc[j0+j].gf = gf*dg                               ; avg. over 16 anodes
         mvn_swe_engy_arc[j0+j].eff = eff                                ; avg. over 16 anodes
 
         mvn_swe_engy_arc[j0+j].data = a5[i].data[*,j]                   ; raw counts

@@ -64,9 +64,9 @@
 ;                 Temp version, with 2 in name, will load LPW data
 ;                 from L0 file, jmm, jimm@ssl.berkeley.edu
 ;LAST MODIFICATION:
-; $LastChangedBy: ali $
-; $LastChangedDate: 2016-05-26 13:52:55 -0700 (Thu, 26 May 2016) $
-; $LastChangedRevision: 21225 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2016-09-19 14:00:42 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21857 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot2.pro $
 ;
 ;-
@@ -330,9 +330,9 @@ PRO mvn_ql_pfp_tplot2, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      undefine, statn0, statn, tname, n, m
      tname = tnames('mvn_sta*', ntplot)
      options, tname, ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log', ztitle='EFlux'
-     options, tname[0], ysubtitle='Energy [eV]' 
-     options, tname[1], ysubtitle='Energy [eV]!CM/q > 12' 
-     options, tname[2], ysubtitle='Mass [amu]'
+     If(ntplot Gt 0) Then options, tname[0], ysubtitle='Energy [eV]' 
+     If(ntplot Gt 1) Then options, tname[1], ysubtitle='Energy [eV]!CM/q > 12' 
+     If(ntplot Gt 2) Then options, tname[2], ysubtitle='Mass [amu]'
 
      suffix = STRARR(ntplot)
      product = STRARR(ntplot)

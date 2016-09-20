@@ -41,8 +41,8 @@
 ;   FUDGE:     Fudge factor for determining spacecraft potential.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-06 10:27:33 -0700 (Fri, 06 May 2016) $
-; $LastChangedRevision: 21035 $
+; $LastChangedDate: 2016-09-19 17:02:20 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21868 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_swi_cal.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -103,6 +103,7 @@ pro mvn_swe_swi_cal, fine=fine, ddd=ddd, pans=pans
     if (count gt 0L) then den.y[indx] = !values.f_nan
     store_data,'mvn_swics_density',data=den
     store_data,'ie_density',data=['mvn_swics_density','mvn_swe_n1d_over']
+    ylim,'ie_density',0,10,0
     options,'ie_density','ynozero',1
     options,'ie_density','ytitle','Ion-Electron!CDensity'
 

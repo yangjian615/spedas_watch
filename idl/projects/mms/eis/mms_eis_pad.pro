@@ -30,8 +30,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp and Ian Cohen (APL)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-29 13:52:44 -0700 (Wed, 29 Jun 2016) $
-;$LastChangedRevision: 21395 $
+;$LastChangedDate: 2016-09-19 15:35:56 -0700 (Mon, 19 Sep 2016) $
+;$LastChangedRevision: 21861 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -43,6 +43,7 @@
 ;                                   : added to call to mms_eis_pad_spinavg.pro
 ;       + 2016-02-26, I. Cohen      : changed 'cps' units_label from 'Counts/s' to '1/s' for compliance with mission standards
 ;       + 2016-04-29, egrimes       : implemented suffix keyword, now allowing probe to be passed as an integer
+;       + 2016-09-19, E. Grimes     : updated to support v3 L1b files
 ;-
 
 pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = data_rate, $
@@ -117,14 +118,13 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
             ; use wild cards to figure out what this variable name should be for telescope 0
             this_variable = tnames(prefix + datatype + '_' + ion_type[ion_type_idx] + '*_' + data_units + '_t0'+suffix)
             
-            if level eq 'l2' then begin
+            if level eq 'l2' || level eq 'l1b' then begin
               ; get the P# value from the name of telescope 0:
               pval_num_in_name = data_rate eq 'brst' ? 6 : 5
               pvalue = (strsplit(this_variable, '_', /extract))[pval_num_in_name]
               if pvalue ne data_units then pvalue = pvalue + '_' else pvalue = ''
             endif else begin
               pvalue = ''
-             
             endelse
 
           ; get flux from each detector

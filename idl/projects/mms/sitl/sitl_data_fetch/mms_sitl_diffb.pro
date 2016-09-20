@@ -1,19 +1,24 @@
 ; Routine to get diffB index for display in EVA
 ; flag = 1 for failure if there are less than 2 spacecraft and calculating diffB is impossible.
 
+; The no_load keyword will bypass calling mms_sitl_get_dfg, however, it assumes that the user
+; ran the code for all four spacecraft outside of the routine, and all appropriate tplot variables are stored.
+
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-16 15:22:25 -0700 (Fri, 16 Sep 2016) $
-;  $LastChangedRevision: 21844 $
+;  $LastChangedDate: 2016-09-19 09:20:10 -0700 (Mon, 19 Sep 2016) $
+;  $LastChangedRevision: 21854 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_diffb.pro $
 
 
-pro mms_sitl_diffB, flag
+pro mms_sitl_diffB, flag, no_load=no_load
 
 flag = 0
 
 ; Load the data
 
-mms_sitl_get_dfg, sc_id = ['mms1', 'mms2', 'mms3', 'mms4']
+if ~keyword_set(no_load) then begin
+  mms_sitl_get_dfg, sc_id = ['mms1', 'mms2', 'mms3', 'mms4']
+endif
 
 ; Define variable names
 dataname = '_dfg_srvy_dmpa' ; NEED TO CHANGE THIS FOR SITL
@@ -35,8 +40,9 @@ ivalid = intarr(4)
 
 for i = 0, 3 do begin
   get_data, names[i], data = d
+  get_data, decnames[i], data = d2
   
-  if n_tags(d) eq 0 then begin
+  if ~is_struct(d) or ~is_struct(d2) then begin
     ivalid[i] = 0
   endif else begin
     ivalid[i] = 1
@@ -56,7 +62,7 @@ endif
 scale = 4d/countvalid
 
 ; Get reference time array
-get_data, names(min(valloc)), data = d
+get_data, names[min(valloc)], data = d
 
 tref = d.x
 

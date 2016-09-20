@@ -2,13 +2,13 @@
 ; flag = 1 if inadequate spacecraft availability for the curlometer.
 ; 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-16 15:22:25 -0700 (Fri, 16 Sep 2016) $
-;  $LastChangedRevision: 21844 $
+;  $LastChangedDate: 2016-09-19 09:20:10 -0700 (Mon, 19 Sep 2016) $
+;  $LastChangedRevision: 21854 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_curl_b.pro $
 
 
 
-pro mms_sitl_curl_b, flag, trange = trange
+pro mms_sitl_curl_b, flag, trange = trange, no_load = no_load
 
 flag = 0
 
@@ -18,7 +18,10 @@ mu0 = !pi*4e-7
 if keyword_set(trange) then time = time_double(trange)
 
 ; Get B-field for all four SC
-mms_sitl_get_dfg, sc_id = ['mms1', 'mms2', 'mms3', 'mms4']
+
+if ~keyword_set(no_load) then begin
+  mms_sitl_get_dfg, sc_id = ['mms1', 'mms2', 'mms3', 'mms4']
+endif
 
 ; Recombine all B
 dataname = '_dfg_srvy_dmpa' ; NEED TO CHANGE THIS FOR SITL
@@ -39,7 +42,7 @@ get_data, Name3, data=d3
 get_data, Name4, data=d4
 
 ; Check for existence of data
-if n_tags(d1) eq 0 or n_tags(d2) eq 0 or n_tags(d3) eq 0 or n_tags(d4) eq 0 then begin
+if ~is_struct(d1) or ~is_struct(d2) or ~is_struct(d3) or ~is_struct(d4) then begin
   print, 'MISSING BFIELD DATA FROM ONE OR MORE SPACECRAFT. NOT CALCULATING CURL B!'
   flag = 1
   return
@@ -69,7 +72,7 @@ get_data, Name2gse, data = d2
 get_data, Name3gse, data = d3
 get_data, Name4gse, data = d4
 
-if n_tags(d1) eq 0 or n_tags(d2) eq 0 or n_tags(d3) eq 0 or n_tags(d4) eq 0 then begin
+if ~is_struct(d1) or ~is_struct(d2) or ~is_struct(d3) or ~is_struct(d4) then begin
   print, 'UNABLE TO CONVERT AT LEAST ONE SPACECRAFT FROM DMPA TO GSE. NOT CALCULATING CURL B!'
   return
 endif

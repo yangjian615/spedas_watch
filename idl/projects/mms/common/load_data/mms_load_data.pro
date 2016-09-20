@@ -93,8 +93,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-29 09:29:27 -0700 (Mon, 29 Aug 2016) $
-;$LastChangedRevision: 21763 $
+;$LastChangedDate: 2016-09-19 14:43:05 -0700 (Mon, 19 Sep 2016) $
+;$LastChangedRevision: 21860 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -240,9 +240,19 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             num_filenames = n_elements(filename)
             
             if keyword_set(available) then begin
-              for file_idx = 0, num_filenames-1 do begin
-                print, remote_file_info[file_idx].filename, ' ', '('+strcompress(string(remote_file_info[file_idx].filesize/(1024.*1024), format='(F0.1)'), /rem) + ' MB'+')'
-                total_size += remote_file_info[file_idx].filesize/(1024.*1024) ; in MB
+              ; filter the files first
+              unfiltered_files = remote_file_info.filename
+              filtered_files = unh_mms_file_filter(unfiltered_files, min_version=min_version, version=cdf_version, latest_version=latest_version, /no_time)
+              
+              if ~is_array(filtered_files) && filtered_files eq '' then continue
+              
+              ; now loop through them, printing the filename and size
+              for file_idx = 0, n_elements(filtered_files)-1 do begin
+                filtered_file_loc = where(unfiltered_files eq filtered_files[file_idx])
+                this_size = remote_file_info[filtered_file_loc].filesize
+
+                print, filtered_files[file_idx], ' ', '('+strcompress(string(this_size/(1024.*1024), format='(F0.1)'), /rem) + ' MB'+')'
+                total_size += this_size/(1024.*1024) ; in MB
               endfor
               continue
             endif

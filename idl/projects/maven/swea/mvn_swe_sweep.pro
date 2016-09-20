@@ -80,8 +80,8 @@
 ;                     PFDPU EEPROM dump.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:56:16 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21711 $
+; $LastChangedDate: 2016-09-19 17:03:00 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21869 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sweep.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-01-03
@@ -434,6 +434,7 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
   E = E[indx]
   dE_E = dE_E[indx]
   gfw = gfw[indx]
+  E_in = E_in[indx]
 
   delta_E = (E - shift(E,-1))/sqrt(E*shift(E,-1))/dE_E
   delta_E[63] = delta_E[62]
@@ -444,7 +445,8 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
   dat = {E:E, dE:dE_E, theta:el, th1:el_hi, th2:el_lo, gfw:gfw, $
          Va:Va, Vd1:Vd1, Vd2:Vd2, V0:V0, delta_E:delta_E, $
          cmd_anlz:cmd_anlz, cmd_def1:cmd_def1, cmd_def2:cmd_def2, $
-         cmd_v0:cmd_v0, chksum:chksum, tabnum:tabnum, th:th}
+         cmd_v0:cmd_v0, chksum:chksum, tabnum:tabnum, th:th, $
+         E_in:E_in}
 
   if keyword_set(prop) then begin
     print,'Table number: ',tabnum,format='(a,i2)'

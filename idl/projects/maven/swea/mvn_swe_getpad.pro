@@ -27,8 +27,8 @@
 ;                      Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:58:22 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21715 $
+; $LastChangedDate: 2016-09-19 17:09:04 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21874 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -297,6 +297,13 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 ; energy.  There is also variation in azimuth and elevation.
 
     pad[n].gf = swe_gf[*,iaz,pkt.group] * swe_dgf[*,jel,pkt.group]
+
+; Electron suppression correction
+
+    Ke = mvn_swe_esuppress(pad[n].time,/silent)
+    dg = exp(-((1./swe_Ein) # Ke)^2.)
+
+    pad[n].gf *= (dg # replicate(1.,16))
 
 ; Relative MCP efficiency.
 

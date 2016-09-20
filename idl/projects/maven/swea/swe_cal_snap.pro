@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:55:25 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21709 $
+; $LastChangedDate: 2016-09-19 17:01:48 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21867 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -174,7 +174,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
 
         !p.multi = [0,2,2]
         plot_oo,x,y1,xtitle='Energy (eV)',ytitle=strupcase(dat.units_name),$
-                     yrange=[1.,10.^(ceil(alog10(max(y1,/nan))))],psym=10
+                     yrange=[1.,1.e5],psym=10
         plot_oi,x,y2,xtitle='Energy (eV)',ytitle='Geometric Factor (x10!u4!n)',psym=10
         plot_oi,x,y3,xtitle='Energy (eV)',ytitle='MCP Efficiency',psym=10
         plot_oi,x,y4,xtitle='Energy (eV)',ytitle='Deadtime Correction',psym=10

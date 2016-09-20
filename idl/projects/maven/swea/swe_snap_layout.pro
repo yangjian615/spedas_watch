@@ -22,8 +22,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:54:23 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21706 $
+; $LastChangedDate: 2016-09-19 16:59:37 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21864 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_snap_layout.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -106,6 +106,13 @@ pro swe_snap_layout, layout
 
              Eopt = {xsize:400, ysize:600, xpos:1600, ypos:300}  ; SPEC
              Hopt = {xsize:200, ysize:545, xpos:2020, ypos:355}
+
+             Oopt  = {xsize:322,  ysize:868, xpos:1600, ypos:10}   ; MVN_ORB_TPLT
+             OCopt = {xsize:600,  ysize:350, xpos:2350, ypos:80}
+             Mopt  = {xsize:757,  ysize:409, xpos:2283, ypos:470}
+             MMopt = {xsize:1082, ysize:572, xpos:1957, ypos:310}
+             
+             tplot_options,'charsize',1.2  ; larger characters for 1600x900 display
            end
     
     '5'  : begin  ; Macbook 1440x900 with Twin Dell 1920x1200 (left, right)

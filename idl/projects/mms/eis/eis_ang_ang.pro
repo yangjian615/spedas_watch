@@ -49,10 +49,11 @@
 ;                                   : set the default data_rate to 'srvy' (if not specified); request the time range (if not specified)
 ;                                   : commented out !p.multi call in postscript output, so that all energy channels are included in the PS file
 ;       + 2016-03-31, E. Grimes     : removed flat fielding 
+;       + 2016-09-19, E. Grimes     : updated to support v3 L1b files, as well as integer probes
 ;                        
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2016-09-19 15:35:56 -0700 (Mon, 19 Sep 2016) $
+;$LastChangedRevision: 21861 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/eis_ang_ang.pro $
 ;-
 
@@ -60,7 +61,7 @@ pro eis_ang_ang, probe=probe, trange = trange, species = species, datatype = dat
   energy_chan = energy_chan, avgdata=avgdata, i_print = i_print, p_filename = p_filename, png = png
 
 ; set defaults
-if not KEYWORD_SET(probe) then probe = '1'
+if not KEYWORD_SET(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
 if not KEYWORD_SET(species) then species = 'proton'
 if not KEYWORD_SET(datatype) then datatype = 'extof'
 if not KEYWORD_SET(data_units) then data_units = 'flux'
@@ -93,7 +94,7 @@ cps = dblarr(6,nenergies,n_elements(d.x))
 
 ; use wild cards to figure out what this variable name should be for telescope 0
 this_variable = tnames(prefix + datatype + '_' + species + '*_' + data_units + '_t0')
-if level eq 'l2' then begin
+if level eq 'l2' || level eq 'l1b' then begin
   ; get the P# value from the name of telescope 0:
   pval_num_in_name = data_rate eq 'brst' ? 6 : 5
   pvalue = (strsplit(this_variable, '_', /extract))[pval_num_in_name]

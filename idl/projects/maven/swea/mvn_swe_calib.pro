@@ -53,15 +53,27 @@
 ;
 ;       DFGON:        Turn on the elevation-dependent sensitivity.
 ;
+;       SETCAL:       Structure holding calibration factors to modify.  Structure can
+;                     have any combination of tags, but only the following are
+;                     recognized (with default values):
+;
+;                       {swe_Ka      : 6.17      , $   ; analyzer constant
+;                        swe_G       : 0.009/16. , $   ; nominal geometric factor
+;                        swe_Ke      : 0.0       , $   ; electron suppression constant
+;                        swe_dead    : 2.8e-6    , $   ; deadtime per preamp
+;                        swe_min_dtc : 0.25         }  ; max 4x deadtime correction
+;
+;                     Any other tags are ignored.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-05-19 09:00:51 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21131 $
+; $LastChangedDate: 2016-09-19 17:13:26 -0700 (Mon, 19 Sep 2016) $
+; $LastChangedRevision: 21879 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
 ;FILE: mvn_swe_calib.pro
 ;-
-pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
+pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon, setcal=setcal, default=default
 
   @mvn_swe_com
 
@@ -72,6 +84,43 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
 ; Initialize
 
   if (size(swe_hsk_str,/type) ne 8) then mvn_swe_init
+
+  if (keyword_set(default) or (size(swe_G,/type) eq 0)) then begin
+    print, "Initializing SWEA constants"
+    swe_Ka      = 6.17       ; analyzer constant (1.4% variation around azim)
+    swe_G       = 0.009/16.  ; nominal geometric factor (IRAP)
+    swe_Ke      = 2.85       ; nominal value, see mvn_swe_esuppress.pro
+    swe_dead    = 2.8e-6     ; deadtime for one MCP-Anode-Preamp chain (IRAP)
+    swe_min_dtc = 0.25       ; max 4x deadtime correction
+  endif
+
+  if (size(setcal,/type) eq 8) then begin
+    str_element, setcal, 'swe_Ka', value, success=ok
+    if (ok) then begin
+      swe_Ka = value
+      print, "Setting analyzer constant: ",value
+    endif
+    str_element, setcal, 'swe_G', value, success=ok
+    if (ok) then begin
+      swe_G = value
+      print, "Setting geometric factor: ",value
+    endif
+    str_element, setcal, 'swe_Ke', value, success=ok
+    if (ok) then begin
+      swe_Ke = value
+      print, "Setting geometric factor: ",value
+    endif
+    str_element, setcal, 'swe_dead', value, success=ok
+    if (ok) then begin
+      swe_dead = value
+      print, "Setting deadtime: ",value
+    endif
+    str_element, setcal, 'swe_min_dtc', value, success=ok
+    if (ok) then begin
+      swe_min_dtc = value
+      print, "Setting maximum deadtime correction: ",1./value
+    endif
+  endif
 
 ; Find the first valid LUT
 ;   chksum =   0B means SWEA has just powered on
@@ -143,14 +192,9 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
   swe_duty = (1.95D/2D)*(6D/7D)  ; duty cycle (fraction of time counts are accumulated)
   swe_integ_t = 1.95D/(7D*64D)   ; integration time per energy/deflector bin
 
-; Analyzer constant (calibrations show 1.4% variation in azimuth caused
-; by slight misalignment of the hemispheres)
-
-  swe_Ka = 6.17
-  
 ; Energy Sweep
 
-; Generate initial sweep table
+; Generate initial sweep table (can change dynamically with V0 system)
 
   mvn_swe_sweep, tabnum=tabnum, result=swp
 
@@ -170,6 +214,8 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
 
   swe_energy  = energy
   swe_denergy = denergy
+
+  swe_Ein = swp.E_in             ; energy interior to the toroidal grids
 
 ; Energy Resolution (dE/E, FWHM), which can be a function of elevation, 
 ; so this array has an additional dimension.  Calibrations show that the
@@ -243,11 +289,19 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
 ;   based on analyzer measurements in a calibrated beam.  This geometric factor
 ;   does not take into account cross calibration with SWIA, STATIC, and LPW.
 
-  geom_factor = 0.009/16.            ; geometric factor per anode (cm2-ster-eV/eV)
+  swe_gf = replicate(!values.f_nan,64,3)  ; per anode (cm2-ster-eV/eV)
 
-  swe_gf = replicate(!values.f_nan,64,3)
+; Simple implementation of electron suppression correction (for debugging).
+; For normal processing (mvn_swe_esuppress), this should be commented out.
 
-  swe_gf[*,0] = geom_factor*swp.gfw
+; dg = exp(-(swe_Ke/swe_Ein)^2.)
+  dg = 1.
+
+; Put it together.  First term is constant geometric factor with V0 
+; disabled.  Second term is correction factor when V0 is enabled, based
+; on electrostatic optics and conservation of phase space density.
+
+  swe_gf[*,0] = swe_G*swp.gfw*dg
   for i=0,31 do swe_gf[(2*i):(2*i+1),1] = (swe_gf[(2*i),0] + swe_gf[(2*i+1),0])/2.
   for i=0,15 do swe_gf[(4*i):(4*i+3),2] = (swe_gf[(4*i),1] + swe_gf[(4*i+3),1])/2.
 
@@ -259,6 +313,14 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
 ; calibration correction is applied.  Default is to apply the correction.
 
   if (size(swe_cc_switch,/type) eq 0) then swe_cc_switch = 1
+
+; Correction for electron suppression at low energies, based on monthly in-flight
+; calibrations.  Note that the suppression factor is based on energies internal
+; to the toroidal grids (swe_Ein).  The correction factor is time dependent.  The
+; function mvn_swe_esuppress calculates the constant Ke, which is used to calculate
+; the suppression correction: exp(-(Ke/E_in)^2.).
+
+  if (size(swe_es_switch,/type) eq 0) then swe_es_switch = 1
 
 ; Add a dimension for relative variation among the 16 anodes.  This variation is
 ; dominated by the MCP efficiency, but I include the same dimension here for ease
@@ -367,15 +429,8 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon
   swe_sc_mask = replicate(1B, 96, 2)  ; 96 solid angle bins, 2 boom states
   
   swe_sc_mask[0:31,0] = 0B                                    ; stowed boom
-;  swe_sc_mask[[0,1,2,3,4,14,15,16,17,18,19,20,30,31],1] = 0B ; deployed boom, aggressive
-  swe_sc_mask[[0,1,2,3,14,15,16,17,18,31],1] = 0B             ; deployed boom
-
-; Dead time (from IRAP calibration: MCP-Anode-Preamp chain)
-; This is for ONE of the 16 chains.  Energy spectra combine all 16 chains, so
-; the deadtime correction is different for APID's A4 and A5.
-
-  swe_dead = 2.8e-6              ; IRAP calibration, one MCP-Anode-Preamp chain
-  swe_min_dtc = 0.25             ; max 4x deadtime correction
+; swe_sc_mask[[0,1,2,3,4,14,15,16,17,18,19,20,30,31],1] = 0B  ; deployed boom, aggressive
+  swe_sc_mask[[0,1,2,3,  14,15,16,17,18,         31],1] = 0B  ; deployed boom
 
 ; Electron rest mass
 

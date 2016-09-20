@@ -13,6 +13,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
   ts = str2time(state.start_time)
   te = str2time(state.end_time)
   timespan,state.start_time, te-ts, /seconds
+  NOLOAD_4FGM = 0L
   
   ;----------------------
   ; NUMBER OF PARAMETERS
@@ -56,7 +57,6 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
     sc = sc_id[p]
     prb = strmid(sc,3,1)
     for i=0,imax-1 do begin; for each requested parameter
-      
       if ~keyword_set(no_gui) then begin
         if progressbar->CheckCancel() then begin
           ok = Dialog_Message('User cancelled operation.',/center) ; Other cleanup, etc. here.
@@ -71,13 +71,17 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
       ; Check pre-loaded tplot variables. 
       ; Avoid reloading if already exists.
       tn=strlowcase(tnames('*',jmax))
-      param = strlowcase(sc+strmid(paramlist[i],4,1000))
+      if strmatch(paramlist[i],'mms_s*') then begin
+        param = paramlist[i]
+      endif else begin
+        param = strlowcase(sc+strmid(paramlist[i],4,1000))
+      endelse
       if jmax eq 0 then begin; if no pre-loaded variable
         ct = 0
       endif else begin; if pre-loaded variable exists...
         idx = where(strmatch(tn,param),ct); check if param is one of the preloaded variables.
       endelse
-      
+
       if keyword_set(force) then ct = 0
       
       if ct eq 0 then begin; if not loaded
@@ -473,6 +477,39 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           answer = 'Yes'
         endif
         
+        ;-----------
+        ; Current 
+        ;-----------
+        pcode=84
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'mms_sitl_jtot_curl_b') and (cp eq 0)) then begin
+          mms_sitl_curl_b, flag, no_load=NOLOAD_4FGM
+          if flag eq 1 then begin
+            msg = 'Skipping curl-B (Missing Bfield data from one or more spacecraft)'
+            result = dialog_message(msg,/center)
+          endif
+          NOLOAD_4FGM = 1L
+          answer = 'Yes'
+        endif
+        pcode=85
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'mms_sitl_diffb') and (cp eq 0)) then begin
+          mms_sitl_diffb, flag, no_load=NOLOAD_4FGM
+          if flag eq 1 then begin
+            msg = 'Skipping diffb (Need at least two spacecraft).'
+            result = dialog_message(msg,/center)
+          endif else begin
+            tn = tnames('mms_sitl_diffB',cnt)
+            if cnt eq 1 then begin
+              options,'mms_sitl_diffB',labflag=-1,labels='diff(B^2)'
+            endif
+          endelse
+          NOLOAD_4FGM = 1L
+          answer = 'Yes'
+        endif
+
+
+
       endif;if ct eq 0 then begin; if not loaded
       c+=1
     endfor; for each requested parameter
