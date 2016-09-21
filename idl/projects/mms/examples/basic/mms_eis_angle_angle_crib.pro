@@ -8,9 +8,9 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-19 15:58:50 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21862 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_eis_angle_angle.pro $
+; $LastChangedDate: 2016-09-20 14:02:38 -0700 (Tue, 20 Sep 2016) $
+; $LastChangedRevision: 21887 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_eis_angle_angle_crib.pro $
 ;-
 
 trange = ['2015-10-16', '2015-10-17']

@@ -30,9 +30,9 @@
 ;                days_in option. (passed through to mvn_sta_l2gen.pro)
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
-; $LastChangedBy: muser $
-; $LastChangedDate: 2016-07-20 15:48:47 -0700 (Wed, 20 Jul 2016) $
-; $LastChangedRevision: 21500 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-09-20 10:54:04 -0700 (Tue, 20 Sep 2016) $
+; $LastChangedRevision: 21885 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -177,10 +177,17 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
         message, /info, 'No Files to process for Instrument: '+instrk
      Endif Else Begin
         nproc = n_elements(timep_do)
-;extract the date from the filename
+;Send a message that processing is starting
+        openw, tunit, '/tmp/sta_l2_msg0.txt', /get_lun
+        printf, tunit, 'Processing: '+instrk
+        For i = 0, nproc-1 Do printf, tunit, timep_do[i]
+        free_lun, tunit
+        cmd0 = 'mailx -s "STA L2 process start" jimm@ssl.berkeley.edu < /tmp/sta_l2_msg0.txt'
+        spawn, cmd0
         message, /info, 'Processing: '+instrk
         For i = 0, nproc-1 Do print, timep_do[i]
         For i = 0, nproc-1 Do Begin
+;extract the date from the filename
            timei0 = timep_do[i]
            timei = strmid(timei0, 0, 4)+$
                    '-'+strmid(timei0, 4, 2)+'-'+strmid(timei0, 6, 2)
@@ -209,6 +216,12 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
            heap_gc              ;added this here to avoid memory issues
         Endfor
         SKIP_INSTR: load_position = 'instrument'
+;Send a message that processing is done
+        openw, tunit, '/tmp/sta_l2_msg1.txt', /get_lun
+        printf, tunit, 'Finished Processing: '+instrk
+        free_lun, tunit
+        cmd1 = 'mailx -s "STA L2 process end" jimm@ssl.berkeley.edu < /tmp/sta_l2_msg1.txt'
+        spawn, cmd1
      Endelse
   Endfor
 ;reset file time

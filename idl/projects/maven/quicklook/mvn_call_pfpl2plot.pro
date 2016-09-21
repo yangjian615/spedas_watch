@@ -38,8 +38,8 @@ End
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen.pro 2015-06-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-11-04 15:30:06 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19242 $
+; $LastChangedDate: 2016-09-20 10:53:34 -0700 (Tue, 20 Sep 2016) $
+; $LastChangedRevision: 21884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_call_pfpl2plot.pro $
 ;-
 Pro mvn_call_pfpl2plot, time_in = time_in, $
@@ -178,8 +178,15 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
         dprint, 'No Files to process for Instrument: '+instrk
      Endif Else Begin
         nproc = n_elements(timep_do)
-;extract the date from the filename
+;Send a message that processing is starting
+        openw, tunit, '/tmp/pfpl2_msg0.txt', /get_lun
+        printf, tunit, 'Processing: '+instrk
+        For i = 0, nproc-1 Do printf, tunit, timep_do[i]
+        free_lun, tunit
+        cmd0 = 'mailx -s "PFPL2 process start" jimm@ssl.berkeley.edu < /tmp/pfpl2_msg0.txt'
+        spawn, cmd0
         For i = 0, nproc-1 Do Begin
+;extract the date from the filename
            timei0 = timep_do[i]
            timei = strmid(timei0, 0, 4)+$
                    '-'+strmid(timei0, 4, 2)+'-'+strmid(timei0, 6, 2)
@@ -210,6 +217,12 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
            heap_gc              ;added this here to avoid memory issues
         Endfor
         SKIP_INSTR: load_position = 'instrument'
+;Send a message that processing is done
+        openw, tunit, '/tmp/pfpl2_msg1.txt', /get_lun
+        printf, tunit, 'Finished Processing: '+instrk
+        free_lun, tunit
+        cmd1 = 'mailx -s "PFPL2 process end" jimm@ssl.berkeley.edu < /tmp/pfpl2_msg1.txt'
+        spawn, cmd1
      Endelse
   Endfor
 
