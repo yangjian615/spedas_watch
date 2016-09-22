@@ -58,8 +58,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-02 10:58:42 -0700 (Fri, 02 Sep 2016) $
-;$LastChangedRevision: 21791 $
+;$LastChangedDate: 2016-09-21 14:24:54 -0700 (Wed, 21 Sep 2016) $
+;$LastChangedRevision: 21896 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans.pro $
 ;-
 
@@ -339,8 +339,8 @@ for i = 0, n_elements(in_names)-1 do begin
   
   ;update labels in limits and dlimits structures
   if ~keyword_set(no_update_labels) then begin
-    spd_cotrans_update_dlimits,out_name,in_c,out_coord
-    spd_cotrans_update_limits,out_name,in_c,out_coord
+    spd_cotrans_update_dlimits,out_name,in_c,strupcase(out_coord)
+    spd_cotrans_update_limits,out_name,in_c,strupcase(out_coord)
   endif
 
 endfor
