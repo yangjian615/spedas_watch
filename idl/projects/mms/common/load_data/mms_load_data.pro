@@ -93,8 +93,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-19 14:43:05 -0700 (Mon, 19 Sep 2016) $
-;$LastChangedRevision: 21860 $
+;$LastChangedDate: 2016-09-22 13:18:53 -0700 (Thu, 22 Sep 2016) $
+;$LastChangedRevision: 21903 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -220,7 +220,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             qt0 = systime(/sec) ;temporary
             data_file = mms_get_science_file_info(sc_id=probe, instrument_id=instrument, $
                     data_rate_mode=data_rate, data_level=level, start_date=day_string, $
-                    end_date=end_string, descriptor=descriptor, public=public)
+                    end_date=end_string, descriptor=descriptor, public=public, cdf_version=cdf_version)
             dt_query += systime(/sec) - qt0 ;temporary
         endif
 

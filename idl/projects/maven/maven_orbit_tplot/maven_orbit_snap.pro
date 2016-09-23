@@ -82,8 +82,8 @@
 ;       THICK:    Line thickness.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:52:28 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21703 $
+; $LastChangedDate: 2016-09-22 10:35:17 -0700 (Thu, 22 Sep 2016) $
+; $LastChangedRevision: 21900 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -99,6 +99,8 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     print, "You must run maven_orbit_tplot first!"
     return
   endif
+  
+  if (size(snap_index,/type) eq 0) then snap_index = 0
 
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)
@@ -200,8 +202,17 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
     xsize = round(350.*oscale)
     ysize = round(943.*oscale)
+    xpos = 0
+    ypos = 0
 
-    window,26,xsize=xsize,ysize=ysize
+    if (snap_index gt 0) then begin
+      xsize = Oopt.xsize
+      ysize = Oopt.ysize
+      xpos = Oopt.xpos
+      ypos = Oopt.ypos
+    endif
+
+    window,26,xsize=xsize,ysize=ysize,xpos=xpos,ypos=ypos
     Owin = !d.window
   endelse
 
@@ -211,7 +222,18 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   endif
 
   if (cyflg) then begin
-    window,/free,xsize=600,ysize=350
+    if (snap_index gt 0) then begin
+      xsize = OCopt.xsize
+      ysize = OCopt.ysize
+      xpos = OCopt.xpos
+      ypos = OCopt.ypos
+    endif else begin
+      xsize = 600
+      ysize = 350
+      xpos = 0
+      ypos = 0
+    endelse
+    window,/free,xsize=xsize,ysize=ysize,xpos=xpos,ypos=ypos
     Cwin = !d.window
   endif
 

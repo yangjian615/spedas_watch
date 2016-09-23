@@ -69,8 +69,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-06 11:41:29 -0700 (Tue, 06 Sep 2016) $
-;$LastChangedRevision: 21799 $
+;$LastChangedDate: 2016-09-22 12:22:45 -0700 (Thu, 22 Sep 2016) $
+;$LastChangedRevision: 21901 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -114,7 +114,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
     if (datatype[0] eq '*' || datatype[0] eq '') && level ne 'ql' then datatype=['des-dist', 'dis-dist', 'dis-moms', 'des-moms']
 
     ; kludge for level = 'sitl' -> datatype shouldn't be defined for sitl data.
-    if level eq 'sitl' then datatype = '*'
+    if level eq 'sitl' || level eq 'trig' then datatype = '*'
 
     mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

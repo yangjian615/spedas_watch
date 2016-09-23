@@ -5,14 +5,24 @@
 ; ran the code for all four spacecraft outside of the routine, and all appropriate tplot variables are stored.
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-19 09:20:10 -0700 (Mon, 19 Sep 2016) $
-;  $LastChangedRevision: 21854 $
+;  $LastChangedDate: 2016-09-22 09:26:48 -0700 (Thu, 22 Sep 2016) $
+;  $LastChangedRevision: 21899 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_diffb.pro $
 
 
 pro mms_sitl_diffB, flag, no_load=no_load
 
 flag = 0
+
+mu0 = !pi*4e-7
+
+times = timerange(/current)
+
+if times(0) gt time_double('2016-09-15/00:00:00') then begin
+  sep = 7d
+endif else begin
+  sep = 10d
+endelse
 
 ; Load the data
 
@@ -173,9 +183,11 @@ diffB = scale*(dbx12 + dbx13 + dbx14 + dbx23 + dbx24 + dbx34 + $
   dby12 + dby13 + dby14 + dby23 + dby24 + dby34 + $
   dbz12 + dbz13 + dbz14 + dbz23 + dbz24 + dbz34)
   
+diffB = sqrt(diffB)*1e-6/(2*sep*mu0)
+  
 store_data, 'mms_sitl_diffB', data = {x:tref, y:diffB}
 
-options, 'mms_sitl_diffB', 'ytitle', 'diffB!u2!n!cnT!u2!n'
+options, 'mms_sitl_diffB', 'ytitle', 'diffB!cuA/m!U2!D'
 
 
 

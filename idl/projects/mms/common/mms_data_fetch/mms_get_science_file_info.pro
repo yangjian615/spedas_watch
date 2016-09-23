@@ -1,7 +1,7 @@
 function mms_get_science_file_info, filename=filename, sc_id=sc_id, $
   instrument_id=instrument_id, data_rate_mode=data_rate_mode, $
   data_level=data_level, descriptor=descriptor, start_date=start_date, end_date=end_date, $
-  public=public
+  public=public, cdf_version=cdf_version
   
   ; Web API defined with lower case.
   if n_elements(sc_id)          gt 0 then sc_id          = strlowcase(sc_id)
@@ -22,6 +22,7 @@ function mms_get_science_file_info, filename=filename, sc_id=sc_id, $
   if n_elements(descriptor)     gt 0 then query_args = [query_args, "descriptor=" + strjoin(descriptor, ",")]
   if n_elements(start_date)     gt 0 then query_args = [query_args, "start_date=" + start_date]
   if n_elements(end_date)       gt 0 then query_args = [query_args, "end_date=" + end_date]
+  if n_elements(cdf_version)    gt 0 then query_args = [query_args, "version=" + cdf_version]
   
   ; Join query args with "&", drop the "hack"
   if n_elements(query_args) lt 2 then query = '' $

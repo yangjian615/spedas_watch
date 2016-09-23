@@ -62,8 +62,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-13 14:39:08 -0700 (Fri, 13 May 2016) $
-;$LastChangedRevision: 21081 $
+;$LastChangedDate: 2016-09-22 18:04:44 -0700 (Thu, 22 Sep 2016) $
+;$LastChangedRevision: 21906 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -254,7 +254,7 @@ pro spd_slice2d_plot, slice, $
     
     ; x minor ticks, simulate default if not set
     ; use new name to avoid mutating input
-    xminor = size(x_minor,/type) eq 0  ?  round(40./n_elements(xtickv)) : (round(x_minor)+1 > 0)
+    xminor = undefined(x_minor) ? 10 : (round(x_minor)+1 > 0)
   
     ; Get y ticks & annotations
     spd_slice2d_getticks, nticks=y_ticks, range=yrange, style=ystyle, precision=yprecision, $
@@ -262,7 +262,7 @@ pro spd_slice2d_plot, slice, $
     
     ; y minor ticks, simulate default if not set
     ; use new name to avoid mutating input
-    yminor = size(y_minor,/type) eq 0  ?  round(40./n_elements(ytickv)) : (round(y_minor)+1 > 0)
+    yminor = undefined(y_minor) ? 10 : (round(y_minor)+1 > 0)
   
   endelse
 
