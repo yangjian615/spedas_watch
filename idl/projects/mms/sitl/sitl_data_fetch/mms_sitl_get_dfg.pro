@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-15 13:14:53 -0700 (Thu, 15 Sep 2016) $
-;  $LastChangedRevision: 21835 $
+;  $LastChangedDate: 2016-09-23 16:17:17 -0700 (Fri, 23 Sep 2016) $
+;  $LastChangedRevision: 21915 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_dfg.pro $
 
 
@@ -199,6 +199,15 @@ pro mms_sitl_get_dfg, sc_id=sc_id, no_update = no_update, reload = reload, level
     tplot_rename, dfg_vecname + '_3', dfg_vecname + '_btot'
     
     store_data, [dfg_vecname + '_0', dfg_vecname + '_1', dfg_vecname + '_2'], /delete
+
+    dfg_vecname_gsm = sc_id(j) + '_dfg_srvy_gsm_dmpa'
+    split_vec, dfg_vecname_gsm
+
+    join_vec, [dfg_vecname_gsm + '_0', dfg_vecname_gsm + '_1', dfg_vecname_gsm + '_2'], dfg_vecname_gsm
+    tplot_rename, dfg_vecname_gsm + '_3', dfg_vecname_gsm + '_btot'
+
+    store_data, [dfg_vecname_gsm + '_0', dfg_vecname_gsm + '_1', dfg_vecname_gsm + '_2'], /delete
+
 
     endif else begin
       print, 'No DFG data available locally or at SDC or invalid query!'

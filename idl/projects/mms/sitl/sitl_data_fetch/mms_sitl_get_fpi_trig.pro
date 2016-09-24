@@ -1,8 +1,8 @@
 ; Routine to load the FPI trigger values for use by the SITL.
 ; 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-22 13:16:52 -0700 (Thu, 22 Sep 2016) $
-;  $LastChangedRevision: 21902 $
+;  $LastChangedDate: 2016-09-23 10:33:24 -0700 (Fri, 23 Sep 2016) $
+;  $LastChangedRevision: 21907 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_fpi_trig.pro $
 
 
@@ -178,9 +178,9 @@ pro mms_sitl_get_fpi_trig, sc_id = sc_id
       
       store_data, [sc_id(j) + '_fpi_bentPipeB_X_DBCS', sc_id(j) + '_fpi_bentPipeB_Y_DBCS', sc_id(j) + '_fpi_bentPipeB_Z_DBCS'], /delete
       
-      store_data, sc_id(j) + '_fpi_bentpipeB_DBCS', data = {x:bentx.x, y:bentb}
-      options, sc_id(j) + '_fpi_bentpipeB_DBCS', labels = ['Bx', 'By', 'Bz']
-      options, sc_id(j) + '_fpi_bentpipeB_DBCS', 'labflag', -1
+      store_data, sc_id(j) + '_fpi_bentPipeB_DBCS', data = {x:bentx.x, y:bentb}
+      options, sc_id(j) + '_fpi_bentPipeB_DBCS', labels = ['Bx', 'By', 'Bz']
+      options, sc_id(j) + '_fpi_bentPipeB_DBCS', 'labflag', -1
       
     endif else begin
       print, 'No FPI trigger data available locally or at SDC or invalid query!'

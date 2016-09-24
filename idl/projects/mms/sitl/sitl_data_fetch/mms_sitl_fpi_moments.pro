@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-16 15:22:25 -0700 (Fri, 16 Sep 2016) $
-;  $LastChangedRevision: 21844 $
+;  $LastChangedDate: 2016-09-23 15:58:12 -0700 (Fri, 23 Sep 2016) $
+;  $LastChangedRevision: 21914 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_fpi_moments.pro $
 
 
@@ -38,8 +38,8 @@ pro mms_sitl_fpi_moments, sc_id = sc_id, clean=clean
     
     ; Load ion and electron data
     
-    mms_load_fpi, probes = prb, data_rate = 'fast', level = 'l1b', datatype = 'dis-moms'
-    mms_load_fpi, probes = prb, data_rate = 'fast', level = 'l1b', datatype = 'des-moms'
+    mms_load_fpi, probes = prb, data_rate = 'fast', level = 'ql', datatype = 'dis', min_version='3.0.0'
+    mms_load_fpi, probes = prb, data_rate = 'fast', level = 'ql', datatype = 'des', min_version='3.0.0'
     
     ; Electron and ion bulk velocities
     

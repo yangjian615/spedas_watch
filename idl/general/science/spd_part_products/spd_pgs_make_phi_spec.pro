@@ -26,9 +26,9 @@
 ;   below. It should produce identical spectrograms for regular phi grids.
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-01-04 15:38:57 -0800 (Mon, 04 Jan 2016) $
-;$LastChangedRevision: 19672 $
+;$LastChangedBy: aaflores $
+;$LastChangedDate: 2016-09-23 16:52:10 -0700 (Fri, 23 Sep 2016) $
+;$LastChangedRevision: 21916 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_phi_spec.pro $
 ;-
 
@@ -49,7 +49,7 @@ pro spd_pgs_make_phi_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
   ;copy data and zero inactive bins to ensure
   ;areas with no data are represented as NaN
   d = data.data
-  scaling = data.scaling
+;  scaling = data.scaling
   idx = where(~data.bins,nd)
   if nd gt 0 then begin
     d[idx] = 0.
@@ -138,7 +138,7 @@ pro spd_pgs_make_phi_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
     ;check for single phi data (phi_min=phi_max)
     contained = ssl_set_intersection(idx_max,idx_min)
     if contained[0] ne -1 && n_phi gt 1 then begin
-      weight[contained] = (phi_max[contained] - phi_min[contained]) * omega_part[contained]
+      weight[contained] = data.dphi[contained] * omega_part[contained]
     endif
     
     ;data bins which completely cover the current spectrogram bin 
@@ -153,10 +153,8 @@ pro spd_pgs_make_phi_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
     idx = ssl_set_union(idx_min,idx_max)
     idx = ssl_set_union(idx,idx_all)
     
-    n = nmax + nmin + nall
-    
     ;assign a weighted average to this bin
-    if n gt 0 then begin
+    if (nmax + nmin + nall) gt 0 then begin
     
 ;      ave[i] = total(d[idx]) / total(data.bins[idx])
 
@@ -173,7 +171,7 @@ pro spd_pgs_make_phi_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
       ave[i] = total(d[idx] * weight)
       
       ;standard deviation
-      ave_s[i] = sqrt(  total(d[idx] * scaling[idx] * weight^2)  )
+      ave_s[i] = sqrt(  total(d[idx] * data.scaling[idx] * weight^2)  )
       
     endif else begin
       ;nothing

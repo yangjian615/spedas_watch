@@ -22,17 +22,18 @@
 ;
 ;
 ;Notes:
-;  -Assumes theta values are exact and constant across energy
-;  -Assumes bins do not overlap
+;  -Resolution of output grid is determined by number of unique theta values
+;   for the first energy.
 ;
 ;
 ;History:
 ;  2016-01-20: Changed algorithm to allow ungrouped theta values (~8% slower now)
+;  2016-09-23: Generalized to remove restrictions on data regularity
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-20 10:57:13 -0800 (Wed, 20 Jan 2016) $
-;$LastChangedRevision: 19765 $
+;$LastChangedDate: 2016-09-23 16:52:10 -0700 (Fri, 23 Sep 2016) $
+;$LastChangedRevision: 21916 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_theta_spec.pro $
 ;-
 
@@ -48,9 +49,6 @@ pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=e
   dr = !dpi/180.
   rd = 1/dr
   
-  enum = dimen1(data.energy)
-  anum = dimen2(data.energy)
-
   ;copy data and zero inactive bins to ensure
   ;areas with no data are represented as NaN
   d = data.data
@@ -62,35 +60,78 @@ pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=e
   ;get unique theta values
   values = data.theta[0,uniq( data.theta[0,*], sort(data.theta[0,*]) )]
 
+  n_theta = n_elements(values)
+  theta_grid = interpol([-90,90],n_theta+1)
+
   ;init this sample's piece of the spectrogram
-  ave = replicate(!values.f_nan, n_elements(values))
+  ave = replicate(!values.f_nan, n_theta)
   ave_s = ave
-  nbins = fltarr(n_elements(values))
   
-  ;loop over each unique theta to sum all active data 
-  ;and bin flags for that value
-  ;  -assumes theta constant across energy
-  for i=0, n_elements(values)-1 do begin
-    idx = where(data.theta[0,*] eq values[i])
-    ave[i] = total( d[*,idx] )
-    ave_s[i] = total( d[*,idx] * data.scaling[*,idx])
-    nbins[i] = total( data.bins[*,idx] )
+  theta_min = data.theta - 0.5*data.dtheta
+  theta_max = data.theta + 0.5*data.dtheta
+
+
+  ;loop over output grid to sum all active data and bin flags
+  for i=0, n_theta-1 do begin
+
+    weight = fltarr(size(/dim,theta_min))
+
+    ;data bins whose maximum overlaps the current spectrogram bin
+    idx_max = where(theta_max gt theta_grid[i] and theta_max lt theta_grid[i+1], nmax)
+    if nmax gt 0 then begin
+      weight[idx_max] = ( sin(dr * theta_max[idx_max]) - sin(dr * theta_grid[i]) ) * data.dphi[idx_max]
+    endif
+    
+    ;data bins whose minimum overlaps the current spectrogram bin
+    idx_min = where(theta_min gt theta_grid[i] and theta_min lt theta_grid[i+1], nmin)
+    if nmin gt 0 then begin
+      weight[idx_min] = ( sin(dr * theta_grid[i+1]) - sin(dr * theta_min[idx_min]) ) * data.dphi[idx_min]
+    endif
+    
+    ;data bins contained withing the current spectrogram bin
+    contained = ssl_set_intersection(idx_max,idx_min)
+    if contained[0] ne -1 then begin
+      weight[contained] = ( sin(dr * theta_max[contained]) - sin(dr * theta_min[contained]) ) * data.dphi[contained] 
+    endif
+    
+    ;data bins that completely cover the current spectrogram bin 
+    idx_all = where( theta_min le theta_grid[i] and theta_max ge theta_grid[i+1], nall)
+    if nall gt 0 then begin
+      weight[idx_all] = ( sin(dr * theta_grid[i+1]) - sin(dr * theta_grid[i]) ) * data.dphi[idx_all]
+    endif
+
+    ;combine indices 
+    idx = ssl_set_union(idx_min,idx_max)
+    idx = ssl_set_union(idx,idx_all)
+    
+    ;assign a weighted average to this bin
+    if (nmax + nmin + nall) gt 0 then begin
+    
+      ;indices will contain a -1 if any other the searches failed 
+      if idx[0] eq -1 then begin
+        idx = idx[1:n_elements(idx)-1]
+      endif
+      
+      ;normalize weighting to selected, active bins
+      weight = weight[idx] * data.bins[idx]
+      weight = weight / total(weight)
+      
+      ;average
+      ave[i] = total(d[idx] * weight)
+      
+      ;standard deviation
+      ave_s[i] = sqrt(  total(d[idx] * data.scaling[idx] * weight^2)  )
+      
+    endif else begin
+      ;nothing
+    endelse
+
   endfor
 
-  ;divide by total active bins to get average
-  ave = ave / nbins
-  ave_s = sqrt(ave_s / nbins^2)
-  
 
   ;get values for the y axis
-  y = values
-  
-  ;sort y axis and data
-  s = sort(y)
-  ave = ave[s]
-  ave_s = ave_s[s]
-  y = y[s]
-
+  y = ( theta_grid + shift(theta_grid,1) ) / 2.
+  y = y[1:n_theta]
 
   ;set the y axis
   if undefined(yaxis) then begin
