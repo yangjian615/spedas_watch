@@ -449,7 +449,7 @@ pro fit, x, yt, $
 
           pder = dblarr(n_elements(y),nterms)
           if keyword_set(NODERIVATIVE) then begin  ;  Evaluate function and estimate partial derivatives
-             yfit = (call_function( Function_name_com, x, param=params))(*)
+             yfit = (call_function( Function_name_com, x, param=params))[*]
              if logf then yfit = alog(yfit)
              xfer_parameters,params,p_names,a,/struct_to_array
              for term=0, nterms-1 do begin
@@ -461,13 +461,13 @@ pro fit, x, yt, $
                 p[term] = p[term] + inc
                 tparams = params
                 xfer_parameters,tparams,p_names,p,/array_to_struct
-                yfit1 = (call_function( Function_name_com, x, param=tparams))(*)
+                yfit1 = (call_function( Function_name_com, x, param=tparams))[*]
                 if logf then yfit1 = alog(yfit1)
                 pder[*,term] = (yfit1-yfit)/inc
              endfor
           endif else begin       ; The user's procedure will compute partial derivatives
              yfit = (call_function(Function_name_com, x, param=params,  $
-                  p_na=fullnames,pder = pder))(*)
+                  p_na=fullnames,pder = pder))[*]
              if logf then begin
                   pder = pder / (yfit # replicate(1.,nterms) )
                   yfit = alog(yfit)
@@ -533,7 +533,7 @@ flambda=1e-5
              b[wpdernz] = a[wpdernz]+ array/c # transpose(beta) ; New params
              b = a_min >  b  < a_max         ; limit range of parameters
              xfer_parameters,tparams,p_names,b,/array_to_struct
-             yfit = (call_function( Function_name_com, x, param=tparams))(*)
+             yfit = (call_function( Function_name_com, x, param=tparams))[*]
              if logf then yfit = alog(yfit)
              chisqr = total(w*(y-yfit)^2)/nfree         ; New chisqr
 if finite(chisqr) eq 0 then begin

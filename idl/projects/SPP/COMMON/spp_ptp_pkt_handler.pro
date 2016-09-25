@@ -47,6 +47,9 @@ end
   
   
 pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
+
+message, 'This routine is now deprecated'
+
   if n_elements(buffer) le 2 then begin
     dprint,'buffer too small!'
     return
@@ -97,7 +100,6 @@ pro spp_ptp_pkt_handler,buffer,time=time,size=ptp_size
   if sc_id ne 'BB'x then begin
     dprint,dlevel=2,'Unknown SC_ID: '+string(sc_id)
     hexprint,buffer
-    
   endif
   if debug(4) then begin
     dprint,dlevel=2,'ptp_size=',ptp_size

@@ -167,7 +167,7 @@ endif else begin
       return,0
     endif
     if ccsds.pkt_size ne buffer_length-offset then begin
-      dprint,'PTP size and CCSDS size mismatch'
+      dprint,'PTP size and CCSDS size mismatch',dlevel=1
     endif
     pktbuffer = buffer[offset+0:offset+ccsds.pkt_size-1]
     ccsds.pdata = ptr_new(pktbuffer,/no_copy)

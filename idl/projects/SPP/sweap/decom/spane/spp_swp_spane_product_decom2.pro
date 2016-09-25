@@ -132,6 +132,10 @@ function spp_swp_spane_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
   bps =  ([4,1])[ compression ]
   
   ndat = ns / bps
+  if ndat * bps ne ns then begin
+    dprint,'decom error',dlevel=2
+    return, 0
+  endif
 
   if ns gt 0 then begin
     data      = ccsds_data[20:*]

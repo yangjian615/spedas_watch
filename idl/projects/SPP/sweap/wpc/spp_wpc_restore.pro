@@ -168,6 +168,10 @@ printdat,total(s0.raw)
 printdat,total(raw)
 makepng,rootname+'_plot2'
 
+;wi,2
+;wsff=fft2(s0.raw)
+stop
+
 wshow
 wi,0
 

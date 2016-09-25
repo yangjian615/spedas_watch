@@ -17,7 +17,7 @@ pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,rem
       break
     endif
     npackets +=1
-    if debug(3) then begin
+    if debug(5) then begin
       ccsds_data = spp_swp_ccsds_data(ccsds)  
       dprint,dlevel=2,format='(i3,i6," APID: ", Z03,"  SeqGrp:",i1, " Seqn: ",i5,"  Size: ",i5,"   ",8(" ",Z02))',npackets,offset,ccsds.apid,ccsds.seq_group,ccsds.seqn,ccsds.pkt_size,ccsds_data[12:17]
     endif

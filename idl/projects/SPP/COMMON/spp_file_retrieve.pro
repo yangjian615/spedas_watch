@@ -43,7 +43,7 @@ if keyword_set(recent) then trange = systime(1) - [recent,0] * 86400d ;    Obtai
 
 if keyword_set(L0) || ~keyword_set(pathname) then begin   ; default location of L0 files
 ;   pathname = 'maven/pfp/l0/YYYY/MM/mvn_pfp_all_l0_YYYYMMDD_v???.dat'
-   pathname = 'spp/data/sci/pfp/l0_all/YYYY/MM/mvn_pfp_all_l0_YYYYMMDD_v???.dat'
+   pathname = 'spp/data/sci/pfp/l0_all/YYYY/MM/spp_swp_all_l0_YYYYMMDD_v???.dat'
    daily_names=1
    last_version =1
 endif

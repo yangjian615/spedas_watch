@@ -25,7 +25,7 @@
 ;-
 pro hexprint,buffer,unit=unit,filename=filename,decimal=decimal,start=start,nbytes=nbytes,dlevel=dlevel,ncolumns=ncolumns
 
-if size(/type,buffer) eq 7 && file_test(buffer,/regular) then begin
+if size(/type,buffer) eq 7 && file_test(buffer,/regular) then begin   ; display file
    fi = file_info(buffer)
    file_open,'r',buffer,unit=ifp,dlevel=3,verbose=2
    if not keyword_set(nbytes) then nbytes=1024

@@ -5,7 +5,6 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
-  if keyword_set(exec0) then exec, exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*3600*.1'
   
   if n_elements(hub) eq 0 then hub = 1
   
@@ -17,7 +16,6 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
   endif
   if keyword_set(swemgse) then begin
     recorder,title='SWEMGSE', port= hub ? 2228 : 2024, host='abiad-sw.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read' ;,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
-    return
   endif
   if keyword_set(rm133) then begin
     recorder,title='ROOM 133', port= hub ? 2028 : 2024, host='128.32.13.37', exec_proc='spp_ptp_stream_read'
@@ -28,8 +26,6 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
     return
   endif
   if keyword_set(rm320) then begin
-    host = 'localhost'
-    host = '128.32.98.101'
     host = 'ABIAD-SW.ssl.berkeley.edu'
     recorder,title='GSEOS PTP ion', port=2028, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
     recorder,title='GSEOS PTP elec',port=2128, host='ABIAD-SW.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'    
@@ -40,6 +36,11 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
     if keyword_set(ion) then recorder,title='GSEOS PTP ion TV',port=2028, host='mgse2.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read';,  destination='spp_raw_YYYYMMDD_hhmmss.ptp'
 
   endif
+  
+  
+
+  if keyword_set(exec0) then exec, exec_text = 'tplot,verbose=0,trange=systime(1)+[-1,.05]*3600*.1',title=title
+  tplot_options,title='Real time'
   
   spp_swp_startup,/rt_flag
   

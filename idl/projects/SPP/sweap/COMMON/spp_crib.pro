@@ -353,6 +353,133 @@ pro spp_swp_finish_rates
 end
 
 
+function  spp_swp_spani_thresh_tlimits,hkp,anode
+  w = where(hkp.mram_addr_hi eq anode )
+  tr = minmax(hkp[w].time)
+end
+
+
+pro spp_swp_spani_thresh_test,anode,trangefull=trangefull,data=data,plotname=plotname
+
+  channel = anode and 'f'x
+  stp  = (anode and '10'x) ne 0
+  if not keyword_set(trangefull) then ctime,trangefull
+ 
+ timebar,trangefull
+  
+  spp_apid_data,'3bb'x,apdata=rates
+  rates = rates.data_array.array
+  w = where((rates.time ge trangefull[0]) and (rates.time le trangefull[1]) )
+  rates_w = rates[w]
+  
+  thresh = data_cut('spp_spani_hkp_MRAM_ADDR_LOW',rates_w.time)
+  anodes = data_cut('spp_spani_hkp_MRAM_ADDR_HI',rates_w.time)
+  mcpv = tsample('spp_spani_hkp_MON_MCP_V',minmax(rates_w.time),/aver)
+  stops = rates_w.stops_cnts[channel]
+  starts =   rates_w.starts_cnts[channel]
+  if stp then begin
+    cnts = stops
+    other = starts
+  endif  else begin
+     cnts = starts
+     other = stops
+  endelse
+  
+  good = 1
+  good = good and (anode eq anodes)
+  good = good and (thresh lt 50) and (thresh gt 5)
+  good = good and (thresh eq shift(thresh,1)) and (thresh eq shift(thresh,-1))
+  good = good and (cnts lt 5e4)
+  good = good and ( other lt 2)
+
+  wgood = where(good)
+  thresh = thresh[wgood]
+  cnts  = cnts[wgood]
+  timebar,minmax(rates_w[wgood].time)
+  
+;  timebar,rates_w[wgood].time
+;  thresh[bad] = !values.f_nan
+  wi,1
+  !p.multi = [0,1,2]
+  xrange = [0,50]
+  anode_str = string(anode,format='("x",Z02)')
+  plot,xrange=xrange,yrange=[1,50000.],thresh,cnts,psym=-1,/ylog,xtitle='Threshold',title = 'MCPV='+strtrim(mcpv,2)+'V  Anode = '+anode_str
+  cntavg = average_hist(cnts,fix(thresh),binsize=1,xbins=tbins)
+  oplot,tbins,cntavg,psym=-1,color=6
+  dthavg = -deriv(tbins,cntavg)
+  plot,xrange=xrange,yrange= yrange, tbins,dthavg,psym=-4,xtitle='Threshold'
+  data = {anode:anode,  cntavg:cntavg,  tbins:tbins }
+  if keyword_set(plotname) then makepng,plotname+'_'+anode_str
+end
+
+pro spp_swp_spani_thresh_test_all 
+
+
+end
+
+
+if 1 then begin
+  
+  if not keyword_set(alldat) then begin
+    alldat = ptrarr(32,/allocate_heap)
+    for i=0,31 do spp_swp_spani_thresh_test,trangefu=trf,i,plotname='spani_thresh_scan',data=*alldat[i]
+  endif
+  
+  
+  wi,1
+  !p.multi = [0,1,3]
+  xrange = [0,50]
+  yrange = [1,50000.]
+  col = intarr(32)
+  col[0:15] = 2
+  col[16:25] = 4
+  col[26:31] = 6
+  
+  plot,xrange=xrange,yrange=yrange,[1,1],/nodata,/ylog,xtitle='Threshold',title ='All anodes',ytitle='Counts'
+  for i=0,31,1 do begin
+    dat = *alldat[i]
+;    col = (dat.anode and '10'x) ne 0 ? 6 : 2
+    oplot,dat.tbins,dat.cntavg,color = col[dat.anode]
+  endfor
+
+  yrange=[0,500]
+  plot,xrange=xrange,yrange=yrange,[1,1],/nodata,ylog=0,xtitle='Threshold',title ='All anodes',ytitle='d(cnt)/d(thresh)'
+
+  for i=0,31,1 do begin
+    dat = *alldat[i]
+ ;   col = (dat.anode and '10'x) ne 0 ? 6 : 2
+    oplot,dat.tbins,-deriv(dat.tbins,dat.cntavg),color = col[dat.anode]
+  endfor
+
+  yrange=[0,5000]
+  plot,xrange=xrange,yrange=yrange,[1,1],/nodata,ylog=0,xtitle='Threshold',title ='All anodes',ytitle='d(cnt)/d(thresh)'
+
+  for i=0,31,1 do begin
+    dat = *alldat[i]
+;    col = (dat.anode and '10'x) ne 0 ? 6 : 2
+    oplot,dat.tbins,-deriv(dat.tbins,dat.cntavg),color = col[dat.anode]
+  endfor
+
+
+  
+endif
+
+
+if 0 then begin
+    
+  
+  
+  
+  file = spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/mgsehires1/20160912_190540_SPANI_EM3_SNOUT2_cold_thresh_scan/PTP_data.dat.gz')
+  
+  
+  
+  
+  
+endif
+
+
+
 
 
 if 0 then begin

@@ -1,29 +1,43 @@
 
-pro spp_ptp_file_read,files
+pro spp_ptp_file_read,files,dwait=dwait
   
+  if not keyword_set(dwait) then   dwait = 10
   t0 = systime(1)
   spp_swp_startup,rt_flag=0,save=1,/clear
+  info = {  time_received:0d, buffer_ptr:ptr_new(/allocate_heap),  file:'',  fileptr:0LL }
 
   for i=0,n_elements(files)-1 do begin
-    file = files[i]
-    file_open,'r',file,unit=lun,dlevel=4
+    info.file = files[i] 
+    tplot_options,title=info.file
+    file_open,'r',info.file,unit=lun,dlevel=4,compress=-1
     sizebuf = bytarr(2)
-    fi = file_info(file)
-    dprint,dlevel=1,'Reading file: '+file+' LUN:'+strtrim(lun,2)+'   Size: '+strtrim(fi.size,2)
+    fi = file_info(info.file)
+    dprint,dlevel=1,'Reading file: '+info.file+' LUN:'+strtrim(lun,2)+'   Size: '+strtrim(fi.size,2)
     while ~eof(lun) do begin
+      info.time_received = systime(1)
       point_lun,-lun,fp
-      readu,lun,sizebuf
-;      point_lun,lun,fp
-      sz = sizebuf[0]*256 + sizebuf[1]
-      if sz lt 17 then begin
-        dprint,format="('Bad PTP packet size',i,' in file: ',a,' at file position: ',i)",sz,file,fp
-        stop
-      endif
-      buffer = bytarr(sz-2)
-      readu,lun,buffer
-      spp_ptp_pkt_handler,[sizebuf,buffer]   ;,time=systime(1)   ;,size=ptp_size
+      if ~keyword_set( *info.buffer_ptr) then begin
+        readu,lun,sizebuf
+        sz = sizebuf[0]*256 + sizebuf[1]
+        if sz gt 17 then  begin   
+          remainder = sizebuf  
+          sz -= 2
+        endif else begin
+          remainder = !null
+          sz = 100L         
+        endelse
+      endif else begin
+        remainder = !null
+        szr =  swap_endian( uint(*info.buffer_ptr,0) ,  /swap_if_little_endian)
+        sz = szr - n_elements(*info.buffer_ptr)
+        dprint,'Resync:',dlevel=3,sz
+      endelse
+      buffer = bytarr(sz)
+      readu,lun,buffer,transfer_count=nb
+      if nb ne sz then dprint,'error'
+      spp_ptp_stream_read,[remainder,buffer],info=info  
       if debug(2) then begin
-        dprint,dwait=20,dlevel=2,'File percentage: ' ,(fp*100.)/fi.size
+        dprint,dwait=dwait,dlevel=2,'File percentage: ' ,(fp*100.)/fi.size
       endif
     endwhile
     free_lun,lun

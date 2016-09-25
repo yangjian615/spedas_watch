@@ -24,6 +24,7 @@ if keyword_set(name) then begin
     'SA_LV': tplot,'*spane*hkp*RIO*',ADD=ADD
     'SA_SPEC': tplot,'*_a_ar_targ_p1_*CNTS_TOTAL *_a_ar_targ_p1_*_SPEC? *_a_ar_targ_p0_*_SPEC*',add=add
     'SB': tplot,'APID',ADD=ADD
+    'SB_SPEC': tplot,'*_b_ar_targ_p1_*CNTS_TOTAL *_b_ar_targ_p1_*_SPEC? *_b_ar_targ_p0_*_SPEC*',add=add
     'SI_RATE': tplot,'*rate*CNTS',ADD=ADD
     'SI_RATE1': tplot,'*rates_'+strsplit(/extract,'VALID_* MULTI_* STARTS_* STOPS_*'),add=add
     'SI_AF0?_1': tplot,'*spani_ar_full_p0_m?_*_SPEC1',add=add

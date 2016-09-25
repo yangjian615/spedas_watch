@@ -61,7 +61,7 @@ END
 
 
 
-PRO exec,base,exec_text=exec_text ,interval=poll_int,now=now,poll=repeater,done=done,ids=ids
+PRO exec,base,exec_text=exec_text ,interval=poll_int,now=now,poll=repeater,done=done,ids=ids,title_suffix=title_suffix
 
 if n_elements(poll_int) eq 1 then poll_text = strtrim(poll_int,2)
 if ~(keyword_set(base) && widget_info(base,/managed) ) then begin
@@ -77,7 +77,7 @@ if ~(keyword_set(base) && widget_info(base,/managed) ) then begin
     WIDGET_CONTROL, ids.base, SET_UVALUE=ids
     WIDGET_CONTROL, ids.base, /REALIZE
     title = 'EXEC ('+strtrim(ids.base,2)+')'
-    widget_control, ids.base, base_set_title=title
+    widget_control, ids.base, base_set_title=title+ (keyword_set(title_suffix) ? ' - '+title_suffix : '')
     XMANAGER, 'exec', ids.base,/no_block
     dprint,dlevel=2,'Started: '+title
     base = ids.base
