@@ -1,4 +1,4 @@
-PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql
+PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql, hpca=hpca
   compile_opt idl2
   if undefined(vthres) then vthres = 500.
   
@@ -7,12 +7,14 @@ PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql
   tn = tnames(sc+'_dfg_srvy_dmpa',ct)
   if ct ne 1 then begin
     mms_sitl_get_dfg, sc_id=sc
+    eva_cap,sc+'_dfg_srvy_gsm_dmpa'
     options,sc+'_dfg_srvy_gsm_dmpa',$
-      labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='GSM [nT]',$
-      colors=[2,4,6],labflag=-1,constant=0, cap=1
+      labels=['B!DX!N', 'B!DY!N', 'B!DZ!N'],ytitle=sc+'!CDFG!Cgsm',ysubtitle='[nT]',$
+      colors=[2,4,6],labflag=-1,constant=0
+    eva_cap,sc+'_dfg_srvy_dmpa'
     options,sc+'_dfg_srvy_dmpa',$
-      labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='DMPA [nT]',$
-      colors=[2,4,6],labflag=-1,constant=0, cap=1
+      labels=['B!DX!N', 'B!DY!N', 'B!DZ!N'],ytitle=sc+'!CDFG!Cgsm',ysubtitle='[nT]',$
+      colors=[2,4,6],labflag=-1,constant=0
   endif
   
   ; E
@@ -59,16 +61,25 @@ PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql
     endfor
   endif
   
-  ; Compare with FPI
+  ; Compare with FPI/HPCA
   ;-------------------------
   
-  tpv = keyword_set(ql) ? '_dis_bulk' : '_fpi_iBulkV_DSC' 
-  tpv2 = keyword_set(ql) ? '_dis_bulkVperp_' : '_fpi_iBulkVperp_'
-  tpv3 = keyword_set(ql) ? '_exbql_vperp_' : '_exb_vperp_'
+;  tpv = keyword_set(ql) ? '_dis_bulk' : '_fpi_iBulkV_DSC' 
+;  tpv2 = keyword_set(ql) ? '_dis_bulkVperp_' : '_fpi_iBulkVperp_'
+;  tpv3 = keyword_set(ql) ? '_exbql_vperp_' : '_exb_vperp_'
+  tpv = keyword_set(hpca) ? '_hpca_hplus_ion_bulk_velocity' : '_fpi_ion_vel_dbcs'
+  tpv2 = keyword_set(hpca) ? '_hpca_ion_Vperp' : '_fpi_ion_Vperp'
+  tpv3 = keyword_set(hpca) ? '_exb_hpca_vperp_' : '_exb_fpi_vperp_'
+
   ; extract Vperp
   tn = tnames(sc+tpv,ct)
   if ct ne 1 then begin
-    eva_data_load_mms_fpi, sc=sc
+    if keyword_set(hpca) then begin
+      prb = strmid(sc,3,1)
+      eva_data_load_mms_hpca, prb=prb, level='sitl'
+    endif else begin
+      eva_data_load_mms_fpi_ql, sc=sc
+    endelse
   endif
   tn = tnames(sc+tpv,ct)
   if ct eq 1 then begin
@@ -88,7 +99,7 @@ PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql
     for c=0,cmax-1 do begin
       store_data,sc+tpv2+comp[c],data={x:F.x,y:Vperp[*,c]}
       options,sc+tpv2+comp[c],labels='Vperp,'+comp[c],labflag=-1,colors=clrs[c],$
-        ytitle=sc+'!CFPI!CVperp,'+comp[c],ysubtitle='[km/s]',constant=0,ystyle=1
+        ytitle=sc+'!CVperp,'+comp[c],ysubtitle='[km/s]',constant=0,ystyle=1
     endfor
     
     ; combine

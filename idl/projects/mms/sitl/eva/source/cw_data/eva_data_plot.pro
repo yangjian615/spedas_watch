@@ -159,7 +159,7 @@ PRO eva_data_plot, wid
   ; PLOT OPTIONS
   tplot_options, 'ystyle', 0; 1) exact 0) not exact
   tplot_options, 'ygap', 0.3
-  ;tplot_options, 'xmargin', [15,20];[14,10] ;18 characters on left side, 12 on right
+  tplot_options, 'xmargin', [15,10];[14,10] ;18 characters on left side, 12 on right
   for j=0,jmax-1 do begin
     eva_data_plot_options, *vars_arr[j]; Note again that *vars_arr[j] is still an array
   endfor

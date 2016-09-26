@@ -1,9 +1,14 @@
+;-------------
+; AE index
+;-------------
+thg_idx_ae
+
 ;-----------------
 ; Magnetic Field
 ;-----------------
 mms*_dfg_srvy_gsm_dmpa; Bx, By, Bz
 mms*_dfg_srvy_gsm_dmpa_m; |B|
-;mms*_dfg_srvy_omb; Temporary parameters to be used when QL data not available. 
+;mms*_dfg_srvy_omb; Temporary parameters to be used when QL data not available.
 ;mms*_dfg_srvy_omb_m; Temporary parameters to be used when QL data not available.
 ;mms*_fpi_bentPipeB_DSC;.... FPI Emergency parameters for when DFG/AFG not available.
 ;mms*_fpi_bentPipeB_DSC_m;... FPI Emergency parameters for when DFG/AFG not available.
@@ -11,38 +16,34 @@ mms*_dfg_srvy_gsm_dmpa_m; |B|
 ;---------------------
 ; S/C Potential
 ;---------------------
-mms*_edp_fast_scpot_sitl; SC-potential
+mms*_edp_scpot_fast_sitl; SC-potential
 
 ;--------------------
 ; Density & Velocity
 ;--------------------
-;mms*_hpca_hplus_number_density
-;mms*_hpca_hplus_ion_bulk_velocity
-mms*_dis_numberDensity;...FPI
-mms*_dis_bulk;........... FPI
-mms*_exbql_vperp_z;....  FPI comparison between (ExB)z and FPI Vperp,z
+mms*_hpca_hplus_number_density
+mms*_hpca_hplus_ion_bulk_velocity
+mms*_exb_hpca_vperp_z;....  Comparison between (ExB)z and HPCA Vperp,z
 
-;-----------------------
-; Current enhancements 
-;-----------------------
-mms_sitl_jtot_curl_b;... Jtot from Curl-B
-mms_sitl_diffB ;.... diffB 
+;mms*_dis_numberDensity;...FPI
+;mms*_dis_bulk;........... FPI
+;mms*_exbql_vperp_z;....  FPI comparison between (ExB)z and FPI Vperp,z
 
 ;--------------------
 ; Spectrograms
 ;--------------------
-;mms*_epd_eis_extof_proton_flux_omni_spin
-mms*_dis_EnergySpectr_omni_avg;......... FPI
-;mms*_hpca_hplus_RF_corrected
+mms*_epd_eis_extof_proton_flux_omni_spin
+;mms*_dis_EnergySpectr_omni_avg;......... FPI
+mms*_hpca_hplus_RF_corrected
 mms*_hpca_oplus_RF_corrected
-;mms*_epd_feeps_srvy_sitl_electron_top_intensity_sensorid_11_clean_sun_removed
-mms*_des_EnergySpectr_omni_avg;......... FPI
+mms*_epd_feeps_srvy_sitl_electron_top_intensity_sensorid_11_clean_sun_removed
+;mms*_des_EnergySpectr_omni_avg;......... FPI
 
 ;--------------------
 ; Waves
 ;--------------------
 mms*_edp_fast_dce_sitl;....... E-field waveform
-mms*_edp_srvy_hfesp_l2;........ E-field spectrum
+mms*_edp_hfesp_srvy_l2;........ E-field spectrum
 mms*_dsp_bpsd_omni_fast_l2;.... B-field spectrum
 
 ;--------------------

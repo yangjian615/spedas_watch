@@ -13,7 +13,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
   ts = str2time(state.start_time)
   te = str2time(state.end_time)
   timespan,state.start_time, te-ts, /seconds
-  NOLOAD_4FGM = 0L
+  LOADED_4FGM = 0L
   
   ;----------------------
   ; NUMBER OF PARAMETERS
@@ -115,7 +115,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
             tn = tn[idx]
             for k=0,kmax-1 do begin
               tarr = strsplit(tn[k],'_',/extract)
-              options, tn[k],ytitle=sc+'!CFEEPS!CTop '+tarr[7],ysubtitle='[keV]'
+              options, tn[k],ytitle=sc+'!CFEEPS!C'+tarr[7],ysubtitle='[keV]'
               ylim, tn[k], 30,500
             endfor
           endif
@@ -174,7 +174,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
             eva_cap,sc+'_afg_srvy_omb'
             options,sc+'_afg_srvy_omb',$
-              labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='OMB [nT]',$
+              labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='OMB [nT]',$
               colors=[2,4,6],labflag=-1,constant=0
             answer = 'Yes'
           endif
@@ -182,7 +182,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           if (strlen(tn[0]) gt 0) and (cnt gt 0) then begin
             eva_cap,sc+'_afg_srvy_bcs'
             options,sc+'_afg_srvy_bcs',$
-              labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='BCS [nT]',$
+              labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='BCS [nT]',$
               colors=[2,4,6],labflag=-1,constant=0
             answer = 'Yes'
           endif
@@ -194,15 +194,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=32
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_dfg*') and (cp eq 0)) then begin
-          mms_sitl_get_dfg, sc_id=sc
-          eva_cap,sc+'_dfg_srvy_gsm_dmpa'
-          options,sc+'_dfg_srvy_gsm_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='GSM [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0
-          eva_cap,sc+'_dfg_srvy_dmpa'
-          options,sc+'_dfg_srvy_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CDFG!Csrvy',ysubtitle='DMPA [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0
+          eva_data_load_mms_dfg, sc=sc
           answer = 'Yes'
         endif
         pcode=33
@@ -309,79 +301,80 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         
         pcode=37
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_edp_fast_scpot*') and (cp eq 0)) then begin
+        if (strmatch(paramlist[i],'*_edp_scpot_fast*') and (cp eq 0)) then begin
           mms_sitl_get_edp, sc=sc, data_rate = 'fast', level='sitl', datatype='scpot'
-          tn = tnames(sc+'_edp_fast_scpot_sitl',cnt)
+          tn = tnames(sc+'_edp_scpot_fast_sitl',cnt)
           if (strlen(tn[0]) gt 0) and (cnt eq 1) then begin
             get_data,tn,data=D,dl=dl,lim=lim
             ynew = (-1)*alog10(D.y > 0)
             store_data,tn,data={x:D.x,y:ynew},dl=dl,lim=lim
-            options,tn,ytitle=sc+'!CEDP!C-log(scpot)';,ysubtitle='[arbitrary]'
+            options,tn,ytitle=sc+'!CEDP!C-log(p)',labels='pot'
           endif
           answer = 'Yes'
         endif
         
         pcode=38
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_edp_srvy_*') and (cp eq 0)) then begin
+        if (strmatch(paramlist[i],'*_edp_hfesp_srvy_*') and (cp eq 0)) then begin
           mms_sitl_get_edp, sc = sc, datatype='hfesp', level = 'l2', data_rate='srvy'
-          tn = tnames(sc+'_edp_srvy_hfesp_l2',cnt)
+          tn = tnames(sc+'_edp_hfesp_srvy_l2',cnt)
           if (strlen(tn[0]) gt 0) and (cnt eq 1) then begin
             options,tn,ytitle=sc+'!CEDP!Chfesp',ysubtitle='[Hz]',ztitle='[(V/m)!U2!N/Hz]'
             options,tn,spec=1,zlog=1
             ylim,tn,600,65536,1 
+            tplot_force_monotonic,tn,/forward
           endif
           answer = 'Yes'
         endif
         
-        ;-----------
-        ; FPI
-        ;-----------
+        ;------------------
+        ; FPI PSEUDO MOM
+        ;------------------
         pcode=50
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_fpi_*') and (cp eq 0)) then begin
-          eva_data_load_mms_fpi, sc=sc
+        PSEUDOMOM = (strmatch(paramlist[i],'*pseudo*') or strmatch(paramlist[i],'*bentpipe*')) 
+        if PSEUDOMOM and (cp eq 0) then begin
+          ;eva_data_load_mms_fpi, sc=sc
+          eva_data_load_mms_fpi_pseudomom, sc=sc
           answer = 'Yes'
         endif
 
-        ;-----------
-        ; FPI QL
-        ;-----------
+        ;-------------
+        ; FPI QL OLD
+        ;-------------
         pcode=51
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_des_*') and (cp eq 0)) then begin
-          eva_data_load_mms_fpi_ql, prb=prb, datatype='des'
+          eva_data_load_mms_fpi_ql_old, prb=prb, datatype='des'
           answer = 'Yes'
         endif
         pcode=52
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_dis_*') and (cp eq 0)) then begin
-          eva_data_load_mms_fpi_ql, prb=prb, datatype='dis'
+          eva_data_load_mms_fpi_ql_old, prb=prb, datatype='dis'
           answer = 'Yes'
         endif
         
-        ;--------------
-        ; FPI BentPipe
-        ;--------------
-;        pcode=53
-;        ip=where(perror eq pcode,cp)
-;        if (strmatch(paramlist[i],'*_fpi_bent*') and (cp eq 0)) then begin
-;          mms_load_fpi, probes = prb, level='sitl', data_rate='fast'
-;          get_data,sc+'_fpi_bentPipeB_X_DSC',data=Dx
-;          get_data,sc+'_fpi_bentPipeB_Y_DSC',data=Dy
-;          get_data,sc+'_fpi_bentPipeB_Z_DSC',data=Dz
-;          get_data,sc+'_fpi_bentPipeB_Norm',data=Dabs
-;          ydata = [[Dabs.Y*Dx.Y], [Dabs.Y*Dy.Y], [Dabs.Y*Dz.Y]]
-;          ysize = sqrt(ydata[*,0]^2+ydata[*,1]^2+ydata[*,2]^2)
-;          store_data,sc+'_fpi_bentPipeB_DSC',data={x:Dx.X, y:ydata}
-;          store_data,sc+'_fpi_bentPipeB_DSC_m',data={x:Dx.X, y:ysize}
-;          options,sc+'_fpi_bentPipeB_DSC',$
-;            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='DSC',$
-;            colors=[2,4,6],labflag=-1,constant=0
-;          options,sc+'_fpi_bentPipeB_DSC_m',constant=0,colors=[0],$
-;            ytitle=sc+'!CFPI!CbentPipeB',ysubtitle='(magnitude)'
-;          answer = 'Yes'
-;        endif
+        ;-------------
+        ; FPI QL NEW
+        ;-------------
+        pcode=53
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_fpi_*') and ~PSEUDOMOM and (cp eq 0)) then begin
+          eva_data_load_mms_fpi_ql, sc=sc
+          answer = 'Yes'
+        endif
+        
+        ;---------------
+        ; FPI COMBINED
+        ;---------------
+        pcode=54
+        ip=where(perror eq pcode,cp)
+        if strmatch(paramlist[i],'*_fpi_com*') then begin
+          eva_data_load_mms_fpi_com, sc=sc
+          answer = 'Yes'
+        endif
+        
         
         ;-----------
         ; HPCA
@@ -412,28 +405,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         level = 'sitl'
         if( (cp eq 0) and $
           (strmatch(paramlist[i],'*_hpca_*number_density') or strmatch(paramlist[i],'*_hpca_*bulk_velocity'))) then begin
-          ;mms_sitl_get_hpca_moments, sc_id=sc, level=level
-          mms_sitl_get_hpca, probes=prb, level=level, datatype='moments'
-          sh='(H!U+!N)'
-          so='(O!U+!N)'
-          options, sc+'_hpca_hplus_number_density',ytitle=sc+'!CHPCA!CN '+sh,ysubtitle='[cm!U-3!N]',/ylog,$
-            colors=1,labels=['N '+sh]
-          options, sc+'_hpca_oplus_number_density',ytitle=sc+'!CHPCA!CN '+so,ysubtitle='[cm!U-3!N]',/ylog,$
-            colors=3,labels=['N '+so]
-          options, sc+'_hpca_hplus_bulk_velocity',ytitle=sc+'!CHPCA!CV '+sh,ysubtitle='[km/s]',ylog=0,$
-            colors=[2,4,6],labels=['V!DX!N '+sh, 'V!DY!N '+sh, 'V!DZ!N '+sh],labflag=-1
-          options, sc+'_hpca_oplus_bulk_velocity',ytitle=sc+'!CHPCA!CV '+so,ysubtitle='[km/s]',ylog=0,$
-            colors=[2,4,6],labels=['V!DX!N '+so, 'V!DY!N '+so, 'V!DZ!N '+so],labflag=-1
-          options, sc+'_hpca_hplus_scalar_temperature',ytitle=sc+'!CHPCA!CT '+sh,ysubtitle='[eV]',/ylog,$
-            colors=1,labels=['T '+sh]
-          options, sc+'_hpca_oplus_scalar_temperature',ytitle=sc+'!CHPCA!CT '+so,ysubtitle='[eV]',/ylog,$
-            colors=3,labels=['T '+so]
-
-          options, sc+'_hpca_hplusoplus_number_densities',ytitle=sc+'!CHPCA!CDensity',ysubtitle='[cm!U-3!N]',/ylog,$
-            colors=[1,3],labels=['N '+sh, 'N '+so],labflag=-1
-          options, sc+'_hpca_hplusoplus_scalar_temperatures',ytitle=sc+'!CHPCA!CTemp',ysubtitle='[eV]',$
-            colors=[1,3],labels=['T '+sh, 'T '+so],labflag=-1
-
+          eva_data_load_mms_hpca, prb=prb, level=level
           answer = 'Yes'
         endif
 
@@ -447,7 +419,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           if tnames('thg_idx_ae') eq '' then begin
             store_data,'thg_idx_ae',data={x:[ts,te], y:replicate(!values.d_nan,2)}
           endif
-          options,'thg_idx_ae',ytitle='THEMIS!CAE Index'
+          options,'thg_idx_ae',ytitle='THM!CAE'
           answer = 'Yes'
         endif
         
@@ -456,14 +428,14 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         ;-----------
         pcode=81
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_exb_*') and (cp eq 0)) then begin
+        if (strmatch(paramlist[i],'*_exb_fpi_*') and (cp eq 0)) then begin
           eva_data_load_mms_exb,sc=sc,vthres=500.
           answer = 'Yes'
         endif
         pcode=82
         ip=where(perror eq pcode,cp)
-        if (strmatch(paramlist[i],'*_exbql_*') and (cp eq 0)) then begin
-          eva_data_load_mms_exb,sc=sc,vthres=500.,/ql
+        if (strmatch(paramlist[i],'*_exb_hpca_*') and (cp eq 0)) then begin
+          eva_data_load_mms_exb,sc=sc,vthres=500.,/hpca
           answer = 'Yes'
         endif
         
@@ -483,33 +455,46 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=84
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_jtot_curl_b') and (cp eq 0)) then begin
-          mms_sitl_curl_b, flag, no_load=NOLOAD_4FGM
+          if not LOADED_4FGM then begin
+            eva_data_load_mms_dfg, sc='mms1'
+            eva_data_load_mms_dfg, sc='mms2'
+            eva_data_load_mms_dfg, sc='mms3'
+            eva_data_load_mms_dfg, sc='mms4'
+            LOADED_4FGM = 1L
+          endif
+          mms_sitl_curl_b, flag, /no_load
           if flag eq 1 then begin
             msg = 'Skipping curl-B (Missing Bfield data from one or more spacecraft)'
             result = dialog_message(msg,/center)
           endif
-          NOLOAD_4FGM = 1L
+          tn = tnames('mms_sitl_jtot_curl_b',cnt)
+          if cnt eq 1 then begin
+            options, tn, ytitle='Jtot',ysubtitle='uA/m!U2!D'
+          endif
           answer = 'Yes'
         endif
         pcode=85
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_diffb') and (cp eq 0)) then begin
-          mms_sitl_diffb, flag, no_load=NOLOAD_4FGM
+          if not LOADED_4FGM then begin
+            eva_data_load_mms_dfg, sc='mms1'
+            eva_data_load_mms_dfg, sc='mms2'
+            eva_data_load_mms_dfg, sc='mms3'
+            eva_data_load_mms_dfg, sc='mms4'
+            LOADED_4FGM = 1L
+          endif
+          mms_sitl_diffb, flag, /no_load
           if flag eq 1 then begin
             msg = 'Skipping diffb (Need at least two spacecraft).'
             result = dialog_message(msg,/center)
           endif else begin
             tn = tnames('mms_sitl_diffB',cnt)
             if cnt eq 1 then begin
-              options,'mms_sitl_diffB',labflag=-1,labels='diff(B^2)'
+              options,tn,labflag=-1,labels='diff-B!U2'
             endif
           endelse
-          NOLOAD_4FGM = 1L
           answer = 'Yes'
         endif
-
-
-
       endif;if ct eq 0 then begin; if not loaded
       c+=1
     endfor; for each requested parameter

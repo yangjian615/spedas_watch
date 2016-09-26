@@ -53,7 +53,7 @@ FUNCTION eva_data_load_reformat, paramlist, probelist, FOURTH=fourth
           if strpos(paramlist[i],'_m') ge 0 then begin
             sfx = '_m'
             pcolor = 0
-            ysubtitle = '(magnitude)'
+            ysubtitle = '(mag)'
             Dnew = sqrt(DD.y[*,0]^2+DD.y[*,1]^2+DD.y[*,2]^2)
             newlabel = ' '
           endif
