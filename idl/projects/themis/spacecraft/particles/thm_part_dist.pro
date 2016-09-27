@@ -88,9 +88,9 @@
 ;HISTORY:
 ;  2016-08-23  background removal moved to thm_pgs_clean_esa
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
-;$LastChangedRevision: 21724 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-09-26 10:16:49 -0700 (Mon, 26 Sep 2016) $
+;$LastChangedRevision: 21940 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_dist.pro $
 ;-
 function thm_part_dist, format, time, type = type, probe = probe, $
@@ -125,7 +125,7 @@ if strmid(format,5,1) eq 's' then begin
   endif
   ;SST calibrations only apply to full/burst data
   if keyword_set(sst_cal) && (strmid(format,7,1) eq 'f' || strmid(format,7,1) eq 'b') then begin
-    return,thm_part_dist2(format,time,_extra=ex)
+    return,thm_part_dist2(format,time,_extra=ex,sst_cal=sst_cal)
   endif
 endif
 

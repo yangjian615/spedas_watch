@@ -11,8 +11,8 @@
 ;  Set timespan by calling timespan outside of this routine.(e.g. time/duration is not an argument)
 ;  
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-09-22 13:46:22 -0700 (Thu, 22 Sep 2016) $
-; $LastChangedRevision: 21905 $
+; $LastChangedDate: 2016-09-26 16:43:23 -0700 (Mon, 26 Sep 2016) $
+; $LastChangedRevision: 21944 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_sst_quality_flags.pro $
 ;-
 
@@ -21,6 +21,7 @@
   
     compile_opt idl2
     
+    thm_load_state,probe=probe,/get_support
     thm_load_sst,probe=probe
     
     data_types = ['b','r','f']
@@ -44,7 +45,15 @@
         bit1 = 0
       endelse
       
-      flags = bit0 or ishft(bit1,1)
+      get_data,'th'+probe+'_state_spinper',data=d
+      
+      if is_struct(d) then begin
+        bit2 = (d.y lt 2.5) or (d.y gt 5)
+      endif else begin
+        bit2 = 0
+      endelse
+      
+      flags = bit0 or ishft(bit1,1) or ishft(bit2,2)
       
       store_data,'th'+probe+'_pse'+data_types[i]+'_data_quality',data={x:d.x,y:flags}
       store_data,'th'+probe+'_psi'+data_types[i]+'_data_quality',data={x:d.x,y:flags}

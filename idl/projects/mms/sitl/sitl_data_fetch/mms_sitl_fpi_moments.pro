@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-23 15:58:12 -0700 (Fri, 23 Sep 2016) $
-;  $LastChangedRevision: 21914 $
+;  $LastChangedDate: 2016-09-26 10:30:19 -0700 (Mon, 26 Sep 2016) $
+;  $LastChangedRevision: 21941 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_fpi_moments.pro $
 
 
@@ -41,19 +41,17 @@ pro mms_sitl_fpi_moments, sc_id = sc_id, clean=clean
     mms_load_fpi, probes = prb, data_rate = 'fast', level = 'ql', datatype = 'dis', min_version='3.0.0'
     mms_load_fpi, probes = prb, data_rate = 'fast', level = 'ql', datatype = 'des', min_version='3.0.0'
     
-    ; Electron and ion bulk velocities
     
-    ivel_n = 'mms' + prb + '_fpi_ion_vel_dbcs'
-    evel_n = 'mms' + prb + '_fpi_elec_vel_dbcs'
-    
-    tplot_rename, 'mms' + prb + '_dis_bulkv_dbcs_fast', ivel_n
-    tplot_rename, 'mms' + prb + '_des_bulkv_dbcs_fast', evel_n
-   
     ; Densities
     name = 'mms' + prb + '_des_numberdensity_fast'
     get_data, name, data=Nelc, dlimits=dlimits
     name = 'mms' + prb + '_dis_numberdensity_fast'
     get_data, name, data=Nion, dlimits=dlimits
+
+    if ~is_struct(Nelc) then begin
+      print, 'NO V3 FPI FILES. RETURNING.'
+      return
+    endif
 
     npts = n_elements(Nelc.X)
     Y = fltarr(npts,2)
@@ -66,6 +64,14 @@ pro mms_sitl_fpi_moments, sc_id = sc_id, clean=clean
     DensityN = 'mms' + prb + '_fpi_density'
     store_data, DensityN, data={X:Nelc.X, Y:Y, V: [1,2]}, dlim=dlim
 
+    
+    ; Electron and ion bulk velocities
+    
+    ivel_n = 'mms' + prb + '_fpi_ion_vel_dbcs'
+    evel_n = 'mms' + prb + '_fpi_elec_vel_dbcs'
+    
+    tplot_rename, 'mms' + prb + '_dis_bulkv_dbcs_fast', ivel_n
+    tplot_rename, 'mms' + prb + '_des_bulkv_dbcs_fast', evel_n
     
     ; Temperatures
     epara_name = 'mms' + prb + '_des_temppara_fast'
