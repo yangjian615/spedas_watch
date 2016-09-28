@@ -32,13 +32,13 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-09-23 16:52:10 -0700 (Fri, 23 Sep 2016) $
-;$LastChangedRevision: 21916 $
+;$LastChangedDate: 2016-09-27 14:21:06 -0700 (Tue, 27 Sep 2016) $
+;$LastChangedRevision: 21950 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_theta_spec.pro $
 ;-
 
 
-pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
+pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, colatitude=colatitude, _extra=ex
 
     compile_opt idl2, hidden
   
@@ -61,7 +61,8 @@ pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=e
   values = data.theta[0,uniq( data.theta[0,*], sort(data.theta[0,*]) )]
 
   n_theta = n_elements(values)
-  theta_grid = interpol([-90,90],n_theta+1)
+  range = keyword_set(colatitude) ? [0,180] : [-90,90]
+  theta_grid = interpol(range,n_theta+1)
 
   ;init this sample's piece of the spectrogram
   ave = replicate(!values.f_nan, n_theta)

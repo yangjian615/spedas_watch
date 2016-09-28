@@ -95,8 +95,8 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-08-24 18:29:05 -0700 (Wed, 24 Aug 2016) $
-;$LastChangedRevision: 21724 $
+;$LastChangedDate: 2016-09-27 14:22:38 -0700 (Tue, 27 Sep 2016) $
+;$LastChangedRevision: 21951 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -518,7 +518,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
-      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, sigma=pa_sigma, yaxis=pa_y
+      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, sigma=pa_sigma, yaxis=pa_y, /colatitude
     endif
     
     ;Build gyrophase spectrogram

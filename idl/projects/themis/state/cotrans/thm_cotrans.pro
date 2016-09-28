@@ -72,8 +72,8 @@
 ;              in_coord='dsl', probe='b c d', out_suff='_gse'
 ;
 ; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-02-24 18:53:52 -0800 (Wed, 24 Feb 2016) $
-; $LastChangedRevision: 20171 $
+; $LastChangedDate: 2016-09-27 17:42:42 -0700 (Tue, 27 Sep 2016) $
+; $LastChangedRevision: 21952 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/cotrans/thm_cotrans.pro $
 ;-
 
@@ -222,12 +222,12 @@ pro thm_cotrans_transform_helper,in_name,out_name,in_coord,out_coord, $
           recursive_in_coord='sse'
         end
       'spg': begin
-          spg2ssl,in_name,out_name,probe=prb
+          spg2ssl,in_name,out_name,probe=prb,ignore_dlimits=ignore_dlimits
           recursive_in_coord='ssl'
         end
       'ssl': switch out_coord of
         'spg': begin
-          spg2ssl,in_name,out_name,/ssl2spg,probe=prb
+          spg2ssl,in_name,out_name,/ssl2spg,probe=prb,ignore_dlimits=ignore_dlimits
           recursive_in_coord='spg'
           break
         end

@@ -98,8 +98,8 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-07-21 17:17:45 -0700 (Thu, 21 Jul 2016) $
-;$LastChangedRevision: 21508 $
+;$LastChangedDate: 2016-09-27 14:22:38 -0700 (Tue, 27 Sep 2016) $
+;$LastChangedRevision: 21951 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -432,7 +432,7 @@ pro mms_part_products, $
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
-      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y
+      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y, /colatitude
     endif
     
     ;Build gyrophase spectrogram
