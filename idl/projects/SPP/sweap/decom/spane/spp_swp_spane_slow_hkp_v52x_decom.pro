@@ -96,6 +96,8 @@ if debug(5) then begin
   printdat,chksum1 - chksum3 
 endif
 
+  if chksum1 ne chksum3 then dprint,'Bad spane checksum',dlevel=2
+
  ; EM2 = 1
   EM3 = 1
   EM2 = ~EM3

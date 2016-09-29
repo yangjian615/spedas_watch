@@ -30,23 +30,31 @@
 ;-
 function spp_file_retrieve,pathname,trange=trange,verbose=verbose, source=src,files=files, $
    last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
-   remote_kp_cdf=remote_kp_cdf, $   
-   insitu_kp_tab = insitu_kp_tab, $
-   insitu_kp_cdf=insitu_kp_cdf, $
    daily_names=daily_names,hourly_names=hourly_names,resolution = res,shiftres=shiftres,  $
    no_server=no_server,user_pass=user_pass,L0=L0,recent=recent, $
-   DPU=DPU,ATLO=ATLO,RT=RT,pformat=pformat,realtime=realtime,no_download=no_download,name=name
+   cal=cal,ATLO=ATLO,RT=RT,pformat=pformat,realtime=realtime,no_download=no_download,name=name
 
 tstart = systime(1)
 
 if keyword_set(recent) then trange = systime(1) - [recent,0] * 86400d ;    Obtain the last N*24 hours
 
-if keyword_set(L0) || ~keyword_set(pathname) then begin   ; default location of L0 files
-;   pathname = 'maven/pfp/l0/YYYY/MM/mvn_pfp_all_l0_YYYYMMDD_v???.dat'
+
+sweap_gsedata_dir = 'spp/data/sci/sweap/prelaunch/gsedata/'
+realtime_dir = sweap_gsedata_dir+'realtime/'
+
+if keyword_set(L0) then begin   ; default location of L0 files
    pathname = 'spp/data/sci/pfp/l0_all/YYYY/MM/spp_swp_all_l0_YYYYMMDD_v???.dat'
    daily_names=1
    last_version =1
 endif
+
+if keyword_set(cal) then begin
+  if not keyword_set(host) then host = 'abiad-sw.s\sl.berkeley.edu'
+  if not keyword_set(port) then port = '2128'
+  if not keyword_set(pathname) then pathname = realtime_dir + host+'.'+port+'/YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
+  hourly_names =1
+endif
+
 
 
 
@@ -64,34 +72,16 @@ endif
 ;lv = n_elements(last_version) eq 0 ? 1 : last_version 
 ;vo = n_elements(valid_only) eq 0 ? 0 : valid_only
 
-source = spp_file_source(src,verbose=verbose,user_pass=user_pass,no_server=no_server,valid_only=valid_only,last_version=last_version,no_update=no_update)
+source = spp_file_source(src,verbose=verbose,user_pass=user_pass,no_server=no_server,valid_only=valid_only,  $
+    last_version=last_version,no_update=no_update,resolution=res)
 
 pos_start = strlen(source.local_data_dir)
 
 dprint,dlevel=5,verbose=verbose,phelp=1,source   ; display the options
 
-if ~keyword_set(RT) then begin
-  if ~keyword_set(files) then begin
-    if keyword_set(res) then begin
-      tr = timerange(trange)
-      str = (tr-sres)/res
-      dtr = (ceil(str[1]) - floor(str[0]) )  > 1           ; must have at least one file
-      times = res * (floor(str[0]) + lindgen(dtr))+sres
-      pathnames = time_string(times,tformat=pathname)
-      pathnames = pathnames[uniq(pathnames)]   ; Remove duplicate filenames - assumes they are sorted
-    endif else pathnames = pathname
-    if keyword_set(create_dir) then begin
-      files = source.local_data_dir + pathnames
-      file_mkdir2,file_dirname( files ),_extra=source
-      return,files
-    endif
-    files = file_retrieve(pathnames,_extra=source)
-    dprint,dlevel=3,verbose=verbose,systime(1)-tstart,' seconds to retrieve ',n_elements(files),' files'
-  endif
-  return,files
-endif
-
-
+files = file_retrieve(pathname,_extra=source,trange=trange)
+dprint,dlevel=3,verbose=verbose,systime(1)-tstart,' seconds to retrieve ',n_elements(files),' files'
+return,files
 
 
 end

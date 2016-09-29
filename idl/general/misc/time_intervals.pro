@@ -82,7 +82,7 @@ if keyword_set(trange) then begin
 endif
 
 if keyword_set(tformat)  then begin
-  if n_elements(times) ne 0  then return,  time_string(times,tformat=tformat) $
+  if n_elements(times) ne 0  then return,  time_string(times,tformat=tformat,escape_seq='\') $
   else return,''  
 endif
 

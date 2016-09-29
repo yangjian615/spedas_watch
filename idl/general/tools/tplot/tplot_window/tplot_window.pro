@@ -44,13 +44,11 @@
 ;     panel in the plot, to make it easier to overplot and annotate plots
 ;   HELP:     Set this to print the contents of the tplot_vars.options
 ;         (user-defined options) structure.
-;   TIMEBAR, DATABAR: If set, will overplot time and databars that are
-;            contained in the limits structures of the plotted variables
 ;HISTORY:
 ; 2016-09-23, jmm, jimm@ssilberkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-27 13:33:12 -0700 (Tue, 27 Sep 2016) $
-; $LastChangedRevision: 21949 $
+; $LastChangedDate: 2016-09-28 10:22:45 -0700 (Wed, 28 Sep 2016) $
+; $LastChangedRevision: 21956 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/tplot_window/tplot_window.pro $
 ;-
 Pro tplot_window_event, event
@@ -185,6 +183,8 @@ Pro tplot_window, datanames, $
    old_tvars = old_tvars, $
    datagap = datagap,     $
    get_plot_position=pos, $
+   xsize = xsize, $
+   ysize = ysize, $
    help = help
 
   common tplot_window_private, state
@@ -199,7 +199,9 @@ Pro tplot_window, datanames, $
            draw_widget:-1L}
 
 ;add a draw widget
-  id0 = widget_draw(master, xsize = 960, ysize = 600, $
+  If(keyword_set(xsize)) Then xsz0 = xsize Else xsz0 = 960
+  If(keyword_set(ysize)) Then ysz0 = ysize Else ysz0 = 600
+  id0 = widget_draw(master, xsize = xsz0, ysize = ysz0, $
 ;                    /button_events, /motion_events, /tracking_events, $
                    /keyboard_events)
   state.draw_widget = id0

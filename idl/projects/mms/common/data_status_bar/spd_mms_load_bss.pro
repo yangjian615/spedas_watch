@@ -34,8 +34,8 @@
 ; Updated by egrimes, June 2016
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-08 09:49:46 -0700 (Wed, 08 Jun 2016) $
-;$LastChangedRevision: 21279 $
+;$LastChangedDate: 2016-09-28 12:07:43 -0700 (Wed, 28 Sep 2016) $
+;$LastChangedRevision: 21963 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/spd_mms_load_bss.pro $
 ;-
 
@@ -84,8 +84,6 @@ PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_l
        end
       'fom': begin
          mms_load_bss_fom, trange=trange
-         options,'mms_bss_fom',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-          ticklen=0,panel_size=panel_size,colors=0, labels=[fom_label], labsize=1, charsize=1.
        end
       else: message,'datatype: '+datatype[n]+' is not allowed.'
     endcase

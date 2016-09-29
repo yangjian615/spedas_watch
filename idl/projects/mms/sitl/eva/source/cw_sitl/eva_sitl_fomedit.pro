@@ -7,8 +7,8 @@
 ;   When "Save" is chosen, the "segSelect" structure will be used to update FOM/BAK structures.
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-10-19 07:10:19 -0700 (Mon, 19 Oct 2015) $
-; $LastChangedRevision: 19105 $
+; $LastChangedDate: 2016-09-28 14:26:40 -0700 (Wed, 28 Sep 2016) $
+; $LastChangedRevision: 21971 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_fomedit.pro $
 ;
 PRO eva_sitl_FOMedit_event, ev
@@ -17,34 +17,43 @@ PRO eva_sitl_FOMedit_event, ev
   code_exit = 0
   segSelect = wid.segSelect; Each event will modify this "segSelect"
   
+  idx = where(strmatch(tag_names(ev),'VALUE'),ct)
+  if ct eq 1 then begin
+    case size(ev.VALUE,/dimension) of
+      0: evalue = ev.VALUE
+      1: evalue = ev.VALUE[0]
+      else: stop
+    endcase
+  endif
+  
   case ev.id of
     wid.ssFOM: begin
-      FOMvalue = (ev.value < wid.fom_max_value) > wid.fom_min_value
+      FOMvalue = (evalue < wid.fom_max_value) > wid.fom_min_value
       segSelect.FOM = FOMvalue
       end
     wid.sldStart: begin
       if n_elements(wid.wgrid) gt 1 then begin
-        result = min(abs(wid.wgrid-ev.value),segSTART)
+        result = min(abs(wid.wgrid-evalue),segSTART)
         result = min(abs(wid.wgrid-segSelect.TE),segSTOP)
         len = segSTOP - segSTART
       endif else begin
-        len = (segSelect.TE-ev.value)/10.d0
+        len = (segSelect.TE-evalue)/10.d0
       endelse
       txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
       widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
-      segSelect.TS = ev.value
+      segSelect.TS = evalue
       end
     wid.sldStop: begin
       if n_elements(wid.wgrid) gt 1 then begin
         result = min(abs(wid.wgrid-segSelect.TS),segSTART)
-        result = min(abs(wid.wgrid-ev.value),segSTOP)
+        result = min(abs(wid.wgrid-evalue),segSTOP)
         len = segSTOP - segSTART
       endif else begin
-        len = (ev.value-segSelect.TS)/10.d0
+        len = (evalue-segSelect.TS)/10.d0
       endelse
       txtbuffs = 'SEGMENT SIZE: '+string(len,format='(I5)')+' buffers'
       widget_control, wid.lblBuffs, SET_VALUE=txtbuffs
-      segSelect.TE = ev.value
+      segSelect.TE = evalue
       end
     wid.txtDiscussion: begin
       widget_control, ev.id, GET_VALUE=new_discussion;get new discussion

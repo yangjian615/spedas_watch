@@ -84,9 +84,9 @@ end
 ;  Output will have the same dimensions as the input.
 ;
 ;CREATED BY:    Davin Larson  Oct 1996
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-02-07 17:21:01 -0800 (Fri, 07 Feb 2014) $
-; $LastChangedRevision: 14206 $
+; $LastChangedBy: davin-mac $
+; $LastChangedDate: 2016-09-28 12:13:15 -0700 (Wed, 28 Sep 2016) $
+; $LastChangedRevision: 21964 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/time_string.pro $
 ;-
 function time_string,time0, $
@@ -94,7 +94,7 @@ function time_string,time0, $
    tformat=tformat, $
    local_time=local_time, $
    is_local_time=is_local_time, $
-   msec = msec, sql=sql, autoprec=autoprec, deltat=dt,timezone=timezone,badstring=badstring
+   msec = msec, sql=sql, autoprec=autoprec, deltat=dt,timezone=timezone,badstring=badstring,escape_seq=escape_seq
 
 ms=['   ','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 dow = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
@@ -140,7 +140,7 @@ if keyword_set(tformat) then begin
         pos = strpos(tformat, token )
     endrep until strpos(tformat,token+'f') lt 0
     time_substitute,res,strmid(string(time.fsec,format='(f10.8)'),1,strlen(token)), pos
-
+    if keyword_set(escape_seq) then res = str_sub(res,escape_seq,'')
     return,res
 
 endif else begin

@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-26 10:30:19 -0700 (Mon, 26 Sep 2016) $
-;  $LastChangedRevision: 21941 $
+;  $LastChangedDate: 2016-09-28 14:03:41 -0700 (Wed, 28 Sep 2016) $
+;  $LastChangedRevision: 21967 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_fpi_moments.pro $
 
 
@@ -48,9 +48,9 @@ pro mms_sitl_fpi_moments, sc_id = sc_id, clean=clean
     name = 'mms' + prb + '_dis_numberdensity_fast'
     get_data, name, data=Nion, dlimits=dlimits
 
-    if ~is_struct(Nelc) then begin
-      print, 'NO V3 FPI FILES. RETURNING.'
-      return
+    if ~is_struct(Nelc) or ~is_struct(Nion) then begin
+      print, 'NO V3 FPI FILES. SKIPPING.'
+      goto, jump1
     endif
 
     npts = n_elements(Nelc.X)
@@ -123,6 +123,8 @@ pro mms_sitl_fpi_moments, sc_id = sc_id, clean=clean
       tplot_names, '*dis*', names=names
       store_data, delete=names
     endif
+    
+    jump1: blah = ''
     
   endfor
 

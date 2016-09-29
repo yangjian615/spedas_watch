@@ -11,8 +11,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-09-27 00:03:33 -0700 (Tue, 27 Sep 2016) $
-; $LastChangedRevision: 21945 $
+; $LastChangedDate: 2016-09-28 11:07:42 -0700 (Wed, 28 Sep 2016) $
+; $LastChangedRevision: 21959 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -23,7 +23,7 @@ PRO recorder_event, ev   ; recorder
     widget_control, ev.top, get_uvalue= info   ; get all widget ID's
     wids = info.wids
     localtime=1
-    dlevel=2
+    dlevel=info.dlevel
 
     CASE ev.id OF                         ;  Timed events
     wids.base:  begin
@@ -36,13 +36,13 @@ PRO recorder_event, ev   ; recorder
             for i=0L,n_elements(buffer)-1 do begin                       ; Read from stream one byte (or value) at a time 
                 flag = file_poll_input(info.hfp,timeout=0)
                 if flag eq 0 then break
-                if eof(info.hfp) then begin            ; This should be fixed so that it does not crash when disconnect by peer.
-                    widget_control,wids.host_text,get_value=hostname
-                    widget_control,wids.host_port,get_value=hostport
-                    dprint,dlevel=dlevel-1,info.title_num+'Connection to Host: '+hostname[0]+':'+hostport[0]+' broken. ',i
-                    eofile = 1
-                    break
-                endif                
+;                if eof(info.hfp) then begin            ; This should be fixed so that it does not crash when disconnect by peer.
+;                    widget_control,wids.host_text,get_value=hostname
+;                    widget_control,wids.host_port,get_value=hostport
+;                    dprint,dlevel=dlevel-1,info.title_num+'Connection to Host: '+hostname[0]+':'+hostport[0]+' broken. ',i
+;                    eofile = 1
+;                    break
+;                endif                
                 readu,info.hfp,b
                 buffer[i] = b
             endfor
@@ -51,12 +51,13 @@ PRO recorder_event, ev   ; recorder
               widget_control,wids.host_text,get_value=hostname
               widget_control,wids.host_port,get_value=hostport
               dprint,dlevel=dlevel-1,info.title_num+'File error: '+hostname[0]+':'+hostport[0]+' broken. ',i
+              dprint,dlevel=dlevel,phelp=2,!error_state
             endif
 
             ;;   Switch file name if needed
             if info.file_timeres ne 0 then begin
               if info.time_received ge info.next_filechange then begin
-                dprint,time_string(info.time_received,prec=3)+ ' Time to change files.'
+                dprint,dlevel=dlevel,time_string(info.time_received,prec=3)+ ' Time to change files.'
                 if info.dfp then begin
                   recorder_event,{top: ev.top, id:wids.dest_button}   ; close old file  - possible error that dfp might change!
                   recorder_event,{top: ev.top, id:wids.dest_button}   ; open  new file                  
@@ -156,7 +157,7 @@ PRO recorder_event, ev   ; recorder
             filename = str_sub(filename,'{PORT}',strtrim(hostport,2) )               ; Substitute port number
             widget_control, wids.dest_text, set_uvalue = fileformat,set_value=filename
             if keyword_set(filename) then begin
-                file_open,'u',info.directory+filename, unit=dfp,dlevel=4
+                file_open,'u',info.directory+filename, unit=dfp,dlevel=4,compress=-1
                 dprint,dlevel=dlevel,info.title_num+'Opened output file: '+info.directory+filename+'   Unit:'+strtrim(dfp)
                 info.dfp = dfp
                 info.filename= info.directory+filename

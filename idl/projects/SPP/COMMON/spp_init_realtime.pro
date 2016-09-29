@@ -10,7 +10,7 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
   
   
   directory = root_data_dir() + 'spp/data/sci/sweap/prelaunch/gsedata/realtime/'
-  destination = '{HOST}.{PORT}/YYYY/MM/spp_socket_YYYYMMDD_hh.dat'
+  destination = '{HOST}.{PORT}/YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
   fileres =3600.d
 
 

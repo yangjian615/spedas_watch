@@ -53,8 +53,8 @@ if fi.exists then begin
    if fi.regular && create then begin
       dprint,dlevel=dlevel,verbose=verbose,'Opening existing file: '+name,/no_check_events
       case tp of
-        'w': if fi.write then  openw,unit,name,/get_lun,_extra=ex
-        'u': if fi.write then  openu,unit,name,/get_lun,_extra=ex,/append
+        'w': if fi.write then  openw,unit,name,/get_lun,_extra=ex,compress=gcomp
+        'u': if fi.write then  openu,unit,name,/get_lun,_extra=ex,compress=gcomp,/append
         'r': if fi.read  then  openr,unit,name,/get_lun,_extra=ex,compress=gcomp
         else:  dprint,'Invalid type: '+type,/no_check_events
       endcase
@@ -62,6 +62,8 @@ if fi.exists then begin
    endif
    return
 endif
+
+
 
 if tp eq 'r' then begin
    if ~create then return

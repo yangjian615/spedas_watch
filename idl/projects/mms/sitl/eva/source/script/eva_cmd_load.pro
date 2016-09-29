@@ -43,8 +43,8 @@
 ; CREATED BY: Mitsuo Oka   Jan 2016
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-04-01 15:05:30 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20713 $
+; $LastChangedDate: 2016-09-28 14:25:51 -0700 (Wed, 28 Sep 2016) $
+; $LastChangedRevision: 21970 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/script/eva_cmd_load.pro $
 ;-
 PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan,$
@@ -59,7 +59,7 @@ PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan
   ;----------------
   ; ParameterSet
   ;----------------  
-  if undefined(paramset) then paramset='SITL_Basic_Dayside'
+  if undefined(paramset) then paramset='SITL_Basic'
   paramset_tmp = strsplit(paramset,'.',/extract)
   paramset = paramset_tmp[0]
   ; 'dir' produces the directory name with a path separator character that can be OS dependent.
@@ -73,7 +73,12 @@ PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan
       msg = 'WARNING: Multiple parameterSets found with the string *'+paramset+'*. Please be more specific.'
       if ct eq 0 then msg = paramset+' is not found.'
       print, msg
-      return 
+      jdx = where(strmatch(paramFileList,'*_SITL_Basic.txt'),ccc)
+      if ccc eq 1 then begin
+        filename = paramFileList[idx[0]]
+      endif else begin
+        return
+      endelse 
     endelse
   endif else begin
     print, 'WARNING: No parameter in the specified parameterSet'

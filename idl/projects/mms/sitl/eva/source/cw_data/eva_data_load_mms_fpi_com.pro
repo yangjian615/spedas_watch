@@ -16,8 +16,8 @@ PRO eva_data_load_mms_fpi_com, sc=sc
   idx=where(strmatch(tn,tn1),c1)
   if c0+c1 eq 2 then begin
     store_data,sc+'_fpi_com_dens',data=[tn0,tn1]
-    options,sc+'_fpi_com_dens',colors=[2,6,3,1],$
-      labels=['Ni (QL)','Ne (QL)','Ni (trig)','Ne (trig)'],labflag=-1
+    options,sc+'_fpi_com_dens',colors=[6,2,3,1],$
+      labels=['Ne (QL)','Ni (QL)','Ni (trig)','Ne (trig)'],labflag=-1
   endif
   
   ;....... velocity ......

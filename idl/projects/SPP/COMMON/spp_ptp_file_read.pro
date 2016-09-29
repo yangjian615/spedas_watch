@@ -5,6 +5,8 @@ pro spp_ptp_file_read,files,dwait=dwait
   t0 = systime(1)
   spp_swp_startup,rt_flag=0,save=1,/clear
   info = {  time_received:0d, buffer_ptr:ptr_new(/allocate_heap),  file:'',  fileptr:0LL }
+  on_ioerror, nextfile
+
 
   for i=0,n_elements(files)-1 do begin
     info.file = files[i] 
@@ -34,19 +36,28 @@ pro spp_ptp_file_read,files,dwait=dwait
       endelse
       buffer = bytarr(sz)
       readu,lun,buffer,transfer_count=nb
-      if nb ne sz then dprint,'error'
+      if nb ne sz then begin
+        dprint,'File read error. Aborting @ ',fp,' bytes'
+        break
+      endif
       spp_ptp_stream_read,[remainder,buffer],info=info  
       if debug(2) then begin
         dprint,dwait=dwait,dlevel=2,'File percentage: ' ,(fp*100.)/fi.size
       endif
     endwhile
     free_lun,lun
+    if 0 then begin
+      nextfile:
+      dprint,'Skipping file'
+    endif
   endfor
   dt = systime(1)-t0
   dprint,format='("Finished loading in ",f0.1," seconds")',dt
   spp_apid_data,/finish
   dt = systime(1)-t0
   dprint,format='("Finished loading in ",f0.1," seconds")',dt
+  
+  spp_apid_data,/rt_flag    ; re-enable realtime
 end
 
 
