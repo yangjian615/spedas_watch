@@ -35,8 +35,8 @@
 ;       
 ;       
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-21 13:05:12 -0700 (Wed, 21 Sep 2016) $
-; $LastChangedRevision: 21895 $
+; $LastChangedDate: 2016-09-29 16:09:38 -0700 (Thu, 29 Sep 2016) $
+; $LastChangedRevision: 21982 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/mms_add_cdf_versions.pro $
 ;-
 
@@ -57,7 +57,9 @@ pro mms_add_cdf_versions, instrument, versions, data_rate = data_rate, right_ali
     ; we won't include duplicate version #s
     dupekill = hash()
     for version_idx = 0, n_elements(versions[*, 0])-1 do begin
-        version_str = (strcompress(string(versions[version_idx, *]), /rem)).join('.', /single)
+        version_str = strcompress(string(versions[version_idx, 0]), /rem) + '.' + $
+          strcompress(string(versions[version_idx, 1]), /rem) + '.' + $
+          strcompress(string(versions[version_idx, 2]), /rem)
         dupekill[version_str] = 1
     endfor
     versions_nodupes = (dupekill.keys()).toArray()
@@ -71,8 +73,13 @@ pro mms_add_cdf_versions, instrument, versions, data_rate = data_rate, right_ali
     for version_idx = 0, n_elements(versions_nodupes)-1 do append_array, version_strs, 'v' + versions_nodupes[version_idx]
     
     version_strs = version_strs[sort(version_strs)]
+    plot_str = ''
 
-    plot_str = version_strs.join(', ', /single)
+    for vi=0, n_elements(version_strs)-1 do begin
+      if vi eq n_elements(version_strs)-1 then plot_str = plot_str + version_strs[vi] else $
+       plot_str = plot_str + version_strs[vi] + ', '
+    endfor
+
     plot_str = undefined(data_rate) ? strupcase(instrument) + ' ' + plot_str : strupcase(instrument) + ' ' + data_rate + ' ' + plot_str
     
     xyouts,abs(keyword_set(right_align)-versionnum_loc),abs(keyword_set(top_align)-yp),plot_str,charsize=chsize,/norm,alignment=keyword_set(right_align)

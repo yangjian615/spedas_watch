@@ -11,8 +11,8 @@
 ;    Davin Larson - April 2011
 ;
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-09-28 11:07:42 -0700 (Wed, 28 Sep 2016) $
-; $LastChangedRevision: 21959 $
+; $LastChangedDate: 2016-09-28 22:56:26 -0700 (Wed, 28 Sep 2016) $
+; $LastChangedRevision: 21979 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/recorder.pro $
 ;
 ;-
@@ -31,6 +31,7 @@ PRO recorder_event, ev   ; recorder
             on_ioerror, stream_error
             eofile =0
             info.time_received = systime(1)
+            widget_control,wids.base,set_uvalue=info
             buffer= bytarr(info.maxsize) 
             b=buffer[0]
             for i=0L,n_elements(buffer)-1 do begin                       ; Read from stream one byte (or value) at a time 
@@ -63,10 +64,12 @@ PRO recorder_event, ev   ; recorder
                   recorder_event,{top: ev.top, id:wids.dest_button}   ; open  new file                  
                 endif
               endif
+              widget_control, ev.top, get_uvalue= info   ; get all widget ID's              
               info.next_filechange = info.file_timeres * ceil(info.time_received / info.file_timeres)
+              widget_control,wids.base,set_uvalue=info
             endif
             
-            if i gt 0 then begin
+            if i gt 0 then begin                      ;; process data
               buffer = buffer[0:i-1]
               if keyword_set(info.dfp) then writeu,info.dfp, buffer  ;swap_endian(buffer,/swap_if_little_endian)
               flush,info.dfp
@@ -91,7 +94,7 @@ PRO recorder_event, ev   ; recorder
             
             if not keyword_set(eofile) then WIDGET_CONTROL, wids.base, TIMER=poll_int else widget_control,wids.host_button,timer=2
         endif
- ;       return
+        return
     end
     wids.host_button : begin
         widget_control,wids.host_button,get_value=status
@@ -157,8 +160,8 @@ PRO recorder_event, ev   ; recorder
             filename = str_sub(filename,'{PORT}',strtrim(hostport,2) )               ; Substitute port number
             widget_control, wids.dest_text, set_uvalue = fileformat,set_value=filename
             if keyword_set(filename) then begin
-                file_open,'u',info.directory+filename, unit=dfp,dlevel=4,compress=-1
-                dprint,dlevel=dlevel,info.title_num+'Opened output file: '+info.directory+filename+'   Unit:'+strtrim(dfp)
+                file_open,'u',info.directory+filename, unit=dfp,dlevel=4,compress=-1,file_mode='666'o,dir_mode='777'o
+                dprint,dlevel=dlevel,info.title_num+' Opened output file: '+info.directory+filename+'   Unit:'+strtrim(dfp)
                 info.dfp = dfp
                 info.filename= info.directory+filename
                 widget_control, wids.dest_flush, sensitive=1

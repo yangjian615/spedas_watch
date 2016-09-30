@@ -9,8 +9,8 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
   if n_elements(hub) eq 0 then hub = 1
   
   
-  directory = root_data_dir() + 'spp/data/sci/sweap/prelaunch/gsedata/realtime/'
-  destination = '{HOST}.{PORT}/YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
+  rootdir = root_data_dir() + 'spp/data/sci/sweap/prelaunch/gsedata/realtime/'
+  fileformat = 'YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
   fileres =3600.d
 
 
@@ -33,14 +33,14 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
   if keyword_set(rm320) or keyword_set(cal) then begin
     host = 'abiad-sw.ssl.berkeley.edu'
     exec_proc = 'spp_ptp_stream_read'
-    if keyword_set(ion) then recorder,title='CAL PTP ion', port=2028, host=host, exec_proc=exec_proc,destination=destination,directory=directory,set_file_timeres=fileres
-    if keyword_set(elec) then recorder,title='CAL PTP elec',port=2128, host=host, exec_proc=exec_proc,destination=destination,directory=directory,set_file_timeres=fileres   
+    if keyword_set(ion) then recorder,title='CAL Ion PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spani/',set_file_timeres=fileres
+    if keyword_set(elec) then recorder,title='CAL Elec PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spane/',set_file_timeres=fileres   
   endif
   if keyword_set(tent) or keyword_set(TV) then begin
     host = 'mgse2.ssl.berkeley.edu'
     exec_proc = 'spp_ptp_stream_read'
-    if keyword_set(elec) then recorder,title='GSEOS PTP elec TV',port=2128, host=host, exec_proc=exec_proc,destination=destination,directory=directory,set_file_timeres=fileres
-    if keyword_set(ion) then recorder,title='GSEOS PTP ion TV',port=2028, host=host, exec_proc=exec_proc,destination=destination,directory=directory,set_file_timeres=fileres
+    if keyword_set(ion)  then recorder,title='TV Ion PTP' ,port=2028, host=host, exec_proc=exec_proc,directory=rootdir+'TVac/spani/',destination=fileformat,set_file_timeres=fileres
+    if keyword_set(elec) then recorder,title='TV Elec PTP',port=2128, host=host, exec_proc=exec_proc,directory=rootdir+'TVac/spane/',destination=fileformat,set_file_timeres=fileres
   endif
 
   if keyword_set(exec0) then begin
