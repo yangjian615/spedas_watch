@@ -79,8 +79,8 @@
 ;
 ;Written by Hannes Schwarzl.
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-02-29 13:39:06 -0800 (Mon, 29 Feb 2016) $
-; $LastChangedRevision: 20268 $
+; $LastChangedDate: 2016-09-30 10:16:20 -0700 (Fri, 30 Sep 2016) $
+; $LastChangedRevision: 21986 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -268,6 +268,8 @@ if n_params() eq 0 then begin
                         cal_file,$
                         interpolate_cal=interpolate_cal,$
                         coord=coord,$
+                        in_suffix=in_suf,$
+                        out_suffix=out_suf,$
                         cal_spin_harmonics=cal_spin_harmonics,$
                         cal_dac_offset=cal_dac_offset,$
                         datatype=dts[j],$
@@ -331,7 +333,7 @@ endif
 ;get the spinperiod from the state file, first check to see if the
 ;state data is loaded
 probe_letter = strmid(name_thx_fgx_in, 2, 1)
-thm_autoload_support, vname=name_thx_fgx_in, probe_in = probe_letter[0], /spinmodel, /spinaxis
+thm_autoload_support, vname=name_thx_fgx_in,suffix=out_suf[0], probe_in = probe_letter[0], /spinmodel, /spinaxis
 preSpin=strmid(name_thx_fgx_in,0,4)
 name_thx_spinper=preSpin+'state_spinper'
 name_thx_spinphase=preSpin+'state_spinphase'

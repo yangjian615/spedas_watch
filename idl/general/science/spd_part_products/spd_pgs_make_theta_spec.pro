@@ -13,6 +13,8 @@
 ;Input/Output:
 ;  spec: The spectrogram (ny x ntimes)
 ;  yaxis: The y axis (ny OR ny x ntimes)
+;  resolution: (optional) Specify output resolution
+;  colatitude: Flag to specify that data is in colatitude
 ;  
 ;  -Each time this procedure runs it will concatenate the sample's data
 ;   to the SPEC variable.
@@ -32,13 +34,13 @@
 ;
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-09-27 14:21:06 -0700 (Tue, 27 Sep 2016) $
-;$LastChangedRevision: 21950 $
+;$LastChangedDate: 2016-09-30 17:20:25 -0700 (Fri, 30 Sep 2016) $
+;$LastChangedRevision: 21989 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_theta_spec.pro $
 ;-
 
 
-pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, colatitude=colatitude, _extra=ex
+pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, resolution=resolution, colatitude=colatitude, _extra=ex
 
     compile_opt idl2, hidden
   
@@ -58,9 +60,13 @@ pro spd_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, colatitu
   endif
   
   ;get unique theta values
-  values = data.theta[0,uniq( data.theta[0,*], sort(data.theta[0,*]) )]
+  if undefined(resolution) then begin
+    values = data.theta[0,uniq( data.theta[0,*], sort(data.theta[0,*]) )]
+    n_theta = n_elements(values)
+  endif else begin
+    n_theta = resolution
+  endelse
 
-  n_theta = n_elements(values)
   range = keyword_set(colatitude) ? [0,180] : [-90,90]
   theta_grid = interpol(range,n_theta+1)
 

@@ -64,9 +64,9 @@
 ;                 Temp version, with 2 in name, will load LPW data
 ;                 from L0 file, jmm, jimm@ssl.berkeley.edu
 ;LAST MODIFICATION:
-; $LastChangedBy: muser $
-; $LastChangedDate: 2016-09-19 14:00:42 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21857 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-09-30 12:53:23 -0700 (Fri, 30 Sep 2016) $
+; $LastChangedRevision: 21987 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot2.pro $
 ;
 ;-
@@ -541,29 +541,32 @@ PRO mvn_ql_pfp_tplot2, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      undefine, tname, ntplot
      options, bvec, labels=['Bx', 'By', 'Bz'], colors='bgr', $
               labflag=1, constant=0, ytitle='MAG ' + lvl, /def
-     get_data, bvec, data=b, dl=bl
+     get_data, bvec, data=b;, dl=bl
      bmax = MAX(btot, /nan)
      IF bmax GT 100. THEN blog = 1 ELSE blog = 0 ; It means B field Log scale or not.     
 
-     bp = b.y ; positive sign
-     bm = b.y ; negative sign
-     lbp = ['Bx', 'By', 'Bz']
-     lbm = lbp
-     FOR il=0, 2 DO IF b.y[N_ELEMENTS(b.x)-1, il] GT 0. THEN lbm[il] = '' ELSE lbp[il] = '' 
-     undefine, il
+     copy_data, bvec, bvec + '_symlog'
+     options, bvec + '_symlog', tplot_routine='mplot_symlog'
 
-     idx = WHERE(bp LT 0., nidx)
-     IF nidx GT 0 THEN bp[idx] = nan
-     idx = WHERE(bm GT 0., nidx)
-     IF nidx GT 0 THEN bm[idx] = nan
-     store_data, bvec + '_plus', data={x: b.x, y: bp}, dl=bl
-     store_data, bvec + '_minus', data={x: b.x, y: ABS(bm)}, dl=bl
+;     bp = b.y ; positive sign
+;     bm = b.y ; negative sign
+;     lbp = ['Bx', 'By', 'Bz']
+;     lbm = lbp
+;     FOR il=0, 2 DO IF b.y[N_ELEMENTS(b.x)-1, il] GT 0. THEN lbm[il] = '' ELSE lbp[il] = '' 
+;     undefine, il
 
-     options, bvec + '_plus', panel_size=0.5, labels=lbp, $
-              ytitle='MAG ' + lvl, ysubtitle='+B' + STRLOWCASE(frame) + ' [nT]', /def
-     options, bvec + '_minus', panel_size=0.5, labels=lbm, $
-              ytitle='MAG ' + lvl, ysubtitle='-B' + STRLOWCASE(frame) + ' [nT]', /def
-     options, bvec +  ['_plus', '_minus'], labflag=1
+;     idx = WHERE(bp LT 0., nidx)
+;     IF nidx GT 0 THEN bp[idx] = nan
+;     idx = WHERE(bm GT 0., nidx)
+;     IF nidx GT 0 THEN bm[idx] = nan
+;     store_data, bvec + '_plus', data={x: b.x, y: bp}, dl=bl
+;     store_data, bvec + '_minus', data={x: b.x, y: ABS(bm)}, dl=bl
+
+;     options, bvec + '_plus', panel_size=0.5, labels=lbp, $
+;              ytitle='MAG ' + lvl, ysubtitle='+B' + STRLOWCASE(frame) + ' [nT]', /def
+;     options, bvec + '_minus', panel_size=0.5, labels=lbm, $
+;              ytitle='MAG ' + lvl, ysubtitle='-B' + STRLOWCASE(frame) + ' [nT]', /def
+;     options, bvec +  ['_plus', '_minus'], labflag=1
 
      store_data, 'mvn_mag_' + STRLOWCASE(lvl) + '_bamp_1sec', $
                  data={x: b.x, y: btot}, $
@@ -576,15 +579,12 @@ PRO mvn_ql_pfp_tplot2, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
      IF (blog) THEN BEGIN
         ylim, 'mvn_mag_bamp', 0.5, bmax*1.1, 1
         options, 'mvn_mag_bamp', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
-     ENDIF ;ELSE BEGIN
-;        ylim, bvec + '_plus', 0., MAX([bp, ABS(bm)], /nan)*1.1, 0
-;        ylim, bvec + '_minus', -MAX([bp, ABS(bm)], /nan)*1.1, 0., 0
-;        options, bvec + ['_plus', '_minus'], yminor=4 
-;     ENDELSE 
-     ylim, bvec + '_plus', 0.5, bmax*1.1, 1
-     ylim, bvec + '_minus', bmax*1.1, 0.5, 1
-     options, bvec + '_plus', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
-     options, bvec + '_minus', ytickformat='mvn_ql_pfp_tplot_ytickname_minus_log'
+     ENDIF
+
+;     ylim, bvec + '_plus', 0.5, bmax*1.1, 1
+;     ylim, bvec + '_minus', bmax*1.1, 0.5, 1
+;     options, bvec + '_plus', ytickformat='mvn_ql_pfp_tplot_ytickname_plus_log'
+;     options, bvec + '_minus', ytickformat='mvn_ql_pfp_tplot_ytickname_minus_log'
 
      undefine, bmax, blog, status
      

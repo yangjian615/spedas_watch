@@ -10,7 +10,7 @@ sl = path_sep()  ;'/' or '\' depending on linux or windows
 ;Check that we have an environment variable telling IDL where to get the luts:
 if getenv('mvn_lpw_software') eq '' then begin
   print, name, ": #### WARNING ####: environment variable 'mvn_lpw_software' not set. LUT not found. No shadow or wake data used."
-  print, "Use: setenv('mvn_lpw_software=/path/to/software/on/your/machine/') to set this variable and locate requested LUTs."
+  print, "Use: setenv,'mvn_lpw_software=/path/to/software/on/your/machine/' to set this variable and locate requested LUTs."
   lut = !values.f_nan ;return nan
 endif else fbase = getenv('mvn_lpw_software')
 ;-----------------------

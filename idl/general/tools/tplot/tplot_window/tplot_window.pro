@@ -47,8 +47,8 @@
 ;HISTORY:
 ; 2016-09-23, jmm, jimm@ssilberkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-28 10:22:45 -0700 (Wed, 28 Sep 2016) $
-; $LastChangedRevision: 21956 $
+; $LastChangedDate: 2016-09-30 10:09:50 -0700 (Fri, 30 Sep 2016) $
+; $LastChangedRevision: 21985 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/tplot_window/tplot_window.pro $
 ;-
 Pro tplot_window_event, event
@@ -92,66 +92,72 @@ Pro tplot_window_event, event
 ;        dprint, dlevel=4, print, time_string(time)
 ;        dprint, dlevel=4, event.x, event.y
         widget_control, event.top, set_uval = state, /no_copy
+;Be sure that you are in the window before doing anything
+        xlimit = geo.xoffset+[0.0, geo.xsize]
+        ylimit = geo.yoffset+[0.0, geo.ysize]
+        If(event.x Gt xlimit[0] And event.x Lt xlimit[1] And $
+           event.y Gt ylimit[0] And event.y Lt ylimit[1]) Then Begin
 ;What key did i press? 
-        If(event.type Eq 5) Then Begin
-           keyval = strlowcase(string(event.ch))
-           Case keyval of
-              'z': Begin        ;If 'z', then zoom in by 50%
-                 dt0 = trange[1]-trange[0]
-                 dt1 = dt0/4.0  ;25% on either side of the point
-                 tlimit, time-dt1, time+dt1
-              End
-              'o':Begin         ;zoom out by 200%
-                 dt1 = trange[1]-trange[0]
-                 tmid = 0.5*(trange[1]+trange[0])
-                 tlimit, tmid-dt1, tmid+dt1
-              End
-              'r': Begin        ;If 'r' go back to initial time range
-                 tlimit, tplot_vars.options.trange_full[0], $
-                         tplot_vars.options.trange_full[1]
-              End
-              't':Begin         ;If t, just call tlimit
-                 tlimit
-              End
-              'b':Begin         ;If 'b' shift back by 25%
-                 dt0 = trange[1]-trange[0]
-                 dt1 = dt0/4.0  ;25% on either side of the point
-                 tlimit, trange[0]-dt1, trange[1]-dt1
-              End
-              'f':Begin         ;If 'f' shift forward by 25%
-                 dt0 = trange[1]-trange[0]
-                 dt1 = dt0/4.0  ;25% on either side of the point
-                 tlimit, trange[0]+dt1, trange[1]+dt1
-              End
-              Else:Begin
-              End
-           Endcase
-        Endif Else If(event.type Eq 6) Then Begin ;arrow keys
-           keyval = event.key
-           Case keyval of
-              5:Begin           ;left arrow If 'b' shift back by 25%
-                 dt0 = trange[1]-trange[0]
-                 dt1 = dt0/4.0  ;25% on either side of the point
-                 tlimit, trange[0]-dt1, trange[1]-dt1
-              End
-              6:Begin           ;right arrow shift forward by 25%
-                 dt0 = trange[1]-trange[0]
-                 dt1 = dt0/4.0  ;25% on either side of the point
-                 tlimit, trange[0]+dt1, trange[1]+dt1
-              End
-              7: Begin          ;up arrow then zoom in by 50%
-                 dt0 = trange[1]-trange[0]
-                 dt1 = dt0/4.0  ;25% on either side of the point
-                 tlimit, time-dt1, time+dt1
-              End
-              8:Begin           ;down arrow zoom out by 200%
-                 dt1 = trange[1]-trange[0]
-                 tmid = 0.5*(trange[1]+trange[0])
-                 tlimit, tmid-dt1, tmid+dt1
-              End
-              Else:Begin
-              End
-           Endcase
+           If(event.type Eq 5) Then Begin
+              keyval = strlowcase(string(event.ch))
+              Case keyval of
+                 'z': Begin     ;If 'z', then zoom in by 50%
+                    dt0 = trange[1]-trange[0]
+                    dt1 = dt0/4.0 ;25% on either side of the point
+                    tlimit, time-dt1, time+dt1
+                 End
+                 'o':Begin      ;zoom out by 200%
+                    dt1 = trange[1]-trange[0]
+                    tmid = 0.5*(trange[1]+trange[0])
+                    tlimit, tmid-dt1, tmid+dt1
+                 End
+                 'r': Begin     ;If 'r' go back to initial time range
+                    tlimit, tplot_vars.options.trange_full[0], $
+                            tplot_vars.options.trange_full[1]
+                 End
+                 't':Begin      ;If t, just call tlimit
+                    tlimit
+                 End
+                 'b':Begin      ;If 'b' shift back by 25%
+                    dt0 = trange[1]-trange[0]
+                    dt1 = dt0/4.0 ;25% on either side of the point
+                    tlimit, trange[0]-dt1, trange[1]-dt1
+                 End
+                 'f':Begin      ;If 'f' shift forward by 25%
+                    dt0 = trange[1]-trange[0]
+                    dt1 = dt0/4.0 ;25% on either side of the point
+                    tlimit, trange[0]+dt1, trange[1]+dt1
+                 End
+                 Else:Begin
+                 End
+              Endcase
+           Endif Else If(event.type Eq 6) Then Begin ;arrow keys
+              keyval = event.key
+              Case keyval of
+                 5:Begin        ;left arrow If 'b' shift back by 25%
+                    dt0 = trange[1]-trange[0]
+                    dt1 = dt0/4.0 ;25% on either side of the point
+                    tlimit, trange[0]-dt1, trange[1]-dt1
+                 End
+                 6:Begin        ;right arrow shift forward by 25%
+                    dt0 = trange[1]-trange[0]
+                    dt1 = dt0/4.0 ;25% on either side of the point
+                    tlimit, trange[0]+dt1, trange[1]+dt1
+                 End
+                 7: Begin       ;up arrow then zoom in by 50%
+                    dt0 = trange[1]-trange[0]
+                    dt1 = dt0/4.0 ;25% on either side of the point
+                    tlimit, time-dt1, time+dt1
+                 End
+                 8:Begin        ;down arrow zoom out by 200%
+                    dt1 = trange[1]-trange[0]
+                    tmid = 0.5*(trange[1]+trange[0])
+                    tlimit, tmid-dt1, tmid+dt1
+                 End
+                 Else:Begin
+                 End
+              Endcase
+           Endif
         Endif
      Endif
   Endif
@@ -206,12 +212,12 @@ Pro tplot_window, datanames, $
                    /keyboard_events)
   state.draw_widget = id0
 
-  widget_control, master, set_uval = state;, /no_copy
   widget_control, master, /realize
   xmanager, 'tplot_window', master, /no_block
   state.window_id = !d.window
   state.ww0 = strcompress(string(!d.window))
   widget_control, master, tlb_set_title = 'tplot window '+state.ww0
+  widget_control, master, set_uval = state, /no_copy
 
   tplot, datanames, $
          WINDOW = -1, $

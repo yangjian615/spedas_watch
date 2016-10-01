@@ -345,7 +345,7 @@ if filetype eq 'L0' then begin
       if getenv('MAVENPFP_USER_PASS') eq '' and not keyword_set(noserver) then begin  ;no password found and we want to access the SSL server...
             print, "mvn_lpw_load: WARNING: your SSL password and username was not found. These are required to access the latest L0 data." 
             print, "Enter these in a startup file as the variable"
-            print, "setenv, 'MAVENPFP_USER_PASS = username:password'"
+            print, "setenv, 'MAVENPFP_USER_PASS=username:password'" ;removed spaces, jmm, 2016-09-30
             print, "Enter 'yes' if you wish to continue anyway (you may not be able to get the L0 file you wanted) or 'no' to return to terminal..."
             response=''
             read, response, prompt='yes or no...'

@@ -260,8 +260,8 @@ end
 ;          frequency responses), rather than proper time-dependent parameters.
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
-; $LastChangedRevision: 21775 $
+; $LastChangedDate: 2016-09-30 10:16:20 -0700 (Fri, 30 Sep 2016) $
+; $LastChangedRevision: 21986 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_efi.pro $
 ;-
 pro thm_cal_efi, probe = probe, datatype = datatype, $
@@ -672,7 +672,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
 ;=======================
 ;
                     dprint, dlevel=2,'Using spin model for probe '+strtrim(sc, 2)+'.'
-                    thm_autoload_support, probe_in=sc, trange=minmax(d.x),/spinmodel,/spinaxis ;check for spin vars, etc.
+                    thm_autoload_support, probe_in=sc,suffix=out_suf[0], trange=minmax(d.x),/spinmodel,/spinaxis ;check for spin vars, etc.
                     model = spinmodel_get_ptr(sc,use_eclipse_corrections=use_eclipse_corrections)
                     ; These validity checks and calls to thm_load_state should
                     ; be unnecessary if thm_autoload_support works properly.
@@ -726,7 +726,7 @@ pro thm_cal_efi, probe = probe, datatype = datatype, $
 ;Calibrate, looping over EFI booms:
 ;**********************************
 ; Get spinmodel info:
-                      thm_autoload_support, probe_in=sc, trange=minmax(d.x), /spinmodel, /spinaxis  ;check for spin vars, etc.
+                      thm_autoload_support, probe_in=sc, suffix=out_suf[0], trange=minmax(d.x), /spinmodel, /spinaxis  ;check for spin vars, etc.
                       model = spinmodel_get_ptr(sc,use_eclipse_corrections=use_eclipse_corrections)
                       ; These validity checks and calls to thm_load_state may be
                       ; unnecessary if thm_autoload_support works as intended

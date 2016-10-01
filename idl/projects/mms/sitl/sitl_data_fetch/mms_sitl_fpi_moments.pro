@@ -3,8 +3,8 @@
 ;
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-28 14:03:41 -0700 (Wed, 28 Sep 2016) $
-;  $LastChangedRevision: 21967 $
+;  $LastChangedDate: 2016-09-30 18:05:55 -0700 (Fri, 30 Sep 2016) $
+;  $LastChangedRevision: 21993 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_fpi_moments.pro $
 
 
@@ -50,7 +50,7 @@ pro mms_sitl_fpi_moments, sc_id = sc_id, clean=clean
 
     if ~is_struct(Nelc) or ~is_struct(Nion) then begin
       print, 'NO V3 FPI FILES. SKIPPING.'
-      goto, jump1
+      continue
     endif
 
     npts = n_elements(Nelc.X)
@@ -64,7 +64,6 @@ pro mms_sitl_fpi_moments, sc_id = sc_id, clean=clean
     DensityN = 'mms' + prb + '_fpi_density'
     store_data, DensityN, data={X:Nelc.X, Y:Y, V: [1,2]}, dlim=dlim
 
-    
     ; Electron and ion bulk velocities
     
     ivel_n = 'mms' + prb + '_fpi_ion_vel_dbcs'
@@ -123,9 +122,7 @@ pro mms_sitl_fpi_moments, sc_id = sc_id, clean=clean
       tplot_names, '*dis*', names=names
       store_data, delete=names
     endif
-    
-    jump1: blah = ''
-    
+        
   endfor
 
 

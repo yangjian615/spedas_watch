@@ -59,6 +59,7 @@
 ;  mag_name:  Tplot variable containing magnetic field data for moments and FAC transformations 
 ;  pos_name:  Tplot variable containing spacecraft position for FAC transformations
 ;  sc_pot_name:  Tplot variable containing spacecraft potential data for moments corrections
+;  vel_name:  Tplot variable containing velocity data in km/s for use with /subtract_bulk
 ;    
 ;  units:  Secify units of output variables.  Must be 'eflux' to calculate moments.
 ;            'flux'   -   # / (cm^2 * s * sr * eV)
@@ -70,6 +71,8 @@
 ;             Existing options: "phigeo,mphigeo, xgse"
 ;  regrid:  Two element array specifying the resolution of the field-aligned data.
 ;           [n_gyro,n_pitch], default is [32,16]
+;  no_regrid:  (experimental) Skip regrid step when converting to field aligned coordinates.
+;              
 ;  
 ;  suffix:  Suffix to append to output tplot variable names 
 ;
@@ -82,6 +85,8 @@
 ;    
 ;  datagap:  Setting for tplot variables, controls how long a gap must be before it is drawn. 
 ;            (can also manually degap)
+;  subtract_bulk:  Flag to subtract velocity vector from distribution before
+;                  calculation of field aligned angular spectra.
 ;
 ;  display_object:  Object allowing dprint to export output messages
 ;
@@ -98,8 +103,8 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-09-27 14:22:38 -0700 (Tue, 27 Sep 2016) $
-;$LastChangedRevision: 21951 $
+;$LastChangedDate: 2016-09-30 18:00:42 -0700 (Fri, 30 Sep 2016) $
+;$LastChangedRevision: 21992 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -127,7 +132,11 @@ pro mms_part_products, $
                      regrid=regrid, $ ;When performing FAC transforms, loss of resolution in sample bins occurs.(because the transformed bins are not aligned with the sample bins)  
                                       ;To resolve this, the FAC distribution is resampled at higher resolution.  This 2 element array specifies that resolution.[nphi,ntheta]
                      
+                     no_regrid=no_regrid, $ ;flag to skip regrid step when converting to fac
+                     
                      suffix=suffix, $ ;tplot suffix to apply when generating outputs
+                     
+                     subtract_bulk=subtract_bulk, $ ;subtract bulk velocity from FAC angular spectra
                      
                      datagap=datagap, $ ;setting for tplot variables, controls how long a gap must be before it is drawn.(can also manually degap)
                             
@@ -136,7 +145,8 @@ pro mms_part_products, $
                      mag_name=mag_name, $ ;tplot variable containing magnetic field data for moments and FAC transformations 
                      sc_pot_name=sc_pot_name, $ ;tplot variable containing spacecraft potential data for moments
                      pos_name=pos_name, $ ;tplot variable containing spacecraft position for FAC transformations
-                  
+                     vel_name=vel_name, $ tplot variable containing velocity data in km/s
+                     
                      error=error,$ ;indicate error to calling routine 1=error,0=success
                      
                      start_angle=start_angle, $ ;select a different start angle
@@ -346,10 +356,14 @@ pro mms_part_products, $
       dprint,dlevel=1,'Warning: Moments can only be calculated if data is in eflux.  Skipping product.'
       outputs_lc[where(strmatch(outputs_lc,'*moments'))] = ''
     endif else begin
-      mms_pgs_clean_support, times, probe, mag_name, sc_pot_name, mag_out=mag_data, sc_pot_out=sc_pot_data
+      mms_pgs_clean_support, times, probe, mag_name=mag_name, sc_pot_name=sc_pot_name, mag_out=mag_data, sc_pot_out=sc_pot_data
     endelse
   endif
 
+  ;get support data for bulk velocity subtraction
+  if keyword_set(subtract_bulk) then begin
+    mms_pgs_clean_support, times, probe, vel_name=vel_name, vel_out=vel_data
+  endif
 
 
   ;--------------------------------------------------------
@@ -408,15 +422,26 @@ pro mms_part_products, $
       ;limits will be applied to energy-aligned bins
       clean_data.bins = temporary(pre_limit_bins)
       
-      ;align bins across energies 
-      ; -ensures smoother statistics and less jagged edges
-      ; -better matches plots from tpm2
-      spd_pgs_align_phi, clean_data
+      ;split hpca angle bins to be equal width in phi/theta
+      ;this is needed when skipping the regrid step
+      if keyword_set(no_regrid) && instrument eq 'hpca' then begin
+        mms_pgs_split_hpca, clean_data, output=clean_data
+      endif
+
       spd_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
       
       ;perform FAC transformation and interpolate onto a new, regular grid 
       spd_pgs_do_fac,clean_data,reform(fac_matrix[i,*,*],3,3),output=clean_data,error=error
-      spd_pgs_regrid,clean_data,regrid,output=clean_data
+
+      ;nearest neighbor interpolation to regular grid in FAC
+      if ~keyword_set(no_regrid) then begin
+        spd_pgs_regrid,clean_data,regrid,output=clean_data
+      endif
+
+      ;shift by bulk velocity vector if requested
+      if keyword_set(subtract_bulk) && ~undefined(vel_data) then begin
+        spd_pgs_v_shift, clean_data, vel_data[i,*], matrix=reform(fac_matrix[i,*,*],3,3), error=error
+      endif
       
       clean_data.theta = 90-clean_data.theta ;pitch angle is specified in co-latitude
       
@@ -432,12 +457,12 @@ pro mms_part_products, $
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
-      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y, /colatitude
+      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y, /colatitude, resolution=regrid[1]
     endif
     
     ;Build gyrophase spectrogram
     if in_set(outputs_lc, 'gyro') then begin
-      spd_pgs_make_phi_spec, clean_data, spec=gyro_spec, yaxis=gyro_y
+      spd_pgs_make_phi_spec, clean_data, spec=gyro_spec, yaxis=gyro_y, resolution=regrid[0]
     endif
     
     ;Build energy spectrogram from field aligned distribution
@@ -450,7 +475,7 @@ pro mms_part_products, $
     if in_set(outputs_lc, 'fac_moments') then begin
       clean_data.theta = 90-clean_data.theta ;convert back to latitude for moments calc
       ;re-add required fields stripped by FAC transform (should fix there if feature becomes standard)
-      clean_data = create_struct('mass',dist.mass,'charge',dist.charge,'magf',[0,0,0.],'sc_pot',0.,clean_data)
+      clean_data = create_struct('charge',dist.charge,'magf',[0,0,0.],'sc_pot',0.,clean_data)
       spd_pgs_moments, clean_data, moments=fac_moments, sc_pot_data=sc_pot_data, index=i, _extra=ex
     endif 
     

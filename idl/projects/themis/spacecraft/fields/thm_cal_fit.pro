@@ -30,8 +30,8 @@
 ;   -- fixed trouble reading cal files with extra lines at the end,
 ;      jmm, 8-nov-2007
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
-; $LastChangedRevision: 21775 $
+; $LastChangedDate: 2016-09-30 10:16:20 -0700 (Fri, 30 Sep 2016) $
+; $LastChangedRevision: 21986 $
 ; $URL $
 ;-
 pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = trange, $
@@ -93,7 +93,7 @@ pro thm_cal_fit, probe = probe, datatype = datatype, files = files, trange = tra
     ; check that returned data is a structure (get_data returns 0 if no TPLOT variable exists).
     if (size(d, /type) ne 8) then continue ;next probe
     ; Make sure spin model data is loaded.
-    thm_autoload_support, probe_in=sc, trange=minmax(d.x), /spinmodel, /spinaxis  ;check for spin vars, etc.
+    thm_autoload_support, probe_in=sc, suffix=out_suf[0], trange=minmax(d.x), /spinmodel, /spinaxis  ;check for spin vars, etc.
     
     ; JWL 2010-07-20 Retrieve eclipse delta_phi values
     

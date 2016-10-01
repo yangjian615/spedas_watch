@@ -115,8 +115,8 @@
 ; in outputs to tplot section, mode has been replaced by strlowcase(mode)
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
-;$LastChangedRevision: 21775 $
+;$LastChangedDate: 2016-09-30 10:16:20 -0700 (Fri, 30 Sep 2016) $
+;$LastChangedRevision: 21986 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_scm.pro $
 ;-
 
@@ -336,9 +336,9 @@ Pro thm_cal_scm, probe = probe, datatype = datatype, $
     tr0 = minmax(time_scx)
     dur = (tr0[1]-tr0[0])/86400.0d0 ;duration in days
     timespan, tr0[0], dur
-    thm_load_state, probe = probe[0], /get_support_data
-    get_data, 'th'+probe+'_state_spinphase', time_thx_state, val_thx_spinpha
-    get_data, 'th'+probe+'_state_spinper', time_thx_state, val_thx_spinper
+    thm_load_state, probe = probe[0],suffix = out_suff[0], /get_support_data
+    get_data, 'th'+probe+'_state_spinphase' + out_suff[0], time_thx_state, val_thx_spinpha
+    get_data, 'th'+probe+'_state_spinper' + out_suff[0], time_thx_state, val_thx_spinper
     if size(val_thx_spinpha, /n_dim) ne 1 || $
       size(val_thx_spinper, /n_dim) ne 1 then message, '*** Aborted: No state data available'
   endif

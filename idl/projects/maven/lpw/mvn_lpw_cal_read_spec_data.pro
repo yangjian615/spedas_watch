@@ -39,7 +39,7 @@ pro  mvn_lpw_cal_read_spec_data,type,subcycle,hfgain,calib_file_spec,filename,ba
   ;Check that we have an environment variable telling IDL where to get the files, and if it is on the lpw_proc computer:
   if getenv('mvn_lpw_software') eq '' then begin
     print, name, ": #### WARNING ####: environment variable 'mvn_lpw_software' not set. File  not found."
-    print, "Use: setenv('mvn_lpw_software=/path/to/software/on/your/machine/') to set this variable and locate requested files."
+    print, "Use: setenv,'mvn_lpw_software=/path/to/software/on/your/machine/' to set this variable and locate requested files."
   if getenv('mvn_lpw_software') eq '/Users/lpwproc/maven_idl/scr_lpw/' then $
     fbase = '/Users/lpwproc/maven_idl/MVN_SVN/LDS_MAVEN_LPW/master/'
   endif else fbase = getenv('mvn_lpw_software')

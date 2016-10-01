@@ -10,33 +10,39 @@
 ;Arguments:
 ;  times: Array of sample times for particledata
 ;  probe: String specifying the spacecraft
-;  mag_tvar_in: String specifying a tplot variable containing magnetic field data
-;  sc_pot_tvar_in: String specifying a tplot variable containing spacecraft potential data
-;  
+;
+;
+;Input Keywords
+;  mag_name: String specifying a tplot variable containing magnetic field data
+;  sc_pot_name: String specifying a tplot variable containing spacecraft potential data
+;  vel_name: String specifying a tplot variable containing velocity data in km/s
+;
 ;
 ;Output Keywords:
 ;  mag_out: Array of magnetic field vectors corresponding to TIMES
 ;  sc_pot_out: Array of spacecraft potential data corresponding to TIMES
+;  vel_out: Array of velocity vectors corresponding to TIMES
 ;
 ;  
 ;Notes:
-;  If no valid tplot variables are specified for:
-;    magnetic field - vector will be [0,0,0] at all times
-;    spacecraft potential - will be 0
 ;    
 ;
 ;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21101 $
+;$LastChangedDate: 2016-09-30 17:29:27 -0700 (Fri, 30 Sep 2016) $
+;$LastChangedRevision: 21991 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_clean_support.pro $
 ;-
 
 pro mms_pgs_clean_support, times, $
                            probe, $
-                           mag_tvar_in, $
-                           sc_pot_tvar_in, $
+
+                           mag_name=mag_tvar_in, $
+                           sc_pot_name=sc_pot_tvar_in, $
+                           vel_name=vel_tvar_in, $
+
                            mag_out=mag_out, $
-                           sc_pot_out=sc_pot_out
+                           sc_pot_out=sc_pot_out, $
+                           vel_out=vel_out
 
     compile_opt idl2, hidden
 
@@ -45,7 +51,7 @@ pro mms_pgs_clean_support, times, $
   ; Magnetic field
   ; -----------------------------------------------------------
   ;   -Transform and interpolate magnetic field data if present
-  ;   -Ignore if tplot variable is not specified
+  ;   -Ignore & warn if tplot variable is not specified
   ; -----------------------------------------------------------
   if ~undefined(mag_tvar_in) then begin
     if (tnames(mag_tvar_in))[0] ne '' then begin
@@ -62,17 +68,19 @@ pro mms_pgs_clean_support, times, $
       
       dprint,'Using "' + mag_tvar_in + '" as magnetic field for particle calculations.',dlevel=1 
     endif else begin
-      dprint, dlevel=1, 'Magnetic field tplot variable not found: '+mag_tvar_in
+      dprint, dlevel=1, 'Magnetic field tplot variable not found: "'+mag_tvar_in+'". No field dependent moments will be produced.' 
     endelse
   endif else begin
-    dprint, dlevel=1, 'No magnetic field specified.  No magnetic field will be used in calibrations.'
+    if arg_present(mag_tvar_in) then begin
+      dprint, dlevel=1, 'No magnetic field specified.  No magnetic field will be used in calibrations.'
+    endif
   endelse
 
 
   ; Spacecraft Potential
   ; ----------------------------------------------------------
   ;   -Interpolate potential data if present
-  ;   -Ignore if tplot variable is not specified
+  ;   -Ignore & warn if tplot variable is not specified
   ; ----------------------------------------------------------
   if ~undefined(sc_pot_tvar_in) then begin
     if (tnames(sc_pot_tvar_in))[0] ne '' then begin
@@ -87,12 +95,41 @@ pro mms_pgs_clean_support, times, $
       del_data, sc_pot_temp
       dprint,'Using "' + sc_pot_tvar_in + '" as spacecraft potential for particle calculations.',dlevel=1 
     endif else begin
-      dprint, dlevel=1, 'Spacecraft potential tplot variable not found: '+sc_pot_tvar_in + '. No spacecraft potential will be used in calibrations.
+      dprint, dlevel=1, 'Spacecraft potential tplot variable not found: "'+sc_pot_tvar_in + '". No spacecraft potential will be used in calibrations.
     endelse
   endif else begin
-    dprint, dlevel=1, 'No spacecraft potential specified.  No spacecraft potential will be used in calibrations.'
+    if arg_present(sc_pot_tvar_in) then begin
+      dprint, dlevel=1, 'No spacecraft potential specified.  No spacecraft potential will be used in calibrations.'
+    endif
   endelse
   
+
+  ; Bulk Velocity
+  ; ----------------------------------------------------------
+  ;   -Interpolate to particle data's time samples
+  ;   -Ignore if tplot variable is not specified
+  ; ----------------------------------------------------------
+  if ~undefined(vel_tvar_in) then begin
+    if (tnames(vel_tvar_in))[0] ne '' then begin
+      ;Sanitize spacecraft potential
+      vel_temp = vel_tvar_in + '_pgs_temp'
+      tinterpol_mxn,vel_tvar_in,times,newname=vel_temp,/nan_extrapolate 
+    
+      ;Pass out potential data
+      get_data, vel_temp, 0, vel_out
+      
+      ;Remove temp variable
+      del_data, vel_temp
+      dprint,'Using "' + vel_tvar_in + '" for bulk velocity subtraction.',dlevel=1 
+    endif else begin
+      dprint, dlevel=1, 'Bulk velocity tplot variable not found: "'+vel_tvar_in + '". No spacecraft potential will be used in calibrations.
+    endelse
+  endif else begin
+    if arg_present(vel_tvar_in) then begin
+      dprint, dlevel=1, 'No bulk velocity specified.  Subtraction will not be performed. Use VEL_NAME to specify tplot var.'
+    endif
+  endelse
+
 
   return
 

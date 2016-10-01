@@ -28,13 +28,13 @@
 ; 
 ; NOTES:
 ; 
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-06-12 10:12:12 -0700 (Thu, 12 Jun 2014) $
-;$LastChangedRevision: 15355 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-09-30 10:16:20 -0700 (Fri, 30 Sep 2016) $
+;$LastChangedRevision: 21986 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_autoload_support.pro $
 ;
 ;-
-Pro thm_autoload_support, vname=vname, spinmodel=spinmodel, spinaxis=spinaxis, slp=slp, history_out=history_out, probe_in=probe_in, trange=trange, progobj=progobj, _extra=_extra
+Pro thm_autoload_support, vname=vname, suffix=suffix, spinmodel=spinmodel, spinaxis=spinaxis, slp=slp, history_out=history_out, probe_in=probe_in, trange=trange, progobj=progobj, _extra=_extra
 
 ; Check to see if input variable name is specified
 if (~keyword_set(vname)) then begin
@@ -159,7 +159,7 @@ endif
   If(loadstate) Then Begin
     If(obj_valid(progobj)) Then progobj -> update, 0.0,  $
       text = 'Loading State data for Calibration, Probe: '+probe
-    thm_load_state, probe = probe, /get_support_data, trange = trange
+    thm_load_state, probe = probe, suffix=suffix, /get_support_data, trange = trange
     tj = time_string(trange)        ;for history
     history_out = 'thm_load_state, probe = '+''''+probe+''''+$
       ', trange = ['+''''+tj[0]+''''+', '+''''+tj[1]+''''+$
