@@ -16,6 +16,7 @@
 ;
 ;Input:
 ;  input_name:  Name of tplot variable containing particle data (must be original name)
+;  single_time: Return a single time nearest to the time specified by single_time (supersedes trange and index)
 ;  trange:  Optional two element time range
 ;  times:  Flag to return array of full distribution sample times
 ;  structure:  Flag to return structures instead of pointer to structures
@@ -39,14 +40,15 @@
 ;
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21101 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-03 15:19:11 -0700 (Mon, 03 Oct 2016) $
+;$LastChangedRevision: 22008 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_get_dist.pro $
 ;-
 
 function mms_get_dist, tname, index, trange=trange, times=times, structure=structure, $
-                       probe=probe, species=species, instrument=instrument, units=units
+                       probe=probe, species=species, instrument=instrument, units=units, $
+                       single_time = time_in
 
     compile_opt idl2, hidden
 
@@ -59,8 +61,8 @@ endif
 
 
 case strlowcase(instrument) of
-  'hpca': return, mms_get_hpca_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species, units=units)
-  'fpi': return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species)
+  'hpca': return, mms_get_hpca_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species, units=units, single_time=time_in)
+  'fpi': return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species, single_time=time_in)
   'null': dprint, dlevel=1, 'Cannot determine instrument from variable name; please specify with INSTRUMENT keyword'
   else: dprint, dlevel=1, 'Unknown instrument: "'+instrument+'"'
 endcase

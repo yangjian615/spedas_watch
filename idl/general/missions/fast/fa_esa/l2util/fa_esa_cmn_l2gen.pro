@@ -60,8 +60,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-06-21 09:38:56 -0700 (Tue, 21 Jun 2016) $
-; $LastChangedRevision: 21343 $
+; $LastChangedDate: 2016-10-03 11:44:02 -0700 (Mon, 03 Oct 2016) $
+; $LastChangedRevision: 21998 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -709,7 +709,7 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
 ;save the file -- full database management
   dummy = cdf_save_vars2(otp_struct, fullfile0, /no_file_id_update)
   If(~keyword_set(no_compression)) Then Begin
-      spawn, '/usr/local/pkg/cdf-3.6.1_CentOS-6.6/bin/cdfconvert '+fullfile0+' '+fullfile0+' -compression vars:gzip.5 -delete'
+      spawn, '/usr/local/pkg/cdf-3.6.2_CentOS-6.7/bin/cdfconvert '+fullfile0+' '+fullfile0+' -blockingfactor optimal -compressnonepoch -compression cdf:none -delete'
   Endif
 
   Return

@@ -4,7 +4,7 @@ PRO eva_data_load_mms_fpi_ql, sc=sc
   
   options,sc+'_fpi_density',ytitle=sc+'!CFPI!Cdns',ysubtitle='[cm!U-3!N]',labels=['Ne','Ni'],$
     labflag=-1,ylog=0,constant=0
-  options,sc+'_fpi_temp',ytitle=sc+'!CFPI!Ctemp',ysubtitle='[eV]',ylog=0,constant=0
+  options,sc+'_fpi_temp',ytitle=sc+'!CFPI!Ctemp',ysubtitle='[eV]',ylog=1,constant=0
   options,sc+'_fpi_ion_vel_dbcs',ytitle=sc+'!CFPIi!Cvel',constant=0
   options,sc+'_fpi_elec_vel_dbcs',ytitle=sc+'!CFPIe!Cvel',constant=0
   options,sc+'_fpi_ions',ytitle=sc+'!CFPIi';,ysubtitle='[Hz]',ztitle='[(V/m)!U2!N/Hz]'

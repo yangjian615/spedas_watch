@@ -47,8 +47,8 @@
 ;HISTORY:
 ; 2016-09-23, jmm, jimm@ssilberkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-30 10:09:50 -0700 (Fri, 30 Sep 2016) $
-; $LastChangedRevision: 21985 $
+; $LastChangedDate: 2016-10-03 15:11:07 -0700 (Mon, 03 Oct 2016) $
+; $LastChangedRevision: 22007 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/tplot_window/tplot_window.pro $
 ;-
 Pro tplot_window_event, event
@@ -83,7 +83,24 @@ Pro tplot_window_event, event
         tplot, verbose=0, get_plot_pos = ppp
 ;Now some xtplot hacks
         geo = widget_info(state.draw_widget, /geo) ;widget geometry
-        trange = timerange(/current)
+;We never want to get into a situation where we are getting prompted
+;for times, unless no data has been loaded
+        trange = tplot_vars.options.trange
+        If(trange[0] Eq 0 And trange[1] Eq 0) Then $
+           trange = tplot_vars.options.trange_full
+        If(trange[0] Eq 0 And trange[1] Eq 0) Then Begin
+           If(tag_exist(tplot_vars.options, 'varnames') && $
+              is_string(tplot_vars.options.varnames)) Then Begin
+              vn = tplot_vars.options.varnames
+              tr = trange
+              For k = 0, n_elements(vn)-1 Do Begin
+                 get_data, vn[k], data = d
+                 If(is_struct(d)) Then tr = minmax(d.x)
+                 If(total(abs(tr)) Gt 0) Then trange = tr
+              Endfor
+           Endif
+        Endif
+        If(trange[0] Eq 0 And trange[1] Eq 0) Then trange = timerange(/current)
         x = event.x
         time = ((event.x/geo.xsize)-ppp[0, 0])*$
                ((trange[1]-trange[0])/(ppp[2, 0]-ppp[0, 0]))+$
@@ -193,6 +210,7 @@ Pro tplot_window, datanames, $
    ysize = ysize, $
    help = help
 
+  @tplot_com
   common tplot_window_private, state
 
 ;create a widget
@@ -220,7 +238,7 @@ Pro tplot_window, datanames, $
   widget_control, master, set_uval = state, /no_copy
 
   tplot, datanames, $
-         WINDOW = -1, $
+         WINDOW = !d.window, $
          NOCOLOR = nocolor,     $
          VERBOSE = verbose,     $
          OPLOT = oplot,         $

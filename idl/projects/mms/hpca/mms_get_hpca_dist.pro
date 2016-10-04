@@ -12,6 +12,7 @@
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
+;  single_time: Return a single time nearest to the time specified by single_time (supersedes trange and index)
 ;  index:  Index of time samples to return (supersedes trange)
 ;  trange:  Two element time range to constrain the requested data
 ;  times:  Flag to return full array of time samples
@@ -30,14 +31,14 @@
 ;  This is a work in progress
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-06-07 17:36:55 -0700 (Tue, 07 Jun 2016) $
-;$LastChangedRevision: 21278 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-03 15:19:11 -0700 (Mon, 03 Oct 2016) $
+;$LastChangedRevision: 22008 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
 function mms_get_hpca_dist, tname, index, trange=trange, times=times, structure=structure, $
-                            probe=probe, species=species, units=units
+                            probe=probe, species=species, units=units, single_time=single_time
 
     compile_opt idl2, hidden
 
@@ -132,18 +133,28 @@ endif
 
 ; Allow calling code to request a time range or specify index to specific sample.
 ;-----------------------------------------------------------------
-if ~undefined(index) then begin
-  full = full[index]
-  n_full = n_elements(full)
-endif else if ~undefined(trange) then begin
-  tr = minmax(time_double(trange))
-  index = where( (*azimuth.x)[full] ge tr[0] and (*azimuth.x)[full] lt tr[1], n_full)
-  if n_full eq 0 then begin
-    dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
+if ~undefined(single_time) then begin
+  nearest_time = find_nearest_neighbor(*azimuth.x, time_double(single_time))
+  if nearest_time eq -1 then begin
+    dprint, 'Cannot find requested time in the data set: ' + time_string(single_time)
     return, 0
   endif
-  full = full[index]
-endif
+  nearest_index = where(*azimuth.x eq nearest_time, n_full)
+  full = full[nearest_index]
+endif else begin
+  if ~undefined(index) then begin
+    full = full[index]
+    n_full = n_elements(full)
+  endif else if ~undefined(trange) then begin
+    tr = minmax(time_double(trange))
+    index = where( (*azimuth.x)[full] ge tr[0] and (*azimuth.x)[full] lt tr[1], n_full)
+    if n_full eq 0 then begin
+      dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
+      return, 0
+    endif
+    full = full[index]
+  endif
+endelse
 data_idx = data_idx[full]
 
 

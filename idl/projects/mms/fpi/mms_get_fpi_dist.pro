@@ -12,6 +12,7 @@
 ;
 ;Input:
 ;  tname: Tplot variable containing the desired data.
+;  single_time: Return a single time nearest to the time specified by single_time (supersedes trange and index)
 ;  index:  Index of time samples to return (supersedes trange)
 ;  trange:  Two element time range to constrain the requested data
 ;  times:  Flag to return full array of time samples
@@ -29,14 +30,14 @@
 ;   this converts those to presumed trajectories (swaps direction).
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-09-02 17:52:09 -0700 (Fri, 02 Sep 2016) $
-;$LastChangedRevision: 21796 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-03 15:19:11 -0700 (Mon, 03 Oct 2016) $
+;$LastChangedRevision: 22008 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
 function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure, $
-                           species = species, probe = probe
+                           species = species, probe = probe, single_time = single_time
 
     compile_opt idl2, hidden
 
@@ -81,29 +82,38 @@ if keyword_set(times) then begin
   return, *p.x
 endif
 
-
 ; Allow calling code to request a time range and/or specify index
 ; to specific sample.  This allows calling code to extract 
 ; structures one at time and improves efficiency in other cases.
 ;-----------------------------------------------------------------
 
-;index supersedes time range
-if undefined(index) then begin
-  if ~undefined(trange) then begin
-    tr = minmax(time_double(trange))
-    index = where( *p.x ge tr[0] and *p.x lt tr[1], n_times)
-    if n_times eq 0 then begin
-      dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
-      return, 0
-    endif
-  endif else begin
-    n_times = n_elements(*p.x)
-    index = lindgen(n_times)
-  endelse
-endif else begin
+; single_time supersedes index and trange
+if ~undefined(single_time) then begin
+  nearest_time = find_nearest_neighbor(*p.x, time_double(single_time))
+  if nearest_time eq -1 then begin
+    dprint, 'Cannot find requested time in the data set: ' + time_string(single_time)
+    return, 0
+  endif
+  index = where(*p.x eq nearest_time)
   n_times = n_elements(index)
-endelse
-
+endif else begin
+  ;index supersedes time range
+  if undefined(index) then begin
+    if ~undefined(trange) then begin
+      tr = minmax(time_double(trange))
+      index = where( *p.x ge tr[0] and *p.x lt tr[1], n_times)
+      if n_times eq 0 then begin
+        dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
+        return, 0
+      endif
+    endif else begin
+      n_times = n_elements(*p.x)
+      index = lindgen(n_times)
+    endelse
+  endif else begin
+    n_times = n_elements(index)
+  endelse
+endelse 
 
 ; Initialize angles, and support data
 ;-----------------------------------------------------------------

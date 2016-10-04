@@ -28,11 +28,11 @@
 ; LIMITATIONS:
 ;   Beware of file pathnames that include the character sequences:  YY,  MM, DD, hh, mm, ss, .f  since these can be retranslated to the time
 ;-
-function spp_file_retrieve,pathname,trange=trange,verbose=verbose, source=src,files=files, $
-   last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
+function spp_file_retrieve,pathname,trange=trange,verbose=verbose, source=src, $
+ ;  last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
    daily_names=daily_names,hourly_names=hourly_names,resolution = res,shiftres=shiftres,  $
-   no_server=no_server,user_pass=user_pass,L0=L0,recent=recent, $
-   cal=cal,ATLO=ATLO,RT=RT,pformat=pformat,realtime=realtime,no_download=no_download,name=name
+ ;  no_server=no_server,user_pass=user_pass,L0=L0, $
+   cal=cal,TVac=Tvac,elec=elec,ion=ion,realtime=realtime,recent=recent
 
 tstart = systime(1)
 
@@ -48,10 +48,18 @@ if keyword_set(L0) then begin   ; default location of L0 files
    last_version =1
 endif
 
+instr = ''
+if keyword_set(elec) then instr = 'spane/'
+if keyword_set(ion) then instr = 'spani/'
+
+
 if keyword_set(cal) then begin
-  if not keyword_set(host) then host = 'abiad-sw.s\sl.berkeley.edu'
-  if not keyword_set(port) then port = '2128'
-  if not keyword_set(pathname) then pathname = realtime_dir + host+'.'+port+'/YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
+  pathname = realtime_dir + 'cal/'+instr+'YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
+  hourly_names =1
+endif
+
+if keyword_set(tvac) then begin
+  pathname = realtime_dir + 'TVac/'+instr+'YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
   hourly_names =1
 endif
 

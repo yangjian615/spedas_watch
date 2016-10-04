@@ -29,6 +29,12 @@ if keyword_set(compress) then begin
   if compress eq -1 then gcomp = (strmid(name,2,/reverse_offset) eq '.gz') else gcomp = compress
 endif else gcomp = 0
 
+if gcomp && fi.exists && type eq 'u' then begin
+  file_archive,name,archive_ext='.arc'
+  fi = file_info(name)
+  dprint,dlevel=2,'Archived old file: ',name
+endif
+
 dprint,dlevel=4,verbose=verbose,'"',type,'" ','"'+name+'"',/no_check_events
 mss = ''
 create = ~keyword_set(test_only)

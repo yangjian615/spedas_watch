@@ -455,46 +455,22 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=84
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_jtot_curl_b') and (cp eq 0)) then begin
-          if not LOADED_4FGM then begin
-            eva_data_load_mms_dfg, sc='mms1'
-            eva_data_load_mms_dfg, sc='mms2'
-            eva_data_load_mms_dfg, sc='mms3'
-            eva_data_load_mms_dfg, sc='mms4'
-            LOADED_4FGM = 1L
-          endif
-          mms_sitl_curl_b, flag, /no_load
-          if flag eq 1 then begin
-            msg = 'Skipping curl-B (Missing Bfield data from one or more spacecraft)'
-            result = dialog_message(msg,/center)
-          endif
-          tn = tnames('mms_sitl_jtot_curl_b',cnt)
-          if cnt eq 1 then begin
-            options, tn, ytitle='Jtot',ysubtitle='uA/m!U2!D'
-          endif
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/curlB)
           answer = 'Yes'
         endif
         pcode=85
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_diffb') and (cp eq 0)) then begin
-          if not LOADED_4FGM then begin
-            eva_data_load_mms_dfg, sc='mms1'
-            eva_data_load_mms_dfg, sc='mms2'
-            eva_data_load_mms_dfg, sc='mms3'
-            eva_data_load_mms_dfg, sc='mms4'
-            LOADED_4FGM = 1L
-          endif
-          mms_sitl_diffb, flag, /no_load
-          if flag eq 1 then begin
-            msg = 'Skipping diffb (Need at least two spacecraft).'
-            result = dialog_message(msg,/center)
-          endif else begin
-            tn = tnames('mms_sitl_diffB',cnt)
-            if cnt eq 1 then begin
-              options,tn,labflag=-1,labels='diff-B!U2'
-            endif
-          endelse
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/diffB)
           answer = 'Yes'
         endif
+        pcode=86
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'mms_sitl_jtot_combb') and (cp eq 0)) then begin
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/combB)
+          answer = 'Yes'
+        endif
+        
       endif;if ct eq 0 then begin; if not loaded
       c+=1
     endfor; for each requested parameter

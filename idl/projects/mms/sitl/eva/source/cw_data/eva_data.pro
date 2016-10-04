@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-04-01 08:25:45 -0700 (Fri, 01 Apr 2016) $
-; $LastChangedRevision: 20674 $
+; $LastChangedDate: 2016-10-03 10:53:30 -0700 (Mon, 03 Oct 2016) $
+; $LastChangedRevision: 21996 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -433,6 +433,13 @@ FUNCTION eva_data_event, ev
       print,'EVA: --------------'
       state = eva_data_load_and_plot(state)
       end
+    state.loadforce: begin
+      print,'EVA: --------------'
+      print,'EVA:  EVENT: load '
+      print,'EVA: --------------'
+      del_data,'*'
+      state = eva_data_load_and_plot(state)
+      end
     state.bgOPOD: str_element,/add,state,'OPOD',ev.select
     state.bgSRTV: str_element,/add,state,'SRTV',ev.select
     else:
@@ -555,9 +562,13 @@ FUNCTION eva_data, parent, $
         SET_VALUE=0)
       widget_control,state.bgSRTV,SENSITIVE=0
 
-  str_element,/add,state,'load',widget_button(mainbase, VALUE = 'LOAD',ysize=30,$;xsize=330,$
+  baseLoad = widget_base(mainbase,/row,/align_center)
+  str_element,/add,state,'load',widget_button(baseLoad, VALUE = 'LOAD',ysize=30,xsize=200,$
     TOOLTIP='Restore from cache or retrieve from a remote server and then plot.')
-    
+  str_element,/add,state,'loadforce',widget_button(baseLoad, VALUE = ' FORCE RELOAD ',ysize=30,$;xsize=330,$
+    TOOLTIP='Clear the static memory and force reloading all tplot variables.')
+
+  
   ; Save out the initial state structure into the first childs UVALUE.
   WIDGET_CONTROL, WIDGET_INFO(mainbase, /CHILD), SET_UVALUE=state, /NO_COPY
   
