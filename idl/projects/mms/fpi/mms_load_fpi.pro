@@ -69,8 +69,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-22 12:22:45 -0700 (Thu, 22 Sep 2016) $
-;$LastChangedRevision: 21901 $
+;$LastChangedDate: 2016-10-04 15:06:23 -0700 (Tue, 04 Oct 2016) $
+;$LastChangedRevision: 22023 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -157,7 +157,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                 tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist'
                 tplot_rename, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_dist'
               endif
-              if array_contains(datatype, 'des-moms') then begin
+              if array_contains(datatype, 'des-moms') || array_contains(datatype, 'des') then begin
                 tplot_rename, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms'
                 tplot_rename, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms'
               endif
@@ -191,7 +191,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                 tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist'
                 tplot_rename, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist'
               endif
-              if array_contains(datatype, 'dis-moms') then begin
+              if array_contains(datatype, 'dis-moms') || array_contains(datatype, 'dis') then begin
                 tplot_rename, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix, 'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms'
                 tplot_rename, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms'
               endif
@@ -242,11 +242,11 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
 
             ; create the error bars
             ; moms
-            mms_fpi_make_errorflagbars,'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms' ; ions
-            mms_fpi_make_errorflagbars,'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms' ; electrons
+            mms_fpi_make_errorflagbars,'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_moms', level=level ; ions
+            mms_fpi_make_errorflagbars,'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_moms', level=level ; electrons
             ; dist
-            mms_fpi_make_errorflagbars,'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist' ; ions
-            mms_fpi_make_errorflagbars,'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist' ; electrons
+            mms_fpi_make_errorflagbars,'mms'+this_probe+'_dis_errorflags_'+data_rate+suffix+'_dist', level=level ; ions
+            mms_fpi_make_errorflagbars,'mms'+this_probe+'_des_errorflags_'+data_rate+suffix+'_dist', level=level ; electrons
         
             ; do not need this bar for survey data, since all data are lossy compressed
             if data_rate eq 'brst' then begin

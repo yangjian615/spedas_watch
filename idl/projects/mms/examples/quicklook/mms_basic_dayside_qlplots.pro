@@ -20,14 +20,14 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-18 11:46:51 -0700 (Thu, 18 Aug 2016) $
-; $LastChangedRevision: 21673 $
+; $LastChangedDate: 2016-10-04 15:48:53 -0700 (Tue, 04 Oct 2016) $
+; $LastChangedRevision: 22024 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_basic_dayside_qlplots.pro $
 ;-
 tplot_options, 'xmargin', [15, 15]
 start_time = systime(/sec)
 
-date = '2015-10-16/00:00:00'
+date = '2016-10-01/00:00:00'
 timespan, date, 1, /day
 probe = '1'
 ; options for send_plots_to:
@@ -40,7 +40,7 @@ postscript = send_plots_to eq 'ps' ? 1 : 0
 
 ; load the data
 mms_load_fgm, instrument='dfg', probe=probe, data_rate='srvy', level='ql'
-mms_load_fpi, probe=probe, data_rate='fast', level='sitl'
+mms_load_fpi, probe=probe, data_rate='fast', level='ql'
 mms_load_edp, probe=probe, datatype='scpot', level='sitl'
 mms_load_edp, probe=probe, data_rate='fast', level='ql', datatype='dce'
 mms_load_edp, probe=probe, data_rate='srvy', level='l2', datatype=['dce', 'hfesp']
@@ -63,7 +63,7 @@ calc, '"mms'+probe+'_edp_fast_scpot_ln" = -ln("mms'+probe+'_edp_scpot_fast_sitl"
 options, 'mms'+probe+'_edp_fast_scpot_ln', ytitle='EDP!CFAST!C-ln(scpot)'
 
 ; join the velocity data into a single variable
-join_vec, 'mms'+probe+['_fpi_iBulkV_X_DSC', '_fpi_iBulkV_Y_DSC', '_fpi_iBulkV_Z_DSC'], 'mms'+probe+'_fpi_iBulkV'
+;join_vec, 'mms'+probe+['_fpi_iBulkV_X_DSC', '_fpi_iBulkV_Y_DSC', '_fpi_iBulkV_Z_DSC'], 'mms'+probe+'_fpi_iBulkV'
 
 ;;;;; The following ExB calculations were taken from EVA, 12/10/2015
 ; ExB
@@ -106,14 +106,14 @@ endif
 ;-------------------------
 
 ; extract Vperp
-tn = tnames(sc+'_fpi_iBulkV',ct)
+tn = tnames(sc+'_dis_bulkv_dbcs_fast',ct)
 if ct eq 1 then begin
   comp = ['x','y','z']
   clrs = [2,4,6]
   cmax = n_elements(comp)
   ; V has a much lower time resolution than B
   ; Here, we keep the lower time resolution by interpolating B.
-  get_data,sc+'_fpi_iBulkV',data=F
+  get_data,sc+'_dis_bulkv_dbcs_fast',data=F
   wBx = interpol(B.y[*,0], B.x, F.x)
   wBy = interpol(B.y[*,1], B.x, F.x)
   wBz = interpol(B.y[*,2], B.x, F.x)
@@ -196,11 +196,11 @@ tplot_force_monotonic, /forward, 'mms'+probe+'_edp_hfesp_srvy_l2'
 ; plot the data
 panels = 'mms'+probe+['_dfg_gsm_srvy', $
   '_dfg_srvy_dmpa_btot', $
-  '_fpi_iEnergySpectr_omni_avg', $
-  '_fpi_eEnergySpectr_omni_avg', $
-  '_fpi_DISnumberDensity', $
+  '_dis_energyspectr_omni_fast', $
+  '_des_energyspectr_omni_fast', $
+  '_dis_numberdensity_fast', $
   '_edp_fast_scpot_ln', $
-  '_fpi_iBulkV', $
+  '_dis_bulkv_dbcs_fast', $
   '_exb_vperp_z', $
   '_hpca_hplus_RF_corrected_elev_0-360', $
   '_hpca_oplus_RF_corrected_elev_0-360', $

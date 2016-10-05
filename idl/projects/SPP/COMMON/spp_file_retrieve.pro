@@ -78,9 +78,9 @@ if keyword_set(hourly_names) then begin
 endif
 
 ;lv = n_elements(last_version) eq 0 ? 1 : last_version 
-;vo = n_elements(valid_only) eq 0 ? 0 : valid_only
+vo = n_elements(valid_only) eq 0 ? 0 : valid_only
 
-source = spp_file_source(src,verbose=verbose,user_pass=user_pass,no_server=no_server,valid_only=valid_only,  $
+source = spp_file_source(src,verbose=verbose,user_pass=user_pass,no_server=no_server,valid_only=vo,  $
     last_version=last_version,no_update=no_update,resolution=res)
 
 pos_start = strlen(source.local_data_dir)

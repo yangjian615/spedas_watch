@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-08 16:53:14 -0700 (Thu, 08 Sep 2016) $
-;$LastChangedRevision: 21808 $
+;$LastChangedDate: 2016-10-04 15:49:46 -0700 (Tue, 04 Oct 2016) $
+;$LastChangedRevision: 22025 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_login_lasp.pro $
 ;-
 
@@ -129,6 +129,10 @@ function mms_login_lasp, login_info = login_info, save_login_info = save_login_i
     endelse
 
     if obj_valid(net_object) then begin
+        ; set the user-agent in the header, so we can collect 
+        ; stats on SPEDAS usage by the community
+        net_object->setProperty, headers='User-Agent: '+'SPEDAS IDL/'+!version.release+' ('+!version.os+' '+!version.arch+')'
+
         ; now save the user/pass to a sav file to remember it in future sessions
         ; (only if the user requested, which should never be by default)
         if keyword_set(save_login_info) then begin

@@ -11,7 +11,7 @@
 ;                      ids for http query (e.g. 'mms1' or ['mms1', 'mms3']).
 ;                      If not used, or set to invalid sc_id, the routine defaults'
 ;                      to 'mms1'
-;                      
+;
 ;   no_update        - OPTIONAL. Set if you don't wish to replace earlier file versions
 ;                      with the latest version. If not set, earlier versions are deleted
 ;                      and replaced.
@@ -29,8 +29,8 @@
 ; LASP, University of Colorado
 ;
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-15 13:14:53 -0700 (Thu, 15 Sep 2016) $
-;  $LastChangedRevision: 21835 $
+;  $LastChangedDate: 2016-10-04 16:18:06 -0700 (Tue, 04 Oct 2016) $
+;  $LastChangedRevision: 22026 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_afg.pro $
 
 
@@ -56,9 +56,9 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload, level
       level = 'ql'
     endif
   endelse
-
+  
   mode = 'srvy'
-
+  
   ; See if spacecraft id is set
   if ~keyword_set(sc_id) then begin
     print, 'Spacecraft ID not set, defaulting to mms1'
@@ -80,11 +80,11 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload, level
       sc_id=sc_id(where(ivalid eq 0))
     endif
   endelse
-
+  
   ;----------------------------------------------------------------------------------------------------------
   ; Check for AFG data first
   ;----------------------------------------------------------------------------------------------------------
-
+  
   for j = 0, n_elements(sc_id)-1 do begin
 
     if keyword_set(no_update) then begin
@@ -147,6 +147,21 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload, level
 
 ;      mag_struct = mms_sitl_open_afg_cdf(files_open(0))
 ;      times = mag_struct.x
+;      b_field = mag_struct.y
+;      varname = mag_struct.varname
+;
+;      if n_elements(files_open) gt 1 then begin
+;        for i = 1, n_elements(files_open)-1 do begin
+;          temp_struct = mms_sitl_open_afg_cdf(files_open(i))
+;          times = [times, temp_struct.x]
+;          b_field = [b_field, temp_struct.y]
+;        endfor
+;      endif
+;
+;      store_data, varname, data = {x: times, y:b_field}
+
+;      mag_struct = mms_sitl_open_afg_cdf(files_open(0))
+;      times = mag_struct.x
 ;      b_field_pgsm = mag_struct.y_pgsm
 ;      pgsm_varname = mag_struct.pgsm_varname
 ;      b_field_dmpa = mag_struct.y_dmpa
@@ -172,26 +187,32 @@ pro mms_sitl_get_afg, sc_id=sc_id, no_update = no_update, reload = reload, level
 ;      if evarname ne '' then begin
 ;        store_data, evarname, data = {x: etimes, y:pos_vect}
 ;      endif else begin
-;        print, 'No QL ephemeris in DFG file for ' + sc_id[j]
+;        print, 'No QL ephemeris in afg file for ' + sc_id[j]
 ;      endelse
+    
+    mms_cdf2tplot, files_open
+    
+    afg_vecname = sc_id(j) + '_afg_srvy_dmpa'
+    split_vec, afg_vecname
+        
+    join_vec, [afg_vecname + '_0', afg_vecname + '_1', afg_vecname + '_2'], afg_vecname
+    tplot_rename, afg_vecname + '_3', afg_vecname + '_btot'
+    
+    store_data, [afg_vecname + '_0', afg_vecname + '_1', afg_vecname + '_2'], /delete
 
-      mms_cdf2tplot, files_open
+    afg_vecname_gsm = sc_id(j) + '_afg_srvy_gsm_dmpa'
+    split_vec, afg_vecname_gsm
 
-      afg_vecname = sc_id(j) + '_afg_srvy_dmpa'
-      split_vec, afg_vecname
+    join_vec, [afg_vecname_gsm + '_0', afg_vecname_gsm + '_1', afg_vecname_gsm + '_2'], afg_vecname_gsm
+    tplot_rename, afg_vecname_gsm + '_3', afg_vecname_gsm + '_btot'
 
-      join_vec, [afg_vecname + '_0', afg_vecname + '_1', afg_vecname + '_2'], afg_vecname
-      tplot_rename, afg_vecname + '_3', afg_vecname + '_btot'
+    store_data, [afg_vecname_gsm + '_0', afg_vecname_gsm + '_1', afg_vecname_gsm + '_2'], /delete
 
-      store_data, [afg_vecname + '_0', afg_vecname + '_1', afg_vecname + '_2'], /delete
-
-
-      ;
 
     endif else begin
-      print, 'No AFG data available locally or at SDC or invalid query!'
+      print, 'No afg data available locally or at SDC or invalid query!'
     endelse
 
-endfor
+  endfor
 
 end

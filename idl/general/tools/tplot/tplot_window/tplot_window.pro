@@ -2,16 +2,58 @@
 ;NAME:
 ; tplot_window
 ;PURPOSE:
-; to allow various widget-like features in a tplot window, this is
-; accomplished by setting up the window as a draw object.
+; Allowd various widget-like features in a tplot window, this is
+; accomplished by setting up the window as a draw widget.
 ;CALLING SEQUENCE:
 ; tplot_window, tplot_vars
+;DESCRIPTION:
+; Called just like tplot, e.g.,
+;
+;   tplot_window, tplot_variable_names
+;
+; (The variable names are optional, if left out, then the previous set
+; of tplotted variables are used)
+;
+; Once tplot_window is called, the all succeeding "tplot" commands are
+; sent to that first window, unless tplot is called using the WINDOW
+; keyword. (To get a new widget, call tplot_window again.)
+;
+; Tplot_window makes the tplot window a draw widget, and enables
+; keyboard commands, e.g., 
+;      'z' for zoom in by 50%; 
+;      'o' for zoom out by200%; 
+;      'r' for reset to initial time range; 
+;      't' for interactive tlimit, which allows you to set 
+;          the plotted time range by clicking same as in a regular
+;          window; 
+;      'b' for shift back by 25%;
+;      'f' for shift forward by 25%;
+;      'c' centers the plot on the cursor, without zooming
+; Arrow keys work too, up zooms in, down zooms out, left shifts back,
+; right shifts forwards.
+;
+; All tplot keywords are allowed except window and wshow. The draw widget
+; does not respond to click events, so that calling tlimit, ctime, etc..
+; from the command line still works. 
+;
+; Note that the widget has no 'memory' so if you zoom out right after
+; zooming in, you don't necessarily return to the same time range, unless
+; you are careful about where on the window you start.
+; The zoom in commands key on the cursor position on the plot, while the zoom
+; out commands zoom out from the center of the current plot.
+;
+; Note that all issues with multiple windows have not been sorted
+; out. To return control of tplot to a given window, call 
+; tplot with no arguments except for the appropriate value using the
+; window keyword, e.g., 
+;    tplot, window = 32 will return control to the original
+;    tplot_window.
 ;INPUT:
 ; tplot_vars = tplot variable names or numbers
 ;OUTPUT:
-; no explicit output, just plots
+; no explicit output, just plots and keywords
 ;KEYWORDS:
-; Same as tplot.pro:
+; Same as tplot.pro, excluding WINDOW:
 ;   TITLE:    A string to be used for the title. Remembered for future plots.
 ;   ADD_VAR:  Set this variable to add datanames to the previous plot.  If set
 ;         to 1, the new panels will appear at the top (position 1) of the
@@ -23,8 +65,6 @@
 ;         TPLOT window.
 ;   PICK:     Set this keyword to choose new order of plot panels
 ;             using the mouse.
-;   WINDOW:   Window to be used for all time plots.  If set to -1, then the
-;             current window is used.
 ;   VAR_LABEL:  String [array]; Variable(s) used for putting labels along
 ;     the bottom. This allows quantities such as altitude to be labeled.
 ;   VERSION:  Must be 1,2,3, or 4 (3 is default)  Uses a different labeling
@@ -47,8 +87,8 @@
 ;HISTORY:
 ; 2016-09-23, jmm, jimm@ssilberkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-03 15:11:07 -0700 (Mon, 03 Oct 2016) $
-; $LastChangedRevision: 22007 $
+; $LastChangedDate: 2016-10-04 14:44:38 -0700 (Tue, 04 Oct 2016) $
+; $LastChangedRevision: 22022 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/tplot_window/tplot_window.pro $
 ;-
 Pro tplot_window_event, event
@@ -80,9 +120,16 @@ Pro tplot_window_event, event
         If(~is_struct(tplot_vars) || ~is_struct(tplot_vars.options)) Then Return
 ;Figure out where we are in non-device coordinates
         widget_control, event.top, get_uval = state, /no_copy
+help, state
+        If(state.init Eq 0) Then Begin ;there always seems to be an event at the start, do nothing
+           state.init = 1
+           widget_control, event.top, set_uval = state, /no_copy
+           Return
+        Endif
         tplot, verbose=0, get_plot_pos = ppp
 ;Now some xtplot hacks
         geo = widget_info(state.draw_widget, /geo) ;widget geometry
+        widget_control, event.top, set_uval = state, /no_copy
 ;We never want to get into a situation where we are getting prompted
 ;for times, unless no data has been loaded
         trange = tplot_vars.options.trange
@@ -100,7 +147,8 @@ Pro tplot_window_event, event
               Endfor
            Endif
         Endif
-        If(trange[0] Eq 0 And trange[1] Eq 0) Then trange = timerange(/current)
+        If(trange[0] Eq 0 And trange[1] Eq 0) Then Return
+;Her we have a time range so continue
         x = event.x
         time = ((event.x/geo.xsize)-ppp[0, 0])*$
                ((trange[1]-trange[0])/(ppp[2, 0]-ppp[0, 0]))+$
@@ -108,7 +156,6 @@ Pro tplot_window_event, event
         time = (time < trange[1]) > trange[0]
 ;        dprint, dlevel=4, print, time_string(time)
 ;        dprint, dlevel=4, event.x, event.y
-        widget_control, event.top, set_uval = state, /no_copy
 ;Be sure that you are in the window before doing anything
         xlimit = geo.xoffset+[0.0, geo.xsize]
         ylimit = geo.yoffset+[0.0, geo.ysize]
@@ -118,6 +165,11 @@ Pro tplot_window_event, event
            If(event.type Eq 5) Then Begin
               keyval = strlowcase(string(event.ch))
               Case keyval of
+                 'c': Begin     ;If 'c' then center the plot on the cursor
+                    tmid = 0.5*(trange[1]+trange[0])
+                    dt1 = time-tmid
+                    tlimit, trange[0]+dt1, trange[1]+dt1
+                 End
                  'z': Begin     ;If 'z', then zoom in by 50%
                     dt0 = trange[1]-trange[0]
                     dt1 = dt0/4.0 ;25% on either side of the point
@@ -220,7 +272,8 @@ Pro tplot_window, datanames, $
   state = {master:master, $
            window_id:-1L, $
            ww0:'', $
-           draw_widget:-1L}
+           draw_widget:-1L, $
+           init:0}
 
 ;add a draw widget
   If(keyword_set(xsize)) Then xsz0 = xsize Else xsz0 = 960

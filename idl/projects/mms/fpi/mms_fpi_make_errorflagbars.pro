@@ -13,9 +13,13 @@
 ;         For DES/DIS distribution function
 ;          tname+'_flagbars_dist': Standard flag bars (2 bars)
 ;
-; KEYWORDS:
+; INPUT:
 ;         tname:   tplot variable name of dis or des errorflag 
 ;
+; KEYWORDS:
+;         level:   level of the data to create the errorflags bar for
+;                 (default is l2 - this only needs to be set for QL data)
+; 
 ; EXAMPLES:
 ;     MMS>  mms_fpi_make_errorflagbars,'mms1_des_errorflags_fast'
 ;     MMS>  mms_fpi_make_errorflagbars,'mms1_dis_errorflags_fast'
@@ -59,23 +63,24 @@
 ;     June 2016: minor updates by egrimes
 ;     
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-24 08:53:13 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21704 $
+; $LastChangedDate: 2016-10-04 15:06:23 -0700 (Tue, 04 Oct 2016) $
+; $LastChangedRevision: 22023 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_make_errorflagbars.pro $
 ;-
 
-PRO mms_fpi_make_errorflagbars,tname
+PRO mms_fpi_make_errorflagbars, tname, level = level
+  if undefined(level) then level = 'l2'
 
   if strmatch(tname,'mms?_dis*') eq 1 then inst='DIS' else if strmatch(tname,'mms?_des*') eq 1 then inst='DES' else return
   if strmatch(tname,'*_fast*') eq 1 then rate='Fast' else if strmatch(tname,'*_brst*') eq 1 then rate='Brst' else return
   if rate eq 'Fast' then gap=5.d else if inst eq 'DIS' then gap=0.16d else gap=0.032d
   get_data,tname,data=d,dlimit=dl
-  
+
   ; check for valid data before continuing on
   if ~is_struct(d) then return
   if ~is_struct(dl) then return
   
-  if strmid(dl.cdf.gatt.data_type,3,4,/rev) eq 'moms' then begin
+  if strmid(dl.cdf.gatt.data_type,3,4,/rev) eq 'moms' or level eq 'ql' then begin
     flags=string(d.y,format='(b012)')
     flagline=fltarr(n_elements(d.x),12)
     flagline_others=fltarr(n_elements(d.x))

@@ -45,9 +45,11 @@ pro spp_ptp_file_read,files,dwait=dwait
         dprint,dwait=dwait,dlevel=2,'File percentage: ' ,(fp*100.)/fi.size
       endif
     endwhile
+    dprint,dlevel=2,'Compression: ',float(fp)/fi.size
     free_lun,lun
     if 0 then begin
       nextfile:
+      dprint,!error_state.msg
       dprint,'Skipping file'
     endif
   endfor

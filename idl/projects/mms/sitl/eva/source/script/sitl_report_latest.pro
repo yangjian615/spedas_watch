@@ -134,7 +134,8 @@ PRO sitl_report_latest, dir=dir, force=force
   Set_Plot, 'Z'
   Erase
   ;Device, Set_Resolution=[1280,768],Set_Pixel_Depth=24, Decomposed=0
-  Device, Set_Resolution=[2048,2048],Set_Pixel_Depth=24, Decomposed=0
+  ;Device, Set_Resolution=[1536,922],Set_Pixel_Depth=24, Decomposed=0
+  Device, Set_Resolution=[1664,998],Set_Pixel_Depth=24, Decomposed=0
   thm_graphics_config
   ;---------------
   pmax = 4

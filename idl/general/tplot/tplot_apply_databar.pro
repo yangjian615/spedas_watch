@@ -35,8 +35,8 @@
 ;HISTORY:
 ; 2016-07-29, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-08-26 11:36:33 -0700 (Fri, 26 Aug 2016) $
-; $LastChangedRevision: 21733 $
+; $LastChangedDate: 2016-10-04 14:17:05 -0700 (Tue, 04 Oct 2016) $
+; $LastChangedRevision: 22020 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_apply_databar.pro $
 ;-
 Pro tplot_apply_databar, varname = varname, clear = clear
@@ -44,7 +44,12 @@ Pro tplot_apply_databar, varname = varname, clear = clear
 @tplot_com ;the tplot_vars.options structure tells us what's on the plot
 
   If(keyword_set(varname)) Then vn = tnames(varname) Else Begin
-     vn = tnames(tplot_vars.options.varnames)
+     If(is_struct(tplot_vars) && is_struct(tplot_vars.options)) Then Begin
+        If(tag_exist(tplot_vars.options, 'varnames') && $
+           is_string(tplot_vars.options.varnames)) Then Begin
+           vn = tnames(tplot_vars.options.varnames)
+        Endif Else Return
+     Endif Else Return
   Endelse
 
   If(~is_string(vn)) Then Begin

@@ -155,15 +155,16 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=30
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_afg*') and (cp eq 0)) then begin
-          mms_sitl_get_afg, sc_id=sc
-          eva_cap,sc+'_afg_srvy_gsm_dmpa'
-          options,sc+'_afg_srvy_gsm_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='GSM [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0
-          eva_cap,sc+'_afg_srvy_dmpa'
-          options,sc+'_afg_srvy_dmpa',$
-            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='DMPA [nT]',$
-            colors=[2,4,6],labflag=-1,constant=0
+          eva_data_load_mms_fgm,sc=sc,sfx='afg'
+;          mms_sitl_get_afg, sc_id=sc
+;          eva_cap,sc+'_afg_srvy_gsm_dmpa'
+;          options,sc+'_afg_srvy_gsm_dmpa',$
+;            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='GSM [nT]',$
+;            colors=[2,4,6],labflag=-1,constant=0
+;          eva_cap,sc+'_afg_srvy_dmpa'
+;          options,sc+'_afg_srvy_dmpa',$
+;            labels=['B!DX!N', 'B!DY!N', 'B!DZ!N','|B|'],ytitle=sc+'!CAFG!Csrvy',ysubtitle='DMPA [nT]',$
+;            colors=[2,4,6],labflag=-1,constant=0
           answer = 'Yes'
         endif
         pcode=31
@@ -194,7 +195,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=32
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_dfg*') and (cp eq 0)) then begin
-          eva_data_load_mms_dfg, sc=sc
+          eva_data_load_mms_fgm, sc=sc, sfx='dfg'
           answer = 'Yes'
         endif
         pcode=33
