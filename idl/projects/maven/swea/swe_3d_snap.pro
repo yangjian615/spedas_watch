@@ -30,7 +30,8 @@
 ;                      magnetic field direction.
 ;
 ;       DDD:           Named variable to hold a 3D structure at the last time
-;                      selected.
+;                      selected.  If this is a 3D structure, then plot a snapshot
+;                      of this instead of using the tplot window to select a time.
 ;
 ;       SUM:           If set, use cursor to specify time ranges for averaging.
 ;
@@ -75,8 +76,8 @@
 ;                      field of view.  FOV masking, if any, will be shown.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:55:37 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21710 $
+; $LastChangedDate: 2016-10-05 12:53:32 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22038 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -95,6 +96,8 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)
   usersym,a*cos(phi),a*sin(phi),/fill
+  
+  if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(burst) then aflg = 1
@@ -196,8 +199,6 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
   Twin = !d.window
 
-  if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
-
   window, /free, xsize=Dopt.xsize, ysize=Dopt.ysize, xpos=Dopt.xpos, ypos=Dopt.ypos
   Dwin = !d.window
 
@@ -216,21 +217,30 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
     Pwin = !d.window
   endif
 
+  got3d = 0
+  if (size(ddd,/type) eq 8) then begin
+    str_element, ddd[0], 'apid', apid, success=ok
+    if (ok) then if ((apid eq 'A0'X) or (apid eq 'A1'X)) then got3d = 1
+  endif
+  if (got3d) then kflg = 0  ; don't delete windows on exit for this mode
+
 ; Select the first time, then get the 3D spectrum closest that time
 
-  print,'Use button 1 to select time; button 3 to quit.'
+  if (~got3d) then begin
+    print,'Use button 1 to select time; button 3 to quit.'
 
-  wset,Twin
-  ctime,trange,npoints=npts,/silent
-  if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
-
-  if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
-    wdelete,Dwin                           ; Don't keep empty windows.
-    if (sflg) then wdelete,Swin
-    if (dflg) then wdelete,Fwin
-    if (dopam) then wdelete,Pwin
     wset,Twin
-    return
+    ctime,trange,npoints=npts,/silent
+    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
+
+    if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
+      wdelete,Dwin                           ; Don't keep empty windows.
+      if (sflg) then wdelete,Swin
+      if (dflg) then wdelete,Fwin
+      if (dopam) then wdelete,Pwin
+      wset,Twin
+      return
+    endif
   endif
   
   ok = 1
@@ -241,7 +251,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
  
     wset, Dwin
 
-    ddd = mvn_swe_get3d(trange,archive=aflg,all=doall,/sum,units=units)
+    if (~got3d) then ddd = mvn_swe_get3d(trange,archive=aflg,all=doall,/sum,units=units)
 
     if (size(ddd,/type) eq 8) then begin
       data = ddd.data
@@ -396,10 +406,12 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
 ; Get the next button press
 
-    wset,Twin
-    ctime,trange,npoints=npts,/silent
-    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
-    if (size(trange,/type) eq 5) then ok = 1 else ok = 0
+    if (~got3d) then begin
+      wset,Twin
+      ctime,trange,npoints=npts,/silent
+      if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
+      if (size(trange,/type) eq 5) then ok = 1 else ok = 0
+    endif else ok = 0
 
   endwhile
 

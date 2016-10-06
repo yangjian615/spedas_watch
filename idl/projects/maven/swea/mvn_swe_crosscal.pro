@@ -8,7 +8,20 @@
 ;  Only periods of steady solar wind, when the spacecraft potential can
 ;  be reliably estimated from SWEA data are used.
 ;
-;  Assumes charge neutrality.
+;  Assumptions:
+;
+;    (1) Charge neutrality.
+;
+;    (2) SWIA is measuring the entire ion distribution.  This is safe 
+;        in the upstream solar wind, as long as the spacecraft is Sun
+;        pointed,  which is most of the time.  Watch out for times of
+;        Earth point.
+;
+;    (3) The energy flux in SWEA's blind spots is the same as the 
+;        average energy flux over the rest of the field of view.  This
+;        can be very much in error for the solar wind halo distribution;
+;        however, most of the density is in the core distribution, which
+;        is not strongly directional.
 ;
 ;USAGE:
 ;  factor = mvn_swe_crosscal(time)
@@ -29,8 +42,8 @@
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:10:15 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21876 $
+; $LastChangedDate: 2016-10-05 13:05:31 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22042 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crosscal.pro $
 ;
 ;CREATED BY:    David L. Mitchell  05-04-16

@@ -59,15 +59,15 @@
 ;
 ;                       {swe_Ka      : 6.17      , $   ; analyzer constant
 ;                        swe_G       : 0.009/16. , $   ; nominal geometric factor
-;                        swe_Ke      : 0.0       , $   ; electron suppression constant
+;                        swe_Ke      : 2.85      , $   ; electron suppression constant
 ;                        swe_dead    : 2.8e-6    , $   ; deadtime per preamp
 ;                        swe_min_dtc : 0.25         }  ; max 4x deadtime correction
 ;
 ;                     Any other tags are ignored.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:13:26 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21879 $
+; $LastChangedDate: 2016-10-05 13:57:51 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22046 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -88,7 +88,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon, setcal=setcal, def
   if (keyword_set(default) or (size(swe_G,/type) eq 0)) then begin
     print, "Initializing SWEA constants"
     swe_Ka      = 6.17       ; analyzer constant (1.4% variation around azim)
-    swe_G       = 0.009/16.  ; nominal geometric factor (IRAP)
+    swe_G       = 0.009/16.  ; nominal geometric factor per anode (IRAP)
     swe_Ke      = 2.85       ; nominal value, see mvn_swe_esuppress.pro
     swe_dead    = 2.8e-6     ; deadtime for one MCP-Anode-Preamp chain (IRAP)
     swe_min_dtc = 0.25       ; max 4x deadtime correction
@@ -320,7 +320,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon, setcal=setcal, def
 ; function mvn_swe_esuppress calculates the constant Ke, which is used to calculate
 ; the suppression correction: exp(-(Ke/E_in)^2.).
 
-  if (size(swe_es_switch,/type) eq 0) then swe_es_switch = 1
+  if (size(swe_es_switch,/type) eq 0) then swe_es_switch = 0
 
 ; Add a dimension for relative variation among the 16 anodes.  This variation is
 ; dominated by the MCP efficiency, but I include the same dimension here for ease
@@ -378,27 +378,36 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon, setcal=setcal, def
 ; elevation bins).  Normalization: mean(swe_dgf) = 1.  Note that rotation
 ; scans at different yaws in the large SSL vacuum chamber confirm behavior of
 ; this sort.
+;
+;  p = { a0 :  5.417775771d-03, $
+;        a1 :  1.911692997d-05, $
+;        a2 :  1.067720924d-06, $
+;        a3 : -2.341636265d-08, $
+;        a4 : -4.758984454d-10, $
+;        a5 :  3.831231544e-12   }
+;
+;  theta = findgen(131) - 65.
+;  dgf = polycurve(theta,par=p)
+;  swe_dgf = fltarr(6,64,3)
+;  
+;  th_min = swp.th1 < swp.th2
+;  th_max = swp.th1 > swp.th2
+; 
+;  for i=0,5 do begin
+;    for j=0,63 do begin
+;      indx = where((theta ge th_min[i,j]) and (theta le th_max[i,j]))
+;      swe_dgf[i,j,0] = mean(dgf[indx])
+;    endfor
+;  endfor
+;
+;  The following is from in-flight calibrations assuming gyrotropy in 
+;  the plasma frame.  The assumption is that the angular sensitivity can
+;  be separated into azimuth and elevation terms that are multiplied
+;  together.
+;
 
-  p = { a0 :  5.417775771d-03, $
-        a1 :  1.911692997d-05, $
-        a2 :  1.067720924d-06, $
-        a3 : -2.341636265d-08, $
-        a4 : -4.758984454d-10, $
-        a5 :  3.831231544e-12   }
-
-  theta = findgen(131) - 65.
-  dgf = polycurve(theta,par=p)
-  swe_dgf = fltarr(6,64,3)
-  
-  th_min = swp.th1 < swp.th2
-  th_max = swp.th1 > swp.th2
-  
-  for i=0,5 do begin
-    for j=0,63 do begin
-      indx = where((theta ge th_min[i,j]) and (theta le th_max[i,j]))
-      swe_dgf[i,j,0] = mean(dgf[indx])
-    endfor
-  endfor
+  dgf = [0.922951, 1.18653, 1.11294, 1.02737, 0.923664, 0.826548]
+  swe_dgf = reform((dgf # replicate(1.,64*3)),6,64,3)
 
   for i=0,31 do begin
     swe_dgf[*,(2*i),1] = (swe_dgf[*,(2*i),0] + swe_dgf[*,(2*i+1),0])/2.
@@ -420,7 +429,20 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon, setcal=setcal, def
   
   swe_dgf = transpose(swe_dgf,[1,0,2])
 
-  if not keyword_set(dgfon) then swe_dgf[*] = 1.
+; Corrections for individual solid angle bins.  These are caused by 
+; partial blockage by the spacecraft.
+
+  swe_ogf = replicate(1.,96)
+  swe_ogf[7]  = 1.15283
+  swe_ogf[19] = 0.656415
+  swe_ogf[20] = 0.690075
+  swe_ogf[33] = 0.787840
+  swe_ogf /= mean(swe_ogf)
+
+  if not keyword_set(dgfon) then begin
+    swe_dgf[*] = 1.
+    swe_ogf[*] = 1.
+  endif
 
 ; Spacecraft blockage mask (~27% of sky, deployed boom, approximate)
 ;   Complete blockage: 0, 1, 2, 3, 17, 18

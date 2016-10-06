@@ -115,8 +115,8 @@
 ;                      potentials on parallel and anti-parallel directions
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:00:04 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21865 $
+; $LastChangedDate: 2016-10-05 12:52:00 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22035 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -129,10 +129,13 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   center=center, pep=pep, resample=resample, hires=hires, $
                   fbdata=fbdata, window=window, adiabatic=adiabatic, $
                   nomid=nomid, uncertainty=uncertainty, nospec90=nospec90, $
-                  shiftpot=shiftpot,popen=popen, indspec=indspec, twopot=twopot
+                  shiftpot=shiftpot,popen=popen, indspec=indspec, twopot=twopot, $
+                  xrange=xrange
 
   @mvn_swe_com
   @swe_snap_common
+
+  if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
 
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(burst) then aflg = 1
@@ -148,6 +151,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     rflg = 0
     dotwo = 1
   endelse
+  if (n_elements(xrange) ge 2) then begin
+    xrange = minmax(xrange)
+    xflg = 1
+  endif else xflg = 0
   if keyword_set(hires) then hflg = 1 else hflg = 0
   if (size(fbdata, /type) eq 0) then fbdata = 'mvn_B_full'
   if keyword_set(adiabatic) then begin
@@ -174,10 +181,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if (size(scp,/type) eq 0) then scp = !values.f_nan else scp = float(scp[0])
   if keyword_set(shiftpot) then begin
     spflg = 1
-    xrange = [1.,5000.]
+    if (~xflg) then xrange = [1.,5000.]
   endif else begin
     spflg = 0
-    xrange = [3.,5000.]
+    if (~xflg) then xrange = [3.,5000.]
   endelse
   if keyword_set(label) then begin
     dolab = 1
@@ -277,43 +284,42 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
      free = 1
      wstat = 0
   endelse
-  if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
   IF keyword_set(dir) THEN wdy = 0.125*Nopt.ysize ELSE wdy = 0.
-  if ~(free) then wstat = execute("wset, wnum")
+  if ~(free) then wstat = execute("wset, wnum",0,1)
   if wstat eq 0 then window, wnum, free=free, xsize=Popt.xsize, ysize=Popt.ysize, xpos=Popt.xpos, ypos=Popt.ypos
   Pwin = !d.window
   wnum += 1
 
   if (sflg) then begin
-    if ~(free) then wstat = execute("wset, wnum")
+    if ~(free) then wstat = execute("wset, wnum",0,1)
     if wstat eq 0 then window, wnum, free=free, xsize=Nopt.xsize, ysize=Nopt.ysize + wdy, xpos=Nopt.xpos, ypos=Nopt.ypos
     Nwin = !d.window
     wnum += 1
   endif
   
   if (dflg) then begin
-    if ~(free) then wstat = execute("wset, wnum")
+    if ~(free) then wstat = execute("wset, wnum",0,1)
     if wstat eq 0 then window, wnum, free=free, xsize=Copt.xsize, ysize=Copt.ysize, xpos=Copt.xpos, ypos=Copt.ypos
     Cwin = !d.window
     wnum += 1
   endif
   
   if (dospec) then begin
-    if ~(free) then wstat = execute("wset, wnum")
+    if ~(free) then wstat = execute("wset, wnum",0,1)
     if wstat eq 0 then window, wnum, free=free, xsize=Fopt.xsize, ysize=Fopt.ysize, xpos=Fopt.xpos, ypos=Fopt.ypos
     Ewin = !d.window
     wnum += 1
   endif
 
   if (rflg or hflg or uflg) then begin
-     if ~(free) then wstat = execute("wset, wnum")
+     if ~(free) then wstat = execute("wset, wnum",0,1)
      if wstat eq 0 then window, wnum, free=free, xsize=Popt.xsize, ysize=Popt.ysize*0.5*(rflg+hflg+uflg), xpos=Popt.xpos, ypos=Popt.ypos
      Rwin = !d.window
      wnum += 1
   endif
 
   if (doind) then begin
-      if ~(free) then wstat = execute("wset, wnum")
+      if ~(free) then wstat = execute("wset, wnum",0,1)
       if wstat eq 0 then window, wnum, free=free, xsize=Fopt.xsize*2, ysize=Fopt.ysize, xpos=Fopt.xpos+1, ypos=Fopt.ypos+1
       Iwin = !d.window
       wnum += 1
@@ -714,7 +720,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             x2=x
         endelse
         
-        plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
+        plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /ysty, $
           xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
           charsize=1.4
         oplot, x1, Fp, psym=10, color=6
@@ -777,7 +783,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         !p.multi=[0,2,1,0,0]
         
         ;first half of the PAD
-        plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
+        plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
             charsize=1.4
                     
@@ -825,7 +831,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         
         
         ;second half of the PAD
-        plot_oo, [0.1,0.1], drange, xrange=[1,5000], yrange=drange, /ysty, $
+        plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
             charsize=1.4
 

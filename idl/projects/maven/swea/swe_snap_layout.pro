@@ -2,7 +2,11 @@
 ;PROCEDURE:   swe_snap_layout
 ;PURPOSE:
 ;  Puts snapshot windows in convenient, non-overlapping locations, 
-;  depending on display hardware.
+;  depending on display hardware.  These layouts are only recognized
+;  by the SWEA snapshot routines.  This routine has no effect unless
+;  a non-zero layout is specified, and you can only do that by calling
+;  this routine.  It is perfectly safe to simply ignore the existence 
+;  of this routine.  It is admittedly only useful to the author.
 ;
 ;USAGE:
 ;  swe_snap_layout, layout
@@ -16,14 +20,13 @@
 ;                        3 --> Macbook 1440x900 with ViewSonic 1680x1050 (above)
 ;                        4 --> Macbook 1440x900 with Samsung 1600x900 (left)
 ;                        5 --> Macbook 1440x900 (below) with twin Dell 1920x1200 (left, right)
-;                        6 --> Macbook 1440x900 (below) with Monoprice 2560x1440 (left)
-;                                                            and Dell 1920x1200 (right)
+;                        6 --> Macbook 1440x900 (below) with twin Dell 2560x1440 (left, right)
 ;
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 16:59:37 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21864 $
+; $LastChangedDate: 2016-10-05 12:51:14 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22034 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_snap_layout.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -117,32 +120,41 @@ pro swe_snap_layout, layout
     
     '5'  : begin  ; Macbook 1440x900 with Twin Dell 1920x1200 (left, right)
              snap_index = 5
+             xsize = 1920
+             ysize = 1200
 
-             Dopt = {xsize:800, ysize:600, xpos:1920+100, ypos:640}  ; 3D
-             Sopt = {xsize:450, ysize:600, xpos:1920+1000, ypos:640}
+             Dopt = {xsize:800, ysize:600, xpos:xsize+100, ypos:640}  ; 3D
+             Sopt = {xsize:450, ysize:600, xpos:xsize+1000, ypos:640}
 
-             Popt = {xsize:800, ysize:600, xpos:1920+100, ypos:640}  ; PAD
-             Nopt = {xsize:600, ysize:450, xpos:1920+1000, ypos:640}
+             Popt = {xsize:800, ysize:600, xpos:xsize+100, ypos:640}  ; PAD
+             Nopt = {xsize:600, ysize:450, xpos:xsize+1000, ypos:640}
              Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
-             Fopt = {xsize:400, ysize:600, xpos:1920+1000, ypos:640}
+             Fopt = {xsize:400, ysize:600, xpos:xsize+1000, ypos:640}
 
-             Eopt = {xsize:400, ysize:600, xpos:1920+100, ypos:640}  ; SPEC
-             Hopt = {xsize:200, ysize:545, xpos:1920+600, ypos:640}
+             Eopt = {xsize:400, ysize:600, xpos:xsize+100, ypos:640}  ; SPEC
+             Hopt = {xsize:200, ysize:545, xpos:xsize+600, ypos:640}
            end
     
-    '6'  : begin  ; Macbook 1440x900 with 2560x1440 (left) and 1920x1200 (right)
+    '6'  : begin  ; Macbook 1440x900 with twin Dell 2560x1440 (left, right)
              snap_index = 6
+             xsize = 2560
+             ysize = 1440
 
-             Dopt = {xsize:800, ysize:600, xpos:2560+100, ypos:640}  ; 3D
-             Sopt = {xsize:450, ysize:600, xpos:2560+1000, ypos:640}
+             Dopt = {xsize:800, ysize:600, xpos:xsize+100, ypos:640}  ; 3D
+             Sopt = {xsize:450, ysize:600, xpos:xsize+1000, ypos:640}
 
-             Popt = {xsize:800, ysize:600, xpos:2560+100, ypos:640}  ; PAD
-             Nopt = {xsize:600, ysize:450, xpos:2560+1000, ypos:640}
+             Popt = {xsize:800, ysize:600, xpos:xsize+100, ypos:640}  ; PAD
+             Nopt = {xsize:600, ysize:450, xpos:xsize+1000, ypos:640}
              Copt = {xsize:500, ysize:700, xpos:1000, ypos:-700}
-             Fopt = {xsize:400, ysize:600, xpos:2560+1000, ypos:640}
+             Fopt = {xsize:400, ysize:600, xpos:xsize+1000, ypos:640}
 
-             Eopt = {xsize:400, ysize:600, xpos:2560+100, ypos:640}  ; SPEC
-             Hopt = {xsize:200, ysize:545, xpos:2560+600, ypos:640}
+             Eopt = {xsize:400, ysize:600, xpos:xsize+100, ypos:640}  ; SPEC
+             Hopt = {xsize:200, ysize:545, xpos:xsize+600, ypos:640}
+
+             Oopt  = {xsize:322,  ysize:868, xpos:xsize+100, ypos:10}   ; MVN_ORB_TPLT
+             OCopt = {xsize:600,  ysize:350, xpos:xsize+750, ypos:80}
+             Mopt  = {xsize:757,  ysize:409, xpos:xsize+683, ypos:470}
+             MMopt = {xsize:1082, ysize:572, xpos:xsize+357, ypos:310}
              
              tplot_options,'charsize',1.5  ; larger characters for 2560x1440 display
            end

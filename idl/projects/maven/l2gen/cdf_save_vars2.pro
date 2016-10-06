@@ -35,8 +35,8 @@
 ;and if you are using Solaris you need to be in 32-bit mode NOT 64-bit
 ;(ie, idl -32)
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2014-12-01 19:48:20 -0800 (Mon, 01 Dec 2014) $
-; $LastChangedRevision: 16330 $
+; $LastChangedDate: 2016-10-05 16:07:18 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22049 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/cdf_save_vars2.pro $
 ;-
 
@@ -166,7 +166,6 @@ function cdf_save_vars2, cdf_structure, new_cdf_name, set_compression=set_compre
 ;add variable data
 ;-----------------
      print,i
-		
      if (ptr_valid(cdf_structure.vars[i].dataptr)) then begin
         vd=*cdf_structure.vars[i].dataptr
         if (recvary eq 'rec_vary') then begin

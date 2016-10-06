@@ -37,9 +37,9 @@
 ;                 data without affecting the cron job)
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen, 17-Apr-2014, jmm
-; $LastChangedBy: muser $
-; $LastChangedDate: 2016-07-20 15:49:16 -0700 (Wed, 20 Jul 2016) $
-; $LastChangedRevision: 21501 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-10-05 16:07:18 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22049 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_swe_l2gen.pro $
 ;-
 Pro mvn_call_swe_l2gen, time_in = time_in, $
@@ -55,12 +55,27 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
   common temp_call_swe_l2gen, load_position
   set_plot, 'z'
   load_position = 'init'
-  catch, error_status
   
+  einit = 0
+  catch, error_status
+
   if error_status ne 0 then begin
      print, '%MVN_CALL_SWE_L2GEN: Got Error Message'
      help, /last_message, output = err_msg
      For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
+;Open a file print out the error message, only once
+     If(einit Eq 0) Then Begin
+        einit = 1
+        openw, eunit, '/tmp/swe_l2_err_msg.txt', /get_lun
+        For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
+        If(keyword_set(timei)) Then Begin
+           printf, eunit, timei
+        Endif Else printf, eunit, 'Date unavailable'
+        free_lun, eunit
+;mail it to jimm@ssl.berkeley.edu
+        cmd_rq = 'mailx -s "Problem with SWE L2 process" jimm@ssl.berkeley.edu < /tmp/swe_l2_err_msg.txt'
+        spawn, cmd_rq
+     Endif
      case load_position of
         'init':begin
            print, 'Problem with initialization'

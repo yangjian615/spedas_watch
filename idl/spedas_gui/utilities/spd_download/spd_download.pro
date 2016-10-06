@@ -69,6 +69,8 @@
 ;
 ;    file_mode:  Bit mask specifying permissions for new files (see file_chmod)
 ;    dir_mode:  Bit mask specifying permissions for new directories (see file_chmod)
+;    
+;    no_wildcards: assume no wild cards in the requested url/filename
 ;
 ;  IDLnetURL Properties
 ;  ---------------------
@@ -107,9 +109,9 @@
 ;     ignore_filedate, archive_ext, archive_dir, min_age_limit
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-01-28 18:23:21 -0800 (Thu, 28 Jan 2016) $
-;$LastChangedRevision: 19833 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-05 09:16:42 -0700 (Wed, 05 Oct 2016) $
+;$LastChangedRevision: 22029 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download.pro $
 ;
 ;-
@@ -141,7 +143,7 @@ function spd_download, $
               no_clobber = no_clobber, $    
               valid_only = valid_only, $
 
-
+              no_wildcards = no_wildcards, $
 
               _extra=_extra
 
@@ -210,7 +212,7 @@ if array_equal(url,'') then begin
 endif
 
 ;if wildcards are used then contact the server(s) and expand list to include all matches
-if ~keyword_set(no_download) then begin
+if ~keyword_set(no_download) and ~keyword_set(no_wildcards) then begin
 
   spd_download_expand, url, last_version=last_version
   

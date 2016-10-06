@@ -15,6 +15,8 @@ endif
 
 setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 
+setenv CDF_TMP /mydisks/home/maven
+
 #check for lock file here
 if (! -e /tmp/SWEL2lock.txt) then
     cd /mydisks/home/maven

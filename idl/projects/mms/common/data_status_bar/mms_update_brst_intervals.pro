@@ -16,8 +16,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-29 15:34:45 -0700 (Wed, 29 Jun 2016) $
-; $LastChangedRevision: 21402 $
+; $LastChangedDate: 2016-10-05 09:27:55 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22030 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_update_brst_intervals.pro $
 ;-
 
@@ -25,9 +25,9 @@ pro mms_update_brst_intervals
 
   mms_init
 
-  brst_file = spd_download(remote_file='https://lasp.colorado.edu/mms/sdc/public/service/latis/mms_burst_data_segment.csv', $
-    local_file=!mms.local_data_dir+'mms_burst_data_segment.csv', $
-    SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0) ; these keywords ignore certificate warnings
+  ; grab ~6 months of burst intervals at a time
+  start_interval = '2015-03-01'
+  end_interval = time_double(start_interval) + 6.*30*24*60*60
 
   brst_seg_temp = { VERSION: 1.0000000, $
     DATASTART: 1, $
@@ -43,16 +43,31 @@ pro mms_update_brst_intervals
     FIELDLOCATIONS: [0, 4, 16, 28, 44, 50, 53, 56, 75, 78, 93, 114, 135], $
     FIELDGROUPS: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]  $
   }
-  brst_data = read_ascii(brst_file, template=brst_seg_temp, count=num_items)
+  
+  while time_double(start_interval) le time_double(systime(/seconds)) do begin
+    start_str = time_string(start_interval, tformat='DD-MTH-YYYY')
+    end_str = time_string(end_interval, tformat='DD-MTH-YYYY')
+    remote_path = 'https://lasp.colorado.edu/mms/sdc/public/service/latis/'
+    remote_file = 'mms_burst_data_segment.csv?FINISHTIME>'+start_str+'&FINISHTIME<'+end_str
+    
+    brst_file = spd_download(remote_path=remote_path, remote_file=remote_file, $
+      local_file=!mms.local_data_dir+'mms_burst_data_segment.csv', /no_wildcards, $
+      SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0) ; these keywords ignore certificate warnings
 
-  complete_idxs = where(brst_data.status eq 'COMPLETE+FINISHED', c_count)
-  if c_count ne 0 then begin
-    tai_start = brst_data.TAISTARTTIME[complete_idxs]
-    tai_end = brst_data.TAIENDTIME[complete_idxs]
+    brst_data = read_ascii(brst_file, template=brst_seg_temp, count=num_items)
+  
+    complete_idxs = where(brst_data.status eq 'COMPLETE+FINISHED', c_count)
+    if c_count ne 0 then begin
+      tai_start = brst_data.TAISTARTTIME[complete_idxs]
+      tai_end = brst_data.TAIENDTIME[complete_idxs]
+  
+      append_array, unix_start, mms_tai2unix(tai_start)
+      append_array, unix_end, mms_tai2unix(tai_end)
+    endif
 
-    unix_start = mms_tai2unix(tai_start)
-    unix_end = mms_tai2unix(tai_end)
-  endif
+    start_interval = end_interval
+    end_interval = time_double(start_interval) + 6.*30*24*60*60
+  endwhile
 
   brst_intervals = {start_times: unix_start, end_times: unix_end}
   save, brst_intervals, filename=!mms.local_data_dir + '/mms_brst_intervals.sav'

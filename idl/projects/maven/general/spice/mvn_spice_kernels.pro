@@ -20,9 +20,9 @@
 ;PLEASE DO NOT USE this routine within general "LOAD" routines using the LOAD keyword. "LOAD" routines should assume that SPICE kernels are already loaded.
 ; 
 ;Author: Davin Larson  - January 2014
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-08-12 09:12:48 -0700 (Fri, 12 Aug 2016) $
-; $LastChangedRevision: 21638 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-10-05 12:41:07 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22033 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear  $
@@ -187,6 +187,15 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
   ;    retrievetime = ct
   ;   kernels = file_search(kernels)
   ;endif
+
+; Is the following code needed?  It converts linux forward slashes to windows backslashes.
+;
+;  if (strupcase(!version.os_family) eq 'WINDOWS') then begin
+;    nker = n_elements(kernels)
+;    for i=0,(nker-1) do $
+;      kernels[i] = strjoin(strsplit(kernels[i], '/', /regex, /extract, /preserve_null), '\')
+;  endif
+
   if keyword_set(clear) then cspice_kclear
   if keyword_set(load) then    spice_kernel_load,kernels
 

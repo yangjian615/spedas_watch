@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:01:48 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21867 $
+; $LastChangedDate: 2016-10-05 12:53:03 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22037 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -38,12 +38,22 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
   @mvn_swe_com
   @swe_snap_common
 
+  if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
+
   if not keyword_set(units) then units = 'rate'
   if keyword_set(archive) then aflg = 1 else aflg = 0
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   
+  if keyword_set(ddd) then doddd = 1 else doddd = 0
+  if keyword_set(pad) then dopad = 1 else dopad = 0
   if keyword_set(spec) then begin
     if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec
+    dospec = 1
+  endif dospec = 0
+  
+  if ((doddd + dopad + dospec) eq 0) then begin
+    print,"You must set a data type keyword: DDD, PAD, SPEC"
+    return
   endif
 
 ; Put up snapshot window
@@ -81,7 +91,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
  
     wset, Cwin
 
-    if keyword_set(ddd) then begin
+    if (doddd) then begin
       dat = mvn_swe_get3d(trange[0],archive=aflg)
 
       if (size(dat,/type) eq 8) then begin
@@ -121,7 +131,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
       endif
     endif
     
-    if keyword_set(pad) then begin
+    if (dopad) then begin
       dat = mvn_swe_getpad(trange[0],archive=aflg)
 
       if (size(dat,/type) eq 8) then begin
@@ -160,7 +170,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
       endif
     endif
     
-    if keyword_set(spec) then begin
+    if (dospec) then begin
       dat = mvn_swe_getspec(trange[0],archive=aflg)
 
       if (size(dat,/type) eq 8) then begin

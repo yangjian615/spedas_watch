@@ -56,17 +56,22 @@
 ;
 ;   EPH:       Named variable to hold ephemeris data.
 ;
+;   LOADONLY:  Create tplot variables, but don't plot.
+;
+;   PANS:      Array of tplot variables created.
+;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 09:00:26 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21719 $
+; $LastChangedDate: 2016-10-05 12:53:53 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22039 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
 pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
-                     sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2, min_pad_eflux=min_pad_eflux
+                     sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2, min_pad_eflux=min_pad_eflux, $
+                     loadonly=loadonly, pans=pans
 
   compile_opt idl2
 
@@ -237,8 +242,10 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   pans = ram_pan + ' ' + sun_pan + ' ' + alt_pan + ' ' + euv_pan + ' ' + $
          swi_pan + ' ' + sta_pan + ' ' + mag_pan + ' ' + sep_pan + ' ' + $
          lpw_pan + ' ' + pad_pan + ' ' + pot_pan + ' ' + engy_pan
+
+  pans = str_sep(pans,' ')
   
-  tplot, pans
+  if not keyword_set(loadonly) then tplot, pans
 
   return
 

@@ -19,15 +19,16 @@
 ;       BURST:         Synonym for ARCHIVE.
 ;
 ;       ALL:           Get all 3D spectra bounded by the earliest and latest times in
-;                      the input time array.
+;                      the input time array.  If no time array is specified, then get
+;                      all available spectra from the currently loaded data.
 ;
 ;       SUM:           If set, then sum all 3D's selected.
 ;
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:09:19 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21875 $
+; $LastChangedDate: 2016-10-05 13:04:59 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22041 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -38,8 +39,10 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
   @mvn_swe_com
 
   if (size(time,/type) eq 0) then begin
-    print,"You must specify a time."
-    return, 0
+    if not keyword_set(all) then begin
+      print,"You must specify a time."
+      return, 0
+    endif else time = swe_3d.time
   endif
 
   time = time_double(time)
@@ -230,8 +233,9 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
 
     egf = swe_gf[*,*,g]   ; energy-dependent term (when V0 is non-zero)
     dgf = swe_dgf[*,*,g]  ; elevation-dependent term
+    ogf = swe_ogf         ; corrections for individual solid angle bins
 
-    for i=0,95 do ddd[n].gf[*,i] = egf[*,(i mod 16)] * dgf[*,(i/16)]
+    for i=0,95 do ddd[n].gf[*,i] = egf[*,(i mod 16)] * dgf[*,(i/16)] * ogf[i]
 
 ; Electron suppression correction
 

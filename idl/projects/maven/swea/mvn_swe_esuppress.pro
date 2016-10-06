@@ -6,24 +6,30 @@
 ;  alternates between table 5 (V0 disabled) and table 6 (V0 enabled) several
 ;  times.
 ;
-;  The suppression is thought to result from the effects of atomic oxygen on
-;  SWEA internal surfaces, which are coated with copper black (Cu2S).  The 
-;  situation is hypothesized to be a slightly different work function near the
-;  entrance aperture (top cap and entrance to concentric hemispheres) compared 
-;  with the hemispheres closer to the MCP.  This is modeled as two ESA's in 
-;  series that have different analyzer constants.  The functional form of the
-;  correction factor is then an exponential:
+;  Empirically, the energy dependence of the suppression behaves as if there
+;  is a slightly different work function near the entrance aperture (top cap 
+;  and entrance to concentric hemispheres) compared with the hemispheres closer 
+;  to the MCP.  This is modeled as two ESA's in series that have different 
+;  analyzer constants.  The functional form of the correction factor is then an 
+;  exponential:
 ;
 ;      correction factor = exp(-(Ke/E_in)^2.)
 ;
 ;  where E_in is the energy of the electron interior to the toroidal grids.
 ;  When Ke = 0, the correction factor is unity.  Otherwise, there is a steep 
-;  falloff for E_in <~ Ke.
+;  drop in sensitivity for E_in <~ Ke.
 ;
-;  Note that SWEA uses Cu2S while STATIC uses CuO (which is commonly known by 
-;  the trade name "Ebonol C").  These materials should be affected differently 
-;  by exposure to atomic oxygen, thus the SWEA electron suppression and the
-;  STATIC ion suppression need not have the same behavior.
+;  This is the same functional form as observed for STATIC ion suppression.
+;  For STATIC, there is a clear time dependence over the mission and a 
+;  directionality (mainly in RAM) that points to the influence of atomic O
+;  on internal STATIC surfaces, which are coated with CuO (commonly known by
+;  the trade name "Ebonol C").  The hypothesis is that atomic oxygen is 
+;  altering the work function of CuO near the aperture.
+;
+;  However, SWEA internal surfaces are coated with Cu2S instead of CuO, and 
+;  there is no clear variation of the electron suppression with time.  This
+;  suggests that exposure to atomic O does not affect SWEA significantly, and
+;  consequently that the suppression has been present since launch.
 ;
 ;USAGE:
 ;  Ke = mvn_swe_esuppress(time)
@@ -57,8 +63,8 @@
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:14:51 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21881 $
+; $LastChangedDate: 2016-10-05 13:56:19 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22045 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_esuppress.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2016-09-13
@@ -74,7 +80,7 @@ function mvn_swe_esuppress, time, on=on, off=off, set=set, extrapolate=extrapola
 
   if (size(setflg,/type) eq 0) then begin
     setflg = 0
-    setval = 0
+    setval = 0.
     domsg = 1
     doext = 1
     a = [2.9037D, -2.3956d-4]
@@ -97,10 +103,10 @@ function mvn_swe_esuppress, time, on=on, off=off, set=set, extrapolate=extrapola
   endif
 
   if (size(set,/type) ne 0) then begin
+    swe_es_switch = 1
     if (set gt 0) then begin
       setflg = 1
       setval = float(set)
-      swe_es_switch = 1
       print,"Using fixed suppression constant: ",setval
     endif else begin
       setflg = 0

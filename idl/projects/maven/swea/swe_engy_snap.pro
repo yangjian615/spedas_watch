@@ -109,8 +109,8 @@
 ;       POPEN:         Set this to the name of a postscript file for output.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:01:13 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21866 $
+; $LastChangedDate: 2016-10-05 12:52:35 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22036 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -131,6 +131,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   c1 = (mass/(2D*!dpi))^1.5
   c2 = (2d5/(mass*mass))
   c3 = 4D*!dpi*1d-5*sqrt(mass/2D)  ; assume isotropic electron distribution
+
+  if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
 
   if not keyword_set(archive) then aflg = 0 else aflg = 1
   if keyword_set(burst) then aflg = 1
@@ -258,8 +260,6 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 ; Put up snapshot window(s)
 
   Twin = !d.window
-
-  if (size(Dopt,/type) ne 8) then swe_snap_layout, 0
 
   window, /free, xsize=Eopt.xsize, ysize=Eopt.ysize, xpos=Eopt.xpos, ypos=Eopt.ypos
   Ewin = !d.window
@@ -473,7 +473,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       oplot, bck.energy, bck.data, line=2, color=4
     endif
 
-    if (dopot and not spflg) then oplot,[pot,pot],yrange,line=2,color=6
+    if (dopot) then begin
+      apot = abs(pot)
+      if (spflg) then oplot,[apot,apot],yrange,line=2,color=4 $
+                 else oplot,[apot,apot],yrange,line=2,color=6
+    endif
     
     if (dopep) then begin
       oplot,[23.,23.],yrange,line=2,color=1
@@ -591,7 +595,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       ys -= dys
       xyouts,xs,ys,string(p.T,format='("T = ",f5.2)'),color=col,charsize=csize1,/norm
       ys -= dys
-      xyouts,xs,ys,string(p.pot,format='("V = ",f5.2)'),color=6,charsize=csize1,/norm
+      xyouts,xs,ys,string(p.pot,format='("V = ",f5.2)'),color=col,charsize=csize1,/norm
       ys -= dys
       if (kap) then begin
         xyouts,xs,ys,string(p.k_n,format='("Nh = ",f5.2)'),color=3,charsize=csize1,/norm
@@ -669,12 +673,12 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       ys -= dys
       xyouts,xs,ys,string(temp,format='("T = ",f6.2)'),color=1,charsize=csize1,/norm
       ys -= dys
-      xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
+      xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=col,charsize=csize1,/norm
       ys -= dys
     endif
     
     if (~mb and ~mom) then begin
-      xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
+      xyouts,xs,ys,string(pot,format='("V = ",f6.2)'),color=col,charsize=csize1,/norm
       ys -= dys
     endif
     
@@ -763,7 +767,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         for j=0,(ncross-1) do oplot,[px[indx[j]],px[indx[j]]],ylim,color=2
 
         if (k gt 0) then begin
-          xyouts,xs,ys,string(px[k],format='("V = ",f6.2)'),color=6,charsize=csize1,/norm
+          xyouts,xs,ys,string(px[k],format='("V = ",f6.2)'),color=col,charsize=csize1,/norm
           ys -= dys
           oplot,[px[k],px[k]],ylim,color=6,line=2
         endif

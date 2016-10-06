@@ -1,10 +1,10 @@
 FUNCTION eva_data_load_mms_jtot, sc=sc,curlB=curlB,diffB=diffB,combB=combB, LOADED_4FGM=LOADED_4FGM
   
   if LOADED_4FGM eq 0 then begin
-    eva_data_load_mms_dfg, sc='mms1'
-    eva_data_load_mms_dfg, sc='mms2'
-    eva_data_load_mms_dfg, sc='mms3'
-    eva_data_load_mms_dfg, sc='mms4'
+    eva_data_load_mms_fgm, sc='mms1'
+    eva_data_load_mms_fgm, sc='mms2'
+    eva_data_load_mms_fgm, sc='mms3'
+    eva_data_load_mms_fgm, sc='mms4'
     LOADED_4FGM = 1L
   endif
   

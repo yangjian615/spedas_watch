@@ -19,7 +19,8 @@
 ;       BURST:         Synonym for ARCHIVE.
 ;
 ;       ALL:           Get all PAD spectra bounded by the earliest and latest times in
-;                      the input time array.
+;                      the input time array.  If no time array is specified, then get
+;                      all PAD spectra from the currently loaded data.
 ;
 ;       SUM:           If set, then sum all PAD's selected.
 ;
@@ -27,8 +28,8 @@
 ;                      Default = 'eflux'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:09:04 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21874 $
+; $LastChangedDate: 2016-10-05 13:04:30 -0700 (Wed, 05 Oct 2016) $
+; $LastChangedRevision: 22040 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -39,8 +40,10 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
   @mvn_swe_com
 
   if (size(time,/type) eq 0) then begin
-    print,"You must specify a time."
-    return, 0
+    if not keyword_set(all) then begin
+      print,"You must specify a time."
+      return, 0
+    endif else time = swe_a2.time
   endif
   
   time = time_double(time)
@@ -49,6 +52,8 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
   if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
   if (size(units,/type) ne 7) then units = 'eflux'
   if keyword_set(burst) then archive = 1
+  
+  ogf = replicate(1.,64) # swe_ogf  ; corrections for individual solid angle bins
 
 ;---------------------------------------------------------------------------------
 ; First attempt to get extract PAD(s) from L2 data
@@ -294,9 +299,10 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     pad[n].denergy[63,*] = abs(energy[62,*] - energy[63,*])
 
 ; Geometric factor.  When using V0, the geometric factor is a function of
-; energy.  There is also variation in azimuth and elevation.
+; energy.  There is also variation in azimuth and elevation.  The ogf term
+; corrects for partial blockage of some solid angle bins by the spacecraft.
 
-    pad[n].gf = swe_gf[*,iaz,pkt.group] * swe_dgf[*,jel,pkt.group]
+    pad[n].gf = swe_gf[*,iaz,pkt.group] * swe_dgf[*,jel,pkt.group] * ogf[*,k3d]
 
 ; Electron suppression correction
 
