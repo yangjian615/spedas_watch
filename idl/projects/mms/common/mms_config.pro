@@ -28,9 +28,9 @@
 ;HISTORY:
 ; 2015-04-10, moka, Created based on 'thm_config'
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2016-05-17 14:43:44 -0700 (Tue, 17 May 2016) $
-; $LastChangedRevision: 21099 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-06 12:31:28 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22054 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config.pro $
 ;
 ;-
@@ -86,7 +86,7 @@ PRO mms_config, no_color_setup=no_color_setup, colortable=colortable
   ;
   ; Do not do color setup if taken care for already
   if not keyword_set(no_color_setup) then begin
-    thm_graphics_config,colortable=colortable
+    spd_graphics_config,colortable=colortable
   endif ; no_color_setup
   
   ;===========  DEBUGGING OPTIONS

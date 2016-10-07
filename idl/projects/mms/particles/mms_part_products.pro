@@ -103,8 +103,9 @@
 ;  -See warning above in purpose description!
 ;
 ;
-;$LastChangedDate: 2016-09-30 18:00:42 -0700 (Fri, 30 Sep 2016) $
-;$LastChangedRevision: 21992 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-06 09:35:27 -0700 (Thu, 06 Oct 2016) $
+;$LastChangedRevision: 22050 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $

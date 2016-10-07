@@ -350,7 +350,7 @@ for w=a,b do begin
   timespan, date, duration
 
 ;--------------------------
-  if(keyword_set(plot_dir)) then pdir = thm_addslash(plot_dir) else pdir = './'
+  if(keyword_set(plot_dir)) then pdir = spd_addslash(plot_dir) else pdir = './'
 
   if w eq 0 then begin
 

@@ -2,8 +2,8 @@
 ; flag = 1 if inadequate spacecraft availability for the curlometer.
 ; 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-09-19 09:20:10 -0700 (Mon, 19 Sep 2016) $
-;  $LastChangedRevision: 21854 $
+;  $LastChangedDate: 2016-10-06 16:27:33 -0700 (Thu, 06 Oct 2016) $
+;  $LastChangedRevision: 22060 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_curl_b.pro $
 
 
@@ -168,7 +168,7 @@ FOR j=0, 3 DO BEGIN
     Pname = 'mms' + strcompress(string(j+1), /REMOVE_ALL) + '_ql_pos_gse'
 
   ; GET DATA
-  IF thm_check_tvar(Pname) then BEGIN
+  IF spd_check_tvar(Pname) then BEGIN
     get_data, Pname, data=mms_pos
     ; EXTRACT POSITION DATA
     Pos(j).X  = interpol(mms_pos.y(*,0), mms_pos.X, t, /spline)

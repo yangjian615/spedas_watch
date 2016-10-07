@@ -64,9 +64,9 @@
 ;               1. Added dsc-to-fac transformation.
 ;
 ; VERSION:
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2013-03-20 13:46:28 -0700 (Wed, 20 Mar 2013) $
-; $LastChangedRevision: 11849 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-06 16:51:43 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22061 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_cotrans.pro $
 ;
 ;-
@@ -143,7 +143,7 @@ case type of
       cotrans, from_tvar, to_tvar, /gse2gsm
     end
   'gse2dsc': begin 
-      if ~thm_check_tvar(mat_dsc) then begin
+      if ~spd_check_tvar(mat_dsc) then begin
         dprint, 'ERROR: ' + $
           'The rotation matrix between GSE and DSC is not available.'
         return
@@ -152,7 +152,7 @@ case type of
       tvector_rotate, mat_dsc, from_tvar, /invert, newname = to_tvar
     end
   'dsc2gse': begin 
-      if ~thm_check_tvar(mat_dsc) then begin
+      if ~spd_check_tvar(mat_dsc) then begin
         dprint, 'ERROR: ' + $
           'The rotation matrix between GSE and DSC is not available.'
         return
@@ -162,7 +162,7 @@ case type of
     end
   'dsc2mgse': begin 
       ; dsc to gse, and construct wgse for rbsp_gse2mgse
-      if ~thm_check_tvar(mat_dsc) then begin
+      if ~spd_check_tvar(mat_dsc) then begin
         dprint, 'ERROR: ' + $
           'The rotation matrix between GSE and DSC is not available.'
         return
@@ -187,7 +187,7 @@ case type of
     end
   'gse2mgse': begin 
       ; dsc to gse, and construct wgse for rbsp_gse2mgse
-      if ~thm_check_tvar(mat_dsc) then begin
+      if ~spd_check_tvar(mat_dsc) then begin
         dprint, 'ERROR: ' + $
           'The rotation matrix between GSE and DSC is not available.'
         return
@@ -209,7 +209,7 @@ case type of
       rbsp_gse2mgse, from_tvar, wgse,newname = to_tvar
     end
   'dsc2gsm': begin 
-      if ~thm_check_tvar(mat_dsc) then begin
+      if ~spd_check_tvar(mat_dsc) then begin
         dprint, 'ERROR: ' + $
           'The rotation matrix between GSE and DSC is not available.'
         return
@@ -223,7 +223,7 @@ case type of
       cotrans, from_tvar, to_tvar, /gsm2gse
     end
   'gsm2dsc': begin 
-      if ~thm_check_tvar(mat_dsc) then begin
+      if ~spd_check_tvar(mat_dsc) then begin
         dprint, 'ERROR: ' + $
           'The rotation matrix between GSE and DSC is not available.'
         return
@@ -234,7 +234,7 @@ case type of
       store_data, tmpname, /del
     end
   'dsc2fac': begin 
-      if ~thm_check_tvar(tmag) then begin
+      if ~spd_check_tvar(tmag) then begin
         dprint, 'ERROR: ' + $
           'Background magnetic field not available. Abort.'
         return

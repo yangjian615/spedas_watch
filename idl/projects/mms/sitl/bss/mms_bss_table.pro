@@ -36,8 +36,8 @@
 ; CREATED BY: Mitsuo Oka  Aug 2015
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-09-02 14:44:25 -0700 (Fri, 02 Sep 2016) $
-; $LastChangedRevision: 21795 $
+; $LastChangedDate: 2016-10-06 15:43:35 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22058 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_table.pro $
 ;-
 PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
@@ -49,7 +49,7 @@ PRO mms_bss_table, bss=bss, trange=trange, bad=bad, overwritten=overwritten, $
   if n_elements(console) eq 0 then console = 1
   if n_elements(json) eq 0 then json = 0
   if undefined(dir) then dir = '/Volumes/moka/public_html/eva/'
-  dir = thm_addslash(dir)
+  dir = spd_addslash(dir)
   
   ;----------------
   ; CATCH

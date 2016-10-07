@@ -30,9 +30,9 @@
 ;           directories, if they are not there
 ;           cg, 2008-5-6, reset default default directory
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2014-02-07 08:12:17 -0800 (Fri, 07 Feb 2014) $
-; $LastChangedRevision: 14191 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-06 12:31:28 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22054 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_config.pro $
 ;
 ;-
@@ -125,7 +125,7 @@ if keyword_set(no_download) then !themis.no_download=1
 ; Do not do color setup if taken care for already
 if not keyword_set(no_color_setup) then begin
 
-  thm_graphics_config,colortable=colortable
+  spd_graphics_config,colortable=colortable
   
 endif	; no_color_setup
 

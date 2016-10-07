@@ -49,9 +49,9 @@
 ;
 ;
 ; VERSION:
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2013-03-20 13:46:27 -0700 (Wed, 20 Mar 2013) $
-; $LastChangedRevision: 11848 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-06 16:51:43 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22061 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_interp_spin_phase.pro $
 ;
 ;-
@@ -112,7 +112,7 @@ if n_elements(umbra_pad) eq 0 then umbra_pad = [-20d, 20d] * 60d ; 20 min
 
 ; Check existence of spin period.
 if n_elements(tper) eq 0 then tper = rbx + 'spinper'
-if ~thm_check_tvar(tper) then begin
+if ~spd_check_tvar(tper) then begin
   dprint, 'Spin period data not available. Abort.'
   return, -1
 endif
@@ -128,7 +128,7 @@ endif
 
 ; Check existence of spin phase.
 if n_elements(tphase) eq 0 then tphase = rbx + 'spinphase'
-if ~thm_check_tvar(tphase) then begin
+if ~spd_check_tvar(tphase) then begin
   dprint, 'Spin phase data not available. Abort.'
   return, -1
 endif
@@ -194,7 +194,7 @@ endif
 ; Check existence of eclipse times.
 if n_elements(tumbra_sta) eq 0 then tumbra_sta = rbx + 'umbra_sta'
 if n_elements(tumbra_end) eq 0 then tumbra_end = rbx + 'umbra_end'
-if ~thm_check_tvar(tumbra_sta) or ~thm_check_tvar(tumbra_end) then begin
+if ~spd_check_tvar(tumbra_sta) or ~spd_check_tvar(tumbra_end) then begin
 ;   dprint, 'Eclipse times not available. Abort.'
 ;   return, -1
   seg_tr = dblarr(5, 2)

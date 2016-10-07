@@ -31,8 +31,8 @@
 ;   match what's at the SDC right now)
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-28 15:23:52 -0700 (Wed, 28 Sep 2016) $
-; $LastChangedRevision: 21973 $
+; $LastChangedDate: 2016-10-06 14:25:57 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22056 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_fpi_crib_qlplots_v3.pro $
 ;-
 
@@ -217,7 +217,7 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     tdegap, electron_espec_omni, /overwrite
     panels=['mms_bss_burst', 'mms_bss_fast', obsstr+'des_errorflags_'+data_rate+'_moms_flagbars', $
             prefix+'_fgm_dmpa_srvy_clipped', electron_espec, electron_espec_omni]
-    window_caption="MMS FPI Electron energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
+    window_caption="MMS FPI Electron energy spectra: Counts summed over sensor look directions +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
     ;tplot_options,'title', window_caption
     tplot, panels, window=iw, var_label=position_vars, title=window_caption
@@ -240,7 +240,7 @@ FOR i=0,n_elements(probes)-1 DO BEGIN    ;step through the observatories
     
     panels=['mms_bss_burst', 'mms_bss_fast', obsstr+'dis_errorflags_'+data_rate+'_moms_flagbars', $
              prefix+'_fgm_dmpa_srvy_clipped',ion_espec, ion_espec_omni]
-    window_caption="MMS FPI Ion energy spectra:  Counts, summed over DSC velocity-dirs +/- X, Y, & Z"
+    window_caption="MMS FPI Ion energy spectra: Counts summed over sensor look directions +/- X, Y, & Z"
     if ~postscript then window, iw, xsize=width, ysize=height
 ;    tplot_options,'title', window_caption
     tplot, panels, window=iw, var_label=position_vars, title=window_caption

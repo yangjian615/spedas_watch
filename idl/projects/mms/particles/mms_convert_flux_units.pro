@@ -22,9 +22,9 @@
 ;  output: Set to named variable that will hold converted structure  
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21101 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-06 11:43:44 -0700 (Thu, 06 Oct 2016) $
+;$LastChangedRevision: 22051 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_convert_flux_units.pro $
 ;-
 pro mms_convert_flux_units,dist,units=units,output=output
@@ -66,7 +66,7 @@ endcase
 ;scaling factor between df and flux units
 flux_to_df = A^2 * 0.5447d * 1d6
 
-;convert between km and cm for df
+;convert between km^6 and cm^6 for df
 cm_to_km = 1d30
 
 ;calculation will be kept simple and stable as possible by 

@@ -60,7 +60,7 @@ if ~keyword_set(exists) || keyword_set(reset) then begin
         barrel_write_config
     endelse
     printdat,/values,!barrel,varname='!barrel'
-    thm_graphics_config
+    spd_graphics_config
 endif
 
 RETURN

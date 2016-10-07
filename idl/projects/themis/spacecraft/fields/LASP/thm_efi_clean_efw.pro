@@ -121,7 +121,7 @@ if n_elements(SpikeRemove) EQ 0 then SpikeRemove = 1      ; REMOVE_SPIKES
 
 ; CHECK FOR EFW DATA
 if not keyword_set(Ename) then Ename = 'th' + sc + '_efw'
-IF thm_check_tvar(Ename) then BEGIN
+IF spd_check_tvar(Ename) then BEGIN
   get_data, ename[0], data=E, dlim=elim
   if ~strcmp(elim.data_att.coord_sys, 'dsl', /fold) then begin
     print, 'THM_EFI_CLEAN_EFW: ' + ename[0] + ' is not in DSL. Exiting...'
@@ -143,7 +143,7 @@ ENDELSE
 
 ; CHECK FOR MAG DATA
 if not keyword_set(Bdslname) then Bdslname = 'th' + sc + '_fgh_dsl'
-IF thm_check_tvar(Bdslname) then BEGIN
+IF spd_check_tvar(Bdslname) then BEGIN
   get_data, Bdslname[0], data=Bdsl, dlim=blim
 ENDIF ELSE BEGIN
   print, 'THM_EFI_CLEAN_EFP: Mag data not stored in dsl. Fetching...'
@@ -161,7 +161,7 @@ Bdsl = {x:Bdsl.x, y:Bdsl.y}
 
 ; CHECK FOR SPIN DATA
 SpinName = 'th' + sc + '_state_spinper'
-IF thm_check_tvar(Spinname) then BEGIN
+IF spd_check_tvar(Spinname) then BEGIN
  get_data, SpinName, data=SpinPer
 ENDIF ELSE BEGIN
   thm_load_state, probe=sc, datatype='spinper'
@@ -176,7 +176,7 @@ ENDELSE
 ; GET EFP DATA FOR SPIKE FINDER
 IF keyword_set(SpikeRemove) then BEGIN
   if not keyword_set(EfpName) then EfpName = 'th' + sc + '_efp'
-  IF thm_check_tvar(EfpName) then BEGIN
+  IF spd_check_tvar(EfpName) then BEGIN
     get_data, EfpName[0], data=Efp, dlim = tmpdlim
     if ~strcmp(tmpdlim.data_att.coord_sys, 'dsl', /fold) then begin
       print, 'THM_EFI_CLEAN_EFW: ' + Efpname[0] + ' is not in DSL. Exiting...'

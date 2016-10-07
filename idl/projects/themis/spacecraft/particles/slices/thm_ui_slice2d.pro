@@ -1725,9 +1725,9 @@ end ;----------------------------------------------------
 ;    thm_crib_part_slice2d.pro
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-08-23 17:20:55 -0700 (Tue, 23 Aug 2016) $
-;$LastChangedRevision: 21700 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-06 12:31:28 -0700 (Thu, 06 Oct 2016) $
+;$LastChangedRevision: 22054 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/slices/thm_ui_slice2d.pro $
 ;
 ;-
@@ -1751,7 +1751,7 @@ endelse
 
 ;Ensure color table properly set
 thm_init
-thm_graphics_config
+spd_graphics_config
 
 ;Bases
 ;-----

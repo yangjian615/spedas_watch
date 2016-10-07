@@ -1,5 +1,5 @@
 ;+
-;  PRO thm_graphics_config
+;  PRO spd_graphics_config
 ;
 ;  This routine does just the graphics configuration for themis.  It can be called from routines that
 ;  need to have a guaranteed graphics configuration without forcing the rest of the themis initialization
@@ -9,14 +9,14 @@
 ;  Keywords:
 ;   colortable: overwrite the default colortable initialization
 ;
-; $LastChangedBy: bsadeghi $
-; $LastChangedDate: 2012-02-23 10:05:32 -0800 (Thu, 23 Feb 2012) $
-; $LastChangedRevision: 9834 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_graphics_config.pro $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-06 12:31:28 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22054 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_graphics_config.pro $
 ;
 ;-
 
-pro thm_graphics_config,colortable=colortable
+pro spd_graphics_config,colortable=colortable
 
 
   ;ctable_file = file_retrieve(ctable_relpath, _extra=!themis)

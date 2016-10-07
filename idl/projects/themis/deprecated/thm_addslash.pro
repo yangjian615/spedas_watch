@@ -1,6 +1,9 @@
 ;+
 ;NAME:
 ; thm_addslash
+; 
+;     Deprecated! Please use: spd_addslash
+; 
 ;PURPOSE:
 ; Adds a trailing slash to a string, (usually a directory name) if it
 ; does not already have one. This is used to insure that local and
@@ -15,10 +18,10 @@
 ;HISTORY:
 ; 2012-08-15, jmm, jimm@ssl.berkeley.edu
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2012-08-24 09:57:09 -0700 (Fri, 24 Aug 2012) $
-; $LastChangedRevision: 10856 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_addslash.pro $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-06 15:10:51 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22057 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/thm_addslash.pro $
 ;-
 Function thm_addslash, dir, _extra = _extra
 

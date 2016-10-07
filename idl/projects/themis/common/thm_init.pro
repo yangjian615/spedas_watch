@@ -58,9 +58,9 @@
 ;                  if not there
 ; 2013-02-27, jmm, Added comment to test SVN commit
 ;
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2015-03-24 17:01:08 -0700 (Tue, 24 Mar 2015) $
-;$LastChangedRevision: 17177 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-06 16:54:56 -0700 (Thu, 06 Oct 2016) $
+;$LastChangedRevision: 22062 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_init.pro $
 ;-
 pro thm_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, $
@@ -75,8 +75,8 @@ if keyword_set(reset) then !themis.init=0
 
 if !themis.init ne 0 then begin 
 ;Assure that trailing slashes exist on data directories
-    !themis.local_data_dir = thm_addslash(!themis.local_data_dir)
-    !themis.remote_data_dir = thm_addslash(!themis.remote_data_dir)
+    !themis.local_data_dir = spd_addslash(!themis.local_data_dir)
+    !themis.remote_data_dir = spd_addslash(!themis.remote_data_dir)
     return
 endif
 
@@ -102,11 +102,11 @@ thm_set_verbose             ;propagate verbose setting into tplot_vars
 ; keywords on first call thm_init (or /reset) override environment and
 ; thm_config
 if keyword_set(local_data_dir) then begin ;jmm, 2-jul-2007, add a slash if needed
-    !themis.local_data_dir = thm_addslash(local_data_dir)    
+    !themis.local_data_dir = spd_addslash(local_data_dir)    
 endif
 
 if keyword_set(remote_data_dir) then begin ;jmm, 2-jul-2007, add a slash if needed
-    !themis.remote_data_dir = thm_addslash(remote_data_dir)
+    !themis.remote_data_dir = spd_addslash(remote_data_dir)
 endif
 
 

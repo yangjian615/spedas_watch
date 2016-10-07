@@ -39,7 +39,7 @@ PRO mms_bss_fom, bss=bss, trange=trange, plot=plot, csv=csv, dir=dir
   mms_init
 
   if undefined(plot) then plot=1
-  if undefined(dir) then dir = '' else dir = thm_addslash(dir)
+  if undefined(dir) then dir = '' else dir = spd_addslash(dir)
   if undefined(csv) then csv = 0
 
   ;----------------

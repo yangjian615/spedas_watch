@@ -1,6 +1,8 @@
 ;+
 ; NAME:
 ;     THM_CHECK_TVAR (FUNCTION)
+;     
+;     Deprecated! Please use: spd_check_tvar
 ; 
 ; PURPOSE:
 ;     This routine check whether the given tplot variable TVAR exists in the

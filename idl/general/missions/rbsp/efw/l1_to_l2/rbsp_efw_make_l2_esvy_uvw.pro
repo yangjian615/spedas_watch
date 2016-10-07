@@ -32,9 +32,9 @@
 ;
 ;
 ; VERSION:
-; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2014-06-24 15:23:47 -0700 (Tue, 24 Jun 2014) $
-; $LastChangedRevision: 15428 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-06 16:51:43 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22061 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_esvy_uvw.pro $
 ;
 ;-
@@ -168,7 +168,7 @@ endif
 ; Get l1 data.
 rbsp_load_efw_waveform, probe = sc, datatype = 'esvy', coord = 'uvw'
 tvar = rbx + 'efw_esvy'
-if ~thm_check_tvar(tvar) then begin
+if ~spd_check_tvar(tvar) then begin
   dprint, tvar, ' is not available. Exit processing.'
   return
 endif

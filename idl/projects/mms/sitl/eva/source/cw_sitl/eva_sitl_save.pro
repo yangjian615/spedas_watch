@@ -11,7 +11,7 @@ PRO eva_sitl_save, auto=auto, dir=dir, quiet=quiet
   
   if keyword_set(auto) then begin 
     if n_elements(dir) eq 0 then dir = spd_default_local_data_dir() + 'mms/'
-    ;fname = thm_addslash(dir)+'eva-fom-modified.sav'
+    ;fname = spd_addslash(dir)+'eva-fom-modified.sav'
     fname = 'eva-fom-modified.sav'
     fname1= 'eva-fom-modified.1step-before.sav'
     fname2= 'eva-fom-modified.2steps-before.sav'

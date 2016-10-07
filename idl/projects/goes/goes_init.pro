@@ -11,9 +11,9 @@
 ;            no_color_setup: skip setting up the graphics configuration
 ;            
 ;             
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-20 12:22:16 -0700 (Mon, 20 Apr 2015) $
-;$LastChangedRevision: 17375 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-06 12:31:28 -0700 (Thu, 06 Oct 2016) $
+;$LastChangedRevision: 22054 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_init.pro $
 ;-
 pro goes_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir, no_color_setup = no_color_setup
@@ -55,7 +55,7 @@ endif
 ; Do not do color setup if taken care for already
 if not keyword_set(no_color_setup) then begin
 
-  thm_graphics_config,colortable=colortable
+  spd_graphics_config,colortable=colortable
   
 endif ; no_color_setup
 

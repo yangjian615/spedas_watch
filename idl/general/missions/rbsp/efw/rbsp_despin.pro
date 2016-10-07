@@ -53,9 +53,9 @@
 ;         2. Added keyword *no_offset_remove*.
 ;
 ; VERSION:
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2013-02-08 16:58:01 -0800 (Fri, 08 Feb 2013) $
-; $LastChangedRevision: 11556 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-06 16:51:43 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22061 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_despin.pro $
 ;
 ;-
@@ -166,7 +166,7 @@ if n_elements(newname) eq 0 then newname = tvar + '_' + coord
 
 if keyword_set(tper) then pertvar = tper
 if n_elements(pertvar) eq 0 then pertvar = rbx + 'spinper'
-if ~thm_check_tvar(pertvar) then begin
+if ~spd_check_tvar(pertvar) then begin
   dprint, 'No spin period data available. Abort.'
   return
 endif

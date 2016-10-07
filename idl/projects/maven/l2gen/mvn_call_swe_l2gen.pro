@@ -38,8 +38,8 @@
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-05 16:07:18 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22049 $
+; $LastChangedDate: 2016-10-06 12:41:32 -0700 (Thu, 06 Oct 2016) $
+; $LastChangedRevision: 22055 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_swe_l2gen.pro $
 ;-
 Pro mvn_call_swe_l2gen, time_in = time_in, $
@@ -186,6 +186,13 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
         message, /info, 'No Files to process for Instrument: '+instrk
      Endif Else Begin
         nproc = n_elements(timep_do)
+;Send a message that processing is starting
+        openw, tunit, '/tmp/swe_l2_msg0.txt', /get_lun
+        printf, tunit, 'Processing: '+instrk
+        For i = 0, nproc-1 Do printf, tunit, timep_do[i]
+        free_lun, tunit
+        cmd0 = 'mailx -s "SWEA L2 process start" jimm@ssl.berkeley.edu < /tmp/swe_l2_msg0.txt'
+        spawn, cmd0
 ;extract the date from the filename
         For i = 0, nproc-1 Do Begin
            timei0 = timep_do[i]
@@ -218,6 +225,12 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
            heap_gc              ;added this here to avoid memory issues
         Endfor
         SKIP_INSTR: load_position = 'instrument'
+;Send a message that processing is done
+        openw, tunit, '/tmp/swe_l2_msg1.txt', /get_lun
+        printf, tunit, 'Finished Processing: '+instrk
+        free_lun, tunit
+        cmd1 = 'mailx -s "SWEA L2 process end" jimm@ssl.berkeley.edu < /tmp/swe_l2_msg1.txt'
+        spawn, cmd1
      Endelse
   Endfor
 ;reset file time

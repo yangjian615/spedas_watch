@@ -19,9 +19,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-11 17:20:48 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19620 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-06 11:44:15 -0700 (Thu, 06 Oct 2016) $
+;$LastChangedRevision: 22052 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_units_string.pro $
 ;-
 
@@ -40,7 +40,7 @@ if keyword_set(simple) then begin
     'rate'   : ustr = ['Rate (','#/sec',')']
     'eflux'  : ustr = ['Energy Flux (','eV / sec / cm^2 / ster / eV',')']
     'flux'   : ustr = ['Flux (','# / sec / cm^2 / ster / eV',')']
-    'df'     : ustr = ['f (','s^3 / km^3 /cm^3',')']
+    'df'     : ustr = ['f (','s^3 / km^6',')']
     'df_cm'  : ustr = ['f (','s^3 / cm^6',')']
     'df_km'  : ustr = ['f (','s^3 / km^6',')']
     'e2flux' : ustr = ['Energy^2 Flux (','eV^2 / sec / cm^2 / ster /ev',')']
@@ -57,9 +57,9 @@ endif else begin
     'rate'   : ustr = ['Rate (','#/sec',')']
     'eflux'  : ustr = ['Energy Flux (','eV/s/cm!U2!N/str/eV',')']
     'flux'   : ustr = ['Flux (','#/s/cm!U2!N/str/eV',')']
-    'df'     : ustr = ['f (','s!U3!N/km!U3!N/cm!U3!N',')']
+    'df'     : ustr = ['f (','s!U3!N/km!U6!N',')']
     'df_cm'  : ustr = ['f (','s!U3!N/cm!U6!N',')']
-    'df_km'  : ustr = ['f (','s!U3!N/cm!U6!N',')']
+    'df_km'  : ustr = ['f (','s!U3!N/km!U6!N',')']
     'e2flux' : ustr = ['Energy!U2!N Flux (','eV!U2!N/s/cm!U2!N/str/eV',')']
     'e3flux' : ustr = ['Energy!U3!N Flux (','eV!U3!N/s/cm!U2!N/str/eV',')']
     else: ustr = 'Unknown'

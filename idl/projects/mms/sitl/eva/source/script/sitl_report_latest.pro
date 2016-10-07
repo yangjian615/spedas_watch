@@ -6,7 +6,7 @@ PRO sitl_report_latest, dir=dir, force=force
   json = 1L
   paramset = 'SITL_Basic';'SITL_Basic_Tail'; SITL_Basic_Dayside
   if undefined(dir) then dir = '/Volumes/moka/public_html/eva/' $
-    else dir = thm_addslash(dir)
+    else dir = spd_addslash(dir)
   if undefined(force) then force = 1
   ;////////////////////////////////////////////////
   mms_init
@@ -136,14 +136,14 @@ PRO sitl_report_latest, dir=dir, force=force
   ;Device, Set_Resolution=[1280,768],Set_Pixel_Depth=24, Decomposed=0
   ;Device, Set_Resolution=[1536,922],Set_Pixel_Depth=24, Decomposed=0
   Device, Set_Resolution=[1664,998],Set_Pixel_Depth=24, Decomposed=0
-  thm_graphics_config
+  spd_graphics_config
   ;---------------
   pmax = 4
   probes = ['1','2','3','4']
   pngsize = fltarr(pmax)  
   for p=0,pmax-1 do begin
     eva_cmd_load,trange=trange,probes=probes[p],paramset=paramset,paramlist=paramlist, force=force
-    dir_png = thm_addslash(dir)+'img/'+yyyy+'/'
+    dir_png = spd_addslash(dir)+'img/'+yyyy+'/'
     file_mkdir, dir_png
     imax = n_elements(paramlist)
     thislist = strarr(imax)
@@ -184,7 +184,7 @@ PRO sitl_report_latest, dir=dir, force=force
   ; selection list
   if SUBMITTED then begin
     header = eva_sitl_text_selection(s)
-    dir_list = thm_addslash(dir)+'list/'+yyyy+'/'
+    dir_list = spd_addslash(dir)+'list/'+yyyy+'/'
     file_mkdir, dir_list
     flist = dir_list+pname+'.txt'
     openw, nf, flist,/get_lun
@@ -207,7 +207,7 @@ PRO sitl_report_latest, dir=dir, force=force
       select:select, yyyy:yyyy, notes:str_notes}
     
     ; Read existing json
-    fjson  = thm_addslash(dir)+'sitl_report.json'
+    fjson  = spd_addslash(dir)+'sitl_report.json'
     openr,nf,fjson,/get_lun ; open as a file with the pointer at the end
     line = '' & readf, nf, line; first line
     jarr = line

@@ -239,7 +239,7 @@ if n_elements(duration_threshold) eq 0 then duration_threshold = 15.
 
 ; CHECK FOR EFP DATA
 if not keyword_set(Ename) then Ename = 'th' + sc + '_efp'
-IF thm_check_tvar(Ename) then BEGIN                       ; added by JBT
+IF spd_check_tvar(Ename) then BEGIN                       ; added by JBT
   get_data, ename(0), data=E, dlim=elim                   ; added by JBT
   ; Check coordinates of Ename.
   if ~strcmp(elim.data_att.coord_sys, 'dsl', /fold) then begin
@@ -258,7 +258,7 @@ ENDELSE
 ; CHECK FOR VOLTAGES
 if ~keyword_set(Vname) then Vname = 'th' + sc + '_vap'
 if ~keyword_set(Vscname) then Vscname = 'th' + sc + '_vsc'
-IF thm_check_tvar(Vscname) then BEGIN                          
+IF spd_check_tvar(Vscname) then BEGIN                          
   get_data, Vscname[0], data=Vsc                                  
 ENDIF ELSE BEGIN                                               
   thm_efi_get_potential, Vname(0), trange=trange
@@ -271,7 +271,7 @@ ENDELSE
 
 ; CHECK FOR MAG DATA
 if not keyword_set(Bdslname) then Bdslname = 'th' + sc + '_fgh_dsl'
-IF thm_check_tvar(Bdslname) then BEGIN                         
+IF spd_check_tvar(Bdslname) then BEGIN                         
   get_data, Bdslname(0), data=Bdsl, dlim=blim                  
 ENDIF ELSE BEGIN                                               
   dprint, 'Mag data not stored in dsl. Fetching...'
@@ -287,7 +287,7 @@ ENDELSE
 
 ; CHECK FOR SPIN DATA
 SpinName = 'th' + sc + '_state_spinper'                    
-IF thm_check_tvar(Spinname) then BEGIN  
+IF spd_check_tvar(Spinname) then BEGIN  
  get_data, SpinName[0], data=SpinPer                          
 ENDIF ELSE BEGIN                                               
   thm_load_state, probe=sc, datatype='spinper'           
@@ -301,7 +301,7 @@ ENDELSE
 ; GET ELECTRON TEMPERATURE DATA 
 ;IF keyword_set(use_electrons) then BEGIN
 ;  if not keyword_set(TeName) then TeName = 'th' + sc + '_peeb_avgtemp'
-;  IF thm_check_tvar(TeName) then BEGIN                          
+;  IF spd_check_tvar(TeName) then BEGIN                          
 ;    get_data, TeName[0], data=peeb_t       
 ;  ENDIF ELSE BEGIN                                               
 ;    print, 'THM_EFI_CLEAN_EFP: Electron temperature data not stored. Fetching...'
