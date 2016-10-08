@@ -26,9 +26,9 @@
 ;  Much of this code was copied from thm_part_moments.pro
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-21 18:58:54 -0700 (Thu, 21 Apr 2016) $
-;$LastChangedRevision: 20880 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+;$LastChangedRevision: 22069 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_moments_tplot.pro $
 ;-
 pro spd_pgs_moments_tplot, moments, $
@@ -98,28 +98,28 @@ pro spd_pgs_moments_tplot, moments, $
   options,strfilter(mom_tnames,'*tens'+suffix),/def ,colors='bgrmcy',ysubtitle='!c[eV/cm^3]'
   
   ;set units (copied from thm_part_moments)
-  thm_new_units, strfilter(mom_tnames, '*_density'+suffix), units_in = '1/cm^3'
-  thm_new_units, strfilter(mom_tnames,'*_velocity'+suffix), units_in = 'km/s'
-  thm_new_units, strfilter(mom_tnames,'*_vthermal'+suffix), units_in = 'km/s'
-  thm_new_units, strfilter(mom_tnames,'*_flux'+suffix), units_in = '#/s/cm^2'
-  thm_new_units, strfilter(mom_tnames,'*t3'+suffix), units_in = 'eV'
-  thm_new_units, strfilter(mom_tnames,'*_avgtemp'+suffix), units_in = 'eV'
-  thm_new_units, strfilter(mom_tnames,'*_sc_pot'+suffix), units_in = 'V'
-  thm_new_units, strfilter(mom_tnames,'*_eflux'+suffix), units_in = 'eV/(cm^2-s)'
-  thm_new_units, strfilter(mom_tnames,'*tens'+suffix), units_in = 'eV/cm^3'
-  thm_new_units, strfilter(mom_tnames,'*_symm_theta'+suffix), units_in = 'degrees'
-  thm_new_units, strfilter(mom_tnames,'*_symm_phi'+suffix), units_in = 'degrees'
-  thm_new_units, strfilter(mom_tnames,'*_symm_ang'+suffix), units_in = 'degrees'
-  thm_new_units, strfilter(mom_tnames,'*_magf'+suffix), units_in = 'nT'
+  spd_new_units, strfilter(mom_tnames, '*_density'+suffix), units_in = '1/cm^3'
+  spd_new_units, strfilter(mom_tnames,'*_velocity'+suffix), units_in = 'km/s'
+  spd_new_units, strfilter(mom_tnames,'*_vthermal'+suffix), units_in = 'km/s'
+  spd_new_units, strfilter(mom_tnames,'*_flux'+suffix), units_in = '#/s/cm^2'
+  spd_new_units, strfilter(mom_tnames,'*t3'+suffix), units_in = 'eV'
+  spd_new_units, strfilter(mom_tnames,'*_avgtemp'+suffix), units_in = 'eV'
+  spd_new_units, strfilter(mom_tnames,'*_sc_pot'+suffix), units_in = 'V'
+  spd_new_units, strfilter(mom_tnames,'*_eflux'+suffix), units_in = 'eV/(cm^2-s)'
+  spd_new_units, strfilter(mom_tnames,'*tens'+suffix), units_in = 'eV/cm^3'
+  spd_new_units, strfilter(mom_tnames,'*_symm_theta'+suffix), units_in = 'degrees'
+  spd_new_units, strfilter(mom_tnames,'*_symm_phi'+suffix), units_in = 'degrees'
+  spd_new_units, strfilter(mom_tnames,'*_symm_ang'+suffix), units_in = 'degrees'
+  spd_new_units, strfilter(mom_tnames,'*_magf'+suffix), units_in = 'nT'
   
   ;set coordinates (copied from thm_part_moments)
-  thm_new_coords, strfilter(mom_tnames,'*_velocity'+suffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(mom_tnames,'*_flux'+suffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(mom_tnames,'*_t3'+suffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(mom_tnames,'*_eflux'+suffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(mom_tnames,'*tens'+suffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(mom_tnames,'*_magf'+suffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(mom_tnames,'*_magt3'+suffix), coords_in = 'FA'
+  spd_new_coords, strfilter(mom_tnames,'*_velocity'+suffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(mom_tnames,'*_flux'+suffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(mom_tnames,'*_t3'+suffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(mom_tnames,'*_eflux'+suffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(mom_tnames,'*tens'+suffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(mom_tnames,'*_magf'+suffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(mom_tnames,'*_magt3'+suffix), coords_in = 'FA'
 
   
   ;Output the names of created tplot variables

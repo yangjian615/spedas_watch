@@ -1,4 +1,6 @@
 ;+
+;  Deprecated! Please use spd_new_units
+;
 ;NAME:
 ; thm_new_units
 ;PURPOSE:
@@ -15,10 +17,10 @@
 ;            value (this is a scalar input)
 ;HISTORY:
 ; 12-feb-2008, jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2012-12-07 10:34:23 -0800 (Fri, 07 Dec 2012) $
-;$LastChangedRevision: 11326 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_new_units.pro $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-07 12:15:23 -0700 (Fri, 07 Oct 2016) $
+;$LastChangedRevision: 22070 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/thm_new_units.pro $
 ;-
 Pro thm_new_units, vars, units_in = units_in
 

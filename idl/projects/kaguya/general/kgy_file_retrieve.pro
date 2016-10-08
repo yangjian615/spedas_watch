@@ -31,12 +31,12 @@
 ;       Mostly copied from 'mvn_pfp_file_retrieve'
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-09-14 22:09:58 -0700 (Wed, 14 Sep 2016) $
-; $LastChangedRevision: 21834 $
+; $LastChangedDate: 2016-10-07 11:58:34 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22067 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/kaguya/general/kgy_file_retrieve.pro $
 ;-
 
-function kgy_file_retrieve,pathname,trange=trange,verbose=verbose,source=src,files=files,last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,daily_names=daily_names,hourly_names=hourly_names,resolution=res,shiftres=shiftres,no_server=no_server,no_download=no_download,_extra=_extra,public=public,skipoddhours=skipoddhours
+function kgy_file_retrieve,pathname,trange=trange,verbose=verbose,source=src,files=files,last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,daily_names=daily_names,hourly_names=hourly_names,resolution=res,shiftres=shiftres,no_server=no_server,no_download=no_download,_extra=_extra,public=public,skipoddhours=skipoddhours, datasuf=datasuf
 
 tstart = systime(1)
 
@@ -75,14 +75,13 @@ if ~keyword_set(files) then begin
 
       ;;; get public data from the Kaguya data archive
       if keyword_set(public) then begin
+         if ~keyword_set(datasuf) then datasuf = ['.dat','.gz','','.cdf']
          suf = '.dat'
          dirs = source.local_data_dir+time_string(times,tf='YYYY/MM/')
          file_mkdir2,dirs,_extra=source
          for i=0,n_elements(pathnames)-1 do begin
-            f = file_search(dirs[i]+pathnames[i]+'.dat')
-            f = [f,file_search(dirs[i]+pathnames[i]+'.gz')]
-            f = [f,file_search(dirs[i]+pathnames[i]+'')]
-            f = [f,file_search(dirs[i]+pathnames[i]+'.cdf')]
+            f = ''
+            for isuf=0,n_elements(datasuf)-1 do f = [f,file_search(dirs[i]+pathnames[i]+datasuf[isuf])] ;- search existing data files
             if total(strlen(f)) eq 0 then begin ;- don't check updates, TBD
                outtar = dirs[i]+'out.tar'
                if file_test(outtar) then file_delete,outtar ;- delete old temp file, if exists
@@ -115,12 +114,10 @@ if ~keyword_set(files) then begin
                   file_delete,outtar
                endif
             endif
-            f = file_search(dirs[i]+pathnames[i]+'.gz')
-            if total(strlen(f)) gt 0 then suf = '.gz'
-            f = file_search(dirs[i]+pathnames[i]+'')
-            if total(strlen(f)) gt 0 then suf = ''
-            f = file_search(dirs[i]+pathnames[i]+'.cdf')
-            if total(strlen(f)) gt 0 then suf = '.cdf'
+            for isuf=0,n_elements(datasuf)-1 do begin
+               f = file_search(dirs[i]+pathnames[i]+datasuf[isuf])
+               if total(strlen(f)) gt 0 then suf = datasuf[isuf]
+            endfor
          endfor
          pathnames = time_string(times,tf='YYYY/MM/') + pathnames + suf
          source.no_server = 1

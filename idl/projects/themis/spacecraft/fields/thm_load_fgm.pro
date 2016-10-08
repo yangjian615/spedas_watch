@@ -76,8 +76,8 @@
 ;  This routine is (should be) platform independent.
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-23 14:56:13 -0700 (Tue, 23 Aug 2016) $
-; $LastChangedRevision: 21695 $
+; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fgm.pro $
 ;-
 
@@ -132,8 +132,8 @@ pro thm_load_fgm_post, sname=probe, datatype=dt, level=lvl, $
            labels = [ 'b1', 'b2', 'b3']
            colors = [ 2, 4, 6]
         end else if strmatch(lvl, 'l2') then begin
-           thm_new_units, tplot_var
-           thm_new_coords, tplot_var
+           spd_new_units, tplot_var
+           spd_new_coords, tplot_var
            get_data, tplot_var, dlimits = dl_str
            unit = dl_str.data_att.units
 ;the units tag has the coordinate system included; for ysubtitle and

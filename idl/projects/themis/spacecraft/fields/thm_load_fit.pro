@@ -43,8 +43,8 @@
 ;Notes:
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-16 12:31:06 -0700 (Tue, 16 Aug 2016) $
-; $LastChangedRevision: 21657 $
+; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fit.pro $
 ;-
 
@@ -75,8 +75,8 @@ pro thm_load_fit_post, sname=probe, datatype=dt, level=level, $
   
   ;better way to set units and coordinates:
   if (level eq 'l2') then begin
-    thm_new_units, tplotnames
-    thm_new_coords, tplotnames
+    spd_new_units, tplotnames
+    spd_new_coords, tplotnames
   endif
   
   if (level eq 'l1' ) and (~keyword_set(proc_type) || strmatch(proc_type, 'calibrated')) then begin

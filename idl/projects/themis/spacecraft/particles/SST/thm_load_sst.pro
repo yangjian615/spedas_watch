@@ -38,8 +38,8 @@
 ; Update removed to not use thm_load_xxx by DEL
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-23 15:04:14 -0700 (Tue, 23 Aug 2016) $
-; $LastChangedRevision: 21696 $
+; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_load_sst.pro $
 ;-
 
@@ -362,53 +362,53 @@ pro thm_load_sst_l2,relpathnames_all=relpathnames_all,suffix=suffix,level=level,
     ;eflux spectra
     en_eflux_vars = strfilter(tplotnames,'*en_eflux*')
     options,en_eflux_vars,/default,/zlog,/ylog
-    thm_new_units, en_eflux_vars, units_in = 'eV/(cm^2-sec-sr-eV)'
-    thm_new_coords,en_eflux_vars, coords_in = 'DSL'
+    spd_new_units, en_eflux_vars, units_in = 'eV/(cm^2-sec-sr-eV)'
+    spd_new_coords,en_eflux_vars, coords_in = 'DSL'
     thm_fix_spec_units, en_eflux_vars
     
     ;flux vectors
     flux_vars = strfilter(tplotnames,'*_flux*')
     options,flux_vars,/def,/ystyle
-    thm_new_coords,flux_vars, coords_in = 'DSL'
+    spd_new_coords,flux_vars, coords_in = 'DSL'
     
     ;density
     den_vars = strfilter(tplotnames,'*density*')
     options,den_vars,/default,/ylog,/ystyle
-    thm_new_units, den_vars, units_in = '1/cm^3'
+    spd_new_units, den_vars, units_in = '1/cm^3'
     
     ;temperature vectors
     t3_vars =  strfilter(tplotnames,'*t3*')
     options,t3_vars,/default,/ylog,colors='bgr',/ystyle
-    thm_new_units, t3_vars, units_in = 'eV'
+    spd_new_units, t3_vars, units_in = 'eV'
     
-    thm_new_coords,strfilter(tplotnames,'*_t3*'), coords_in = 'DSL'
-    thm_new_coords,strfilter(tplotnames,'*_magt3*'), coords_in = 'FA'
+    spd_new_coords,strfilter(tplotnames,'*_t3*'), coords_in = 'DSL'
+    spd_new_coords,strfilter(tplotnames,'*_magt3*'), coords_in = 'FA'
     
     ;tensors
     tens_vars = strfilter(tplotnames,'*tens*')
     options,tens_vars,/default,colors='bgrmcy',/ystyle
-    thm_new_coords,tens_vars, coords_in = 'DSL'
+    spd_new_coords,tens_vars, coords_in = 'DSL'
     
     ;velocity vectors
     vel_vars = strfilter(tplotnames,'*velocity*')
     options,vel_vars,/defaults,/ystyle
-    thm_new_units, vel_vars, units_in = 'km/s'
+    spd_new_units, vel_vars, units_in = 'km/s'
     
-    thm_new_coords, strfilter(tplotnames,'*_velocity_dsl*'), coords_in = 'DSL'
-    thm_new_coords, strfilter(tplotnames,'*_velocity_gse*'), coords_in = 'GSE'
-    thm_new_coords, strfilter(tplotnames,'*_velocity_gsm*'), coords_in = 'GSM'
+    spd_new_coords, strfilter(tplotnames,'*_velocity_dsl*'), coords_in = 'DSL'
+    spd_new_coords, strfilter(tplotnames,'*_velocity_gse*'), coords_in = 'GSE'
+    spd_new_coords, strfilter(tplotnames,'*_velocity_gsm*'), coords_in = 'GSM'
     
     ;magnetic field support data
     mag_names = strfilter(tplotnames,'*_magf*')
-    thm_new_units,mag_names, units_in ='nT'
-    thm_new_coords,mag_names, coords_in = 'DSL'
+    spd_new_units,mag_names, units_in ='nT'
+    spd_new_coords,mag_names, coords_in = 'DSL'
     
     ;spacecraft potential support data
     scpot_names = strfilter(tplotnames,'*_sc_pot*')
-    thm_new_units,scpot_names, units_in ='V'
+    spd_new_units,scpot_names, units_in ='V'
     
     symm_ang_names = strfilter(tplotnames,'*_symm_ange*')
-    thm_new_units,scpot_names, units_in ='degrees'
+    spd_new_units,scpot_names, units_in ='degrees'
 
   endif
 
@@ -436,7 +436,7 @@ if size(/type,datatype0) gt 0 then datatype = datatype0 ;keep input vars from be
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 21696 2016-08-23 22:04:14Z nikos $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 22069 2016-10-07 19:12:46Z nikos $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']

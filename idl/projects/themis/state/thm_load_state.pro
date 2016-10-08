@@ -66,9 +66,9 @@
 ; If you modify the d_names constant make sure to make the
 ; corresponding changes to the c_names constant
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2016-05-25 12:17:42 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21196 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22069 $
 ; $URL $
 ;-
 
@@ -196,7 +196,7 @@ for i = 0,n_elements(dt_temp)-1L do begin
         endelse
         
         store_data,var_name,data=d,limit=l,dlimit=dl
-        thm_new_units,var_name,units_in=unit_name
+        spd_new_units,var_name,units_in=unit_name
 
 ;        if keyword_set(coord) && $
 ;          coord_name ne 'unknown' && $

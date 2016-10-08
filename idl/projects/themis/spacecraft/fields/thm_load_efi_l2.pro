@@ -54,8 +54,8 @@
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-01 11:53:52 -0700 (Mon, 01 Aug 2016) $
-; $LastChangedRevision: 21583 $
+; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi_l2.pro $
 ;-
 
@@ -186,8 +186,8 @@ pro thm_load_efi_l2, probe = probe, datatype = datatype, trange = trange, $
       get_data, tplot_var, data = d_str, limit = l_str, dlimit = dl_str
       if is_struct(dl_str) then begin
         if qflag[0] eq -1 then begin ;a field or voltage
-          thm_new_units, tplot_var
-          thm_new_coords, tplot_var
+          spd_new_units, tplot_var
+          spd_new_coords, tplot_var
           get_data, tplot_var, dlimits = dl_str
           unit = dl_str.data_att.units
 ;the units tag has the coordinate system included; for ysubtitle and

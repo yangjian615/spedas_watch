@@ -32,9 +32,9 @@
 ;HISTORY:
 ; 2015-04-10, moka, Created based on 'thm_init'
 ; 
-; $LastChangedBy: moka $
-; $LastChangedDate: 2015-07-07 11:34:49 -0700 (Tue, 07 Jul 2015) $
-; $LastChangedRevision: 18027 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-07 11:29:48 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22064 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_init.pro $
 ;-
 
@@ -50,8 +50,8 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
 
   if !mms.init ne 0 then begin
     ;Assure that trailing slashes exist on data directories
-    !mms.local_data_dir = thm_addslash(!mms.local_data_dir)
-    !mms.remote_data_dir = thm_addslash(!mms.remote_data_dir)
+    !mms.local_data_dir = spd_addslash(!mms.local_data_dir)
+    !mms.remote_data_dir = spd_addslash(!mms.remote_data_dir)
     return
   endif
 
@@ -69,10 +69,10 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
   ; keywords on first call to mms_init (or /reset) override environment and
   ; mms_config
   if keyword_set(local_data_dir) then begin 
-    !mms.local_data_dir = thm_addslash(local_data_dir)
+    !mms.local_data_dir = spd_addslash(local_data_dir)
   endif
   if keyword_set(remote_data_dir) then begin
-    !mms.remote_data_dir = thm_addslash(remote_data_dir)
+    !mms.remote_data_dir = spd_addslash(remote_data_dir)
   endif
   
   cdf_lib_info,version=v,subincrement=si,release=r,increment=i,copyright=c

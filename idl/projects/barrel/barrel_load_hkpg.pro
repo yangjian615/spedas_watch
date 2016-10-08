@@ -309,8 +309,8 @@ IF (n_newvars GT 0) THEN BEGIN
             (dl_str.cdf.vatt.var_type EQ 'support_data')) THEN BEGIN
             
             ; build and populate a minimal dl_str.data_att
-            thm_new_units, tplot_var
-            thm_new_coords, tplot_var
+            spd_new_units, tplot_var
+            spd_new_coords, tplot_var
 
             ;get_data, tplot_var, dlimitis, dlimits = dl_str <--????
 

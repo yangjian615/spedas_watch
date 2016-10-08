@@ -29,8 +29,8 @@
 ; 2015-04-10, moka, Created based on 'thm_config'
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-06 12:31:28 -0700 (Thu, 06 Oct 2016) $
-; $LastChangedRevision: 22054 $
+; $LastChangedDate: 2016-10-07 11:29:48 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22064 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config.pro $
 ;
 ;-
@@ -45,7 +45,7 @@ PRO mms_config, no_color_setup=no_color_setup, colortable=colortable
   ; Settings of environment variables can override thm_config
   if getenv('MMS_DATA_DIR') ne '' then $
     !mms.local_data_dir = getenv('MMS_DATA_DIR')
-  !mms.local_data_dir = thm_addslash(!mms.local_data_dir)
+  !mms.local_data_dir = spd_addslash(!mms.local_data_dir)
   
   ;--------------------
   ; REMOTE_DATA_DIR
@@ -71,10 +71,10 @@ PRO mms_config, no_color_setup=no_color_setup, colortable=colortable
   ; Settings of environment variables can override thm_config
   if getenv('MMS_REMOTE_DATA_DIR') ne '' then $
     !mms.remote_data_dir = getenv('MMS_REMOTE_DATA_DIR')
-  !mms.remote_data_dir = thm_addslash(!mms.remote_data_dir)
+  !mms.remote_data_dir = spd_addslash(!mms.remote_data_dir)
   
   if getenv('ROOT_DATA_DIR') ne '' then $
-    !mms.LOCAL_DATA_DIR = thm_addslash(getenv('ROOT_DATA_DIR'))+'mms/'
+    !mms.LOCAL_DATA_DIR = spd_addslash(getenv('ROOT_DATA_DIR'))+'mms/'
 
   
   ;------------------------

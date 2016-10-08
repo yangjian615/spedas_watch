@@ -26,9 +26,9 @@
 ;   thm_load_mom,/get_suppport_data,probe=['a', 'b']
 ;Notes:
 ;  Temporary version, to avoid conflicts, but can read Level 2 data, jmm
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_mom_l2.pro $
 ;-
 pro thm_load_mom_l2, probe = probe, datatype = datatype, trange = trange, $
@@ -111,8 +111,8 @@ for s = 0, n_elements(probes)-1 do begin
 ;loaded_vars refers to CDF vars, not necessarily tplot vars
   new_v = tnames(loaded_vars)
   If(new_v[0] Ne '') Then Begin
-    thm_new_units, new_v  ;set units in dlimits using dlimits.cdf.vatt
-    thm_new_coords, new_v       ;set coordinates in dlimits
+    spd_new_units, new_v  ;set units in dlimits using dlimits.cdf.vatt
+    spd_new_coords, new_v       ;set coordinates in dlimits
 ;set data_type of 'calibrated'
     For j = 0, n_elements(new_v)-1 Do Begin
       get_data, new_v[j], dlimit = dl

@@ -1,27 +1,34 @@
 ;+
 ;NAME:
-; thm_new_coords
+; spd_new_coords
+; 
 ;PURPOSE:
 ; sets coordinate systems in the dlimits structure of input
 ; tplot variables from the CDF attributes, or alternatively, input
 ; keywords
+; 
 ;CALLING SEQUENCE:
-; thm_new_coords,vars,coords_in=coords_in
+; spd_new_coords,vars,coords_in=coords_in
+; 
 ;INPUT:
 ; vars = variable names
+; 
 ;OUTPUT:
 ; none explicit, the dlimits structure of the variables are changed
+; 
 ;KEYWORDS:
 ; coords_in = if set, then the coords for all vars will be set to this
 ;             value (this is a scalar input)
+;             
 ;HISTORY:
 ; 12-feb-2008, jmm, jimm@ssl.berkeley.edu
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2012-11-14 12:40:40 -0800 (Wed, 14 Nov 2012) $
-;$LastChangedRevision: 11233 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_new_coords.pro $
+; 
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-07 12:19:00 -0700 (Fri, 07 Oct 2016) $
+;$LastChangedRevision: 22071 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_new_coords.pro $
 ;-
-Pro thm_new_coords, vars, coords_in = coords_in
+Pro spd_new_coords, vars, coords_in = coords_in
 
 ;add coords, coordinate systems to variables
   new_v = tnames(vars)

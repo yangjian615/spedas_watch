@@ -40,8 +40,8 @@
 ;Notes:
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
-; $LastChangedRevision: 21775 $
+; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fft.pro $
 ;-
 
@@ -124,8 +124,8 @@ pro thm_load_fft_post, sname=probe, datatype=dt, level=lvl, $
 ;; set units and coordinates from CDF attributes for L2, then set some
 ;; tplot options for plotting
   if strmatch(lvl, 'l2') then begin
-    thm_new_units, tplotnames
-    thm_new_coords, tplotnames
+    spd_new_units, tplotnames
+    spd_new_coords, tplotnames
     options, tplotnames, 'zlog', 1
     options, tplotnames, 'ylog', 1
     options, tplotnames, 'ystyle', 1

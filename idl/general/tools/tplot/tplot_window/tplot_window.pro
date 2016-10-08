@@ -87,8 +87,8 @@
 ;HISTORY:
 ; 2016-09-23, jmm, jimm@ssilberkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-04 14:44:38 -0700 (Tue, 04 Oct 2016) $
-; $LastChangedRevision: 22022 $
+; $LastChangedDate: 2016-10-07 11:30:08 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22065 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/tplot_window/tplot_window.pro $
 ;-
 Pro tplot_window_event, event
@@ -107,20 +107,30 @@ Pro tplot_window_event, event
      Return
   Endif
   
-  ;kill request block, note this is the only way to exit
+;kill request block, note this is the only way to exit
   If(TAG_NAMES(event, /STRUCTURE_NAME) EQ 'WIDGET_KILL_REQUEST') Then Begin
   exit_sequence:
     widget_control, event.top, /destroy
     Return
   Endif
 
+;Resize? See xtplot and http://www.idlcoyote.com/widget_tips/resize_draw.html
+  If(TAG_NAMES(event, /STRUCTURE_NAME) EQ 'WIDGET_BASE') Then Begin
+     widget_control, event.top, get_uvalue = state, /no_copy
+     widget_control, state.draw_widget, draw_xsize = event.x, draw_ysize = event.y
+     widget_control, event.top, set_uvalue = state, /no_copy
+     tplot, verbose = 0
+     tplot_apply_timebar & tplot_apply_databar
+     Return
+  Endif
+
 ;what sort of events, only keystrokes to start
+  used_tlimit = 0b
   If(tag_exist(event, 'type') && (event.type Eq 5 || event.type Eq 6)) Then Begin
      If(event.release Eq 1) Then Begin
         If(~is_struct(tplot_vars) || ~is_struct(tplot_vars.options)) Then Return
 ;Figure out where we are in non-device coordinates
         widget_control, event.top, get_uval = state, /no_copy
-help, state
         If(state.init Eq 0) Then Begin ;there always seems to be an event at the start, do nothing
            state.init = 1
            widget_control, event.top, set_uval = state, /no_copy
@@ -169,33 +179,40 @@ help, state
                     tmid = 0.5*(trange[1]+trange[0])
                     dt1 = time-tmid
                     tlimit, trange[0]+dt1, trange[1]+dt1
+                    used_tlimit = 1b
                  End
                  'z': Begin     ;If 'z', then zoom in by 50%
                     dt0 = trange[1]-trange[0]
                     dt1 = dt0/4.0 ;25% on either side of the point
                     tlimit, time-dt1, time+dt1
+                    used_tlimit = 1b
                  End
                  'o':Begin      ;zoom out by 200%
                     dt1 = trange[1]-trange[0]
                     tmid = 0.5*(trange[1]+trange[0])
                     tlimit, tmid-dt1, tmid+dt1
+                    used_tlimit = 1b
                  End
                  'r': Begin     ;If 'r' go back to initial time range
                     tlimit, tplot_vars.options.trange_full[0], $
                             tplot_vars.options.trange_full[1]
+                    used_tlimit = 1b
                  End
                  't':Begin      ;If t, just call tlimit
                     tlimit
+                    used_tlimit = 1b
                  End
                  'b':Begin      ;If 'b' shift back by 25%
                     dt0 = trange[1]-trange[0]
                     dt1 = dt0/4.0 ;25% on either side of the point
                     tlimit, trange[0]-dt1, trange[1]-dt1
+                    used_tlimit = 1b
                  End
                  'f':Begin      ;If 'f' shift forward by 25%
                     dt0 = trange[1]-trange[0]
                     dt1 = dt0/4.0 ;25% on either side of the point
                     tlimit, trange[0]+dt1, trange[1]+dt1
+                    used_tlimit = 1b
                  End
                  Else:Begin
                  End
@@ -207,21 +224,25 @@ help, state
                     dt0 = trange[1]-trange[0]
                     dt1 = dt0/4.0 ;25% on either side of the point
                     tlimit, trange[0]-dt1, trange[1]-dt1
+                    used_tlimit = 1b
                  End
                  6:Begin        ;right arrow shift forward by 25%
                     dt0 = trange[1]-trange[0]
                     dt1 = dt0/4.0 ;25% on either side of the point
                     tlimit, trange[0]+dt1, trange[1]+dt1
+                    used_tlimit = 1b
                  End
                  7: Begin       ;up arrow then zoom in by 50%
                     dt0 = trange[1]-trange[0]
                     dt1 = dt0/4.0 ;25% on either side of the point
                     tlimit, time-dt1, time+dt1
+                    used_tlimit = 1b
                  End
                  8:Begin        ;down arrow zoom out by 200%
                     dt1 = trange[1]-trange[0]
                     tmid = 0.5*(trange[1]+trange[0])
                     tlimit, tmid-dt1, tmid+dt1
+                    used_tlimit = 1b
                  End
                  Else:Begin
                  End
@@ -229,6 +250,10 @@ help, state
            Endif
         Endif
      Endif
+  Endif
+
+  If(used_tlimit) Then Begin
+     tplot_apply_timebar & tplot_apply_databar
   Endif
   
   If(is_struct(state)) Then widget_control, event.top, $
@@ -267,7 +292,8 @@ Pro tplot_window, datanames, $
 
 ;create a widget
   master = widget_base(/row, title = 'tplot window ', $
-                       /align_top, /tlb_kill_request_events)
+                       /align_top, /tlb_kill_request_events, $
+                      /tlb_size_events)
 ;Define a state structure
   state = {master:master, $
            window_id:-1L, $

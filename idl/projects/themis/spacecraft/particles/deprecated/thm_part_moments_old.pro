@@ -352,38 +352,38 @@ options,strfilter(tplotnames,'*_flux'+tplotsuffix),/def ,yrange=[-1e8,1e8],/ysty
 options,strfilter(tplotnames,'*t3'+tplotsuffix),/def ,yrange=[1,10000.],/ystyle,/ylog,ysubtitle='!c[eV]'
 
 ;set units in moments
-thm_new_units, strfilter(tplotnames, '*_density'+tplotsuffix), units_in = '1/cm^3'
-thm_new_units, strfilter(tplotnames,'*_velocity'+tplotsuffix), units_in = 'km/s'
-thm_new_units, strfilter(tplotnames,'*_vthermal'+tplotsuffix), units_in = 'km/s'
-thm_new_units, strfilter(tplotnames,'*_flux'+tplotsuffix), units_in = '#/s/cm^2'
+spd_new_units, strfilter(tplotnames, '*_density'+tplotsuffix), units_in = '1/cm^3'
+spd_new_units, strfilter(tplotnames,'*_velocity'+tplotsuffix), units_in = 'km/s'
+spd_new_units, strfilter(tplotnames,'*_vthermal'+tplotsuffix), units_in = 'km/s'
+spd_new_units, strfilter(tplotnames,'*_flux'+tplotsuffix), units_in = '#/s/cm^2'
 
-thm_new_units, strfilter(tplotnames,'*t3'+tplotsuffix), units_in = 'eV'
-thm_new_units, strfilter(tplotnames,'*_avgtemp'+tplotsuffix), units_in = 'eV'
-thm_new_units, strfilter(tplotnames,'*_sc_pot'+tplotsuffix), units_in = 'V'
+spd_new_units, strfilter(tplotnames,'*t3'+tplotsuffix), units_in = 'eV'
+spd_new_units, strfilter(tplotnames,'*_avgtemp'+tplotsuffix), units_in = 'eV'
+spd_new_units, strfilter(tplotnames,'*_sc_pot'+tplotsuffix), units_in = 'V'
 
-thm_new_units, strfilter(tplotnames,'*_eflux'+tplotsuffix), units_in = 'eV/(cm^2-s)' ;en_efluxes will be overwritten by the next step
-thm_new_units, strfilter(tplotnames,'*_en_eflux'+tplotsuffix), units_in = 'eV/(cm^2-s-sr-eV)'
+spd_new_units, strfilter(tplotnames,'*_eflux'+tplotsuffix), units_in = 'eV/(cm^2-s)' ;en_efluxes will be overwritten by the next step
+spd_new_units, strfilter(tplotnames,'*_en_eflux'+tplotsuffix), units_in = 'eV/(cm^2-s-sr-eV)'
 
-thm_new_units, strfilter(tplotnames,'*tens'+tplotsuffix), units_in = 'eV/cm^3'
+spd_new_units, strfilter(tplotnames,'*tens'+tplotsuffix), units_in = 'eV/cm^3'
 
-thm_new_units, strfilter(tplotnames,'*_symm_theta'+tplotsuffix), units_in = 'degrees'
-thm_new_units, strfilter(tplotnames,'*_symm_phi'+tplotsuffix), units_in = 'degrees'
-thm_new_units, strfilter(tplotnames,'*_symm_ang'+tplotsuffix), units_in = 'degrees'
+spd_new_units, strfilter(tplotnames,'*_symm_theta'+tplotsuffix), units_in = 'degrees'
+spd_new_units, strfilter(tplotnames,'*_symm_phi'+tplotsuffix), units_in = 'degrees'
+spd_new_units, strfilter(tplotnames,'*_symm_ang'+tplotsuffix), units_in = 'degrees'
 
-thm_new_units, strfilter(tplotnames,'*_magf'+tplotsuffix), units_in = 'nT'
+spd_new_units, strfilter(tplotnames,'*_magf'+tplotsuffix), units_in = 'nT'
 
 ;set coordinates in moments
-thm_new_coords, strfilter(tplotnames,'*_velocity'+tplotsuffix), coords_in = 'DSL'
-thm_new_coords, strfilter(tplotnames,'*_flux'+tplotsuffix), coords_in = 'DSL'
+spd_new_coords, strfilter(tplotnames,'*_velocity'+tplotsuffix), coords_in = 'DSL'
+spd_new_coords, strfilter(tplotnames,'*_flux'+tplotsuffix), coords_in = 'DSL'
 
-thm_new_coords, strfilter(tplotnames,'*_t3'+tplotsuffix), coords_in = 'DSL'
-thm_new_coords, strfilter(tplotnames,'*_magt3'+tplotsuffix), coords_in = 'FA'
+spd_new_coords, strfilter(tplotnames,'*_t3'+tplotsuffix), coords_in = 'DSL'
+spd_new_coords, strfilter(tplotnames,'*_magt3'+tplotsuffix), coords_in = 'FA'
 
-thm_new_coords, strfilter(tplotnames,'*_eflux'+tplotsuffix), coords_in = 'DSL'
+spd_new_coords, strfilter(tplotnames,'*_eflux'+tplotsuffix), coords_in = 'DSL'
 
-thm_new_coords, strfilter(tplotnames,'*tens'+tplotsuffix), coords_in = 'DSL'
+spd_new_coords, strfilter(tplotnames,'*tens'+tplotsuffix), coords_in = 'DSL'
 
-thm_new_coords, strfilter(tplotnames,'*_magf'+tplotsuffix), coords_in = 'DSL'
+spd_new_coords, strfilter(tplotnames,'*_magf'+tplotsuffix), coords_in = 'DSL'
 
 If(keyword_set(get_error)) Then Begin
   store_data, '*t3_sigma*', /delete ;currently these are not filled, so delete to avoid confusion
@@ -391,18 +391,18 @@ If(keyword_set(get_error)) Then Begin
   store_data, '*sc_pot*_sigma*', /delete ;currently these are not filled, so delete to avoid confusion
   store_data, '*magf*_sigma*', /delete ;currently these are not filled, so delete to avoid confusion
 ;add units to the remaining _sigma variables
-  thm_new_units, strfilter(tplotnames, '*_density_sigma'+tplotsuffix), units_in = '1/cm^3'
-  thm_new_units, strfilter(tplotnames,'*_velocity_sigma'+tplotsuffix), units_in = 'km/s'
-  thm_new_units, strfilter(tplotnames,'*_vthermal_sigma'+tplotsuffix), units_in = 'km/s'
-  thm_new_units, strfilter(tplotnames,'*_flux_sigma'+tplotsuffix), units_in = '#/s/cm^2'
-  thm_new_units, strfilter(tplotnames,'*_avgtemp_sigma'+tplotsuffix), units_in = 'eV'
-  thm_new_units, strfilter(tplotnames,'*_eflux_sigma'+tplotsuffix), units_in = 'eV/(cm^2-s)'
-  thm_new_units, strfilter(tplotnames,'*tens_sigma'+tplotsuffix), units_in = 'eV/cm^3'
+  spd_new_units, strfilter(tplotnames, '*_density_sigma'+tplotsuffix), units_in = '1/cm^3'
+  spd_new_units, strfilter(tplotnames,'*_velocity_sigma'+tplotsuffix), units_in = 'km/s'
+  spd_new_units, strfilter(tplotnames,'*_vthermal_sigma'+tplotsuffix), units_in = 'km/s'
+  spd_new_units, strfilter(tplotnames,'*_flux_sigma'+tplotsuffix), units_in = '#/s/cm^2'
+  spd_new_units, strfilter(tplotnames,'*_avgtemp_sigma'+tplotsuffix), units_in = 'eV'
+  spd_new_units, strfilter(tplotnames,'*_eflux_sigma'+tplotsuffix), units_in = 'eV/(cm^2-s)'
+  spd_new_units, strfilter(tplotnames,'*tens_sigma'+tplotsuffix), units_in = 'eV/cm^3'
 ;add coordinates to the remaining _sigma variables
-  thm_new_coords, strfilter(tplotnames,'*_velocity_sigma'+tplotsuffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(tplotnames,'*_flux_sigma'+tplotsuffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(tplotnames,'*_eflux_sigma'+tplotsuffix), coords_in = 'DSL'
-  thm_new_coords, strfilter(tplotnames,'*tens_sigma'+tplotsuffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(tplotnames,'*_velocity_sigma'+tplotsuffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(tplotnames,'*_flux_sigma'+tplotsuffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(tplotnames,'*_eflux_sigma'+tplotsuffix), coords_in = 'DSL'
+  spd_new_coords, strfilter(tplotnames,'*tens_sigma'+tplotsuffix), coords_in = 'DSL'
 Endif
 
 end

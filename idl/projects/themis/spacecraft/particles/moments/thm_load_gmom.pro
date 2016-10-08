@@ -31,9 +31,9 @@
 ;   thm_load_gmom,probe=['a', 'b']
 ;Notes:
 ;  Temporary version, to avoid conflicts, but can read Level 2 data, jmm
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-06-17 10:10:47 -0700 (Fri, 17 Jun 2016) $
-; $LastChangedRevision: 21334 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
+; $LastChangedRevision: 22069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_gmom.pro $
 ;-
 pro thm_load_gmom, probe = probe, datatype = datatype, trange = trange, $
@@ -137,8 +137,8 @@ for s = 0, n_elements(probes)-1 do begin
   If(~keyword_set(suffix)) Then new_v = tnames(loaded_vars) $
   Else new_v = tnames(loaded_vars+suffix) ;kluge around issue
   If(new_v[0] Ne '') Then Begin
-    thm_new_units, new_v  ;set units in dlimits using dlimits.cdf.vatt
-    thm_new_coords, new_v       ;set coordinates in dlimits
+    spd_new_units, new_v  ;set units in dlimits using dlimits.cdf.vatt
+    spd_new_coords, new_v       ;set coordinates in dlimits
 ;set data_type of 'calibrated'
     For j = 0, n_elements(new_v)-1 Do Begin
       get_data, new_v[j], dlimit = dl
