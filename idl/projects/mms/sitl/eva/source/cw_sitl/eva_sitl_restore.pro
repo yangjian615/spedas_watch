@@ -3,8 +3,7 @@ PRO eva_sitl_restore, auto=auto, dir=dir
 
   if keyword_set(auto) then begin
     if n_elements(dir) eq 0 then dir = spd_default_local_data_dir() + 'mms/'
-    ;fname = spd_addslash(dir)+'eva-fom-modified.sav'
-    fname = 'eva-fom-modified.sav'
+    fname = 'eva-fom-modified-most-recent.sav'
   endif else begin
     fname = dialog_pickfile(/READ)
     if strlen(fname) eq 0 then begin
@@ -23,7 +22,6 @@ PRO eva_sitl_restore, auto=auto, dir=dir
   
   ; 'mms_stlm_fomstr'
   
-  ;if strmatch(fname,'*eva-fom-modified*') then begin
   if undefined(fomstr) then begin
     fomstr = eva_lim.UNIX_FOMSTR_MOD
     tfom = eva_sitl_tfom(fomstr)

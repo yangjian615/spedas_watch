@@ -87,8 +87,8 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
         endif else lns = bytarr(nvn)
         if keyword_set(thick) then begin
            if n_elements(thick) eq nvn then thk = thick $
-           else thk = intarr(nvn)+thick[0]
-        endif else thk = bytarr(nvn)
+           else thk = fltarr(nvn)+thick[0]
+        endif else thk = fltarr(nvn)
         for j = 0, nvn-1 do begin
            timebar, t, color=clr[j], linestyle=lns[j], $
                     thick=thk[j], verbose=verbose,$
@@ -155,7 +155,6 @@ PRO timebar,t1,color=color,linestyle=linestyle,thick=thick,verbose=verbose,$
 	dprint, 'Time '+time_string(t[i])+' is out of trange.'
     endfor
   endif else begin
-
     for i=0l,0l do begin ;databar    ;for now work only on first element.
       dp = t[i]
       if tplot_vars.settings.y[nd[i]].type then dp = yp[0] + (( alog10(dp) - yr[0] )/(yr[1]-yr[0]) * (yp[1]-yp[0])) else $

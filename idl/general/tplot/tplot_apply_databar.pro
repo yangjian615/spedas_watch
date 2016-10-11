@@ -35,8 +35,8 @@
 ;HISTORY:
 ; 2016-07-29, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-04 14:17:05 -0700 (Tue, 04 Oct 2016) $
-; $LastChangedRevision: 22020 $
+; $LastChangedDate: 2016-10-10 12:29:12 -0700 (Mon, 10 Oct 2016) $
+; $LastChangedRevision: 22074 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_apply_databar.pro $
 ;-
 Pro tplot_apply_databar, varname = varname, clear = clear
@@ -97,7 +97,7 @@ Pro tplot_apply_databar, varname = varname, clear = clear
         If(tag_exist(db, 'thick')) Then Begin 
            thk0 = db.thick
            If(n_elements(thk0) Eq nyval) Then thk = thk0 $
-           Else thk = intarr(nyval)+thk0[0]
+           Else thk = fltarr(nyval)+thk0[0]
         Endif Else thk = intarr(nyval)
         For k = 0, nyval-1 Do Begin
            timebar, db.yval[k], color = clr[k], linestyle = lns[k], $

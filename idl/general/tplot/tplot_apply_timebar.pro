@@ -36,8 +36,8 @@
 ;HISTORY:
 ; 2016-07-29, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-04 14:17:05 -0700 (Tue, 04 Oct 2016) $
-; $LastChangedRevision: 22020 $
+; $LastChangedDate: 2016-10-10 12:29:12 -0700 (Mon, 10 Oct 2016) $
+; $LastChangedRevision: 22074 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_apply_timebar.pro $
 ;-
 Pro tplot_apply_timebar, varname = varname, clear = clear
@@ -86,7 +86,7 @@ Pro tplot_apply_timebar, varname = varname, clear = clear
      If(is_struct(tb)) Then Begin
         If(tag_exist(tb, 'color')) Then clr = tb.color Else clr = 0
         If(tag_exist(tb, 'linestyle')) Then lns = tb.linestyle Else lns = 0
-        If(tag_exist(tb, 'thick')) Then thk = tb.color Else thk = 0
+        If(tag_exist(tb, 'thick')) Then thk = tb.thick Else thk = 0
         timebar, tb.time, color = clr, linestyle = lns, thick = thk, varname = vn[j]
      Endif
   Endfor

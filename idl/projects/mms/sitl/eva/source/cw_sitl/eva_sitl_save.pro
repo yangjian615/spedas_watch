@@ -11,8 +11,8 @@ PRO eva_sitl_save, auto=auto, dir=dir, quiet=quiet
   
   if keyword_set(auto) then begin 
     if n_elements(dir) eq 0 then dir = spd_default_local_data_dir() + 'mms/'
-    ;fname = spd_addslash(dir)+'eva-fom-modified.sav'
-    fname = 'eva-fom-modified.sav'
+    fnameP= 'eva-fom-modified.sav'
+    fname = 'eva-fom-modified-most-recent.sav'
     fname1= 'eva-fom-modified.1step-before.sav'
     fname2= 'eva-fom-modified.2steps-before.sav'
     fname3= 'eva-fom-modified.3steps-before.sav'
@@ -21,6 +21,7 @@ PRO eva_sitl_save, auto=auto, dir=dir, quiet=quiet
     found=file_test(fname2) & if found then file_copy, fname2, fname3,/overwrite
     found=file_test(fname1) & if found then file_copy, fname1, fname2,/overwrite
     found=file_test(fname)  & if found then file_copy, fname,  fname1,/overwrite
+    found=file_test(fnameP) & if found then file_delete, fnameP
   endif else begin
     fname_default = 'eva-fom-modified-'+time_string(systime(1,/utc),format=2)+'.sav'
     fname = dialog_pickfile(DEFAULT_EXTENSION='sav', /WRITE, $

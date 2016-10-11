@@ -18,8 +18,8 @@
 ;     Datapoints within the specified theta or z-axis range are projected onto 
 ;     the slice plane and linearly interpolated onto a regular 2D grid.      
 ;    
-;   Geomtric:
-;     Each point on the plot is given the value of the bin it instersects.
+;   Geometric:
+;     Each point on the plot is given the value of the bin it intersects.
 ;     This allows bin boundaries to be drawn at high resolutions.
 ;
 ;
@@ -32,14 +32,14 @@
 ;
 ;Example Usage:
 ;  slice = spd_slice2d(data, time=time)            ;get slice from distribution closest to TIME
-;  slice = spd_slice23(data, time=time, samples=4) ;use average of the 4 samples nearest to TIME
-;  slice = spd_slice23(data, time=time, window=10) ;use average of all data within [TIME,TIME+10sec]
+;  slice = spd_slice2d(data, time=time, samples=4) ;use average of the 4 samples nearest to TIME
+;  slice = spd_slice2d(data, time=time, window=10) ;use average of all data within [TIME,TIME+10sec]
 ;                                                  ;add "/center_time" for [TIME-5sec,TIME+5sec]  
-;  slice = spd_slice23(data, trange=trange)        ;use average of all data within TRANGE
+;  slice = spd_slice2d(data, trange=trange)        ;use average of all data within TRANGE
 ;
-;  slice = spd_slice23(data, time=time, /three_d_interp) ;use 3D interpolation (default) 
-;  slice = spd_slice23(data, time=time, /two_d_interp)   ;use 2D interpolation
-;  slice = spd_slice23(data, time=time, /geometric)      ;use geometric interpolation
+;  slice = spd_slice2d(data, time=time, /three_d_interp) ;use 3D interpolation (default) 
+;  slice = spd_slice2d(data, time=time, /two_d_interp)   ;use 2D interpolation
+;  slice = spd_slice2d(data, time=time, /geometric)      ;use geometric interpolation
 ;
 ;  See crib sheets:  
 ;    THEMIS:  thm_crib_part_slice2d  (called by thm_part_slice2d)
@@ -58,7 +58,7 @@
 ;    SAMPLES: Number of nearest samples to TIME to average. (int/double)
 ;             If neither SAMPLES nor WINDOW are specified then default=1.
 ;    WINDOW: Length in seconds from TIME over which data will be averaged. (int/double)  
-;      CENTER_TIME: Flag denoting that TIME should be midpoint for window instad of beginning.
+;      CENTER_TIME: Flag denoting that TIME should be midpoint for window instead of beginning.
 ;  
 ;  THREE_D_INTERP: Flag to use 3D interpolation method (described above)      
 ;  TWO_D_INTERP: Flag to use 2D interpolation method (described above)
@@ -70,7 +70,7 @@
 ;                   3x3 rotation matrix or a tplot variable containing matrices.
 ;                   If the time window covers multiple matrices they will be averaged.
 ;                   This is applied before other transformations
-;  ROTATION: Alligns the data relative to the magnetic field and/or bulk velocity.
+;  ROTATION: Aligns the data relative to the magnetic field and/or bulk velocity.
 ;            This is applied after the CUSTOM_ROTATION. (BV and BE are invariant 
 ;            between coordinate systems)
 ;
@@ -131,7 +131,7 @@
 ;          convolution. Even entries will be incremented, 0 and 1 are ignored.
 ;
 ;  ENERGY: Flag to plot data against energy (in eV) instead of velocity.
-;  LOG: Flag to apply logarithmic scaling to the radial mesure (i.e. energy/velocity).
+;  LOG: Flag to apply logarithmic scaling to the radial measure (i.e. energy/velocity).
 ;       (on by default if /ENERGY is set)
 ;
 ;  ERANGE: Two element array specifying the energy range to be used in eV.
@@ -143,7 +143,7 @@
 ;             Z-Axis range, in km/s, used to calculate slice.
 ;             Ignored if called with THETARANGE.
 ;
-;  AVERAGE_ANGLE: (geometric inperpolation only)
+;  AVERAGE_ANGLE: (geometric interpolation only)
 ;                 Two element array specifying an angle range over which 
 ;                 averaging will be applied. The angle is measured 
 ;                 from the slice plane and about the slice's x-axis; 
@@ -166,12 +166,12 @@
 ;       spacecraft: spacecraft designation
 ;       data_name: string or string array containing the type(s) of distribution used
 ;
-;       mass: partile mass in ev/(km/s)^2
+;       mass: particle mass in ev/(km/s)^2
 ;       units: the data's units
 ;       xyunits: the x & y axes' units
 ;       coord: placeholder for coordinate system label
 ;       rot: the applied rotation option
-;       type: flag denoting interpolation type (0,2,3 for geomtric, 2D, 3D respectively)
+;       type: flag denoting interpolation type (0,2,3 for geometric, 2D, 3D respectively)
 ;       rlog: flag denoting radial log scaling
 ;
 ;       zrange: two-element array containing the range of the un-interpolated data 
@@ -179,7 +179,7 @@
 ;       trange: two-element array containing the numerical time range
 ;        
 ;       bulk: 3-vector containing the bulk velocity in the slice plane's coordinates
-;       bfield: 3-vector containing the bfiend in the slice plane's coordinates
+;       bfield: 3-vector containing the B-field in the slice plane's coordinates
 ;       sunvec: 3-vector containing the sun direction in the slice plane's coordinates
 ;       custom_matrix: The applied custom rotation matrix.
 ;       rotation_matrix: Rotation matrix from the the original or custom coordinates 
@@ -191,7 +191,7 @@
 ; 
 ;
 ;NOTES:
-;   - Regions containting no data are assigned zeros instead of NaNs.
+;   - Regions containing no data are assigned zeros instead of NaNs.
 ;   - Interpolation may occur across data gaps or areas with recorded zeroes
 ;     when using 3D interpolation (use geometric interpolation to see bins).
 ;   - The center/midpoint time of a distribution is used as it's timestamp
@@ -203,9 +203,9 @@
 ;  Aaron Flores, based on work by Bryan Kerr, Arjun Raj, and Xuzhi Zhou
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-12-02 19:02:41 -0800 (Wed, 02 Dec 2015) $
-;$LastChangedRevision: 19515 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-10 12:53:12 -0700 (Mon, 10 Oct 2016) $
+;$LastChangedRevision: 22077 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 

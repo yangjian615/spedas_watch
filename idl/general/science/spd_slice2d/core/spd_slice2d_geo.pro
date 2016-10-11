@@ -117,20 +117,23 @@ pro spd_slice2d_geo, data=data, resolution=resolution, $
   ;resolution and the width of the average.
   if keyword_set(average_angle) then begin
     alpha = minmax(average_angle)
-    
+
     ;number of additional slices to average over 
     na = (2 * sqrt(n) * (alpha[1]-alpha[0])/90.) > 2
-    
+
     ;copy slice's x-vector
     xv = m[*,0] ## replicate(1d,na)
-    
+
     ;interpolate across the angle range
     a = ([dindgen(na-1)/(na-1),1] * (alpha[1]-alpha[0])) + alpha[0]
+    
+    ; convert angles to radians (expected by qcompose) - fixed by egrimes, 10/10/2016
+    a = a*!dtor
     
     ;constuct quaternion array to get rotation matricies
     qs = qcompose(xv,a/rd, /free) ;quaternions to rotate about x by a
     ms = qtom(qs) ;get matricies
-    
+
     if n_elements(ms) eq 1 then begin
       fail = 'Error: Cannot construct rotation matrices for angular averaging.'
       dprint, dlevel=0, fail 
