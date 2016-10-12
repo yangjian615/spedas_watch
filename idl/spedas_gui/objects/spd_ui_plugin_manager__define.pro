@@ -6,9 +6,9 @@
 ;    Interface for SPEDAS plugins
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-06-30 13:52:41 -0700 (Tue, 30 Jun 2015) $
-;$LastChangedRevision: 18001 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-11 16:59:54 -0700 (Tue, 11 Oct 2016) $
+;$LastChangedRevision: 22089 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_plugin_manager__define.pro $
 ;-
 
@@ -271,8 +271,14 @@ function spd_ui_plugin_manager::parseConfig, filename
 end
 
 function spd_ui_plugin_manager::loadSaveFile, save_file
-    if save_file ne '' then restore, save_file
-    return, 1
+    catch, error_status
+    if error_status ne 0 then return, 0
+    result = file_test(save_file, /read)
+    if result then begin
+      restore, save_file 
+      return, 1
+    endif 
+    return, 0
 end
 
 function spd_ui_plugin_manager::init
@@ -281,9 +287,9 @@ function spd_ui_plugin_manager::init
         ; find any save files in the plugins directory
         ;    (this is useful for adding new plugins to 
         ;     the VM releases that can't compile routines)
-        plugin_sav_files = file_search(path, '*.sav')
-        
+        plugin_sav_files = file_search(path, '*.sav')        
         for sav_idx = 0, n_elements(plugin_sav_files)-1 do begin
+            if plugin_sav_files[sav_idx] eq '' then continue 
             if self->loadSaveFile(plugin_sav_files[sav_idx]) ne 1 then begin
                 dprint, dlevel = 0, 'Error loading the save file at: ' + plugin_sav_files[sav_idx]
                 ; throw an error dialog too, since we're probably in the VM here

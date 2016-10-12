@@ -27,9 +27,9 @@
 ;
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-13 17:46:11 -0700 (Fri, 13 May 2016) $
-;$LastChangedRevision: 21085 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-11 07:49:52 -0700 (Tue, 11 Oct 2016) $
+;$LastChangedRevision: 22083 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_custom_rotation.pro $
 ;-
 pro spd_slice2d_custom_rotation, $ 
