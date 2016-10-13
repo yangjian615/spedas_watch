@@ -48,7 +48,8 @@ FUNCTION eva_data_load_mms_jtot, sc=sc,curlB=curlB,diffB=diffB,combB=combB, LOAD
       Dnew = dblarr(nmax,3)
       Dnew[*,0] = D1.y[*,0]
       Dnew[*,1] = D1.y[*,1]
-      Dnew[*,2] = D2.y
+      Dnew[*,2] = interpol(D2.y, D2.x, D1.x, /nan)
+      ;Dnew[*,2] = D2.y
       store_data,'mms_sitl_jtot_combB',data={x:D1.x, y:Dnew}
       options,'mms_sitl_jtot_combB',colors=[6,0,2],labflag=-1,$
         labels=['curlB_err','curlB','diffB'],$

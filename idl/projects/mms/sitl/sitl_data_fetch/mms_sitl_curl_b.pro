@@ -2,8 +2,8 @@
 ; flag = 1 if inadequate spacecraft availability for the curlometer.
 ; 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-10-06 16:27:33 -0700 (Thu, 06 Oct 2016) $
-;  $LastChangedRevision: 22060 $
+;  $LastChangedDate: 2016-10-12 15:24:15 -0700 (Wed, 12 Oct 2016) $
+;  $LastChangedRevision: 22090 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_curl_b.pro $
 
 
@@ -77,20 +77,73 @@ if ~is_struct(d1) or ~is_struct(d2) or ~is_struct(d3) or ~is_struct(d4) then beg
   return
 endif
 
-Bx1 = d1.Y(*,0)
-Bx2 = interpol(d2.Y(*,0), d2.X, d1.X)
-Bx3 = interpol(d3.Y(*,0), d3.X, d1.X)
-Bx4 = interpol(d4.Y(*,0), d4.X, d1.X)
+; Find the mag file with the most data
+lengths = [n_elements(d1.x), n_elements(d2.x), n_elements(d3.x), n_elements(d4.x)]
+maxlen = max(lengths, lidx)
+best_sc = lidx + 1
 
-By1 = d1.Y(*,1)
-By2 = interpol(d2.Y(*,1), d2.X, d1.X)
-By3 = interpol(d3.Y(*,1), d3.X, d1.X)
-By4 = interpol(d4.Y(*,1), d4.X, d1.X)
+gse_names = [Name1gse, Name2gse, Name3gse, Name4gse]
 
-Bz1 = d1.Y(*,2)
-Bz2 = interpol(d2.Y(*,2), d2.X, d1.X)
-Bz3 = interpol(d3.Y(*,2), d3.X, d1.X)
-Bz4 = interpol(d4.Y(*,2), d4.X, d1.X)
+case best_sc of
+  1: begin
+      tinterpol, gse_names(1), gse_names(0), /overwrite, /nan_extrapolate
+      tinterpol, gse_names(2), gse_names(0), /overwrite, /nan_extrapolate
+      tinterpol, gse_names(3), gse_names(0), /overwrite, /nan_extrapolate
+     end
+  2: begin
+      tinterpol, gse_names(0), gse_names(1), /overwrite, /nan_extrapolate
+      tinterpol, gse_names(2), gse_names(1), /overwrite, /nan_extrapolate
+      tinterpol, gse_names(3), gse_names(1), /overwrite, /nan_extrapolate
+     end
+  3: begin
+      tinterpol, gse_names(0), gse_names(2), /overwrite, /nan_extrapolate
+      tinterpol, gse_names(1), gse_names(2), /overwrite, /nan_extrapolate
+      tinterpol, gse_names(3), gse_names(2), /overwrite, /nan_extrapolate
+     end
+  4: begin
+      tinterpol, gse_names(0), gse_names(3), /overwrite, /nan_extrapolate
+      tinterpol, gse_names(1), gse_names(3), /overwrite, /nan_extrapolate
+      tinterpol, gse_names(2), gse_names(3), /overwrite, /nan_extrapolate
+     end
+else: return
+endcase
+
+get_data, Name1gse, data = d1
+get_data, Name2gse, data = d2
+get_data, Name3gse, data = d3
+get_data, Name4gse, data = d4
+
+
+Bx1 = d1.y(*,0)
+Bx2 = d2.y(*,0)
+Bx3 = d3.y(*,0)
+Bx4 = d4.y(*,0)
+
+By1 = d1.y(*,1)
+By2 = d2.y(*,1)
+By3 = d3.y(*,1)
+By4 = d4.y(*,1)
+
+Bz1 = d1.y(*,2)
+Bz2 = d2.y(*,2)
+Bz3 = d3.y(*,2)
+Bz4 = d4.y(*,2)
+
+
+;Bx1 = d1.Y(*,0)
+;Bx2 = interpol(d2.Y(*,0), d2.X, d1.X)
+;Bx3 = interpol(d3.Y(*,0), d3.X, d1.X)
+;Bx4 = interpol(d4.Y(*,0), d4.X, d1.X)
+;
+;By1 = d1.Y(*,1)
+;By2 = interpol(d2.Y(*,1), d2.X, d1.X)
+;By3 = interpol(d3.Y(*,1), d3.X, d1.X)
+;By4 = interpol(d4.Y(*,1), d4.X, d1.X)
+;
+;Bz1 = d1.Y(*,2)
+;Bz2 = interpol(d2.Y(*,2), d2.X, d1.X)
+;Bz3 = interpol(d3.Y(*,2), d3.X, d1.X)
+;Bz4 = interpol(d4.Y(*,2), d4.X, d1.X)
 
 npts = n_elements(d1.x)
 Y = fltarr(npts,4)
