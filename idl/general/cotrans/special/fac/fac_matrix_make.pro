@@ -77,7 +77,7 @@
 ;                 First coordinate definition: X = Ygsm x Z
 ;                 Third completes orthogonal RHS XYZ
 ; Example:
-;  fac_matrix_make,'tha_fgs',other_dim='Xgse',pos_var_name='tha_pos',out_var_name='tha_fgs_fac_mat'
+;  fac_matrix_make,'tha_fgs',other_dim='Xgse',pos_var_name='tha_pos',newname='tha_fgs_fac_mat'
 ;
 ;Notes:
 ;--> Should filter NaNs to supress floating point errors
@@ -88,9 +88,9 @@
 ;     cotrans,cotrans_get_coord,tvector_rotate,minvar_matrix_make,fac_crib
 ;
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-01-23 16:21:34 -0800 (Mon, 23 Jan 2012) $
-; $LastChangedRevision: 9592 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2016-10-13 11:17:14 -0700 (Thu, 13 Oct 2016) $
+; $LastChangedRevision: 22094 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/fac/fac_matrix_make.pro $
 ;-
 

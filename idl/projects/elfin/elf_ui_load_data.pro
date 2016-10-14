@@ -78,8 +78,6 @@ pro elf_ui_load_data_event,event
         if event.index eq 2 then typeArray = state.engTypeArray
         widget_control, typelist, set_value=typeArray
       end    
-      'TYPELIST': begin
-      end
       'CLEARPARAMS': begin
         ;clear the level and type list widget of all selections
         levellist = widget_info(event.handler,find_by_uname='levellist')
@@ -161,6 +159,7 @@ pro elf_ui_load_data_event,event
         if instrument eq 'epd' then typeArray = state.epdTypeArray
         if instrument eq 'eng' then typeArray = state.engTypeArray
         types = typeArray[typeSelect]
+
         ;report errors to status bar and history window
         if  instNum eq -1 then begin
           state.statusBar->update,'You must select at least one instrument'
@@ -312,7 +311,7 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   
   ;create the list box and a clear all button for the data types for a given 
   ;instrument             
-  prmLevelArray = ['L1']
+  prmLevelArray = ['L2']
   epdLevelArray = ['L1']
   engLevelArray = ['L1']
   levelBase = widget_base(dataBase,/col)
@@ -335,6 +334,7 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
                   '8v6_volt_mon', '8v_volt_mon', '5v_dig_volt_mon', '5v_epd_volt_mon', '4v5_volt_mon', $
                   '3v3_volt_mon', '1v5_volt_dig_volt_mon', '1v5_epd_volt_mon', '1v5_prm_volt_mon', $
                   'epd_biasl_volt_mon', 'epd_biash_volt_mon', 'epd_fend_temp']
+  engIndex=1
   typeBase = widget_base(dataBase,/col)
   typeLabel = widget_label(typeBase,value='Type:')
   typeList = widget_list(typeBase,$
@@ -364,7 +364,8 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
            engLevelArray:engLevelArray, $            
            prmTypeArray:prmTypeArray, $
            epdTypeArray:epdTypeArray, $
-           engTypeArray:engTypeArray}
+           engTypeArray:engTypeArray, $
+           engIndex:engIndex}
   widget_control,topBase,set_uvalue=state
                                   
   return
