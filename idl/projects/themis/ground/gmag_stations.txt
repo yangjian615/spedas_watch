@@ -1,4 +1,4 @@
-aari|AARI||
+﻿aari|AARI||
 asi|ASI||
 autu|AUTUMN||
 autx|AUTUMNX||
@@ -6,6 +6,7 @@ carisma|CARISMA||
 cgsm|CGSM||
 dtu|DTU||
 gima|GIMA||
+falcon|FALCON||
 kyoto|KYOTO||
 leirv|Leirvogur||
 maccs|MACCS||
@@ -119,6 +120,7 @@ ae|Themis AE|hop|Hopen, Norway
 tgo|TGO|hop|Hopen, Norway
 epo|Themis EPO|hots|Hot Springs, MT
 step|STEP|hrp|Hornepayne, ON
+falcon|FALCON|hris|Harris, MN
 maccs|MACCS|iglo|Igloolik, NU
 ae|Themis AE|inuk|Inukjuak, QC
 autx|AUTUMNX|inuk|Inukjuak, QC
@@ -140,6 +142,7 @@ aeold|Themis AE (pre 2015)|kian|Kiana, AK
 gbo|Themis GBO|kian|Kiana, AK
 asi|ASI|kian|Kiana, AK
 autx|AUTUMNX|kjpk|Kuujjuarapik, QC
+falcon|FALCON|kodk|Kodiak Island, AK
 aeold|Themis AE (pre 2015)|kuuj|Kuujjuaq, QC
 gbo|Themis GBO|kuuj|Kuujjuaq, QC
 asi|ASI|kuuj|Kuujjuaq, QC
@@ -150,6 +153,7 @@ step|STEP|lcl|Lucky Lake, SK
 ae|Themis AE|leth|Lethbridge, AB
 autu|AUTUMN|leth|Lethbridge, AB
 epo|Themis EPO|loys|Loysburg, PA
+falcon|FALCON|lrel|Laurel, MD
 mcmac|McMAC|lres|Linares, Mexico
 step|STEP|lrg|LaRonge, SK
 ae|Themis AE|lrv|Leirvogur, Iceland
@@ -180,6 +184,7 @@ maccs|MACCS|pang|Pangnirtung, NU
 ae|Themis AE|pbk|Pevek, Russia
 aari|AARI|pbk|Pevek, Russia
 kyoto|KYOTO|pbk|Pevek, Russia
+falcon|FALCON|pblo|Pueblo, CO
 mcmac|McMAC|pcel|Purcell, OK
 pen|PENGUIn|pg0|Antarctica
 pen|PENGUIn|pg1|Antarctica
@@ -240,6 +245,7 @@ tgo|TGO|sol|Solund, Norway
 tgo|TGO|sor|S�r�ya, Norway
 ae|Themis AE|stf|Kangerlussuaq, Greenland
 dtu|DTU|stf|Kangerlussuaq, Greenland
+falcon|FALCON|stfd|Stanford, CA
 autx|AUTUMNX|stfl|Saint-Felicien, QC
 nrcan|NRCan|stj|St. John, NL
 dtu|DTU|svs|Savissivik, Greenland
@@ -272,6 +278,7 @@ aeold|Themis AE (pre 2015)|whit|Whitehorse, YT
 gbo|Themis GBO|whit|Whitehorse, YT
 asi|ASI|whit|Whitehorse, YT
 step|STEP|whs|Whitehorse, YT
+falcon|FALCON|wlps|Wallops Island, VA
 mcmac|McMAC|wrth|Worthington, MN
 cgsm|CGSM|ykc|Yellowknife, NT
 kyoto|KYOTO|ykc|Yellowknife, NT

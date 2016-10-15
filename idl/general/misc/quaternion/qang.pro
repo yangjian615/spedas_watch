@@ -25,9 +25,9 @@
 ;
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2007-11-11 17:12:08 -0800 (Sun, 11 Nov 2007) $
-; $LastChangedRevision: 2027 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/ssl_general/trunk/cotrans/cotrans.pro $
+; $LastChangedDate: 2016-10-14 11:01:12 -0700 (Fri, 14 Oct 2016) $
+; $LastChangedRevision: 22098 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/quaternion/qang.pro $
 ;-
 
 function qang,q

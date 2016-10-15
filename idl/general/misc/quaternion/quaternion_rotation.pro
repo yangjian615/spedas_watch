@@ -13,9 +13,9 @@
 ;
 ;Written by: Davin Larson
 ;
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2014-12-16 15:38:27 -0800 (Tue, 16 Dec 2014) $
-; $LastChangedRevision: 16488 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2016-10-14 11:01:12 -0700 (Fri, 14 Oct 2016) $
+; $LastChangedRevision: 22098 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/quaternion/quaternion_rotation.pro $
 ;-
 function quaternion_rotation,v,q,last_index=last_index
