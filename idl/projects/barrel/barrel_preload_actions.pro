@@ -112,7 +112,7 @@ if (keyword_set(probe)) then $
 ;   C  = campaign number (0 for non-campaign, 1 for 2012/2013, 2 for 2013/2014)
 ;   LL = numerical launch order payload identifier (00 for non-campaign data)
 ;   PP = alphanumerical build order payload identifier (e.g. 1A, 1B)
-;   S  = launch site (0 for non-campaign, 1 for SANAE, 2 for Halley)
+;   S  = launch site (0 for non-campaign, 1 for SANAE, 2 for Halley, 3 for Kiruna)
 ; NOTE: these are the long-form identifiers.  As of v0.93 and CDF v02+, a 
 ;       short-form identifier (of type "PP") is instead used in file and 
 ;       variable naming conventions.  The long-form identifier is 
@@ -134,7 +134,7 @@ year2 = ['201_2T_2','202_2I_2','203_2W_1',     '205_2K_2',$
      ; note, no data available for payload 2J (launch 04, identifier 204_2J_2)
      ;  or payload 2Z (launch 10, identifier 210_2Z_1)
 year3 = ['301_3A_3','302_3B_3','303_3C_3','304_3D_3','305_3E_3','306_3F_3', '305_3G_3']
-
+year4 = ['401_4A_3','402_4B_3','403_4C_3','404_4D_3','405_4E_3','406_4F_3','407_4G_3','408_4H_3']
 ; non-campaign, pre-launch, and testing data         
   ; build order identifiers
   year1_bo = '1'+string(bindgen(1,25)+(byte('A'))[0])
@@ -145,7 +145,7 @@ year3 = ['301_3A_3','302_3B_3','303_3C_3','304_3D_3','305_3E_3','306_3F_3', '305
 
 
 ; all valid payload designators
-vprobes = [year1, year2, year3] ; provision for next year's campaign
+vprobes = [year1, year2, year3, year4] ; provision for next year's campaign
 ;vprobes = [year1, year2, testing] ; provision for non-campaign CDF data
 
 
