@@ -5,8 +5,8 @@
 ; ran the code for all four spacecraft outside of the routine, and all appropriate tplot variables are stored.
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-10-12 15:24:15 -0700 (Wed, 12 Oct 2016) $
-;  $LastChangedRevision: 22090 $
+;  $LastChangedDate: 2016-10-17 14:55:34 -0700 (Mon, 17 Oct 2016) $
+;  $LastChangedRevision: 22111 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_diffb.pro $
 
 
@@ -140,22 +140,23 @@ for i = 0, n_elements(d1.x)-1 do begin
   Bzs = [d1.y(i,2), d2.y(i,2), d3.y(i,2), d4.y(i,2)]
   jvalid = [0, 0, 0, 0]
   
-  goodloc = where(Bxs ne !values.f_nan, countgood)
+  goodloc = where(finite(Bxs), countgood)
   
-  badloc = where(Bxs eq !values.f_nan, countbad)
-  
+  badloc = where(~finite(Bxs), countbad)
+    
   if countbad gt 0 then begin
     Bxs[badloc] = 0
     Bys[badloc] = 0
     Bzs[badloc] = 0
   endif
   
+  
   if countgood le 1 then begin
     diffB(i) = 0
   endif else begin
     jvalid[goodloc] = 1
     scale = 4d/countgood
-    
+
     B1x = Bxs(0)
     B2x = Bxs(1)
     B3x = Bxs(2)
@@ -207,7 +208,5 @@ diffB = sqrt(diffB)*1e-6/(2*sep*mu0)
 store_data, 'mms_sitl_diffB', data = {x:tref, y:diffB}
 
 options, 'mms_sitl_diffB', 'ytitle', 'diffB!cuA/m!U2!D'
-
-
 
 end

@@ -37,8 +37,8 @@
 ;             *rbsp_efw_cal_waveform*.
 ;
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2015-01-05 12:33:35 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16587 $
+; $LastChangedDate: 2016-10-17 09:27:46 -0700 (Mon, 17 Oct 2016) $
+; $LastChangedRevision: 22106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_load_efw_waveform_l3.pro $
 ;-
 
@@ -50,7 +50,7 @@ pro rbsp_load_efw_waveform_l3,probe=probe, trange=trange, $
                               etu=etu,tper = tper, tphase = tphase, _extra = _extra
 
   rbsp_efw_init
-  dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_waveform_l3.pro 16587 2015-01-05 20:33:35Z aaronbreneman $'
+  dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_efw_waveform_l3.pro 22106 2016-10-17 16:27:46Z aaronbreneman $'
 
   UMN_data_location = 'http://rbsp.space.umn.edu/data/rbsp/'
   cache_remote_data_dir = !rbsp_efw.remote_data_dir
@@ -59,7 +59,7 @@ pro rbsp_load_efw_waveform_l3,probe=probe, trange=trange, $
   if keyword_set(etu) then probe = 'a'
 
   if(keyword_set(probe)) then $
-     p_var = probe
+     p_var = strlowcase(probe)
 
   vb = keyword_set(verbose) ? verbose : 0
   vb = vb > !rbsp_efw.verbose
@@ -105,7 +105,7 @@ pro rbsp_load_efw_waveform_l3,probe=probe, trange=trange, $
 
         dprint, dlevel = 5, verbose = verbose, 'Setting options...'
 
-        options, /def, tns, code_id = '$Id: rbsp_load_efw_waveform_l3.pro 16587 2015-01-05 20:33:35Z aaronbreneman $'
+        options, /def, tns, code_id = '$Id: rbsp_load_efw_waveform_l3.pro 22106 2016-10-17 16:27:46Z aaronbreneman $'
 
         store_data,new_name,/delete
         store_data,old_name,newname=new_name

@@ -99,8 +99,8 @@
 ;	 100%. Remembercomparing two straight lines yields 100% polarisation.
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-09 11:17:05 -0700 (Tue, 09 Aug 2016) $
-; $LastChangedRevision: 21621 $
+; $LastChangedDate: 2016-10-17 16:12:51 -0700 (Mon, 17 Oct 2016) $
+; $LastChangedRevision: 22112 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wavpol/wavpol.pro $
 ;-
 pro wavpol,ct,Bx,By,Bz,timeline,freqline,powspec,degpol,waveangle,elliptict,helict,pspec3,$
@@ -431,6 +431,8 @@ samp_per=samp_per_input, nopfft=nopfft_input,steplength = steplength_input, bin_
           
           ; CREATING OUTPUT STRUCTURES
           timeline[KK_batch_start:KK_batch_stop]=ct[ind0]+ABS(nopfft/2)/samp_freq+findgen(nbp_fft_batches[batch])*steplength/samp_freq
+          ; avoid a crash when we hit the end of timeline
+          if KK eq n_elements(timeline) then continue 
           ; time tag of the leap frog between batch
           timeline[KK_batch_stop+1]=ct[ind0]+ABS(nopfft/2)/samp_freq+(nbp_fft_batches[batch]+1)*steplength/samp_freq
           KK = KK+1L

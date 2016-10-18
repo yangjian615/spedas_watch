@@ -100,9 +100,16 @@ spp_msg_file_read, spp_file_retrieve( 'spp/data/sci/sweap/prelaunch/gsedata/EM/S
 
 spp_msg_file_read, spp_file_retrieve( 'spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-2/20160805_125639_ramp_up/GSE_all_msg.dat')  ; Ion ramp in which SWEMULATOR reset?
 
-spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-3/20160923_165136_BfltContinuedPHDscan/PTP_data.dat')
 
 spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-3/20160920_084426_BfltBigCalChamberEAscan/PTP_data.dat.gz')
+
+spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-3/20160923_165136_BfltContinuedPHDscan/PTP_data.dat')
+
+;   spane B flight CO pre conformal coat
+files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8']) 
+spp_ptp_file_read,files
+
+spp_ptp_file_read, spp_file_re
 
 
 tplot,'*CNTS *DCMD_REC *VMON_MCP *VMON_RAW *ACC*'
@@ -152,7 +159,7 @@ if 0 then begin
   tplot,'ALL_CMD_CNT',/add
   tplot,/add,'spp*hkp*ERR_CNT'
   tplot,/add,'spp_*_C'
-  tplot/
+;  tplot/
   
 endif
 

@@ -66,7 +66,7 @@
 ;     Note that only one result can be returned through this keyword.(ie You can't use this keyword with tplot name-globbing)  
 ;
 ;CALLING SEQUENCE;
-;           tinterpol,'tplot_var1','tplot_var2',out_var='tplot_var_out'
+;           tinterpol,'tplot_var1','tplot_var2',newname='tplot_var_out'
 ;           tinterpol,'tplot_var1','tplot_var2',/NO_EXTRAPOLATE
 ;           tinterpol,'tplot_var1','tplot_var2',/SPLINE
 ;           tinterpol,'tplot_var1','tplot_var2',out=out_data_struct ;doesn't create tplot variable, instead returns struct
@@ -90,9 +90,9 @@
 ; and we want three matrices then output is all 1s all 1.5s all 2s 
 ; 
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-12-19 16:54:40 -0800 (Thu, 19 Dec 2013) $
-; $LastChangedRevision: 13712 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-10-17 08:33:58 -0700 (Mon, 17 Oct 2016) $
+; $LastChangedRevision: 22105 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/tinterpol.pro $
 ;-
 

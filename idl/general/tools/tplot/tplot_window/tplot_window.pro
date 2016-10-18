@@ -87,8 +87,8 @@
 ;HISTORY:
 ; 2016-09-23, jmm, jimm@ssilberkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-07 11:30:08 -0700 (Fri, 07 Oct 2016) $
-; $LastChangedRevision: 22065 $
+; $LastChangedDate: 2016-10-17 12:48:20 -0700 (Mon, 17 Oct 2016) $
+; $LastChangedRevision: 22110 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/tplot_window/tplot_window.pro $
 ;-
 Pro tplot_window_event, event
@@ -136,6 +136,10 @@ Pro tplot_window_event, event
            widget_control, event.top, set_uval = state, /no_copy
            Return
         Endif
+;Check to be sure that the graphics device is set to the tplot window,
+;sometimes this is not the case when windows get deleted or moved
+;around
+        wset, tplot_vars.options.window
         tplot, verbose=0, get_plot_pos = ppp
 ;Now some xtplot hacks
         geo = widget_info(state.draw_widget, /geo) ;widget geometry
