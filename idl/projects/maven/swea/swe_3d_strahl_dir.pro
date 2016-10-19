@@ -31,8 +31,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:50:54 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16879 $
+; $LastChangedDate: 2016-10-18 15:24:35 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22134 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_strahl_dir.pro $
 ;
 ;-
@@ -271,8 +271,6 @@ pro swe_3d_strahl_dir, result=result, energy=energy, power=pow, smo=smo, pans=pa
   options,'SYM_The','yminor',3
 
   pans = ['SYM_Phi','SYM_The']
-  
-  timebar,t_cfg,/line
 
   return
 

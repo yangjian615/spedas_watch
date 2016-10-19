@@ -26,8 +26,8 @@
 ;       ARCHIVE:       If set, show snapshots of archive data.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-05 12:53:03 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22037 $
+; $LastChangedDate: 2016-10-18 15:23:51 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22133 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_cal_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -49,7 +49,7 @@ pro swe_cal_snap, ddd=ddd, pad=pad, spec=spec, keepwins=keepwins, units=units, $
   if keyword_set(spec) then begin
     if (size(mvn_swe_engy,/type) ne 8) then mvn_swe_makespec
     dospec = 1
-  endif dospec = 0
+  endif else dospec = 0
   
   if ((doddd + dopad + dospec) eq 0) then begin
     print,"You must set a data type keyword: DDD, PAD, SPEC"

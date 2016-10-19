@@ -51,8 +51,6 @@
 ;       CHKSUM:       Specify the sweep table by its checksum.  See above.
 ;                     This only works for table numbers > 3.
 ;
-;       DFGON:        Turn on the elevation-dependent sensitivity.
-;
 ;       SETCAL:       Structure holding calibration factors to modify.  Structure can
 ;                     have any combination of tags, but only the following are
 ;                     recognized (with default values):
@@ -66,14 +64,14 @@
 ;                     Any other tags are ignored.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-05 13:57:51 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22046 $
+; $LastChangedDate: 2016-10-18 15:30:31 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22137 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
 ;FILE: mvn_swe_calib.pro
 ;-
-pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon, setcal=setcal, default=default
+pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
 
   @mvn_swe_com
 
@@ -121,6 +119,8 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon, setcal=setcal, def
       print, "Setting maximum deadtime correction: ",1./value
     endif
   endif
+
+  if keyword_set(ogf) then swe_ff_switch = 1 else swe_ff_switch = 0
 
 ; Find the first valid LUT
 ;   chksum =   0B means SWEA has just powered on
@@ -405,44 +405,42 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, dgfon=dgfon, setcal=setcal, def
 ;  be separated into azimuth and elevation terms that are multiplied
 ;  together.
 ;
-
-  dgf = [0.922951, 1.18653, 1.11294, 1.02737, 0.923664, 0.826548]
-  swe_dgf = reform((dgf # replicate(1.,64*3)),6,64,3)
-
-  for i=0,31 do begin
-    swe_dgf[*,(2*i),1] = (swe_dgf[*,(2*i),0] + swe_dgf[*,(2*i+1),0])/2.
-    swe_dgf[*,(2*i+1),1] = swe_dgf[*,(2*i),1]
-  endfor
-
-  for i=0,15 do begin
-    swe_dgf[*,(4*i),2] = (swe_dgf[*,(4*i),1] + swe_dgf[*,(4*i+3),1])/2.
-    for j=1,3 do swe_dgf[*,(4*i+j),2] = swe_dgf[*,(4*i),2]
-  endfor
-
+;  dgf = [0.922951, 1.18653, 1.11294, 1.02737, 0.923664, 0.826548]
+;  swe_dgf = reform((dgf # replicate(1.,64*3)),6,64,3)
+;
+;  Average over energy bins for group = 1,2
+;
+;  for i=0,31 do begin
+;    swe_dgf[*,(2*i),1] = (swe_dgf[*,(2*i),0] + swe_dgf[*,(2*i+1),0])/2.
+;    swe_dgf[*,(2*i+1),1] = swe_dgf[*,(2*i),1]
+;  endfor
+;
+;  for i=0,15 do begin
+;    swe_dgf[*,(4*i),2] = (swe_dgf[*,(4*i),1] + swe_dgf[*,(4*i+3),1])/2.
+;    for j=1,3 do swe_dgf[*,(4*i+j),2] = swe_dgf[*,(4*i),2]
+;  endfor
+;
 ; Normalize: mean(swe_dgf[*,i,j]) = 1.
+;
+;  for i=0,63 do begin
+;    for j=0,2 do begin
+;      swe_dgf[*,i,j] = swe_dgf[*,i,j]/mean(swe_dgf[*,i,j])
+;    endfor
+;  endfor
+;  
+;  swe_dgf = transpose(swe_dgf,[1,0,2])
 
-  for i=0,63 do begin
-    for j=0,2 do begin
-      swe_dgf[*,i,j] = swe_dgf[*,i,j]/mean(swe_dgf[*,i,j])
-    endfor
-  endfor
-  
-  swe_dgf = transpose(swe_dgf,[1,0,2])
+  swe_dgf = replicate(1., 64, 6, 3)  ; Don't use deflector-based correction
 
-; Corrections for individual solid angle bins.  These are caused by 
-; partial blockage by the spacecraft.
+; Corrections for individual solid angle bins based on in-flight calibrations
+; (see mvn_swe_fovcal).  This method corrects for sensitivity variations in 
+; azimuth and elevation independently.  This includes edge effects at the 
+; maximum and minimum deflection angles, and partial spacecraft blockage.
+; Fully blocked bins have a sensitivity of unity, but these are masked (see 
+; next section).  Note that sensitivity variations in azimuth are relative to
+; the ground calibration contained in swe_rgf, above.
 
-  swe_ogf = replicate(1.,96)
-  swe_ogf[7]  = 1.15283
-  swe_ogf[19] = 0.656415
-  swe_ogf[20] = 0.690075
-  swe_ogf[33] = 0.787840
-  swe_ogf /= mean(swe_ogf)
-
-  if not keyword_set(dgfon) then begin
-    swe_dgf[*] = 1.
-    swe_ogf[*] = 1.
-  endif
+  if (size(swe_ff_state,/type) eq 0) then mvn_swe_flatfield, /off, /silent
 
 ; Spacecraft blockage mask (~27% of sky, deployed boom, approximate)
 ;   Complete blockage: 0, 1, 2, 3, 17, 18

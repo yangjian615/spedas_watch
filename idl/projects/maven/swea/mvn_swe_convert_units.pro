@@ -9,15 +9,22 @@
 ;	mvn_swe_convert_units, data, units, SCALE=SCALE
 ;INPUTS: 
 ;	Data: A 3D, PAD, or SPEC data structure for SWEA
-;	Units: Units to convert the structure to
+;	Units: Units to convert the structure to.  Recognized units are:
+;            COUNTS : raw counts, uncorrected for deadtime
+;            RATE   : raw count rate, uncorrected for deadtime
+;            CRATE  : count rate, corrected for deadtime
+;            FLUX   : differential number flux (1/cm^2-s-ster-eV)
+;            EFLUX  : differential energy flux (eV/cm^2-s-ster-eV)
+;            E2FLUX : energy flux per energy bin (eV/cm^2-s-ster-bin)
+;            DF     : distribution function (1/(cm^3-(km/s)^3))
 ;KEYWORDS:
 ;	SCALE: Returns an array of conversion factors used
 ;OUTPUTS:
 ;	Returns the same data structure in the new units
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-09 14:42:03 -0800 (Mon, 09 Nov 2015) $
-; $LastChangedRevision: 19319 $
+; $LastChangedDate: 2016-10-18 13:59:04 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22128 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_convert_units.pro $
 ;
 ;-

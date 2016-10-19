@@ -15,9 +15,7 @@
 ; before_time = if set, process all of the files created *before* the
 ;              input time
 ; days_in = An array of dates, e.g., ['2009-01-30','2009-02-01'] to
-;           process. This ignores the input time. This option
-;           replicates the proceesing done by
-;           thm_reprocess_l2gen_days.
+;           process. This ignores the input time.
 ; out_dir = the directory in which you write the data, default is './'
 ; use_file4time = if set, use filenames for time test instead of file
 ;                 modified time, useful for reprocessing
@@ -31,8 +29,8 @@
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-20 10:54:04 -0700 (Tue, 20 Sep 2016) $
-; $LastChangedRevision: 21885 $
+; $LastChangedDate: 2016-10-18 10:41:14 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22120 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $

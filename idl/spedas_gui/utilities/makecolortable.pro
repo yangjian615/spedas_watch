@@ -11,9 +11,9 @@
 ;EFFECTS:
 ;  overwrites the file spedas/spd_ui/utilities/spd_gui_colors.tbl
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2014-02-11 10:54:32 -0800 (Tue, 11 Feb 2014) $
-;$LastChangedRevision: 14326 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-18 16:31:28 -0700 (Tue, 18 Oct 2016) $
+;$LastChangedRevision: 22141 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/makecolortable.pro $
 ;----------
 
@@ -91,7 +91,7 @@ pro makeColortable
   ;SPEDAS
   ;loadct,13
   
-  thm_init
+  spedas_init
   loadct2,43
   
   tvlct,r,g,b,/get

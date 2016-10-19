@@ -4,10 +4,10 @@
 ; Makes a blank panel if proper data quantities are not present
 ;
 ;
-; $LastChangedBy: lphilpott $
-; $LastChangedDate: 2012-06-14 10:41:59 -0700 (Thu, 14 Jun 2012) $
-; $LastChangedRevision: 10558 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/blank_panel.pro $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-18 15:59:42 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22140 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/deprecated/blank_panel.pro $
 ;-
 pro blank_panel,mnem,ytitle,labels=labels
 

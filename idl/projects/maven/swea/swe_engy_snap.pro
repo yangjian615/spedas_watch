@@ -36,6 +36,10 @@
 ;
 ;       SUM:           If set, use cursor to specify time ranges for averaging.
 ;
+;       ERROR_BARS:    If set, plot energy spectra with error bars.  Does not work 
+;                      when the TPLOT option (see above) is set, because statistical
+;                      uncertainties are not stored in the tplot variable.
+;
 ;       POT:           Overplot an estimate of the spacecraft potential.  Must run
 ;                      mvn_swe_sc_pot first.
 ;
@@ -108,9 +112,13 @@
 ;
 ;       POPEN:         Set this to the name of a postscript file for output.
 ;
+;       XRANGE:        Override the default horizontal axis range with this.
+;
+;       YRANGE:        Override the default vertical axis range with this.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-05 12:52:35 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22036 $
+; $LastChangedDate: 2016-10-18 15:23:21 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22132 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -122,7 +130,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
                    xrange=xrange,yrange=frange,sscale=sscale, popen=popen, times=times, $
-                   flev=flev, pylim=pylim, k_e=k_e, peref=peref
+                   flev=flev, pylim=pylim, k_e=k_e, peref=peref, error_bars=error_bars
 
   @mvn_swe_com
   @swe_snap_common
@@ -138,6 +146,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(burst) then aflg = 1
   if not keyword_set(units) then units = 'eflux'
   if keyword_set(sum) then npts = 2 else npts = 1
+  if keyword_set(error_bars) then ebar = 1 else ebar = 0
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if keyword_set(noerase) then oflg = 0 else oflg = 1
   if (size(scp,/type) eq 0) then scp = !values.f_nan else scp = float(scp[0])
@@ -166,11 +175,16 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(tplot) then begin
     get_data,'swe_a4',data=dat,limits=lim,index=i
     if (i gt 0) then begin
-      str_element,lim,'ztitle',units,success=ok
-      if (ok) then units = strlowcase(units) else units = 'unknown'
-      tspec = {time:dat.x, data:dat.y, energy:dat.v, units_name:units}
+      str_element,lim,'ztitle',units_name,success=ok
+      if (ok) then units_name = strlowcase(units_name) else units_name = 'unknown'
+      tspec = {time:dat.x, data:dat.y, energy:dat.v, units_name:units_name}
       tflg = 1
     endif else print,'No SPEC data found in tplot.'
+  endif
+  
+  if (tflg and ebar) then begin
+    print,"Can't plot error bars with TPLOT option."
+    ebar = 0
   endif
 
   get_data,'alt',data=alt
@@ -197,7 +211,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if (size(mask_sc,/type) eq 0) then mask_sc = 1
   if keyword_set(mask_sc) then obins = swe_sc_mask * obins
   
-  if keyword_set(pot) then dopot = 1 else dopot = 0
+  if (size(pot,/type) eq 0) then dopot = 1 else dopot = keyword_set(pot)
   if keyword_set(pepeaks) then dopep = 1 else dopep = 0
   if (size(peref,/type) eq 8) then doper = 1 else doper = 0
   if keyword_set(scat) then scat = 1 else scat = 0
@@ -229,7 +243,6 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         print,"No SPEC archive data."
         return
       endif
-      mvn_swe_convert_units, mvn_swe_engy_arc, units
     endif else begin
       if (size(mvn_swe_engy,/type) ne 8) then begin
         print,"No SPEC survey data."
@@ -317,14 +330,20 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   endelse
   if (fflg) then yrange = drange
   if keyword_set(frange) then yrange = frange
-  
+
+; Correct for spacecraft potential.  For instrumental units (COUNTS, RATE, or
+; CRATE) only shift in energy.  For flux units (FLUX, EFLUX), shift in energy 
+; and correct the signal level to ensure conservation of phase space density.
+
   if (spflg) then begin
-    mvn_swe_convert_units, spec, 'df'
-    spec.energy -= pot
-    mvn_swe_convert_units, spec, units
+    if (stregex(units,'flux',/boo,/fold)) then begin
+      mvn_swe_convert_units, spec, 'df'
+      spec.energy -= pot
+      mvn_swe_convert_units, spec, units
+    endif else spec.energy -= pot
   endif
   
-  case strupcase(spec.units_name) of
+  case strupcase(units) of
     'COUNTS' : ytitle = 'Raw Counts'
     'RATE'   : ytitle = 'Raw Count Rate'
     'CRATE'  : ytitle = 'Count Rate'
@@ -345,6 +364,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
     x = spec.energy
     y = spec.data
+    if (ebar) then dy = sqrt(spec.var)
     phi = spec.sc_pot
     ys = 0.90
 
@@ -358,13 +378,15 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     if ((nplot eq 0) or oflg) then plot_oo,x,y,yrange=yrange,/ysty,xrange=xrange, $
             xtitle='Energy (eV)', ytitle=ytitle,charsize=csize2,psym=psym,title=time_string(spec.time) $
                               else oplot,x,y,psym=psym
+
+    if (ebar) then oploterr,x,y,dy,3
     
     if (rflg) then oplot,x,y,psym=psym,color=(nplot mod 6)+1
 
     if (dflg) then begin
       if (npts gt 1) then ddd = mvn_swe_get3d(trange,/all,/sum) $
                      else ddd = mvn_swe_get3d(spec.time)
-      mvn_swe_convert_units, ddd, spec.units_name
+      mvn_swe_convert_units, ddd, units
       dt = min(abs(swe_hsk.time - ddd.time), kref)
 
       if (ddd.time gt t_mtx[2]) then boom = 1 else boom = 0
@@ -380,7 +402,6 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 ; Method from McFadden, adapted from Dave Evans.
 
     if (dosec) then begin
-      units = spec.units_name
       odat = spec
       mvn_swe_convert_units, odat, 'crate'
 
@@ -425,7 +446,6 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 ; Experimental.
 
     if (dobkg) then begin
-      units = spec.units_name
       odat = spec
       mvn_swe_convert_units, odat, 'crate'
 
@@ -461,15 +481,19 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     
     if keyword_set(bck) then begin
       bck = spec
-      bck.data[*] = 5.6/16.  ; background crate per anode at periapsis
+      eff0 = 1./mvn_swe_crosscal('2014-11-15',/extrapolate,/silent)
+      eff = 1./mvn_swe_crosscal(bck.time,/extrapolate,/silent)
+      brate = (0.6*(average(eff,/nan)/eff0))[0]
+      bck.data[*] = brate  ; background crate per anode at periapsis
       bck.units_name = 'crate'
-      mvn_swe_convert_units, bck, spec.units_name
-      oplot, bck.energy, bck.data, line=2, color=4              ; periapsis
-      oplot, bck.energy, bck.data*(0.97/0.63), line=2, color=4  ; apoapsis
+      mvn_swe_convert_units, bck, units
+      oplot, bck.energy, bck.data, line=2, color=4        ; periapsis
+      brate = ((2./3.)*(0.97/0.63) + (1./3.))             ; GCR's + Potassium-40
+      oplot, bck.energy, bck.data*brate, line=2, color=4  ; apoapsis
       
-      bck.data[*] = 1.071e6  ; saturation crate per anode
+      bck.data[*] = (1./swe_min_dtc - 1.)/swe_dead        ; saturation CRATE
       bck.units_name = 'crate'
-      mvn_swe_convert_units, bck, spec.units_name
+      mvn_swe_convert_units, bck, units
       oplot, bck.energy, bck.data, line=2, color=4
     endif
 
@@ -876,11 +900,13 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                          else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
         spec.sc_pot = pot
       endelse
-  
+
       if (spflg) then begin
-        mvn_swe_convert_units, spec, 'df'
-        spec.energy -= pot
-        mvn_swe_convert_units, spec, units
+        if (stregex(units,'flux',/boo,/fold)) then begin
+          mvn_swe_convert_units, spec, 'df'
+          spec.energy -= pot
+          mvn_swe_convert_units, spec, units
+        endif else spec.energy -= pot
       endif
 
       if (fflg) then yrange = drange

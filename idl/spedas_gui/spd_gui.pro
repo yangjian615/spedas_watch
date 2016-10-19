@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-10-06 12:31:28 -0700 (Thu, 06 Oct 2016) $
-;$LastChangedRevision: 22054 $
+;$LastChangedDate: 2016-10-18 16:44:57 -0700 (Tue, 18 Oct 2016) $
+;$LastChangedRevision: 22142 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -429,21 +429,21 @@ PRO spd_gui_event, event
     
     'SUBMARKERMULTI': spd_ui_subset_marker_multi,info
     
-    'EXMD': BEGIN
-
-     result = Widget_Info(event.id, /Button_Set)
-     IF result EQ 0 THEN BEGIN
-
-       example_data,info
-
-       info.statusBar->Update, 'Example window displayed'
-     ENDIF ELSE BEGIN
-       info.statusBar->Update, 'Example window not displayed'
-     ENDELSE
-     FOR i=0, N_Elements(info.panelButtons)-1 DO Widget_Control, info.panelButtons[i], sensitive=1
-     FOR i=0, N_Elements(info.markerButtons)-1 DO Widget_Control, info.markerButtons[i], sensitive=1
-     
-    END
+;    'EXMD': BEGIN
+;
+;     result = Widget_Info(event.id, /Button_Set)
+;     IF result EQ 0 THEN BEGIN
+;
+;       example_data,info
+;
+;       info.statusBar->Update, 'Example window displayed'
+;     ENDIF ELSE BEGIN
+;       info.statusBar->Update, 'Example window not displayed'
+;     ENDELSE
+;     FOR i=0, N_Elements(info.panelButtons)-1 DO Widget_Control, info.panelButtons[i], sensitive=1
+;     FOR i=0, N_Elements(info.markerButtons)-1 DO Widget_Control, info.markerButtons[i], sensitive=1
+;     
+;    END
     
     'TEST': BEGIN
       spd_ui_widget_tree_test,info.master,info.loadedData, info.historywin

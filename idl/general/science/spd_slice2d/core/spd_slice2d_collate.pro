@@ -6,8 +6,8 @@
 ;
 ;Purpose:
 ; Collate data aggregated as spd_slice2d_get_data loops over input
-; Data aggregation continues until a a change in energy or angle 
-; bins occurs (mode chance or other) or aggregation completes.  
+; Data aggregation continues until a change in energy or angle 
+; bins occurs (mode change or other) or aggregation completes.  
 ; At those points this procedure is called to average the data, 
 ; concatenate data to output variables, and clear the appropriate 
 ; variables for the next loop.
@@ -43,9 +43,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-09-08 18:47:45 -0700 (Tue, 08 Sep 2015) $
-;$LastChangedRevision: 18734 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-18 11:43:30 -0700 (Tue, 18 Oct 2016) $
+;$LastChangedRevision: 22124 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_collate.pro $
 ;-
 pro spd_slice2d_collate, data_t = data_t, $
@@ -74,7 +74,7 @@ pro spd_slice2d_collate, data_t = data_t, $
     compile_opt idl2, hidden
 
 
-  ;Average data over number of time samples containging valid measurements
+  ;Average data over number of time samples containing valid measurements
   data_ave = temporary(data_t) / (weight_t > 1)
 
 
@@ -114,7 +114,7 @@ pro spd_slice2d_collate, data_t = data_t, $
 
 
   ;This prevents the previous iterations' data and coordinates from being reused.
-  ;This block should remain regardles of temporary() usage above.
+  ;This block should remain regardless of temporary() usage above.
   if ~undefined(data_t) then undefine, data_t
   if ~undefined(weight_t) then undefine, weight_t
   if ~undefined(rad_in) then undefine, rad_in

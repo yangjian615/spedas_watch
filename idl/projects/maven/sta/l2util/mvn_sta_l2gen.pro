@@ -25,9 +25,9 @@ End
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-07-22 18:34:32 -0700 (Fri, 22 Jul 2016) $
-; $LastChangedRevision: 21516 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2016-10-18 11:40:29 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22123 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -251,16 +251,16 @@ skip_ephemeris_l2:
   Endif Else Begin
      mvn_sta_l0_load, files = filex
 ;Only call ephemeris_load if the date is more than 5 days ago
-;Changed to 10 days, 2015-09-30, jmm
+;Changed to 10 days, 2015-09-30, jmm, back to 2 (!) days, 2016-10-18
      ttest = systime(/sec)-time_double(date)
-     If(ttest Gt 10.0*86400.0d0) Then Begin
+     If(ttest Gt 2.0*86400.0d0) Then Begin
+        load_position = 'ephemeris_l0'
         mvn_sta_mag_load
         mvn_sta_qf14_load
         mvn_sta_dead_load
         mk = mvn_spice_kernels(/all,/load,trange=timerange())
         If(is_struct(mvn_c8_dat)) Then mvn_sta_sc_bins_load
 ;ephemeris might crash, don't kill the process, jmm, 2016-02-03
-        load_position = 'ephemeris_l0'
         mvn_sta_ephemeris_load
 ;scpot uses c6 eflux, but only if it exists
         If(is_struct(mvn_c6_dat)) Then Begin

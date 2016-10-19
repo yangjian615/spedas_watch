@@ -8,9 +8,9 @@
 ;
 ;
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-15 15:14:31 -0700 (Wed, 15 Apr 2015) $
-;$LastChangedRevision: 17332 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2016-10-18 15:14:49 -0700 (Tue, 18 Oct 2016) $
+;$LastChangedRevision: 22129 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/fast/spedas_plugin/fast_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -31,6 +31,9 @@ pro fast_ui_import_data,$
   datatype=loadStruc.datatype[0]
   parameters=loadStruc.parameters
   timeRange=loadStruc.timeRange
+  paRange=loadStruc.paRange
+  energyRange=loadStruc.energyRange
+
   loaded = 0
 
   new_vars = ''
@@ -44,11 +47,65 @@ pro fast_ui_import_data,$
 
   tn_before = [tnames('*',create_time=cn_before)]
 ;  tn_before_time_hash = [tn_before + time_string(double(cn_before),/msec)]
-
-  par_names = 'fa_hr_dcb_' + parameters
-
-  fa_load_mag_hr_dcb,trange=timeRange,tplotnames=tplotnames
   
+  If(instrument Eq 'ESA') Then Begin ;added L2 ESA input, 2016-05-02
+     ;translate from 
+     typ = ['ies', 'ees', 'ieb', 'eeb']
+     jtyp = ['ion_survey', 'electron_survey', 'ion_burst', 'electron_burst']
+     parnames_list = ['Ion_eflux_survey', 'Electron_eflux_survey', $
+                      'Ion_eflux_burst',  'Electron_eflux_burst', $
+                      'Ion_pad_survey', 'Electron_pad_survey', $
+                      'Ion_pad_burst', 'Electron_pad_burst']
+     parnames_tplot_ed = 'fa_'+['ies_l2_edist', 'ees_l2_edist', $
+                                'ieb_l2_edist', 'eeb_l2_edist']
+     ;Add suffixes for distributions
+     parange0 = strcompress(string(long(parange)), /remove_all)
+     ed_suffix = '_Pa_'+strjoin(parange0, '_')
+     parnames_tplot_ed = parnames_tplot_ed+ed_suffix
+     parnames_tplot_pa = 'fa_'+['ies_l2_pad', 'ees_l2_pad', $
+                                'ieb_l2_pad', 'eeb_l2_pad']
+     erange0 = strcompress(string(long(energyrange)), /remove_all)
+     pa_suffix = '_En_'+strjoin(erange0, '_')
+     parnames_tplot_pa = parnames_tplot_pa+pa_suffix
+     parnames_tplot = [parnames_tplot_ed, parnames_tplot_pa]
+
+     par1 = strarr(n_elements(parameters))
+     For j = 0, n_elements(parameters)-1 Do Begin
+        temp = strlowcase(strsplit(parameters[j], '_', /extract))
+        par1[j] = strjoin(temp[[0,2]], '_')
+     Endfor
+     sstyp = sswhere_arr(jtyp, par1)
+     If(sstyp[0] Eq -1) Then Begin
+        statusBar->update, 'FAST ESA: Bad datatype: ' + strjoin(par1, ' ')
+        historyWin->update, 'FAST ESA: Bad datatype: ' + strjoin(par1, ' ')
+        return
+     Endif
+     fa_esa_load_l2, type=typ[sstyp], trange=timeRange
+; Create the tplot variables
+     ntyp = n_elements(sstyp)
+     tplotnames = ''
+     For j = 0, ntyp-1 Do Begin
+        dummy='' & dummy1=''
+        dummy = fa_esa_l2_pad(typ[sstyp[j]], trange = timeRange, $
+                              energy=energyRange, suffix = pa_suffix)
+        If(is_string(tnames(dummy))) Then tplotnames = [tplotnames, dummy]
+        dummy1 = fa_esa_l2_edist(typ[sstyp[j]], trange = timeRange, $
+                                 parange = paRange, suffix = ed_suffix)
+        If(is_string(tnames(dummy1))) Then tplotnames = [tplotnames, dummy1]
+     Endfor
+     sspar = sswhere_arr(parnames_list, parameters)
+     par_names = parnames_tplot[sspar]
+     If(n_elements(tplotnames) Gt 1) Then tplotnames = tplotnames[1:*] $
+     Else Begin
+        statusBar->update, 'FAST ESA: No Data Loaded: ' + strjoin(par1, ' ')
+        historyWin->update, 'FAST ESA: Data loaded: ' + strjoin(par1, ' ')
+        return
+     Endelse
+  Endif Else Begin
+     par_names = 'fa_hr_dcb_' + parameters
+     fa_load_mag_hr_dcb,trange=timeRange,tplotnames=tplotnames
+  Endelse
+
   spd_ui_cleanup_tplot,tn_before,create_time_before=cn_before,del_vars=to_delete,new_vars=new_vars
   
   if new_vars[0] ne '' then begin

@@ -204,8 +204,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-10 12:53:12 -0700 (Mon, 10 Oct 2016) $
-;$LastChangedRevision: 22077 $
+;$LastChangedDate: 2016-10-18 09:35:33 -0700 (Tue, 18 Oct 2016) $
+;$LastChangedRevision: 22116 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -327,7 +327,7 @@ if type ne 0 && keyword_set(average_angle) then begin
 endif
 
 
-msg = 'Processing slice at ' + time_string(time, format=5) +'... '
+msg = 'Processing slice at ' + time_string(time, tformat='YYYY/MM/DD hh:mm:ss.fff') +'... '
 dprint, dlevel=2, msg, display_object=msg_obj 
 
 

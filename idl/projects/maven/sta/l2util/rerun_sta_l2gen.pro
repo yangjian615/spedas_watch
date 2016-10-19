@@ -14,13 +14,14 @@
 ; none
 ;HISTORY:
 ; 20-oct-2014, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: muser $
-; $LastChangedDate: 2016-08-18 09:59:01 -0700 (Thu, 18 Aug 2016) $
-; $LastChangedRevision: 21671 $
+; 18-oct-2016, single call to mvn_call_l2l2, jmm
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-10-18 10:41:14 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22120 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/rerun_sta_l2gen.pro $
 ;-
 
-Pro rerun_sta_l2gen, ndays = ndays
+Pro rerun_sta_l2gen
 
   test_file = file_search('/tmp/STAL2Rlock.txt')
   If(is_string(test_file[0])) Then Begin
@@ -28,12 +29,7 @@ Pro rerun_sta_l2gen, ndays = ndays
   Endif Else Begin
      test_file = '/tmp/STAL2Rlock.txt'
      file_touch, test_file[0]
-;by default, ndays is 7
-     If(~keyword_set(ndays)) Then ndays = 7
-;Subtract ndays from today
-     tt = time_string(systime(/sec)-ndays*86400.0d0)
-     days_in = time_string(tt, precision = -3)
-     mvn_call_sta_l2gen, days_in = days_in, /use_l2_files
+     mvn_call_sta_l2l2
      message, /info, 'Removing Lock file /tmp/STAL2Rlock.txt'
      file_delete, test_file[0]
   Endelse

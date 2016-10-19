@@ -11,8 +11,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-05 14:42:32 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22048 $
+; $LastChangedDate: 2016-10-18 15:31:18 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22138 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_stat.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -71,6 +71,8 @@ pro mvn_swe_stat, npkt=npkt, silent=silent
 
     if (swe_es_switch) then print,"Electron suppression correction enabled" $
                        else print,"Electron suppression correction disabled"
+
+    mvn_swe_flatfield ; just report the state of the correction
 
     print,""
   endif
