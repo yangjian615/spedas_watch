@@ -27,10 +27,10 @@
 ;
 ;  date_str = num_to_str_pad(year,4)+num_to_str_pad(mon,2)+num_to_str_pad(day,2)
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2010-03-16 18:00:51 -0700 (Tue, 16 Mar 2010) $
-; $LastChangedRevision: 7416 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/num_to_str_pad.pro $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-19 15:27:17 -0700 (Wed, 19 Oct 2016) $
+; $LastChangedRevision: 22151 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/num_to_str_pad.pro $
 ;-
 function num_to_str_pad,val,len,pad=pad,integral=integral
 

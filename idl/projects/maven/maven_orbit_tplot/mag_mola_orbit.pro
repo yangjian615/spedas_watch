@@ -32,8 +32,8 @@
 ;       TERMINATOR: Overlay the terminator.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-01 09:13:44 -0700 (Fri, 01 May 2015) $
-; $LastChangedRevision: 17465 $
+; $LastChangedDate: 2016-10-18 21:34:24 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22146 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_mola_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
@@ -43,6 +43,7 @@ pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
                     terminator=ttime
 
   common magmola_orb_com, img, ppos
+  @swe_snap_common
 
   twin = !d.window
   owin = 29
@@ -75,8 +76,21 @@ pro mag_mola_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
     yoff = round(30.*csize)
     i = sz[2] + (2*xoff)
     j = sz[3] + (2*yoff)
+    
+    if (snap_index gt 0) then begin
+	  if keyword_set(big) then begin
+	    xpos = MMopt.xpos
+	    ypos = MMopt.ypos
+	  endif else begin
+	    xpos = Mopt.xpos
+	    ypos = Mopt.ypos
+	  endelse
+    endif else begin
+      xpos = 0
+      ypos = 0
+    endelse
 
-    window,owin,xsize=i,ysize=j
+    window,owin,xsize=i,ysize=j,xpos=xpos,ypos=ypos
 
     px = [0.0, 1.0] * !d.x_vsize + xoff + 16
     py = [0.0, 1.0] * !d.y_vsize + yoff + 10

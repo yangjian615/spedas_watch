@@ -42,9 +42,9 @@
 ;     -65.1840  
 ;
 ;
-; $LastChangedBy: kersten $
-; $LastChangedDate: 2013-01-30 10:33:53 -0800 (Wed, 30 Jan 2013) $
-; $LastChangedRevision: 11501 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-10-19 12:36:49 -0700 (Wed, 19 Oct 2016) $
+; $LastChangedRevision: 22150 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/TT2000/add_tt2000_offset.pro $
 ;-
 
@@ -56,8 +56,17 @@ function add_tt2000_offset,dates,subtract=subtract,offsets=offsets
     ;fatal error
     message,'Error. !CDF_LEAP_SECONDS, must be defined.  Try calling cdf_leap_second_init'
   endif
-;  stop
+
   leap_data = read_asc(!cdf_leap_seconds.local_data_dir+'/CDFLeapSeconds.txt')
+
+  if ~is_struct(leap_data) then begin
+      ; reload the leap second file if there's trouble loading it
+      dprint, dlevel = 0, 'Error, couldn''t find a valid CDFLeapSeconds.txt file; re-downloading from cdf.gsfc.nasa.gov...'
+      file_delete, !cdf_leap_seconds.local_data_dir+'/CDFLeapSeconds.txt'
+      cdf_leap_second_init, /reset
+      return, add_tt2000_offset(dates,subtract=subtract,offsets=offsets)
+  endif
+  
   leap_dates= time_double(strtrim(leap_data.(0),2)+'-'+strtrim(leap_data.(1),2)+'-'+strtrim(leap_data.(2),2)+'/00:00:00')
   leap_offsets=leap_data.(3)
   

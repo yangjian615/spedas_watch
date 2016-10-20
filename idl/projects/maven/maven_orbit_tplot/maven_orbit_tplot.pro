@@ -43,7 +43,8 @@
 ;
 ;       SEGMENTS: Plot nominal altitudes for orbit segment boundaries as dotted
 ;                 horizontal lines.  Closely spaced lines are transitions, during
-;                 which time the spacecraft is reorienting.
+;                 which time the spacecraft is reorienting.  The actual segment 
+;                 boundaries vary with orbit period.
 ;
 ;       RESULT:   Named variable to hold the MSO ephemeris with some calculated
 ;                 quantities.
@@ -101,8 +102,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:51:29 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21702 $
+; $LastChangedDate: 2016-10-19 17:55:09 -0700 (Wed, 19 Oct 2016) $
+; $LastChangedRevision: 22157 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -110,7 +111,8 @@
 pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=result, $
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
-                       colors=colors, reset_trange=reset_trange, nocrop=nocrop, spk=spk
+                       colors=colors, reset_trange=reset_trange, nocrop=nocrop, spk=spk, $
+                       segments=segments
 
   @maven_orbit_common
 

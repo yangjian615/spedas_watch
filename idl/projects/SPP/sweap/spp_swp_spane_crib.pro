@@ -107,9 +107,68 @@ spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/SW
 
 ;   spane B flight CO pre conformal coat
 files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8']) 
+
+
+
+
+ trange =  '2016 10 '+ ['18/04','19/17']   ; SPANE - A flght in Cal chamber:  MCP test
+ 
+ files = spp_file_retrieve(/elec,/cal,trange=trange)
+
+
+
+;  Get recent data files:
+files = spp_file_retrieve(/elec,/cal,recent=1/24.)   ; get last 1 hour of data from server
+
+
+; Read  (Load) files
 spp_ptp_file_read,files
 
-spp_ptp_file_read, spp_file_re
+
+; Real time data collection:
+spp_init_realtime,/elec,/cal,/exec
+
+
+spp_swp_tplot,'SE'
+spp_swp_tplot,'SE_hv'
+spp_swp_tplot,'SE_lv'
+spp_swp_tplot,'SE'
+
+
+; print information on collected data
+spp_apdat_info,/print
+
+
+
+; get SPANE-A HKP data:
+hkp = spp_apdat('36e'x)
+
+hkp.help
+
+hkp.print
+
+printdat, hkp.strct
+
+printdat, hkp.data
+
+printdat, hkp.data.array
+
+printdat, hkp.data.size
+
+printdat, hkp.data.typename
+
+printdat,  hkp.data.array[-1]
+
+
+
+
+
+
+
+
+; Get info on 
+
+
 
 
 tplot,'*CNTS *DCMD_REC *VMON_MCP *VMON_RAW *ACC*'

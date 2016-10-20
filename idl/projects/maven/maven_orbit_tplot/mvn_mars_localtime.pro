@@ -23,8 +23,8 @@
 ;                    s_lat : sub-solar point latitude (deg)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:50:15 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21701 $
+; $LastChangedDate: 2016-10-18 21:32:45 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22144 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mvn_mars_localtime.pro $
 ;
 ;CREATED BY:	David L. Mitchell
@@ -50,13 +50,9 @@ pro mvn_mars_localtime, result=result
 
 ; Local time is IAU_MARS longitude relative to sub-solar longitude
 
-  lst = (lon - s_lon)*(12D/180D)
+  lst = (lon - s_lon)*(12D/180D) - 12D  ; 0 = midnight, 12 = noon
+  lst -= 24D*double(floor(lst/24D))     ; wrap to 0-24 range
 
-  jndx = where(lst lt 0., count)
-  if (count gt 0L) then lst[jndx] = lst[jndx] + 24.
-  jndx = where(lst gt 24., count)
-  if (count gt 0L) then lst[jndx] = lst[jndx] - 24.
-  
   store_data,'lst',data={x:time, y:lst}
   ylim,'lst',0,24,0
   options,'lst','yticks',4

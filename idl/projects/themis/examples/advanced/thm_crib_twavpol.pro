@@ -62,8 +62,8 @@
 ;; Select date and time interval
 ;; =============================
 
-date = '2007-05-08'
-timespan, date,1,/day
+timespan, '2007-05-08/03:30:00',1,/hours
+trange=['2007-05-08/03:30:00','2007-05-08/04:30:00']
 
 ;; =============================
 ;; Select probe and mode
@@ -76,10 +76,9 @@ sc = ['c']
 ;;　Select mode (scf, scp, scw, fgs, fsl, fgh, fge)
 
 mode = 'scf'
-;mode = 'fge'
 
 ;; =============================
-;; Get auxiliary data from STAT 
+;; Get auxiliary data from STATE 
 ;; =============================
 
 thm_load_state, probe=sc, /get_support_data
@@ -92,38 +91,39 @@ thm_load_state, probe=sc, /get_support_data
 ;; For best cleanup, it is best to specify a relatively short time range,
 ;; over which the noise signal is relatively uniform.
 
-starting_date = strmid(date, 0, 10)
-starting_time = '03:30:00.0'
-ending_time   = '04:30:00.0'
-
-trange = [starting_date+'/'+starting_time,starting_date+'/'+ending_time]
 
 ;; Get SCM/FGM data
 
-thm_load_scm, probe=sc, datatype=mode, level=1, trange=trange
-;thm_load_fgm, probe=sc, datatype=mode, level=2, trange=trange,coord='gsm'
+thm_load_scm, probe=sc, datatype=mode, level=2, trange=trange, coord='gse'
+thm_load_fgm, probe=sc, datatype='fgl', level=2, trange=trange, coord='gse'
+;
+tsmooth2,'thc_fgl_gse',12,newname='thc_fgl_gse_lp' ; low pass filtered FGL data at 3sec resolution for fac
+thm_fac_matrix_make, 'thc_fgl_gse_lp', other_dim='xgse', newname = 'thc_fgl_gse_lp_fac_mat' ; get fac rot mat
+tvector_rotate, 'thc_fgl_gse_lp_fac_mat', 'thc_fgl_gse', newname = 'thc_fgl_fac' ; full fgl data in fac coords
+tvector_rotate, 'thc_fgl_gse_lp_fac_mat', 'thc_scf_gse', newname = 'thc_scf_fac' ; full scf data in fac coords
+;
 
-thscs_mode = 'th'+sc+'_'+mode
-;thscs_mode = 'th'+sc+'_'+mode+'_gsm'
+
 
 ;fill data gaps with regularly spaced(in time) NaNs, wavpol *only* works on regularly gridded data
 ;using data with irregular grids will produce incorrect results
-tdegap,'thc_scf',/overwrite
-
+tdegap,'th'+sc+'_scf_fac',/overwrite
+tclip,'th'+sc+'_scf_fac',-10.,10.,/overwrite
+tdeflag,'th'+sc+'_scf_fac','linear',/overwrite
+;
 ;; =======================
 ;; Calculate polarisation
 ;; =======================
 
-twavpol,'thc_scf'
-;twavpol,'thc_fgl_gsm'
+
+twavpol,'thc_scf_fac' ; can't work with string variable for now (could be fixed later)
 
 ;; =====================
 ;; Plot calculated data
 ;; =====================
 
 zlim,'*_powspec',0.0,0.0,1
-tplot, [thscs_mode+'_powspec', thscs_mode+'_degpol', thscs_mode+'_waveangle', thscs_mode+'_elliptict', thscs_mode+'_helict'], $
-       trange=trange
+tplot, 'thc_scf_fac'+['','_powspec','_degpol', '_waveangle', '_elliptict', '_helict']
 
 
  

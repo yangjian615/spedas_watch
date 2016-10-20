@@ -82,8 +82,8 @@
 ;       THICK:    Line thickness.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-22 10:35:17 -0700 (Thu, 22 Sep 2016) $
-; $LastChangedRevision: 21900 $
+; $LastChangedDate: 2016-10-18 21:33:35 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22145 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -100,7 +100,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     return
   endif
   
-  if (size(snap_index,/type) eq 0) then snap_index = 0
+  if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
 
   a = 0.8
   phi = findgen(49)*(2.*!pi/49)

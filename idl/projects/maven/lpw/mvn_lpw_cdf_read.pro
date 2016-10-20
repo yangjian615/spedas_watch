@@ -217,23 +217,24 @@ endif
 ;======
 ;Some EUV dates have timestamps of zero which causes tplot to crash. Remove them here.
 if euvget eq 1 then begin
-    get_data, 'mvn_euv_calib_bands', data=dd1, dlimit=dl1, limit=ll1
-    i = where(dd1.x gt 0., ni)
-    if ni gt 0. then begin
-        ddnew = create_struct('x'   ,   dd1.x[i]     , $
-                              'y'   ,   dd1.y[i,*]   , $
-                              'dy'  ,   dd1.dy[i,*]  , $
-                              'dv'  ,   dd1.dv[i,*]  , $
-                              'flag',   dd1.flag[i]  )
-    endif
+    get_data, 'mvn_euv_calib_bands', data=dd1, dlimit=dl1, limit=ll1, index=j
+    if (j gt 0) then begin
+      i = where(dd1.x gt 0., ni)
+      if ni gt 0. then begin
+          ddnew = create_struct('x'   ,   dd1.x[i]     , $
+                                'y'   ,   dd1.y[i,*]   , $
+                                'dy'  ,   dd1.dy[i,*]  , $
+                                'dv'  ,   dd1.dv[i,*]  , $
+                                'flag',   dd1.flag[i]  )
+      endif
     
-    store_data, 'mvn_euv_calib_bands', data=ddnew, dlimit=dl1, limit=ll1
-    options, 'mvn_euv_calib_bands', ylog=0
-    ;Set yrange on plot:
-    ymax = max(ddnew.y, /nan)*1.1
-    ymin = min(ddnew.y, /nan)
-    ylim, 'mvn_euv_calib_bands', ymin, ymax
-    
+      store_data, 'mvn_euv_calib_bands', data=ddnew, dlimit=dl1, limit=ll1
+      options, 'mvn_euv_calib_bands', ylog=0
+      ;Set yrange on plot:
+      ymax = max(ddnew.y, /nan)*1.1
+      ymin = min(ddnew.y, /nan)
+      ylim, 'mvn_euv_calib_bands', ymin, ymax
+    endif    
 endif
 
 

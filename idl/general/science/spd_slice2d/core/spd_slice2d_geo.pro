@@ -59,6 +59,10 @@
 ;   -This routine will slow as the number of bins (N) increases.
 ;    Averaging will significantly lengthen the required time. 
 ; 
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-10-19 09:02:17 -0700 (Wed, 19 Oct 2016) $
+; $LastChangedRevision: 22148 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_geo.pro $
 ;-
 pro spd_slice2d_geo, data=data, resolution=resolution, $
                      rad=r, phi=phi, theta=theta, $
@@ -126,7 +130,7 @@ pro spd_slice2d_geo, data=data, resolution=resolution, $
     
     ;interpolate across the angle range
     a = ([dindgen(na-1)/(na-1),1] * (alpha[1]-alpha[0])) + alpha[0]
-    
+
     ;constuct quaternion array to get rotation matricies
     qs = qcompose(xv,a/rd, /free) ;quaternions to rotate about x by a
     ms = qtom(qs) ;get matricies

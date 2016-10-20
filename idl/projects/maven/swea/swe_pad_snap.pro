@@ -129,8 +129,8 @@
 ;        ZRANGE:       Override default color scale range with this.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 15:17:10 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22131 $
+; $LastChangedDate: 2016-10-18 18:19:14 -0700 (Tue, 18 Oct 2016) $
+; $LastChangedRevision: 22143 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -722,36 +722,57 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         if (~psflg) then wset, Ewin
         x = pad.energy[*,0]
 
-        pndx = where(reform(pad.pa_max[63,*]) lt swidth, count)
-        if (count gt 0L) then begin
-          ngud = total(finite(pad.data[*,pndx]),2)
-          Fp = average(pad.data[*,pndx],2,/nan)
-          Fp_err = sqrt(total(pad.var[*,pndx],2,/nan))/(ngud > 1.)
-        endif else begin
-          Fp = replicate(!values.f_nan,64)
-          Fp_err = Fp
-        endelse
+        pndx = where(reform(pad.pa_max[63,*]) lt swidth, nbins)
+        case nbins of
+             0 : begin
+                   Fp = replicate(!values.f_nan,64)
+                   Fp_err = Fp
+                 end
+             1 : begin
+                   Fp = pad.data[*,pndx]
+                   Fp_err = sqrt(pad.var[*,pndx])
+                 end
+          else : begin
+                   ngud = total(finite(pad.data[*,pndx]),2)
+                   Fp = average(pad.data[*,pndx],2,/nan)
+                   Fp_err = sqrt(total(pad.var[*,pndx],2,/nan))/(ngud > 1.)
+                 end
+        endcase
 
-        mndx = where(reform(pad.pa_min[63,*]) gt (!pi - swidth), count)
-        if (count gt 0L) then begin
-          ngud = total(finite(pad.data[*,mndx]),2)
-          Fm = average(pad.data[*,mndx],2,/nan)
-          Fm_err = sqrt(total(pad.var[*,mndx],2,/nan))/(ngud > 1.)
-        endif else begin
-          Fm = replicate(!values.f_nan,64)
-          Fm_err = Fm
-        endelse
+        mndx = where(reform(pad.pa_min[63,*]) gt (!pi - swidth), nbins)
+        case nbins of
+             0 : begin
+                   Fm = replicate(!values.f_nan,64)
+                   Fm_err = Fm
+                 end
+             1 : begin
+                   Fm = pad.data[*,mndx]
+                   Fm_err = sqrt(pad.var[*,mndx])
+                 end
+          else : begin
+                   ngud = total(finite(pad.data[*,mndx]),2)
+                   Fm = average(pad.data[*,mndx],2,/nan)
+                   Fm_err = sqrt(total(pad.var[*,mndx],2,/nan))/(ngud > 1.)
+                 end
+        endcase
 
         zndx = where((reform(pad.pa_max[63,*]) lt (!pi - swidth)) and $
-                     (reform(pad.pa_min[63,*]) gt swidth), count)
-        if (count gt 0L) then begin
-          ngud = total(finite(pad.data[*,zndx]),2)
-          Fz = average(pad.data[*,zndx],2,/nan)
-          Fz_err = sqrt(total(pad.var[*,zndx],2,/nan))/(ngud > 1.)
-        endif else begin
-          Fz = replicate(!values.f_nan,64)
-          Fz_err = Fz
-        endelse
+                     (reform(pad.pa_min[63,*]) gt swidth), nbins)
+        case nbins of
+             0 : begin
+                   Fz = replicate(!values.f_nan,64)
+                   Fz_err = Fz
+                 end
+             1 : begin
+                   Fz = pad.data[*,zndx]
+                   Fz_err = sqrt(pad.var[*,zndx])
+                 end
+          else : begin
+                   ngud = total(finite(pad.data[*,zndx]),2)
+                   Fz = average(pad.data[*,zndx],2,/nan)
+                   Fz_err = sqrt(total(pad.var[*,zndx],2,/nan))/(ngud > 1.)
+                 end
+        endcase
         
         if keyword_set(twopot) then begin
             php = Fp/x^2              ; assume EFLUX units

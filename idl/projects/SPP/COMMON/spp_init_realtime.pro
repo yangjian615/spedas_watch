@@ -1,12 +1,16 @@
 
 
-pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=itf,RM133=RM133,rm320=rm320,rm333=rm333,tent=tent, $
-    exec=exec0, elec=elec,ion=ion,tv=tv,cal=cal
+pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm320=rm320,rm333=rm333,tent=tent, $
+    spani= spani, spanea=spanea, spaneb=spaneb,  spc=spc,SWEMGSE=SWEMGSE, $
+    exec=exec0,ion=ion,tv=tv,cal=cal,snout2=snout2,snout1=snout1
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
-  
+  if keyword_set(ion) then spani=1
   if n_elements(hub) eq 0 then hub = 1
+  if keyword_set(rm320) then cal=1
+  if keyword_set(tent) then tv=1
+  if keyword_set(tv) then snout2=1
   
   
   rootdir = root_data_dir() + 'spp/data/sci/sweap/prelaunch/gsedata/realtime/'
@@ -20,7 +24,7 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
     return
   endif
   if keyword_set(swemgse) then begin
-    recorder,title='SWEMGSE', port= hub ? 2228 : 2024, host='abiad-sw.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read' 
+    recorder,title='SWEMGSE', port= hub ? 2428 : 2024, host='abiad-sw.ssl.berkeley.edu', exec_proc='spp_ptp_stream_read' 
   endif
   if keyword_set(rm133) then begin
     recorder,title='ROOM 133', port= hub ? 2028 : 2024, host='128.32.13.37', exec_proc='spp_ptp_stream_read'
@@ -30,17 +34,32 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
     recorder,title='ROOM 333', port= hub ? 2028 : 2023, host='ssa333-lab.ssl.berkeley.edu', exec_proc='spp_msg_stream_read'
     return
   endif
-  if keyword_set(rm320) or keyword_set(cal) then begin
+  if  keyword_set(cal) then begin
     host = 'abiad-sw.ssl.berkeley.edu'
     exec_proc = 'spp_ptp_stream_read'
-    if keyword_set(ion) then recorder,title='CAL Ion PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spani/',set_file_timeres=fileres
-    if keyword_set(elec) then recorder,title='CAL Elec PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spane/',set_file_timeres=fileres   
+    if keyword_set(spani) then spp_ptp_recorder,title='CAL SPANI PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spani/',set_file_timeres=fileres
+    if keyword_set(spanea) then spp_ptp_recorder,title='CAL SPANA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spanea/',set_file_timeres=fileres
+    if keyword_set(spaneb) then spp_ptp_recorder,title='CAL SPANB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spaneb/',set_file_timeres=fileres
+    if keyword_set(spc)    then spp_ptp_recorder,title='CAL SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spc/',set_file_timeres=fileres
+    if keyword_set(swem)   then spp_ptp_recorder,title='CAL SPC PTP',port=2428, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/swem/',set_file_timeres=fileres
   endif
-  if keyword_set(tent) or keyword_set(TV) then begin
+  if  keyword_set(snout2) then begin
     host = 'mgse2.ssl.berkeley.edu'
     exec_proc = 'spp_ptp_stream_read'
-    if keyword_set(ion)  then recorder,title='TV Ion PTP' ,port=2028, host=host, exec_proc=exec_proc,directory=rootdir+'TVac/spani/',destination=fileformat,set_file_timeres=fileres
-    if keyword_set(elec) then recorder,title='TV Elec PTP',port=2128, host=host, exec_proc=exec_proc,directory=rootdir+'TVac/spane/',destination=fileformat,set_file_timeres=fileres
+    if keyword_set(spani) then spp_ptp_recorder,title='Snout2 SPANI PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spani/',set_file_timeres=fileres
+    if keyword_set(spanea) then spp_ptp_recorder,title='Snout2 SPANA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spanea/',set_file_timeres=fileres
+    if keyword_set(spaneb) then spp_ptp_recorder,title='Snout2 SPANB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spaneb/',set_file_timeres=fileres
+    if keyword_set(spc)    then spp_ptp_recorder,title='Snout2 SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spc/',set_file_timeres=fileres
+    if keyword_set(swem)   then spp_ptp_recorder,title='Snout2 SWEM PTP',port=2428, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/swem/',set_file_timeres=fileres
+  endif
+  if  keyword_set(snout1) then begin
+    host = 'mgse2.ssl.berkeley.edu'
+    exec_proc = 'spp_ptp_stream_read'
+    if keyword_set(spani) then spp_ptp_recorder,title='Snout1 SPANI PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/spani/',set_file_timeres=fileres
+    if keyword_set(spanea) then spp_ptp_recorder,title='Snout1 SPANA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/spanea/',set_file_timeres=fileres
+    if keyword_set(spaneb) then spp_ptp_recorder,title='Snout1 SPANB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/spaneb/',set_file_timeres=fileres
+    if keyword_set(spc)    then spp_ptp_recorder,title='Snout1 SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/spc/',set_file_timeres=fileres
+    if keyword_set(swem)   then spp_ptp_recorder,title='Snout1 SWEM PTP',port=2428, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/swem/',set_file_timeres=fileres
   endif
 
   if keyword_set(exec0) then begin
@@ -48,7 +67,8 @@ pro spp_init_realtime,filename=filename,base=base,SWEMGSE=SWEMGSE,hub=hub,itf=it
   endif
   tplot_options,title='Real time'
   
-  spp_swp_startup,/rt_flag
+;  spp_swp_startup,/rt_flag
+  spp_swp_apid_init,/rt_flag
   
   ;spp_swp_set_tplot_options
   
