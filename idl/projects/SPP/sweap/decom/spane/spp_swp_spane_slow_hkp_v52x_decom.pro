@@ -137,7 +137,7 @@ endif
   
 
   sf0 = ccsds_data[11] and 3
-  if sf0 ne 0 then dprint,dlevel=4, 'Odd time at: ',time_string(ccsds.time)
+  if sf0 ne 0 then dprint,dlevel=5,sf0, ' Odd time at: ',time_string(ccsds.time)
 
 ;  ref = 5.29 ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)
   ref = 4.   ; Volts   (EM is 5 volt reference,  FM will be 4 volt reference)

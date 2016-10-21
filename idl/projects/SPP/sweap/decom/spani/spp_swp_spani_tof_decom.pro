@@ -13,8 +13,8 @@ function spp_swp_spani_tof_decom,ccsds,ptp_header=ptp_header,apdat=apdat
                                 ;  dprint,format="('Generic routine
                                 ;  for
                                 ;  ',Z04)",ccsds.apid                                                                                            
-  if debug(4) then begin
-     dprint,dlevel=2,'TOF',ccsds.pkt_size, n_elements(ccsds_data[24:*])
+  if debug(5) then begin
+     dprint,dlevel=5,'TOF',ccsds.pkt_size, n_elements(ccsds_data[24:*])
      hexprint,ccsds_data
   endif
 

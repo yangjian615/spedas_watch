@@ -30,9 +30,9 @@
 ;-
 function spp_file_retrieve,pathname,trange=trange,verbose=verbose, source=src, $
  ;  last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
-   daily_names=daily_names,hourly_names=hourly_names,resolution = res,shiftres=shiftres,  $
+   daily_names=daily_names,hourly_names=hourly_names,resolution = res,shiftres=shiftres,valid_only=valid_only,  $
  ;  no_server=no_server,user_pass=user_pass,L0=L0, $
-   cal=cal,TVac=Tvac,elec=elec,ion=ion,realtime=realtime,recent=recent
+   cal=cal,TVac=Tvac,ion=ion,recent=recent,spani=spani,spanea=spanea,spaneb=spaneb,spc=spc,swem=swem,elec=elec,instr=instr,router=router
 
 tstart = systime(1)
 
@@ -48,22 +48,28 @@ if keyword_set(L0) then begin   ; default location of L0 files
    last_version =1
 endif
 
-instr = ''
-if keyword_set(elec) then instr = 'spane/'
-if keyword_set(ion) then instr = 'spani/'
+if keyword_set(elec) then begin
+  spanea = 1
+  dprint, 'Please use spanea keyword instead'
+endif
+if keyword_set(tvac) then snout2=1
+
+if keyword_set(ion) then instr = 'spani'
+if keyword_set(spanea) then instr='spanea'
+if keyword_set(spaneb) then instr='spaneb'
+if keyword_set(spc) then instr = 'spc'
+if keyword_set(swem) then instr = 'swem'
 
 
-if keyword_set(cal) then begin
-  pathname = realtime_dir + 'cal/'+instr+'YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
+if keyword_set(cal) then   router = 'cal'
+if keyword_set(snout2) then router = 'snout2'
+if keyword_set(snout1) then router = 'snout1'
+
+
+if ~keyword_set(pathname) then begin
+  pathname = realtime_dir + router+'/'+instr+'/YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
   hourly_names =1
 endif
-
-if keyword_set(tvac) then begin
-  pathname = realtime_dir + 'TVac/'+instr+'YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
-  hourly_names =1
-endif
-
-
 
 
 if not keyword_set(shiftres) then shiftres =0

@@ -40,6 +40,7 @@ end
 
 pro ccsds_header__define,ccsds
   ccsds = {ccsds_header, $
+    inherits IDL_Object, $    ; superclass
     apid:0u, $
     seq_cntr:0u, $
     size_1:0u, $

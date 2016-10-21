@@ -15,10 +15,10 @@
 ;Methods:
 ;
 ;HISTORY:
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-17 08:42:58 -0700 (Fri, 17 Apr 2015) $
-;$LastChangedRevision: 17349 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/depreciated/spd_ui_lock_axes__define.pro $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-20 16:23:30 -0700 (Thu, 20 Oct 2016) $
+;$LastChangedRevision: 22177 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/deprecated/spd_ui_lock_axes__define.pro $
 ;
 ;--------------------------------------------------------------------------------
 

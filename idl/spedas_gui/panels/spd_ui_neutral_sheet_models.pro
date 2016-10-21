@@ -190,7 +190,7 @@ pro spd_ui_neutral_sheet_models_event, event
           state.statusBar->update, 'Coordinate system for input position not in GSM, transforming from ' + strupcase(coord_sys) + ' to GSM prior to calculating models'
           state.historyWin->update, 'Coordinate system for input position not in GSM, transforming from ' + strupcase(coord_sys) + ' to GSM prior to calculating models'
           var_to_use = pos_input[0] + '_gsm'
-          thm_cotrans, pos_input[0], var_to_use, out_coord = 'gsm'
+          spd_cotrans, pos_input[0], var_to_use, out_coord = 'gsm'
         endif else var_to_use = pos_input[0]
 
         ; extract data

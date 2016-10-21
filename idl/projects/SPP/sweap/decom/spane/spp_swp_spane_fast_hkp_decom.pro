@@ -11,20 +11,20 @@ function spp_swp_spane_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
     return,!null
   endif
 
-  b = spp_swp_ccsds_data(ccsds)
+  ccsds_data = spp_swp_ccsds_data(ccsds)
 
 ;  b = ccsds.data
-  data = swap_endian(/swap_if_little_endian,  uint(b,20,512))
+  data = swap_endian(/swap_if_little_endian,  uint(ccsds_data,20,512))
   ;; New York Second
   time = ccsds.time + (0.87*findgen(512)/512.)
 
   plot, data
 
-  header    = ccsds.data[0:19]
+  header    = ccsds_data[0:19]
 ;  ns = pksize - 20
 ;  log_flag    = header[12]
   mode1 = header[13]
-  mode2 = (swap_endian(uint(ccsds.data,14,1) ,/swap_if_little_endian ))[0]
+  mode2 = (swap_endian(uint(ccsds_data,14,1) ,/swap_if_little_endian ))[0]
   f0 = (swap_endian(ulong(header,16,1), /swap_if_little_endian))[0]
   status_flag = header[18]
   peak_bin = header[19]
@@ -36,7 +36,7 @@ function spp_swp_spane_fast_hkp_decom,ccsds,ptp_header=ptp_header,apdat=apdat
         time:       time, $
         met:        ccsds.met,  $
         delay_time: ptp_header.ptp_time - ccsds.time, $
-        seq_cntr:   ccsds.seq_cntr, $
+        seqn:   ccsds.seqn, $
         mode1:        mode1,  $
         mode2:        mode2,  $
     ;    f0:           f0,$

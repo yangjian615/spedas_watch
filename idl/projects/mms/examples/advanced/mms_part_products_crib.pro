@@ -7,9 +7,9 @@
 ;  Basic example on how to use mms_part_products to generate particle
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 12:32:40 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21740 $
+;$LastChangedBy: pcruce $
+;$LastChangedDate: 2016-10-20 12:07:19 -0700 (Thu, 20 Oct 2016) $
+;$LastChangedRevision: 22167 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib.pro $
 ;
 ;-
@@ -112,6 +112,14 @@
   mms_part_products, name, trange=trange,$
                      mag_name=bname, pos_name=pos_name, $ ;required for field aligned spectra
                      outputs=['energy','phi','theta','pa','gyro','moments']
+                     
+  ;generate products (experimental option)
+  ;  The /no_regrid option uses a regular transformation on the HPCA to avoid the more general spherical interpolation
+  ;    The main benefit of the /no_regrid keyword is to reduce the runtime of mms_part_products
+  ;  mms_part_products, name, trange=trange,/no_regrid, $
+  ;                     mag_name=bname, pos_name=pos_name, $ ;required for field aligned spectra
+  ;                     outputs=['energy','phi','theta','pa','gyro','moments']
+
 
   ;plot spectrograms
   tplot,name+'_'+['energy','theta','phi','pa','gyro']

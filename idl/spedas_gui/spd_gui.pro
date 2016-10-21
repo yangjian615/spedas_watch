@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-10-18 16:44:57 -0700 (Tue, 18 Oct 2016) $
-;$LastChangedRevision: 22142 $
+;$LastChangedDate: 2016-10-20 14:48:56 -0700 (Thu, 20 Oct 2016) $
+;$LastChangedRevision: 22171 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1724,11 +1724,11 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   xsize = defaultxsize
   ysize = defaultysize
   
-  defsysv,'!spedas',exists=thm_exists
+  defsysv,'!spedas',exists=spd_exists
 
   ;these blocks determine whether to reload old state from memory
   ;or to restart with new settings
-  if thm_exists && in_set(strlowcase(tag_names(!spedas)),'loadeddata') && obj_valid(!spedas.loadeddata) then begin
+  if spd_exists && in_set(strlowcase(tag_names(!spedas)),'loadeddata') && obj_valid(!spedas.loadeddata) then begin
     if keyword_set(reset) then begin
       obj_destroy,!spedas.loadedData
       loadedData = Obj_New('SPD_UI_LOADED_DATA')
@@ -1751,7 +1751,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
     endif else begin
       template_file = template_filename
     endelse
-  endif else if thm_exists && in_set(strlowcase(tag_names(!spedas)),'templatepath') && (size(!spedas.templatepath,/type) eq 7) then begin
+  endif else if spd_exists && in_set(strlowcase(tag_names(!spedas)),'templatepath') && (size(!spedas.templatepath,/type) eq 7) then begin
     if !spedas.templatepath ne '' then begin
       open_spedas_template,template=template,filename=!spedas.templatepath,$
         statusmsg=statusmsg,statuscode=statuscode
@@ -1764,7 +1764,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
     endif
   endif
   
-  if thm_exists && in_set(strlowcase(tag_names(!spedas)),'windowstorage') && obj_valid(!spedas.windowstorage) then begin
+  if spd_exists && in_set(strlowcase(tag_names(!spedas)),'windowstorage') && obj_valid(!spedas.windowstorage) then begin
     if keyword_set(reset) then begin
       obj_destroy,!spedas.windowStorage
       windowStorage = obj_new('spd_ui_windows',loadedData)
@@ -1996,7 +1996,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   Widget_Control, drawID, Get_Value=drawWin 
   info.drawWin = drawWin
   
-  if thm_exists && in_set(strlowcase(tag_names(!spedas)),'drawobject') && obj_valid(!spedas.drawObject) then begin
+  if spd_exists && in_set(strlowcase(tag_names(!spedas)),'drawobject') && obj_valid(!spedas.drawObject) then begin
     if keyword_set(reset) then begin
       obj_destroy,!spedas.drawObject
       drawObj = OBJ_NEW('spd_ui_draw_object',drawWin,statusbar,historyWin)

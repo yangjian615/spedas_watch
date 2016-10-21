@@ -25,10 +25,10 @@
 ;
 ;
 ;Version:
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-01-05 17:01:57 -0800 (Mon, 05 Jan 2015) $
-; $LastChangedRevision: 16596 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_ui_overplot.pro $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-10-20 16:23:30 -0700 (Thu, 20 Oct 2016) $
+; $LastChangedRevision: 22177 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/deprecated/spd_ui_overplot.pro $
 ;-
 
 

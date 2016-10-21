@@ -3,16 +3,12 @@ function spp_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   if n_params() eq 0 then begin
     return,!null
   endif
-  str = create_struct(ptp_header,ccsds)
+  str =   ccsds   ; create_struct(ptp_header,ccsds)
   ;dprint,format="('Generic routine for',Z04)",ccsds.apid                                                                                              
   if debug(4,msg='Generic') then begin
-     dprint,dlevel=2,'generic:',ccsds.apid,ccsds.size+7, n_elements(ccsds.data)
+     dprint,dlevel=2,'generic:',ccsds.apid,ccsds.pkt_size
      hexprint,ccsds.data
   endif
-  ;print, format='(z, a10, i4, a10)',
-  ;ccsds.apid, ' has
-  ;',n_elements(ccsds.data),
-  ;'bytes'                                                               
   return,str
 
 end

@@ -111,7 +111,7 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
 
 
 
- trange =  '2016 10 '+ ['18/04','19/17']   ; SPANE - A flght in Cal chamber:  MCP test
+ trange =  '2016 10 '+ ['18/04','19/22']   ; SPANE - A flght in Cal chamber:  MCP test
  
  files = spp_file_retrieve(/elec,/cal,trange=trange)
 
@@ -126,9 +126,11 @@ spp_ptp_file_read,files
 
 
 ; Real time data collection:
-spp_init_realtime,/elec,/cal,/exec
+spp_init_realtime,/spanea,/cal,/exec
 
 
+tplot, 'manip',/add
+spp_swp_tplot,/setlim
 spp_swp_tplot,'SE'
 spp_swp_tplot,'SE_hv'
 spp_swp_tplot,'SE_lv'

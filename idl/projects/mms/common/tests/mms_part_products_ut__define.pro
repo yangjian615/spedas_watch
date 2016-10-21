@@ -8,9 +8,9 @@
 ; and mgunit in the local path.
 ;
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-13 12:57:57 -0700 (Tue, 13 Sep 2016) $
-; $LastChangedRevision: 21827 $
+; $LastChangedBy: pcruce $
+; $LastChangedDate: 2016-10-20 12:22:10 -0700 (Thu, 20 Oct 2016) $
+; $LastChangedRevision: 22168 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_products_ut__define.pro $
 ;-
 
@@ -515,6 +515,47 @@ pro mms_part_products_ut::load_data, species, rate, moments=moments, support=sup
   self.trange = trange
 
 end
+
+
+function mms_part_products_ut::test_no_regrid
+
+  ;test common types
+  ;test oplus because it's probably mostly zeros
+  species = ['e','i','hplus','oplus']
+  success = replicate(0,n_elements(species))
+
+  for i=0, n_elements(species)-1 do begin
+
+    self->load_data, species[i], /support
+
+    mms_part_products, self.data, trange=self.trange, /silent, $
+      outputs='energy phi theta pa gyro moments', $
+      mag_name=self.mag, pos_name=self.pos,/no_regrid
+
+    basic_spectra = self.data+'_'+['energy','phi','theta']
+    fac_spectra = self.data+'_'+['pa','gyro']
+    moments = self.data+'_'+['density','velocity','ptens']
+
+    success[i] = spd_data_exists([basic_spectra,fac_spectra,moments],self.trange[0],self.trange[1])
+
+    tplot, basic_spectra, title=species[i]+' basic spectra'
+    makepng, self.prefix+species[i]+'_basic_spectra'
+
+    tplot, fac_spectra, title=species[i]+' FAC spectra'
+    makepng, self.prefix+species[i]+'_fac_spectra'
+
+    tplot, moments, title=species[i]+' moments'
+    makepng, self.prefix+species[i]+'_moments'
+
+  endfor
+
+  idx = where(~success,n)
+
+  assert, n eq 0, 'Failed to produce one or more ouputs for: '+strjoin(species[idx],' ')
+
+  return, 1
+end
+
 
 ;+
 ; Ensure data is always cleared and window always open

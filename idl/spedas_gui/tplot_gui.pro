@@ -44,9 +44,9 @@
 ;NOTES:
 ;  tplot_gui supports many of the same settings that are selected in tplot using options and tplot_options. 
 ;  
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-28 13:17:10 -0700 (Tue, 28 Apr 2015) $
-;$LastChangedRevision: 17440 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-20 14:50:42 -0700 (Thu, 20 Oct 2016) $
+;$LastChangedRevision: 22172 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/tplot_gui.pro $
 ;--------------------------------------------------------------------------------
 
@@ -127,9 +127,9 @@ pro tplot_gui, datanames,$
     dnames = strjoin(last_tplot,' ')
   endelse
    
-  defsysv,'!spedas',exists=thm_exists ;check if prexisting gui
+  defsysv,'!spedas',exists=spd_exists ;check if prexisting gui
   
-  if keyword_set(reset) || keyword_set(add_panel) || keyword_set(overplot) || ~thm_exists then begin
+  if keyword_set(reset) || keyword_set(add_panel) || keyword_set(overplot) || ~spd_exists then begin
     newwin = 0
   endif else begin
     newwin = 1

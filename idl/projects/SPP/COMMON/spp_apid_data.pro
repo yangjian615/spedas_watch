@@ -1,3 +1,5 @@
+deprecated
+
 pro spp_apid_data,apid,name=name,$
                   clear=clear,$
                   reset=reset,$

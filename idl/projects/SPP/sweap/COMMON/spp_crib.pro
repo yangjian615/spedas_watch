@@ -344,8 +344,13 @@ end
 
 
 pro spp_swp_finish_rates
-   spp_apid_data,'3bb'x,apdata=rates
-   d = rates.data_array.array
+if 0 then  begin
+  spp_apid_data,'3bb'x,apdata=rates  
+  d = rates.data_array.array
+endif  else begin
+   rates = spp_apid_obj('3bb'x)
+   d = rates.array
+endelse
    store_data,'stops_with_starts',data={x:d.time, y: transpose(d.stops_cnts - d.stop_nostart_cnts )}
    store_data,'starts_with_stops',data={x:d.time, y: transpose(d.starts_cnts - d.start_nostop_cnts )}
    store_data,'start_eff',data={x:d.time, y: transpose(d.valid_cnts / d.stops_cnts ) }

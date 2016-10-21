@@ -1,20 +1,32 @@
 
 pro spp_ptp_file_read,files,dwait=dwait
   
+  oldmethod =0
+  
   if not keyword_set(dwait) then   dwait = 10
   t0 = systime(1)
-  spp_swp_startup,rt_flag=0,save=1,/clear
-  info = {  time_received:0d, buffer_ptr:ptr_new(/allocate_heap),  file:'',  fileptr:0LL }
+  if oldmethod then begin
+    spp_swp_startup,rt_flag=0,save=1,/clear
+  endif else begin
+    spp_swp_apdat_init
+    spp_apdat_info,rt_flag=0,save_flag=1,/clear   
+  endelse
+  info = {socket_recorder   }
   on_ioerror, nextfile
 
 
   for i=0,n_elements(files)-1 do begin
-    info.file = files[i] 
-    tplot_options,title=info.file
-    file_open,'r',info.file,unit=lun,dlevel=4,compress=-1
+    info.filename = files[i] 
+    tplot_options,title=info.filename
+    file_open,'r',info.filename,unit=lun,dlevel=3,compress=-1
     sizebuf = bytarr(2)
-    fi = file_info(info.file)
-    dprint,dlevel=1,'Reading file: '+info.file+' LUN:'+strtrim(lun,2)+'   Size: '+strtrim(fi.size,2)
+    fi = file_info(info.filename)
+    dprint,dlevel=1,'Reading file: '+info.filename+' LUN:'+strtrim(lun,2)+'   Size: '+strtrim(fi.size,2)
+    if lun eq 0 then continue
+if 1 then begin
+    spp_ptp_lun_read,lun,info=info
+  
+endif else begin
     while ~eof(lun) do begin
       info.time_received = systime(1)
       point_lun,-lun,fp
@@ -45,7 +57,9 @@ pro spp_ptp_file_read,files,dwait=dwait
         dprint,dwait=dwait,dlevel=2,'File percentage: ' ,(fp*100.)/fi.size
       endif
     endwhile
-    dprint,dlevel=2,'Compression: ',float(fp)/fi.size
+endelse    
+    fst = fstat(lun)
+    dprint,dlevel=2,'Compression: ',float(fst.cur_ptr)/fst.size
     free_lun,lun
     if 0 then begin
       nextfile:
@@ -55,11 +69,16 @@ pro spp_ptp_file_read,files,dwait=dwait
   endfor
   dt = systime(1)-t0
   dprint,format='("Finished loading in ",f0.1," seconds")',dt
-  spp_apid_data,/finish
+  
+  if oldmethod then begin
+    spp_apid_data,/finish
+    spp_apid_data,/rt_flag    ; re-enable realtime
+  endif else begin
+    spp_apdat_info,/finish,/rt_flag,/all
+  endelse
   dt = systime(1)-t0
   dprint,format='("Finished loading in ",f0.1," seconds")',dt
   
-  spp_apid_data,/rt_flag    ; re-enable realtime
 end
 
 

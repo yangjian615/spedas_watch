@@ -16,8 +16,8 @@ function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ccsds_data = spp_swp_ccsds_data(ccsds)
 ;  printdat,ccsds
   b = ccsds_data
-  if debug(4) then begin
-     dprint,dlevel=3,'Power Supply',ccsds.pkt_size, n_elements(ccsds_data),'  ',time_string(ccsds.time,/local)
+  if debug(5) then begin
+     dprint,dlevel=5,'Power Supply',ccsds.pkt_size, n_elements(ccsds_data),'  ',time_string(ccsds.time,/local)
      hexprint,ccsds_data
   endif
   case size of
@@ -40,9 +40,8 @@ function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
                VLIM: spp_swp_float_decom(b,52), $
                clim: spp_swp_float_decom(b,56) *1e3, $
                gap: ccsds.gap}
-        if debug(4) then begin
-          dprint
-          printdat,str
+        if debug(5) then begin
+          dprint,dlevel=4,str,phelp=2
         endif
      end  
      80: begin   ; Agilent PS
@@ -68,8 +67,8 @@ function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
          p6v     : spp_swp_float_decom(b,72), $
          p6i     : spp_swp_float_decom(b,76), $
          gap: ccsds.gap}
-       if debug(4) then begin
-         dprint,dlevel=2,'APS:',time_string(ccsds.time)
+       if debug(5) then begin
+         dprint,dlevel=5,'APS:',time_string(ccsds.time)
      ;    hexprint,b[12:*]  
          printdat,str     
        endif

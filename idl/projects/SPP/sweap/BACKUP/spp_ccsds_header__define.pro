@@ -1,4 +1,4 @@
-
+; Not ready for prime time - ignore this file.
 
 function spp_ccsds_header::struct
   str = {spp_ccsds_header}

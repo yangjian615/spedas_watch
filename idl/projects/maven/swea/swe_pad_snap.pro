@@ -129,8 +129,8 @@
 ;        ZRANGE:       Override default color scale range with this.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 18:19:14 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22143 $
+; $LastChangedDate: 2016-10-20 15:52:40 -0700 (Thu, 20 Oct 2016) $
+; $LastChangedRevision: 22175 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -626,13 +626,17 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         x = pad.energy[*,0]
         y = pad.pa*!radeg
         z = pad.data
+        dz = sqrt(pad.var)
+        pcol = !p.color
 
         if (~psflg) then wset, Nwin
         de = min(abs(energy - x),i)
         energy = x[i]
         ylo = reform(pad.pa_min[i,*])*!radeg
         yhi = reform(pad.pa_max[i,*])*!radeg
-        zi = z[i,*]/mean(z[i,*],/nan)
+        zmean = mean(z[i,*],/nan)
+        zi = z[i,*]/zmean
+        dzi = dz[i,*]/zmean
 
         col = [replicate(2,8), replicate(6,8)]
 
@@ -645,8 +649,18 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
         for j=0,15 do oplot,[ylo[j],yhi[j]],[zi[j],zi[j]],color=col[j]
         oplot,y[i,0:7],zi[0:7],linestyle=1,color=2
+        if (ebar) then begin
+          !p.color = 2
+          oploterr,y[i,0:7],zi[0:7],dzi[0:7],3
+          !p.color = pcol
+        endif
         oplot,y[i,0:7],zi[0:7],psym=4
         oplot,y[i,8:15],zi[8:15],linestyle=1,color=6
+        if (ebar) then begin
+          !p.color = 6
+          oploterr,y[i,8:15],zi[8:15],dzi[8:15],3
+          !p.color = pcol
+        endif
         oplot,y[i,8:15],zi[8:15],psym=4
       
         if (dolab) then begin
@@ -880,12 +894,11 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         dys = 0.03
       
         for ip=0,npa/2-1 do begin
-            ipa=ip+inm
-            if ipa ge npa then ipa=ipa-npa
-            mip=pad.pa_min[63,ipa]*!radeg
-            maap=pad.pa_max[63,ipa]*!radeg
-            if pad.pa[63,ipa]*!radeg ge 90 then lst=2 else lst=0
-            clr=244./(npa/2-1)*ip+10
+            ipa = (ip + inm) < (ipa - npa)
+            mip = pad.pa_min[63,ipa]*!radeg
+            maap = pad.pa_max[63,ipa]*!radeg
+            if (pad.pa[63,ipa]*!radeg ge 90) then lst = 2 else lst = 0
+            clr = 244./(npa/2-1)*ip + 10
             oplot,x,pad.data[*,ipa], color=clr, linestyle=lst
             xyouts,xs,ys,string(mip, maap, format='(i3," - ",i3)'),charsize=1.2,/norm,color=clr
             ys -= dys

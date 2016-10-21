@@ -6,8 +6,8 @@
 ; A widget to display the file 'spd_gui.txt' help
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-04-30 18:11:13 -0700 (Wed, 30 Apr 2014) $
-;$LastChangedRevision: 14991 $
+;$LastChangedDate: 2016-10-20 14:45:33 -0700 (Thu, 20 Oct 2016) $
+;$LastChangedRevision: 22170 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_help_window.pro $
 ;
 ;-
@@ -70,7 +70,7 @@ Pro spd_ui_help_window, historyWin, gui_id
   help_arr = 'No Help File'
   
   getresourcepath,rpath
-  fname = rpath+'thm_users_guide_link.txt'
+  fname = rpath+'spd_users_guide_link.txt'
   if file_test(fname) then begin
     help_arr = strarr(file_lines(fname))
     openr, unit, fname, /get_lun

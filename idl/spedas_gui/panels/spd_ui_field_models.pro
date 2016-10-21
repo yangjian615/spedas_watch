@@ -8,9 +8,9 @@
 ;
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-08-21 12:21:00 -0700 (Thu, 21 Aug 2014) $
-;$LastChangedRevision: 15698 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-10-20 14:21:22 -0700 (Thu, 20 Oct 2016) $
+;$LastChangedRevision: 22169 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_field_models.pro $
 ;-
 
@@ -460,7 +460,7 @@ pro spd_ui_field_models_event, event
                     state.statusBar->update, 'Coordinate system for input position not in GSM, transforming from ' + strupcase(coord_sys) + ' to GSM prior to calculating models'
                     state.historyWin->update, 'Coordinate system for input position not in GSM, transforming from ' + strupcase(coord_sys) + ' to GSM prior to calculating models'
                     var_to_map = pos_input[0] + '_gsm'
-                    thm_cotrans, pos_input[0], var_to_map, out_coord = 'gsm'
+                    spd_cotrans, pos_input[0], var_to_map, out_coord = 'gsm'
                 endif else var_to_map = pos_input[0]
                 
                 state.statusBar -> update, 'Generating the ' + field_model + ' model field for: ' + string(var_to_map)

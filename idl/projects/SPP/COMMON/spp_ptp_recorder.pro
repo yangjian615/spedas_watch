@@ -53,8 +53,8 @@ PRO spp_ptp_recorder_event, ev   ; recorder
                 cnt++
             endwhile
             dt = systime(1) -info.time_received
-            store_data,/append,'xrate',systime(1),dt/i*1e6
-            if debug(4) then begin
+;            store_data,/append,'xrate',systime(1),dt/i*1e6
+            if debug(5) then begin
               dprint,dlevel=4,nb,cnt,i,dt, dt/i*1e6
             endif
 
@@ -62,8 +62,7 @@ PRO spp_ptp_recorder_event, ev   ; recorder
               stream_error:
               widget_control,wids.host_text,get_value=hostname
               widget_control,wids.host_port,get_value=hostport
-              dprint,dlevel=dlevel-1,info.title_num+'File error: '+hostname[0]+':'+hostport[0]+' broken. ',i
-              dprint,dlevel=dlevel,!error_state.msg
+              dprint,dlevel=dlevel+1,info.title_num+!error_state.msg
             endif
 
             ;;   Switch file name if needed
@@ -95,7 +94,7 @@ PRO spp_ptp_recorder_event, ev   ; recorder
               if keyword_set(proc_name) then call_procedure,proc_name[0],buffer ,info=info  ;,time=info.time_received   ; Execute exec_proc here
             endif
             widget_control,wids.output_text,set_value=msg
-            dprint,dlevel=dlevel+3,info.title_num+msg,/no_check
+            dprint,dlevel=dlevel+4,info.title_num+msg,/no_check
             widget_control,wids.poll_int,get_value = poll_int
             poll_int = float(poll_int) 
             if poll_int le 0 then poll_int = 1
@@ -122,7 +121,7 @@ PRO spp_ptp_recorder_event, ev   ; recorder
             WIDGET_CONTROL, wids.host_port, sensitive=0
             socket,hfp,/get_lun,server_name,fix(server_port),error=error ,/swap_if_little_endian,connect_timeout=10
             if keyword_set(error) then begin
-              dprint,dlevel=dlevel-1,info.title_num+!error_state.msg,error   ;strmessage(error)
+              dprint,dlevel=dlevel-1,info.title_num+!error_state.msg+strtrim(error)   ;strmessage(error)
               widget_control, wids.output_text, set_value=!error_state.msg
               WIDGET_CONTROL, wids.host_button, set_value = 'Failed:',sensitive=1
               WIDGET_CONTROL, wids.host_text, sensitive=1

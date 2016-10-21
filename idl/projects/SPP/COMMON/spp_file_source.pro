@@ -58,7 +58,7 @@ function spp_file_source,DEFAULT_SOURCE,set=set,reset=reset,_extra=ex
       user_pass = ''
       str_element,ex,'USER_PASS',user_pass                 ;  Get user_pass if it was passed in
       if ~keyword_set(user_pass) then  user_pass = getenv('SPP_USER_PASS')
-      if ~keyword_set(user_pass) then  user_pass = user + ':' + user + '_pfp'
+      if ~keyword_set(user_pass) then  user_pass = user + ':' + user + '_swp'
       str_element,/add,psource,'USER_PASS',user_pass
       psource.preserve_mtime = 1
       ;       psource.no_update=1   ; this can be set to 1 only because all files use version numbers and will not be updated.
@@ -68,6 +68,7 @@ function spp_file_source,DEFAULT_SOURCE,set=set,reset=reset,_extra=ex
     ;    psource.archive_dir = psource.local_data_dir+ 'maven/' + 'archive/'  ; archive directory
     psource.verbose=2
 ;    str_element,/add,psource,'LAST_VERSION',1            ;  set this as default since version numbers are generally used.
+    str_element,/add,psource,'STRICT_HTML',0            ;  set this as default since version numbers are generally used.
   endif
 
   if size(/type,default_source) eq 8 then  source= default_source  else source = psource
