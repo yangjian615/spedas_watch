@@ -6,6 +6,7 @@ pro spp_apdat_info,apids,name=name,verbose=verbose,$
                   clear=clear,$
                   reset=reset,$
                   apdats = apdats, $
+                  matchname = matchname,  $
                   save_flag=save_flag,$
                   nonzero=nonzero,  $
                   all = all, $
@@ -27,8 +28,22 @@ pro spp_apdat_info,apids,name=name,verbose=verbose,$
   endif
 
   if ~keyword_set(all_apdat) then all_apdat = replicate( obj_new() , 2^11 )
-
+  
   if n_elements(apids) eq 0 then apids = where(all_apdat,/null)
+
+  if n_elements(matchname) ne 0 then begin
+    all = 1
+    n = n_elements(apids)
+    if n ne 0 then begin
+      names = strarr(n_elements(apids))
+      for i=0,n_elements(apids)-1 do names[i] = all_apdat[apids[i]].name
+      ind = strfilter(names,matchname,/index,/null)
+      ;printdat,names,matchname,ind
+      apids = apids[ind]
+    endif    
+
+  endif
+
   
   default_apid_obj_name =  'spp_gen_apdat'
 

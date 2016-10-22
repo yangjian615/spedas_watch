@@ -87,8 +87,8 @@
 ;HISTORY:
 ; 2016-09-23, jmm, jimm@ssilberkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-17 12:48:20 -0700 (Mon, 17 Oct 2016) $
-; $LastChangedRevision: 22110 $
+; $LastChangedDate: 2016-10-21 11:05:30 -0700 (Fri, 21 Oct 2016) $
+; $LastChangedRevision: 22185 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/tplot_window/tplot_window.pro $
 ;-
 Pro tplot_window_event, event
@@ -124,23 +124,25 @@ Pro tplot_window_event, event
      Return
   Endif
 
+  widget_control, event.top, get_uval = state, /no_copy
+  If(state.init Eq 0) Then Begin ;there always seems to be an event at the start, do nothing
+     state.init = 1
+     widget_control, event.top, set_uval = state, /no_copy
+     Return
+  Endif Else widget_control, event.top, set_uval = state, /no_copy
+
 ;what sort of events, only keystrokes to start
   used_tlimit = 0b
   If(tag_exist(event, 'type') && (event.type Eq 5 || event.type Eq 6)) Then Begin
      If(event.release Eq 1) Then Begin
         If(~is_struct(tplot_vars) || ~is_struct(tplot_vars.options)) Then Return
-;Figure out where we are in non-device coordinates
         widget_control, event.top, get_uval = state, /no_copy
-        If(state.init Eq 0) Then Begin ;there always seems to be an event at the start, do nothing
-           state.init = 1
-           widget_control, event.top, set_uval = state, /no_copy
-           Return
-        Endif
 ;Check to be sure that the graphics device is set to the tplot window,
 ;sometimes this is not the case when windows get deleted or moved
 ;around
         wset, tplot_vars.options.window
-        tplot, verbose=0, get_plot_pos = ppp
+        tplot, verbose = 0, get_plot_pos = ppp
+;Figure out where we are in non-device coordinates
 ;Now some xtplot hacks
         geo = widget_info(state.draw_widget, /geo) ;widget geometry
         widget_control, event.top, set_uval = state, /no_copy

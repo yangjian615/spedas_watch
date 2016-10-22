@@ -24,8 +24,8 @@
 ;   these cribs can help double as documentation for tplot.
 ;
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-17 12:46:41 -0700 (Mon, 17 Oct 2016) $
-; $LastChangedRevision: 22109 $
+; $LastChangedDate: 2016-10-21 11:06:02 -0700 (Fri, 21 Oct 2016) $
+; $LastChangedRevision: 22186 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot_window.pro $
 ;-
 
@@ -75,12 +75,14 @@ print,"the most recent window (in this case window 34). "
 print,'Type ".c" to continue'
 stop 
 
-tplot, window = 32
+tplot_options, 'window', 32
 
-print,"Call tplot, window = 32 to reset to the original window. "
+print,"Call tplot_options, 'window', 32 to reset to the original window. "
 print,"Note that the original window has no 'memory' of the original "
-print,"variables that you plotted."
-print,"Kill the other two widgets by clicking on the 'X' in the "
+print,"variables that you plotted. Therefore, when you now operate on "
+print,"the current window (now window 32), only one variable, 'sta_SWEA_en' "
+print,"is plotted. This is consistent with TPLOT behavior."
+print,"You can kill the other two widgets by clicking on the 'X' in the "
 print,"upper right hand corner"
 print,'Type ".c" to continue'
 stop
@@ -88,7 +90,7 @@ stop
 tplot, 'sta_SWEA_mom_flux', /add
 
 print, "Execpt with the window command, all of the regular tplot commands "
-print, "are acceptable, Add varaibles using tplot, /add:"
+print, "are acceptable; add the variable 'sta_SWEA_mom_flux' using tplot, /add:"
 print,'Type ".c" to continue'
 stop
 
@@ -106,8 +108,8 @@ print, "Execpt with the window command, all of the regular tplot commands "
 print, "are acceptable, try ctime:"
 
 ctime, time, y, z
-print, 'time:' , t
-print, 'y, z: ', t
+print, 'time:' , time_string(time)
+print, 'y, z: ', y, z
 
 print,'Type ".c" to continue'
 stop
