@@ -52,8 +52,8 @@ END
 function spp_gen_apdat::info
 ;rs =string(format="(Z03,'x ',a-14, i8,i8 ,i12,i3,i3,i8,' ',a-14,a-36,' ',a-36, ' ',a-20,a)",self.apid,self.name,self.npkts,self.lost_pkts, $
 ;    self.nbytes,self.save_flag,self.rt_flag,self.data.size,self.data.typename,string(/print,self),self.routine,self.tname,self.save_tags)
-  rs =string(format="(Z03,'x ',a-14, i8,i8 ,i12,i3,i3,i8,' ',a-14,a-26,' ',a-36, ' ',a-20,a)",self.apid,self.name,self.npkts,self.lost_pkts, $
-    self.nbytes,self.save_flag,self.rt_flag,self.data.size,self.data.typename,typename(self),self.routine,self.tname,self.save_tags)
+  rs =string(format="(Z03,'x ',a-14, i8,i8 ,i12,i3,i3,i8,' ',a-14,a-26,' ',a-36, ' ',a-20,'<',a,'>')",self.apid,self.name,self.npkts,self.lost_pkts, $
+    self.nbytes,self.save_flag,self.rt_flag,self.data.size,self.data.typename,typename(self),self.routine,self.tname,self.ttags)
 
 return,rs
 end
@@ -107,7 +107,7 @@ pro spp_gen_apdat::handler,ccsds,header
 
   if self.rt_flag && keyword_set(strct) then begin
     if ccsds.gap eq 1 then strct = [fill_nan(strct[0]),strct]
-    store_data,self.tname,data=strct, tagnames=self.rt_tags , append = 1, gap_tag='GAP'
+    store_data,self.tname,data=strct, tagnames=self.ttags , append = 1, gap_tag='GAP'
   endif
 end
  
@@ -116,7 +116,7 @@ end
  
 pro spp_gen_apdat::finish
   if self.npkts ne 0 then self.print ,dlevel=3,'finish'
-  store_data,self.tname,data=self.data.array, tagnames=self.save_tags,  gap_tag='GAP',verbose=0
+  store_data,self.tname,data=self.data.array, tagnames=self.ttags,  gap_tag='GAP',verbose=0
 end
  
 
@@ -174,8 +174,7 @@ void = {spp_gen_apdat, $
   save_flag: 0b, $
   routine:  '', $
   tname: '',  $
-  rt_tags: '',  $
-  save_tags: '',   $
+  ttags: '',  $
   ccsds_last: ptr_new(), $
   ccsds_array: obj_new(), $  
   data: obj_new()  $

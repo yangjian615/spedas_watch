@@ -29,7 +29,7 @@ function spp_swp_spani_rates_decom,ccsds, ptp_header=ptp_header, apdat=apdat
   rates_str = { $
     time:               time, $
     met:                ccsds.met,  $
-    seq_cntr:           ccsds.seqn, $
+    seqn:               ccsds.seqn, $
     mode:               b[13] , $
     valid_cnts:         reform( rates[0,*]) , $
     multi_cnts:         reform( rates[1,*]), $

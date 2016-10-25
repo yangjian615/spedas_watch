@@ -9,6 +9,28 @@
 ;end
 
 
+function spp_swp_ccsds_decom_mettime,header,spc=spc,span=span,subsec=subsec
+  if size(header,/type) eq 1 then begin   ; convert to uints
+    n = n_elements(header) 
+    header2 = swap_endian(uint(header,0,6 < n/2) ,/swap_if_little_endian )
+    return, spp_swp_ccsds_decom_mettime(header2,subsec=subsec,spc=spc,span=span)
+  endif
+  
+    ; header assumed to be uints at this point
+  n = n_elements(header)
+  if n lt 5 then return, !values.d_nan
+
+  if keyword_set(span) then begin
+    MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) +   ( (header[5] ) mod 4) * 2d^15/150000              ; SPANS
+  endif else if keyword_set(spc) then begin
+    MET = (header[3]*2UL^16 + header[4] + (header[5] and 'ffff'x)  / 2d^16)             ; SPC
+  endif else begin
+    MET = double( header[3]*2UL^16 + header[4] )   ; normal 1 sec resolution
+  endelse
+return,met
+end
+
+
 
 
 
@@ -55,18 +77,32 @@ function spp_swp_ccsds_decom,buffer,offset,buffer_length,remainder=remainder , e
   if n_elements(subsec) eq 0 then subsec= ccsds.apid ge '350'x
 
   apid = ccsds.apid
-  if apid ge '360'x then begin
-    MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) +   ( (header[5] ) mod 4) * 2d^15/150000              ; SPANS
+  
+  MET = spp_swp_ccsds_decom_mettime(header)
+
+  ;  if apid ge '360'x then begin
+  ;    MET = (header[3]*2UL^16 + header[4] + (header[5] and 'fffc'x)  / 2d^16) +   ( (header[5] ) mod 4) * 2d^15/150000              ; SPANS
+  ;  endif else if apid ge '350'x then begin
+  ;    MET = (header[3]*2UL^16 + header[4] + (header[5] and 'ffff'x)  / 2d^16)             ; SPC
+  ;  endif else begin
+  ;    MET = double( header[3]*2UL^16 + header[4] )
+  ;  endelse
+
+; The following MET computation code belongs in the apdat object handler routines - this is a temporaty cluge that may disappear
+  
+  if apid ge '3c0'x then begin
+    MET = spp_swp_ccsds_decom_mettime(header)              ; GSE data
+  endif else if apid ge '360'x then begin
+    MET = spp_swp_ccsds_decom_mettime(header,/span)              ; SPANS
   endif else if apid ge '350'x then begin
-    MET = (header[3]*2UL^16 + header[4] + (header[5] and 'ffff'x)  / 2d^16)             ; SPC
+    MET = spp_swp_ccsds_decom_mettime(header,/spc)              ; SPC
   endif else begin
-    MET = double( header[3]*2UL^16 + header[4] )
+    MET = spp_swp_ccsds_decom_mettime(header)              ; SWEM data
   endelse
 
   ccsds.met = met
-  ; dprint,ccsds.apid,ccsds.met,format='(z,"x ",f12.2)'
-
   ccsds.time = spp_spc_met_to_unixtime(ccsds.MET)
+
   ccsds.pkt_size = header[2] + 7
 
   if buffer_length-offset lt ccsds.pkt_size then begin
@@ -80,11 +116,11 @@ function spp_swp_ccsds_decom,buffer,offset,buffer_length,remainder=remainder , e
     return ,0
   endif else begin
     if ccsds.pkt_size lt 10 then begin
-      dprint,'Invalid Packet size:' , ccsds.pkt_size
+      dprint,ccsds.apid,ccsds.seqn,' Invalid Packet size:' , ccsds.pkt_size,dlevel=2
       return,0
     endif
     if ccsds.pkt_size ne buffer_length-offset then begin
-      dprint,'buffer and CCSDS size mismatch',dlevel=4
+      dprint,'buffer and CCSDS size mismatch',dlevel=3
     endif
     pktbuffer = buffer[offset+0:offset+ccsds.pkt_size-1]
     ccsds.pdata = ptr_new(pktbuffer,/no_copy)

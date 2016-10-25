@@ -17,9 +17,9 @@ strct = {time:header_str.time, $
 ;  ;fill_nan(strct), index = *apdat.dataindex
 ;  append_array, *apdat.dataptr, strct, index = *apdat.dataindex
 ;endif
-if apdat.rt_flag && apdat.rt_tags then begin
+if apdat.rt_flag && apdat.ttags then begin
   ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-  store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+  store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
 endif
 return,0
 end
@@ -38,9 +38,9 @@ function spp_swp_spani_32Ex16A, data, header_str=header_str, apdat=apdat
     cnts_Anode:data,  $
     gap: 0}
 
-  if apdat.rt_flag && apdat.rt_tags then begin
+  if apdat.rt_flag && apdat.ttags then begin
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
   endif
 
   data = reform(data,32,16,/overwrite)
@@ -52,9 +52,9 @@ function spp_swp_spani_32Ex16A, data, header_str=header_str, apdat=apdat
     spec2:spec2, $
     gap: 0}
 
-  if apdat.rt_flag && apdat.rt_tags then begin
+  if apdat.rt_flag && apdat.ttags then begin
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
   endif
 
 end
@@ -69,9 +69,9 @@ message,'bad routine'
     cnts_Anode:data,  $
     gap: 0}
 
-  if apdat.rt_flag && apdat.rt_tags then begin
+  if apdat.rt_flag && apdat.ttags then begin
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
   endif
 
 
@@ -101,9 +101,9 @@ function spp_swp_spani_8Dx32Ex16A, data, header_str=header_str, apdat=apdat   ; 
     spec123:spec123, $
     gap: 0}
 
-  if apdat.rt_flag && apdat.rt_tags then begin
+  if apdat.rt_flag && apdat.ttags then begin
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
   endif
 
 end
@@ -129,9 +129,9 @@ function spp_swp_spani_32Ex16Ax4M, data, header_str=header_str, apdat=apdat   ; 
     spec23:spec23, $
     gap: 0}
 
-  if apdat.rt_flag && apdat.rt_tags then begin
+  if apdat.rt_flag && apdat.ttags then begin
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
   endif
 end
 
@@ -158,9 +158,9 @@ function spp_swp_spani_8Dx32EX16Ax2M, data, header_str=header_str, apdat=apdat  
     spec23:spec23, $
     gap: 0}
 
-  if apdat.rt_flag && apdat.rt_tags then begin
+  if apdat.rt_flag && apdat.ttags then begin
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
   endif
 end
 
@@ -185,9 +185,9 @@ function spp_swp_spani_8Dx32Ex16Ax1M, data, header_str=header_str, apdat=apdat  
     spec23:spec23, $
     gap: 0}
 
-  if apdat.rt_flag && apdat.rt_tags then begin
+  if apdat.rt_flag && apdat.ttags then begin
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
   endif
 end
 
@@ -207,10 +207,10 @@ function spp_swp_spani_16Ax16M, data, header_str=header_str, apdat=apdat   ; thi
     spec2:spec2, $
     gap: 0}
 
-  if apdat.rt_flag && apdat.rt_tags then begin
- ;   printdat,apdat.rt_tags
+  if apdat.rt_flag && apdat.ttags then begin
+ ;   printdat,apdat.ttags
     ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
   endif
 end
 

@@ -2,13 +2,13 @@
 ;NAME:
 ;fa_esa_l2_edist
 ;CALLING SEQUENCE:
-;edist = fa_esa_l2_edist(type)
+;eflux = fa_esa_l2_edist(type)
 ;PURPOSE:
 ;Create FAST ESA energy spectrum, from L2 input
 ;INPUT:
 ;type = one of ['ies', 'ees', 'ieb', 'eeb']
 ;OUTPUT:
-;edist = tplot variable name for energy spectrum in the given pitch
+;eflux = tplot variable name for energy spectrum in the given pitch
 ;        angle range
 ;KEYWORDS: (all from get_pa_spec.pro, but the interpretation may be
 ;           different because there are no 'counts')
@@ -27,8 +27,8 @@
 ;HISTORY:
 ; 2016-04-12, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-12 13:04:26 -0700 (Mon, 12 Sep 2016) $
-; $LastChangedRevision: 21815 $
+; $LastChangedDate: 2016-10-24 12:02:05 -0700 (Mon, 24 Oct 2016) $
+; $LastChangedRevision: 22189 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_edist.pro $
 ;-
 Function fa_esa_l2_edist, type, $
@@ -199,13 +199,13 @@ Function fa_esa_l2_edist, type, $
 ;setup tplot variable
   If(is_string(name)) Then name_o_tplot = name $
   Else Begin
-     name_o_tplot = 'fa_'+typex+'_l2_edist'
+     name_o_tplot = 'fa_'+typex+'_l2_eflux'
      If(is_string(suffix)) Then name_o_tplot = name_o_tplot+suffix
   Endelse
 
   store_data, name_o_tplot, data = {x:(all_dat.time[ss]+all_dat.end_time[ss])/2,y:eflux_out,v:energy_out}
 ;  zlim,name_o_tplot, 1.e1, 1.e6, 1
-  ylim,name_o_tplot, 5., 40000., 1
+  ylim, name_o_tplot, 5., 40000., 1
   options, name_o_tplot, 'ztitle', 'Eflux'
   options, name_o_tplot, 'ytitle',type+': eV'
   options, name_o_tplot, 'spec', 1
@@ -213,6 +213,7 @@ Function fa_esa_l2_edist, type, $
   options, name_o_tplot, 'y_no_interp', 1
   options, name_o_tplot, datagap = 5
   options, name_o_tplot, 'zlog', 1
+  options, name_o_tplot, 'units', 'eV/(cm^2-s-eV)', /default
 
   Return, name_o_tplot
 End

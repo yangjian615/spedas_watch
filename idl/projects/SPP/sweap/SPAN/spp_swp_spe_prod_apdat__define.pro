@@ -176,7 +176,7 @@ pro spp_swp_spe_prod_apdat::handler,ccsds,ptp_header
 
   if self.rt_flag && keyword_set(strct) then begin
     if ccsds.gap eq 1 then strct = [fill_nan(strct[0]),strct]
-    store_data,self.tname,data=strct, tagnames=self.rt_tags , append = 1,gap_tag='GAP'
+    store_data,self.tname,data=strct, tagnames=self.ttags , append = 1,gap_tag='GAP'
   endif
 end
  
@@ -208,7 +208,7 @@ END
 ;pro spp_swp_spe_prod_apdat::finish
 ;
 ;  dprint,dlevel=2,'Finishing ',self.name,self.apid
-;  store_data,self.tname,data=self.data.array, tagnames=self.save_tags,gap_tag='GAP',verbose=0
+;  store_data,self.tname,data=self.data.array, tagnames=self.ttags,gap_tag='GAP',verbose=0
 ;
 ;;  store_data, self.prod_16A.array , self.prod_16A.name
 ;;  store_data, self.prod_16Ax32E.array , self.prod_16Ax32E.name

@@ -29,7 +29,8 @@
 ;   Beware of file pathnames that include the character sequences:  YY,  MM, DD, hh, mm, ss, .f  since these can be retranslated to the time
 ;-
 function spp_file_retrieve,pathname,trange=trange,verbose=verbose, source=src, $
- ;  last_version=last_version,valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
+   last_version=last_version, $
+ ;  valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
    daily_names=daily_names,hourly_names=hourly_names,resolution = res,shiftres=shiftres,valid_only=valid_only,  $
  ;  no_server=no_server,user_pass=user_pass,L0=L0, $
    cal=cal,TVac=Tvac,snout2=snout2,snout1=snout1,ion=ion,recent=recent,spani=spani,spanea=spanea,spaneb=spaneb,spc=spc,swem=swem,elec=elec,instr=instr,router=router
@@ -54,7 +55,7 @@ if keyword_set(elec) then begin
 endif
 if keyword_set(tvac) then snout2=1
 
-if keyword_set(ion) then instr = 'spani'
+if keyword_set(spani) then instr = 'spani'
 if keyword_set(spanea) then instr='spanea'
 if keyword_set(spaneb) then instr='spaneb'
 if keyword_set(spc) then instr = 'spc'

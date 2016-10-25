@@ -51,6 +51,7 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header   ,apdat=apdat
 ;          mlinmove:   b[14],$                          ;; ,,,  8
 ;          mlincoast:  b[15],$                          ;; ,,,  8
 ;          mlinerror:  b[16],$                          ;; ,,,  8
+          mov_flag:  total(/preserve,(b[[14,15,16,21,22,23,28,29,30]] * [1,2,4,8,16,32,64,128,256])), $
           lin_flag:  total(/preserve,(b[14:16] ne 0) * byte([1,2,4]))  , $
           lin_pos:    spp_swp_float_decom(b,17),$      ;; ,,, 32
 ;          myawmove:   b[21],$                          ;; ,,,  8

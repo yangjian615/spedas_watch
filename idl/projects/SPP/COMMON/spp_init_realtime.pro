@@ -20,7 +20,7 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
   endif
   if keyword_set(tvac) then snout2=1
 
-  if keyword_set(ion) then instr = 'spani'
+  if keyword_set(spani) then instr = 'spani'
   if keyword_set(spanea) then instr='spanea'
   if keyword_set(spaneb) then instr='spaneb'
   if keyword_set(spc) then instr = 'spc'

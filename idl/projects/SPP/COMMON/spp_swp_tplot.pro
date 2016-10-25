@@ -23,16 +23,17 @@ if keyword_set(name) then begin
     'SE':   tplot,'*sp?_AF0_ANODE_SPEC *sp?_AF1_*_SPEC spp_sp?_hkp_MRAM_*',ADD=ADD
     'SE_HV': tplot,'*sp?_hkp_ADC_VMON_* *sp?_hkp_ADC_IMON_*',ADD=ADD
     'SE_LV': tplot,'*sp?_hkp_RIO*',ADD=ADD
-    'SA_SPEC': tplot,'*_a_ar_targ_p1_*CNTS_TOTAL *_a_ar_targ_p1_*_SPEC? *_a_ar_targ_p0_*_SPEC*',add=add
-    'SB': tplot,'APID',ADD=ADD
-    'SB_SPEC': tplot,'*_b_ar_targ_p1_*CNTS_TOTAL *_b_ar_targ_p1_*_SPEC? *_b_ar_targ_p0_*_SPEC*',add=add
+;    'SA_SPEC': tplot,'*_a_ar_targ_p1_*CNTS_TOTAL *_a_ar_targ_p1_*_SPEC? *_a_ar_targ_p0_*_SPEC*',add=add
+;    'SB': tplot,'APID',ADD=ADD
+;    'SB_SPEC': tplot,'*_b_ar_targ_p1_*CNTS_TOTAL *_b_ar_targ_p1_*_SPEC? *_b_ar_targ_p0_*_SPEC*',add=add
     'SI_RATE': tplot,'*rate*CNTS',ADD=ADD
     'SI_RATE1': tplot,'*rates_'+strsplit(/extract,'VALID_* MULTI_* STARTS_* STOPS_*'),add=add
     'SI_AF0?_1': tplot,'*spani_ar_full_p0_m?_*_SPEC1',add=add
-    'SI_MON' : tplot,'*spani_*hkp_MON*',add=add
-    'SI_HV' : tplot,'*spani_*' + strsplit(/extract,'RAW_? MCP_? ACC_?'),add=add
-    'MANIP':tplot,'*_M???POS *MRAM_LOW',add=add
+    'SI_MON' : tplot,'*spi_*hkp_MON*',add=add
+    'SI_HV' : tplot,'*spi_*' + strsplit(/extract,'RAW_? MCP_? ACC_?'),add=add
+    'MANIP':tplot,'manip*_POS',add=add
     'SI_GSE': tplot,add=add,'Igun_* APS3_*'
+    'SI': tplot,add=add,'Igun_* manip_*POS *rates_VAL*CNTS *rates_*NO*CNTS '
     'SC':  tplot,'spp_*spc*',ADD=ADD
     else:
   endcase

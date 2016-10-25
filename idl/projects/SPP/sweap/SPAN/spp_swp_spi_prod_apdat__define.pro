@@ -17,7 +17,7 @@ pro spp_swp_spi_prod_apdat::prod_16A, strct
     gap: strct.gap}
     
   self.prod_16A.append, strct2
-  self.store_data, strct2, pname
+;  self.store_data, strct2, pname
   return
 end
 
@@ -40,7 +40,7 @@ pro spp_swp_spi_prod_apdat::prod_32Ex16A, strct
     gap: strct.gap}
 
   self.prod_32Ex16A.append, strct2
-  self.store_data, strct2, pname
+;  self.store_data, strct2, pname
 
 end
 
@@ -53,9 +53,9 @@ end
 ;  strct = {time:header_str.time, $
 ;    cnts_Anode:data,  $
 ;    gap: 0}
-;  if apdat.rt_flag && apdat.rt_tags then begin
+;  if apdat.rt_flag && apdat.ttags then begin
 ;    ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
-;    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+;    store_data,apdat.tname+pname,data=strct, tagnames=apdat.ttags, /append
 ;  endif
 ;end
 
@@ -85,7 +85,7 @@ pro spp_swp_spi_prod_apdat::prod_8Dx32Ex16A, strct   ; this function needs fixin
     gap: strct.gap}
 
   self.prod_8Dx32Ex16A.append, strct2
-  self.store_data, strct2, pname
+;  self.store_data, strct2, pname
 end
 
 
@@ -111,34 +111,32 @@ pro spp_swp_spi_prod_apdat::prod_32Ex16Ax4M, strct  ; this function needs fixing
     gap: strct.gap}
     
   self.prod_32Ex16Ax4M.append, strct2
-  self.store_data, strct2, pname
+;  self.store_data, strct2, pname
 end
 
 
 
 pro spp_swp_spi_prod_apdat::prod_8Dx32EX16Ax2M, strct   ; this function needs fixing
-  data = *strct.pdata
   if n_elements(data) ne 8192 then begin
     dprint,'bad size'
     return
   endif
   pname = '8Dx32Ex16Ax2M_'
-  data = reform(data,8,32,16,2,/overwrite)
-  spec1 = total(reform(data,8,32*16*2),2)
-  spec2 = total( total(data,1) ,2 )
-  spec3 = total(total(reform(data,8*32,16,2),1) ,2)
-  spec23 = total(total(reform(data,8,32*16,2),1), 2)
+  cnts = *strct.pdata
 
-  ;  printdat,spec1,spec2,spec2,spec23
+  cnts = reform(cnts,8,32,16,2,/overwrite)
 
-  strct2 = {time:strct.time, $
-    spec1:spec1, $
-    spec2:spec2, $
-    spec3:spec3, $
-    spec23:spec23, $
-    gap:  strct.gap}
+  strct2 = {time:strct.time, $  ; add more in the future
+    cnts:cnts, $
+    gap: strct.gap}
+
+  strct.anode_spec = total( reform(cnts,8*32,16) , 1)
+  strct.nrg_spec =  total( total(cnts,1), 2 )
+  strct.def_spec =  total( total(cnts,2) ,2)
+  strct.mass_spec =  total(cnts,1)
+  
   self.prod_8Dx32Ex16Ax2M.append, strct2
-  self.store_data, strct2, pname
+
 end
 
 
@@ -149,20 +147,21 @@ pro spp_swp_spi_prod_apdat::prod_8Dx32Ex16Ax1M, strct   ; this function needs fi
     return
   endif
   pname = '8Dx32Ex16Ax1M_'
-  data = reform(data,8,32,16,/overwrite)
-  spec1 = total(reform(data,8,32*16),2)
-  spec2 = total( total(data,1) ,2 )
-  spec3 = total(reform(data,8*32,16),1)
-  spec23 = total(reform(data,8,32*16),1)
 
-  strct2 = {time:header_str.time, $
-    spec1:spec1, $
-    spec2:spec2, $
-    spec3:spec3, $
-    spec23:spec23, $
-    gap:  strct.gap}
-  self.prod_8Dx32Ex16Ax2M.append, strct2
-  self.store_data, strct2, pname
+  cnts = *strct.pdata
+
+  cnts = reform(cnts,8,32,16,/over)
+
+  strct2 = {time:strct.time, $  ; add more in the future
+    cnts:cnts, $
+    gap: strct.gap}
+
+  strct.anode_spec = total( reform(cnts,8*32,16) , 1)
+  strct.nrg_spec =  total( total(cnts,1), 2 )
+  strct.def_spec =  total( total(cnts,2) ,2)
+;  strct.mass_spec =  total(cnts,1)
+
+  self.prod_8Dx32Ex16Ax1M.append, strct2
 end
 
 
@@ -172,16 +171,48 @@ pro spp_swp_spi_prod_apdat::prod_16Ax16M, strct   ; this function needs fixing
     return
   endif
   pname = '16Ax16M_'
-  data = reform(data,16,16,/overwrite)
-  spec1 = total(data,2)
-  spec2 = total(data,1 )
+  
+  cnts = *strct.pdata
 
-  strct2 = {time:strct.time, $
-    spec1:spec1, $
-    spec2:spec2, $
+  cnts = reform(cnts,16,16,/over)
+
+  strct2 = {time:strct.time, $  ; add more in the future
+    cnts:cnts, $
     gap: strct.gap}
-  self.prod_16Ax16M.append, strct2
-  self.store_data, strct2, pname
+
+  strct.anode_spec =  total(cnts,2)
+  strct.mass_spec =  total(cnts,1) 
+
+  self.prod_16Ax16m.append, strct2
+
+end
+
+
+
+
+pro spp_swp_spe_prod_apdat::prod_16Ax8Dx32E, strct   ; this function needs fixing
+
+  data = *strct.pdata
+  if n_elements(data) ne 4096 then begin
+    dprint,'bad size'
+    return
+  endif
+  pname = '16Ax8Dx32E_'
+
+  cnts = *strct.pdata
+
+  cnts = reform(cnts,16,8,32,/over)
+
+  strct2 = {time:strct.time, $  ; add more in the future
+    cnts:cnts, $
+    gap: strct.gap}
+
+  strct.anode_spec = total( total(cnts,2), 2)
+  strct.nrg_spec =  total( total(cnts,1), 1 )
+  strct.def_spec =  total( total(cnts,1) ,2)
+
+  self.prod_16Ax8Dx32E.append, strct2
+  ;  if self.rt_flag then  self.store_data, strct2, pname
 end
 
 
@@ -233,42 +264,45 @@ endif else begin
   cnts = 0
 endelse
 
-str = { $
-  time:        ccsds.time, $
-  apid:        ccsds.apid, $
-  time_delta:  ccsds.time_delta, $
-  seqn:        ccsds.seqn,  $
-  seqn_delta:  ccsds.seqn_delta,  $
-  seq_group:   ccsds.seq_group,  $
-  pkt_size :   ccsds.pkt_size,  $
-  ndat:        ndat, $
-  datasize:    ns, $
-  log_flag:    log_flag, $
-  mode1:        mode1,  $
-  mode2:        mode2,  $
-  f0:           f0,$
-  status_flag: status_flag,$
-  peak_bin:    peak_bin, $
-  cnts_total:  tcnts,  $
-  pdata:        ptr_new(data), $
-  gap:         ccsds.gap  }
+
+  str = { $
+    time:        ccsds.time, $
+    apid:        ccsds.apid, $
+    time_delta:  ccsds.time_delta, $
+    seqn:        ccsds.seqn,  $
+    seqn_delta:  ccsds.seqn_delta,  $
+    seq_group:   ccsds.seq_group,  $
+    pkt_size :   ccsds.pkt_size,  $
+    ndat:        ndat, $
+    datasize:    ns, $
+    log_flag:    log_flag, $
+    mode1:        mode1,  $
+    mode2:        mode2,  $
+    f0:           f0,$
+    status_flag: status_flag,$
+    peak_bin:    peak_bin, $
+    cnts:  tcnts,  $
+    anode_spec:  fltarr(16),  $
+    nrg_spec:    fltarr(32),  $
+    def_spec:    fltarr(8) ,  $
+    mass_spec:   fltarr(32),  $
+    pdata:        ptr_new(cnts), $
+    gap:         ccsds.gap  }
+
+
+
 
 return,str
 end
 
 
+ 
+ 
 
 
 pro spp_swp_spi_prod_apdat::handler,ccsds,ptp_header
 
-;  self.increment_counters,ccsds,ptp_header
-
   strct = self.decom(ccsds)
-  
-  if self.save_flag && keyword_set(strct) then begin
-    dprint,self.name,dlevel=5,self.apid
-    self.data.append,  strct
-  endif
 
   ns=1
   if  ns gt 0 then begin
@@ -279,19 +313,25 @@ pro spp_swp_spi_prod_apdat::handler,ccsds,ptp_header
       2048: self.prod_32Ex16Ax4M, strct
       4096: self.prod_8Dx32Ex16A, strct
       8192: self.prod_8Dx32EX16Ax2M, strct
-      else:  dprint,dlevel=2,'Size not recognized: ',ndat
+      else:  dprint,dlevel=2,'Size not recognized: ',strct.ndat
     endcase
+  endif
+
+  if self.save_flag && keyword_set(strct) then begin
+    dprint,self.name,dlevel=5,self.apid
+    self.data.append,  strct
   endif
 
 
   if self.rt_flag && keyword_set(strct) then begin
     if ccsds.gap eq 1 then strct = [fill_nan(strct[0]),strct]
-    store_data,self.tname,data=strct, tagnames=self.rt_tags , append = 1
+    store_data,self.tname,data=strct, tagnames=self.ttags , append = 1,gap_tag='GAP'
   endif
 end
- 
- 
- 
+
+
+
+
 
  
  
@@ -341,22 +381,11 @@ END
 
 
 
-pro spp_swp_spi_prod_apdat::finish
-
-;  dprint,dlevel=3,'Finishing ',self.name,self.apid
-  ;  das = [self.data,self.
-  store_data,self.tname,data=self.data.array, tagnames=self.save_tags,gap_tag='GAP',verbose=0
-
-;  store_data, self.data.array , self.data.name
-;  self.store_data, self.prod_16A.array , self.prod_16A.name
-;  self.store_data, self.prod_32Ex16A.array , self.prod_32Ex16A.name
-;  self.store_data, self.prod_8Dx32Ex16A.array , self.prod_8Dx32Ex16A.name
-;  self.store_data, self.prod_32Ex16Ax4M.array , self.prod_32Ex16Ax4M.name
-;  self.store_data, self.prod_8Dx32EX16Ax1M.array , self.prod_8Dx32EX16Ax1M.name
-;  self.store_data, self.prod_8Dx32EX16Ax2M.array , self.prod_8Dx32EX16Ax2M.name
-;  self.store_data,self.tname+'',data=self.data.array, tagnames=self.save_tags
-;  store_data,self.tname+'_2',data= self.data2.array,  tagnames = '*'
-end
+;pro spp_swp_spi_prod_apdat::finish
+;
+;  store_data,self.tname,data=self.data.array, tagnames=self.ttags,gap_tag='GAP',verbose=0
+;
+;end
 
  
 PRO spp_swp_spi_prod_apdat__define

@@ -21,9 +21,9 @@
 ;coeff = [0.00E+00,  0.00E+00,  -5.76E-20, 5.01E-15,  -1.68E-10, 2.69E-06,  -2.33E-02, 9.33E+01]
 
 
-function spp_swp_int4_decom,buffer,n
-   return,   swap_endian(/swap_if_little_endian,  long(buffer,n) )
-end
+;function spp_swp_int4_decom,buffer,n
+;   return,   swap_endian(/swap_if_little_endian,  long(buffer,n) )
+;end
 
 
 

@@ -1,15 +1,26 @@
 function spp_swp_swemulator_apdat::decom , ccsds, ptp_header
-  buffer = spp_swp_ccsds_data(ccsds)
+  ccsds_data = spp_swp_ccsds_data(ccsds)
   
   if ccsds.time gt 1.76e9 then  ccsds.time -= 315576000   ; fix error in timing
+  if ccsds.pkt_size ne 34 then begin
+    dprint, 'Size error'
+    return,!null
+  endif
 
-   v = swap_endian( uint(buffer[10:*],0,12) ,/swap_if_little_endian)
+   buffer = ccsds_data[10:33]
+   v = swap_endian( uint(buffer,0,12) ,/swap_if_little_endian)
+
    f0 = v[0]
    met = V[1] * 2d^16 + V[2]  + V[3]/(2d^16)
    time=spp_spc_met_to_unixtime(met)
+   delay_ptp = ptp_header.ptp_time - time
+   delay_ccsds = ccsds.time - time
 
-   tns = { time:time, f0:f0,  MET:met, revnum:buffer[8+6],  power_flag: buffer[9], fifo_cntr:buffer[10], fifo_flag: buffer[11], $
-     sync: v[6], counts:v[7]  , parity_frame: v[8],  command:v[9],  telem_fifo_flag:v[10],  inst_power_flag:v[11]  }
+   tns = { time:time,time_delay_ptp:delay_ptp,time_delay_ccsds:delay_ccsds, f0:f0,  MET:met, revnum:buffer[8],  power_flag: buffer[9], fifo_cntr:buffer[10], fifo_flag: buffer[11], $
+     heater_flag: buffer[12], misc_flag:buffer[13], counts:v[7]  , parity_frame: v[8],  command:v[9],  telem_fifo_flag:v[10],  inst_power_flag:v[11]  }
+  
+;  hexprint,buffer
+  ;printdat,tns
   
   return, tns 
 end 

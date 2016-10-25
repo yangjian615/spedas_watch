@@ -28,8 +28,8 @@
 ;HISTORY:
 ; 2016-03-21, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-12 13:04:26 -0700 (Mon, 12 Sep 2016) $
-; $LastChangedRevision: 21815 $
+; $LastChangedDate: 2016-10-24 12:02:05 -0700 (Mon, 24 Oct 2016) $
+; $LastChangedRevision: 22189 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_pad.pro $
 ;-
 Function fa_esa_l2_pad, type, $
@@ -207,6 +207,7 @@ Function fa_esa_l2_pad, type, $
   options, name_o_tplot, 'y_no_interp', 1
   options, name_o_tplot, 'zlog', 1
   options, name_o_tplot, datagap = 5
+  options, name_o_tplot, 'units', 'eV/(cm^2-s-sr)', /default
 
   Return, name_o_tplot
 End

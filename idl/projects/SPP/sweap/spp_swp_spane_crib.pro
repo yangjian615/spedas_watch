@@ -1,9 +1,17 @@
 
+
+
 pro misc2
-  spp_apid_data,'36E'x,apdata=hkp
-  s=hkp.dataptr
-  def = (*s).acc_dac * sign((*s).adc_vmon_def1 - (*s).adc_vmon_def2)
-  store_data,'DEF1-DEF2',(*s).time,float(def)
+  hkp= spp_apdat('36E'x)
+  s=hkp.data.array
+  
+  naan = !values.f_nan
+ ; sgn= fix(s.mram_wr_addr_hi eq 1) - fix(s.mram_wr_addr_hi eq 2)
+sgns = [!values.f_nan,1.,-1., !values.f_nan]
+  sgn = sgns[0 > s.mram_wr_addr_hi < 3]
+  def = s.mram_wr_addr * sgn
+;  def = s.mram_wr_addr *  sign(s.adc_vmon_def1 - s.adc_vmon_def2)
+  store_data,'DEF1-DEF2',s.time,float(def)
 
 end
 
@@ -34,7 +42,7 @@ pro spane_deflector_scan,tranges = trange
 end
 
 
-pro spane_threshold_scan,tranges=trange,lim=lim
+pro spane_threshold_scan,tranges=trange,lim=lim   ;now obsolete
   swap_interp=0
   xlim,lim,0,512
   ylim,lim,10,10000,1
@@ -118,8 +126,8 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
 
 
 ;  Get recent data files:
-files = spp_file_retrieve(/elec,/cal,recent=1/24.)   ; get last 1 hour of data from server
-
+files = spp_file_retrieve(/spanea,/cal,recent=1/24.)   ; get last 1 hour of data from server
+files = spp_file_retrieve(/spanea,/cal,recent=4/24.)   ; get last 4 hours of data from server
 
 ; Read  (Load) files
 spp_ptp_file_read,files
@@ -129,7 +137,7 @@ spp_ptp_file_read,files
 spp_init_realtime,/spanea,/cal,/exec
 
 
-tplot, 'manip',/add
+tplot, 'manip*',/add
 spp_swp_tplot,/setlim
 spp_swp_tplot,'SE'
 spp_swp_tplot,'SE_hv'
@@ -151,15 +159,15 @@ hkp.print
 
 printdat, hkp.strct
 
-printdat, hkp.data
+printdat, hkp.data      ; return the 
 
-printdat, hkp.data.array
+printdat, hkp.data.array   ; return a copy of the data array
 
-printdat, hkp.data.size
+printdat, hkp.data.size    ; return the number of elements in the data array
 
-printdat, hkp.data.typename
+printdat, hkp.data.typename   ; return the typename of the data array 
 
-printdat,  hkp.data.array[-1]
+printdat,  hkp.data.array[-1]  ; return the current last element of the data array
 
 
 

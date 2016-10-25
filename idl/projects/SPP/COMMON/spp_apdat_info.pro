@@ -12,8 +12,7 @@ pro spp_apdat_info,apids,name=name,verbose=verbose,$
                   all = all, $
                   finish=finish,$
                   tname=tname,$
-                  save_tags=save_tags,$
-                  rt_tags=rt_tags,$
+                  ttags=ttags,$
                   routine=routine,$
                   apid_obj_name = apid_obj_name, $
                   print=print, $
@@ -57,10 +56,9 @@ pro spp_apdat_info,apids,name=name,verbose=verbose,$
     if n_elements(name)       ne 0 then apdat.name = name
     if n_elements(routine)    ne 0 then apdat.routine=routine
     if n_elements(rt_flag)    ne 0 then apdat.rt_flag = rt_flag
-    if n_elements(rt_tags)    ne 0 then apdat.rt_tags = rt_tags
     if n_elements(tname)      ne 0 then apdat.tname = tname
+    if n_elements(ttags)      ne 0 then apdat.ttags = ttags
     if n_elements(save_flag)  ne 0 then apdat.save_flag = save_flag
-    if n_elements(save_tags)  ne 0 then apdat.save_tags = save_tags
     if ~keyword_set(all)  &&  (apdat.npkts eq 0) then continue
     if keyword_set(finish) then    apdat.finish
     if keyword_set(clear)  then    apdat.clear

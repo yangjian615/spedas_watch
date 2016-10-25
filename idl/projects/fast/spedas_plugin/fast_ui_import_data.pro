@@ -9,8 +9,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2016-10-18 15:14:49 -0700 (Tue, 18 Oct 2016) $
-;$LastChangedRevision: 22129 $
+;$LastChangedDate: 2016-10-24 12:13:12 -0700 (Mon, 24 Oct 2016) $
+;$LastChangedRevision: 22190 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/fast/spedas_plugin/fast_ui_import_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -56,16 +56,16 @@ pro fast_ui_import_data,$
                       'Ion_eflux_burst',  'Electron_eflux_burst', $
                       'Ion_pad_survey', 'Electron_pad_survey', $
                       'Ion_pad_burst', 'Electron_pad_burst']
-     parnames_tplot_ed = 'fa_'+['ies_l2_edist', 'ees_l2_edist', $
-                                'ieb_l2_edist', 'eeb_l2_edist']
+     parnames_tplot_ed = 'fa_'+['ies_l2_eflux', 'ees_l2_eflux', $
+                                'ieb_l2_eflux', 'eeb_l2_eflux']
      ;Add suffixes for distributions
      parange0 = strcompress(string(long(parange)), /remove_all)
-     ed_suffix = '_Pa_'+strjoin(parange0, '_')
+     ed_suffix = '_PaFrom'+strjoin(parange0, 'To')
      parnames_tplot_ed = parnames_tplot_ed+ed_suffix
      parnames_tplot_pa = 'fa_'+['ies_l2_pad', 'ees_l2_pad', $
                                 'ieb_l2_pad', 'eeb_l2_pad']
      erange0 = strcompress(string(long(energyrange)), /remove_all)
-     pa_suffix = '_En_'+strjoin(erange0, '_')
+     pa_suffix = '_EnFrom'+strjoin(erange0, 'To')
      parnames_tplot_pa = parnames_tplot_pa+pa_suffix
      parnames_tplot = [parnames_tplot_ed, parnames_tplot_pa]
 

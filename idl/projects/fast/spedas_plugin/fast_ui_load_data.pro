@@ -8,8 +8,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2016-10-18 15:14:49 -0700 (Tue, 18 Oct 2016) $
-;$LastChangedRevision: 22129 $
+;$LastChangedDate: 2016-10-24 12:13:12 -0700 (Mon, 24 Oct 2016) $
+;$LastChangedRevision: 22190 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/fast/spedas_plugin/fast_ui_load_data.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -331,10 +331,10 @@ pro fast_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRang
 ;------------------------------------------------------------------------------
   If(n_elements(pa) Ne 2) Then pa = [0,360]
         
-  angle_range_label_base = widget_base(paramBase, /row, /align_left)
-  angle_range_base = widget_base(paramBase, /col, /frame, ypad=8, xpad=5)
+  angle_range_label_base = widget_base(selectionBase, /row, /align_left)
+  angle_range_base = widget_base(selectionBase, /col, /frame, ypad=8, xpad=5)
 
-  angle_range_label = widget_label(angle_range_label_base, value='ESA Edist Pitch Angle Range (min/max):')
+  angle_range_label = widget_label(angle_range_label_base, value='ESA Eflux Pitch Angle Range (min/max):')
   pa_range_base = widget_base(angle_range_base, /row, uname='pa_base')
   pa_min = spd_ui_spinner(pa_range_base, label='', value=pa[0], uvalue = 'PAMIN', $
                           tooltip = 'Minimum pitch angle used for energy distribution spectrograms.')
@@ -346,8 +346,8 @@ pro fast_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRang
 ;------------------------------------------------------------------------------
   If(n_elements(energy) Ne 2) Then energy = [0,5.0e4]
   
-  energy_range_label_base = widget_base(paramBase, /row, xpad=0, ypad=0)
-  energy_range_base = widget_base(paramBase, /col, /frame, ypad=8, xpad=5 )
+  energy_range_label_base = widget_base(selectionBase, /row, xpad=0, ypad=0)
+  energy_range_base = widget_base(selectionBase, /col, /frame, ypad=8, xpad=5 )
   energy_range_label = widget_label(energy_range_label_base, value='ESA PADist Energy Range (min/max):')
   energy_range_base2 = widget_base(energy_range_base, /row, uname='er_base2')
   energy_min = spd_ui_spinner(energy_range_base2, label='', value=energy[0], uvalue='EMIN', $
