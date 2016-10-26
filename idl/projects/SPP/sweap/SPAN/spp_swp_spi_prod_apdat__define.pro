@@ -91,24 +91,22 @@ end
 
 
 pro spp_swp_spi_prod_apdat::prod_32Ex16Ax4M, strct  ; this function needs fixing
-  data = *strct.pdata
-  if n_elements(data) ne 2048 then begin
+  cnts = *strct.pdata
+  if n_elements(cnts) ne 2048 then begin
     dprint,'bad size'
     return
   endif
   pname = '32Ex16Ax4M_'
-  data = reform(data,32,16,4,/overwrite)
-  spec1 = total(reform(data,32,16*4),2)
-  spec2 = total( total(data,1) ,2 )
-  spec3 = total(reform(data,32*16,4),1)
-  spec23 = total(reform(data,32,16*4),1)
 
-  strct2 = {time:strct.time, $
-    spec1:spec1, $
-    spec2:spec2, $
-    spec3:spec3, $
-    spec23:spec23, $
+  strct.anode_spec = total( total(reform(/overwrite,cnts,32,16,4),1), 2)
+  strct.nrg_spec =  total( reform(/overwrite,cnts,32,16*4), 2 )
+  strct.mass_spec = total( reform(/overwrite,cnts,32*16,4), 1 )
+  cnts = reform(/overwrite,cnts,32,16,4)
+
+  strct2 = {time:strct.time, $  ; add more in the future
+    cnts:cnts, $
     gap: strct.gap}
+
     
   self.prod_32Ex16Ax4M.append, strct2
 ;  self.store_data, strct2, pname
@@ -166,13 +164,13 @@ end
 
 
 pro spp_swp_spi_prod_apdat::prod_16Ax16M, strct   ; this function needs fixing
-  if n_elements(data) ne 256 then begin
+  cnts = *strct.pdata
+  if n_elements(cnts) ne 256 then begin
     dprint,'bad size'
     return
   endif
   pname = '16Ax16M_'
   
-  cnts = *strct.pdata
 
   cnts = reform(cnts,16,16,/over)
 
@@ -189,32 +187,32 @@ end
 
 
 
-
-pro spp_swp_spe_prod_apdat::prod_16Ax8Dx32E, strct   ; this function needs fixing
-
-  data = *strct.pdata
-  if n_elements(data) ne 4096 then begin
-    dprint,'bad size'
-    return
-  endif
-  pname = '16Ax8Dx32E_'
-
-  cnts = *strct.pdata
-
-  cnts = reform(cnts,16,8,32,/over)
-
-  strct2 = {time:strct.time, $  ; add more in the future
-    cnts:cnts, $
-    gap: strct.gap}
-
-  strct.anode_spec = total( total(cnts,2), 2)
-  strct.nrg_spec =  total( total(cnts,1), 1 )
-  strct.def_spec =  total( total(cnts,1) ,2)
-
-  self.prod_16Ax8Dx32E.append, strct2
-  ;  if self.rt_flag then  self.store_data, strct2, pname
-end
-
+;
+;pro spp_swp_spe_prod_apdat::prod_16Ax8Dx32E, strct   ; this function needs fixing
+;
+;  data = *strct.pdata
+;  if n_elements(data) ne 4096 then begin
+;    dprint,'bad size'
+;    return
+;  endif
+;  pname = '16Ax8Dx32E_'
+;
+;  cnts = *strct.pdata
+;
+;  cnts = reform(cnts,16,8,32,/over)
+;
+;  strct2 = {time:strct.time, $  ; add more in the future
+;    cnts:cnts, $
+;    gap: strct.gap}
+;
+;  strct.anode_spec = total( total(cnts,2), 2)
+;  strct.nrg_spec =  total( total(cnts,1), 1 )
+;  strct.def_spec =  total( total(cnts,1) ,2)
+;
+;  self.prod_16Ax8Dx32E.append, strct2
+;  ;  if self.rt_flag then  self.store_data, strct2, pname
+;end
+;
 
 
 
@@ -358,6 +356,7 @@ end
 FUNCTION spp_swp_spi_prod_apdat::Init,apid,name,_EXTRA=ex
   void = self->spp_gen_apdat::Init(apid,name)   ; Call our superclass Initialization method.
   self.prod_16A     = obj_new('dynamicarray',name='prod_16A')
+  self.prod_16Ax16M     = obj_new('dynamicarray',name='prod_16Ax16M')
   self.prod_32Ex16A = obj_new('dynamicarray',name='prod_32Ex16A')
   self.prod_8Dx32Ex16A=  obj_new('dynamicarray',name='prod_8Dx32Ex16A')
   self.prod_32Ex16Ax4M=  obj_new('dynamicarray',name='prod_32Ex16Ax4M')
@@ -371,6 +370,7 @@ END
 PRO spp_swp_spi_prod_apdat::Clear
   self->spp_gen_apdat::Clear
   self.prod_16A.array     = !null
+  self.prod_16Ax16M.array = !null
   self.prod_32Ex16A.array = !null
   self.prod_8Dx32Ex16A.array = !null
   self.prod_32Ex16Ax4M.array = !null
@@ -392,6 +392,7 @@ PRO spp_swp_spi_prod_apdat__define
 void = {spp_swp_spi_prod_apdat, $
   inherits spp_gen_apdat, $    ; superclass
   prod_16A     : obj_new(), $
+  prod_16Ax16M     : obj_new(), $
   prod_32Ex16A : obj_new(), $
   prod_8Dx32Ex16A:  obj_new(), $
   prod_32Ex16Ax4M:  obj_new(), $

@@ -1,7 +1,7 @@
 pro spp_swp_tplot,name,ADD=ADD,setlim=setlim
 
 if keyword_set(setlim) then begin
-  options,'spp_*AF1_*_SPEC' , spec=1
+  options,'spp_*AF*_SPEC' , spec=1
   options,'*MASK',tplot_routine='bitplot'
   options,'*_FLAG',tplot_routine='bitplot'
   tplot_options,'no_interp',1
@@ -34,6 +34,7 @@ if keyword_set(name) then begin
     'MANIP':tplot,'manip*_POS',add=add
     'SI_GSE': tplot,add=add,'Igun_* APS3_*'
     'SI': tplot,add=add,'Igun_* manip_*POS *rates_VAL*CNTS *rates_*NO*CNTS '
+    'SI_SCAN':tplot,add=add,'*MCP_V *MRAM* *spi_AF0?_NRG_SPEC'
     'SC':  tplot,'spp_*spc*',ADD=ADD
     else:
   endcase

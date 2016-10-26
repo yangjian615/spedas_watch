@@ -5,18 +5,23 @@
 ; PURPOSE:
 ;       This routine calculates div B and curl B for a specified time interval
 ;
-; NOTES:
+; NOTES:  
+;       The input B-field data and position data are expected to be in 
+;       GSE coordinates
+; 
 ;       Original by Jonathan Eastwood, with changes from Tai Phan
 ;       Minor modifications for SPEDAS by egrimes
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-26 12:00:43 -0700 (Mon, 26 Sep 2016) $
-; $LastChangedRevision: 21942 $
+; $LastChangedDate: 2016-10-25 10:34:29 -0700 (Tue, 25 Oct 2016) $
+; $LastChangedRevision: 22193 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/curlometer/mms_curl.pro $
 ;-
 
-pro mms_curl, trange=trange, fields=fields, positions=positions
+pro mms_curl, trange=trange, fields=fields, positions=positions, suffix=suffix
+  if undefined(suffix) then suffix = ''
+  
 
   ;*********************************************************
   ; Magnetic Field
@@ -149,33 +154,34 @@ pro mms_curl, trange=trange, fields=fields, positions=positions
 
   end
 
-  store_data,'baryb', data = {x:timeb1,y:baryb}
-  store_data,'curlB', data = {x:timeb1, y:divb[*,2:4]}
-  store_data,'divB', data = {x:timeb1, y:divb[*,1]}
-  store_data,'jtotal', data = {x:timeb1, y:jtotal[*,0:2]}
+  store_data,'baryb'+suffix, data = {x:timeb1,y:baryb}
+  store_data,'curlB'+suffix, data = {x:timeb1, y:divb[*,2:4]}
+  store_data,'divB'+suffix, data = {x:timeb1, y:divb[*,1]}, dlimits={}, limits={}
+  
+  store_data,'jtotal'+suffix, data = {x:timeb1, y:jtotal[*,0:2]}
 
-  store_data,'jpar', data = {x:timeb1, y:jparallel}
+  store_data,'jpar'+suffix, data = {x:timeb1, y:jparallel}
 
-  store_data,'jperp', data = {x:timeb1, y:jperpvec[*,0:2]}
+  store_data,'jperp'+suffix, data = {x:timeb1, y:jperpvec[*,0:2]}
 
-  split_vec, 'jperp'
-  store_data, 'jperppar', data = ['jpar','jperp_3']
+  split_vec, 'jperp'+suffix
+  store_data, 'jperppar'+suffix, data = ['jpar','jperp_3']
 
-  store_data,'alpha', data = {x:timeb1, y:alpha}
-  store_data,'alphaparallel', data = {x:timeb1, y:alphaparallel}
+  store_data,'alpha'+suffix, data = {x:timeb1, y:alpha}
+  store_data,'alphaparallel'+suffix, data = {x:timeb1, y:alphaparallel}
 
-
+  
   ;ylim, 'jtotal', [-1.75e-6,1.75e-6],0
   ;ylim, 'divB', [-1.0,1.0],0
   ;ylim, 'curlB', [-1.0,1.0],0
-  options, 'curlB', 'colors',[2,4,6]
-  options, 'curlB', 'labels',['delbx','delby','delbz']
-  options, 'curlB','labflag',-1
-  options, 'jtotal', 'colors',[2,4,6]
-  options, 'jtotal', 'labels',['jx','jy','jz']
-  options, 'jtotal','labflag',-1
-  options, 'jperp', 'colors',[2,4,6]
-  options, 'jperp', 'labels',['jperpx','jperpy','jperpz']
-  options, 'jperp','labflag',-1
+  options, 'curlB'+suffix, 'colors',[2,4,6]
+  options, 'curlB'+suffix, 'labels',['delbx','delby','delbz']
+  options, 'curlB'+suffix,'labflag',-1
+  options, 'jtotal'+suffix, 'colors',[2,4,6]
+  options, 'jtotal'+suffix, 'labels',['jx','jy','jz']
+  options, 'jtotal'+suffix,'labflag',-1
+  options, 'jperp'+suffix, 'colors',[2,4,6]
+  options, 'jperp'+suffix, 'labels',['jperpx','jperpy','jperpz']
+  options, 'jperp'+suffix,'labflag',-1
 
 end

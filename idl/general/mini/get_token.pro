@@ -11,8 +11,8 @@
 ; 
 ; 
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-09-18 09:09:44 -0700 (Fri, 18 Sep 2015) $
-; $LastChangedRevision: 18835 $
+; $LastChangedDate: 2016-10-25 17:48:17 -0700 (Tue, 25 Oct 2016) $
+; $LastChangedRevision: 22195 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/get_token.pro $
 ;- 
 
@@ -189,17 +189,28 @@ endif else if stregex(s,'^([#]{1,2}|\*|\+|-|/|\<|\>|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][E
   
   tok.value = strlowcase(strmid(s,0,l))
   
-;punctuation
+
 ;endif else if stregex(s,'^([\(\)\*\^/\<\>~\?,\{}=]|\[|]|[+#-]{1,2}|&&|\|\|)',length=l) ne -1 then begin
 ;endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#+-]{1,2}|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
-endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#]{1,2}|[+]{1,2}|[-]{1,2}|\$\+|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
+;endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#]{1,2}|[+]{1,2}|[-]{1,2}|\$\+|[Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt])',length=l) ne -1 then begin
+;arimethetic character operators
+endif else if stregex(s,'^([*^/<>~]|&&|\|\||[#]{1,2}|[+]{1,2}|[-]{1,2}|\$\+)',length=l) ne -1 then begin
+  
   tok.type = 'operator'
   
   tok.name = strlowcase(strmid(s,0,l))  
   
   tok.value = tok.name
   
-;end else if stregex(s,'^[@!]?[[:alnum:]$_]+',length=l) ne -1 then begin
+;character operators that could appear as variable substrings
+end else if stregex(s,'^([Aa][Nn][Dd]|[Ee][Qq]|[Gg][Ee]|[Gg][Tt]|[Ll][Ee]|[Ll][Tt]|[Mm][Oo][Dd]|[Nn][Ee]|[Oo][Rr]|[Xx][Oo][Rr]|[Nn][Oo][Tt]) ',length=l) ne -1 then begin
+  
+  tok.type = 'operator'
+
+  tok.name = strlowcase(strmid(s,0,l-1))
+
+  tok.value = tok.name
+  
 end else if stregex(s,'^[@!]?[[:alnum:]_]+',length=l) ne -1 then begin ;$ no longer legal inside variable name(to support $+ operator)
 
   tok.type = 'identifier'

@@ -14,8 +14,8 @@
 ;           error:  If an error occurs, a struct describing it will be returned through this variable
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-01-09 12:57:39 -0800 (Wed, 09 Jan 2013) $
-; $LastChangedRevision: 11408 $
+; $LastChangedDate: 2016-10-25 17:48:17 -0700 (Tue, 25 Oct 2016) $
+; $LastChangedRevision: 22195 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/mini/lex.pro $
 ;
 
@@ -33,10 +33,12 @@ pro lex,s,token_list=token_list,error=error
   
   error = 0
   
+  ;unset token_list
   if keyword_set(token_list) then begin
     t = temporary(token_list)
   endif
   
+  ;unset error
   if keyword_set(error) then begin
     t = temporary(error)
   endif

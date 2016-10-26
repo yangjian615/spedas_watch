@@ -14,6 +14,7 @@ pro spp_apdat_info,apids,name=name,verbose=verbose,$
                   tname=tname,$
                   ttags=ttags,$
                   routine=routine,$
+                  file_save=file_save, file_restore=file_restore, $
                   apid_obj_name = apid_obj_name, $
                   print=print, $
                   rt_flag=rt_flag
@@ -25,6 +26,9 @@ pro spp_apdat_info,apids,name=name,verbose=verbose,$
     all_apdat=!null
     return
   endif
+  
+  if keyword_set(file_save) then save,file=file_save,all_apdat,/verbose
+  if keyword_set(file_restore) then restore,file=file_restore,all_apdat,/verbose
 
   if ~keyword_set(all_apdat) then all_apdat = replicate( obj_new() , 2^11 )
   

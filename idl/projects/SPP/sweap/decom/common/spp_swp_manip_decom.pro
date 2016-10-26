@@ -41,6 +41,8 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header   ,apdat=apdat
  ; printdat,time_string(ccsds.time);  -1.2623e9
 ;  dprint,dlevel=2,n_elements(b)
   if n_elements(b) lt 107 then return,0
+  
+  ccsds.gap = abs(ccsds.time_delta) gt 4
 
   manip = {time:       ptp_header.ptp_time, $
           met:        ccsds.met,  $
@@ -88,7 +90,7 @@ function spp_swp_manip_decom,ccsds,ptp_header=ptp_header   ,apdat=apdat
 ;          daqAI10:    spp_swp_float_decom(b,95),$                            ;; ,,, 32
 ;           daqAI11:    spp_swp_float_decom(b,99),$                            ;; ,,, 32
 ;          daqAI12:    spp_swp_float_decom(b,103),$
-          gap:ccsds.gap }
+          gap:ccsds.gap}
           ;daqAI13:    spp_swp_float_decom(b,107),$                           ;; ,,, 32
           ;daqAI14:    spp_swp_float_decom(b,111),$                           ;; ,,, 32
           ;daqAI15:    spp_swp_float_decom(b,115)}                            ;; ,,, 32
