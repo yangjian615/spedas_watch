@@ -12,8 +12,8 @@
 ;         end_times:    returns an array of unix times (double) containing the end of each burst interval
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-13 15:36:26 -0700 (Tue, 13 Sep 2016) $
-;$LastChangedRevision: 21831 $
+;$LastChangedDate: 2016-10-26 12:28:50 -0700 (Wed, 26 Oct 2016) $
+;$LastChangedRevision: 22201 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_load_brst_segments.pro $
 ;-
 
@@ -43,7 +43,9 @@ pro mms_load_brst_segments, trange=trange, suffix=suffix, start_times=start_time
 
     if t_count ne 0 then begin
       unix_start = unix_start[times_in_range]
-      unix_end = unix_end[times_in_range]
+       ; +10 second offset added by egrimes, 10/26/2016; there appears to be an extra 10
+       ; seconds of data, consistently, not included in the range here
+      unix_end = unix_end[times_in_range]+10.0
       
       for idx = 0, n_elements(unix_start)-1 do begin
         if unix_end[idx] ge tr[0] and unix_start[idx] le tr[1] then begin

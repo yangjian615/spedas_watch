@@ -131,10 +131,12 @@ END
  
  
  
-PRO spp_gen_apdat::GetProperty,data=data, array=array, npkts=npkts, apid=apid, name=name,  typename=typename, nsamples=nsamples,nbytes=nbytes,strct=strct,ccsds_last=ccsds_last
+PRO spp_gen_apdat::GetProperty,data=data, array=array, npkts=npkts, apid=apid, name=name,  typename=typename, $
+   nsamples=nsamples,nbytes=nbytes,strct=strct,ccsds_last=ccsds_last,tname=tname
 COMPILE_OPT IDL2
 IF (ARG_PRESENT(nbytes)) THEN nbytes = self.nbytes
 IF (ARG_PRESENT(name)) THEN name = self.name
+IF (ARG_PRESENT(tname)) THEN tname = self.tname
 IF (ARG_PRESENT(apid)) THEN apid = self.apid
 IF (ARG_PRESENT(npkts)) THEN npkts = self.npkts
 IF (ARG_PRESENT(ccsds_last)) THEN ccsds_last = self.ccsds_last

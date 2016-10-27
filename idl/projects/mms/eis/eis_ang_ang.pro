@@ -50,10 +50,11 @@
 ;                                   : commented out !p.multi call in postscript output, so that all energy channels are included in the PS file
 ;       + 2016-03-31, E. Grimes     : removed flat fielding 
 ;       + 2016-09-19, E. Grimes     : updated to support v3 L1b files, as well as integer probes
+;       + 2016-10-26  E. Grimes     : fixed bug for burst mode data; n_azi=32 (burst), n_azi=8 (srvy)
 ;                        
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-19 15:35:56 -0700 (Mon, 19 Sep 2016) $
-;$LastChangedRevision: 21861 $
+;$LastChangedDate: 2016-10-26 13:39:19 -0700 (Wed, 26 Oct 2016) $
+;$LastChangedRevision: 22204 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/eis_ang_ang.pro $
 ;-
 
@@ -122,11 +123,11 @@ if count ne 8 then spininds = spininds[1:n_elements(spininds)-1]  ;; If not then
 spin_test = where(spin.y eq spin.y[spininds[n_elements(spininds)-1]],count)   ;; Check to see if the last one is complete
 if count ne 8 then spininds = spininds[0:n_elements(spininds)-2]  ;; If not then go to the second spin
 nspins = n_elements(spininds)
-
 n_pol = 6
 min_pol_edges = -80 + 160*findgen(n_pol)/n_pol      ;;Minus 80 plus
 max_pol_edges = -80 + 160*(findgen(n_pol)+1)/n_pol
-n_azi = 8
+
+if data_rate eq 'brst' then n_azi = 32 else n_azi = 8
 min_azi_edges = -180 + 360*findgen(n_azi)/n_azi
 max_azi_edges = -180 + 360*(findgen(n_azi)+1)/n_azi
 angangdata = dblarr(n_azi,n_pol,nspins,nenergies)
