@@ -350,9 +350,9 @@
 ;    plotxyz,plotxy,thm_crib_tplotxy,thm_crib_plotxy,thm_crib_plotxyz,
 ;    plotxylib,plotxyvec
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-08-23 17:25:01 -0700 (Fri, 23 Aug 2013) $
-; $LastChangedRevision: 12887 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-10-27 14:27:21 -0700 (Thu, 27 Oct 2016) $
+; $LastChangedRevision: 22223 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplotxy.pro $
 ;-
 
@@ -472,8 +472,8 @@ if n_elements(names) gt 1 then begin
 endif
 
 if ((keyword_set(tplot_vars) && keyword_set(tplot_vars.options) && keyword_set(tplot_vars.options.trange)) $
-    || keyword_set(usetrange)) && not keyword_set(notrange) then begin
-   
+    || keyword_set(usetrange)) && ~keyword_set(notrange) then begin
+
    tr =  timerange(/current)
 
    id = where(d.x ge tr[0] and d.x le tr[1])

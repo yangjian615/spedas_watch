@@ -22,7 +22,7 @@ pro spp_swp_apdat_init,reset=reset, save_flag = save_flag, $
     
   spp_apdat_info,'340'x,routine='spp_generic_decom',tname='spp_swem_hkp_',    save_flag=save_flag,ttags=ttags,rt_flag=rt_flag 
   spp_apdat_info,'341'x,routine='spp_generic_decom',tname='spp_swem_crit_',    save_flag=save_flag,ttags=ttags,rt_flag=rt_flag 
-  spp_apdat_info,'343'x,routine='spp_generic_decom',tname='spp_swem_ahkp_',    save_flag=save_flag,ttags=ttags,rt_flag=rt_flag 
+  spp_apdat_info,'343'x,routine='spp_swp_swem_hkp_decom',tname='spp_swem_ahkp_',    save_flag=save_flag,ttags='*',rt_flag=rt_flag 
   spp_apdat_info,'344'x,routine='spp_generic_decom',tname='spp_swem_events_',    save_flag=save_flag,ttags=ttags,rt_flag=rt_flag 
   spp_apdat_info,'346'x,routine='spp_swp_swem_timing_decom',tname='spp_swem_timing_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
 

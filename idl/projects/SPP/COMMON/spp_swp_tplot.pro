@@ -11,6 +11,16 @@ if keyword_set(setlim) then begin
   options,'*hkp_HV_MODE',tplot_routine= 'bitplot'
   options,'*TEMPS',/ynozero
   options,'*events*',psym=3
+  options,'manip_YAW_POS',ytitle='YAW (deg)'
+  options,'manip_ROT_POS',ytitle='ROT (deg)'
+  options,'manip_LIN_POS',ytitle='LIN (cm)'
+  options,'Igun_VOLTS',ytitle='Energy (eV)'
+  options,'Igun_CURRENT',ytitle ='Ie- (uA)'
+  options,'spp_spi_hkp_DAC_DEFL',ytitle='DEFL (dac)'
+
+  tplot,var_label=tnames('manip*_POS *DAC_DEFL Igun_VOLTS Igun_CURRENT')
+  !y.style=3
+  dprint,setd=3
   
   
 endif

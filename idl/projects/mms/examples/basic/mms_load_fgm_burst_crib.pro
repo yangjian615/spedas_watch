@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-;$LastChangedRevision: 21138 $
+;$LastChangedDate: 2016-10-27 11:42:30 -0700 (Thu, 27 Oct 2016) $
+;$LastChangedRevision: 22219 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fgm_burst_crib.pro $
 ;-
 
@@ -17,8 +17,8 @@
 timespan, '2015-10-16', 1
 
 ; load MMS FGM burst data for all spacecraft
-; only grab the latest version of the CDF
-mms_load_fgm, probes=[1, 2, 3, 4], data_rate='brst', level='l2', /latest_version, cdf_filenames = files
+
+mms_load_fgm, probes=[1, 2, 3, 4], data_rate='brst', level='l2', cdf_filenames = files ;, /latest_version ; only grab the latest version of the CDF
 
 ; plot the data in GSE coordinates for all spacecraft
 tplot, 'mms?_fgm_b_gse_brst_l2_bvec'

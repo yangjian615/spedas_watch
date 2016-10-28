@@ -12,8 +12,8 @@
 ;   2015-10-16: 13:03:34.000 - 13:04:54.000
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-10-05 10:01:25 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22031 $
+; $LastChangedDate: 2016-10-27 08:30:13 -0700 (Thu, 27 Oct 2016) $
+; $LastChangedRevision: 22213 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_brst_segments_ut__define.pro $
 ;-
 
@@ -77,8 +77,8 @@ function mms_load_brst_segments_ut::test_load_overlap_starttime
 end
 
 function mms_load_brst_segments_ut::test_load_overlap_endtime
-  mms_load_brst_segments, trange=['2015-10-16/13:02:40', '2015-10-16/13:03:06']
-  assert, spd_data_exists('mms_bss_burst', '2015-10-16/13:02:40', '2015-10-16/13:03:06'), $
+  mms_load_brst_segments, trange=['2015-10-16/13:02:40', '2015-10-16/13:03:16']
+  assert, spd_data_exists('mms_bss_burst', '2015-10-16/13:02:40', '2015-10-16/13:03:16'), $
     'Problem loading burst bar when we only overlap the end time of an interval'
   return, 1
 end
@@ -102,16 +102,16 @@ function mms_load_brst_segments_ut::test_start_end_keywords
             '2015-10-16/13:54:04', $
             '2015-10-16/13:55:34', $
             '2015-10-16/13:57:14']
-  ends = ['2015-10-16/12:58:24', $
-          '2015-10-16/13:03:04', $
-          '2015-10-16/13:04:54', $
-          '2015-10-16/13:07:34', $, $
-          '2015-10-16/13:09:34', $
-          '2015-10-16/13:35:14', $
-          '2015-10-16/13:41:34', $
-          '2015-10-16/13:55:24', $
-          '2015-10-16/13:57:04', $
-          '2015-10-16/13:58:34']
+  ends = ['2015-10-16/12:58:34', $
+          '2015-10-16/13:03:14', $
+          '2015-10-16/13:05:04', $
+          '2015-10-16/13:07:44', $, $
+          '2015-10-16/13:09:44', $
+          '2015-10-16/13:35:24', $
+          '2015-10-16/13:41:44', $
+          '2015-10-16/13:55:34', $
+          '2015-10-16/13:57:14', $
+          '2015-10-16/13:58:44']
   assert, array_equal(time_string(start_bursts), starts) && array_equal(time_string(end_bursts), ends), $
     'Problem with start/end interval keywords in mms_load_brst_segments'
   return, 1

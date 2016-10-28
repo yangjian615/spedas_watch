@@ -35,8 +35,8 @@
 ;       
 ;       
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-29 16:09:38 -0700 (Thu, 29 Sep 2016) $
-; $LastChangedRevision: 21982 $
+; $LastChangedDate: 2016-10-27 09:13:33 -0700 (Thu, 27 Oct 2016) $
+; $LastChangedRevision: 22216 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/mms_add_cdf_versions.pro $
 ;-
 
@@ -53,6 +53,10 @@ pro mms_add_cdf_versions, instrument, versions, data_rate = data_rate, right_ali
       dprint, dlevel = 0, 'Array of version #s required'
       return
     endif
+    
+    ; make sure versions isn't full of 0s (occurs when no data were loaded)
+    where_not_zeroes = where(versions ne 0, nonzerocount)
+    if nonzerocount eq 0 then return
 
     ; we won't include duplicate version #s
     dupekill = hash()

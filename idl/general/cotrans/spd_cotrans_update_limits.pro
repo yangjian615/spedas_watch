@@ -8,9 +8,9 @@
 ;
 ;Notes:
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-04-08 10:03:05 -0700 (Fri, 08 Apr 2016) $
-;$LastChangedRevision: 20759 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-27 12:25:53 -0700 (Thu, 27 Oct 2016) $
+;$LastChangedRevision: 22221 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/spd_cotrans_update_limits.pro $
 ;-
 
@@ -30,13 +30,13 @@ if in_set(strlowcase(tag_names(al)),'labels') then begin
     type3 = stregex(al.labels[k], '[^a-zA-Z]'+in_coord+'$', /fold_case)
     type4 = stregex(al.labels[k], '^'+in_coord+'$', /fold_case)
     if type1 ne -1 then begin
-      al.labels[k] = strmid(al.labels[k], 0, type1+1) + out_coord + strmid(al.labels[k], type1+strlen(in_coord)+1, strlen(al.labels[k])-(type1+strlen(in_coord)+1))
+      al.labels[k] = strmid(al.labels[k], 0, type1+1) + strupcase(out_coord) + strmid(al.labels[k], type1+strlen(in_coord)+1, strlen(al.labels[k])-(type1+strlen(in_coord)+1))
     endif else if type2 ne -1 then begin
-      al.labels[k] = out_coord + strmid(al.labels[k], strlen(in_coord), strlen(al.labels[k])-strlen(in_coord))
+      al.labels[k] = strupcase(out_coord) + strmid(al.labels[k], strlen(in_coord), strlen(al.labels[k])-strlen(in_coord))
     endif else if type3 ne -1 then begin
-      al.labels[k] = strmid(al.labels[k], 0, type3+1) + out_coord
+      al.labels[k] = strmid(al.labels[k], 0, type3+1) + strupcase(out_coord)
     endif else if type4 ne -1 then begin
-      al.labels[k] = out_coord
+      al.labels[k] = strupcase(out_coord)
     endif
   endfor
 endif

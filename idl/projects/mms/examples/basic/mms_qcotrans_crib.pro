@@ -9,9 +9,9 @@
 ;  See also: mms_cotrans_crib
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-25 18:22:33 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21214 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-10-27 12:28:55 -0700 (Thu, 27 Oct 2016) $
+;$LastChangedRevision: 22222 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_qcotrans_crib.pro $
 ;-
 
@@ -76,8 +76,8 @@ join_vec, v_name+['x','y','z']+'_dbcs_fast', v_name
 
 ; add coordinates to labels
 ; the labels will be automatically updated when transformed
-options, v_name, labels='V'+['x','y','z']+' dbcs'
-options, b_name, labels='B'+['x','y','z']+' dmpa'
+options, v_name, labels='V'+['x','y','z']+' DBCS'
+options, b_name, labels='B'+['x','y','z']+' DMPA'
 
 ;taller plot window
 window, xs=900, ys=900
@@ -124,8 +124,8 @@ mms_qcotrans, [v_name,b_name], in_coord='dmpa', out_coord='gse', $
               out_suffix='_pseudo_gse', /ignore_dlimits
 
 ;labels will not be automatically updated when /ignore_dlimits is set
-options, b_name+'_pseudo_gse', labels='B'+['x','y','z']+' "GSE"'
-options, v_name+'_pseudo_gse', labels='V'+['x','y','z']+' "GSE"'      
+options, b_name+'_pseudo_gse', labels='B'+['x','y','z']+' GSE'
+options, v_name+'_pseudo_gse', labels='V'+['x','y','z']+' GSE'      
 
 ; plot against real gse
 ; b field will be identical, velocity should be nearly identical

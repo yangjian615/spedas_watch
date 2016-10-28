@@ -28,11 +28,11 @@ ccsds_data = spp_swp_ccsds_data(ccsds)
 ;data = ccsds.data
 
 if ccsds.pkt_size lt 72 then begin
-  if debug(2) then begin
+  if debug(3) then begin
     dprint,'error',ccsds.pkt_size,dlevel=2
     hexprint,ccsds_data
-    return,0    
   endif
+  return,0
 endif
 
 values = swap_endian(ulong(ccsds_data,10,11) )

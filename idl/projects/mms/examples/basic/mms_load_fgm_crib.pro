@@ -8,8 +8,8 @@
 ;   
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-19 10:51:27 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21138 $
+; $LastChangedDate: 2016-10-27 11:44:47 -0700 (Thu, 27 Oct 2016) $
+; $LastChangedRevision: 22220 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fgm_crib.pro $
 ;-
 
@@ -32,6 +32,7 @@ stop
 
 ; list all the variables loaded into tplot variables
 tplot_names
+stop
 
 ; load the FGM data, along with the ephemeris data stored in the FGM files
 mms_load_fgm, probes=3, trange=['2015-10-16', '2015-10-17'], /get_fgm_ephemeris

@@ -19,8 +19,8 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-02 09:09:34 -0700 (Fri, 02 Sep 2016) $
-; $LastChangedRevision: 21783 $
+; $LastChangedDate: 2016-10-27 09:03:45 -0700 (Thu, 27 Oct 2016) $
+; $LastChangedRevision: 22214 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_basic_dayside_v3.pro $
 ;-
 start_time = systime(/sec)
@@ -37,14 +37,14 @@ plot_directory = ''
 postscript = send_plots_to eq 'ps' ? 1 : 0
 
 ; load the data
-mms_load_fgm, probe=probe, data_rate='srvy', level='l2'
-mms_load_mec, probe=probe, data_rate='srvy', level='l2'
-mms_load_fpi, probe=probe, data_rate='fast', level='l1b', datatype=['des-moms', 'dis-moms'], min_version='2.2.0'
-mms_load_edp, probe=probe, datatype='scpot', level='l2'
-mms_load_edp, probe=probe, data_rate='fast', level='l2', datatype='dce'
-mms_load_edp, probe=probe, data_rate='srvy', level='l2', datatype=['dce', 'hfesp']
-mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd'
-mms_load_hpca, probe=probe, data_rate='srvy', level='l2', datatype='ion'
+mms_load_fgm, probe=probe, data_rate='srvy', level='l2', versions=fgm_versions
+mms_load_mec, probe=probe, data_rate='srvy', level='l2', versions=mec_versions
+mms_load_fpi, probe=probe, data_rate='fast', level='l2', datatype=['des-moms', 'dis-moms'], min_version='2.2.0', versions=fpi_versions
+mms_load_edp, probe=probe, datatype='scpot', level='l2', versions=scpot_versions
+mms_load_edp, probe=probe, data_rate='fast', level='l2', datatype='dce', versions=dce_versions
+mms_load_edp, probe=probe, data_rate='srvy', level='l2', datatype=['dce', 'hfesp'], versions=hfesp_versions
+mms_load_dsp, probe=probe, data_rate='fast', level='l2', datatype='bpsd', versions=dsp_versions
+mms_load_hpca, probe=probe, data_rate='srvy', level='l2', datatype='ion', versions=hpca_versions
 
 ; sum the HPCA spectra over the full field of view
 mms_hpca_calc_anodes, fov=[0, 360], probe=probe
@@ -192,7 +192,17 @@ tplot, 'mms'+probe+['_fgm_gsm_srvy', $
                     '_edp_hfesp_srvy_l2', $
                     '_dsp_bpsd_omni_fast_l2' $
                     ], var_label=position_vars
-                    
+
+; add CDF version numbers to the bottom right of the figure
+mms_add_cdf_versions, 'fgm', fgm_versions, charsize=0.7, /right
+mms_add_cdf_versions, 'mec', mec_versions, charsize=0.7, /right
+mms_add_cdf_versions, 'fpi', fpi_versions, charsize=0.7, /right
+mms_add_cdf_versions, 'EDP SCPOT', scpot_versions, charsize=0.7, /right
+mms_add_cdf_versions, 'EDP DCE', dce_versions, data_rate='fast', charsize=0.7, /right
+mms_add_cdf_versions, 'EDP HFESP', hfesp_versions, charsize=0.7, /right
+mms_add_cdf_versions, 'DSP', dsp_versions, charsize=0.7, /right
+mms_add_cdf_versions, 'HPCA', hpca_versions, charsize=0.7, /right
+             
 if postscript then tprint, plot_directory + 'mms'+probe + '_basic_dayside'
 if send_plots_to eq 'png' then begin
   makepng, plot_directory + 'mms'+probe + '_basic_dayside_'+ $

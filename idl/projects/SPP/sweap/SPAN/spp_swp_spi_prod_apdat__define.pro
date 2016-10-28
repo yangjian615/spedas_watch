@@ -16,7 +16,7 @@ pro spp_swp_spi_prod_apdat::prod_16A, strct
     SPEC:data,  $
     gap: strct.gap}
     
-  self.prod_16A.append, strct2
+  if self.save_raw && self.prod_16A then   self.prod_16A.append, strct2
 ;  self.store_data, strct2, pname
   return
 end
@@ -39,7 +39,7 @@ pro spp_swp_spi_prod_apdat::prod_32Ex16A, strct
     spec2:spec2, $
     gap: strct.gap}
 
-  self.prod_32Ex16A.append, strct2
+  if self.save_raw && self.prod_32Ex16A  then   self.prod_32Ex16A.append, strct2
 ;  self.store_data, strct2, pname
 
 end
@@ -62,29 +62,27 @@ end
 
 pro spp_swp_spi_prod_apdat::prod_8Dx32Ex16A, strct   ; this function needs fixing
 
-  data = *strct.pdata
-  if n_elements(data) ne 4096 then begin
+  cnts = *strct.pdata
+  if n_elements(cnts) ne 4096 then begin
     dprint,'bad size'
     return
   endif
+  
   pname = '8Dx32Ex16A_'
-  spec1 = total(reform(data,16,8*32),2)   ; This is wrong
-  spec2 = total( total(data,1) ,2 )      ;  This is wrong
-  spec3 = total(reform(data,16*8,32),1)    ; This is wrong
-  spec23 = total(reform(data,16,8*32),1)   ; this is wrong
-  spec12 = total(reform(data,8*32,16),2)
-  spec123 = reform(data,8*32*16)
+  
+  strct.def_spec   = total(reform(/overwrite,cnts,8,32*16),2)
+  strct.anode_spec = total(reform(/overwrite,cnts,8*32,16),1)
+  cnts = reform(/overwrite,cnts,8,32,16)
+  strct.nrg_spec =   total(  total( cnts, 1 ),2)
 
-  strct2 = {time:strct.time, $
-    spec1:spec1, $
-    spec2:spec2, $
-    spec3:spec3, $
-    spec23:spec23, $
-    spec12:spec12, $
-    spec123:spec123, $
+  strct2 = {time:strct.time, $  ; add more in the future
+    cnts:cnts, $
     gap: strct.gap}
 
-  self.prod_8Dx32Ex16A.append, strct2
+
+  
+
+  if self.save_raw && self.prod_8Dx32Ex16A then   self.prod_8Dx32Ex16A.append, strct2
 ;  self.store_data, strct2, pname
 end
 
@@ -108,7 +106,7 @@ pro spp_swp_spi_prod_apdat::prod_32Ex16Ax4M, strct  ; this function needs fixing
     gap: strct.gap}
 
     
-  self.prod_32Ex16Ax4M.append, strct2
+  if self.save_raw && self.prod_32Ex16Ax4M then   self.prod_32Ex16Ax4M.append, strct2
 ;  self.store_data, strct2, pname
 end
 
@@ -133,7 +131,7 @@ pro spp_swp_spi_prod_apdat::prod_8Dx32EX16Ax2M, strct   ; this function needs fi
   strct.def_spec =  total( total(cnts,2) ,2)
   strct.mass_spec =  total(cnts,1)
   
-  self.prod_8Dx32Ex16Ax2M.append, strct2
+  if self.save_raw && self.prod_8Dx32Ex16Ax2M then   self.prod_8Dx32Ex16Ax2M.append, strct2
 
 end
 
@@ -159,7 +157,7 @@ pro spp_swp_spi_prod_apdat::prod_8Dx32Ex16Ax1M, strct   ; this function needs fi
   strct.def_spec =  total( total(cnts,2) ,2)
 ;  strct.mass_spec =  total(cnts,1)
 
-  self.prod_8Dx32Ex16Ax1M.append, strct2
+  if self.save_raw  && self.prod_8Dx32Ex16Ax1M then   self.prod_8Dx32Ex16Ax1M.append, strct2
 end
 
 
@@ -181,39 +179,9 @@ pro spp_swp_spi_prod_apdat::prod_16Ax16M, strct   ; this function needs fixing
   strct.anode_spec =  total(cnts,2)
   strct.mass_spec =  total(cnts,1) 
 
-  self.prod_16Ax16m.append, strct2
+  if self.save_raw && self.prod_16Ax16m.append then   self.prod_16Ax16m.append, strct2
 
 end
-
-
-
-;
-;pro spp_swp_spe_prod_apdat::prod_16Ax8Dx32E, strct   ; this function needs fixing
-;
-;  data = *strct.pdata
-;  if n_elements(data) ne 4096 then begin
-;    dprint,'bad size'
-;    return
-;  endif
-;  pname = '16Ax8Dx32E_'
-;
-;  cnts = *strct.pdata
-;
-;  cnts = reform(cnts,16,8,32,/over)
-;
-;  strct2 = {time:strct.time, $  ; add more in the future
-;    cnts:cnts, $
-;    gap: strct.gap}
-;
-;  strct.anode_spec = total( total(cnts,2), 2)
-;  strct.nrg_spec =  total( total(cnts,1), 1 )
-;  strct.def_spec =  total( total(cnts,1) ,2)
-;
-;  self.prod_16Ax8Dx32E.append, strct2
-;  ;  if self.rt_flag then  self.store_data, strct2, pname
-;end
-;
-
 
 
 
@@ -355,6 +323,7 @@ end
 
 FUNCTION spp_swp_spi_prod_apdat::Init,apid,name,_EXTRA=ex
   void = self->spp_gen_apdat::Init(apid,name)   ; Call our superclass Initialization method.
+  self.save_raw = 0  ; set to 1 to save full 3 or 4 Dimensions of raw data
   self.prod_16A     = obj_new('dynamicarray',name='prod_16A')
   self.prod_16Ax16M     = obj_new('dynamicarray',name='prod_16Ax16M')
   self.prod_32Ex16A = obj_new('dynamicarray',name='prod_32Ex16A')
@@ -391,6 +360,7 @@ END
 PRO spp_swp_spi_prod_apdat__define
 void = {spp_swp_spi_prod_apdat, $
   inherits spp_gen_apdat, $    ; superclass
+  save_raw: 0b, $
   prod_16A     : obj_new(), $
   prod_16Ax16M     : obj_new(), $
   prod_32Ex16A : obj_new(), $

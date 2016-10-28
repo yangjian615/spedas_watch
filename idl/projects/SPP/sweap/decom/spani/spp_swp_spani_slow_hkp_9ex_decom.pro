@@ -260,6 +260,7 @@ endif
          MRAM_ADDR_HI:    b[117] and '11111'b, $
          MRAM_ADDR_low:       spp_swp_word_decom(b,118), $ ;;;!!!!! CHANGE TO LSB 21 bits !!!!!
          DACS:         DAC_VALS,  $
+         DAC_DEFL:         long(DAC_DEF1) -  long(DAC_DEF2),  $
 ;         DACS2  :         ADC_VALS2,  $
          ;ADCS   :         ADC_VALS2,  $
 ;         DAC_MCP:         DAC_MCP, $
