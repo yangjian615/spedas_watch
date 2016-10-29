@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-10-20 14:48:56 -0700 (Thu, 20 Oct 2016) $
-;$LastChangedRevision: 22171 $
+;$LastChangedDate: 2016-10-28 10:35:00 -0700 (Fri, 28 Oct 2016) $
+;$LastChangedRevision: 22227 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1388,7 +1388,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   getresourcepath,rpath
   ;use spedas bitmap as toolbar icon for newer versions
   if double(!version.release) ge 6.4d then begin
-    palettebmp = read_bmp(rpath + 'thmLogo.bmp', /rgb)
+    palettebmp = read_bmp(rpath + 'spedas_logo.bmp', /rgb)
     palettebmp = transpose(palettebmp, [1,2,0])
     _extra = {bitmap:palettebmp}
   endif

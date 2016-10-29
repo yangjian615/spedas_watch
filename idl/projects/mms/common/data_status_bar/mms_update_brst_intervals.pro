@@ -16,8 +16,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-10-05 09:27:55 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22030 $
+; $LastChangedDate: 2016-10-28 13:29:59 -0700 (Fri, 28 Oct 2016) $
+; $LastChangedRevision: 22231 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_update_brst_intervals.pro $
 ;-
 
@@ -47,8 +47,9 @@ pro mms_update_brst_intervals
   while time_double(start_interval) le time_double(systime(/seconds)) do begin
     start_str = time_string(start_interval, tformat='DD-MTH-YYYY')
     end_str = time_string(end_interval, tformat='DD-MTH-YYYY')
+    print, '*** now grabbing updates for ' + start_str + ' - ' +  end_str
     remote_path = 'https://lasp.colorado.edu/mms/sdc/public/service/latis/'
-    remote_file = 'mms_burst_data_segment.csv?FINISHTIME>'+start_str+'&FINISHTIME<'+end_str
+    remote_file = 'mms_burst_data_segment.csv?FINISHTIME>='+start_str+'&FINISHTIME<'+end_str
     
     brst_file = spd_download(remote_path=remote_path, remote_file=remote_file, $
       local_file=!mms.local_data_dir+'mms_burst_data_segment.csv', /no_wildcards, $
@@ -56,6 +57,8 @@ pro mms_update_brst_intervals
 
     brst_data = read_ascii(brst_file, template=brst_seg_temp, count=num_items)
   
+    if ~is_struct(brst_data) then break
+    
     complete_idxs = where(brst_data.status eq 'COMPLETE+FINISHED', c_count)
     if c_count ne 0 then begin
       tai_start = brst_data.TAISTARTTIME[complete_idxs]
@@ -65,6 +68,7 @@ pro mms_update_brst_intervals
       append_array, unix_end, mms_tai2unix(tai_end)
     endif
 
+    print, '*** done grabbing updates for ' + start_str + ' - ' +  end_str
     start_interval = end_interval
     end_interval = time_double(start_interval) + 6.*30*24*60*60
   endwhile

@@ -210,25 +210,25 @@ end
 
 function mms_load_fpi_ut::test_load
   mms_load_fpi, probe=4, level='l2', datatype='des-moms'
-  assert, spd_data_exists('mms4_des_energyspectr_omni_avg mms4_des_pitchangdist_avg mms4_des_energyspectr_px_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data'
+  assert, spd_data_exists('mms4_des_energyspectr_omni_fast mms4_des_pitchangdist_avg mms4_des_energyspectr_px_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data'
   return, 1
 end
 
 function mms_load_fpi_ut::test_load_multi_probes
   mms_load_fpi, probe=['1', '4'], level='l2', datatype='des-moms'
-  assert, spd_data_exists('mms1_des_energyspectr_omni_avg mms4_des_pitchangdist_avg mms1_des_energyspectr_pz_fast', '2015-12-15', '2015-12-16'), 'Problem loading multiple probe fpi data'
+  assert, spd_data_exists('mms1_des_energyspectr_omni_fast mms4_des_pitchangdist_avg mms1_des_energyspectr_pz_fast', '2015-12-15', '2015-12-16'), 'Problem loading multiple probe fpi data'
   return, 1
 end
 
 function mms_load_fpi_ut::test_load_mixed_probe_type
   mms_load_fpi, probes=['1', 4], level='l2', datatype='des-moms'
-  assert, spd_data_exists('mms1_des_energyspectr_omni_avg mms4_des_pitchangdist_avg mms1_des_energyspectr_pz_fast', '2015-12-15', '2015-12-16'), 'Problem loading mixed probe type fpi data'
+  assert, spd_data_exists('mms1_des_energyspectr_omni_fast mms4_des_pitchangdist_avg mms1_des_energyspectr_pz_fast', '2015-12-15', '2015-12-16'), 'Problem loading mixed probe type fpi data'
   return, 1
 end
 
 function mms_load_fpi_ut::test_load_level_ql
   mms_load_fpi, probe=1, level='ql'
-  assert, spd_data_exists('mms1_des_EnergySpectr_omni_avg mms1_des_energySpectr_pY','2015-12-15', '2015-12-16'), 'Problem loading quicklook fpi data'
+  assert, spd_data_exists('mms1_des_energyspectr_omni_fast mms1_des_energyspectr_py_fast','2015-12-15', '2015-12-16'), 'Problem loading quicklook fpi data'
   assert, ~spd_data_exists('mms2_dis_TempYY_err','2015-12-15', '2015-12-16'), 'Problem loading quicklook fpi data'
   return, 1
 end
@@ -259,7 +259,7 @@ end
 
 function mms_load_fpi_ut::test_load_dtypes
   mms_load_fpi, probe=1, datatype=['des-moms']
-  assert, spd_data_exists('mms1_des_energyspectr_anti_fast mms1_des_pitchangdist_lowen_fast mms1_des_presyz_dbcs_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data using data type'
+  assert, spd_data_exists('mms1_des_energyspectr_anti_fast mms1_des_pitchangdist_lowen_fast mms1_des_prestensor_gse_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data using data type'
   return, 1
 end
 
@@ -271,8 +271,8 @@ end
 
 function mms_load_fpi_ut::test_load_dtypes_caps
   mms_load_fpi, probe=1, datatype='DIS', level='ql'
-  assert, spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS (1)'
-  assert, ~spd_data_exists('mms1_des_startDelPhi_angle', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS (2)'
+  assert, spd_data_exists('mms1_dis_startdelphi_angle_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS (1)'
+  assert, ~spd_data_exists('mms1_DIS_startdelphi_angle_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS (2)'
   return, 1
 end
 
@@ -292,9 +292,9 @@ end
 
 function mms_load_fpi_ut::test_load_time_clip
   mms_load_fpi, probe=1, datatype='DIS', level='ql', trange=['2015-12-15 00:04:00', '2015-12-15 00:12:00'], /time_clip
-  assert, spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15/00:04:00', '2015-12-15/00:12:00'), 'Problem loading fpi data with time_clip'
-  assert, ~spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15/00:00:00', '2015-12-15/00:4:00'), 'Problem loading fpi data with time_clip'
-  assert, ~spd_data_exists('mms1_dis_startDelPhi_angle', '2015-12-15/00:12:00', '2015-12-15/00:14:00'), 'Problem loading fpi data with time_clip'
+  assert, spd_data_exists('mms1_dis_startdelphi_angle_fast', '2015-12-15/00:04:00', '2015-12-15/00:12:00'), 'Problem loading fpi data with time_clip'
+  assert, ~spd_data_exists('mms1_dis_startdelphi_angle_fast', '2015-12-15/00:00:00', '2015-12-15/00:4:00'), 'Problem loading fpi data with time_clip'
+  assert, ~spd_data_exists('mms1_dis_startdelphi_angle_fast', '2015-12-15/00:12:00', '2015-12-15/00:14:00'), 'Problem loading fpi data with time_clip'
   return, 1
 end
 

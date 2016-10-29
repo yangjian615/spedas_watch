@@ -51,8 +51,8 @@
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;  Added _extra keyword to ease the passing of keywords to thm_cal_efi
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
-; $LastChangedRevision: 21775 $
+; $LastChangedDate: 2016-10-28 12:00:18 -0700 (Fri, 28 Oct 2016) $
+; $LastChangedRevision: 22229 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi.pro $
 ;-
 
@@ -386,7 +386,7 @@ pro thm_load_efi, probe = probe, datatype = datatype, trange = trange, $
   ;hed variables: add suffix or delete them if get_support_data was not set
   for i = 0, n_elements(vl1datatypes)-1L do begin
     th_name_hed = 'th'+probe+'_'+vl1datatypes[i]+'_hed'
-    if tnames(th_name_hed) ne '' then begin          
+    if n_elements(tnames(th_name_hed)) gt 0 then begin          
       if keyword_set(delete_support_data) then begin  
         del_data, th_name_hed
       endif else begin
@@ -397,7 +397,7 @@ pro thm_load_efi, probe = probe, datatype = datatype, trange = trange, $
       endelse
     endif
     th_name_hed = 'th'+probe+'_'+vl1datatypes[i]+'_hed_ac'
-    if tnames(th_name_hed) ne '' then begin
+    if n_elements(tnames(th_name_hed)) gt 0 then begin
       if keyword_set(delete_support_data) then begin
         del_data, th_name_hed
       endif else begin

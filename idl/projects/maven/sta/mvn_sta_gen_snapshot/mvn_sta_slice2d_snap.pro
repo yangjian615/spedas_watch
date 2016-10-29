@@ -44,7 +44,12 @@
 ;
 ;      APID:      If set, specifies the APID data product to use.
 ;
-;    SC_POT:      Specifies the spacecraft potential.
+;     DOPOT:      If set, correct for the spacecraft potential.  The default is
+;                 to use the potential stored in the L2 CDF's or calculated by 
+;                 mvn_sta_scpot_load.  If this estimate is not available, no
+;                 correction is made.
+;
+;    SC_POT:      Override the default spacecraft potential with this.
 ;
 ;       VSC:      Corrects for the spacecraft velocity.
 ;
@@ -81,16 +86,16 @@
 ;CREATED BY:      Takuya Hara on 2015-05-22.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: hara $
-; $LastChangedDate: 2016-03-11 17:09:50 -0800 (Fri, 11 Mar 2016) $
-; $LastChangedRevision: 20420 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2016-10-28 16:43:16 -0700 (Fri, 28 Oct 2016) $
+; $LastChangedRevision: 22232 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id,    $
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
-                          sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange
+                          dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange
 
   IF STRUPCASE(STRMID(!version.os, 0, 3)) EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
@@ -101,6 +106,8 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
   ENDIF 
   IF SIZE(var1, /type) NE 0 AND SIZE(var2, /type) EQ 0 THEN var2 = var1
   IF SIZE(var2, /type) NE 0 THEN trange = time_double(var2)
+  IF keyword_set(dopot) THEN dopot = 1 else dopot = 0
+  IF SIZE(sc_pot, /type) NE 0 THEN forcepot = 1 else forcepot = 0
 
   IF keyword_set(window) THEN wnum = window ELSE BEGIN
      IF !d.name NE 'PS' THEN BEGIN
@@ -198,7 +205,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         str_element, d, 'nenergy', (d.nenergy), /add_replace
         str_element, d, 'bins', REBIN(TRANSPOSE(d.bins), d.nenergy, d.nbins), /add_replace
         str_element, d, 'bins_sc', REBIN(TRANSPOSE(d.bins_sc), d.nenergy, d.nbins), /add_replace
-        IF keyword_set(sc_pot) OR keyword_set(vsc) THEN BEGIN
+        IF (dopot OR keyword_set(vsc)) THEN BEGIN
            IF keyword_set(vsc) THEN BEGIN
               sstat = EXECUTE("v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')")
               IF sstat EQ 0 THEN BEGIN
@@ -211,17 +218,24 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
                          lbreak + '  Correcting f(v) for the spacecraft velocity:' + lbreak + $
                          '  V_sc (km/s) = [   ' + STRING(v_sc, '(3(F0, :, ",   "))') + '].'
               ENDIF 
+              v_sc *= -1. ; reverse the sign because flow is opposite to s/c motion
               undefine, sstat
            ENDIF ELSE v_sc = [0., 0., 0.]
 
-           IF keyword_set(sc_pot) THEN d.sc_pot = sc_pot
+           IF (~finite(d.sc_pot)) THEN d.sc_pot = 0.
+           IF (forcepot) THEN d.sc_pot = sc_pot
+           IF (dopot) THEN BEGIN
+               dprint, dlevel=2, verbose=verbose, $
+                       lbreak + '  Correcting f(v) for the spacecraft potential:' + lbreak + $
+                       '  SC_POT (V) = [   ' + STRING(d.sc_pot, '(F5.1)') + '].'
+           ENDIF ELSE d.sc_pot = 0.
+
            vel = v_4d(d)
-           IF keyword_set(sc_pot) THEN d.sc_pot *= -1. ; Trick to apply 'convert_vframe'.
+           d.sc_pot *= -1.                             ; Trick to apply 'convert_vframe'.
            d = convert_vframe(d, v_sc)                 ; Correcting f(v) for either sc_pot or V_sc.
            badbin = WHERE(~FINITE(d.energy), nbad)
            IF nbad GT 0 THEN d.bins[badbin] = 0
-           vel -= v_sc          ; Removing V_sc from the bulk flow.
-           undefine, v_sc
+           vel -= v_sc                                 ; Removing V_sc from the bulk flow.
         ENDIF ELSE vel = v_3d(d)
 
         IF !d.name NE 'PS' THEN BEGIN
@@ -239,7 +253,23 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
 
         status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel")
         IF status EQ 1 THEN BEGIN
-           XYOUTS, !x.window[0]*1.2, !y.window[0]*1.2, mtit, charsize=!p.charsize, /normal
+           x0 = !x.window[0]*1.2
+           y0 = !y.window[1]*0.95
+           dy = 0.04
+           XYOUTS, x0, y0, mtit, charsize=!p.charsize, /normal
+           if (dopot) then begin
+             y0 -= dy
+             msg = string(-d.sc_pot,'("s/c pot = ",f5.1," V")')
+             XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
+           endif
+           if keyword_set(vsc) then begin
+             y0 -= dy
+             msg = string(sqrt(total(v_sc*v_sc)),'("s/c vel = ",f5.2," km/s")')
+             XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
+           endif
+           y0 -= dy
+           msg = string(sqrt(total(vel*vel)),'("bulk vel = ",f5.2," km/s")')
+           XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
            IF keyword_set(showdata) THEN BEGIN
               wb = WHERE(block.v LE 0., nwb, complement=wf, ncomplement=nwf)
               IF nwb GT 0 THEN OPLOT, block.x[wb], block.y[wb], psym=7, color=1, symsize=showdata ; blocked bins

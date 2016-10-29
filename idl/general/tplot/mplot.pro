@@ -291,8 +291,8 @@ for n_=0,n_elements(ind)-1 do begin
 ;  if bins(n) ne 0 then begin
     if ndx eq 1 then i=0 else i=n
     c = col[ (n + c_off) mod nc ]
-    if n_nsums ne 0 then nsum = nsums(n mod n_nsums)
-    if n_linestyles ne 0 then linestyle = linestyles(n mod n_linestyles)
+    if n_nsums ne 0 then nsum = nsums[n mod n_nsums]
+    if n_linestyles ne 0 then linestyle = linestyles[n mod n_linestyles]
     xt = x[*,i]
     yt = y[*,n]
     if (keyword_set(nsmooth) && (nsmooth lt n_elements(yt))) then yt = smooth(yt,nsmooth,edge_truncate=0)
