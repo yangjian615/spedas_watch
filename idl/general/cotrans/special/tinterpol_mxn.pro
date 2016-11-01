@@ -10,7 +10,7 @@
 ;
 ;              
 ;Arguments:
-;            xv_tvar = tplot variable to be interpolated, the y component
+;            xv_tvar(source) = tplot variable to be interpolated, the y component
 ;            can have any dimesions, can use globbing to interpolate
 ;            many values at once
 ;            uses x component for x abcissa values
@@ -18,7 +18,7 @@
 ;            data component for a tplot variable:
 ;            {x:time_array,y:data_array,v:optional_y_axis_abcissas}
 ;            
-;            uz_tvar = tplot variable that V will be fit to
+;            uz_tvar(target) = tplot variable that V will be fit to
 ;            uses x component for u abcissa values.  Can also
 ;            pass in an array of time values rather than a tplot 
 ;            variable.
@@ -93,8 +93,8 @@
 ; 
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2014-10-31 10:31:56 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16099 $
+; $LastChangedDate: 2016-10-31 11:32:53 -0700 (Mon, 31 Oct 2016) $
+; $LastChangedRevision: 22236 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/cotrans/special/tinterpol_mxn.pro $
 ;-
 

@@ -14,9 +14,10 @@
 ; 12-oct-2012, jmm, Added this comment to test SVN
 ; 12-oct-2012, jmm, Added this comment to test SVN, again
 ; 18-oct-2012, jmm, Another SVN test
+; 31-oct-2016, jmm, Added setting to dprint too
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2012-10-17 12:07:58 -0700 (Wed, 17 Oct 2012) $
-; $LastChangedRevision: 11030 $
+; $LastChangedDate: 2016-10-31 13:25:10 -0700 (Mon, 31 Oct 2016) $
+; $LastChangedRevision: 22240 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_set_verbose.pro $
 ;-
 Pro thm_set_verbose, vlevel
@@ -32,6 +33,9 @@ If(n_elements(vlevel) Eq 0) Then vlev = !themis.verbose Else vlev = vlevel[0]
 !themis.verbose = vlev
 
 tplot_options, 'verbose', vlev
+
+;Set dprint verbose too, jmm, 2016-10-31
+dprint, setverbose=vlev
 
 Return
 End

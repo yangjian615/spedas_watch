@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  sst_quality_flags
+;  thm_sst_quality_flags
 ;  
 ;Description:
 ;  makes a bitpacked tplot variable containing quality flags for SST
@@ -11,8 +11,8 @@
 ;  Set timespan by calling timespan outside of this routine.(e.g. time/duration is not an argument)
 ;  
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-09-26 16:43:23 -0700 (Mon, 26 Sep 2016) $
-; $LastChangedRevision: 21944 $
+; $LastChangedDate: 2016-10-31 11:37:49 -0700 (Mon, 31 Oct 2016) $
+; $LastChangedRevision: 22237 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_sst_quality_flags.pro $
 ;-
 
@@ -45,6 +45,9 @@
         bit1 = 0
       endelse
       
+      
+      ;state time abcissas won't match sst time abcissas by default 
+      tinterpol_mxn,'th'+probe+'_state_spinper','th'+probe+'_pse'+data_types[i]+'_tot',/overwrite
       get_data,'th'+probe+'_state_spinper',data=d
       
       if is_struct(d) then begin
