@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-19 09:54:47 -0700 (Fri, 19 Aug 2016) $
-; $LastChangedRevision: 21678 $
+; $LastChangedDate: 2016-11-01 14:14:10 -0700 (Tue, 01 Nov 2016) $
+; $LastChangedRevision: 22253 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_eis_crib_qlplots.pro $
 ;-
 
@@ -104,7 +104,7 @@ panels = ['mms'+probe+'_dfg_srvy_dmpa_bvec', $
  
 if ~postscript then window, iw, xsize=width, ysize=height
 ;tplot, panels, var_label=position_vars, window=iw
-mms_tplot_quicklook, panels, var_label=position_vars, title='EIS - Quicklook', $
+mms_tplot_quicklook, panels, trange=trange, var_label=position_vars, title='EIS - Quicklook', $
   burst_bar='mms_bss_burst', fast_bar='mms_bss_fast', window=iw
 timebar, 0.0, /databar, varname='mms'+probe+'_dfg_srvy_dmpa_bvec', linestyle=2
 

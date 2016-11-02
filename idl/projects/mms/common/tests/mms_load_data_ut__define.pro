@@ -7,8 +7,8 @@
 ;     test_auth_info_pub.sav - sav file containing an empty username and password
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-18 11:17:28 -0700 (Mon, 18 Apr 2016) $
-; $LastChangedRevision: 20844 $
+; $LastChangedDate: 2016-11-01 12:50:42 -0700 (Tue, 01 Nov 2016) $
+; $LastChangedRevision: 22250 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_data_ut__define.pro $
 ;-
 
@@ -69,7 +69,7 @@ function mms_load_data_ut::test_public_access_sdc_multi
     instrument='edi', level='l2', data_rate='srvy', probe=1, datatype='efield'
   
   assert, tnames('mms1_fgm_b_gsm_srvy_l2') ne '', 'Problem loading L2 FGM data (public, multi-call test)'
-  assert, tnames('mms1_des_numberdensity_dbcs_fast') ne '', 'Problem loading L2 FPI data (public, multi-call test)'
+  assert, tnames('mms1_des_numberdensity_fast') ne '', 'Problem loading L2 FPI data (public, multi-call test)'
   assert, tnames('mms1_edi_e_gsm_srvy_l2') ne '', 'Problem loading L2 EDI data (public, multi-call test)'
   mms_sitl_logout
   return, 1

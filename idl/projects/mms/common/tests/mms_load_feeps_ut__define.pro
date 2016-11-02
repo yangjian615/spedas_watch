@@ -6,10 +6,17 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-08 09:21:34 -0700 (Mon, 08 Aug 2016) $
-; $LastChangedRevision: 21608 $
+; $LastChangedDate: 2016-11-01 12:51:12 -0700 (Tue, 01 Nov 2016) $
+; $LastChangedRevision: 22251 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_load_sitl_omni
+  mms_load_feeps, probe=[2, 4], level='sitl', trange=['2016-09-15', '2016-09-16']
+  assert, spd_data_exists('mms4_epd_feeps_srvy_sitl_electron_count_rate_omni mms4_epd_feeps_srvy_sitl_electron_count_rate_omni_spin mms4_epd_feeps_srvy_sitl_electron_intensity_omni mms4_epd_feeps_srvy_sitl_electron_intensity_omni_spin', '2016-09-15', '2016-09-16'), $
+    'Problem loading omni-directional FEEPS spectra using SITL files'
+  return, 1
+end
 
 function mms_load_feeps_ut::test_load_l1a_multi_datatypes
   mms_load_feeps, probes=4, level='l1a', datatype=['ion-top', 'electron-top']

@@ -12,8 +12,8 @@
 ;         end_times:    returns an array of unix times (double) containing the end of each fast interval
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-18 11:04:16 -0700 (Thu, 18 Aug 2016) $
-;$LastChangedRevision: 21672 $
+;$LastChangedDate: 2016-11-01 15:48:52 -0700 (Tue, 01 Nov 2016) $
+;$LastChangedRevision: 22256 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_load_fast_segments.pro $
 ;-
 
@@ -47,6 +47,8 @@ pro mms_load_fast_segments, trange=trange, suffix=suffix, start_times=start_time
           append_array, bar_y, [!values.f_nan, 0.,0., !values.f_nan]
         endif
       endfor
+      
+      if undefined(bar_x) then return
       
       store_data,'mms_bss_fast'+suffix,data={x:bar_x, y:bar_y}
       options,'mms_bss_fast'+suffix,thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$

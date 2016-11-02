@@ -17,7 +17,7 @@
 ; tplotnames regressions
 function mms_load_fpi_ut::test_loading_tplotnames_desmoms
   mms_load_fpi, trange=['2015-10-15', '2015-10-16'], datatype='des-moms', tplotnames = tplotnames
-  assert, n_elements(tplotnames) eq 97, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
+  assert, n_elements(tplotnames) eq 39, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
   return, 1
 end
 
@@ -29,7 +29,7 @@ end
 
 function mms_load_fpi_ut::test_loading_tplotnames_des
   mms_load_fpi, trange=['2015-10-15', '2015-10-16'], datatype=['des-moms', 'des-dist'], tplotnames = tplotnames
-  assert, n_elements(tplotnames) eq 107, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
+  assert, n_elements(tplotnames) eq 49, '(potential) Problem with number of tplotnames returned from mms_load_fpi'
   return, 1
 end
 
@@ -96,7 +96,7 @@ end
 
 ; user requests a few seconds after file start time
 function mms_load_fpi_ut::test_seconds_after_file_start
-  mms_load_fpi, trange=['2015-10-15/6:45:21', '2015-10-15/6:51:21'], data_rate='brst', level='l1b'
+  mms_load_fpi, trange=['2015-10-15/6:45:21', '2015-10-15/6:51:21'], data_rate='brst', level='l2'
   assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-15/06:47:23','2015-10-15/06:54:59'), $
     'Error! Not grabbing the correct data from the SDC???'
   return, 1
@@ -104,7 +104,7 @@ end
 
 ; user requests a few seconds after file end time
 function mms_load_fpi_ut::test_seconds_after_file_end
-  mms_load_fpi, trange=['2015-10-15/6:49:21', '2015-10-15/6:54:01'], data_rate='brst', level='l1b'
+  mms_load_fpi, trange=['2015-10-15/6:49:21', '2015-10-15/6:54:01'], data_rate='brst', level='l2'
   assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-15/06:47:23','2015-10-15/06:54:59'), $
     'Error! Not grabbing the correct data from the SDC???'
   return, 1
@@ -112,7 +112,7 @@ end
 
 ; user requests a time interval without any CDF files inside
 function mms_load_fpi_ut::test_empty_interval
-  mms_load_fpi, trange=['2015-10-15/6:46:21', '2015-10-15/6:49:01'], data_rate='brst', level='l1b'
+  mms_load_fpi, trange=['2015-10-15/6:46:21', '2015-10-15/6:49:01'], data_rate='brst', level='l2'
   assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-15/06:47:23','2015-10-15/06:49:59'), $
     'Error! Not grabbing the correct data from the SDC???'
   return, 1
@@ -121,7 +121,7 @@ end
 ; user requests a time interval just beyond start time (but inside the interval)
 ; of last burst-mode file for the day
 function mms_load_fpi_ut::test_weird_fpi_case
-  mms_load_fpi, trange=['2015-10-16/13:07', '2015-10-16/13:09'], data_rate='brst', level='l1b'
+  mms_load_fpi, trange=['2015-10-16/13:07', '2015-10-16/13:09'], data_rate='brst', level='l2'
   assert, spd_data_exists('mms3_dis_bulkSpeed','2015-10-16/13:07','2015-10-16/13:09'), $
     'Error! Not grabbing the correct data from the SDC???'
   return, 1
@@ -135,7 +135,7 @@ function mms_load_fpi_ut::test_noupdate_actually_works
   
   ; load the data locally
   mms_load_fpi, trange=['2015-10-15', '2015-10-18'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_local, /no_update
-  assert, spd_data_exists('mms1_dis_energyspectr_omni_avg', '2015-10-15', '2015-10-18'), $
+  assert, spd_data_exists('mms1_dis_energyspectr_omni_fast', '2015-10-15', '2015-10-18'), $
     'Problem loading data from local drive'
   assert, array_equal(fn_sdc, fn_local), $
     'Problem loading data from local drive (different CDF filenames)'
@@ -227,7 +227,7 @@ function mms_load_fpi_ut::test_load_mixed_probe_type
 end
 
 function mms_load_fpi_ut::test_load_level_ql
-  mms_load_fpi, probe=1, level='ql'
+  mms_load_fpi, probe=1, level='ql', min_version='3.0.0'
   assert, spd_data_exists('mms1_des_energyspectr_omni_fast mms1_des_energyspectr_py_fast','2015-12-15', '2015-12-16'), 'Problem loading quicklook fpi data'
   assert, ~spd_data_exists('mms2_dis_TempYY_err','2015-12-15', '2015-12-16'), 'Problem loading quicklook fpi data'
   return, 1
@@ -270,7 +270,7 @@ function mms_load_fpi_ut::test_load_dtypes_multi
 end
 
 function mms_load_fpi_ut::test_load_dtypes_caps
-  mms_load_fpi, probe=1, datatype='DIS', level='ql'
+  mms_load_fpi, probe=1, datatype='DIS', level='ql', min_version='3.0.0'
   assert, spd_data_exists('mms1_dis_startdelphi_angle_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS (1)'
   assert, ~spd_data_exists('mms1_DIS_startdelphi_angle_fast', '2015-12-15', '2015-12-16'), 'Problem loading fpi data with data types in CAPS (2)'
   return, 1

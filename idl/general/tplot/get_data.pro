@@ -29,6 +29,10 @@
 ;CREATED BY:	Davin Larson
 ;MODIFICATION BY: 	Peter Schroeder
 ;LAST MODIFICATION:	@(#)get_data.pro	1.28 02/04/17
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-11-01 10:30:00 -0700 (Tue, 01 Nov 2016) $
+; $LastChangedRevision: 22247 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/get_data.pro $
 ;
 ;-
 pro get_data,name, time, data, values, $
@@ -73,9 +77,20 @@ if index ne 0 then begin
    				    str_element,data_str,mytags[i],*foo,/add
 	   		endfor
 	   	endif else data_str = *dq.dh
+                if size(/type,data_str) ne 8 then $
+                   dprint, dlevel = 6, 'No Data Structure for: '+name
    endif
-   if arg_present(lim_str) or arg_present(alim_str) then lim_str = *dq.lh
-   if arg_present(dlim_str) or arg_present(alim_str) then dlim_str = *dq.dl
+
+   if arg_present(lim_str) or arg_present(alim_str) then begin
+      lim_str = *dq.lh
+      if size(/type, lim_str) ne 8 then $
+         dprint, dlevel = 6, 'No Limits Structure for: '+name
+   endif
+   if arg_present(dlim_str) or arg_present(alim_str) then begin
+      dlim_str = *dq.dl
+      if size(/type, dlim_str) ne 8 then $
+         dprint, dlevel = 6, 'No Dlimits Structure for: '+name
+   endif
 
    extract_tags,alim_str,dlim_str,/replace
    extract_tags,alim_str,lim_str,/replace
@@ -98,7 +113,7 @@ if index ne 0 then begin
 	if size(/type,*dq.dh) eq 8 then ptr_str = *dq.dh
 
 str_element,dq,'dtype',dtype
-endif
+endif else dprint, dlevel = 6, 'Variable '+string(name)+ ' Not Found'
 return
 end
 

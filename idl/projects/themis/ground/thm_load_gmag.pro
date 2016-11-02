@@ -70,6 +70,8 @@
 ; 
 ; /epo_sites = Set this keyword to load magnetometers that are EPO sites
 ;
+; /falcon_sites = Set this keyword to load magnetometers that are Falcon netword sites
+;
 ; /carisma_sites = Set this keyword to load magnetometers that are carisma sites
 ;
 ; /mcmac_sites = Set this keyword to load magnetometers that are mcmac sites
@@ -105,8 +107,8 @@
 ; 04-Apr-2012, clrussell, Added units to the data_att structure
 ; 
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2016-05-19 10:24:03 -0700 (Thu, 19 May 2016) $
-; $LastChangedRevision: 21136 $
+; $LastChangedDate: 2016-11-01 10:18:09 -0700 (Tue, 01 Nov 2016) $
+; $LastChangedRevision: 22246 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag.pro $
 ;-
 
@@ -206,6 +208,7 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
                    usgs_sites = usgs_sites, $
                    atha_sites = atha_sites, $
                    epo_sites = epo_sites, $
+                   falcon_sites = falcon_sites, $
                    mcmac_sites = mcmac_sites, $
                    nrcan_sites = nrcan_sites, $
                    step_sites = step_sites, $
@@ -227,8 +230,9 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
     Endif
   Endif else begin
     vsnames = 'abk akul amd amer arct atha benn bett blc bmls bou brw bsl cbb ccnv cdrt chbg cigo cmo crvr ded dik drby eagl ekat fcc frd frn fsim fsj fsmi ftn fykn '+ $
-      'fyts gako gbay gill gjoa glyn gua hlms homr hon hots hrp iglo inuk inuv iqa kako kapu kian kjpk kuuj larg lcl leth loys lrg lrv lyfd mcgr mea nain new nrsq '+ $
-      'ott pang pbk pcel pg0 pg1 pg2 pg3 pg4 pg5 pgeo pina pine pks pokr ptrs puvr radi rank rbay redr rich rmus roth salu satx schf sept shu sit sjg snap snkq stfl stj swno tik tpas trap tuc ukia vic vldr whit whs wrth ykc yknf'
+      'fyts gako gbay gill gjoa glyn gua hlms homr hon hots hris hrp iglo inuk inuv iqa kako kapu kian kjpk kodk kuuj larg lcl leth loys lrel lrg lrv lyfd mcgr mea nain new nrsq '+ $
+      'ott pang pbk pblo pcel pg0 pg1 pg2 pg3 pg4 pg5 pgeo pina pine pks pokr ptrs puvr radi rank rbay redr rich rmus roth salu satx schf sept shu sit sjg snap snkq stfd stfl stj '+ $
+      'swno tik tpas trap tuc ukia vic vldr whit whs wlps wrth ykc yknf'
     vsnames_arr = strsplit(vsnames, ' ', /extract)
     vsnames_g =  'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf svs tdc thl tro umq upn'
     vsnames_g_arr = strsplit(vsnames_g, ' ', /extract)
@@ -279,6 +283,10 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
     if keyword_set(epo_sites) then begin
       site_in = array_concat(['bmls','ccnv','drby','fyts','hots','loys','pgeo','pine','ptrs','rmus','swno','ukia'],site_in)
     endif 
+
+    if keyword_set(falcon_sites) then begin
+      site_in = array_concat(['hris', 'kodk', 'lrel', 'pblo', 'stfd', 'wlps'],site_in)
+    endif
 
     if keyword_set(mcmac_sites) then begin
       site_in = array_concat(['amer', 'benn', 'glyn', 'lyfd', 'pcel', 'rich', 'satx', 'wrth'],site_in)
