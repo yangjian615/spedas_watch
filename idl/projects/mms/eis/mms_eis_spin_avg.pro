@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-16 07:36:01 -0700 (Fri, 16 Sep 2016) $
-;$LastChangedRevision: 21837 $
+;$LastChangedDate: 2016-11-02 13:32:57 -0700 (Wed, 02 Nov 2016) $
+;$LastChangedRevision: 22258 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_spin_avg.pro $
 ;-
 
@@ -60,6 +60,14 @@ pro mms_eis_spin_avg, probe=probe, species = species, data_units = data_units, $
   for scope_idx = 0, 5 do begin
     this_scope = (telescopes[scope_idx])[0]
     get_data, this_scope, data=flux_data, dlimits=flux_dl
+    
+    ; check that this spectra variable contains an energy table - and gracefully halt
+    ; before crashing
+    str_element, flux_data, 'v', success=s
+    if s ne 1 then begin
+      dprint, dlevel = 0, 'Error, couldn''t find energy table for the variable: ' + this_scope
+      continue
+    endif
 
     spin_sum_flux = dblarr(n_elements(spin_starts), n_elements(flux_data.Y[0, *]))
 

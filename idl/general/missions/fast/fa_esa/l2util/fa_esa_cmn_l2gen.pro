@@ -60,8 +60,8 @@
 ;HISTORY:
 ; Hacked from mvn_sta_cmn_l2gen.pro, 22-jul-2015
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-24 12:02:05 -0700 (Mon, 24 Oct 2016) $
-; $LastChangedRevision: 22189 $
+; $LastChangedDate: 2016-11-02 13:57:47 -0700 (Wed, 02 Nov 2016) $
+; $LastChangedRevision: 22261 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_cmn_l2gen.pro $
 ;-
 Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
@@ -161,8 +161,8 @@ Pro fa_esa_cmn_l2gen, cmn_dat, esa_type=esa_type, $
             ['time_delta', 'DOUBLE', 'Averaging time. (TIME_END - TIME_START). (NUM_DISTS elements).', 'Averaging time'], $
             ['time_integ', 'DOUBLE', 'Integration time. (TIME_DELTA/N_ENERGY). (NUM_DISTS elements).', 'Integration time'], $
             ['header_bytes', 'BYTE', 'The packet header bytes. (44XNUM_DISTS elements)', 'Header'], $
-            ['valid', 'INTEGER', 'Validity flag codes valid data (bit 0), non-zero values are not necessarily valid (NUM_DISTS elements)', ' Valid flag'], $
-            ['data_quality', 'INTEGER', 'Quality flag (NUM_DISTS elements)', 'Quality flag'], $
+            ['valid', 'INTEGER', 'Validity flag codes valid data from CDF, 0 for invalid data, 1 for good data', ' Valid flag'], $
+            ['data_quality', 'INTEGER', 'Quality flag (NUM_DISTS elements)', 'Quality flag, 0 for good quality, add 2 for counter overflow overflow, add 4 for excess dead_time above 0.90'], $
             ['nbins', 'INTEGER', 'Number of angluar bins (NUM_DISTS elements)', 'Number of bins'], $
             ['nenergy', 'INTEGER', 'Number of energies (NUM_DISTS elements)', 'Number of energies'], $
             ['geom_factor', 'DOUBLE', 'GEOM_FACTOR, Geometrical factor used in calibration (NUM_DISTS elements)', 'Geometric Factor'], $

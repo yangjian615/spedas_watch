@@ -9,8 +9,8 @@
 ;  changed ion burst mode time range   SAB
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-26 13:25:40 -0700 (Fri, 26 Aug 2016) $
-; $LastChangedRevision: 21750 $
+; $LastChangedDate: 2016-11-02 15:07:31 -0700 (Wed, 02 Nov 2016) $
+; $LastChangedRevision: 22262 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_fpi_dist_slice_comparison_crib_v3.pro $
 ;-
 
@@ -57,7 +57,7 @@ folder = 'slice_test/'
 
 coord_sys = 'gse'
 
-level = 'l1b'
+level = 'l2'
 
 ;load particle, field & support data
 ;---------------------------------------------

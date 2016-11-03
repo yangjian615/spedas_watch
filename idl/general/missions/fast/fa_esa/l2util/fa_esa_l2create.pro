@@ -68,8 +68,8 @@
 ; added orbit stat and end tags, 2015-08-24, jmm
 ; added energy_full, denergy_full, pitch_angle arrays 2016-02-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20609 $
+; $LastChangedDate: 2016-11-02 13:57:47 -0700 (Wed, 02 Nov 2016) $
+; $LastChangedRevision: 22261 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2create.pro $
 ;-
 pro fa_esa_l2create,type=type, $
@@ -151,7 +151,8 @@ pro fa_esa_l2create,type=type, $
            if count gt 0 then begin
               dprint,dlevel=1,min(denom,ind)
               denom = denom>.1 
-              dprint,dlevel=1,' Error: convert_peace_units dead time error.'
+              dprint,dlevel=1,' FA_ESA_L2CREATE: convert_units dead time error.'
+              all_dat.data_quality[i] = all_dat.data_quality[i]+4 ;Add to 3rd bit for bad dead_time
            endif
            data_tmp=data_tmp/denom
            data_tmp=data_tmp/(gf_tmp*dt)
@@ -167,7 +168,8 @@ pro fa_esa_l2create,type=type, $
            if count gt 0 then begin
               dprint,dlevel=1,min(denom,ind)
               denom = denom>.1 
-              dprint, dlevel=1,' Error: convert_peace_units dead time error.'
+              dprint,dlevel=1,' FA_ESA_L2CREATE: convert_units dead time error.'
+              all_dat.data_quality[i] = all_dat.data_quality[i]+4 ;Add to 3rd bit for bad dead_time
            endif
            data_tmp=data_tmp/denom
            data_tmp=data_tmp/(gf_tmp*dt)
@@ -183,7 +185,8 @@ pro fa_esa_l2create,type=type, $
            if count gt 0 then begin
               dprint,dlevel=1,min(denom,ind)
               denom = denom>.1 
-              dprint,dlevel=1,' Error: convert_peace_units dead time error.'
+              dprint,dlevel=1,' FA_ESA_L2CREATE: convert_units dead time error.'
+              all_dat.data_quality[i] = all_dat.data_quality[i]+4 ;Add to 3rd bit for bad dead_time
            endif
            data_tmp=data_tmp/denom
            data_tmp=data_tmp/(gf_tmp*dt)

@@ -2,7 +2,7 @@
 ;PROCEDURE:  str_element, struct,  tagname, value
 ;PURPOSE:
 ; Find (or add) an element of a structure.
-; This procedure will not
+;
 ; Input:
 ;   struct,  generic structure
 ;   tagname,    string  (tag name)
@@ -48,11 +48,10 @@
 ;VERSION  1.10
 ;LAST MODIFICATION: 01/10/08
 ; CREATED BY: Davin Larson
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
-
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-11-02 13:38:33 -0700 (Wed, 02 Nov 2016) $
+; $LastChangedRevision: 22260 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/str_element.pro $
 ;-
 pro str_element,struct,tagname,value,  $
    ADD_REPLACE = add_rep, $
