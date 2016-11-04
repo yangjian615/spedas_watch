@@ -39,8 +39,8 @@
 ;CREATED BY:	David L. Mitchell  2016-08-03
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 15:33:50 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22139 $
+; $LastChangedDate: 2016-11-03 12:00:30 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22275 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_fovplot.pro $
 ;-
 pro mvn_swe_fovplot, dat, bad=ondx, date=date, crange=crange, map=map, result=result, $
@@ -70,7 +70,10 @@ pro mvn_swe_fovplot, dat, bad=ondx, date=date, crange=crange, map=map, result=re
     k3d = findgen(96)
     ndat = n_elements(dat)
     rms = replicate(0.,96)
-    if (ndat gt 1L) then rgf = average(dat.rgf,2,stdev=rms_all,/nan) else rgf = dat.rgf
+    if (ndat eq 1L) then begin
+      rgf = dat.rgf
+      rms_all = replicate(0.,n_elements(rgf))
+    endif else rgf = average(dat.rgf,2,stdev=rms_all,/nan)
 
     fovcal = swe_3d_struct
     fovcal.project_name = 'SWEA Relative Geometric Factor -'

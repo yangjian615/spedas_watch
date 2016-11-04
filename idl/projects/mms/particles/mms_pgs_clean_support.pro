@@ -27,9 +27,9 @@
 ;Notes:
 ;    
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-09-30 17:29:27 -0700 (Fri, 30 Sep 2016) $
-;$LastChangedRevision: 21991 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-11-03 09:51:41 -0700 (Thu, 03 Nov 2016) $
+;$LastChangedRevision: 22268 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_clean_support.pro $
 ;-
 
@@ -115,7 +115,7 @@ pro mms_pgs_clean_support, times, $
       vel_temp = vel_tvar_in + '_pgs_temp'
       tinterpol_mxn,vel_tvar_in,times,newname=vel_temp,/nan_extrapolate 
     
-      ;Pass out potential data
+      ;Pass out velocity data
       get_data, vel_temp, 0, vel_out
       
       ;Remove temp variable

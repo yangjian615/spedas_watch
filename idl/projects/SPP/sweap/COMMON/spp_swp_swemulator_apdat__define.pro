@@ -17,7 +17,7 @@ function spp_swp_swemulator_apdat::decom , ccsds, ptp_header
    delay_ccsds = ccsds.time - time
 
    tns = { time:time,time_delay_ptp:delay_ptp,time_delay_ccsds:delay_ccsds, f0:f0,  MET:met, revnum:buffer[8],  power_flag: buffer[9], fifo_cntr:buffer[10], fifo_flag: buffer[11], $
-     heater_flag: buffer[12], misc_flag:buffer[13], counts:v[7]  , parity_frame: v[8],  command:v[9],  telem_fifo_flag:v[10],  inst_power_flag:v[11]  }
+     heater_flag: buffer[12], misc_flag:buffer[13], counts:v[7]  , parity_frame: v[8],  command:v[9],  rate_full:buffer[20], rate_target:buffer[21],  inst_power_flag:v[11]  }
   
 ;  hexprint,buffer
   ;printdat,tns

@@ -17,8 +17,8 @@
 ;                      across calibration sequence.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:14:36 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21880 $
+; $LastChangedDate: 2016-11-03 11:59:51 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22274 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_mcpcal.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -30,7 +30,6 @@ pro mvn_swe_mcpcal, trange
   
   tmin = min(time_double(trange), max=tmax)
 
-  mvn_swe_sc_pot, /over
   get_data,'swe_pot_overlay',data=scp,index=i
   if (i eq 0) then begin
     print,"Error getting spacecraft potential."

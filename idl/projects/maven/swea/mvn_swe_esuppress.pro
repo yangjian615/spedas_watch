@@ -50,27 +50,21 @@
 ;                     Note that SET = 0 reverts to the nominal suppression
 ;                     constant; it does not disable the correction.
 ;
-;                     This is useful for fine tuning the suppression, 
+;                     This is useful for fine tuning the correction, 
 ;                     especially outside of the calibrated time range
 ;                     (2015-03-01 to 2016-09-01).
-;
-;       EXTRAPOLATE:  If set, extrapolate the calibration polynomial
-;                     outside the range of measurements.  Otherwise, use
-;                     the closest measurement.  This remains persistent
-;                     until you disable it with EXTRAPOLATE = 0.
-;                     Default = 1.
 ;
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-05 13:56:19 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22045 $
+; $LastChangedDate: 2016-11-03 12:06:39 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22278 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_esuppress.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2016-09-13
 ;FILE: mvn_swe_esuppress.pro
 ;-
-function mvn_swe_esuppress, time, on=on, off=off, set=set, extrapolate=extrapolate, silent=silent
+function mvn_swe_esuppress, time, on=on, off=off, set=set, silent=silent
 
   @mvn_swe_com
 
@@ -116,13 +110,6 @@ function mvn_swe_esuppress, time, on=on, off=off, set=set, extrapolate=extrapola
     domsg = 1
   endif
 
-  if (size(extrapolate,/type) ne 0) then begin
-    doext = keyword_set(extrapolate)
-    if (doext) then print,"Extrapolate suppression constant: YES" $
-               else print,"Extrapolate suppression constant: NO"
-    domsg = 1
-  endif
-
 ; If electron suppression switch is off, then return zero
 
   swe_Ke = replicate(0., (n_elements(time) > 1L))
@@ -142,39 +129,16 @@ function mvn_swe_esuppress, time, on=on, off=off, set=set, extrapolate=extrapola
 
   t = time_double(time)
   day = (t - t_sup[0])/86400D
-  
-  indx = where(t lt t_sup[0], count)
-  if (count gt 0L) then begin
-    if (doext) then begin
-      swe_Ke[indx] = a[0] + a[1]*day[indx]
-      if (domsg) then print,"Warning: SWEA electron suppression constant extrapolated before ", $
-                             time_string(t_sup[0],prec=-3)
-      domsg = 0
-    endif else begin
-      swe_Ke[indx] = a[0]
-      if (domsg) then print,"Warning: SWEA electron suppression constant fixed before ", $
-                             time_string(t_sup[0],prec=-3)
-      domsg = 0
-    endelse
-  endif
-  
-  indx = where((t ge t_sup[0]) and (t le t_sup[1]), count)
-  if (count gt 0L) then swe_Ke[indx] = a[0] + a[1]*day[indx]
-    
-  indx = where(t gt t_sup[1], count)
-  if (count gt 0L) then begin
-    if (doext) then begin
-      swe_Ke[indx] = a[0] + a[1]*day[indx]
-      if (domsg) then print,"Warning: SWEA electron suppression constant extrapolated after ", $
-             time_string(t_mcp[6],prec=-3)
-      domsg = 0
-    endif else begin
-      day = (t_sup[1] - t_sup[0])/86400D
-      swe_Ke[indx] = a[0] + a[1]*day
-      if (domsg) then print,"Warning: SWEA electron suppression constant fixed after ", $
-                             time_string(t_sup[1],prec=-3)
-      domsg = 0
-    endelse
+  swe_Ke = a[0] + a[1]*day
+
+  if (domsg) then begin
+    if (min(t) lt t_sup[0]) then $
+      print,"Warning: SWEA electron suppression constant extrapolated before ", $
+            time_string(t_sup[0],prec=-3)
+    if (max(t) gt t_sup[1]) then $
+      print,"Warning: SWEA electron suppression constant extrapolated after ", $
+            time_string(t_sup[0],prec=-3)
+    domsg = 0
   endif
 
   return, swe_Ke

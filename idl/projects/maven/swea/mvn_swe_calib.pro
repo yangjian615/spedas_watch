@@ -64,8 +64,8 @@
 ;                     Any other tags are ignored.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 15:30:31 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22137 $
+; $LastChangedDate: 2016-11-03 12:11:32 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22282 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -77,7 +77,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
 
 ; Set the SWEA Ground Software Version
 
-    mvn_swe_version = 3
+    mvn_swe_version = 4
 
 ; Initialize
 
@@ -87,7 +87,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
     print, "Initializing SWEA constants"
     swe_Ka      = 6.17       ; analyzer constant (1.4% variation around azim)
     swe_G       = 0.009/16.  ; nominal geometric factor per anode (IRAP)
-    swe_Ke      = 2.85       ; nominal value, see mvn_swe_esuppress.pro
+    swe_Ke      = 2.80       ; nominal value, see mvn_swe_esuppress.pro
     swe_dead    = 2.8e-6     ; deadtime for one MCP-Anode-Preamp chain (IRAP)
     swe_min_dtc = 0.25       ; max 4x deadtime correction
   endif
@@ -119,8 +119,6 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
       print, "Setting maximum deadtime correction: ",1./value
     endif
   endif
-
-  if keyword_set(ogf) then swe_ff_switch = 1 else swe_ff_switch = 0
 
 ; Find the first valid LUT
 ;   chksum =   0B means SWEA has just powered on
@@ -306,7 +304,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
   for i=0,15 do swe_gf[(4*i):(4*i+3),2] = (swe_gf[(4*i),1] + swe_gf[(4*i+3),1])/2.
 
 ; Correction factor from cross calibration with SWIA in the solar wind.  This
-; factor changes whenever an MCP bias adjustment is made, and it can also drift
+; factor changes whenever an MCP bias adjustment is made, and it also drifts
 ; with time as the MCP gain changes.  The times of bias adjustments are recorded
 ; in mvn_swe_config.  The function mvn_swe_crosscal() now supercedes the variable
 ; swe_crosscal.  The variable swe_cc_switch controls whether or not the cross
@@ -320,7 +318,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
 ; function mvn_swe_esuppress calculates the constant Ke, which is used to calculate
 ; the suppression correction: exp(-(Ke/E_in)^2.).
 
-  if (size(swe_es_switch,/type) eq 0) then swe_es_switch = 0
+  if (size(swe_es_switch,/type) eq 0) then swe_es_switch = 1
 
 ; Add a dimension for relative variation among the 16 anodes.  This variation is
 ; dominated by the MCP efficiency, but I include the same dimension here for ease
@@ -440,11 +438,12 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
 ; next section).  Note that sensitivity variations in azimuth are relative to
 ; the ground calibration contained in swe_rgf, above.
 
-  if (size(swe_ff_state,/type) eq 0) then mvn_swe_flatfield, /off, /silent
+  if (size(swe_ff_state,/type) eq 0) then mvn_swe_flatfield, /nominal, /silent
 
 ; Spacecraft blockage mask (~27% of sky, deployed boom, approximate)
-;   Complete blockage: 0, 1, 2, 3, 17, 18
-;   Partial blockage: 4, 14 & 15 (summed onboard), 16, 19, 20, 30, 31
+;   Complete blockage: 0,  1,  2,  3, 17, 18  (masked)
+;   Partial blockage: 14, 15, 16, 31          (masked)
+;   Partial blockage:  4, 19, 20, 30          (compensated with flatfield)
 
   swe_sc_mask = replicate(1B, 96, 2)  ; 96 solid angle bins, 2 boom states
   

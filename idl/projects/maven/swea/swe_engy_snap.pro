@@ -117,8 +117,8 @@
 ;       YRANGE:        Override the default vertical axis range with this.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 15:23:21 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22132 $
+; $LastChangedDate: 2016-11-03 14:54:49 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22288 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -146,7 +146,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(burst) then aflg = 1
   if not keyword_set(units) then units = 'eflux'
   if keyword_set(sum) then npts = 2 else npts = 1
-  if keyword_set(error_bars) then ebar = 1 else ebar = 0
+  if (size(error_bars,/type) eq 0) then ebar = 1 else ebar = keyword_set(error_bars)
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if keyword_set(noerase) then oflg = 0 else oflg = 1
   if (size(scp,/type) eq 0) then scp = !values.f_nan else scp = float(scp[0])
@@ -481,8 +481,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     
     if keyword_set(bck) then begin
       bck = spec
-      eff0 = 1./mvn_swe_crosscal('2014-11-15',/extrapolate,/silent)
-      eff = 1./mvn_swe_crosscal(bck.time,/extrapolate,/silent)
+      eff0 = 1./mvn_swe_crosscal('2014-11-15',/silent)
+      eff = 1./mvn_swe_crosscal(bck.time,/silent)
       brate = (0.6*(average(eff,/nan)/eff0))[0]
       bck.data[*] = brate  ; background crate per anode at periapsis
       bck.units_name = 'crate'

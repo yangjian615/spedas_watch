@@ -69,8 +69,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: rickwilder $
-;$LastChangedDate: 2016-08-12 15:41:13 -0700 (Fri, 12 Aug 2016) $
-;$LastChangedRevision: 21642 $
+;$LastChangedDate: 2016-11-03 15:25:10 -0700 (Thu, 03 Nov 2016) $
+;$LastChangedRevision: 22291 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_feeps.pro $
 ;-
 pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -86,37 +86,57 @@ pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
     if undefined(probes) then probes_in = ['1'] else probes_in = probes
     if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
     if undefined(level) then level_in = 'l1b' else level_in = level
-    if undefined(data_units) then data_units = 'flux'
+    if undefined(data_units) then data_units = 'intensity'
     if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
     if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '4.3.0'
     if undefined(get_support_data) then get_support_data = 1 ; support data needed for sun removal and spin averaging
-      
+    l1a_datatypes = ['electron-bottom', 'electron-top', 'ion-top', 'ion-bottom']
+
+    if level_in eq 'l1a' && ~is_array(ssl_set_intersection(l1a_datatypes, [datatype_in])) then begin
+        dprint, dlevel = 0, 'Couldn''t find the datatype: "' + datatype_in + '" for L1a data; loading all data...'
+        datatype_in = l1a_datatypes
+    endif
+    
     mms_load_data, trange = trange, probes = probes_in, level = level_in, instrument = 'feeps', $
         data_rate = data_rate_in, local_data_dir = local_data_dir, source = source, $
-        datatype = datatype_in, /get_support_data, $ ; support data is needed for spin averaging, etc.
+        datatype = datatype_in, get_support_data=get_support_data, $ ; support data is needed for spin averaging, etc.
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf
+        spdf = spdf, available = available, versions = versions, always_prompt = always_prompt
     
     if undefined(tplotnames) || tplotnames[0] eq '' then return
     
+    if level_in eq 'l1a' then return ; avoid the following for L1a data
+    
     for probe_idx = 0, n_elements(probes_in)-1 do begin
       this_probe = string(probes_in[probe_idx])
-      ; split the extra integral channel from all of the spectrograms
-      mms_sitl_feeps_split_integral_ch, ['count_rate', 'intensity'], datatype_in, this_probe, $
-        suffix = suffix, data_rate = data_rate_in, level = level_in
+      for datatype_idx = 0, n_elements(datatype_in)-1 do begin
+        this_datatype = datatype_in[datatype_idx]
+        ; split the extra integral channel from all of the spectrograms
         
-      ; remove the sunlight contamination
-      mms_sitl_feeps_remove_sun, probe = this_probe, datatype = datatype_in, level = level_in, $
-          data_rate = data_rate_in, suffix = suffix, data_units = ['count_rate', 'intensity']
-
-      ; calculate the omni-directional spectra
-      mms_sitl_feeps_omni, this_probe, datatype = datatype_in, tplotnames = tplotnames, data_units = data_units, $
-          data_rate = data_rate_in, suffix=suffix
-
-      ; calculate the spin averages
-      mms_sitl_feeps_spin_avg, probe=this_probe, datatype=datatype_in, suffix = suffix, data_units = data_units, level = level_in
+        mms_sitl_feeps_split_integral_ch, data_units, this_datatype, this_probe, $
+          suffix = suffix, data_rate = data_rate_in, level = level_in
+        
+        for data_units_idx = 0, n_elements(data_units)-1 do begin
+          ; remove the sunlight contamination
+          mms_sitl_feeps_remove_sun, probe = this_probe, datatype = this_datatype, level = level_in, $
+              data_rate = data_rate_in, suffix = suffix, data_units = data_units[data_units_idx], $
+              tplotnames = tplotnames
+    
+          ; calculate the omni-directional spectra
+          mms_sitl_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units[data_units_idx], $
+              data_rate = data_rate_in, suffix=suffix, level = level_in
+    
+          ; calculate the spin averages
+          mms_sitl_feeps_spin_avg, probe=this_probe, datatype=this_datatype, suffix = suffix, data_units = data_units[data_units_idx], $
+              tplotnames = tplotnames, data_rate = data_rate_in, level = level_in
+          
+          ; calculate the smoothed products
+          if ~undefined(num_smooth) then mms_feeps_smooth, probe=this_probe, datatype=this_datatype, $
+            suffix=suffix, data_units=data_units[data_units_idx], data_rate=data_rate_in, level=level_in, num_smooth=num_smooth
+        endfor
+      endfor
     endfor
     
     ; interpolate to account for gaps in data near perigee for srvy data
@@ -125,4 +145,6 @@ pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
       tdeflag, tnames('*_count_rate_*'), 'repeat', /overwrite
       tdeflag, tnames('*_counts_*'), 'repeat', /overwrite
     endif
+end
+
 end

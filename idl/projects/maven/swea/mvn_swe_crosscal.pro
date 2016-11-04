@@ -35,21 +35,17 @@
 ;
 ;       OFF:          Turn cross calibration switch off.
 ;
-;       EXTRAPOLATE:  If set, extrapolate the calibration polynomial
-;                     outside the range of measurements.  Otherwise,
-;                     use the last measurement.
-;
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-05 13:05:31 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22042 $
+; $LastChangedDate: 2016-11-03 12:08:21 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22279 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crosscal.pro $
 ;
 ;CREATED BY:    David L. Mitchell  05-04-16
 ;FILE: mvn_swe_crosscal.pro
 ;-
-function mvn_swe_crosscal, time, on=on, off=off, extrapolate=extrapolate, silent=silent
+function mvn_swe_crosscal, time, on=on, off=off, silent=silent
 
   @mvn_swe_com
 
@@ -72,10 +68,10 @@ function mvn_swe_crosscal, time, on=on, off=off, extrapolate=extrapolate, silent
 
   t = time_double(time)
   day = (t - t_mcp[0])/86400D
-  
+
   indx = where(t lt t_mcp[1], count)
   if (count gt 0L) then cc[indx] = 2.6     ; best overall value
-  
+
   indx = where((t ge t_mcp[1]) and (t lt t_mcp[2]), count)
   if (count gt 0L) then cc[indx] = 2.3368  ; match polynomial starting at t_mcp[2]
   
@@ -83,26 +79,19 @@ function mvn_swe_crosscal, time, on=on, off=off, extrapolate=extrapolate, silent
   if (count gt 0L) then cc[indx] = 4.0071D - day[indx]*(1.3221d-2 - day[indx]*2.6014d-5)
   
   indx = where((t ge t_mcp[3]) and (t lt t_mcp[4]), count)
-  if (count gt 0L) then cc[indx] = 1.2379D + day[indx]*1.5413d-3
+  if (count gt 0L) then cc[indx] = 7.5293D - day[indx]*(1.7454d-2 - day[indx]*1.4300d-5)
   
   indx = where((t ge t_mcp[4]) and (t lt t_mcp[5]), count)
   if (count gt 0L) then cc[indx] = 4.0071D - day[indx]*(1.3221d-2 - day[indx]*2.6014d-5)
   
   indx = where((t ge t_mcp[5]) and (t lt t_mcp[6]), count)
   if (count gt 0L) then cc[indx] = 7.5293D - day[indx]*(1.7454d-2 - day[indx]*1.4300d-5)
-  
+
   indx = where(t ge t_mcp[6], count)
   if (count gt 0L) then begin
-    if keyword_set(extrapolate) then begin
-      cc[indx] = 7.5293D - day[indx]*(1.7454d-2 - day[indx]*1.4300d-5)
-      if (domsg) then print,"Warning: SWE-SWI cross calibration extrapolated after ", $
-                             time_string(t_mcp[6],prec=-3)
-    endif else begin
-      day = (t_mcp[6] - t_mcp[0])/86400D
-      cc[indx] = 7.5293D - day[indx]*(1.7454d-2 - day[indx]*1.4300d-5)
-      if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
-                             time_string(t_mcp[6],prec=-3)
-    endelse
+    cc[indx] = 2.15D                       ; eliminate discontinuity at MCP bump
+    if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
+                           time_string(t_mcp[6],prec=-3)
   endif
 
   return, cc

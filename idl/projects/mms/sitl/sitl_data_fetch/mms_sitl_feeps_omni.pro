@@ -25,8 +25,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: rickwilder $
-; $LastChangedDate: 2016-08-12 15:41:13 -0700 (Fri, 12 Aug 2016) $
-; $LastChangedRevision: 21642 $
+; $LastChangedDate: 2016-11-03 09:06:44 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22265 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_feeps_omni.pro $
 ;-
 pro mms_sitl_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, $
@@ -48,6 +48,8 @@ pro mms_sitl_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, su
   ; special case for burst mode data
   if data_rate eq 'brst' && datatype eq 'electron' then sensors = ['1','2','3','4','5','9','10','11','12']
   if data_rate eq 'brst' && datatype eq 'ion' then sensors = ['6','7','8']
+  
+  if level eq 'sitl' && datatype eq 'electron' then sensors = ['5','11','12']
   
   lower_en = datatype eq 'electron' ? 71 : 78
 
@@ -72,14 +74,16 @@ pro mms_sitl_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, su
       flux_omni[*, sensor_count, *] = d.Y
       sensor_count += 1
     endfor
-    for i=0, n_elements(sensors)-1. do begin ; loop through each bottom sensor
-      ;var_name = prefix+'bottom_'+datatype+'_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix
-      ;var_name = strlowcase(var_name)
-      var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_bottom_'+data_units+'_sensorid_'+string(sensors[i])+'_clean_sun_removed'+suffix, /rem)
-      get_data, var_name, data = d
-      flux_omni[*, sensor_count, *] = d.Y
-      sensor_count += 1
-    endfor
+    if level ne 'sitl' then begin ; no bottom sensors for SITL data
+      for i=0, n_elements(sensors)-1. do begin ; loop through each bottom sensor
+        ;var_name = prefix+'bottom_'+datatype+'_'+data_units+'_sensorID_'+sensors[i]+'_clean_sun_removed'+suffix
+        ;var_name = strlowcase(var_name)
+        var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_bottom_'+data_units+'_sensorid_'+string(sensors[i])+'_clean_sun_removed'+suffix, /rem)
+        get_data, var_name, data = d
+        flux_omni[*, sensor_count, *] = d.Y
+        sensor_count += 1
+      endfor
+    endif
 
     ;newname = prefix+datatype+'_'+data_units+'_omni'+suffix
     newname = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+data_units+'_omni'+suffix, /rem)

@@ -64,6 +64,11 @@
 ;                  field vector.  Use with caution, since this routine is
 ;                  symmetrizes the distribution based on this direction.
 ;
+;       SCP:       Set the spacecraft potential to this value.
+;
+;       CALNUM:    Set the nominal calibration to this solar wind period.
+;                  Default = 1.
+;
 ;       RESULT:    A structure containing the time and a 96-element array
 ;                  containing the relative geometric factors for the 3D
 ;                  bins.
@@ -71,13 +76,13 @@
 ;CREATED BY:	David L. Mitchell  2016-08-03
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 15:33:50 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22139 $
+; $LastChangedDate: 2016-11-03 12:04:33 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22276 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_fovcal.pro $
 ;-
 pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
                     midpa=midpa, olap=olap, symdir=symdir, result=result, $
-                    lon=lon, lat=lat
+                    lon=lon, lat=lat, calnum=calnum, scp=scp
 
   @mvn_swe_com
 
@@ -90,6 +95,7 @@ pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
   if not keyword_set(olap) then olap = 10. else olap = float(olap)
   if not keyword_set(lon) then lon = 180.
   if not keyword_set(lat) then lat = 0.
+  if not keyword_set(calnum) then calnum = 1
   if keyword_set(symdir) then begin
     dosym = 1
     get_data, 'Saz', data=Saz, index=i
@@ -110,7 +116,7 @@ pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
     print,"Abort!"
     return
   endif
-  scp = dat.sc_pot
+  if (size(scp,/type) ne 0) then scp = float(scp) else scp = dat.sc_pot
   if (~finite(scp)) then begin
     print,"No spacecraft potential!"
     return
@@ -167,6 +173,10 @@ pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
 ; Mask blockage by spacecraft
 
   gud = where((swe_sc_mask[*,1] eq 1) and (f gt 0.) and (c gt mincnts), ngud)
+  if (ngud lt 2) then begin
+    print,"Not enough good data!"
+    return
+  endif
   bad = where(swe_sc_mask[*,1] eq 0, nbad)
   mask = replicate(1.,96)
   mask[bad] = !values.f_nan
@@ -241,11 +251,11 @@ pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
     mask = replicate(1.,96)
     if (count gt 0L) then mask[indx] = !values.f_nan
     fovcal.data[i_e,*] *= mask
-    fovcal.data[i_e+1,*] = fovcal.data[i_e,*]/rgf
+    fovcal.data[i_e+1,*] = fovcal.data[i_e,*]/rgf                   ; current cal
 
-    mvn_swe_flatfield, /on, /silent, value=ogf
+    mvn_swe_flatfield, /nominal, /silent, value=ogf, calnum=calnum  ; nominal cal
       fovcal.data[i_e+2,*] = fovcal.data[i_e,*]/ogf
-    mvn_swe_flatfield, /off, /silent
+    mvn_swe_flatfield, /off, /silent                                ; no cal
 
     fovcal.data[i_e+3,*] = rgf
     plot3d_options,map='cyl'

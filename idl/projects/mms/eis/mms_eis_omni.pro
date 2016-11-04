@@ -14,8 +14,8 @@
 ;       + 2016-03-09, I. Cohen      : altered ylabel for new omni variables
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-21 15:54:03 -0700 (Wed, 21 Sep 2016) $
-;$LastChangedRevision: 21897 $
+;$LastChangedDate: 2016-11-03 08:11:22 -0700 (Thu, 03 Nov 2016) $
+;$LastChangedRevision: 22263 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_omni.pro $
 ;-
 
@@ -58,6 +58,10 @@ pro mms_eis_omni, probe, species = species, datatype = datatype, tplotnames = tp
   get_data, (telescopes[0])[0], data = d, dlimits=dl
 
   if is_struct(d) then begin
+    ; make sure the spectra has an energy table before continuing
+    str_element, d, 'v', success=s
+    if s ne 1 then return
+
     flux_omni = dblarr(n_elements(d.x),n_elements(d.v))
     for i=0, 5 do begin ; loop through each detector
       get_data, (telescopes[i])[0], data = d

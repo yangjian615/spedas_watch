@@ -16,8 +16,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 13:04:19 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17556 $
+; $LastChangedDate: 2016-11-03 14:54:06 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22287 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_padsum.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -29,16 +29,16 @@ function mvn_swe_padsum, pad
   if (n_elements(pad) eq 1) then return, pad
 
   old_units = pad[0].units_name  
-  mvn_swe_convert_units, pad, 'counts'     ; convert to raw counts
+  mvn_swe_convert_units, pad, 'counts'            ; convert to raw counts
   padsum = pad[0]
   npts = n_elements(pad)
 
   padsum.met = mean(pad.met)
   padsum.time = mean(pad.time)
   padsum.end_time = max(pad.end_time)
-  tmin = min(pad.time, max=tmax)
-  padsum.delta_t = (tmax - tmin) > pad[0].delta_t
-  padsum.dt_arr = total(pad.dt_arr,3)      ; normalization for the sum
+  start_time = min(pad.time - (pad.delta_t/2D))
+  padsum.delta_t = (padsum.end_time - start_time) > pad[0].delta_t
+  padsum.dt_arr = total(pad.dt_arr,3)             ; normalization for the sum
     
   padsum.pa = total(pad.pa,3)/float(npts)         ; pitch angles can be blurred
   padsum.dpa = total(pad.dpa,3)/float(npts)
@@ -55,7 +55,7 @@ function mvn_swe_padsum, pad
   padsum.v_flow[2] = mean(pad.v_flow[2], /nan)
 
   padsum.data = total(pad.data/pad.dtc,3)  ; corrected counts
-  padsum.var = total(pad.var/pad.dtc,3)    ; variance
+  padsum.var = total(pad.var/pad.dtc,3)    ; variance of sum
   padsum.dtc = 1.         ; summing corrected counts is not reversible
   padsum.bkg = total(pad.bkg,3)/float(npts)
 

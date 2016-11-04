@@ -26,8 +26,8 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-11 13:11:42 -0700 (Mon, 11 May 2015) $
-; $LastChangedRevision: 17562 $
+; $LastChangedDate: 2016-11-03 14:55:08 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22289 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -81,30 +81,16 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
     endif
     spec = mvn_swe_engy[iref]
   endelse
-  
-  old_units = spec[0].units_name
-  mvn_swe_convert_units, spec, 'counts'
 
-  if (keyword_set(sum) and (count gt 1)) then begin
-    spec0 = spec[0]
-    spec0.time = mean(spec.time)
-    spec0.met = mean(spec.met)
-    delta_t = minmax(spec.time)
-    spec0.end_time = delta_t[1]
-    spec0.delta_t = (delta_t[1] - delta_t[0]) > spec0.delta_t
-    spec0.dt_arr = total(spec.dt_arr, 2)
-    spec0.data = total(spec.data/spec.dtc, 2, /nan)
-    spec0.var = total(spec.var/spec.dtc, 2, /nan)
-    spec0.dtc = 1.  ; summing corrected counts is not reversible
-    spec0.sc_pot = mean(spec.sc_pot,/nan)
-    spec0.magf[0] = mean(spec.magf[0],/nan)
-    spec0.magf[1] = mean(spec.magf[1],/nan)
-    spec0.magf[2] = mean(spec.magf[2],/nan)
-    spec = spec0
-  endif
+; Sum the data
 
-  if (size(units,/type) eq 7) then mvn_swe_convert_units, spec, units $
-                              else mvn_swe_convert_units, spec, old_units
+  if keyword_set(sum) then spec = mvn_swe_specsum(spec)
+
+; Convert units
+
+  if (size(units,/type) eq 7) then mvn_swe_convert_units, spec, units
+
+; Convenient plot limits (returned via keyword)
 
   indx = where(spec.data gt 0., count)
   if (count gt 0L) then begin

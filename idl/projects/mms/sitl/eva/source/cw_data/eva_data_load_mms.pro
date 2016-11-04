@@ -108,16 +108,17 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_feeps_*') and (cp eq 0)) then begin
           mms_sitl_get_feeps, probes=prb, datatype='electron', level='sitl'
-          tn=tnames(sc+'_epd_feeps_*',jmax)
+          
+          ; delete most of the variables
+          tn = tnames(sc+'*feeps*top*',jmax)
+          if jmax gt 0 then store_data, tn,/delete
+          
+          ; options
+          tnf = sc+'_epd_feeps_srvy_sitl_electron_intensity_omni_spin'
+          tn=tnames(tnf,jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
-            idx = where(strmatch(tn,'*feeps*_sun_removed'),kmax,complement=cidx, ncomp=nc)
-            store_data, tn[cidx], /delete; delete most of the variables
-            tn = tn[idx]
-            for k=0,kmax-1 do begin
-              tarr = strsplit(tn[k],'_',/extract)
-              options, tn[k],ytitle=sc+'!CFEEPS!C'+tarr[7],ysubtitle='[keV]'
-              ylim, tn[k], 30,500
-            endfor
+            options, tnf, ytitle=sc+'!CFEEPS!Cintnsty',ysubtitle='[keV]'
+            ylim, tnf, 30,500
           endif
           answer = 'Yes'
         endif

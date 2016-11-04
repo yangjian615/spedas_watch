@@ -18,8 +18,8 @@
 ;                   changes in a tplot window (assumed to exist).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:12:16 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21877 $
+; $LastChangedDate: 2016-11-03 12:09:02 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22280 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -77,16 +77,22 @@ pro mvn_swe_config, list=list, timebar=timebar
 
 ; 2013-11-18/18:28                                     ; MAVEN launch (bias = 2500 V)
   t_mcp = time_double('2014-03-22/00:00:00')           ; first cross calibration measurement
+
 ; 2014-09-22/01:50                                     ; MAVEN orbit insertion
+  t_sup = time_double('2014-10-14/00:00:00')           ; first suppression calibration
   t_mcp = [t_mcp, time_double('2014-10-17/02:26:41')]  ; bias adjustment (2500 -> 2600 V)
   t_mcp = [t_mcp, time_double('2014-11-12/00:00:00')]  ; bias = 2600 V (beginning of poly fit)
+
 ; 2014-11-15/00:00                                     ; beginning of science phase
-  t_sup = time_double('2014-10-14/00:00:00')           ; first suppression calibration
+
+; 2015-11-15/00:00                                     ; beginning of EM-1
   t_mcp = [t_mcp, time_double('2015-12-18/23:39:09')]  ; bias adjustment (2600 -> 2700 V)
   t_mcp = [t_mcp, time_double('2015-12-22/20:01:45')]  ; revert to 2600 V after HV reset
   t_mcp = [t_mcp, time_double('2015-12-30/02:28:57')]  ; back to correct bias (2700 V)
   t_sup = [t_sup, time_double('2016-09-02/00:00:00')]  ; last suppression calibration
-  t_mcp = [t_mcp, time_double('2016-09-06/00:00:00')]  ; last cross calibration measurement
+
+; 2016-10-01/00:00                                     ; beginning of EM-2
+  t_mcp = [t_mcp, time_double('2016-10-25/21:52:45')]  ; bias adjustment (2700 -> 2750 V)
 
 ; Gather all the configuration change times into one variable (for timebar).
 
@@ -106,6 +112,7 @@ pro mvn_swe_config, list=list, timebar=timebar
     print,time_string(t_mcp[3]),' --> MCP bias adjustment (2600 -> 2700 V)'
     print,time_string(t_mcp[4]),' --> MCP bias revert to 2600 V (unintentional)'
     print,time_string(t_mcp[5]),' --> MCP bias restore to 2700 V'
+    print,time_string(t_mcp[6]),' --> MCP bias adjustment (2700 -> 2750 V)'
   endif
 
 ; Overplot dotted time bars on the current tplot window (assumed to exist)

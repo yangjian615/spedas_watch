@@ -16,8 +16,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-18 14:43:14 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17641 $
+; $LastChangedDate: 2016-11-03 14:54:06 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22287 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_3dsum.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -36,8 +36,8 @@ function mvn_swe_3dsum, ddd
   dddsum.met = mean(ddd.met)
   dddsum.time = mean(ddd.time)
   dddsum.end_time = max(ddd.end_time)
-  tmin = min(ddd.time, max=tmax)
-  dddsum.delta_t = (tmax - tmin) > ddd[0].delta_t
+  start_time = min(ddd.time - (ddd.delta_t)/2D)
+  dddsum.delta_t = (dddsum.end_time - start_time) > ddd[0].delta_t
   dddsum.dt_arr = total(ddd.dt_arr,3)      ; normalization for the sum
 
   dddsum.sc_pot = mean(ddd.sc_pot, /nan)    
@@ -51,7 +51,7 @@ function mvn_swe_3dsum, ddd
   dddsum.v_flow[2] = mean(ddd.v_flow[2], /nan)
 
   dddsum.data = total(ddd.data/ddd.dtc,3)  ; corrected counts
-  dddsum.var = total(ddd.var/ddd.dtc,3)    ; variance
+  dddsum.var = total(ddd.var/ddd.dtc,3)    ; variance of sum
   dddsum.dtc = 1.         ; summing corrected counts is not reversible
 
   mvn_swe_convert_units, ddd, old_units

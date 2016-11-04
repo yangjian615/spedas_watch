@@ -10,8 +10,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-11 15:48:37 -0700 (Thu, 11 Aug 2016) $
-; $LastChangedRevision: 21636 $
+; $LastChangedDate: 2016-11-03 09:02:08 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22264 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_coverage_ut__define.pro $
 ;-
 
@@ -29,7 +29,7 @@ function mms_load_coverage_ut::test_load_fpi
   for m=0, n_elements(self.months_to_test)-1 do begin
     del_data, '*'
     mms_load_fpi, probe=1, trange=self.months_to_test[m]+self.days_to_test, level='l2', datatype=['des-moms', 'dis-moms']
-    assert, spd_data_exists('mms1_des_energyspectr_omni_avg mms1_dis_energyspectr_omni_avg', self.months_to_test[m]+self.days_to_test[0], self.months_to_test[m]+self.days_to_test[1]), $
+    assert, spd_data_exists('mms1_des_energyspectr_omni_fast mms1_dis_energyspectr_omni_fast', self.months_to_test[m]+self.days_to_test[0], self.months_to_test[m]+self.days_to_test[1]), $
       'Problem loading FPI data ('+self.months_to_test[m]+')'
   endfor
   return, 1

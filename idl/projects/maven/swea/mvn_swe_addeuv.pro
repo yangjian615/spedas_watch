@@ -25,9 +25,11 @@
 ;    PANS:          Named variable to hold a space delimited string containing
 ;                   the tplot variable(s) created.
 ;
+;    NOFLAG:        If set, do not flag bad data.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-06 15:08:29 -0800 (Sun, 06 Mar 2016) $
-; $LastChangedRevision: 20338 $
+; $LastChangedDate: 2016-11-03 11:49:48 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22270 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_addeuv.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
@@ -47,6 +49,35 @@ pro mvn_swe_addeuv, pans=pans
     get_data,epan,data=euv,index=i
     if (i gt 0) then begin
       euv.y *= 1000.
+
+; Swap the indices for the 0.1-7 nm and 17-22 nm channels
+
+      y = euv.y
+      y[*,1] = euv.y[*,0]
+      y[*,0] = euv.y[*,1]
+      euv.y = temporary(y)
+      dy = euv.dy
+      dy[*,1] = euv.dy[*,0]
+      dy[*,0] = euv.dy[*,1]
+      euv.dy = temporary(dy)
+      dv = euv.dv
+      dv[*,1] = euv.dv[*,0]
+      dv[*,0] = euv.dv[*,1]
+      euv.dv = temporary(dv)
+
+; Flag bad data (0 -> good data)
+
+      if not keyword_set(noflag) then begin
+        indx = where(euv.flag ne 0, count)
+        if (count gt 0L) then begin
+          euv.y[indx,*] = !values.f_nan
+          euv.dy[indx,*] = !values.f_nan
+          euv.dv[indx,*] = !values.f_nan
+        endif
+      endif
+
+; Store the result back into tplot
+
       store_data,epan,data=euv
       options,epan,'ytitle','EUV (mW/m!u2!n)'
       options,epan,'ysubtitle',''
