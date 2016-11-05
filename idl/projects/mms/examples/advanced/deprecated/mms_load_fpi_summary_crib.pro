@@ -23,9 +23,9 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-02 09:09:34 -0700 (Fri, 02 Sep 2016) $
-; $LastChangedRevision: 21783 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
+; $LastChangedDate: 2016-11-04 15:40:01 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22307 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/deprecated/mms_load_fpi_summary_crib.pro $
 ;-
 
 start_time = systime(/seconds)

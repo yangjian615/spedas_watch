@@ -1,5 +1,5 @@
 ;+
-;PROCEDURE:   mvn_swe_flatfield
+;FUNCTION:   mvn_swe_flatfield
 ;PURPOSE:
 ;  Maintains the angular sensitivity calibration and provides a means to
 ;  enable and disable the correction.  See mvn_swe_fovcal for details.
@@ -14,7 +14,7 @@
 ;  frame (using SWIA data), where the gyrotropy condition applies.
 ;  Correction factors are then determined for each of the 96 angular bins
 ;  that symmetrizes the angular distribution with respect to the magnetic
-;  field direction.  The solar wind calibration periods are:
+;  field direction.  To date, the solar wind calibration periods are:
 ;
 ;      1 : 2014-10-27 to 2015-03-14
 ;      2 : 2015-06-10 to 2015-10-15
@@ -30,9 +30,11 @@
 ;  until changed with this routine.
 ;
 ;USAGE:
-;  mvn_swe_flatfield
+;  ff = mvn_swe_flatfield(time)
 ;
 ;INPUTS:
+;       time:         Specify the time (in any format accepted by time_double)
+;                     for calculating the flatfield correction.
 ;
 ;KEYWORDS:
 ;       NOMINAL:      Enable the nominal correction.
@@ -43,65 +45,25 @@
 ;
 ;       SILENT:       Don't print any warnings or messages.
 ;
-;       VALUE:        Named variable to hold the current values of 
-;                     the 96 correction factors.
-;
-;       TIME:         Normally, the time is obtained from the current
-;                     timespan or from currently loaded data.  You can
-;                     override with this keyword.  For testing.
+;       INIT:         Reinitialize the flatfield common block.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 12:06:12 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22277 $
+; $LastChangedDate: 2016-11-03 19:10:40 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22295 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_flatfield.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2016-09-28
 ;FILE: mvn_swe_flatfield.pro
 ;-
-pro mvn_swe_flatfield, nominal=nominal, off=off, set=set, silent=silent, value=value, $
-                       time=time, calnum=calnum
+function mvn_swe_flatfield, time, nominal=nominal, off=off, set=set, silent=silent, $
+                            calnum=calnum, init=init
 
   @mvn_swe_com
+  common swe_flatfield_com, cc_t, kmax, swe_ff
 
-; Process keywords to determine configuration
+; Initialize the common block, if necessary
 
-  blab = ~keyword_set(silent)
-  
-  if keyword_set(off) then begin
-    swe_ff_state = 0
-    swe_ogf = replicate(1.,96)
-    set = 0
-    nominal = 0
-  endif
-
-  if (n_elements(set) eq 96) then begin
-    swe_ff_state = 2
-    swe_ogf = float(reform(set,96))
-    nominal = 0
-  endif
-
-; Get the time
-
-  if (size(time,/type) eq 0) then begin
-    tplot_options, get_opt=topt
-    tspan_exists = (max(topt.trange_full) gt time_double('2013-11-18'))
-    if (~tspan_exists) then begin
-      if (size(a4,/type) eq 8) then t = mean(minmax(a4.time))
-    endif else t = mean(topt.trange_full)
-  endif else t = mean(minmax(time_double(time)))
-
-  if (size(t,/type) eq 0) then begin
-    if (blab) then print,"mvn_swe_flatfield: Can't get time!"
-    swe_ff_state = 0
-    swe_ogf = replicate(1.,96)
-    set = 0
-    nominal = 0
-  endif
-
-; Set the correction factors based in in-flight calibrations
-
-  if keyword_set(nominal) then begin
-    swe_ff_state = 1
+  if ((size(cc_t,/type) eq 0) or (keyword_set(init))) then begin
     kmax = 5
     swe_ff = replicate(1.,96,kmax+1)
 
@@ -172,28 +134,50 @@ pro mvn_swe_flatfield, nominal=nominal, off=off, set=set, silent=silent, value=v
 
     swe_ff[*,5] = swe_ff[*,1]
 
-;   Interpolate between angular calibrations based on SWEA MCP gain, as inferred
-;   from SWE-SWI cross calibration factor.
-
-    cc = (mvn_swe_crosscal(t,/silent))[0]
-
 ;   Centers of solar wind calibration periods 1-4
 
     tt = time_double(['2014-12-21','2015-08-03','2016-02-10','2016-08-10'])
     cc_t = mvn_swe_crosscal(tt,/silent)
 
-;   Interpolate between calibrations
+  endif
+
+; Process keywords to determine configuration
+
+  blab = ~keyword_set(silent)
+
+; Only one configuration at a time.  Precedence: off, set, nominal.
+
+  if keyword_set(nominal) then swe_ff_state = 1
+  if (n_elements(set) eq 96) then begin
+    swe_ff_state = 2
+    swe_ff[*,0] = float(reform(set,96))/mean(set,/nan)
+  endif
+  if keyword_set(off) then swe_ff_state = 0
+
+; Handle the easy cases first
+
+  if (swe_ff_state eq 2) then swe_ogf = swe_ff[*,0] else swe_ogf = replicate(1.,96)
+
+; Set the correction factors based on in-flight calibrations
+
+  if ((swe_ff_state eq 1) and (size(time,/type) ne 0)) then begin
+
+;   Interpolate between angular calibrations based on SWEA MCP gain, as inferred
+;   from SWE-SWI cross calibration factor.
+
+    t = time_double(time)
+    cc = (mvn_swe_crosscal(t,/silent))[0]
 
     if (t lt t_mcp[5]) then begin
       frac = (((cc - cc_t[0])/(cc_t[1] - cc_t[0])) > 0.) < 1.
       swe_ogf = swe_ff[*,1]*(1. - frac) + swe_ff[*,2]*frac
     endif
-    
+
     if ((t ge t_mcp[5]) and (t lt t_mcp[6])) then begin
       frac = (((cc - cc_t[2])/(cc_t[3] - cc_t[2])) > 0.) < 1.
       swe_ogf = swe_ff[*,3]*(1. - frac) + swe_ff[*,4]*frac
     endif
-    
+
     if (t ge t_mcp[6]) then swe_ogf = swe_ff[*,5]
 
 ;   Override this with a specific calibration, if requested --> for testing
@@ -206,10 +190,6 @@ pro mvn_swe_flatfield, nominal=nominal, off=off, set=set, silent=silent, value=v
 
   endif
 
-; Make a copy of the current correction values
-
-  value = swe_ogf
-
 ; Report the flatfield configuration
 
   if (blab) then begin
@@ -220,6 +200,6 @@ pro mvn_swe_flatfield, nominal=nominal, off=off, set=set, silent=silent, value=v
     endcase
   endif
 
-  return
+  return, swe_ogf
 
 end

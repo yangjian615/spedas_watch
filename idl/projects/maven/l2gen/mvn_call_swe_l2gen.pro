@@ -38,8 +38,8 @@
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen, 17-Apr-2014, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-06 12:41:32 -0700 (Thu, 06 Oct 2016) $
-; $LastChangedRevision: 22055 $
+; $LastChangedDate: 2016-11-04 10:35:11 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22298 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_swe_l2gen.pro $
 ;-
 Pro mvn_call_swe_l2gen, time_in = time_in, $
@@ -58,7 +58,8 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
   
   einit = 0
   catch, error_status
-
+;create a random number for emails
+  Ff_ext = strcompress(/remove_all, string(long(100000.0*randomu(seed))))
   if error_status ne 0 then begin
      print, '%MVN_CALL_SWE_L2GEN: Got Error Message'
      help, /last_message, output = err_msg
@@ -66,15 +67,18 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
 ;Open a file print out the error message, only once
      If(einit Eq 0) Then Begin
         einit = 1
-        openw, eunit, '/tmp/swe_l2_err_msg.txt', /get_lun
+        efile = '/tmp/swe_l2_err_msg.txt'+ff_ext
+        openw, eunit, efile, /get_lun
         For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
         If(keyword_set(timei)) Then Begin
            printf, eunit, timei
         Endif Else printf, eunit, 'Date unavailable'
         free_lun, eunit
-;mail it to jimm@ssl.berkeley.edu
-        cmd_rq = 'mailx -s "Problem with SWE L2 process" jimm@ssl.berkeley.edu < /tmp/swe_l2_err_msg.txt'
+        file_chmod, efile, '664'o
+;mail it to jimm@ssl.berkeley.edu, and delete
+        cmd_rq = 'mailx -s "Problem with SWE L2 process" jimm@ssl.berkeley.edu < '+efile
         spawn, cmd_rq
+        file_delete, efile
      Endif
      case load_position of
         'init':begin
@@ -187,12 +191,15 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
      Endif Else Begin
         nproc = n_elements(timep_do)
 ;Send a message that processing is starting
-        openw, tunit, '/tmp/swe_l2_msg0.txt', /get_lun
+        ofile0 = '/tmp/swe_l2_msg0.txt'+ff_ext
+        openw, tunit, ofile0, /get_lun
         printf, tunit, 'Processing: '+instrk
         For i = 0, nproc-1 Do printf, tunit, timep_do[i]
         free_lun, tunit
-        cmd0 = 'mailx -s "SWEA L2 process start" jimm@ssl.berkeley.edu < /tmp/swe_l2_msg0.txt'
+        file_chmod, ofile0, '664'o
+        cmd0 = 'mailx -s "SWEA L2 process start" jimm@ssl.berkeley.edu < '+ofile0
         spawn, cmd0
+        file_delete, ofile0
 ;extract the date from the filename
         For i = 0, nproc-1 Do Begin
            timei0 = timep_do[i]
@@ -226,11 +233,14 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
         Endfor
         SKIP_INSTR: load_position = 'instrument'
 ;Send a message that processing is done
-        openw, tunit, '/tmp/swe_l2_msg1.txt', /get_lun
+        ofile1 = '/tmp/swe_l2_msg1.txt'+ff_ext
+        openw, tunit, ofile1, /get_lun
         printf, tunit, 'Finished Processing: '+instrk
         free_lun, tunit
-        cmd1 = 'mailx -s "SWEA L2 process end" jimm@ssl.berkeley.edu < /tmp/swe_l2_msg1.txt'
+        file_chmod, ofile1, '664'o
+        cmd1 = 'mailx -s "SWEA L2 process end" jimm@ssl.berkeley.edu < '+ofile1
         spawn, cmd1
+        file_delete, ofile1
      Endelse
   Endfor
 ;reset file time

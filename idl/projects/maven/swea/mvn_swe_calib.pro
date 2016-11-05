@@ -64,8 +64,8 @@
 ;                     Any other tags are ignored.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 12:11:32 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22282 $
+; $LastChangedDate: 2016-11-03 19:11:16 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22296 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -438,7 +438,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
 ; next section).  Note that sensitivity variations in azimuth are relative to
 ; the ground calibration contained in swe_rgf, above.
 
-  if (size(swe_ff_state,/type) eq 0) then mvn_swe_flatfield, /nominal, /silent
+  if (size(swe_ff_state,/type) eq 0) then swe_ff_state = 1
 
 ; Spacecraft blockage mask (~27% of sky, deployed boom, approximate)
 ;   Complete blockage: 0,  1,  2,  3, 17, 18  (masked)

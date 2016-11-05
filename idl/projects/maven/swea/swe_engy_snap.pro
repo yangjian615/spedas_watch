@@ -116,9 +116,13 @@
 ;
 ;       YRANGE:        Override the default vertical axis range with this.
 ;
+;       TRANGE:        Plot snapshot for this time range.  Can be in any
+;                      format accepted by time_double.  (This disables the
+;                      interactive time range selection.)
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 14:54:49 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22288 $
+; $LastChangedDate: 2016-11-04 16:36:34 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22313 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -130,7 +134,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
                    xrange=xrange,yrange=frange,sscale=sscale, popen=popen, times=times, $
-                   flev=flev, pylim=pylim, k_e=k_e, peref=peref, error_bars=error_bars
+                   flev=flev, pylim=pylim, k_e=k_e, peref=peref, error_bars=error_bars, $
+                   trange=tspan
 
   @mvn_swe_com
   @swe_snap_common
@@ -139,6 +144,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   c1 = (mass/(2D*!dpi))^1.5
   c2 = (2d5/(mass*mass))
   c3 = 4D*!dpi*1d-5*sqrt(mass/2D)  ; assume isotropic electron distribution
+  tiny = 1.e-31
 
   if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
 
@@ -270,6 +276,20 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(keepwins) then kflg = 0 else kflg = 1
   if keyword_set(archive) then aflg = 1 else aflg = 0
 
+  case n_elements(tspan) of
+       0 : tsflg = 0
+       1 : begin
+             tspan = time_double(tspan)
+             tsflg = 1
+             kflg = 0
+           end
+    else : begin
+             tspan = minmax(time_double(tspan))
+             tsflg = 1
+             kflg = 0
+           end
+  endcase
+
 ; Put up snapshot window(s)
 
   Twin = !d.window
@@ -294,9 +314,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   print,'Use button 1 to select time; button 3 to quit.'
 
   wset,Twin
-  trange = 0
-  ctime,trange,npoints=npts,/silent
-  if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
+  if (~tsflg) then begin
+    trange = 0
+    ctime,trange,npoints=npts,/silent
+    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; Make sure mouse button released
+  endif else trange = tspan
 
   if (size(trange,/type) ne 5) then begin
     wdelete,Ewin
@@ -379,7 +401,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
             xtitle='Energy (eV)', ytitle=ytitle,charsize=csize2,psym=psym,title=time_string(spec.time) $
                               else oplot,x,y,psym=psym
 
-    if (ebar) then oploterr,x,y,dy,3
+    if (ebar) then errplot,x,(y-dy)>tiny,y+dy,width=0
     
     if (rflg) then oplot,x,y,psym=psym,color=(nplot mod 6)+1
 
@@ -871,47 +893,49 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
     nplot++
 
-    wset,Twin
-    trange = 0
-    ctime,trange,npoints=npts,/silent
-    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
+    if (~tsflg) then begin
+      wset,Twin
+      trange = 0
+      ctime,trange,npoints=npts,/silent
+      if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
 
-    if (size(trange,/type) eq 5) then begin
+      if (size(trange,/type) eq 5) then begin
 
-      if (tflg) then begin
-        if (finite(scp)) then pot = scp else pot = 0.
+        if (tflg) then begin
+          if (finite(scp)) then pot = scp else pot = 0.
 
-        if (npts eq 1) then begin
-          dt = min(abs(trange[0] - tspec.time), i)
-          spec = {time:tspec.time[i], data:reform(tspec.data[i,*]), $
-                  energy:tspec.energy, units_name:tspec.units_name, $
-                  sc_pot:pot}
+          if (npts eq 1) then begin
+            dt = min(abs(trange[0] - tspec.time), i)
+            spec = {time:tspec.time[i], data:reform(tspec.data[i,*]), $
+                    energy:tspec.energy, units_name:tspec.units_name, $
+                    sc_pot:pot}
+          endif else begin
+            tmin = min(trange, max=tmax)
+            i = where((tspec.time ge tmin) and (tspec.time le tmax), count)
+            if (count gt 0L) then begin
+              spec = {time:mean(tspec.time[i]), data:average(tspec.data[i,*],1,/nan), $
+                      energy:tspec.energy, units_name:tspec.units_name, sc_pot:pot}
+            endif
+          endelse
         endif else begin
-          tmin = min(trange, max=tmax)
-          i = where((tspec.time ge tmin) and (tspec.time le tmax), count)
-          if (count gt 0L) then begin
-            spec = {time:mean(tspec.time[i]), data:average(tspec.data[i,*],1,/nan), $
-                    energy:tspec.energy, units_name:tspec.units_name, sc_pot:pot}
-          endif
+          spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
+          if (finite(scp)) then pot = scp $
+                           else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
+          spec.sc_pot = pot
         endelse
-      endif else begin
-        spec = mvn_swe_getspec(trange, /sum, archive=aflg, units=units, yrange=yrange)
-        if (finite(scp)) then pot = scp $
-                         else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
-        spec.sc_pot = pot
-      endelse
 
-      if (spflg) then begin
-        if (stregex(units,'flux',/boo,/fold)) then begin
-          mvn_swe_convert_units, spec, 'df'
-          spec.energy -= pot
-          mvn_swe_convert_units, spec, units
-        endif else spec.energy -= pot
-      endif
+        if (spflg) then begin
+          if (stregex(units,'flux',/boo,/fold)) then begin
+            mvn_swe_convert_units, spec, 'df'
+            spec.energy -= pot
+            mvn_swe_convert_units, spec, units
+          endif else spec.energy -= pot
+        endif
 
-      if (fflg) then yrange = drange
-      if keyword_set(frange) then yrange = frange
-      if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)
+        if (fflg) then yrange = drange
+        if keyword_set(frange) then yrange = frange
+        if (hflg) then dt = min(abs(swe_hsk.time - trange[0]), jref)
+      endif else ok = 0
     endif else ok = 0
 
   endwhile

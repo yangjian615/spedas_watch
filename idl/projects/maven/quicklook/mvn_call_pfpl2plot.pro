@@ -38,8 +38,8 @@ End
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen.pro 2015-06-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-20 10:53:34 -0700 (Tue, 20 Sep 2016) $
-; $LastChangedRevision: 21884 $
+; $LastChangedDate: 2016-11-04 10:56:00 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22300 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_call_pfpl2plot.pro $
 ;-
 Pro mvn_call_pfpl2plot, time_in = time_in, $
@@ -57,6 +57,8 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
   load_position = 'init'
   einit = 0
   catch, error_status
+;create a random number for emails
+  Ff_ext = strcompress(/remove_all, string(long(100000.0*randomu(seed))))
   if error_status ne 0 then begin
      print, '%MVN_CALL_PFPL2PLOT: Got Error Message'
      help, /last_message, output = err_msg
@@ -64,15 +66,17 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
 ;Open a file print out the error message, only once
      If(einit Eq 0) Then Begin
         einit = 1
-        openw, eunit, '/tmp/pfpl2_err_msg.txt', /get_lun
+        efile = '/tmp/pfpl2_err_msg.txt'+ff_ext
+        openw, eunit, efile, /get_lun
         For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
         If(keyword_set(timei)) Then Begin
            printf, eunit, time_string(timei)
         Endif Else printf, eunit, time_string(alttimerange())
         free_lun, eunit
 ;mail it to jimm@ssl.berkeley.edu
-        cmd_rq = 'mailx -s "Problem with PFPL2 process" jimm@ssl.berkeley.edu < /tmp/pfpl2_err_msg.txt'
+        cmd_rq = 'mailx -s "Problem with PFPL2 process" jimm@ssl.berkeley.edu < '+efile
         spawn, cmd_rq
+        file_delete, efile
      Endif
 
      case load_position of
@@ -179,12 +183,14 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
      Endif Else Begin
         nproc = n_elements(timep_do)
 ;Send a message that processing is starting
-        openw, tunit, '/tmp/pfpl2_msg0.txt', /get_lun
+        ofile0 = '/tmp/pfpl2_msg0.txt'+ff_ext
+        openw, tunit, ofile0, /get_lun
         printf, tunit, 'Processing: '+instrk
         For i = 0, nproc-1 Do printf, tunit, timep_do[i]
         free_lun, tunit
-        cmd0 = 'mailx -s "PFPL2 process start" jimm@ssl.berkeley.edu < /tmp/pfpl2_msg0.txt'
+        cmd0 = 'mailx -s "PFPL2 process start" jimm@ssl.berkeley.edu < '+ofile0
         spawn, cmd0
+        file_delete, ofile0
         For i = 0, nproc-1 Do Begin
 ;extract the date from the filename
            timei0 = timep_do[i]
@@ -218,11 +224,13 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
         Endfor
         SKIP_INSTR: load_position = 'instrument'
 ;Send a message that processing is done
-        openw, tunit, '/tmp/pfpl2_msg1.txt', /get_lun
+        ofile1 = '/tmp/pfpl2_msg1.txt'+ff_ext
+        openw, tunit, ofile1, /get_lun
         printf, tunit, 'Finished Processing: '+instrk
         free_lun, tunit
-        cmd1 = 'mailx -s "PFPL2 process end" jimm@ssl.berkeley.edu < /tmp/pfpl2_msg1.txt'
+        cmd1 = 'mailx -s "PFPL2 process end" jimm@ssl.berkeley.edu < '+ofile1
         spawn, cmd1
+        file_delete, ofile1
      Endelse
   Endfor
 

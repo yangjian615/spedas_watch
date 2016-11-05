@@ -59,8 +59,8 @@
 ;          
 ;          
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-29 09:36:13 -0700 (Mon, 29 Aug 2016) $
-;$LastChangedRevision: 21764 $
+;$LastChangedDate: 2016-11-04 10:59:52 -0700 (Fri, 04 Nov 2016) $
+;$LastChangedRevision: 22301 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 
@@ -93,7 +93,10 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
         
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return
-      
+    
+    ; no reason to continue if no data were loaded
+    if undefined(tplotnames) then return
+
     ; turn the right ascension and declination of the L vector into separate tplot variables
     ; this is for passing to dmpa2gse.
     for probe_idx = 0, n_elements(probes)-1 do begin

@@ -10,8 +10,8 @@
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-27 12:28:55 -0700 (Thu, 27 Oct 2016) $
-;$LastChangedRevision: 22222 $
+;$LastChangedDate: 2016-11-04 15:57:41 -0700 (Fri, 04 Nov 2016) $
+;$LastChangedRevision: 22311 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_qcotrans_crib.pro $
 ;-
 
@@ -68,11 +68,8 @@ mms_load_fgm, probe=probe, trange=trange, level=level, varformat='*_b_*'
 mms_load_fpi, probe=probe, trange=trange, level=level, datatype=['dis-moms'], varformat='*_bulk?_*'
 
 ; example variables to be transformed
-v_name = 'mms'+probe+'_dis_bulk'
+v_name = 'mms'+probe+'_dis_bulkv_dbcs_fast'
 b_name = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
-
-; join components of velocity into single 3-vector
-join_vec, v_name+['x','y','z']+'_dbcs_fast', v_name
 
 ; add coordinates to labels
 ; the labels will be automatically updated when transformed

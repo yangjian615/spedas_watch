@@ -60,18 +60,21 @@
 ;
 ;   PANS:      Array of tplot variables created.
 ;
+;   PADSMO:    Smooth the resampled PAD data in time with this smoothing interval,
+;              in seconds.
+;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 11:58:38 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22273 $
+; $LastChangedDate: 2016-11-04 16:37:11 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22315 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
 pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
                      sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2, min_pad_eflux=min_pad_eflux, $
-                     loadonly=loadonly, pans=pans
+                     loadonly=loadonly, pans=pans, padsmo=padsmo
 
   compile_opt idl2
 
@@ -100,6 +103,14 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
     if (count gt 0L) then begin
       pad.y[indx,*] = !values.f_nan
       store_data, tname, data=pad, dl=dl
+    endif
+    if (size(padsmo,/type) ne 0) then begin
+      dx = median(pad.x - shift(pad.x,1))
+      dt = double(padsmo[0])
+      if (dt gt 1.5D*dx) then begin
+        tsmooth_in_time, tname, padsmo
+        pad_pan = pad_pan + '_smoothed'
+      endif
     endif
   endif else pad_pan = 'swe_a2_280'
 

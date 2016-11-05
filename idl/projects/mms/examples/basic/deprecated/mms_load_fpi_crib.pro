@@ -6,9 +6,9 @@
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-06-10 07:27:48 -0700 (Fri, 10 Jun 2016) $
-; $LastChangedRevision: 21301 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fpi_crib.pro $
+; $LastChangedDate: 2016-11-04 15:21:03 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22303 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/deprecated/mms_load_fpi_crib.pro $
 ;-
 
 timespan, '2015-10-16', 1, /day

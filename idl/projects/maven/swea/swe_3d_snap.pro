@@ -75,9 +75,13 @@
 ;       PLOT_FOV:      Replace the data with a "chess board" pattern to show the
 ;                      field of view.  FOV masking, if any, will be shown.
 ;
+;       TRANGE:        Plot snapshot for this time range.  Can be in any
+;                      format accepted by time_double.  (This disables the
+;                      interactive time range selection.)
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-05 12:53:32 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22038 $
+; $LastChangedDate: 2016-11-04 16:36:55 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22314 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -88,7 +92,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  symenergy=symenergy, symdiag=symdiag, power=pow, map=map, $
                  abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst, $
                  plot_sc=plot_sc, padmap=padmap, pot=pot, plot_fov=plot_fov, $
-                 labsize=labsize
+                 labsize=labsize, trange=tspan
 
   @mvn_swe_com
   @swe_snap_common
@@ -157,6 +161,20 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   if not keyword_set(pow) then pow = 3.
   if keyword_set(symdiag) then dflg = 1 else dflg = 0
   if keyword_set(padmap) then dopam = 1 else dopam = 0
+
+  case n_elements(tspan) of
+       0 : tflg = 0
+       1 : begin
+             tspan = time_double(tspan)
+             tflg = 1
+             kflg = 0
+           end
+    else : begin
+             tspan = minmax(time_double(tspan))
+             tflg = 1
+             kflg = 0
+           end
+  endcase
 
   if (n_elements(smo) gt 0) then begin
     nsmo = [1,1,1]
@@ -230,8 +248,10 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
     print,'Use button 1 to select time; button 3 to quit.'
 
     wset,Twin
-    ctime,trange,npoints=npts,/silent
-    if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
+    if (~tflg) then begin
+      ctime,trange,npoints=npts,/silent
+      if (npts gt 1) then cursor,cx,cy,/norm,/up  ; Make sure mouse button released
+    endif else trange = tspan
 
     if (size(trange,/type) eq 2) then begin  ; Abort before first time select.
       wdelete,Dwin                           ; Don't keep empty windows.
@@ -406,7 +426,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
 
 ; Get the next button press
 
-    if (~got3d) then begin
+    if (~got3d and ~tflg) then begin
       wset,Twin
       ctime,trange,npoints=npts,/silent
       if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released

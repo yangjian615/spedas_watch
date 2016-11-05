@@ -7,10 +7,10 @@
 ;  Basic example on how to use mms_part_products to generate particle
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-10-20 12:07:19 -0700 (Thu, 20 Oct 2016) $
-;$LastChangedRevision: 22167 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-11-04 15:46:21 -0700 (Fri, 04 Nov 2016) $
+;$LastChangedRevision: 22309 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/deprecated/mms_part_products_crib.pro $
 ;
 ;-
 

@@ -11,15 +11,15 @@
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-26 13:22:43 -0700 (Fri, 26 Aug 2016) $
-; $LastChangedRevision: 21749 $
+; $LastChangedDate: 2016-11-04 15:18:32 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22302 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fpi_crib_v3.pro $
 ;-
 
 timespan, '2015-10-16', 1, /day
 probe = '1'
 datatype = ['des-moms', 'dis-moms'] ; DES/DIS moments file (contains moments, as well as spectra and pitch angle distributions)
-level = 'l1b'
+level = 'l2'
 data_rate = 'fast'
 
 mms_load_fpi, probes = probe, datatype = datatype, level = level, data_rate = data_rate, min_version='2.2.0'

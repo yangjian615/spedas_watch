@@ -27,8 +27,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-05 13:04:59 -0700 (Wed, 05 Oct 2016) $
-; $LastChangedRevision: 22041 $
+; $LastChangedDate: 2016-11-03 19:10:04 -0700 (Thu, 03 Nov 2016) $
+; $LastChangedRevision: 22294 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -229,11 +229,13 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
     ddd[n].denergy[63,*] = abs(energy[62,*] - energy[63,*])
 
 ; Geometric factor.  When using V0, the geometric factor is a function of
-; energy.  There is also variation in elevation.
+; energy.  The dgf term is a elevation-only correction.  The ogf term corrects 
+; variations in the angular sensitivity as a function of azimuth and 
+; elevation (see mvn_swe_flatfield).
 
-    egf = swe_gf[*,*,g]   ; energy-dependent term (when V0 is non-zero)
-    dgf = swe_dgf[*,*,g]  ; elevation-dependent term
-    ogf = swe_ogf         ; corrections for individual solid angle bins
+    egf = swe_gf[*,*,g]
+    dgf = swe_dgf[*,*,g]
+    ogf = mvn_swe_flatfield(ddd[n].time,/silent)
 
     for i=0,95 do ddd[n].gf[*,i] = egf[*,(i mod 16)] * dgf[*,(i/16)] * ogf[i]
 

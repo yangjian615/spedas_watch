@@ -142,8 +142,8 @@
 ;        NOTE:         Insert a text label.  Keep it short.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 11:55:09 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22271 $
+; $LastChangedDate: 2016-11-04 16:35:43 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22312 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -163,6 +163,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   @mvn_swe_com
   @swe_snap_common
 
+  tiny = 1.e-31
   if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
 
   if (size(note,/type) ne 7) then note = ''
@@ -178,11 +179,21 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     xrange = minmax(xrange)
     xflg = 1
   endif else xflg = 0
-  if (n_elements(tspan) ge 2) then begin
-    tspan = minmax(time_double(tspan))
-    tflg = 1
-    kflg = 0  ; don't kill snapshot windows on exit
-  endif else tflg = 0
+
+  case n_elements(tspan) of
+       0 : tflg = 0
+       1 : begin
+             tspan = time_double(tspan)
+             tflg = 1
+             kflg = 0
+           end
+    else : begin
+             tspan = minmax(time_double(tspan))
+             tflg = 1
+             kflg = 0
+           end
+  endcase
+
   if keyword_set(hires) then hflg = 1 else hflg = 0
   if (size(fbdata, /type) eq 0) then fbdata = 'mvn_B_full'
   if keyword_set(adiabatic) then begin
@@ -699,18 +710,10 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
         for j=0,15 do oplot,[ylo[j],yhi[j]],[zi[j],zi[j]],color=col[j]
         oplot,y[i,0:7],zi[0:7],linestyle=1,color=2
-        if (ebar) then begin
-          !p.color = 2
-          oploterr,y[i,0:7],zi[0:7],dzi[0:7],3
-          !p.color = pcol
-        endif
+        if (ebar) then errplot,y[i,0:7],(zi[0:7]-dzi[0:7])>tiny,zi[0:7]+dzi[0:7],color=2,width=0
         oplot,y[i,0:7],zi[0:7],psym=4
         oplot,y[i,8:15],zi[8:15],linestyle=1,color=6
-        if (ebar) then begin
-          !p.color = 6
-          oploterr,y[i,8:15],zi[8:15],dzi[8:15],3
-          !p.color = pcol
-        endif
+        if (ebar) then errplot,y[i,8:15],(zi[8:15]-dzi[8:15])>tiny,zi[8:15]+dzi[8:15],color=6,width=0
         oplot,y[i,8:15],zi[8:15],psym=4
       
         if (dolab) then begin
@@ -875,16 +878,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         if (domid) then oplot, x, Fz, psym=10, color=4
 
         if (ebar) then begin
-          pcol = !p.color
-            !p.color = 6
-            oploterr, x1*0.999, Fp, Fp_err, 3
-            !p.color = 2
-            oploterr, x2*1.001, Fm, Fm_err, 3
-            if (domid) then begin
-              !p.color = 4
-              oploterr, x, Fz, Fz_err, 3
-            endif
-          !p.color = pcol
+          errplot, x1*0.999, (Fp-Fp_err)>tiny, Fp+Fp_err, color=6, width=0
+          errplot, x2*1.001, (Fm-Fm_err)>tiny, Fm+Fm_err, color=2, width=0
+          if (domid) then errplot, x, (Fz-Fz_err)>tiny, Fz+Fz_err, color=4, width=0
         endif
 
         if (dopot) then begin
@@ -1059,6 +1055,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     nplot++
     
 ; Get the next button press
+
     if (pdflg and ~tflg) then begin
        wset,Twin
        ctime,trange,npoints=npts,/silent

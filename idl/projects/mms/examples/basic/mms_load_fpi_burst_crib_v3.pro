@@ -7,15 +7,15 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-30 13:36:49 -0700 (Tue, 30 Aug 2016) $
-; $LastChangedRevision: 21772 $
+; $LastChangedDate: 2016-11-04 15:24:29 -0700 (Fri, 04 Nov 2016) $
+; $LastChangedRevision: 22304 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fpi_burst_crib_v3.pro $
 ;-
 
 trange = ['2015-10-16/13:05', '2015-10-16/13:10']
 probe = '1'
 datatype = ['des-moms', 'dis-moms']
-level = 'l1b'
+level = 'l2'
 data_rate = 'brst'
 
 mms_load_fpi, probes=probe, trange=trange, datatype=datatype, level=level, data_rate=data_rate, min_version='2.2.0'

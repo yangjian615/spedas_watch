@@ -11,9 +11,9 @@
 ;See also:
 ;   mms_isee_3d_crib.pro
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-24 13:27:20 -0700 (Tue, 24 May 2016) $
-;$LastChangedRevision: 21186 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-11-04 15:54:42 -0700 (Fri, 04 Nov 2016) $
+;$LastChangedRevision: 22310 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_isee_3d_crib_basic.pro $
 ;-
 
@@ -33,7 +33,7 @@ level = 'l2'
 ;names of tplot variables that will contain particle data, bfield, and bulk velocity
 name = 'mms'+probe+'_d'+species+'s_dist_'+data_rate 
 bfield = 'mms'+probe+'_fgm_b_gse_srvy_l2_bvec'
-velocity = 'mms'+probe+'_d'+species+'s_bulk'
+velocity = 'mms'+probe+'_d'+species+'s_bulkv_gse_'+data_rate 
 
 ;use short time range for data due to high resolution (saves time/memory)
 ;time range must include at least three sample times
@@ -58,10 +58,6 @@ data = spd_dist_to_hash(dist)
 mms_load_fgm, probe=probe, trange=support_trange, level='l2'
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $
               probe=probe, trange=support_trange
-
-;combine separate velocity components
-join_vec, velocity + ['x','y','z'] +'_dbcs_'+data_rate, velocity
-
 
 ;once GUI is open select PSD from Units menu
 isee_3d, data=data, trange=trange, bfield=bfield, velocity=velocity
