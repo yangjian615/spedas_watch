@@ -9,9 +9,9 @@
 ;  Basic example on how to use mms_part_products to generate particle
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-10-20 12:07:19 -0700 (Thu, 20 Oct 2016) $
-;$LastChangedRevision: 22167 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-11-07 11:40:53 -0800 (Mon, 07 Nov 2016) $
+;$LastChangedRevision: 22329 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib_v3.pro $
 ;-
 
@@ -27,7 +27,7 @@
   probe='1'      ;1, 2, 3, 4
   species='e'    ;e, i
   rate='brst'    ;brst, fast
-  level = 'l1b'
+  level = 'l2'
 
   ;use short time range for data due to high resolution
   ;use longer time range for support data to ensure we have enough to work with
@@ -36,7 +36,7 @@
   support_trange = trange + [-60,60]
  
   ;load particle data
-  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-dist', /no_update, min_version='2.2.0'
+  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-dist', min_version='2.2.0'
                 
   ;load state data (needed for coordinate transforms and field aligned coordinates)
   mms_load_state, probes=probe, trange=support_trange
@@ -73,7 +73,7 @@
   ; 
   ;  The following example shows how to load the FPI moments 
   ;  released by the team (des-moms, dis-moms datatypes)
-  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-moms', /no_update, min_version='2.2.0'
+  mms_load_fpi, probe=probe, trange=trange, data_rate=rate, level=level, datatype='d'+species+'s-moms', min_version='2.2.0'
   tplot, 'mms' + probe + '_d'+species+'s_numberdensity_brst'
 
   stop

@@ -1,23 +1,14 @@
 ;+
 ;Procedure:
-;  mms_cotrans_crib
+;  mms_qcotrans_crib
 ;
 ;Purpose:
-;  Demonstrate usage of mms_cotrans and mms_qcotrans.
+;  Demonstrate usage of mms_qcotrans.
 ;
 ;Notes:
 ;  See also: mms_cotrans_crib
 ;  
-;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-04 15:57:41 -0700 (Fri, 04 Nov 2016) $
-;$LastChangedRevision: 22311 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_qcotrans_crib.pro $
-;-
-
-
-;------------------------------------------------------
-;  MMS_QCOTRANS Supported coordinate systems:
+;  Supported coordinate systems:
 ;    -BCS
 ;    -DBCS
 ;    -DMPA
@@ -31,25 +22,12 @@
 ;    -GEO
 ;    -ECI
 ;    -J2000 (identical to ECI)
-;
-;;  MMS_COTRANS Supported coordinate systems:
-;    -DMPA
-;    -DSL  (currently treated as identical to DMPA)
-;    -GSE
-;    -GSM
-;    -AGSM
-;    -SM
-;    -GEI
-;    -J2000
-;    -GEO
-;    -MAG
-;  
-;  Aside from the differences in supported coordinate systems, 
-;  usage of the two routines is interchangeable.
-;
-;------------------------------------------------------
-
-
+;    
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-11-07 10:53:48 -0800 (Mon, 07 Nov 2016) $
+;$LastChangedRevision: 22326 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_qcotrans_crib.pro $
+;-
 
 ;------------------------------------------------------
 ; Load data & setup tplot variables 
@@ -71,14 +49,6 @@ mms_load_fpi, probe=probe, trange=trange, level=level, datatype=['dis-moms'], va
 v_name = 'mms'+probe+'_dis_bulkv_dbcs_fast'
 b_name = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
 
-; add coordinates to labels
-; the labels will be automatically updated when transformed
-options, v_name, labels='V'+['x','y','z']+' DBCS'
-options, b_name, labels='B'+['x','y','z']+' DMPA'
-
-;taller plot window
-window, xs=900, ys=900
-
 ;------------------------------------------------------
 ; Implicit transformations
 ;  -Input/output coordinates can be specified with IN/OUT_SUFFIX keywords
@@ -91,7 +61,6 @@ mms_qcotrans, [v_name, b_name], out_suffix='_gse'
 tplot, [v_name, v_name, b_name, b_name] + ['','_gse','','_gse']
 
 stop
-
 
 ;------------------------------------------------------
 ; Specify input suffix
@@ -108,7 +77,6 @@ tplot, [v_name, v_name, b_name, b_name] + ['_gse','_sm','_gse','_sm']
 
 stop
 
-
 ;------------------------------------------------------
 ; Explicit transformations
 ;  -input/output coordinates can be specified independent of suffixes
@@ -120,11 +88,7 @@ stop
 mms_qcotrans, [v_name,b_name], in_coord='dmpa', out_coord='gse', $
               out_suffix='_pseudo_gse', /ignore_dlimits
 
-;labels will not be automatically updated when /ignore_dlimits is set
-options, b_name+'_pseudo_gse', labels='B'+['x','y','z']+' GSE'
-options, v_name+'_pseudo_gse', labels='V'+['x','y','z']+' GSE'      
-
-; plot against real gse
+; plot against real GSE
 ; b field will be identical, velocity should be nearly identical
 tplot, [v_name, v_name, b_name, b_name] + ['_gse','_pseudo_gse','_gse','_pseudo_gse']
 
@@ -140,8 +104,6 @@ mms_qcotrans, v_name, 'v_gse2k', out_coord='gse2000'
 mms_qcotrans, b_name, 'b_gse2k', out_coord='gse2000'
 
 tplot, [v_name,'v_gse2k',b_name,'b_gse2k']
-
-
 
 
 end

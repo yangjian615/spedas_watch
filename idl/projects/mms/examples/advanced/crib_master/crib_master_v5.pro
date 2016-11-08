@@ -38,7 +38,7 @@ level = 'l2' ; (current options are 'l2', 'sitl' or 'l1b' for HPCA)
 if i_load eq 1 then begin
 
 ; loading FPI, HPCA, FGM, and FEEPS data
-mms_load_fpi, probes=probe_id,level='l1b',data_rate='fast', datatype=['des-moms', 'dis-moms'], min_version='2.2.0'
+mms_load_fpi, probes=probe_id,level='l2',data_rate='fast', datatype=['des-moms', 'dis-moms'], min_version='2.2.0'
 
 ; Load E
 mms_load_edp, probes = probe_id, level='l2', data_rate='fast', datatype='dce'

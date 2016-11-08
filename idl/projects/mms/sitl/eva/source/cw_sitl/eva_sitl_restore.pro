@@ -1,6 +1,5 @@
 PRO eva_sitl_restore, state_data, auto=auto, dir=dir
   compile_opt idl2
-@tplot_com
 
   if keyword_set(auto) then begin
     if n_elements(dir) eq 0 then dir = spd_default_local_data_dir() + 'mms/'
@@ -58,7 +57,7 @@ PRO eva_sitl_restore, state_data, auto=auto, dir=dir
   
   if answer eq 'No' then begin
     options, tpname, ysubtitle='(Copy)'
-    tplot, tplot_vars.OPTIONS.def_datanames
+    ss = eva_data_load_and_plot(state_data, /cod)
   endif else begin
     tplot
   endelse

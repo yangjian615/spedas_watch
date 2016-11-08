@@ -28,8 +28,8 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-02 09:12:53 -0700 (Fri, 02 Sep 2016) $
-; $LastChangedRevision: 21785 $
+; $LastChangedDate: 2016-11-07 11:25:47 -0800 (Mon, 07 Nov 2016) $
+; $LastChangedRevision: 22327 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib_v3.pro $
 ;-
 
@@ -56,7 +56,7 @@ data_rate = data_rates[irate] ;SAB
 ;probes = [1, 2, 3, 4]
 probes = [1]
 datatype = ['des-moms', 'dis-moms'] ; grab all data in the CDF
-level = 'l1b' ; FPI data
+level = 'l2' ; FPI data
 fgm_level = 'l2' ; FGM
 autoscale = 1
 iw=0

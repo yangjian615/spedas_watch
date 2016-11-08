@@ -27,8 +27,8 @@
 ;   and less for electrons.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 12:06:55 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21739 $
+;$LastChangedDate: 2016-11-07 11:43:59 -0800 (Mon, 07 Nov 2016) $
+;$LastChangedRevision: 22330 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_slice2d_fpi_crib_v3.pro $
 ;-
 
@@ -40,7 +40,7 @@
 
 ;setup
 probe='1'
-level='l1b'
+level='l2'
 species='i'
 data_rate='brst'
 
@@ -51,7 +51,7 @@ time = '2015-10-16/13:06:00' ;slice time
 
 ;load particle data into tplot
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-dist', $
-              probe=probe, trange=trange, /no_update, min_version='2.2.0'
+              probe=probe, trange=trange, min_version='2.2.0'
 
 ;reformat data from tplot variable into compatible 3D structures
 dist = mms_get_dist(name, trange=trange)
@@ -85,7 +85,7 @@ stop
 ;======================================================================
 
 probe='1'
-level='l1b'
+level='l2'
 species='i'
 data_rate='brst'
 
@@ -97,7 +97,7 @@ trange=['2015-10-16/13:06', '2015-10-16/13:07']
 time = '2015-10-16/13:06:00'
 
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-dist', $
-              probe=probe, trange=trange, /no_update, min_version='2.2.0'
+              probe=probe, trange=trange, min_version='2.2.0'
 
 dist = mms_get_dist(name, trange=trange)
 
@@ -106,7 +106,7 @@ mms_load_fgm, probe=probe, trange=trange, level='l2'
 
 ;load velocity moment
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $
-              probe=probe, trange=trange, /no_update, min_version='2.2.0'
+              probe=probe, trange=trange, min_version='2.2.0'
 
 ;combine separate velocity components
 ;join_vec, vname + ['x','y','z']+'_dbcs_brst', vname
@@ -129,7 +129,7 @@ stop
 ; Export time series
 ;======================================================================
 probe='1'
-level='l1b'
+level='l2'
 species='i'
 data_rate='brst'
 
@@ -138,7 +138,7 @@ name =  'mms'+probe+'_d'+species+'s_dist_'+data_rate
 trange=['2015-10-16/13:06', '2015-10-16/13:07']
 
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-dist', $
-              probe=probe, trange=trange, /no_update, min_version='2.2.0'
+              probe=probe, trange=trange, min_version='2.2.0'
 
 dist = mms_get_dist(name, trange=trange)
 

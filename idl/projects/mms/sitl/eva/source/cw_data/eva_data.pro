@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-10-03 10:53:30 -0700 (Mon, 03 Oct 2016) $
-; $LastChangedRevision: 21996 $
+; $LastChangedDate: 2016-11-07 10:41:35 -0800 (Mon, 07 Nov 2016) $
+; $LastChangedRevision: 22324 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -66,9 +66,9 @@ FUNCTION eva_data_validate_time, str_stime, str_etime
   return, msg
 END
 
-FUNCTION eva_data_load_and_plot, state
+FUNCTION eva_data_load_and_plot, state, cod=cod
   @tplot_com
-  
+
   ; validate time range
   msg = eva_data_validate_time(state.start_time, state.end_time)
   if strlen(msg) gt 0 then begin
@@ -100,11 +100,14 @@ FUNCTION eva_data_load_and_plot, state
   ;----------------------
   ; Load SITL
   ;----------------------
-  
   idx=where(strpos(paramlist,'stlm') gt 0,ct)
   paramlist_stlm = (ct ge 1) ? paramlist[idx] : ''
   str_element,/add,state,'paramlist_stlm',paramlist_stlm
-  rst_stlm = (ct ge 1) ? eva_data_load_sitl(state) : 'No'
+  if keyword_set(cod) then begin
+    rst_stlm = 'Yes'
+  endif else begin
+    rst_stlm = (ct ge 1) ? eva_data_load_sitl(state) : 'No'
+  endelse
   print, 'EVA: load SITL: number of parameters:'+string(ct)
 
   ;----------------------
@@ -165,12 +168,14 @@ FUNCTION eva_data_load_and_plot, state
     ;##############################################################
     eva_data_plot, state; ............. PLOT
     ;##############################################################
-    ;
-    ;Activate DASHBOARD
-    tn = tnames('*_stlm_*',ct); Check for the existence of stlm parameters
-    s = (ct gt 0)
-    id_sitl = widget_info(state.parent, find_by_uname='eva_sitl')
-    widget_control, id_sitl, SET_VALUE=s
+    
+    if not keyword_set(cod) then begin
+      ;Activate DASHBOARD
+      tn = tnames('*_stlm_*',ct); Check for the existence of stlm parameters
+      s = (ct gt 0)
+      id_sitl = widget_info(state.parent, find_by_uname='eva_sitl')
+      widget_control, id_sitl, SET_VALUE=s
+    endif
   endif
   
   eva_toc,clock,str=str

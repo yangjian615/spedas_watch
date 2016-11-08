@@ -641,7 +641,7 @@ FUNCTION eva_sitl_event, ev
 ;        'Save': eva_sitl_save,/auto,dir=dir
 ;        'Restore': eva_sitl_restore,/auto,dir=dir
         'Save As': eva_sitl_save
-        'Restore From': eva_sitl_restore
+        'Restore From': eva_sitl_restore, state_data
         else: answer = dialog_message('Something is wrong.')
       endcase
       end

@@ -42,7 +42,7 @@
 ;   polarisation.
 ;
 ;         Helicity:Similar to Ellipticity except defined in terms of the
-; direction of minimum variance instead of Z. Stricltly the Helicity
+; direction of minimum variance instead of Z. Strictly the Helicity
 ; is defined in terms of the wavenormal direction or k.
 ; However since from single point observations the
 ; sense of k cannot be determined,  helicity here is
@@ -58,8 +58,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-11 13:48:12 -0700 (Thu, 11 Aug 2016) $
-; $LastChangedRevision: 21635 $
+; $LastChangedDate: 2016-11-07 11:58:16 -0800 (Mon, 07 Nov 2016) $
+; $LastChangedRevision: 22332 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_wavpol_crib.pro $
 ;-
 
@@ -122,9 +122,9 @@ steplength_input = nopfft_input/2
 ;;; number of bins for frequency averaging
 bin_freq_input = 3
 twavpol,mms_scm_name+'_fac' $
+,nopfft=nopfft_input,steplength=steplength_input,bin_freq=bin_freq_input
 ;, error=error, freqline = freqline, $
 ;  timeline = timeline,
-,nopfft=nopfft_input,steplength=steplength_input,bin_freq=bin_freq_input
 
 ;=== change of units from radians to degrees for wave angle variable
 get_data,mms_scm_name+'_fac_waveangle',time_wa,val_wa,val_freq
@@ -137,21 +137,20 @@ deg_pol_c = 0.7
 
 get_data,mms_scm_name+'_fac_degpol',time,val,val_freq
 index_deg_pol = where(val lt deg_pol_c)
-val(index_deg_pol) = !VALUES.F_NAN
+val[index_deg_pol] = !VALUES.F_NAN
 store_data,mms_scm_name+'_fac_degpol',data={x:time,y:val,v:val_freq}
 get_data,mms_scm_name+'_fac_powspec',time,val,val_freq
-val(index_deg_pol) = !VALUES.F_NAN
+val[index_deg_pol] = !VALUES.F_NAN
 store_data,mms_scm_name+'_fac_powspec',data={x:time,y:val,v:val_freq}
 get_data,mms_scm_name+'_fac_waveangle',time,val,val_freq
-val(index_deg_pol) = !VALUES.F_NAN
+val[index_deg_pol] = !VALUES.F_NAN
 store_data,mms_scm_name+'_fac_waveangle',data={x:time,y:val,v:val_freq}
 get_data,mms_scm_name+'_fac_elliptict',time,val,val_freq
-val(index_deg_pol) = !VALUES.F_NAN
+val[index_deg_pol] = !VALUES.F_NAN
 store_data,mms_scm_name+'_fac_elliptict',data={x:time,y:val,v:val_freq}
 get_data,mms_scm_name+'_fac_elliptict',time,val,val_freq
-val(index_deg_pol) = !VALUES.F_NAN
+val[index_deg_pol] = !VALUES.F_NAN
 store_data,mms_scm_name+'_fac_helict',data={x:time,y:val,v:val_freq}
-
 
 ;; =====================
 ;; Plot calculated data
@@ -165,36 +164,34 @@ if scm_datatype eq 'scsrvy' then freq_max = 16.
 
 nlog_f = 1
 
-
 options, ['*'], 'labflag', -1
 options, mms_scm_name, colors=[2, 4, 6]
 options, mms_scm_name, labels=['X GSE', 'Y GSE', 'Z GSE']
 options, mms_scm_name, labflag=-1
-options,mms_scm_name,ytitle='MMS'+sc+'!C SCM !C'
+options, mms_scm_name,ytitle='MMS'+sc+'!C SCM !C'
 
-options,mms_scm_name+'_fac',colors=[2,4,6]
+options, mms_scm_name+'_fac',colors=[2,4,6]
 options, mms_scm_name+'_fac', labels=['X FAC', 'Y FAC', 'Z FAC']
 options, mms_scm_name+'_fac', labflag=-1
-options,mms_scm_name+'_fac',ytitle='MMS'+sc+'!C SCM !C'
+options, mms_scm_name+'_fac',ytitle='MMS'+sc+'!C SCM !C'
 
-ylim,mms_scm_name+'_fac_powspec',freq_min,freq_max,nlog_f
-ylim,mms_scm_name+'_fac_degpol',freq_min,freq_max,nlog_f
-ylim,mms_scm_name+'_fac_waveangle',freq_min,freq_max,nlog_f
-ylim,mms_scm_name+'_fac_elliptict',freq_min,freq_max,nlog_f
-ylim,mms_scm_name+'_fac_helict',freq_min,freq_max,nlog_f
+ylim, mms_scm_name+'_fac_powspec',freq_min,freq_max,nlog_f
+ylim, mms_scm_name+'_fac_degpol',freq_min,freq_max,nlog_f
+ylim, mms_scm_name+'_fac_waveangle',freq_min,freq_max,nlog_f
+ylim, mms_scm_name+'_fac_elliptict',freq_min,freq_max,nlog_f
+ylim, mms_scm_name+'_fac_helict',freq_min,freq_max,nlog_f
 
-options,mms_scm_name+'_fac_powspec',ztitle='Arbitrary units'
-options,mms_scm_name+'_fac_powspec',ytitle='f', ysubtitle='[Hz]'
-options,mms_scm_name+'_fac_degpol',ztitle='Deg. Pol.'
-options,mms_scm_name+'_fac_waveangle',ztitle='Wave !C!CAngle'
-options,mms_scm_name+'_fac_elliptict',ztitle='Ellipticity'
-options,mms_scm_name+'_fac_helict',ztitle='Helicity'
+options, mms_scm_name+'_fac_powspec',ztitle='Arbitrary units'
+options, mms_scm_name+'_fac_powspec',ytitle='f', ysubtitle='[Hz]'
+options, mms_scm_name+'_fac_degpol',ztitle='Deg. Pol.'
+options, mms_scm_name+'_fac_waveangle',ztitle='Wave !C!CAngle'
+options, mms_scm_name+'_fac_elliptict',ztitle='Ellipticity'
+options, mms_scm_name+'_fac_helict',ztitle='Helicity'
 
-options,mms_scm_name+'_fac_degpol',ytitle='f', ysubtitle='[Hz]'
-options,mms_scm_name+'_fac_waveangle',ytitle='f', ysubtitle='[Hz]'
-options,mms_scm_name+'_fac_elliptict',ytitle='f', ysubtitle='[Hz]'
-options,mms_scm_name+'_fac_helict',ytitle='f', ysubtitle='[Hz]'
-
+options, mms_scm_name+'_fac_degpol',ytitle='f', ysubtitle='[Hz]'
+options, mms_scm_name+'_fac_waveangle',ytitle='f', ysubtitle='[Hz]'
+options, mms_scm_name+'_fac_elliptict',ytitle='f', ysubtitle='[Hz]'
+options, mms_scm_name+'_fac_helict',ytitle='f', ysubtitle='[Hz]'
 
 zlim,'*_powspec',0.0,0.0,1
 zlim,'*_degpol',0.7,1.,0
