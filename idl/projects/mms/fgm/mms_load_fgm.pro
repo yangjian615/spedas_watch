@@ -62,8 +62,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-08 14:39:28 -0700 (Thu, 08 Sep 2016) $
-;$LastChangedRevision: 21807 $
+;$LastChangedDate: 2016-11-08 10:47:41 -0800 (Tue, 08 Nov 2016) $
+;$LastChangedRevision: 22339 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -101,6 +101,15 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if instrument eq 'fgm' && level ne 'l2' then begin
         dprint, dlevel = 0, 'Error, no '+level+' data available for the "FGM" instrument; try instrument="DFG" or instrument="AFG" for '+level+' FGM data'
         return
+    endif
+    
+    if ~undefined(varformat) && get_support_data eq 1 then begin
+      dprint, dlevel = 0, 'Appending *flag* to requested varformat, so the data can be deflagged'
+      if is_array(varformat) then begin
+        append_array, varformat, '*flag*'
+      endif else begin
+        varformat += ' *flag*'
+      endelse
     endif
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $

@@ -6,10 +6,69 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21557 $
+; $LastChangedDate: 2016-11-08 07:55:54 -0800 (Tue, 08 Nov 2016) $
+; $LastChangedRevision: 22336 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_eis_ut__define.pro $
 ;-
+
+function mms_load_eis_ut::test_ang_ang_energychan
+  eis_ang_ang, energy_chan=[1, 2]
+  assert, spd_data_exists('mms1_epd_eis_extof_proton_flux_omni mms1_epd_eis_extof_oxygen_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle energy_chan keyword'
+  return, 1
+end
+
+function mms_load_eis_ut::test_ang_ang_datatype_electron
+  eis_ang_ang, datatype='electronenergy', probe=4
+  assert, spd_data_exists('mms4_epd_eis_electronenergy_electron_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle with datatype electronenergy'
+  return, 1
+end
+
+function mms_load_eis_ut::test_ang_ang_datatype_phxtof
+  eis_ang_ang, datatype='phxtof', probe=3
+  assert, spd_data_exists('mms3_epd_eis_phxtof_proton_flux_omni mms3_epd_eis_phxtof_oxygen_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle datatype PHxTOF'
+  return, 1
+end
+
+function mms_load_eis_ut::test_ang_ang_data_rate
+  eis_ang_ang, data_rate='brst', trange=['2015-10-16/13:00', '2015-10-16/13:10']
+  assert, spd_data_exists('mms1_epd_eis_brst_extof_proton_flux_omni mms1_epd_eis_brst_extof_alpha_flux_omni mms1_epd_eis_brst_extof_oxygen_flux_omni', '2015-10-16/13:00', '2015-10-16/13:10'), 'Problem with EIS angle-angle burst mode?'
+  return, 1
+end
+
+function mms_load_eis_ut::test_ang_ang_data_units
+  eis_ang_ang, data_units='cps'
+  assert, spd_data_exists('mms1_epd_eis_extof_proton_cps_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle data_units keyword'
+  return, 1
+end
+
+function mms_load_eis_ut::test_ang_ang_extof_oxygen
+  eis_ang_ang, datatype='extof', species='oxygen'
+  assert, spd_data_exists('mms1_epd_eis_extof_oxygen_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle with ExTOF oxygen'
+  return, 1
+end
+
+function mms_load_eis_ut::test_ang_ang_diffprobe
+  eis_ang_ang, probe=3
+  assert, spd_data_exists('mms3_epd_eis_extof_proton_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle when probe is set'
+  return, 1
+end
+
+function mms_load_eis_ut::test_angle_angle_load_simple
+  eis_ang_ang, trange=['2015-12-15', '2015-12-16']
+  assert, spd_data_exists('mms1_epd_eis_extof_proton_flux_omni mms1_epd_eis_extof_alpha_flux_omni mms1_epd_eis_extof_oxygen_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle?'
+  return, 1
+end
+
+; the following is a regression test for a bug that
+; occurs when the user attempts to load data with
+; 'P2' and 'P3' in the name (v2 and v3 CDF files)
+; 
+;function mms_load_eis_ut::test_p2_and_p3_same_time
+;  mms_load_eis, probe='1', trange=['2015-09-02', '2015-09-03']
+;  mms_load_eis, probe='1', trange=['2015-10-19', '2015-10-20']
+;  
+;  return, 1
+;end
 
 function mms_load_eis_ut::test_yrange_of_spectra
   mms_load_eis, datatype='phxtof', level='l2', probe=1

@@ -6,8 +6,11 @@
 ; KEYWORDS:
 ;         probe: value for MMS SC #
 ;         trange: time range of interest (string, ex. ['yyyy-mm-dd','yyyy-mm-dd'])
-;         species: 'ion', 'electron', or 'all'
 ;         datatype: 'extof', 'phxtof', or 'electronenergy'
+;         species: depends on datatype: 
+;             - ExTOF: 'proton', 'oxygen', 'alpha'
+;             - PHxTOF: 'proton', 'oxygen'
+;             - electronenergy: 'electron' (this will be set automatically if you specify 'electronenergy' as the datatype)
 ;         level: data level ['l1a','l1b','l2pre','l2' (default)]
 ;         data_units: 'flux' or 'cps'
 ;         data_rate: instrument data rates ['brst', 'srvy' (default)]
@@ -51,10 +54,12 @@
 ;       + 2016-03-31, E. Grimes     : removed flat fielding 
 ;       + 2016-09-19, E. Grimes     : updated to support v3 L1b files, as well as integer probes
 ;       + 2016-10-26  E. Grimes     : fixed bug for burst mode data; n_azi=32 (burst), n_azi=8 (srvy)
+;       + 2016-11-08  E. Grimes     : now programmatically getting number of azimuths from the sector variable; setting species='electron' when datatype='electronenergy';
+;                                   : also now checking that data exists before trying to access the data
 ;                        
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-26 13:39:19 -0700 (Wed, 26 Oct 2016) $
-;$LastChangedRevision: 22204 $
+;$LastChangedDate: 2016-11-08 07:25:57 -0800 (Tue, 08 Nov 2016) $
+;$LastChangedRevision: 22334 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/eis_ang_ang.pro $
 ;-
 
@@ -75,6 +80,9 @@ if not KEYWORD_SET(trange) && n_elements(trange) eq 2 $
   then trange = timerange(trange) $
   else trange = timerange()
 
+; species should always be 'electron' for 'electronenergy' datatypes
+if datatype eq 'electronenergy' then species = 'electron'
+
 date_dir = strmid(trange(0),0,10)
 date_filename = strmid(trange(0),0,4)+strmid(trange(0),5,2)+strmid(trange(0),8,2)
 start_time_filename = strmid(trange(0),11,2)+strmid(trange(0),14,2)
@@ -88,6 +96,10 @@ if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_' else prefix 
 mms_load_eis, probes=probe, trange=trange, datatype=datatype, level = level, data_rate = data_rate, data_units=data_units, /time_clip
 
 get_data, prefix+datatype+'_look_t0', data = d
+
+; check if there's valid data before continuing
+if ~is_struct(d) then return
+
 azi = dblarr(6,n_elements(d.x))
 pol = dblarr(6,n_elements(d.x))
 pa = dblarr(6,n_elements(d.x))
@@ -116,6 +128,7 @@ endfor
 
 get_data, prefix+datatype+'_b', data = magfield
 get_data, prefix+datatype+'_spin', data = spin
+get_data, prefix+datatype+'_sector', data = sector
 
 spininds = uniq(spin.y)
 spin_test = where(spin.y eq spin.y[spininds[0]],count)            ;; Check to see if we have a complete first spin
@@ -127,7 +140,9 @@ n_pol = 6
 min_pol_edges = -80 + 160*findgen(n_pol)/n_pol      ;;Minus 80 plus
 max_pol_edges = -80 + 160*(findgen(n_pol)+1)/n_pol
 
-if data_rate eq 'brst' then n_azi = 32 else n_azi = 8
+;if data_rate eq 'brst' then n_azi = 32 else n_azi = 8
+n_azi = n_elements(uniq(sector.Y, sort(sector.Y)))
+
 min_azi_edges = -180 + 360*findgen(n_azi)/n_azi
 max_azi_edges = -180 + 360*(findgen(n_azi)+1)/n_azi
 angangdata = dblarr(n_azi,n_pol,nspins,nenergies)

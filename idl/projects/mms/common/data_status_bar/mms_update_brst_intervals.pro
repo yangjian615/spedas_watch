@@ -16,8 +16,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-10-28 13:29:59 -0700 (Fri, 28 Oct 2016) $
-; $LastChangedRevision: 22231 $
+; $LastChangedDate: 2016-11-08 09:45:46 -0800 (Tue, 08 Nov 2016) $
+; $LastChangedRevision: 22338 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_update_brst_intervals.pro $
 ;-
 
@@ -28,6 +28,12 @@ pro mms_update_brst_intervals
   ; grab ~6 months of burst intervals at a time
   start_interval = '2015-03-01'
   end_interval = time_double(start_interval) + 6.*30*24*60*60
+  
+  restore, 'mms_auth_info.sav'
+  if is_struct(auth_info) then begin
+    username = auth_info.user
+    password = auth_info.password
+  endif
 
   brst_seg_temp = { VERSION: 1.0000000, $
     DATASTART: 1, $
@@ -48,12 +54,13 @@ pro mms_update_brst_intervals
     start_str = time_string(start_interval, tformat='DD-MTH-YYYY')
     end_str = time_string(end_interval, tformat='DD-MTH-YYYY')
     print, '*** now grabbing updates for ' + start_str + ' - ' +  end_str
-    remote_path = 'https://lasp.colorado.edu/mms/sdc/public/service/latis/'
+    remote_path = 'https://lasp.colorado.edu/mms/sdc/sitl/latis/dap/'
+    ;remote_path = 'https://lasp.colorado.edu/mms/sdc/public/service/latis/'
     remote_file = 'mms_burst_data_segment.csv?FINISHTIME>='+start_str+'&FINISHTIME<'+end_str
     
     brst_file = spd_download(remote_path=remote_path, remote_file=remote_file, $
       local_file=!mms.local_data_dir+'mms_burst_data_segment.csv', /no_wildcards, $
-      SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0) ; these keywords ignore certificate warnings
+      SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0, url_username=username, url_password=password)
 
     brst_data = read_ascii(brst_file, template=brst_seg_temp, count=num_items)
   
