@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-08 07:55:54 -0800 (Tue, 08 Nov 2016) $
-; $LastChangedRevision: 22336 $
+; $LastChangedDate: 2016-11-08 10:58:00 -0800 (Tue, 08 Nov 2016) $
+; $LastChangedRevision: 22340 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_eis_ut__define.pro $
 ;-
 
@@ -271,7 +271,7 @@ function mms_load_eis_ut::init, _extra=e
   ; the following adds code coverage % to the output
   self->addTestingRoutine, ['mms_load_eis', 'mms_eis_omni', $
     'mms_eis_pad_spinavg', 'mms_eis_pad', 'mms_eis_set_metadata', $
-    'mms_eis_spin_avg']
+    'mms_eis_spin_avg', 'eis_ang_ang']
   return, 1
 end
 

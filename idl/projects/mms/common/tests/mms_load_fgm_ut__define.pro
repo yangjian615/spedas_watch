@@ -6,10 +6,30 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 14:44:14 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21560 $
+; $LastChangedDate: 2016-11-08 11:01:33 -0800 (Tue, 08 Nov 2016) $
+; $LastChangedRevision: 22341 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
+
+function mms_load_fgm_ut::test_varformat_array_still_flagged
+  mms_load_fgm, level='l2', data_rate='srvy', varformat=['*fgm_b_gsm_srvy_l2*', '*fgm_b_gse_srvy_l2*']
+  get_data, 'mms1_fgm_flag_srvy_l2', data=flags
+  get_data, 'mms1_fgm_b_gsm_srvy_l2_bvec', data=flagged
+  assert, ~finite(flagged.y[(where(flags.Y ne 0))[0], 0]), $
+    'Problem with removing flags in mms_load_fgm (varformat == array)'
+  assert, spd_data_exists('mms1_fgm_b_gse_srvy_l2 mms1_fgm_b_gsm_srvy_l2 mms1_fgm_flag_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading FGM data with varformat keyword - data not being deflagged?'
+  return, 1
+end
+
+function mms_load_fgm_ut::test_varformat_still_flagged
+  mms_load_fgm, probes=1, level='l2', data_rate='srvy', instrument='fgm', varformat='*fgm_b_gsm_srvy_l2*'
+  get_data, 'mms1_fgm_flag_srvy_l2', data=flags
+  get_data, 'mms1_fgm_b_gsm_srvy_l2_bvec', data=flagged
+  assert, ~finite(flagged.y[(where(flags.Y ne 0))[0], 0]), $
+    'Problem with removing flags in mms_load_fgm (varformat == string)'
+  assert, spd_data_exists('mms1_fgm_b_gsm_srvy_l2 mms1_fgm_flag_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading FGM data with varformat - deflagging broken?'
+  return, 1
+end
 
 function mms_load_fgm_ut::test_small_brst_interval
     mms_load_fgm, probe=2, level='l2', data_rate='brst', trange=['2015-12-15/10:49', '2015-12-15/10:50']
