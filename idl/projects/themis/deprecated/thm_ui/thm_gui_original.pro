@@ -41,6 +41,7 @@ End
 ;                  calibration parameters. altered how the load SCM data is
 ;                  handled, it now calls a different GUI for SCM data
 ;             jmm, Tweaking to test SVN, 21-May-2009
+;             jmm, Tweaking to test SVN, 9-nov-2016
 ;$LastChangedBy: $
 ;$LastChangedDate: $
 ;$LastChangedRevision: $
