@@ -1,7 +1,7 @@
 ;+
 ;	Procedure: FIND_CONST_INTERVALS
 ;
-;	Purpose:  Find intervals within the input array where the data are constant to some tollerance,
+;	Purpose:  Find intervals within the input array where the data are constant to some tolerance,
 ;		and return the begin and end indices into the original array for those intervals.
 ;
 ;	Calling Sequence:
@@ -18,9 +18,9 @@
 ;	Notes:
 ;		None.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2007-06-27 13:16:28 -0700 (Wed, 27 Jun 2007) $
-; $LastChangedRevision: 904 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-11-14 13:46:58 -0800 (Mon, 14 Nov 2016) $
+; $LastChangedRevision: 22356 $
 ; $URL $
 ;-
 

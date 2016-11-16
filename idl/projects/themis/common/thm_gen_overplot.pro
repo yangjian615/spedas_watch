@@ -52,7 +52,7 @@
 pro thm_gen_overplot_print, date = date, str_message=str_message, gui_plot=gui_plot, probes = probes
   if (gui_plot eq 1) then return ; run this only for server plots
   severity='2' ;error severity level
-  CALDAT,SYSTIME(/julian), month0, day0, year0
+  CALDAT,SYSTIME(/julian), month0, day0, year0, hour0, minute0
   datetime0 = time_double(strtrim(string(year0),2) + "-" + strtrim(string(FORMAT='(I02)', month0),2) + "-" + strtrim(string(FORMAT='(I02)', day0),2) + "/" + strtrim(string(FORMAT='(I02)', hour0),2) + ":" + strtrim(string(FORMAT='(I02)', minute0),2))
   datetime1 = time_double(date)
   if abs(datetime0 - datetime1) le 172800.0D then begin ; if less than 48 hours, no error is printed

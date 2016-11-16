@@ -2,7 +2,7 @@
 ;NAME:    mms_config
 ;
 ;PURPOSE:
-;  This procedure serves as the themis configuration file.  It sets global (system)
+;  This procedure serves as the MMS configuration file.  It sets global (system)
 ;  variables and initializes devices
 ;
 ;  This procedure will define the location of data files and the data server.
@@ -28,9 +28,9 @@
 ;HISTORY:
 ; 2015-04-10, moka, Created based on 'thm_config'
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-07 11:29:48 -0700 (Fri, 07 Oct 2016) $
-; $LastChangedRevision: 22064 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-11-15 07:53:54 -0800 (Tue, 15 Nov 2016) $
+; $LastChangedRevision: 22360 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config.pro $
 ;
 ;-

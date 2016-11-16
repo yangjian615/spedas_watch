@@ -12,8 +12,8 @@
 ;         end_times:    returns an array of unix times (double) containing the end of each burst interval
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-26 12:28:50 -0700 (Wed, 26 Oct 2016) $
-;$LastChangedRevision: 22201 $
+;$LastChangedDate: 2016-11-14 09:33:40 -0800 (Mon, 14 Nov 2016) $
+;$LastChangedRevision: 22352 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_load_brst_segments.pro $
 ;-
 
@@ -29,6 +29,16 @@ pro mms_load_brst_segments, trange=trange, suffix=suffix, start_times=start_time
     local_file=!mms.local_data_dir+'mms_brst_intervals.sav', $
     SSL_VERIFY_HOST=0, SSL_VERIFY_PEER=0) ; these keywords ignore certificate warnings
 
+  ; try updating the burst intervals file if there are any errors while trying to load the file
+  catch, error_status
+  if (error_status ne 0) then begin
+    catch, /cancel
+    if strpos(!error_state.msg, 'RESTORE: Error opening file.') ne -1 then begin
+        mms_update_brst_intervals
+        mms_load_brst_segments, trange=trange, suffix=suffix, start_times=start_times, end_times=end_times
+    endif
+  endif
+    
   restore, brst_file
   
   if is_struct(brst_intervals) then begin
