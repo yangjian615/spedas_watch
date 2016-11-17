@@ -110,8 +110,8 @@
 ;                    an 'End of file encountered...' bug.
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-30 17:47:46 -0700 (Tue, 30 Aug 2016) $
-; $LastChangedRevision: 21775 $
+; $LastChangedDate: 2016-11-16 15:45:58 -0800 (Wed, 16 Nov 2016) $
+; $LastChangedRevision: 22364 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_scm.pro $
 ;-
 pro thm_load_scm_post, sname = probe, datatype = dt, level = lvl, $
@@ -275,6 +275,8 @@ pro thm_load_scm, probe = probe, datatype = datatype, trange = trange, $
                   suffix = suffix, type = type, coord = coord, $
                   progobj = progobj, scm_cal = scm_cal, $
                   use_eclipse_corrections=use_eclipse_corrections,_extra = _extra
+
+  if ~keyword_set(probe) then probe = ['a', 'b', 'c', 'd', 'e']
 
   if arg_present(relpathnames_all) then begin
     downloadonly = 1

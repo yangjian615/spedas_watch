@@ -76,8 +76,8 @@
 ;  This routine is (should be) platform independent.
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
-; $LastChangedRevision: 22069 $
+; $LastChangedDate: 2016-11-16 15:45:58 -0800 (Wed, 16 Nov 2016) $
+; $LastChangedRevision: 22364 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fgm.pro $
 ;-
 
@@ -230,6 +230,8 @@ pro thm_load_fgm, probe = probe, datatype = datatype, trange = trange, $
                   cal_dac_offset = cal_dac_offset, cal_tone_removal = cal_tone_removal, $
                   cal_get_fulloffset = cal_get_fulloffset, cal_get_dac_dat = cal_get_dac_dat, $
                   cal_get_spin_dat = cal_get_spin_dat, use_eclipse_corrections=use_eclipse_corrections,_extra = _extra
+
+  if ~keyword_set(probe) then probe = ['a', 'b', 'c', 'd', 'e']
 
   if arg_present(relpathnames_all) then begin
      downloadonly=1

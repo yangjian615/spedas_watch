@@ -40,8 +40,8 @@
 ;Notes:
 ; Added the new frequency center values, 24-oct-2008, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-08-25 16:24:45 -0700 (Thu, 25 Aug 2016) $
-; $LastChangedRevision: 21728 $
+; $LastChangedDate: 2016-11-16 15:45:58 -0800 (Wed, 16 Nov 2016) $
+; $LastChangedRevision: 22364 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fbk.pro $
 ;-
 
@@ -139,7 +139,8 @@ pro thm_load_fbk,probe=probe, $
                  progobj = progobj, $
                  _extra = _extra
 
-  
+  if ~keyword_set(probe) then probe = ['a', 'b', 'c', 'd', 'e']
+
   if(keyword_set(type)) then $
     dprint, 'type keyword ignored for fb data'
 

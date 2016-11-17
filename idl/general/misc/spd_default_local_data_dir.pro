@@ -18,10 +18,10 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy:  $
-;$LastChangedDate:  $
-;$LastChangedRevision:  $
-;$URL:  $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-11-16 08:19:37 -0800 (Wed, 16 Nov 2016) $
+;$LastChangedRevision: 22362 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/spd_default_local_data_dir.pro $
 ;-----------------------------------------------------------------------------------
 
 function spd_default_local_data_dir

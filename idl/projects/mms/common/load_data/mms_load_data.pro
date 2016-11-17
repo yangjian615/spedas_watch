@@ -93,8 +93,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-22 13:18:53 -0700 (Thu, 22 Sep 2016) $
-;$LastChangedRevision: 21903 $
+;$LastChangedDate: 2016-11-16 15:20:58 -0800 (Wed, 16 Nov 2016) $
+;$LastChangedRevision: 22363 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -296,7 +296,9 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         endif else begin
             ; get all files from the beginning of the first day
             local_files = mms_get_local_files(probe=probe, instrument=instrument, $
-                    data_rate=data_rate, level=level, datatype=datatype, trange=time_double([day_string, end_string]))
+                    data_rate=data_rate, level=level, datatype=datatype, $
+                    trange=time_double([day_string, end_string]), cdf_version=cdf_version, $
+                    min_version=min_version, latest_version=latest_version)
 
             if is_string(local_files) then begin
                 ; prepare the file list as a list of structs, (required input to mms_files_in_interval)

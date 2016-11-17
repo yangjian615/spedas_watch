@@ -54,8 +54,8 @@
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
-; $LastChangedRevision: 22069 $
+; $LastChangedDate: 2016-11-16 15:45:58 -0800 (Wed, 16 Nov 2016) $
+; $LastChangedRevision: 22364 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi_l2.pro $
 ;-
 
@@ -68,6 +68,9 @@ pro thm_load_efi_l2, probe = probe, datatype = datatype, trange = trange, $
                      no_time_clip = no_time_clip, msg_out=msg_out, _extra = _extra
 
   thm_init
+  
+  if ~keyword_set(probe) then probe = ['a', 'b', 'c', 'd', 'e']
+
 ; If verbose keyword is defined, override !themis.verbose
   vb = size(verbose, /type) ne 0 ? verbose : !themis.verbose
   if not keyword_set(suffix) then suffix=''

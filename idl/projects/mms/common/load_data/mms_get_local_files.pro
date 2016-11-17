@@ -27,21 +27,14 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-12-11 08:18:15 -0800 (Fri, 11 Dec 2015) $
-;$LastChangedRevision: 19601 $
+;$LastChangedDate: 2016-11-16 15:20:58 -0800 (Wed, 16 Nov 2016) $
+;$LastChangedRevision: 22363 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_get_local_files.pro $
 ;-
 
-function mms_get_local_files, $
- 
-            probe = probe, $
-            instrument = instrument, $
-            
-            data_rate = data_rate, $
-            level = level, $
-            datatype = datatype, $ 
-            
-            trange=trange_in
+function mms_get_local_files, probe = probe, instrument = instrument, data_rate = data_rate, $
+  level = level, datatype = datatype, trange = trange_in, cdf_version = cdf_version, $
+  latest_version = latest_version, min_version = min_version
 
             
   compile_opt idl2, hidden
@@ -156,31 +149,12 @@ files = files[time_idx]
 file_strings = file_strings[*,time_idx]
 
 
+
+
 ;----------------------------------------------------------------
 ;Extract the latest version of each file
 ;----------------------------------------------------------------
-
-;get file versions
-versions = (stregex(files, '_([^_]+)\.cdf', /subexpr, /extract, /fold_case))[1,*]
-
-; Solution to duplicate files
-;   - Loop over unique file times, not all file times.
-iuniq        = uniq(file_strings[2,*], sort(file_strings[2,*]))
-uniq_strings = file_strings[*,iuniq]
-
-;loop over file names to find files with multiple versions 
-for i=0, n_elements(iuniq)-1 do begin
-  
-  ;find files with identical names (excluding version)
-  vidx = where(uniq_strings[0,i] eq file_strings[0,*], n_versions)
-  
-  ;sort results by ascending version and use last in list
-  highest_version = (  (files[vidx])[sort(versions[vidx])]  )[n_versions-1]
-
-  ;add to output list
-  files_out = array_concat(highest_version,files_out)  
-           
-endfor
+files_out = unh_mms_file_filter(files, /no_time, version=cdf_version, min_version=min_version, latest_version=latest_version)
 
 ;ensure files are in chronoligical order, just in case (see note in mms_load_data) 
 files_out = files_out[bsort(files_out)]

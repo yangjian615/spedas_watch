@@ -43,8 +43,8 @@
 ;Notes:
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
-; $LastChangedRevision: 22069 $
+; $LastChangedDate: 2016-11-16 15:45:58 -0800 (Wed, 16 Nov 2016) $
+; $LastChangedRevision: 22364 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_fit.pro $
 ;-
 
@@ -103,6 +103,7 @@ pro thm_load_fit,probe=probe, datatype=datatype, trange=trange, $
     progobj=progobj,type=type, suffix=suffix,coord=coord,sigma=sigma,$
     no_cal=no_cal, true_dsl=true_dsl, use_eclipse_corrections=use_eclipse_corrections,_extra = _extra
     
+  if ~keyword_set(probe) then probe = ['a', 'b', 'c', 'd', 'e']
     
   if arg_present(relpathnames_all) then begin
     downloadonly=1

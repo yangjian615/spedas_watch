@@ -51,8 +51,8 @@
 ;  Fixed crash on passing an argument for RELPATHNAMES_ALL, WMF, 4/9/2008 (Tu).
 ;  Added _extra keyword to ease the passing of keywords to thm_cal_efi
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-28 12:00:18 -0700 (Fri, 28 Oct 2016) $
-; $LastChangedRevision: 22229 $
+; $LastChangedDate: 2016-11-16 15:45:58 -0800 (Wed, 16 Nov 2016) $
+; $LastChangedRevision: 22364 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_load_efi.pro $
 ;-
 
@@ -71,6 +71,8 @@ pro thm_load_efi, probe = probe, datatype = datatype, trange = trange, $
 
   thm_init
 
+  if ~keyword_set(probe) then probe = ['a', 'b', 'c', 'd', 'e']
+  
   ; Make sure SUFFIX is an array (and not just a space-separated list),
   ; and make lower case:
   if keyword_set(suffix) then begin
