@@ -3,7 +3,7 @@
 #An muser cronjob for STA L2 processing
 # 27 * * * * /bin/csh /home/muser/export_socware/idl_socware/projects/maven/l2gen/muser_sta_l2gen.sh >/dev/null 2>&1
 
-source /usr/local/setup/setup_idl8.3		# IDL
+source /usr/local/setup/setup_idl8.5.1		# IDL
 setenv BASE_DATA_DIR /disks/data/
 setenv ROOT_DATA_DIR /disks/data/
 #IDL SETUP for MAVEN

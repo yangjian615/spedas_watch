@@ -4,7 +4,7 @@
 #that are 14 and 30 days old, using the current L2 files as input
 # Run once per day
 # 19 7 * * * /bin/csh /home/muser/export_socware/idl_socware/projects/maven/l2gen/muser_sta_l2reprocess.sh >/dev/null 2>&1
-source /usr/local/setup/setup_idl8.3		# IDL
+source /usr/local/setup/setup_idl8.5.1		# IDL
 setenv BASE_DATA_DIR /disks/data/
 setenv ROOT_DATA_DIR /disks/data/
 #IDL SETUP for MAVEN
