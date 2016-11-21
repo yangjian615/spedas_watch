@@ -33,8 +33,8 @@
 ;                       Updated to use all telescopes for burst mode data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-26 09:28:52 -0700 (Tue, 26 Jul 2016) $
-;$LastChangedRevision: 21528 $
+;$LastChangedDate: 2016-11-18 16:45:21 -0800 (Fri, 18 Nov 2016) $
+;$LastChangedRevision: 22379 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -48,12 +48,17 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
     if undefined(suffix_in) then suffix_in = '' 
     prefix = 'mms'+strcompress(string(probe), /rem)
     if undefined(bin_size) then bin_size = 15 ;deg
-    if undefined(energy) then energy = [0,1000]
+    if undefined(energy) then energy = [70,1000]
     if undefined(data_units) then data_units = 'intensity'
     if undefined(level) then level = 'l2' else level = strlowcase(level)
     if data_units eq 'intensity' then out_units = '(cm!E2!N s sr KeV)!E-1!N'
     if data_units eq 'cps' || data_units eq 'count_rate' then out_units = 'Counts/s'
     if data_units eq 'counts' then out_units = 'Counts'
+    
+    if energy[0] lt 70.0 then begin
+      dprint, dlevel = 0, 'Please select a starting energy of 70 keV or above'
+      return
+    endif
 
     ; set up the number of pa bins to create
     bin_size = float(bin_size)

@@ -6,10 +6,18 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-01 12:51:12 -0700 (Tue, 01 Nov 2016) $
-; $LastChangedRevision: 22251 $
+; $LastChangedDate: 2016-11-18 17:14:05 -0800 (Fri, 18 Nov 2016) $
+; $LastChangedRevision: 22381 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_pad_low_en
+  mms_load_feeps
+  mms_feeps_pad, energy=[30, 50]
+  ; the previous call shouldn't have created a PAD variable
+  assert, ~spd_data_exists('*keV_pad', '2015-12-15', '2015-12-16'), 'FEEPS PAD code is allowing energies less than 70 keV!'
+  return, 1
+end
 
 function mms_load_feeps_ut::test_load_sitl_omni
   mms_load_feeps, probe=[2, 4], level='sitl', trange=['2016-09-15', '2016-09-16']
@@ -102,21 +110,21 @@ end
 function mms_load_feeps_ut::test_brst_caps_pad
   mms_load_feeps, data_rate='BRST', level='l2'
   mms_feeps_pad, probe=1, data_rate='BRST'
-  assert, spd_data_exists('mms1_epd_feeps_brst_l2_electron_intensity_0-1000keV_pad_spin', '2015-12-15', '2015-12-16'), 'Problem with FEEPS full energy range PAD (BRST)'
+  assert, spd_data_exists('mms1_epd_feeps_brst_l2_electron_intensity_70-1000keV_pad_spin', '2015-12-15', '2015-12-16'), 'Problem with FEEPS full energy range PAD (BRST)'
   return, 1
 end
 
 function mms_load_feeps_ut::test_brst_pad
   mms_load_feeps, data_rate='brst', level='l2'
   mms_feeps_pad, probe=1, data_rate='brst'
-  assert, spd_data_exists('mms1_epd_feeps_brst_l2_electron_intensity_0-1000keV_pad_spin', '2015-12-15', '2015-12-16'), 'Problem with FEEPS full energy range PAD (brst)'
+  assert, spd_data_exists('mms1_epd_feeps_brst_l2_electron_intensity_70-1000keV_pad_spin', '2015-12-15', '2015-12-16'), 'Problem with FEEPS full energy range PAD (brst)'
   return, 1
 end
 
 function mms_load_feeps_ut::test_pad
   mms_load_feeps, probe=4
   mms_feeps_pad, probe=4
-  assert, spd_data_exists('mms4_epd_feeps_srvy_l2_electron_intensity_0-1000keV_pad_spin', '2015-12-15', '2015-12-16'), 'Problem with FEEPS full energy range PAD'
+  assert, spd_data_exists('mms4_epd_feeps_srvy_l2_electron_intensity_70-1000keV_pad_spin', '2015-12-15', '2015-12-16'), 'Problem with FEEPS full energy range PAD'
   return, 1
 end
 
@@ -152,7 +160,7 @@ function mms_load_feeps_ut::test_load_l1b_pad
   del_data, '*'
   mms_load_feeps, level='l1b', data_rate='Brst'
   mms_feeps_pad, level='l1B', data_rate='Brst'
-  assert, spd_data_exists('mms1_epd_feeps_brst_l1b_electron_intensity_0-1000keV_pad_spin mms1_epd_feeps_brst_l1b_electron_intensity_0-1000keV_pad', '2015-12-15', '2015-12-16'), $
+  assert, spd_data_exists('mms1_epd_feeps_brst_l1b_electron_intensity_70-1000keV_pad_spin mms1_epd_feeps_brst_l1b_electron_intensity_70-1000keV_pad', '2015-12-15', '2015-12-16'), $
     'Problem loading burst mode FEEPS PAD for L1b data'
   return, 1
 end
@@ -171,7 +179,7 @@ function mms_load_feeps_ut::test_load_suffix_pad
   del_data, '*'
   mms_load_feeps, level='l2', suffix='suffix_test'
   mms_feeps_pad, level='l2', suffix='suffix_test'
-  assert, spd_data_exists('mms1_epd_feeps_srvy_l2_electron_intensity_0-1000keV_padsuffix_test mms1_epd_feeps_srvy_l2_electron_intensity_0-1000keV_pad_spinsuffix_test', '2015-12-15', '2015-12-16'), $
+  assert, spd_data_exists('mms1_epd_feeps_srvy_l2_electron_intensity_70-1000keV_padsuffix_test mms1_epd_feeps_srvy_l2_electron_intensity_70-1000keV_pad_spinsuffix_test', '2015-12-15', '2015-12-16'), $
     'Problem with suffix test in FEEPS PAD'
   return, 1
 end
@@ -191,14 +199,14 @@ end
 function mms_load_feeps_ut::test_smooth_pad
   mms_load_feeps, num_smooth=30.0, level='l2'
   mms_feeps_pad, level='l2', num_smooth=30.0
-  assert, spd_data_exists('mms1_epd_feeps_srvy_l2_electron_intensity_0-1000keV_pad_smth', '2015-12-15', '2015-12-16'), 'Problem with creating smooted PAD'
+  assert, spd_data_exists('mms1_epd_feeps_srvy_l2_electron_intensity_70-1000keV_pad_smth', '2015-12-15', '2015-12-16'), 'Problem with creating smooted PAD'
   return, 1
 end
 
 function mms_load_feeps_ut::test_pad_binsize
   mms_load_feeps, level='l2'
   mms_feeps_pad, bin_size=3
-  get_data, 'mms1_epd_feeps_srvy_l2_electron_intensity_0-1000keV_pad_spin', data=d
+  get_data, 'mms1_epd_feeps_srvy_l2_electron_intensity_70-1000keV_pad_spin', data=d
   assert, n_elements(d.V) eq 61, 'Problem with bin_size keyword in FEEPS PAD' 
   return, 1
 end

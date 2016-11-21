@@ -30,50 +30,61 @@
 ;	J.McFadden	06-2-23		changed the s/c pot calculation to the same as n_2d_new.pro
 ;	J.McFadden	09-4-29		added a diagonalization to Pxx and Pyy to maximize difference
 ;-
-function p_4d,dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
+function p_4d,dat2,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt
 
-p4dxx = 0. & p4dyy = 0. & p4dzz = 0. & p4dxy = 0. & p4dxz = 0. & p4dyz = 0.
+p4d=[0.,0.,0.,0.,0.,0.] 
 
-if dat.valid eq 0 then begin
+if dat2.valid eq 0 then begin
   print,'Invalid Data'
-  return, [p4dxx,p4dyy,p4dzz,p4dxy,p4dxz,p4dyz]
+  return, p4d
 endif
 
-if (dat2.quality_flag and 195) gt 0 then return,[p4dxx,p4dyy,p4dzz,p4dxy,p4dxz,p4dyz]
+if (dat2.quality_flag and 195) gt 0 then return,p4d
 
+if dat2.nbins eq 1 then return,p4d
+
+dat = dat2
 nmass = dat.nmass
 nenergy = dat.nenergy
-mass = dat.mass*dat.mass_arr 
-if keyword_set(mi) then mass = dat.mass*(fix(dat.mass_arr+.5)>1)
-if ndimen(mass) eq 3 then mass=reform(total(mass(*,0,*),1))/nenergy
-if ndimen(mass) eq 2 then mass=total(mass,1)/nenergy
+nbins = dat.nbins
 
 momen = m_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 flux=j_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 density=n_4d(dat,ENERGY=en,ERANGE=er,EBINS=ebins,ANGLE=an,ARANGE=ar,BINS=bins,MASS=ms,m_int=mi,q=q,mincnt=mincnt)
 
 if keyword_set(ms) then begin
-	p4dxx = total(reform((momen[0,*]-mass*flux[0,*]*flux[0,*]/(density+1.e-10)/1.e10)))
-	p4dyy = total(reform((momen[1,*]-mass*flux[1,*]*flux[1,*]/(density+1.e-10)/1.e10)))
-	p4dzz = total(reform((momen[2,*]-mass*flux[2,*]*flux[2,*]/(density+1.e-10)/1.e10)))
-	p4dxy = total(reform((momen[3,*]-mass*flux[0,*]*flux[1,*]/(density+1.e-10)/1.e10)))
-	p4dxz = total(reform((momen[4,*]-mass*flux[0,*]*flux[2,*]/(density+1.e-10)/1.e10)))
-	p4dyz = total(reform((momen[5,*]-mass*flux[1,*]*flux[2,*]/(density+1.e-10)/1.e10)))
-	nmass=1
+	if keyword_set(mi) then mass2=mi else mass2=(ms[0]+ms[1])/2.
 endif else begin
-	p4dxx = reform((momen[0,*]-mass*flux[0,*]*flux[0,*]/(density+1.e-10)/1.e10))
-	p4dyy = reform((momen[1,*]-mass*flux[1,*]*flux[1,*]/(density+1.e-10)/1.e10))
-	p4dzz = reform((momen[2,*]-mass*flux[2,*]*flux[2,*]/(density+1.e-10)/1.e10))
-	p4dxy = reform((momen[3,*]-mass*flux[0,*]*flux[1,*]/(density+1.e-10)/1.e10))
-	p4dxz = reform((momen[4,*]-mass*flux[0,*]*flux[2,*]/(density+1.e-10)/1.e10))
-	p4dyz = reform((momen[5,*]-mass*flux[1,*]*flux[2,*]/(density+1.e-10)/1.e10))
+	if ndimen(dat.mass_arr) eq 3 then mass2=reform(total(dat.mass_arr(*,0,*),1))/nenergy
+	if ndimen(dat.mass_arr) eq 2 then mass2=total(dat.mass_arr,1)/nenergy
+	if keyword_set(mi) then mass2[*]=mi
+endelse
+
+mass2 = mass2*dat.mass
+
+if keyword_set(ms) then begin
+	p4dxx = (momen[0]-mass2*flux[0]*flux[0]/(density+1.e-10)/1.e10)
+	p4dyy = (momen[1]-mass2*flux[1]*flux[1]/(density+1.e-10)/1.e10)
+	p4dzz = (momen[2]-mass2*flux[2]*flux[2]/(density+1.e-10)/1.e10)
+	p4dxy = (momen[3]-mass2*flux[0]*flux[1]/(density+1.e-10)/1.e10)
+	p4dxz = (momen[4]-mass2*flux[0]*flux[2]/(density+1.e-10)/1.e10)
+	p4dyz = (momen[5]-mass2*flux[1]*flux[2]/(density+1.e-10)/1.e10)
+	nmass=1
+
+endif else begin
+	p4dxx = reform((momen[0,*]-mass2*flux[0,*]*flux[0,*]/(density+1.e-10)/1.e10))
+	p4dyy = reform((momen[1,*]-mass2*flux[1,*]*flux[1,*]/(density+1.e-10)/1.e10))
+	p4dzz = reform((momen[2,*]-mass2*flux[2,*]*flux[2,*]/(density+1.e-10)/1.e10))
+	p4dxy = reform((momen[3,*]-mass2*flux[0,*]*flux[1,*]/(density+1.e-10)/1.e10))
+	p4dxz = reform((momen[4,*]-mass2*flux[0,*]*flux[2,*]/(density+1.e-10)/1.e10))
+	p4dyz = reform((momen[5,*]-mass2*flux[1,*]*flux[2,*]/(density+1.e-10)/1.e10))
 endelse
 
 ; Rotate the tensor about the magnetic field to diagonalize
 ; This should give a result that diagonalizes the pressure tensor about dat.magf
 ; where magf is in s/c coordinates -- ie same as the dat.theta and dat.phi coordinates.
 
-pp = fltarr(6,nmass)
+pp = reform(fltarr(6,nmass))
 
 if finite(total(dat.magf)) && (total(dat.magf*dat.magf) gt 0.) then begin
 

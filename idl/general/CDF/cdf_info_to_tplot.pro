@@ -6,9 +6,9 @@
 ;
 ; Written by Davin Larson
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2015-08-25 15:51:15 -0700 (Tue, 25 Aug 2015) $
-; $LastChangedRevision: 18611 $
+; $LastChangedBy: pulupa $
+; $LastChangedDate: 2016-11-18 12:20:32 -0800 (Fri, 18 Nov 2016) $
+; $LastChangedRevision: 22377 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_info_to_tplot.pro $
 ;-
 pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
@@ -20,7 +20,7 @@ pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
         load_labels=load_labels ;copy labels from labl_ptr_1 in attributes into dlimits
                                       ;resolve labels implemented as keyword to preserve backwards compatibility
 
-dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 18611 2015-08-25 22:51:15Z jwl $'
+dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 22377 2016-11-18 20:20:32Z pulupa $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -132,7 +132,7 @@ for i=0,nv-1 do begin
           if(keyword_set(var_2)) then var_1 = var_2 else var_1 = 0 ;bpif  v.name eq 'thb_sir_001'
           var_2 = 0
      endif
-     cdfstuff={filename:cdfi.filename,gatt:cdfi.g_attributes,vname:v.name,vatt:attr}
+     cdfstuff={filename:cdfi.filename,gatt:cdfi.g_attributes,vname:v.name,vatt:keyword_set(attr)?attr:0}
      units = struct_value(attr,'units',default='')
      if keyword_set(var_2) then data = {x:tvar.dataptr,y:v.dataptr,v1:var_1.dataptr, v2:var_2.dataptr} $
      else if keyword_set(var_1) then data = {x:tvar.dataptr,y:v.dataptr, v:var_1.dataptr}  $

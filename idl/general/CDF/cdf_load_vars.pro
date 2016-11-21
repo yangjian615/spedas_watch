@@ -134,9 +134,9 @@
 ; Side Effects:
 ;   Data is returned in pointer variables. Calling routine is responsible for freeing up heap memory - otherwise a memory leak will occur.
 ;
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 15:16:05 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21206 $
+; $LastChangedBy: pulupa $
+; $LastChangedDate: 2016-11-18 12:20:32 -0800 (Fri, 18 Nov 2016) $
+; $LastChangedRevision: 22377 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_load_vars.pro $
 ;
 ;-
@@ -150,7 +150,7 @@ function cdf_load_vars,files,varnames=vars,varformat=vars_fmt,info=info,verbose=
 vb = keyword_set(verbose) ? verbose : 0
 vars=''
 info = 0
-dprint,dlevel=4,verbose=verbose,'$Id: cdf_load_vars.pro 21206 2016-05-25 22:16:05Z egrimes $'
+dprint,dlevel=4,verbose=verbose,'$Id: cdf_load_vars.pro 22377 2016-11-18 20:20:32Z pulupa $'
 
 on_ioerror, ferr
 for fi=0,n_elements(files)-1 do begin
@@ -282,8 +282,11 @@ for fi=0,n_elements(files)-1 do begin
                     if not keyword_set(vi.dataptr) then vi.dataptr = ptr_new(value,/no_copy)
                 endelse
             endif
-            if not keyword_set(vi.attrptr) then $
-                vi.attrptr = ptr_new( cdf_var_atts(id,vi.name,convert_int1_to_int2=convert_int1_to_int2) )
+            if not keyword_set(vi.attrptr) then begin
+                var_atts = cdf_var_atts(id,vi.name,convert_int1_to_int2=convert_int1_to_int2)
+                if not keyword_set(var_atts) then vi.attrptr = ptr_new(/allocate_heap) $
+                else vi.attrptr = ptr_new(var_atts)
+            end
             info.vars[w] = vi
         endif else  dprint,dlevel=1,verbose=verbose,'variable "'+vars2[j]+'" not found!'
     endfor

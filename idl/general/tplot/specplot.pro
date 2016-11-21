@@ -50,9 +50,9 @@
 ;
 ;See Also:  "XLIM", "YLIM", "ZLIM",  "OPTIONS",  "TPLOT", "DRAW_COLOR_SCALE"
 ;Author:  Davin Larson,  Space Sciences Lab
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-01-22 15:06:50 -0800 (Fri, 22 Jan 2016) $
-; $LastChangedRevision: 19796 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-11-18 11:13:27 -0800 (Fri, 18 Nov 2016) $
+; $LastChangedRevision: 22376 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/specplot.pro $
 ;-
 pro specplot,x,y,z,limits=lim,data=data,overplot=overplot,overlay=overlay,$
@@ -103,7 +103,10 @@ if keyword_set(dg) then begin
 
    ;dg = max_gap_interp
    ;dt = median(x[1:*]-x)
-   tdif = [x[1:*]-x[0:n_elements(x)-2]]
+   if n_elements(x) lt 2 then begin
+    dprint, dlevel=1, 'Error! Single x point.'
+    tdif = [0]
+   endif else tdif = [x[1:*]-x[0:n_elements(x)-2]]
 
    ; set minimum gap interp to twice median sampling rate in current trange
    ;if dg lt 2*dt then dg = 2*dt

@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-23 07:27:29 -0700 (Wed, 23 Mar 2016) $
-;$LastChangedRevision: 20554 $
+;$LastChangedDate: 2016-11-18 16:27:55 -0800 (Fri, 18 Nov 2016) $
+;$LastChangedRevision: 22378 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_tetrahedron_qf.pro $
 ;-
 
@@ -80,7 +80,9 @@ pro mms_load_tetrahedron_qf, trange = trange
             tqfs = tetrahedron_qfs[idx]
             
         endif
-    endif
+    endif else begin
+        dprint, dlevel = 0, 'No tetrahedron quality factor found for this trange: ' + start_time_str + ' - ' + end_time_str
+    endelse
     
     if ~undefined(time_data) && ~undefined(tetrahedron_qfs) then begin
         store_data, 'mms_tetrahedron_qf', data={x: time_values, y: tqfs}

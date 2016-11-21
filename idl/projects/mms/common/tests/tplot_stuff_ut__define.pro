@@ -6,10 +6,32 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-23 14:07:21 -0700 (Fri, 23 Sep 2016) $
-; $LastChangedRevision: 21913 $
+; $LastChangedDate: 2016-11-18 09:45:35 -0800 (Fri, 18 Nov 2016) $
+; $LastChangedRevision: 22374 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/tplot_stuff_ut__define.pro $
 ;-
+
+; ------- the following are some regression tests -------
+function tplot_stuff_ut::test_time_clip_multi_dimen_v3
+  store_data, 'test_data', data={x: [1, 2, 3, 4, 5], y: findgen(5, 16, 32, 32), v1: findgen(5, 16), v2: findgen(5, 32), v3: findgen(32)}
+  time_clip, 'test_data', 2, 4, /replace
+  get_data, 'test_data', data=d
+  assert, n_elements(d.X) eq n_elements(d.Y[*, 0]) && n_elements(d.X) eq n_elements(d.v1[*, 0]) && n_elements(d.X) eq n_elements(d.v2[*, 0]) && n_elements(d.v3) eq 32, $
+    'Problem with time_clip on tplot variable with multi dimensional v tags'
+  return, 1
+end
+
+function tplot_stuff_ut::test_time_clip_multi_v2
+  store_data, 'test_data', data={x: [1, 2, 3, 4, 5], y: findgen(5, 16, 32), v1: findgen(5, 16), v2: findgen(5, 32)}
+  time_clip, 'test_data', 2, 4, /replace
+  get_data, 'test_data', data=d
+  assert, n_elements(d.X) eq n_elements(d.Y[*, 0]) && n_elements(d.X) eq n_elements(d.v1[*, 0]) && n_elements(d.X) eq n_elements(d.v2[*, 0]), $
+    'Problem with time_clip on tplot variable with multi dimensional v tags'
+  return, 1
+end
+
+; ------- end of the regression tests -------
+
 
 function tplot_stuff_ut::test_mult_data
   store_data, 'test_data_to_multiply', data={x: time_double('2015-1-1')+indgen(15), y: indgen(15)+8}

@@ -165,17 +165,32 @@ for i=0,n_elements(nm)-1 do begin
        endif else if(ndimen(d.y) eq 3) then begin
          d2 = {x:d.x[idx], y:d.y[idx, *, *]}
          str_element, d, 'V1', success = s
-         if s then str_element, d2, 'V1', d.v1, /add
+         if s then begin
+            if (ndimen(d.v1) eq 1) then str_element, d2, 'V1', d.v1, /add
+            if (ndimen(d.v1) eq 2) then str_element, d2, 'V1', d.v1[idx, *], /add
+         endif
          str_element, d, 'V2', success = s
-         if s then str_element, d2, 'V2', d.v2, /add 
+         if s then begin
+           if (ndimen(d.v2) eq 1) then str_element, d2, 'V2', d.v2, /add
+           if (ndimen(d.v2) eq 2) then str_element, d2, 'V2', d.v2[idx, *], /add
+         endif
        endif else if(ndimen(d.y) eq 4) then begin
          d2 = {x:d.x[idx], y:d.y[idx, *, *, *]}
          str_element, d, 'V1', success = s
-         if s then str_element, d2, 'V1', d.v1, /add
+         if s then begin
+            if (ndimen(d.v1) eq 1) then str_element, d2, 'V1', d.v1, /add
+            if (ndimen(d.v1) eq 2) then str_element, d2, 'V1', d.v1[idx, *], /add
+         endif
          str_element, d, 'V2', success = s
-         if s then str_element, d2, 'V2', d.v2, /add
+         if s then begin
+            if (ndimen(d.v2) eq 1) then str_element, d2, 'V2', d.v2, /add
+            if (ndimen(d.v2) eq 2) then str_element, d2, 'V2', d.v2[idx, *], /add
+         endif
          str_element, d, 'V3', success = s
-         if s then str_element, d2, 'V3', d.v3, /add
+         if s then begin
+            if (ndimen(d.v3) eq 1) then str_element, d2, 'V3', d.v3, /add
+            if (ndimen(d.v3) eq 2) then str_element, d2, 'V3', d.v3[idx, *], /add
+         endif
        endif else begin
          error = 1
          dprint, 'tvar_name: ' + nm[i] + ' too many dimensions'
