@@ -86,9 +86,9 @@
 ;CREATED BY:      Takuya Hara on 2015-05-22.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-28 16:43:16 -0700 (Fri, 28 Oct 2016) $
-; $LastChangedRevision: 22232 $
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2016-11-21 10:03:07 -0800 (Mon, 21 Nov 2016) $
+; $LastChangedRevision: 22388 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
@@ -269,6 +269,10 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            endif
            y0 -= dy
            msg = string(sqrt(total(vel*vel)),'("bulk vel = ",f5.2," km/s")')
+           XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
+           y0 -= dy
+           vbulk=sqrt(total(vel*vel))
+           msg = string(vbulk^2*0.005*mq,'("energy = ",f5.2," eV")')
            XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
            IF keyword_set(showdata) THEN BEGIN
               wb = WHERE(block.v LE 0., nwb, complement=wf, ncomplement=nwf)

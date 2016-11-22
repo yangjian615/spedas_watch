@@ -57,15 +57,15 @@
 ;
 ;                       {swe_Ka      : 6.17      , $   ; analyzer constant
 ;                        swe_G       : 0.009/16. , $   ; nominal geometric factor
-;                        swe_Ke      : 2.85      , $   ; electron suppression constant
+;                        swe_Ke      : 2.8       , $   ; electron suppression constant
 ;                        swe_dead    : 2.8e-6    , $   ; deadtime per preamp
 ;                        swe_min_dtc : 0.25         }  ; max 4x deadtime correction
 ;
 ;                     Any other tags are ignored.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 19:11:16 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22296 $
+; $LastChangedDate: 2016-11-21 09:12:29 -0800 (Mon, 21 Nov 2016) $
+; $LastChangedRevision: 22387 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13

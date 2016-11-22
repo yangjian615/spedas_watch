@@ -15,7 +15,11 @@
 ;Plotting Keywords:
 ;  LEVELS: Number of color contour levels to plot (default is 60)
 ;  OLINES: Number of contour lines to plot (default is 0)
-;  ZLOG: Boolean indicating logarithmic countour scaling (on by default)
+;  CONTOURS_OPLOT: Boolean indicating to only plot contours, not the data.
+;           this is especially useful if you're interested in plotting 
+;           2-d or 3-d interpolated contours onto plots using geometric
+;           interpolation; requires an already existing 2d slice plot
+;  ZLOG: Boolean indicating logarithmic contour scaling (on by default)
 ;  ECIRCLE: Boolean to plot circle(s) designating min/max energy 
 ;           from distribution (on by default)
 ;  SUNDIR: Boolean to plot the projection of scaled sun direction (black line).
@@ -34,7 +38,7 @@
 ;  [XYZ]RANGE: Two-element array specifying x/y/z axis range.
 ;  [XYZ]TICKS: Integer(s) specifying the number of ticks for each axis 
 ;  [XYZ]PRECISION: Integer specifying annotation precision (sig. figs.).
-;                  Set to zero to truncate printed values to inegers.
+;                  Set to zero to truncate printed values to integers.
 ;  [XYZ]STYLE: Integer specifying annotation style:
 ;             Set to 0 (default) for style to be chosen automatically. 
 ;             Set to 1 for decimal annotations only ('0.0123') 
@@ -61,9 +65,9 @@
 ;  Aaron Flores, based on work by Bryan Kerr and Arjun Raj
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-09-22 18:04:44 -0700 (Thu, 22 Sep 2016) $
-;$LastChangedRevision: 21906 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2016-11-21 15:22:53 -0800 (Mon, 21 Nov 2016) $
+;$LastChangedRevision: 22395 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -86,6 +90,7 @@ pro spd_slice2d_plot, slice, $
                        short_title=short_title, $
                      ; Contours
                        olines=olines, levels=levels, nlines=nlines, clabels=clabels, $
+                       contours_oplot=contours_oplot, $
                      ; Other plotting options
                        plotaxes=plotaxes, ecircle=ecircle, sundir=sundir, $ 
                        plotbulk=plotbulk, plotbfield=plotbfield, $
@@ -201,113 +206,113 @@ pro spd_slice2d_plot, slice, $
   xsize = xcsize * !d.x_ch_size
   ysize = ycsize * !d.y_ch_size
 
+  if undefined(contours_oplot) then begin
 
-  ;Open postscript file
-  ; -specify aspect ratio to keep output on non-windows systems
-  ;  from appearing clipped in that system's viewer
-  if keyword_set(export) && keyword_set(eps) then begin
-    popen, export, encapsulated = 1, $
-           aspect = ysize/xsize, $
-           _extra=_extra
-  endif
-
-
-  ;Format the plotting window
-  if !d.name eq 'WIN' or !d.name eq 'X' and ~keyword_set(custom) then begin
-
-    device, window_state = wins
+    ;Open postscript file
+    ; -specify aspect ratio to keep output on non-windows systems
+    ;  from appearing clipped in that system's viewer
+    if keyword_set(export) && keyword_set(eps) then begin
+      popen, export, encapsulated = 1, $
+             aspect = ysize/xsize, $
+             _extra=_extra
+    endif
+  
+  
+    ;Format the plotting window
+    if !d.name eq 'WIN' or !d.name eq 'X' and ~keyword_set(custom) then begin
+  
+      device, window_state = wins
+      
+      ;ensure a free window is used if possible
+      if undefined(window) then begin
+        wn = !d.window le 1 or !d.window ge 32  ?  $
+              min( where(wins eq 0) ) > 2 : !d.window
+      endif else begin
+        wn = window
+      endelse
     
-    ;ensure a free window is used if possible
-    if undefined(window) then begin
-      wn = !d.window le 1 or !d.window ge 32  ?  $
-            min( where(wins eq 0) ) > 2 : !d.window
-    endif else begin
-      wn = window
+      window, wn, xsize = xcsize * !d.x_ch_size, $
+              ysize = ycsize * !d.y_ch_size, $
+              title = title
+  
+      xmargin[0] = xmargin[0] > 0.5*(xcsize - plotxcsize)
+    endif
+  
+    
+    ; Get tick annotations after window has been initialized, 
+    ; this will avoid an extra window from being created by AXIS.
+    if keyword_set(slice.rlog) then begin
+    
+      ; Get ticks for radial log plots
+      spd_slice2d_getticks_rlog, range=slice.rrange, grid=slice.xgrid, $
+                                 style=xstyle, precision=xprecision, nticks=x_ticks, $
+                                 ticks=xticks, tickv=xtickv, tickname=xtickname
+                             
+      yticks = xticks
+      ytickv = xtickv
+      ytickname = xtickname
+          
+    endif else begin 
+    
+      ; Get x ticks & annotations
+      spd_slice2d_getticks, nticks=x_ticks, range=xrange, style=xstyle, precision=xprecision, $
+                            ticks=xticks, tickv=xtickv, tickname=xtickname, log=0
+      
+      ; x minor ticks, simulate default if not set
+      ; use new name to avoid mutating input
+      xminor = undefined(x_minor) ? 10 : (round(x_minor)+1 > 0)
+    
+      ; Get y ticks & annotations
+      spd_slice2d_getticks, nticks=y_ticks, range=yrange, style=ystyle, precision=yprecision, $
+                            ticks=yticks, tickv=ytickv, tickname=ytickname, log=0
+      
+      ; y minor ticks, simulate default if not set
+      ; use new name to avoid mutating input
+      yminor = undefined(y_minor) ? 10 : (round(y_minor)+1 > 0)
+    
     endelse
   
-    window, wn, xsize = xcsize * !d.x_ch_size, $
-            ysize = ycsize * !d.y_ch_size, $
-            title = title
-
-    xmargin[0] = xmargin[0] > 0.5*(xcsize - plotxcsize)
-  endif
-
+      ; Plot
+      contour, slice.data, slice.xgrid, slice.ygrid, $
+          levels = colorlevels, c_color = thecolors, charsize=charsize, $
+          /isotropic, /closed, /follow, $
+    ;      /cell_fill,  $     ; Cell fill does not appear necessary here
+          /fill, $
+          title = title, $
+          xmargin = xmargin, $
+          ymargin = ymargin, $
+          xstyle = 1, $    ; Force range
+          ystyle = 1, $    ;
+          ticklen = 0.01,$
+          xtickname = xtickname,$  ; 2012-June: Annotations now controled by 
+          ytickname = ytickname,$  ;            formatannotation
+          xminor = xminor,$   ; Allow minor ticks to persist
+          yminor = yminor,$   ; when specifying # of major ticks
+          xtickv = xtickv,$  ; 2013-April: Specify values to avoid inconsistencies
+          ytickv = ytickv,$  ;             
+          xticks = xticks, $  ; Number of ticks must be passed in with values 
+          yticks = yticks, $  ; for them to be placed correctly
+          xrange = xrange,$
+          yrange = yrange,$
+          xtitle = xtitle,$
+          ytitle = ytitle, $
+          _extra = _extra
   
-  ; Get tick annotations after window has been initialized, 
-  ; this will avoid an extra window from being created by AXIS.
-  if keyword_set(slice.rlog) then begin
-  
-    ; Get ticks for radial log plots
-    spd_slice2d_getticks_rlog, range=slice.rrange, grid=slice.xgrid, $
-                               style=xstyle, precision=xprecision, nticks=x_ticks, $
-                               ticks=xticks, tickv=xtickv, tickname=xtickname
-                           
-    yticks = xticks
-    ytickv = xtickv
-    ytickname = xtickname
-        
-  endif else begin 
-  
-    ; Get x ticks & annotations
-    spd_slice2d_getticks, nticks=x_ticks, range=xrange, style=xstyle, precision=xprecision, $
-                          ticks=xticks, tickv=xtickv, tickname=xtickname, log=0
+    ; Get z axis ticks
+    spd_slice2d_getticks,nticks=z_ticks, range=zrange, log=zlog, $
+                         style=zstyle, precision=zprecision, $
+                         ticks=zticks, tickv=ztickv, tickname=ztickname
+                               
     
-    ; x minor ticks, simulate default if not set
-    ; use new name to avoid mutating input
-    xminor = undefined(x_minor) ? 10 : (round(x_minor)+1 > 0)
-  
-    ; Get y ticks & annotations
-    spd_slice2d_getticks, nticks=y_ticks, range=yrange, style=ystyle, precision=yprecision, $
-                          ticks=yticks, tickv=ytickv, tickname=ytickname, log=0
-    
-    ; y minor ticks, simulate default if not set
-    ; use new name to avoid mutating input
-    yminor = undefined(y_minor) ? 10 : (round(y_minor)+1 > 0)
-  
-  endelse
+    ; Draw z axis color bar.c
+    ;  - both the number of ticks and the tick values must 
+    ;    be passed in for them to be placed correctly
+    if ~keyword_set(nocolorbar) then begin
+      draw_color_scale,range=zrange, log=zlog,title=ztitle, charsize=charsize, $
+                       yticks=zticks, ytickv=ztickv, ytickname=ztickname
+    endif
 
-
-  ; Plot
-  contour, slice.data, slice.xgrid, slice.ygrid, $
-      levels = colorlevels, c_color = thecolors, charsize=charsize, $
-      /isotropic, /closed, /follow, $
-;      /cell_fill,  $     ; Cell fill does not appear necessary here
-      /fill, $
-      title = title, $
-      xmargin = xmargin, $
-      ymargin = ymargin, $
-      xstyle = 1, $    ; Force range
-      ystyle = 1, $    ;
-      ticklen = 0.01,$
-      xtickname = xtickname,$  ; 2012-June: Annotations now controled by 
-      ytickname = ytickname,$  ;            formatannotation
-      xminor = xminor,$   ; Allow minor ticks to persist
-      yminor = yminor,$   ; when specifying # of major ticks
-      xtickv = xtickv,$  ; 2013-April: Specify values to avoid inconsistencies
-      ytickv = ytickv,$  ;             
-      xticks = xticks, $  ; Number of ticks must be passed in with values 
-      yticks = yticks, $  ; for them to be placed correctly
-      xrange = xrange,$
-      yrange = yrange,$
-      xtitle = xtitle,$
-      ytitle = ytitle, $
-      _extra = _extra
-
-
-  ; Get z axis ticks
-  spd_slice2d_getticks,nticks=z_ticks, range=zrange, log=zlog, $
-                       style=zstyle, precision=zprecision, $
-                       ticks=zticks, tickv=ztickv, tickname=ztickname
-                             
-  
-  ; Draw z axis color bar
-  ;  - both the number of ticks and the tick values must 
-  ;    be passed in for them to be placed correctly
-  if ~keyword_set(nocolorbar) then begin
-    draw_color_scale,range=zrange, log=zlog,title=ztitle, charsize=charsize, $
-                     yticks=zticks, ytickv=ztickv, ytickname=ztickname
   endif
-
 
 
   ;Other Plotting Options
@@ -331,6 +336,7 @@ pro spd_slice2d_plot, slice, $
         levels = linelevels, charsize=charsize,  $
         /overplot, /closed, /isotropic, $
         follow = clabels, _extra=_extra
+
   endif
 
 

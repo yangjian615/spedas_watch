@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-16 15:20:58 -0800 (Wed, 16 Nov 2016) $
-;$LastChangedRevision: 22363 $
+;$LastChangedDate: 2016-11-21 08:13:10 -0800 (Mon, 21 Nov 2016) $
+;$LastChangedRevision: 22384 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_get_local_files.pro $
 ;-
 
@@ -152,11 +152,12 @@ file_strings = file_strings[*,time_idx]
 
 
 ;----------------------------------------------------------------
-;Extract the latest version of each file
+;Extract the latest version of each file 
 ;----------------------------------------------------------------
+
 files_out = unh_mms_file_filter(files, /no_time, version=cdf_version, min_version=min_version, latest_version=latest_version)
 
-;ensure files are in chronoligical order, just in case (see note in mms_load_data) 
+;ensure files are in chronological order, just in case (see note in mms_load_data) 
 files_out = files_out[bsort(files_out)]
 
 return, files_out

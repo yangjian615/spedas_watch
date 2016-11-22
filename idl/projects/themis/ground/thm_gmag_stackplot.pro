@@ -72,6 +72,7 @@ if not keyword_set(no_data_load) then begin
     thm_load_gmag, site = ['fcc', 'cmo', 'naq', 'lrv']
 ;If NRSQ was loaded, take it out -- it's the same as NAQ
     del_data, '*nrsq*'
+    del_data, '*pang*' ; PANG has a data problem, do not include it - 11/21/2016
 endif
 
 ;________________________________________________________________________________________________

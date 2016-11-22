@@ -76,8 +76,8 @@
 ;CREATED BY:	David L. Mitchell  2016-08-03
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 12:04:33 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22276 $
+; $LastChangedDate: 2016-11-21 09:11:27 -0800 (Mon, 21 Nov 2016) $
+; $LastChangedRevision: 22385 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_fovcal.pro $
 ;-
 pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
@@ -253,9 +253,9 @@ pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
     fovcal.data[i_e,*] *= mask
     fovcal.data[i_e+1,*] = fovcal.data[i_e,*]/rgf                   ; current cal
 
-    mvn_swe_flatfield, /nominal, /silent, value=ogf, calnum=calnum  ; nominal cal
-      fovcal.data[i_e+2,*] = fovcal.data[i_e,*]/ogf
-    mvn_swe_flatfield, /off, /silent                                ; no cal
+    ogf = mvn_swe_flatfield(dat.time, /nominal, /silent)            ; nominal cal
+    fovcal.data[i_e+2,*] = fovcal.data[i_e,*]/ogf
+    ff = mvn_swe_flatfield(/off, /silent)                           ; no cal
 
     fovcal.data[i_e+3,*] = rgf
     plot3d_options,map='cyl'

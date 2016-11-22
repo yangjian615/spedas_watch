@@ -26,8 +26,8 @@
 ;                      the default is 1 (yes).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-07 07:14:01 -0800 (Mon, 07 Nov 2016) $
-; $LastChangedRevision: 22320 $
+; $LastChangedDate: 2016-11-21 09:11:43 -0800 (Mon, 21 Nov 2016) $
+; $LastChangedRevision: 22386 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_catalog.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -87,6 +87,7 @@ pro mvn_swe_catalog, version=version, revision=revision, result=dat, verbose=ver
 
   print, ' '
   print, 'Total number of files:'
+  ntotal = 0
   for k=0,(ntypes-1) do begin
     ftype = dat[k].ftype
     print, ftype ,format='(a7,": ",$)'
@@ -112,7 +113,10 @@ pro mvn_swe_catalog, version=version, revision=revision, result=dat, verbose=ver
     endfor
     
     print, string(nfound,format='(i5)')
+    ntotal += nfound
   endfor
+  print,'--------------'
+  print,'total',ntotal,format='(a7,": ",i5)'
   print, ' '
 
 ; Report the result
@@ -121,7 +125,9 @@ pro mvn_swe_catalog, version=version, revision=revision, result=dat, verbose=ver
     for i=0,(nyear-1) do begin
       for j=0,11 do begin
         print, time_string(dat[0].cat[i,j].date,prec=-4)
-        for k=0,(ntypes-1) do print,dat[k].ftype,dat[k].cat[i,j].nfiles,format='(2x,a7,2x,i2)'
+        for k=0,(ntypes-1) do print,dat[k].ftype,dat[k].cat[i,j].nfiles,format='(2x,a7,2x,i3)'
+        print,'--------------'
+        print,'total',total(dat.cat[i,j].nfiles),format='(2x,a7,2x,i3)'
         print,' '
       endfor
     endfor
