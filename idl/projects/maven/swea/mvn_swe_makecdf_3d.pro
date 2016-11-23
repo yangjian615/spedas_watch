@@ -23,8 +23,8 @@
 ;   ISTP compliance scrub; DLM: 2016-04-08
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2016-05-09 09:22:41 -0700 (Mon, 09 May 2016) $
-;   $LastChangedRevision: 21042 $
+;   $LastChangedDate: 2016-11-22 12:31:03 -0800 (Tue, 22 Nov 2016) $
+;   $LastChangedRevision: 22397 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -41,14 +41,16 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
     return
   endif
 
-; Identify data that do not use sweep table 3 (checksum C0)
-; or sweep table 5 (checksum CC).  Table 3 is primary during
-; cruise, and was superceded by table 5 during transition on
-; Oct. 6, 2014.  Include a 1-record buffer to account for 
-; spectra obtained during the sweep table change.  Exclude 
-; these data from the CDF.
+; Identify data that do not use sweep table 3 (checksum C0),
+; table 5 (checksum CC) or table 6 (checksum 82).  Table 3 is 
+; primary during cruise, and was superceded by table 5 during 
+; transition on Oct. 6, 2014.  Table 6 is very similar to 5, 
+; except that it enables V0.  Include a 1-record buffer to 
+; account for spectra obtained during the sweep table change. 
+; Exclude these data from the CDF.
 
-  indx = where((data.chksum ne 'CC'X) and (data.chksum ne 'C0'X), count)
+  cs = data.chksum
+  indx = where((cs ne 'C0'X) and (cs ne 'CC'X) and (cs ne '82'X), count)
   if (count gt 0L) then begin
     data[indx].valid = 0B
     data[(indx - 1L) > 0L].valid = 0B
