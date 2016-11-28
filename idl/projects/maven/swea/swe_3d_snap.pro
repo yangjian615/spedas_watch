@@ -35,6 +35,8 @@
 ;
 ;       SUM:           If set, use cursor to specify time ranges for averaging.
 ;
+;       TSMO:          Smoothing interval, in seconds.  Default is no smoothing.
+;
 ;       SMO:           Set smoothing in energy and angle.  Since there are only six
 ;                      theta bins, smoothing in that dimension is not recommended.
 ;
@@ -80,8 +82,8 @@
 ;                      interactive time range selection.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-04 16:36:55 -0700 (Fri, 04 Nov 2016) $
-; $LastChangedRevision: 22314 $
+; $LastChangedDate: 2016-11-27 13:58:06 -0800 (Sun, 27 Nov 2016) $
+; $LastChangedRevision: 22403 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_3d_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -92,7 +94,7 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
                  symenergy=symenergy, symdiag=symdiag, power=pow, map=map, $
                  abins=abins, dbins=dbins, obins=obins, mask_sc=mask_sc, burst=burst, $
                  plot_sc=plot_sc, padmap=padmap, pot=pot, plot_fov=plot_fov, $
-                 labsize=labsize, trange=tspan
+                 labsize=labsize, trange=tspan, tsmo=tsmo
 
   @mvn_swe_com
   @swe_snap_common
@@ -189,7 +191,14 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
     npts = 1
     doall = 0
   endelse
-  
+
+  if keyword_set(tsmo) then begin
+    npts = 1
+    doall = 1
+    dotsmo = 1
+    delta_t = double(tsmo)/2D
+  endif else dotsmo = 0
+
   if keyword_set(sundir) then begin
     t = [0D]
     the = [0.]
@@ -266,6 +275,11 @@ pro swe_3d_snap, spec=spec, keepwins=keepwins, archive=archive, ebins=ebins, $
   ok = 1
 
   while (ok) do begin
+
+    if (dotsmo) then begin
+      tmin = min(trange, max=tmax)
+      trange = [(tmin - delta_t), (tmax + delta_t)]
+    endif
 
 ; Put up a 3D spectrogram
  

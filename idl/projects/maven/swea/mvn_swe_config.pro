@@ -18,8 +18,8 @@
 ;                   changes in a tplot window (assumed to exist).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 12:09:02 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22280 $
+; $LastChangedDate: 2016-11-27 13:58:56 -0800 (Sun, 27 Nov 2016) $
+; $LastChangedRevision: 22404 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -90,6 +90,11 @@ pro mvn_swe_config, list=list, timebar=timebar
   t_mcp = [t_mcp, time_double('2015-12-22/20:01:45')]  ; revert to 2600 V after HV reset
   t_mcp = [t_mcp, time_double('2015-12-30/02:28:57')]  ; back to correct bias (2700 V)
   t_sup = [t_sup, time_double('2016-09-02/00:00:00')]  ; last suppression calibration
+
+; SWEA data dropouts resulting from PFDPU processing error
+;
+;  2016-01-28/03:33:52 - 2016-02-02/17:13:42
+;  2016-02-26/14:03:58 - 2016-03-16/03:30:10
 
 ; 2016-10-01/00:00                                     ; beginning of EM-2
   t_mcp = [t_mcp, time_double('2016-10-25/21:52:45')]  ; bias adjustment (2700 -> 2750 V)

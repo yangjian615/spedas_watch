@@ -27,6 +27,8 @@
 ;
 ;       SUM:           If set, use cursor to specify time ranges for averaging.
 ;
+;       TSMO:          Smoothing interval, in seconds.  Default is no smoothing.
+;
 ;       SMO:           Number of energy bins to smooth over.
 ;
 ;       NORM:          At each energy step, normalize the distribution to the mean.
@@ -142,8 +144,8 @@
 ;        NOTE:         Insert a text label.  Keep it short.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-04 16:35:43 -0700 (Fri, 04 Nov 2016) $
-; $LastChangedRevision: 22312 $
+; $LastChangedDate: 2016-11-27 13:58:06 -0800 (Sun, 27 Nov 2016) $
+; $LastChangedRevision: 22403 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -158,7 +160,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   nomid=nomid, uncertainty=uncertainty, nospec90=nospec90, $
                   shiftpot=shiftpot,popen=popen, indspec=indspec, twopot=twopot, $
                   xrange=xrange, error_bars=error_bars, yrange=yrange, trange=tspan, $
-                  note=note, mincounts=mincounts, maxrerr=maxrerr
+                  note=note, mincounts=mincounts, maxrerr=maxrerr, tsmo=tsmo
 
   @mvn_swe_com
   @swe_snap_common
@@ -217,6 +219,12 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     npts = 1
     doall = 0
   endelse
+  if keyword_set(tsmo) then begin
+    npts = 1
+    doall = 1
+    dosmo = 1
+    delta_t = double(tsmo)/2D
+  endif else dosmo = 0
   if not keyword_set(smo) then smo = 1
   if keyword_set(norm) then nflg = 1 else nflg = 0
   if (size(pot,/type) eq 0) then dopot = 1 else dopot = keyword_set(pot)
@@ -410,7 +418,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
     wset,Twin
     return
   endif
-  
+
   if keyword_set(dir) then begin
     get_data,'mvn_B_1sec',index=i
     if (i eq 0) then mvn_mag_load
@@ -432,8 +440,12 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   
   while (ok) do begin
 
-  
-  if (psflg) then popen, psname + string(nplot,format='("_",i2.2)')
+    if (dosmo) then begin
+      tmin = min(trange, max=tmax)
+      trange = [(tmin - delta_t), (tmax + delta_t)]
+    endif
+
+    if (psflg) then popen, psname + string(nplot,format='("_",i2.2)')
 
 ; Put up a PAD spectrogram
  

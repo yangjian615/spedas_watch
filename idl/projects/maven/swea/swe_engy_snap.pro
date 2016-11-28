@@ -36,6 +36,8 @@
 ;
 ;       SUM:           If set, use cursor to specify time ranges for averaging.
 ;
+;       TSMO:          Smoothing interval, in seconds.  Default is no smoothing.
+;
 ;       ERROR_BARS:    If set, plot energy spectra with error bars.  Does not work 
 ;                      when the TPLOT option (see above) is set, because statistical
 ;                      uncertainties are not stored in the tplot variable.
@@ -121,8 +123,8 @@
 ;                      interactive time range selection.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-04 16:36:34 -0700 (Fri, 04 Nov 2016) $
-; $LastChangedRevision: 22313 $
+; $LastChangedDate: 2016-11-27 13:58:06 -0800 (Sun, 27 Nov 2016) $
+; $LastChangedRevision: 22403 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -135,7 +137,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
                    xrange=xrange,yrange=frange,sscale=sscale, popen=popen, times=times, $
                    flev=flev, pylim=pylim, k_e=k_e, peref=peref, error_bars=error_bars, $
-                   trange=tspan
+                   trange=tspan, tsmo=tsmo
 
   @mvn_swe_com
   @swe_snap_common
@@ -152,6 +154,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(burst) then aflg = 1
   if not keyword_set(units) then units = 'eflux'
   if keyword_set(sum) then npts = 2 else npts = 1
+  if keyword_set(tsmo) then begin
+    npts = 1
+    dosmo = 1
+    delta_t = double(tsmo)/2D
+  endif else dosmo = 0
   if (size(error_bars,/type) eq 0) then ebar = 1 else ebar = keyword_set(error_bars)
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if keyword_set(noerase) then oflg = 0 else oflg = 1
@@ -327,11 +334,16 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     wset,Twin
     return
   endif
+  
+  if (dosmo) then begin
+    tmin = min(trange, max=tmax)
+    trange = [(tmin - delta_t), (tmax + delta_t)]
+  endif
 
   if (tflg) then begin
     if (finite(scp)) then pot = scp else pot = 0.
 
-    if (npts eq 1) then begin
+    if ((npts eq 1) and (~dosmo)) then begin
       dt = min(abs(trange[0] - tspec.time), i)
       spec = {time:tspec.time[i], data:reform(tspec.data[i,*]), $
               energy:tspec.energy, units_name:tspec.units_name, $
@@ -900,11 +912,16 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       if (npts gt 1) then cursor,cx,cy,/norm,/up  ; make sure mouse button is released
 
       if (size(trange,/type) eq 5) then begin
+  
+        if (dosmo) then begin
+          tmin = min(trange, max=tmax)
+          trange = [(tmin - delta_t), (tmax + delta_t)]
+        endif
 
         if (tflg) then begin
           if (finite(scp)) then pot = scp else pot = 0.
 
-          if (npts eq 1) then begin
+          if ((npts eq 1) and (~dosmo)) then begin
             dt = min(abs(trange[0] - tspec.time), i)
             spec = {time:tspec.time[i], data:reform(tspec.data[i,*]), $
                     energy:tspec.energy, units_name:tspec.units_name, $
