@@ -120,8 +120,8 @@
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-05 11:20:07 -0700 (Mon, 05 Sep 2016) $
-; $LastChangedRevision: 21797 $
+; $LastChangedDate: 2016-11-28 09:08:23 -0800 (Mon, 28 Nov 2016) $
+; $LastChangedRevision: 22405 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -459,31 +459,24 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
   pflg = BYTARR(4)
   FOR i=0, 3 DO pflg[i] = (pstyle AND 2L^i)/2L^i
 
-  IF NOT keyword_set(abins) THEN abins = REPLICATE(1., 16)
-  IF NOT keyword_set(dbins) THEN dbins = REPLICATE(1., 6)
-  obins = REFORM(abins # dbins, 96)
-  i = WHERE(obins EQ 0., cnt)
-  IF cnt GT 0 THEN obins[i] = nan
-  undefine, i, cnt
+; Field of view masking
 
-  stow = INTARR(ndat)
-  stow[*] = 0
-  IF keyword_set(mask) THEN BEGIN
-     mobins = FLTARR(96, 2)
-     mobins[*, 1] = swe_sc_mask[*,0]  ; stowed boom
-     mobins[*, 0] = swe_sc_mask[*,1]  ; deployed boom
-     i = WHERE(dat_time[idx] LT t_mtx[2], cnt)
-     IF cnt GT 0 THEN stow[i] = 1
-     undefine, i, cnt
-  ENDIF ELSE IF keyword_set(mbins) THEN BEGIN
-     IF N_ELEMENTS(mbins) EQ 96 THEN mobins = mbins $
-     ELSE BEGIN
-        dprint, 'You should input 96 elements of array to mask.'
-        mobins = REPLICATE(1., 96)
-     ENDELSE 
-  ENDIF ELSE mobins = REPLICATE(1., 96)
-  i = WHERE(mobins EQ 0., cnt)
-  IF cnt GT 0 THEN mobins[i] = nan
+  if (n_elements(abins) ne 16) then abins = replicate(1., 16)
+  if (n_elements(dbins) ne  6) then dbins = replicate(1., 6)
+  if (n_elements(mbins) ne 96) then mbins = reform(abins # dbins, 96)
+  mobins = mbins # [1.,1.]  ; same mask for both boom states
+
+  if (size(mask,/type) eq 0) then mask = 1
+  if keyword_set(mask) then mobins *= float(swe_sc_mask)
+
+  i = where(mobins eq 0., cnt)
+  if (cnt gt 0) then mobins[i] = nan
+
+; SWEA boom state: 0 = stowed, 1 = deployed
+
+  boom = replicate(1, ndat)
+  i = where((dat_time[idx] lt t_mtx[2]), cnt)
+  if (cnt gt 0) then boom[i] = 0
   undefine, i, cnt
 
   IF STRLOWCASE(!version.os_family) EQ 'windows' THEN chsz = 1. ELSE chsz = 1.3
@@ -518,7 +511,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
         magf /= SQRT(TOTAL(magf * magf))
         
         ;; ddd.data *= REBIN(TRANSPOSE(obins), ddd.nenergy, ddd.nbins)
-        ddd.data *= REBIN(TRANSPOSE(obins*mobins[*, stow[i]]), ddd.nenergy, ddd.nbins)
+        ddd.data *= REBIN(TRANSPOSE(mobins[*, boom[i]]), ddd.nenergy, ddd.nbins)
         IF keyword_set(map3d) THEN $
            ddd = mvn_swe_pad_resample_map3d(ddd, prf=interpolate)
      ENDIF ELSE BEGIN
@@ -537,8 +530,8 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
         dname = pad.data_name
         energy = average(pad.energy, 2)
         ;; pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]), pad.nenergy, pad.nbins)
-        pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]*mobins[pad.k3d, stow[i]]), pad.nenergy, pad.nbins)
-        block = WHERE(~FINITE(obins[pad.k3d]*mobins[pad.k3d, stow[i]]), nblock)
+        pad.data *= REBIN(TRANSPOSE(mobins[pad.k3d, boom[i]]), pad.nenergy, pad.nbins)
+        block = WHERE(~FINITE(mobins[pad.k3d, boom[i]]), nblock)
         IF ((nblock GT 0) and prt) THEN BEGIN
            tblk = 'Removed anode bin(s) data due to the FOV blockage: ['
            FOR iblk=0, nblock-1 DO BEGIN

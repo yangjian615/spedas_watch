@@ -59,8 +59,19 @@
 ;                      respect to the observed vector magnetic field
 ;                      in the MSO and LGEO(local geographic coordinate). 
 ;
-;       MASK_SC:       Mask PA bins that are blocked by the spacecraft.
-;                      Default = 1 (yes).
+;       ABINS:         Anode bin mask -> 16 elements (0 = off, 1 = on)
+;                      Default = replicate(1,16)
+;
+;       DBINS:         Deflector bin mask -> 6 elements (0 = off, 1 = on)
+;                      Default = replicate(1,6)
+;
+;       OBINS:         3D solid angle bin mask -> 96 elements (0 = off, 1 = on)
+;                      Default = reform(ABINS # DBINS)
+;
+;       MASK_SC:       Mask the spacecraft blockage.  This is in addition to any
+;                      masking defined by the ABINS, DBINS, and OBINS.
+;                      Default = 1 (yes).  Set this to 0 to disable and use the
+;                      above 3 keywords only.
 ;
 ;       SPEC:          Plot energy spectra for parallel, anti-parallel, and
 ;                      90-degree pitch angle populations.  The value of this 
@@ -144,8 +155,8 @@
 ;        NOTE:         Insert a text label.  Keep it short.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-27 13:58:06 -0800 (Sun, 27 Nov 2016) $
-; $LastChangedRevision: 22403 $
+; $LastChangedDate: 2016-11-28 09:09:33 -0800 (Mon, 28 Nov 2016) $
+; $LastChangedRevision: 22406 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -245,16 +256,19 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif else dolab = 0
   if keyword_set(plotlims) then plot_pa_lims = 1 else plot_pa_lims = 0
   if keyword_set(nomid) then domid = 0 else domid = 1
-  
+
+; Field of view masking
+
   if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
   if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
-  if (n_elements(obins) ne 96) then begin
-    obins = replicate(1B, 96, 2)
-    obins[*,0] = reform(abins # dbins, 96)
-    obins[*,1] = obins[*,0]
-  endif else obins = byte(obins # [1B,1B])
+  if (n_elements(obins) ne 96) then obins = reform(abins # dbins, 96)
+  fovmask = byte(obins # [1B,1B])  ; same mask for both boom states
+
   if (size(mask_sc,/type) eq 0) then mask_sc = 1
-  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+  if keyword_set(mask_sc) then fovmask *= swe_sc_mask
+
+; Pitch angle resolved energy spectra
+
   if (size(spec,/type) ne 0) then begin
     dospec = 1
     swidth = (float(abs(spec)) > 30.)*!dtor
@@ -506,7 +520,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
       str_element,limits,'title',title,/add
       
       if (pad.time gt t_mtx[2]) then boom = 1 else boom = 0
-      indx = where(obins[pad.k3d,boom] eq 0B, count)
+      indx = where(fovmask[pad.k3d,boom] eq 0B, count)
       if (count gt 0L) then pad.data[*,indx] = !values.f_nan
 
       x = pad.energy[*,0]
@@ -615,7 +629,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             rtime = minmax(trange)
             if rtime[0] eq rtime[1] then rtime = rtime[0]
             mvn_swe_pad_resample, rtime, snap=0, tplot=0, result=rpad, silent=3, hires=hflg, $
-                                  fbdata=fbdata, sc_pot=spflg, archive=aflg
+                                  fbdata=fbdata, sc_pot=spflg, archive=aflg, mbins=fovmask[*,boom]
             arpad = rpad.avg
             if size(arpad, /n_dimension) eq 3 then arpad = average(arpad, 3)
 
@@ -780,7 +794,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
         if (dflg) then begin
           ddd = mvn_swe_get3d(trange,archive=aflg,all=doall,/sum,units=units)
-          indx = where(obins[*,boom] eq 0B, count)
+          indx = where(fovmask[*,boom] eq 0B, count)
           if (count gt 0L) then ddd.data[*,indx] = !values.f_nan
 
           de = min(abs(ddd.energy[*,0] - energy),ebin)

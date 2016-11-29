@@ -31,13 +31,14 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-03 15:19:11 -0700 (Mon, 03 Oct 2016) $
-;$LastChangedRevision: 22008 $
+;$LastChangedDate: 2016-11-28 12:02:39 -0800 (Mon, 28 Nov 2016) $
+;$LastChangedRevision: 22407 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
 function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure, $
-                           species = species, probe = probe, single_time = single_time
+                           species = species, probe = probe, single_time = single_time, $
+                           data_rate = data_rate
 
     compile_opt idl2, hidden
 
@@ -49,7 +50,7 @@ if name eq '' then begin
 endif
 
 ;pull data and metadata
-get_data, name, ptr=p
+get_data, name, ptr=p, dlimits=dl
 
 if ~is_struct(p) then begin
   dprint, 'Variable: "'+tname+'" contains invalid data'
@@ -133,13 +134,19 @@ case strlowcase(species) of
          mass = 1.04535e-2
          charge = 1.
          data_name = 'FPI Ion'
-         integ_time = .150
+         if keyword_set(data_rate) then begin
+             if data_rate eq 'brst' then integ_time = .150
+             if data_rate eq 'fast' then integ_time = 4.5
+         endif
        end
   'e': begin
          mass = 5.68566e-06
          charge = -1.
          data_name = 'FPI Electron'
-         integ_time = .03
+         if keyword_set(data_rate) then begin
+           if data_rate eq 'brst' then integ_time = .03
+           if data_rate eq 'fast' then integ_time = 4.5
+         endif
        end
   else: begin
     dprint, 'Cannot determine species'
@@ -190,6 +197,28 @@ dist = replicate(template, n_times)
 
 ; Populate
 ;-----------------------------------------------------------------
+if undefined(integ_time) then begin
+    ; if the user didn't specify data_rate, we'll have to guess the integration time from 
+    ; the metadata
+    if is_struct(dl) then begin
+      str_element, dl, 'cdf.gatt.time_resolution', time_resolution, success=s
+      if s eq 1 then begin
+        tres = strsplit(time_resolution, ' ', /extract)
+        if tres[1] eq 'milliseconds' then factor_to_seconds = 1000.0 else factor_to_seconds = 1.
+        integ_time = float((tres)[0])/factor_to_seconds
+      endif
+    endif
+    ; time resolution not in the metadata, try to guess it from the data
+    if s eq 0 then begin
+      if index ne 0 then begin
+          integ_time = (*p.x)[index]-(*p.x)[index-1] 
+      endif else begin
+          integ_time = (*p.x)[index+1]-(*p.x)[index]
+      endelse
+      if is_array(integ_time) then integ_time = integ_time[0]
+      dprint, dlevel = 0, 'No integration time specified in mms_get_fpi_dist; guessed ' + strcompress(string(integ_time), /rem) + ' seconds from the data'
+    endif
+endif
 dist.time = (*p.x)[index]
 dist.end_time = (*p.x)[index] + integ_time
 
