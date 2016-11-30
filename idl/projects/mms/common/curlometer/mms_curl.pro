@@ -14,14 +14,21 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-10-25 10:34:29 -0700 (Tue, 25 Oct 2016) $
-; $LastChangedRevision: 22193 $
+; $LastChangedDate: 2016-11-29 08:40:37 -0800 (Tue, 29 Nov 2016) $
+; $LastChangedRevision: 22410 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/curlometer/mms_curl.pro $
 ;-
 
 pro mms_curl, trange=trange, fields=fields, positions=positions, suffix=suffix
   if undefined(suffix) then suffix = ''
+  if undefined(fields) || undefined(positions) then begin
+    dprint, dlevel = 0, 'B-field and spacecraft position keywords required.'
+    return
+  endif
   
+  if ~undefined(trange) && n_elements(trange) eq 2 $
+    then t_curl = timerange(trange) $
+  else t_curl = timerange()
 
   ;*********************************************************
   ; Magnetic Field
@@ -41,8 +48,6 @@ pro mms_curl, trange=trange, fields=fields, positions=positions, suffix=suffix
   
   ;some constants
   m0 = 4.*!dpi*1.e-7;
-
-  t_curl = time_double(trange)
 
   b1 = tsample(fields[0], t_curl, times = timeb1)
   b1 = b1[*,0:2]

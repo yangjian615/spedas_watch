@@ -20,14 +20,16 @@
 ;    examples/advanced/thm_crib_slp_sse.pro (selenocentric coordinate systems)
 ;    
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-05-18 16:12:17 -0700 (Mon, 18 May 2015) $
-; $LastChangedRevision: 17644 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2016-11-29 13:21:52 -0800 (Tue, 29 Nov 2016) $
+; $LastChangedRevision: 22414 $
 ; $URL $
 ;-
 
 ; Start with a clean slate
 del_data,'*'
+
+thm_init
 
 ; Set the time frame
 timespan,'2007-06-23'

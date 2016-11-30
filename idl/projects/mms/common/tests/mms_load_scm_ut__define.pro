@@ -12,6 +12,16 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_scm_ut__define.pro $
 ;-
 
+; regression test for wavpol bug where there was a zero at the end of the data
+function mms_load_scm_ut::test_wavpol_zero_at_end
+  mms_load_scm, trange=['2015-10-7/11:44:39', '2015-10-7/11:44:53'], probes='1', level='l2', data_rate='brst', datatype='schb', tplotnames=tplotnames
+  twavpol, 'mms1_scm_acb_gse_schb_brst_l2',nopfft=512,steplength=1,bin_freq=1
+  get_data, 'mms1_scm_acb_gse_schb_brst_l2_powspec', data=d
+  wherezeroes = where(d.X eq 0, wherecount)
+  assert, wherecount eq 0, 'zero times found in wavpol results'
+  return, 1
+end
+
 function mms_load_scm_ut::test_load
   mms_load_scm, probe=4
   assert, spd_data_exists('mms4_scm_acb_gse_scsrvy_srvy_l2', '2015-12-15', '2015-12-16'), 'Problem loading scm data'

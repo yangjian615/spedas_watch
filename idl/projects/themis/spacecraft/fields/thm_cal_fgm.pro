@@ -78,9 +78,9 @@
 ;Notes: under construction!!
 ;
 ;Written by Hannes Schwarzl.
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-09-30 10:16:20 -0700 (Fri, 30 Sep 2016) $
-; $LastChangedRevision: 21986 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2016-11-29 13:28:11 -0800 (Tue, 29 Nov 2016) $
+; $LastChangedRevision: 22416 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -333,6 +333,7 @@ endif
 ;get the spinperiod from the state file, first check to see if the
 ;state data is loaded
 probe_letter = strmid(name_thx_fgx_in, 2, 1)
+if undefined(out_suf) then out_suf=''
 thm_autoload_support, vname=name_thx_fgx_in,suffix=out_suf[0], probe_in = probe_letter[0], /spinmodel, /spinaxis
 preSpin=strmid(name_thx_fgx_in,0,4)
 name_thx_spinper=preSpin+'state_spinper'

@@ -53,6 +53,13 @@
 ;
 ;  CUSTOM:  Flag that to disable automatic window creation and allow
 ;           user-controlled plots.
+;  
+;  BACKGROUND_COLOR_INDEX: Integer (0-255) specifying a custom background color
+;           where data = 0.0
+;           
+;  BACKGROUND_COLOR_RGB: 3D array of integers (0-255) representing RGB values
+;            of the background color where data == 0.0; this keyword modifies the 
+;            current color table to include this color at index = 7
 ;
 ;Exporting keywords:
 ;  EXPORT: String designating the path and file name of the desired file. 
@@ -66,8 +73,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-21 15:22:53 -0800 (Mon, 21 Nov 2016) $
-;$LastChangedRevision: 22395 $
+;$LastChangedDate: 2016-11-29 10:24:51 -0800 (Tue, 29 Nov 2016) $
+;$LastChangedRevision: 22413 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d_plot.pro $
 ;
 ;-
@@ -96,6 +103,8 @@ pro spd_slice2d_plot, slice, $
                        plotbulk=plotbulk, plotbfield=plotbfield, $
                        b_color=b_color, v_color=v_color, sun_color=sun_color, $
                        custom=custom, nocolorbar=nocolorbar, $
+                       background_color_index=background_color_index, $
+                       background_color_rgb=background_color_rgb, $
                      ; Eport
                        export=export, eps=eps, $
                        _extra=_extra
@@ -111,6 +120,7 @@ pro spd_slice2d_plot, slice, $
     contour, [[0,0],[0,0]], title='Invalid input'
     return
   endif
+  
 
 
   ; Defaults
@@ -271,7 +281,31 @@ pro spd_slice2d_plot, slice, $
       yminor = undefined(y_minor) ? 10 : (round(y_minor)+1 > 0)
     
     endelse
-  
+      ; allow users to set a custom background color
+      if ~undefined(background_color_rgb) then begin
+        ; the user specified RGB values for the background color
+        if n_elements(background_color_rgb) ne 3 then begin
+          dprint, dlevel = 0, 'Error, background_color_rgb should have 3 components - Red, Green, Blue'
+          return
+        endif
+        ; modify element 7 of the colortable to include the user's color
+        tvlct, red, green, blue, /get
+        red[7]=background_color_rgb[0]  ; choose index after 6th to preserve black axes, ticks, and text
+        green[7]=background_color_rgb[1]
+        blue[7]=background_color_rgb[2]
+        tvlct, red, green, blue
+        background_color_index = 7
+      endif
+      if ~undefined(background_color_index) then begin
+        colorlevels_new = fltarr(n_elements(colorlevels)+1)
+        colorlevels_new[0] = 0.0
+        thecolors_new = intarr(n_elements(thecolors)+1)
+        thecolors_new[0] = background_color_index
+        colorlevels_new[1:*] = colorlevels
+        thecolors_new[1:*] = thecolors
+        colorlevels = colorlevels_new
+        thecolors = thecolors_new
+      endif
       ; Plot
       contour, slice.data, slice.xgrid, slice.ygrid, $
           levels = colorlevels, c_color = thecolors, charsize=charsize, $

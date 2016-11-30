@@ -15,9 +15,9 @@
 ;                           The problem is probably in the way that some of the LASP code handles, or does not handle, the TPLOT labelling.
 ;	None.
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-02-06 18:09:41 -0800 (Fri, 06 Feb 2015) $
-; $LastChangedRevision: 16904 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2016-11-29 13:22:27 -0800 (Tue, 29 Nov 2016) $
+; $LastChangedRevision: 22415 $
 ; $URL $
 ;-
 
@@ -111,7 +111,7 @@ stop
 timespan, tr[0], tr[1] - tr[0], /seconds
 tplot, [ 'thd_vap_raw', 'thd_vap', 'thd_efp_raw', 'thd_efp_dsl', 'thd_efp_gei', 'thd_efp_0', 'thd_efp_dot0_dsl', 'thd_efp_dot0_gei' ]
 print, 'particle burst'
-print, 'use the mouse to zoom in'
+print, 'use the mouse to zoom in. click anywhere on plot. first click sets start. second click sets end.'
 tlimit
 print, 'Enter ".c" to view wave burst data.'
 

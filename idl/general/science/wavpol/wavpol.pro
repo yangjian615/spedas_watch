@@ -16,6 +16,8 @@
 ;             added pspec3 input, pspec[x,y,z], returns pspec3 (changes from Justin Lee) - added to original 10/10/2013
 ;             converted () to [], fixed tabbing
 ;             updated documentation with changes from Justin Lee - added to original 9/23/2014
+;         :Modified by egrimes, now checking for 0s in the output time series, setting those
+;             data values to NaNs
 ;             
 ;              
 ;PURPOSE:To perform polarisation analysis of three orthogonal component time
@@ -99,8 +101,8 @@
 ;	 100%. Remembercomparing two straight lines yields 100% polarisation.
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-10-17 16:12:51 -0700 (Mon, 17 Oct 2016) $
-; $LastChangedRevision: 22112 $
+; $LastChangedDate: 2016-11-29 14:56:05 -0800 (Tue, 29 Nov 2016) $
+; $LastChangedRevision: 22418 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/wavpol/wavpol.pro $
 ;-
 pro wavpol,ct,Bx,By,Bz,timeline,freqline,powspec,degpol,waveangle,elliptict,helict,pspec3,$
@@ -254,7 +256,7 @@ samp_per=samp_per_input, nopfft=nopfft_input,steplength = steplength_input, bin_
       xs = Bx[ind0:ind1]
       ys = By[ind0:ind1]
       zs = Bz[ind0:ind1]
-    
+      
       good_data = where(finite(xs), ngood,/L64)
       if(ngood Gt nopfft) then begin
           ;=== Number of fft spectra
@@ -454,5 +456,18 @@ samp_per=samp_per_input, nopfft=nopfft_input,steplength = steplength_input, bin_
     
     endfor ; loop end on batches
     freqline=binwidth*findgen(nopfft/2)
+    
+    ; make sure there aren't any missing data points at the end of the output
+    wherezero = where(timeline eq 0, zerocount)
+    if zerocount ne 0 then begin
+      timeline[wherezero] = !values.d_nan
+      powspec[wherezero, *] = !values.d_nan
+      elliptict[wherezero, *] = !values.d_nan
+      helict[wherezero, *] = !values.d_nan
+      pspecx[wherezero, *] = !values.d_nan
+      pspecy[wherezero, *] = !values.d_nan
+      pspecz[wherezero, *] = !values.d_nan
+      pspec3[wherezero, *, *] = !values.d_nan
+    endif
     return
 end
