@@ -42,7 +42,7 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
   ports= dictionary('spani',2028,'spanea',2128,'spaneb',2228,'spc',2328,'swem',2428)
   hosts= dictionary('cal','abiad-sw.ssl.berkeley.edu','snout1','?????','snout2','mgse2.ssl.berkeley.edu')
 
-  if keyword_set(recent) then spp_ptp_file_read, spp_file_retrieve(cal=cal,snout2=snout2,recent=recent,spani=spani,spanea=spanea,spaneb=spaneb,swem=swem)
+  if keyword_set(recent) then spp_ptp_file_read, spp_file_retrieve(cal=cal,snout2=snout2,snout1=snout1,recent=recent,spani=spani,spanea=spanea,spaneb=spaneb,swem=swem)
 
   
   if keyword_set(itf) then begin

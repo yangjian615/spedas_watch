@@ -49,18 +49,23 @@ PRO spp_gen_apdat::help
 END
 
 
-function spp_gen_apdat::info
+function spp_gen_apdat::info,header=header
 ;rs =string(format="(Z03,'x ',a-14, i8,i8 ,i12,i3,i3,i8,' ',a-14,a-36,' ',a-36, ' ',a-20,a)",self.apid,self.name,self.npkts,self.lost_pkts, $
 ;    self.nbytes,self.save_flag,self.rt_flag,self.data.size,self.data.typename,string(/print,self),self.routine,self.tname,self.save_tags)
-  rs =string(format="(Z03,'x ',a-14, i8,i8 ,i12,i3,i3,i8,' ',a-14,a-26,' ',a-36, ' ',a-20,'<',a,'>')",self.apid,self.name,self.npkts,self.lost_pkts, $
+  fmt ="(Z03,'x ',a-14, i8,i8 ,i12,i3,i3,i8,' ',a-14,a-26,' ',a-36, ' ',a-20,'<',a,'>')"
+  hfmt="( a4,' ',a-14, a8,a8 ,a12,a3,a3,a8,' ',a-14,a-26,' ',a-36, ' ',a-20,'<',a,'>')"
+;  if keyword_set(header) then rs=string(format=hfmt,'APID','Name','npkts','lost','nbytes','save','rtf','size','type','objname','routine','tname','tags')
+  rs =string(format=fmt,self.apid,self.name,self.npkts,self.lost_pkts, $
     self.nbytes,self.save_flag,self.rt_flag,self.data.size,self.data.typename,typename(self),self.routine,self.tname,self.ttags)
+
+  if keyword_set(header) then rs=string(format=hfmt,'APID','Name','Npkts','lost','nbytes','sv','rt','size','type','objname','routine','tname','tags') +string(13b)+ rs
 
 return,rs
 end
 
 
-PRO spp_gen_apdat::print,dlevel=dlevel,verbose=verbose,strng
-  print,self.info()
+PRO spp_gen_apdat::print,dlevel=dlevel,verbose=verbose,strng,header=header
+  print,self.info(header=header)
 END
 
 

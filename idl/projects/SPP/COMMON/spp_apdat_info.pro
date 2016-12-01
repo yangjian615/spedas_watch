@@ -66,7 +66,7 @@ pro spp_apdat_info,apids,name=name,verbose=verbose,$
     if ~keyword_set(all)  &&  (apdat.npkts eq 0) then continue
     if keyword_set(finish) then    apdat.finish
     if keyword_set(clear)  then    apdat.clear
-    if keyword_set(print)  then    apdat.print
+    if keyword_set(print)  then    apdat.print, header = i eq 0
   endfor
 
   apdats=all_apdat[apids]

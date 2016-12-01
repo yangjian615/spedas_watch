@@ -3,7 +3,8 @@ function spp_swp_swemulator_apdat::decom , ccsds, ptp_header
   
   if ccsds.time gt 1.76e9 then  ccsds.time -= 315576000   ; fix error in timing
   if ccsds.pkt_size ne 34 then begin
-    dprint, 'Size error'
+    dprint,dlevel=3, 'Size error',ccsds.pkt_size
+   ; hexprint,ccsds_data
     return,!null
   endif
 

@@ -15,9 +15,9 @@
 ;  Run "thm_ui_slice2d" on the IDL console to use for the GUI version.
 ;   (Also part of the plugins menu in the SPEDAS GUI) 
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-14 14:38:31 -0700 (Thu, 14 May 2015) $
-;$LastChangedRevision: 17616 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-11-30 11:43:37 -0800 (Wed, 30 Nov 2016) $
+;$LastChangedRevision: 22421 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_part_slice2d_adv.pro $;
 ;-
 
@@ -177,6 +177,7 @@ vel_data = 'thb_peib_velocity_dsl'
 ;  -ESA background removal options can be used inthis call (examples later)
 peib_arr = thm_part_dist_array(probe=probe, type='peib', trange=trange)
 
+peeb_arr = thm_part_dist_array(probe=probe, type='peeb', trange=trange)
 
 ; Create array of SST particle distributions
 psif_arr = thm_part_dist_array(probe=probe, type='psif', trange=trange)
@@ -289,13 +290,13 @@ stop
 ;  -Setting the AVERAGE_ANGLE keyword will average all data within 
 ;   the specified angle from the slice plane about the x-axis. 
 ; - Averaging may take up to 60+ seconds with full resolution (500)
-;   this example uses lower resolution to decrease computation time.
-thm_part_slice2d, peib_arr, slice_time=slice_time, timewin=timewin, $
-                  /three_d_interp, $
-                  rotation='bv', $
+;   this example uses lower range to decrease computation time.
+thm_part_slice2d, peeb_arr, slice_time=slice_time, timewin=timewin, $
+;                  /three_d_interp, $ ; only for /geometric. For interp this does not work
+                  rotation='BV', $
                   mag_data=mag_data, $    ; specify mag data for rotation
                   vel_data=vel_data, $    ; specify velocity data for rotation
-                  average_angle=[-30,30], $   ; min/max to average about x
+                  average_angle=[-30,30], $   ; min/max to avg. about x (B) axis; could be +/- 90 takes long
                   part_slice=part_slice
 
 thm_part_slice2d_plot, part_slice
@@ -308,12 +309,12 @@ stop
 ; Field/Velocity aligned SST slice with averaging
 ; ----------------------------
 ;  -The performs the same operation as the last example with SST data.
-;  -The averaging range has been increased to include the entire distribution. 
+;  -The averaging range has been increased to include a larger portion of the distribution. 
 thm_part_slice2d, psif_arr, slice_time=slice_time, timewin=timewin, $
-                  /three_d_interp, $
-                  rotation='bv', $ 
+;                  /three_d_interp, $ ; works only for /geometric (default). For interp this does not wor
+                  rotation='bv', $  
                   mag_data=mag_data, $
-                  average_angle=[-90,90], $   ; min/max to average about x
+                  average_angle=[-45,45], $   ; min/max to average about x
                   part_slice=part_slice
 
 thm_part_slice2d_plot, part_slice
@@ -330,7 +331,7 @@ stop
 ;   will be removed. 
 thm_part_slice2d, psif_arr, slice_time=slice_time, timewin=timewin, $
                   COORD='GSE', $             ; GSE coordinates
-                  count_threshold = 2, $     ; mask bins with less than 2 counts
+                  count_threshold = 0.5, $     ; mask bins with less than 0.5 counts/s
                   part_slice=part_slice
 
 thm_part_slice2d_plot, part_slice
@@ -345,7 +346,7 @@ stop
 ;   specified number of counts from the entire distribution. 
 thm_part_slice2d, psif_arr, slice_time=slice_time, timewin=timewin, $
                   COORD='GSE', $             ; GSE coordinates
-                  subtract_counts = 2, $     ; subtract 2 counts from all data 
+                  subtract_counts = 0.5, $     ; subtract 0.5 counts from all data 
                   part_slice=part_slice
 
 thm_part_slice2d_plot, part_slice
@@ -359,6 +360,7 @@ stop
 ;  -Up to four distribution arrays can be used to create a single slice.
 thm_part_slice2d, psif_arr, peib_arr, $     ; pass in up to four distribution arrays
                   slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   COORD = 'GSE', $          ; GSE coords
                   erange = [0,200000], $    ; limit energy range to exclude 
                                             ; higher SST energies
@@ -377,8 +379,9 @@ stop
 ;   set LOG=0 to use linear scaling.
 thm_part_slice2d, psif_arr, peib_arr, $     ; pass in up to four distribution arrays
                   slice_time=slice_time, timewin=timewin, $
+                  /three_d_interp, $
                   COORD = 'GSE', $          ; GSE coords
-                  erange = [0,200000], $    ; limit energy range
+                  erange = [10,200000], $    ; limit energy range
                   /energy, $
 ;                  log=0, $
                   part_slice=part_slice
@@ -393,3 +396,4 @@ stop
                      
 
 END
+

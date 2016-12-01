@@ -11,12 +11,12 @@ pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,rem
     ccsds = spp_swp_ccsds_decom(dbuffer,offset,buffer_length,remainder=remainder,dlevel=3)
     if ~keyword_set(ccsds) then begin
       if debug(2) then begin
-        dprint,dlevel=3,'Incomplete CCSDS, saving ',n_elements(remainder),' bytes for later '    ;,pkt_size,pkt_size - n_elements(b)
+        dprint,dlevel=2,'Incomplete CCSDS, saving ',n_elements(remainder),' bytes for later '    ;,pkt_size,pkt_size - n_elements(b)
       endif
       break
     endif
     npackets +=1
-    if debug(5) then begin
+    if debug(3) then begin
       ccsds_data = spp_swp_ccsds_data(ccsds)  
       dprint,dlevel=2,format='(i3,i6," APID: ", Z03,"  SeqGrp:",i1, " Seqn: ",i5,"  Size: ",i5,"   ",8(" ",Z02))',npackets,offset,ccsds.apid,ccsds.seq_group,ccsds.seqn,ccsds.pkt_size,ccsds_data[12:17]
     endif
@@ -24,7 +24,7 @@ pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,rem
         
     if keyword_set(ptp_header) then begin
       if ptp_header.ptp_size ne ccsds.pkt_size + 17 then begin
-        dprint,dlevel=3,'ccsds pkt ',ccsds.apid,' size does not match ptp size.', ptp_header.ptp_size,ccsds.pkt_size+17
+        dprint,dlevel=3,format='("APID: ",Z03," ccsds PKT size: ",i5," does not match ptp size:",i5,a)',ccsds.apid,ccsds.pkt_size+17, ptp_header.ptp_size,' '+time_string(ccsds.time)
       endif
       header=ptp_header
     endif else begin

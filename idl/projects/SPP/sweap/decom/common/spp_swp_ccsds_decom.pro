@@ -60,7 +60,7 @@ function spp_swp_ccsds_decom,buffer,offset,buffer_length,remainder=remainder , e
     gap :         1b  }
 
   if buffer_length-offset lt 12 then begin
-    if debug(4) then begin
+    if debug(3) then begin
       dprint,'CCSDS Buffer length too short to include header: ',buffer_length-offset,dlevel=3
       hexprint,buffer
     endif
@@ -116,7 +116,7 @@ function spp_swp_ccsds_decom,buffer,offset,buffer_length,remainder=remainder , e
     return ,0
   endif else begin
     if ccsds.pkt_size lt 10 then begin
-      dprint,ccsds.apid,ccsds.seqn,' Invalid Packet size:' , ccsds.pkt_size,dlevel=2
+      dprint,ccsds.apid,ccsds.seqn,' Invalid Packet size:' , ccsds.pkt_size,dlevel=3
       return,0
     endif
     if ccsds.pkt_size ne buffer_length-offset then begin

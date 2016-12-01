@@ -122,10 +122,11 @@ files =spp_file_retrieve(/cal,/spani,recent=2/24.)
 spp_ptp_file_read, files
 
 
-spp_init_realtime,/cal,/spani,/exec,recent=2/24.
+spp_init_realtime,/cal,/spani,/exec,recent=.01
 
 spp_swp_tplot,/setlim
 spp_swp_tplot,'si'
 
+spp_swp_gse_pressure_file_read  ; load chamber pressure
 
 end

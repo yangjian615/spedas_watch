@@ -42,11 +42,11 @@
 ;       
 ;    'BV':  The x axis is parallel to B field; the bulk velocity defines the x-y plane
 ;    'BE':  The x axis is parallel to B field; the B x V(bulk) vector defines the x-y plane
+;    'perp':  The x axis is the bulk velocity projected onto the plane normal to the B field; y is B x V(bulk)
 ;    'xy':  (default) The x axis is along the coordinate's x axis and y is along the coordinate's y axis
 ;    'xz':  The x axis is along the coordinate's x axis and y is along the coordinate's z axis
 ;    'yz':  The x axis is along the coordinate's y axis and y is along the coordinate's z axis
 ;    'xvel':  The x axis is along the coordinate's x axis; the x-y plane is defined by the bulk velocity 
-;    'perp':  The x axis is the bulk velocity projected onto the plane normal to the B field; y is B x V(bulk)
 ;    'perp_xy':  The coordinate's x & y axes are projected onto the plane normal to the B field
 ;    'perp_xz':  The coordinate's x & z axes are projected onto the plane normal to the B field
 ;    'perp_yz':  The coordinate's y & z axes are projected onto the plane normal to the B field
@@ -62,9 +62,9 @@
 ;NOTES: 
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-08-25 13:12:48 -0700 (Thu, 25 Aug 2016) $
-;$LastChangedRevision: 21727 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2016-11-30 11:48:57 -0800 (Wed, 30 Nov 2016) $
+;$LastChangedRevision: 22422 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_part_slice2d.pro $
 ;
 ;-
@@ -169,8 +169,10 @@ thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, 
 
 thm_part_slice2d_plot, slice
 
-print, nl,'Another identical cut using the 3D interpolation method,'
-print, 'Here the entire distribution is linearly interpolated in 
+print, nl,'Another identical cut using the 3D interpolation method.'
+print, 'Also, the ESA background removal is explicitly applied; '
+print, 'you can change settings (or into "eflux" or "counts" as needed.'
+print, 'Here main point is: the entire distribution is linearly interpolated in 
 print, 'three dimensions and a slice is extracted.',nl
 
 stop
@@ -221,14 +223,14 @@ thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice_c
 
 ;get default phase space density slice
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice_df, $
-                  /three_d_interp
+                  /two_d_interp
 
 ;plot counts slice
 thm_part_slice2d_plot, slice_counts, window=2
 
 ;plot DF slice with contour line at 1 count
 thm_part_slice2d_plot, slice_df, window=1
-spd_slice2d_add_line, slice_counts, 1
+spd_slice2d_add_line, slice_counts, 0.1
 
 ;plot DF slice with dotted colored contour lines at 1, 5, and 10 count
 ;   see IDL documentation for CONTOUR procedure for valid keywords 
@@ -301,8 +303,9 @@ trange = '2008-02-26/' + ['04:54','04:55']
 dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange)
 
 ;Field aligned rotations require magnetic field data to be loaded beforehand.
-thm_load_fgm, probe='b', datatype='fgl', level=2, coord='dsl', trange=trange
-thm_load_esa, probe='b', datatype='peib_velocity_dsl', trange=trange 
+thm_load_fit, probe='b', datatype='fgs', coord='dsl', suff='_dsl', trange=trange ; could be FGL (averaged later)
+ 
+thm_load_esa, probe='b', datatype='peib_velocity_dsl', trange=trange ; load ground precomputed moments, can be other
 
 ;This example aligns the slice plane along the BV plane.
 ;The MAG_DATA keyword is used to specify a tplot variable containing magnetic field data.
@@ -310,7 +313,7 @@ thm_load_esa, probe='b', datatype='peib_velocity_dsl', trange=trange
 ;  -bulk velocity is calculated from distribution if tplot variable is not specified
 ;These vectors will be averaged over the time range of the slice.
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
-       rotation='BV', mag_data='thb_fgl_dsl', vel_data='thb_peib_velocity_dsl', /three_d_interp
+       rotation='BV', mag_data='thb_fgs_dsl', vel_data='thb_peib_velocity_dsl', /three_d_interp
 
 thm_part_slice2d_plot, slice
 
@@ -429,11 +432,11 @@ trange = '2008-02-26/' + ['04:54','04:55']
 dist_arr = thm_part_dist_array(probe='b',type='peib', trange=trange, /get_sun)
 
 ;load B field data so it can be plotted on slice 
-thm_load_fgm, probe='b', datatype='fgl', level=2, coord='dsl', trange=trange
+thm_load_fit, probe='b', datatype='fgs', coord='dsl', suff='_dsl', trange=trange
 
 ;generate slice
 thm_part_slice2d, dist_arr, slice_time=trange[0], timewin=30, part_slice=slice, $
-                  mag_data='thb_fgl_dsl', /three_d_interp
+                  mag_data='thb_fgs_dsl', /three_d_interp
 
 ;Various keywords control other aspects of the plot.
 ;  -/sundir requires that thm_part_dist_array is called with /get_sun_direction
@@ -487,3 +490,4 @@ stop
 print, 'End of crib.'
 
 end
+
