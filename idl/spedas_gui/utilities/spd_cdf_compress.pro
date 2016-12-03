@@ -13,6 +13,7 @@
 ;  replace: if set, replace original file
 ;  cdfconvert: (string) Full path to cdfconvert executable
 ;  cdfparams: (string) Parameters for cdfconvert
+;  cdf_tmp_dir: (string) Directory for temp files
 ;  cdf_compress_error: (string) Returns error
 ;
 ;OUTPUT:
@@ -27,17 +28,19 @@
 ;  spd_cdf_compress, 'c:\temp\in.cdf', 'c:\temp\out.cdf', cdfconvert='C:\CDF Distribution\cdf36_1-dist\bin\cdfconvert.exe', replace=1, cdf_compress_error=cdf_compress_error
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-05-03 09:53:41 -0700 (Tue, 03 May 2016) $
-;$LastChangedRevision: 21003 $
+;$LastChangedDate: 2016-12-02 15:08:54 -0800 (Fri, 02 Dec 2016) $
+;$LastChangedRevision: 22431 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_cdf_compress.pro $
 ;
 ;-
 
-pro spd_cdf_compress, file_in, file_out=file_out, replace=replace, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_compress_error=cdf_compress_error
+pro spd_cdf_compress, file_in, file_out=file_out, replace=replace, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_tmp_dir=cdf_tmp_dir, cdf_compress_error=cdf_compress_error
 
   ; check input
   cdf_compress_error = ""
+  
   if ~keyword_set(replace) then replace=0 else replace=1
+  
   if ~keyword_set(file_in) then begin
     msg = 'Error: No input cdf file given. Exiting.'
     dprint,  msg
@@ -51,10 +54,28 @@ pro spd_cdf_compress, file_in, file_out=file_out, replace=replace, cdfconvert=cd
       return
     endif
   endelse
+  
+  if ~keyword_set(cdf_tmp_dir) then begin
+    cdf_temp = GETENV('CDF_TMP')
+    if file_test(cdf_temp, /directory) then begin
+      cdf_tmp_dir=cdf_temp
+    endif else begin ;if CDF_TMP doesn't exist, use the server temp dir
+      if file_test('/mydisks/home/thmsoc/', /directory) then begin
+        cdf_tmp_dir = '/mydisks/home/thmsoc/'
+      endif
+    endelse    
+  endif
+  if file_test(cdf_tmp_dir, /directory) then begin
+    cdf_tmp_dir = file_dirname(file_in)
+  endif
+  if strmid(cdf_tmp_dir, 0, /reverse_offset) ne path_sep() then begin
+    cdf_tmp_dir = cdf_tmp_dir + path_sep()
+  endif
+  
   ; if replace is set, then we don't need a file_out
   if (replace eq 1) then begin
-    if ~keyword_set(file_out) then begin
-      file_out = file_in + '_temp.cdf'
+    if ~keyword_set(file_out) then begin      
+      file_out = cdf_tmp_dir + file_basename(file_in) + '_temp.cdf'
     endif
   endif
   if ~keyword_set(file_out) then begin
@@ -64,7 +85,7 @@ pro spd_cdf_compress, file_in, file_out=file_out, replace=replace, cdfconvert=cd
     return
   endif
 
-  if ~keyword_set(cdfconvert) then cdfconvert='/usr/local/pkg/cdf-3.6.1_CentOS-6.6/bin/cdfconvert'
+  if ~keyword_set(cdfconvert) then cdfconvert='/usr/local/pkg/cdf-3.6.2_CentOS-6.7/bin/cdfconvert'
   if ~keyword_set(cdfparams) then cdfparams='-delete -blockingfactor optimal -compressnonepoch -compression "cdf:none"'
 
   if ~file_test(cdfconvert, /regular) then begin

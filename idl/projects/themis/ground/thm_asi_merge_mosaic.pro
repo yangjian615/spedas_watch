@@ -216,7 +216,12 @@ if (names[0] ne '') then store_data,delete=names
 
 	;load weights
 file_loc=!themis.local_data_dir+'thg/l2/asi/cal/'
-restore,file_loc+'true_weights_new.sav'
+file_weights = file_loc+'true_weights_new.sav'
+if ~file_test(file_weights) then begin
+  paths = spd_download( remote_file='http://themis.ssl.berkeley.edu/data/themis/thg/l2/asi/cal/true_weights_new.sav', $
+                        local_path=file_loc)
+endif
+restore,file_weights
 
 	; load cal_files once for the whole loop
 if keyword_set(stoptime) then begin
