@@ -120,6 +120,14 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
 
 
  trange =  '2016 10 '+ ['18/04','19/22']   ; SPANE - A flght in Cal chamber:  MCP test
+ trange =  '2016 11 '+ ['18/21','18/23']  ; SPAN-Ae FM postcoat w/ attenuator: Full rotation (angles incorrect, ROT not zeroed)
+
+ trange =  '2016 11 '+ ['19/00','19/02'] ; SPAN-Ae FM quick EA scan
+ trange =  '2016 11 '+ ['19/02','19/04'] ; SPAN-Ae FM rotation @ 2degrees Yaw, which has been shown to be the beam emit angle
+ trange =  '2016 11 '+ ['20/00','20/07'] ; SPAN-Ae FM thresh & MCP scan @ 2degrees Yaw
+ trange =  '2016 11 '+ ['21/01','21/23'] ; SPAN-Ae FM deflector test
+ trange =  '2016 11 '+ ['21/23','22/02'] ; SPAN-Ae FM spoiler test
+ trange =  '2016 11 '+ ['21/01','22/12'] ; last load
  
  files = spp_file_retrieve(/elec,/cal,trange=trange)
 

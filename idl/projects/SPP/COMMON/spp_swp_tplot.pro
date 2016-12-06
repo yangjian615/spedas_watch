@@ -33,9 +33,8 @@ if keyword_set(name) then begin
     'SE':   tplot,'*sp?_AF0_ANODE_SPEC *sp?_AF1_*_SPEC spp_sp?_hkp_MRAM_*',ADD=ADD
     'SE_HV': tplot,'*sp?_hkp_ADC_VMON_* *sp?_hkp_ADC_IMON_*',ADD=ADD
     'SE_LV': tplot,'*sp?_hkp_RIO*',ADD=ADD
-;    'SA_SPEC': tplot,'*_a_ar_targ_p1_*CNTS_TOTAL *_a_ar_targ_p1_*_SPEC? *_a_ar_targ_p0_*_SPEC*',add=add
-;    'SB': tplot,'APID',ADD=ADD
-;    'SB_SPEC': tplot,'*_b_ar_targ_p1_*CNTS_TOTAL *_b_ar_targ_p1_*_SPEC? *_b_ar_targ_p0_*_SPEC*',add=add
+    'SA_SPEC': tplot, 'spp_spa_hkp_ADC_VMON_HEM spp_spa_AF0_CNTS spp_spa_AF1_ANODE_SPEC spp_spa_AF1_NRG_SPEC spp_spa_AT0_CNTS spp_spa_AT1_ANODE_SPEC spp_spa_AT1_NRG_SPEC spp_spa_AT1_PEAK_BIN', ADD=ADD
+    'SB_SPEC': tplot, 'spp_spb_hkp_ADC_VMON_HEM spp_spb_AF0_CNTS spp_spb_AF1_ANODE_SPEC spp_spb_AF1_NRG_SPEC spp_spb_AT0_CNTS spp_spb_AT1_ANODE_SPEC spp_spb_AT1_NRG_SPEC spp_spb_AT1_PEAK_BIN', ADD=ADD
     'SI_RATE': tplot,'*rate*CNTS',ADD=ADD
     'SI_RATE1': tplot,'*rates_'+strsplit(/extract,'VALID_* MULTI_* STARTS_* STOPS_*'),add=add
     'SI_AF0?_1': tplot,'*spani_ar_full_p0_m?_*_SPEC1',add=add

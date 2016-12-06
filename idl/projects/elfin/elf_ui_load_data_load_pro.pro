@@ -90,7 +90,7 @@ pro elf_ui_load_data_load_pro,$
   ; ***** This is the routine that loads the actual data *****
   ; ***** This routine is provided by each mission ***** 
   ; ***** Parameters for the load routines will vary per mission *****
-  elf_load_data, instrument=instrument, datatype=datatype, level=level, $
+  elf_load_data, instrument=instrument, datatype=datatype, level=datalevel, $
                     trange=timeRange 
 
   ;if instrument EQ 'epd' then del_data, 'ell_epdi'

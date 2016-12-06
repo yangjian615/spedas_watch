@@ -13,9 +13,9 @@
 ;  thm_crib_fgm
 ;  thm_crib_fit
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-03-03 17:38:34 -0800 (Tue, 03 Mar 2015) $
-; $LastChangedRevision: 17075 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2016-12-05 10:32:00 -0800 (Mon, 05 Dec 2016) $
+; $LastChangedRevision: 22434 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/basic/thm_crib_scm.pro $
 ;-
 
@@ -91,6 +91,10 @@ thm_cal_scm, probe=probe, datatype=datatype, trange=trange, $
              out_suffix = '_volt', $
              step = 1
 
+;rename support data 
+hnames = tnames('*_scp_hed_volt')
+for i=0,n_elements(hnames)-1 do copy_data, hnames[i], strmid(hnames[i], 0, strlen(hnames[i])-5)
+           
 ;Calibrate
 ;---------
 ;  -the default values of parameters are shown
@@ -125,7 +129,10 @@ thm_cal_scm, probe=probe, datatype=datatype+'*', out_suffix = '_cal', $
 ;             step = 4, $
              /edge_zero
 
-
+;rename support data 
+hnames = tnames('*_hed_cal')
+for i=0,n_elements(hnames)-1 do copy_data, hnames[i], strmid(hnames[i], 0, strlen(hnames[i])-4)
+             
 ;Plot
 ;---------
 

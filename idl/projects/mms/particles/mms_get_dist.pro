@@ -41,14 +41,14 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-03 15:19:11 -0700 (Mon, 03 Oct 2016) $
-;$LastChangedRevision: 22008 $
+;$LastChangedDate: 2016-12-05 11:22:40 -0800 (Mon, 05 Dec 2016) $
+;$LastChangedRevision: 22435 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_get_dist.pro $
 ;-
 
 function mms_get_dist, tname, index, trange=trange, times=times, structure=structure, $
                        probe=probe, species=species, instrument=instrument, units=units, $
-                       single_time = time_in
+                       data_rate=data_rate, single_time = time_in
 
     compile_opt idl2, hidden
 
@@ -62,7 +62,7 @@ endif
 
 case strlowcase(instrument) of
   'hpca': return, mms_get_hpca_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species, units=units, single_time=time_in)
-  'fpi': return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species, single_time=time_in)
+  'fpi': return, mms_get_fpi_dist(tname, index, trange=trange, times=times, structure=structure, probe=probe, species=species, single_time=time_in, data_rate=data_rate)
   'null': dprint, dlevel=1, 'Cannot determine instrument from variable name; please specify with INSTRUMENT keyword'
   else: dprint, dlevel=1, 'Unknown instrument: "'+instrument+'"'
 endcase

@@ -13,6 +13,20 @@
 ;-
 
 ; regression tests ---------->
+; same as below, except using mms_get_dist
+function mms_load_fpi_ut::test_integration_time_get_dist
+  mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='brst'
+  mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='fast'
+  fpi_dist = mms_get_dist('mms3_dis_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst)'
+  fpi_dist = mms_get_dist('mms3_des_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst)'
+  fpi_dist = mms_get_dist('mms3_dis_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, fast)'
+  fpi_dist = mms_get_dist('mms3_des_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, fast)'
+  return, 1
+end
 
 function mms_load_fpi_ut::test_integration_time_get_i_dist_brst
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='dis-dist', data_rate='brst'

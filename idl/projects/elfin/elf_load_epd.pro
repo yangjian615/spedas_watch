@@ -81,8 +81,7 @@ PRO elf_load_epd, datatype=datatype, level=level, trange=trange, $
   if no_download eq 0 then begin
 
     ; Construct file name
-    level1='l1'   ; remove this when l2 cdf files are available.
-    remote_file = !elf.remote_data_dir + level1+'/epd/'+yr+'/lomo_'+level1+'_'+yr+mo+day+'_epd_v01.cdf'
+    remote_file = !elf.remote_data_dir + 'l1_ingo/EPD/lomo_'+strupcase(level)+'_elfin_'+yr+mo+day+'_EPD.cdf'
     paths=spd_download(remote_file=remote_file, local_file=local_file)
 
   endif

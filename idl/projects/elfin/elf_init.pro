@@ -38,7 +38,7 @@ pro elf_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
   no_color_setup=no_color_setup
 
   defsysv,'!elf',exists=exists
-  defsysv,'!elf', file_retrieve(/structure_format)
+  ;defsysv,'!elf', file_retrieve(/structure_format)
 
   if not keyword_set(exists) then begin; if !mms does not exist
     defsysv,'!elf', file_retrieve(/structure_format)
@@ -46,7 +46,8 @@ pro elf_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
 
   !elf.local_data_dir = !elf.local_data_dir + 'lomo/elfin/'
   !elf.remote_data_dir = 'http://themis-data.igpp.ucla.edu/ell/'   ; use as backup web server
-;  !elf.no_download=1
+  ;!elf.no_download=1
+  ;!elf.no_server=1
 ;  elf_config
     
   return

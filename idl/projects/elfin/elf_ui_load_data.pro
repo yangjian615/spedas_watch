@@ -311,9 +311,9 @@ pro elf_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
   
   ;create the list box and a clear all button for the data types for a given 
   ;instrument             
-  prmLevelArray = ['L2']
+  prmLevelArray = ['L1', 'L2']
   epdLevelArray = ['L1']
-  engLevelArray = ['L1']
+  engLevelArray = ['L1','L2']
   levelBase = widget_base(dataBase,/col)
   levelLabel = widget_label(levelBase,value='Level:')
   levelList = widget_list(levelBase,$

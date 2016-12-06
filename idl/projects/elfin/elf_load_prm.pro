@@ -43,8 +43,6 @@ PRO elf_load_prm, datatype=datatype, level=level, trange=trange, $
   if undefined(source) then source=!elf
   validtypes = ['*', 'mag']
   validlevels = ['l1', 'l2']
-
-  if undefined(source) then source=!elf
   if undefined(level) then level = 'l1' else level=strlowcase(level)
   if undefined(datatype) then datatype=validtypes
   if undefined(suffix) then suffix=''
@@ -84,8 +82,8 @@ PRO elf_load_prm, datatype=datatype, level=level, trange=trange, $
           ; Construct file name
           ; temporary kluge for l2 data
           ; for now use level 1 and calibrate on the fly.
-          level1='l1'   ; remove this when l2 cdf files are available.
-          remote_file = !elf.remote_data_dir + level1+'/prm/'+yr+'/lomo_'+level1+'_'+yr+mo+day+'_prm_v01.cdf'
+          if level EQ 'l2' then remote_level = 'L1' else remote_level=strupcase(level) 
+          remote_file = !elf.remote_data_dir + 'l1_ingo/PRM/lomo_'+remote_level+'_elfin_'+yr+mo+day+'_PRM.cdf'
           paths=spd_download(remote_file=remote_file, local_file=local_file)
           
   endif 
@@ -93,14 +91,24 @@ PRO elf_load_prm, datatype=datatype, level=level, trange=trange, $
       init_time=systime(/sec)
       cdf2tplot, file=local_file, get_support_data=1
       
-;      get_data, 'ell_prm', data=d, dlimits=dl
-    
-       ; for now calibrate on the fly
-;      if level EQ 'l2' then begin
-;         d.y[*,0]=d.y[*,0]/106.4   ;27238.4
-;         d.y[*,1]=d.y[*,1]/97.9    ;25062.4
-;         d.y[*,2]=d.y[*,2]/104.5   ;26572.
-;      endif 
+      If level EQ 'l2' then begin
+
+        ; calibrate on the fly for now
+        get_data, 'ell_prm', data=d, dlimits=dl, limits=l
+        d.y[*,0]=d.y[*,0]/106.4   ;27238.4
+        d.y[*,1]=d.y[*,1]/97.9    ;25062.4
+        d.y[*,2]=d.y[*,2]/104.5   ;26572.
+        ; update attributes
+;        idx=where(d.y[*,1] GT 0. or d.y[*,0] GT 0, ncnt) 
+;        d.y[idx,0]=d.y[idx,0]
+;        d.y[idx,1]=d.y[idx,1]
+;        d.y[idx,2]=d.y[idx,2]
+        miny=min(d.y[*,1])
+        maxy=max(d.y[*,0])
+        newdl={cdf:dl.cdf, spec:0, log:0, colors:[2,4,6], labels:['x','y','z'], labflag:1, ytitle:'[nT]', $
+            color_table:39, yrange:[miny,maxy]}
+        store_data, 'ell_prm', data=d, dlimits=newdl, limits=l
+      Endif
     
 ;      if i EQ 0 then begin
 ;        alld=d
@@ -109,18 +117,9 @@ PRO elf_load_prm, datatype=datatype, level=level, trange=trange, $
 ;        append_array, alld.y[*,k]=
 ;      endelse
 
-  ; update attributes
-;  miny=min(d.y[*,1])
-;  maxy=max(d.y[*,0])
-;  newdl={spec:0, log:0, colors:[2,4,6], labels:['x','y','z'], labflag:1, ytitle:'[nT]', $
-;    color_table:39, yrange:[miny,maxy]}
-
-;  store_data, 'ell_prm'+suffix, data=d, dlimits=newdl
-
-;   all_prm=tnames('ell_prm*')
 ;   req_prm=['ell_prm']
 ;   tvar_to_delete = ssl_set_complement(req_prm, all_prm)   
    ; remove tvars that were not reqested by the user
-  store_data, delete='ell_prm_time'   ; temp kluge
+;  store_data, delete='ell_prm_time'   ; temp kluge
 
 end

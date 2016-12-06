@@ -46,9 +46,9 @@ PRO elf_load_eng, datatype=datatype, level=level, trange=trange, $
     '8v6_volt_mon', '8v_volt_mon', '5v_dig_volt_mon', '5v_epd_volt_mon', '4v5_volt_mon', $
     '3v3_volt_mon', '1v5_volt_dig_volt_mon', '1v5_epd_volt_mon', '1v5_prm_volt_mon', $
     'epd_biasl_volt_mon', 'epd_biash_volt_mon', 'epd_fend_temp']
-  validlevels = ['l1']
+  validlevels = ['l1', 'l2']
 
-  if undefined(level) then level = 'l1' else level=strlowcase(level)
+  if undefined(level) then level = 'l1' else level=strlowcase(level)  
   if undefined(datatype) then datatype=validtypes
   if datatype[0] EQ '*' then datatype=validtypes else datatype=strlowcase(datatype)
   if undefined(local_data_dir) then local_data_dir = !elf.local_data_dir
@@ -63,6 +63,7 @@ PRO elf_load_eng, datatype=datatype, level=level, trange=trange, $
       return
     endif
   endfor
+
   for i = 0, n_elements(level)-1 do begin
     idx = where(validlevels eq level[i], ncnt)
     if ncnt EQ 0 then begin
@@ -76,27 +77,23 @@ PRO elf_load_eng, datatype=datatype, level=level, trange=trange, $
   mo = strmid(trange[0],5,2)
   day = strmid(trange[0],8,2)
 
+  ;local_file = !elf.local_data_dir + level+'/eng/'+yr+'/lomo_'+level+'_'+yr+mo+day+'_eng_v01.cdf'
   local_file = !elf.local_data_dir + level+'/eng/'+yr+'/lomo_'+level+'_'+yr+mo+day+'_eng_v01.cdf'
   no_download = !elf.no_download or !elf.no_server or ~undefined(no_update)
 
   if no_download eq 0 then begin
-
     ; Construct file name
     ; temporary kluge for l2 data
     ; for now use level 1 and calibrate on the fly.
-    level1='l1'   ; remove this when l2 cdf files are available.
-    remote_file = !elf.remote_data_dir + level1+'/eng/'+yr+'/lomo_'+level1+'_'+yr+mo+day+'_eng_v01.cdf'
+    remote_file = !elf.remote_data_dir + 'l1_ingo/ENG/lomo_L1_elfin_'+yr+mo+day+'_ENG.cdf'
     ; download data
     paths=spd_download(remote_file=remote_file, local_file=local_file)
-
   endif
 
   init_time=systime(/sec)
-  cdf2tplot, file=local_file, get_support_data=1
-
-;  all_eng=tnames('ell_hsk*')
-;  req_eng='ell_hsk_'+datatype
-;  tvar_to_delete = ssl_set_complement(req_eng, all_eng)
-;  store_data, delete=tvar_to_delete
+  cdf2tplot, file=local_file   ;, get_support_data=1
+  If level EQ 'l2' then begin
+     calibrate_lomo_engineering
+  Endif
 
 END
