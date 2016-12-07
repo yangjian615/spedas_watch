@@ -134,7 +134,7 @@ stop
 print,  'Test Wavelet Transform:'
 ;run the following command:
 tplot, var
-thm_ui_wavelet, var, var_new, ['2007-03-23 06:00', '2007-03-23 9:00']
+spd_ui_wavelet, var, new_var,  ['2007-03-23 06:00', '2007-03-23 9:00']
 print, 'For verification, spectrograms of wavelet transforms'
 tplot, var_new
 stop
