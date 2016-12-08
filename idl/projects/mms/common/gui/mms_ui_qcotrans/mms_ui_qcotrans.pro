@@ -33,8 +33,8 @@
 ;
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-12-01 11:44:31 -0800 (Thu, 01 Dec 2016) $
-;$LastChangedRevision: 22428 $
+;$LastChangedDate: 2016-12-07 11:04:32 -0800 (Wed, 07 Dec 2016) $
+;$LastChangedRevision: 22444 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_qcotrans/mms_ui_qcotrans.pro $
 ;
 ;-
@@ -85,35 +85,30 @@ for i=0, n_elements(active_data)-1 do begin
   probe = support_parameters[i].probe
   trange = support_parameters[i].trange
   in_coord = support_parameters[i].in_coord
-
-  ;names of support vars
-  state_names = ['th'+probe+'_state_spinras', $
-                 'th'+probe+'_state_spindec', $
-                 'th'+probe+'_state_spinras_corrected', $
-                 'th'+probe+'_state_spindec_corrected']
-
-  slp_names = ['slp_sun_pos', $
-               'slp_lun_pos', $
-               'slp_lun_att_x', $
-               'slp_lun_att_z']
+  
+;  ;names of support vars
+  mec_names = ['mms'+probe+'_mec_quat_eci_to_'+in_coord, $
+               'mms'+probe+'_mec_quat_eci_to_'+out_coord]
 
 
-  ;load state data if needed/requested
+  ;load mec data if needed/requested
   ;--------------------------------------------
-;  if support_parameters[i].load_state && mms_ui_req_spin(in_coord, out_coord, probe, trange) then begin
-;
-;    mms_load_state, probe=probe, trange=trange, /get_support_data
-;    
-;    if mms_ui_req_spin(in_coord, out_coord, probe, trange) then begin
-;      error_message = 'Failed to auto-load state data for MMS ' + strlowcase(probe) + ' to transform ' + active_data[i] + "; skipping."
-;      spd_ui_message, error_message, sb=sb, hw=hw, /dialog, title=error_title
-;      continue
-;    endif
-;    
-;    ;add to list of tplot variables allowed to persist after returning
-;    support_names = array_concat(state_names,support_names)
-;
-;  endif
+  
+  ;doesn't check if mec is in loaded data, although capability is present in req_mec, but assuming Aaron did this for a good reason  
+  if support_parameters[i].load_mec && mms_ui_req_mec(in_coord, out_coord, probe, trange) then begin
+
+    mms_load_mec, probe=probe, trange=trange, varformat='*_quat_*'
+    
+    if mms_ui_req_mec(in_coord, out_coord, probe, trange) then begin
+      error_message = 'Failed to auto-load state data for MMS ' + strlowcase(probe) + ' to transform ' + active_data[i] + "; skipping."
+      spd_ui_message, error_message, sb=sb, hw=hw, /dialog, title=error_title
+      continue
+    endif
+    
+    ;add to list of tplot variables allowed to persist after returning
+    support_names = array_concat(mec_names,support_names)
+
+  endif
 
 
   ;load slp data if needed/requested

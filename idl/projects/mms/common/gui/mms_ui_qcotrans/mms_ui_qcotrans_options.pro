@@ -33,8 +33,8 @@
 ;
 ;
 ;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-12-01 11:44:31 -0800 (Thu, 01 Dec 2016) $
-;$LastChangedRevision: 22428 $
+;$LastChangedDate: 2016-12-07 11:04:32 -0800 (Wed, 07 Dec 2016) $
+;$LastChangedRevision: 22444 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_qcotrans/mms_ui_qcotrans_options.pro $
 ;
 ;-
@@ -71,9 +71,9 @@ out_coord = strlowcase(strtrim(plugin_structure.name,2))
 support_parameters = { valid:0b, $
                        probe:'', $
                        in_coord:'', $
+                       out_coord:'',$
                        trange:[0d,0], $
-                       load_state:0b, $
-                       load_slp:0b }
+                       load_mec:0b }
 support_parameters = replicate(support_parameters, n_elements(active))
 
 
@@ -89,8 +89,8 @@ output = { ok: 0b, $
 error_title = 'Coordinate Transform Error'
 
 ;initialize user prompt output
-load_state = ''
-load_slp = ''
+load_mec = ''
+
 
 
 ;loop over active data to check for requisite support data
@@ -110,7 +110,7 @@ for i = 0,n_elements(active)-1 do begin
   ;various checks
   ;--------------------------------------------------
   ;set dummy probe for non-MMS data
-  if strlowcase(mission) ne 'MMS' then begin
+  if strlowcase(mission) ne 'mms' then begin
     probe='x'
   endif
   
@@ -129,15 +129,15 @@ for i = 0,n_elements(active)-1 do begin
   endif
 
   ;parse long probe names
-  if stregex(probe, '^th[abcde]|xxx$', /fold_case, /bool) then begin
-    probe = strlowcase(strmid(probe,2,1))
-  endif
-
-  ;check probe ("x" may be used as placeholder for non-MMS data)
-  if ~stregex(probe, '^[abcdex]$', /bool) then begin
-    errors = array_concat('Invalid spacecraft designation: '+probe, errors)
-    continue
-  endif
+;  if stregex(probe, '^th[abcde]|xxx$', /fold_case, /bool) then begin
+;    probe = strlowcase(strmid(probe,2,1))
+;  endif
+;
+;  ;check probe ("x" may be used as placeholder for non-MMS data)
+;  if ~stregex(probe, '^[abcdex]$', /bool) then begin
+;    errors = array_concat('Invalid spacecraft designation: '+probe, errors)
+;    continue
+;  endif
   
   ;skip if MMS specific transform is requested for non-MMS data
   if probe eq 'x' then begin
@@ -156,53 +156,29 @@ for i = 0,n_elements(active)-1 do begin
 ;    continue
 ;  Endif
 ;
-;
-;  ;check if state data is required for transform
-;  ;--------------------------------------------------
-;  if mms_ui_req_spin(in_coord,out_coord,probe,trange) then begin
-;     
-;    message_stem = 'Required state data (probe '+probe+' not loaded for transform of ' + active[i]
-;    skip_message = message_stem + '; skipping.' 
-;    prompt_message = message_stem + '.  Would you like to load this data automatically?'
-;    
-;    if load_state ne 'yestoall' && load_state ne 'notoall' then begin
-;      load_state = spd_ui_prompt_widget(gui_id,sb,hw,promptText=prompt_message,title="Load state data?",defaultValue="no",/yes,/no,/allyes,/allno, frame_attr=8)
-;    endif
-;    
-;    if load_state eq 'notoall' || load_state eq 'no' then begin
-;      spd_ui_message, skip_message, sb=sb, hw=hw 
-;      continue
-;    endif
-;    
-;    if load_state eq 'yes' || load_state eq 'yestoall' then begin
-;      support_parameters[i].load_state = 1b
-;    endif
-;
-;  endif
-;  
+  
 
-  ;check if slp data is required for transform
+  ;check if mec data is required for transform
   ;--------------------------------------------------
-;  if mms_ui_req_slp(in_coord,out_coord,trange) then begin
-;    
-;    message_stem = 'Required Solar/Lunar ephemeris not present for transform of ' + active[i]
-;    skip_message = message_stem + '; skipping.' 
-;    prompt_message = message_stem + '.  Would you like to load this data now?'
-;    
-;    if load_slp ne 'yestoall' && load_slp ne 'notoall' then begin
-;      load_slp = spd_ui_prompt_widget(gui_id,sb,hw,promptText=prompt_message,title="Load SLP data?",defaultValue="no",/yes,/no,/allyes,/allno, frame_attr=8)  
-;    endif
-;     
-;    if load_slp eq 'notoall' || load_slp eq 'no' then begin
-;      spd_ui_message, skip_message, sb=sb, hw=hw 
-;      continue
-;    endif
-;
-;    if load_slp eq 'yes' || load_slp eq 'yestoall' then begin
-;      support_parameters[i].load_slp = 1b
-;    endif
-;
-;  endif
+  if mms_ui_req_mec(in_coord,out_coord,probe,trange) then begin
+     
+    message_stem = 'Required mec data (probe '+probe+' not loaded for transform of ' + active[i]
+    skip_message = message_stem + '; skipping.' 
+    prompt_message = message_stem + '.  Would you like to load this data automatically?'
+    
+    if load_mec ne 'yestoall' && load_mec ne 'notoall' then begin
+      load_mec = spd_ui_prompt_widget(gui_id,sb,hw,promptText=prompt_message,title="Load mec data?",defaultValue="no",/yes,/no,/allyes,/allno, frame_attr=8)
+    endif
+    
+    if load_mec eq 'notoall' || load_mec eq 'no' then begin
+      spd_ui_message, skip_message, sb=sb, hw=hw 
+      continue
+    endif
+    
+    if load_mec eq 'yes' || load_mec eq 'yestoall' then begin
+      support_parameters[i].load_mec = 1b
+    endif
+  endif
 
 
   ;set remaining flags
