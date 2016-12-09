@@ -30,8 +30,8 @@
 ;Notes:
 ;
 ;
-;$LastChangedDate: 2016-08-02 19:05:30 -0700 (Tue, 02 Aug 2016) $
-;$LastChangedRevision: 21596 $
+;$LastChangedDate: 2016-12-08 12:35:18 -0800 (Thu, 08 Dec 2016) $
+;$LastChangedRevision: 22446 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_get_dist.pro $
 ;-
 
@@ -58,8 +58,11 @@ endif else begin
   datatype = strlowcase(datatype_in)
 endelse
 
+if keyword_set(uncorrected) && uncorrected eq 1 then begin
+  cor = 'uncori'
+endif else cor = 'cor'
 
-cor = keyword_set(uncorrected) ? 'uncor':'cor'
+;cor = keyword_set(uncorrected) ? 'uncor':'cor'
 names = tnames('g'+probe+'_'+datatype+'_*keV_dtc_'+cor+'_flux')
 
 get_data, names[0], ptr=p 

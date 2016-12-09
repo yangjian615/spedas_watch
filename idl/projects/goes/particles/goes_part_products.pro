@@ -57,8 +57,9 @@
 ;  datagap:  Setting for tplot variables, controls how long a gap must be before it is drawn. 
 ;            (can also manually degap)
 ;
-;  display_object:  Object allowing dprint to export output messages
-;
+;  display_object:  Object allowing dprint to export output messages  
+;  uncorrected: use uncorrected data           
+;  g_interpolate: interpolate uncorrected data
 ;  
 ;Output Keywords:
 ;  tplotnames:  List of tplot variables that were created
@@ -72,10 +73,106 @@
 ;  
 ;
 ;
-;$LastChangedDate: 2016-08-04 18:16:31 -0700 (Thu, 04 Aug 2016) $
-;$LastChangedRevision: 21603 $
+;$LastChangedDate: 2016-12-08 12:35:18 -0800 (Thu, 08 Dec 2016) $
+;$LastChangedRevision: 22446 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_part_products.pro $
 ;-
+
+function goes_part_intersection, set_a, set_b
+  ; intersection of two sets 
+  newset = []
+  for i = 0, n_elements(set_a)-1 do begin
+    if where(set_a[i] eq set_b) ge 0 then begin
+      newset=[newset,set_a[i]]
+    endif
+  endfor
+  return, newset
+ 
+end
+
+pro goes_uncor_flux_interpol, g_interpolate=g_interpolate
+  ;interpolate uncorrected data producing '_dtc_uncori_flux'
+  ;if keyword g_interpolate is not set, we try to find and use common points in the data
+  ;otherwise, we perform interpolation 
+  
+  if ~keyword_set(g_interpolate) || g_interpolate eq 0 then g_interpolate=0 else g_interpolate=1
+  
+  names = tnames('*_dtc_uncor_flux')  
+  
+  if g_interpolate eq 0 then begin
+    ;without interpolation (default)
+    for i=0,n_elements(names)-1 do begin
+      ; g15_maged_40keV_dtc_uncor_flux  40,75,150,275,475
+      get_data, names[i], data=d
+      curtime = d.x
+      if i gt 0 then begin
+        fulltime = goes_part_intersection(fulltime, curtime)        
+      endif else begin
+        fulltime = curtime
+      endelse
+      if fulltime eq !null then break
+    endfor
+    if n_elements(fulltime) lt 150 then begin ;few points, do interpolation 
+      dprint, "Warning: Few time points are common. Interpolation will be used althought it wasn't explicitly requested."
+      g_interpolate = 1
+    endif
+  endif 
+  
+  if g_interpolate eq 1 then begin
+    ;with interpolation
+    ; find maximum elements and interpolate using that
+    n_max = 0 
+    i_max = -1
+    time_list = [0]
+    for i=0,n_elements(names)-1 do begin
+      ; g15_maged_40keV_dtc_uncor_flux  40,75,150,275,475
+      get_data, names[i], data=d, limits=dlim
+      curtime = d.x
+      if n_max lt n_elements(curtime) then begin
+        n_max = n_elements(curtime)
+        i_max = i
+      endif
+    endfor
+    
+    if i_max ge 0 then begin
+      dprint, "Starting GOES interpolation for uncorrected variables."
+          
+      curname = names[i_max]
+      get_data, curname, data=d0, limits=dlim
+      t0 = d0.x 
+      if strlen(curname) lt 15 then begin
+        dprint, "Error: Variable name too short."  
+        return 
+      endif
+      
+      new_name = strmid(curname, 0, strlen(curname)-15) +  '_dtc_uncori_flux'
+      copy_data, curname, new_name
+      
+      for i=0,n_elements(names)-1 do begin
+        if i eq i_max then continue
+        ; for the new name, replace '_dtc_uncor_flux' with '_dtc_uncori_flux'
+        curname = names[i]
+        if strlen(curname) lt 15 then continue        
+        new_name = strmid(curname, 0, strlen(curname)-15) +  '_dtc_uncori_flux'
+        
+        get_data, curname, data=d, limits=dlim
+        ndim = size(d.y, /dimensions) 
+        yn = make_array(n_elements(t0), 9, /double)       
+        for j=0, 8 do begin
+          yn[j] = interpol(d.y[*, j], d.x, t0)
+        endfor 
+        store_data, new_name, data={x:t0, y:yn}, limits=dlim      
+        
+      endfor
+    endif else begin
+      dprint, "Error: Coultn't find any data to interpolate."
+    endelse    
+    
+  endif
+
+end
+
+
 pro goes_part_products, $
 
            probe=probe, $
@@ -111,14 +208,26 @@ pro goes_part_products, $
            get_data_structures=get_data_structures, $  ;pass out aggregated fac data structures
            
            display_object=display_object, $ ;object allowing dprint to export output messages
-
-           _extra=ex ;TBD: consider implementing as _strict_extra 
+            
+           uncorrected=uncorrected, $ ;use uncorrected data 
+           
+           g_interpolate=g_interpolate, $ ;interpolate uncorrected points
+             
+           _extra=ex  ; TBD: consider implementing as _strict_extra 
 
 
   compile_opt idl2
   
   twin = systime(/sec)
   error = 1
+  
+  if ~keyword_set(g_interpolate) || g_interpolate eq 0 then g_interpolate=0 else g_interpolate=1
+    
+  if ~keyword_set(uncorrected) || uncorrected eq 0 then uncorrected = 0 else begin 
+    ;use uncorrected data, interpolate first
+    uncorrected=1
+    goes_uncor_flux_interpol,g_interpolate=g_interpolate
+  endelse
   
   if undefined(probe) then begin
     dprint, 'ERROR: Must provide a probe designation, e.g. probe=''g13'''
@@ -216,8 +325,9 @@ pro goes_part_products, $
   ;Get array of sample times and initialize indices for loop
   ;--------------------------------------------------------
   
-  times = goes_get_dist(probe=probe, datatype=datatype, trange=trange, /times)
 
+  times = goes_get_dist(probe=probe, datatype=datatype, trange=trange, uncorrected=uncorrected, /times)
+   
   if size(times,/type) ne 5 then begin
     dprint,dlevel=1, 'No g'+probe+' '+datatype+' data has been loaded.'
     return
@@ -271,7 +381,7 @@ pro goes_part_products, $
   
     ;Get the data structure for this samgple
 
-    dist = goes_get_dist(probe=probe, datatype=datatype, index=time_idx[i], /structure)
+    dist = goes_get_dist(probe=probe, datatype=datatype, index=time_idx[i], uncorrected=uncorrected, /structure)
 
     ;Sanitize data (unnecessary at the moment)
 ;    goes_pgs_clean_data,dist,output=clean_data,units=units_lc
@@ -362,7 +472,8 @@ pro goes_part_products, $
   ;Create tplot variables for requested data types
   ;--------------------------------------------------------
 
-  tplot_prefix = 'g'+probe+'_'+datatype+'_dtc_cor_flux_'
+  if uncorrected eq 1 then datasuf='_dtc_uncor_flux_' else datasuf='_dtc_cor_flux_'
+  tplot_prefix = 'g'+probe+'_'+datatype+datasuf
   units_lc = 'flux'
  
 

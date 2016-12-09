@@ -5,23 +5,23 @@
 ;Purpose:
 ;  Demonstrate generation of spectrograms from GOES MAGED and MAGPD data.
 ;
-;$LastChangedDate: 2016-08-02 19:05:30 -0700 (Tue, 02 Aug 2016) $
-;$LastChangedRevision: 21596 $
+;$LastChangedDate: 2016-12-08 13:20:22 -0800 (Thu, 08 Dec 2016) $
+;$LastChangedRevision: 22447 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_part_products_crib_sheet.pro $
 ;-
 
 
 ;==========================================================
-; Basic spectra
+; Basic spectra, 1 min ave data
 ;==========================================================
 
 ;setup
+del_data, '*'
 probe = '15'
 datatype = 'maged'
 
 timespan, '2012-01-01', 5, /days
 trange = timerange()
-
 
 ;load particle data
 goes_load_data, probe=probe, datatype=datatype, trange=trange, $
@@ -34,15 +34,39 @@ goes_part_products, probe=probe, datatype=datatype, trange=trange, $
  
 tplot, 'g'+probe+'_'+datatype+'_dtc_cor_flux_' + ['energy','theta','phi']
 
-
 stop
 
+;==========================================================
+; Basic spectra, full data (slow)
+;==========================================================
+
+;setup
+del_data, '*'
+probe = '15'
+datatype = 'maged'
+
+timespan, '2012-01-01', 5, /days
+trange = timerange()
+
+;load particle data
+goes_load_data, probe=probe, datatype=datatype, trange=trange, $
+   /noeph
+
+;generate energy, phi, and theta spectra
+;these will be in the spacecraft's coodinates
+goes_part_products, probe=probe, datatype=datatype, trange=trange, $
+  uncorrected=1, g_interpolate=1, output='energy phi theta'
+
+tplot, 'g'+probe+'_'+datatype+'_dtc_uncor_flux_' + ['energy','theta','phi']
+
+stop
 
 ;==========================================================
 ; Field aligned spectra
 ;==========================================================
 
 ;setup
+del_data, '*'
 probe = '15'
 datatype = 'maged'
 
