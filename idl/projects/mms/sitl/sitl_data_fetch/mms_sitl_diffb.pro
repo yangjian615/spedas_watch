@@ -5,8 +5,8 @@
 ; ran the code for all four spacecraft outside of the routine, and all appropriate tplot variables are stored.
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-10-17 14:55:34 -0700 (Mon, 17 Oct 2016) $
-;  $LastChangedRevision: 22111 $
+;  $LastChangedDate: 2016-12-09 10:19:03 -0800 (Fri, 09 Dec 2016) $
+;  $LastChangedRevision: 22450 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_diffb.pro $
 
 
@@ -44,7 +44,6 @@ decnames = ['mms1', 'mms2', 'mms3', 'mms4'] + DEC
 
 namesgse = ['mms1', 'mms2', 'mms3', 'mms4'] + dataname_gse
 
-
 ; Check to see how many s/c have valid data
 ivalid = intarr(4)
 
@@ -75,6 +74,9 @@ new_vals = valloc
 lengths = lonarr(n_elements(valloc))
 
 for i = 0, countvalid-1 do begin
+  split_vec, decnames[valloc(i)]
+  dsl2gse, names[valloc(i)], decnames[valloc(i)] + '_0', decnames[valloc(i)] + '_1', namesgse[valloc(i)], /ignore_dlimits
+
   get_data, namesgse[valloc(i)], data = blah
   lengths[i] = n_elements(blah.x)
 endfor
@@ -97,6 +99,7 @@ if count_invalid gt 0 then begin
     Bz = replicate(!values.f_nan, n_elements(tref))
     Bbad = [[Bx], [By], [Bz]]
     store_data, namesgse[badloc[i]], data = {x:tref, y:Bbad}
+    
   endfor
 endif
 

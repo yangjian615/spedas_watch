@@ -147,7 +147,7 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
         if dopot then begin
             ipot = swe_sc_pot[nn(swe_sc_pot.time, pad.time)].potential
             pots[n] = ipot
-            if ipot eq ipot and finite(ipot) then begin;and ipot le -2
+            if ipot eq ipot and abs(ipot) le 20 then begin;and ipot le -2
                 mvn_swe_pot_conve, pad.energy[*,0], Fp, outEn, Fpc, ipot
                 mvn_swe_pot_conve, pad.energy[*,0], Fz, outEn, Fzc, ipot
                 mvn_swe_pot_conve, pad.energy[*,0], Fm, outEn, Fmc, ipot
