@@ -39,6 +39,8 @@
 ;                   EFP is used to find spike positions.
 ;    status         OPTIONAL: A named variable to return the exiting status. If
 ;                    exit successfully, status = 0, otherwise status = 1
+;    EFWHEDACNAME   OPTIONAL: Valid TPLOT name for the AC-coupled E-field header info
+;                   DEFAULT = 'thX_efw_hed_ac'
 ;
 ; KEYWORDS (Filter):
 ;    FPole          (OBSOLETE) Kept for backward compatibility.
@@ -83,14 +85,18 @@
 ;               Fixed problems with AC-coupled data sampled at < 16 ksps
 ;
 ; VERSION:
-; $LastChangedBy$
-; $LastChangedDate$
-; $LastChangedRevision$
-; $URL$
+;
+; $LastChangedBy $
+; $LastChangedDate $
+; $LastChangedRevision $
+; $URL $
+;
 ;-
+
 pro thm_efi_clean_efw, probe=probe, Ename=Ename, Bdslname=Bdslname, $
         trange=trange, talk=talk, EfpName=EfpName, $       ; GENERAL
         FPole=FPole, $                                     ; FILTER
+        EFWHEDACNAME=efwhedacname, $                    ; optional name for AC header info
         Edslname = Edslname, $                          ; OUTPUT NAME
         Efacname = Efacname, $                          ; OUTPUT NAME
         SpikeRemove=SpikeRemove, SpikeNwin=SpikeNwin, $    ; REMOVE_SPIKES
@@ -218,8 +224,17 @@ if n_elements(SpikeNfit) EQ 0   then begin
    if abs(srate-16384.) lt 10 then SpikeNfit   = 800L
 endif
 
+; CHECK FOR EFW HEADER TPLOT HANDLE KEYWORD SETTING
+test  = (size(efwhedacname,/type) ne 7) or (not keyword_set(efwhedacname))
+if (test[0]) then efwhacname = 'th'+sc[0]+'_efw_hed_ac' else efwhacname = efwhedacname[0]
 ; Flag for AC/DC coupled (needed for deconvolving instrument response)
-get_data,'th'+sc+'_efw_hed_ac',data=efw_ac
+get_data,efwhacname[0],data=efw_ac
+if (size(efw_ac,/type) ne 8) then begin
+  message,'No efw header info TPLOT handle found --> exiting prematurely',/continue,/informational
+  status = 1
+  return
+endif
+;get_data,'th'+sc+'_efw_hed_ac',data=efw_ac
 if total(efw_ac.y ne efw_ac.y[0]) ne 0 then begin
   print,'THM_EFI_CLEAN_EFW: Error: EFW data switches coupling (AC/DC) during the requested interval.'
   print,'                   Please split this interval at ',time_string(efw_ac.x[min(where(efw_ac.y ne efw_ac.y[0]))])
