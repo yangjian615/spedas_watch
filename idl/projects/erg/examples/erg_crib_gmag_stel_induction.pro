@@ -14,9 +14,9 @@
 ;             ERG-Science Center, STEL, Nagoya Univ.
 ;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
 ;
-;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
-;   $LastChangedRevision: 21070 $
+;   $LastChangedBy: egrimes $
+;   $LastChangedDate: 2016-12-13 10:48:28 -0800 (Tue, 13 Dec 2016) $
+;   $LastChangedRevision: 22455 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/examples/erg_crib_gmag_stel_induction.pro $
 ;-
 
@@ -80,6 +80,5 @@ endfor
 ;-----
 ; export to ASCII
 tplot_ascii, 'stel_induction_db_dt_msr'
-stop
 
 end

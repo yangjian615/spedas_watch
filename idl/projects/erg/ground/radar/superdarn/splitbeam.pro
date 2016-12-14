@@ -6,13 +6,13 @@
 ;    splitbeam, 'sd_hok_vlos_0'
 ;
 ; :Author:
-;    Tomoaki Hori (E-mail: horit@stelab.nagoya-u.ac.jp)
+;    Tomoaki Hori (E-mail: horit@isee.nagoya-u.ac.jp)
 ; :HISTORY:
 ;    2010/03/02: Created
 ;
-; $LastChangedBy: lphilpott $
-; $LastChangedDate: 2011-10-14 09:20:31 -0700 (Fri, 14 Oct 2011) $
-; $LastChangedRevision: 9113 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-12-13 10:48:28 -0800 (Tue, 13 Dec 2016) $
+; $LastChangedRevision: 22455 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/splitbeam.pro $
 ;-
 PRO splitbeam, tvars

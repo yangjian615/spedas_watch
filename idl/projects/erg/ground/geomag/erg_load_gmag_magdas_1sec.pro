@@ -32,9 +32,9 @@
 ;             ERG-Science Center, STEL, Nagoya Univ.
 ;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
 ;
-;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2016-05-23 10:50:26 -0700 (Mon, 23 May 2016) $
-;   $LastChangedRevision: 21176 $
+;   $LastChangedBy: egrimes $
+;   $LastChangedDate: 2016-12-13 10:48:28 -0800 (Tue, 13 Dec 2016) $
+;   $LastChangedRevision: 22455 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/geomag/erg_load_gmag_magdas_1sec.pro $
 ;-
 
@@ -59,8 +59,8 @@ site_code_all = strsplit( $
    + ' ' , ' ', /extract)
 
 ;--- check site codes
-if  (n_elements(site) eq 0) then site='all'
-  site_code = ssl_check_valid_name(site, site_code_all, $
+if (n_elements(site) eq 0) then site='all'
+site_code = ssl_check_valid_name(site, site_code_all, $
     /ignore_case, /include_all)
 
 print, site_code

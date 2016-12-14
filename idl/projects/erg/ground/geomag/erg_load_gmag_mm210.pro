@@ -16,8 +16,8 @@
 ;              lmt kat ktn chd zyk mgd ptk msr rik onw
 ;              kag ymk cbi gua yap kor ktb bik wew daw
 ;              wep bsv dal can adl kot cst ewa asa mcq
-;   datatype = Time resolution. '1sec' for 1 sec', '1min' for 1 min, and '1h' for 1 h.
-;              The default is 'all'.  If you need two of them, set to 'all'.
+;   datatype = Time resolution. '1sec' for 1 sec, '1min' for 1 min, and '1h' for 1 h.
+;              The default is 'all'.  If you need all of them, set to 'all'.
 ;   /downloadonly, if set, then only download the data, do not load it into variables.
 ;   /no_server, use only files which are online locally.
 ;   /no_download, use only files which are online locally. (Identical to no_server keyword.)
@@ -29,15 +29,15 @@
 ;                        trange=['2003-11-20/00:00:00','2003-11-21/00:00:00']
 ;
 ; NOTE: See the rules of the road.
-;       For more information, see http://stdb2.stelab.nagoya-u.ac.jp/mm210/
+;       For more information, see http://stdb2.isee.nagoya-u.ac.jp/mm210/
 ;
 ; Written by: Y. Miyashita, Apr 22, 2010
-;             ERG-Science Center, STEL, Nagoya Univ.
-;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
+;             ERG-Science Center, ISEE, Nagoya Univ.
+;             erg-sc-core at isee.nagoya-u.ac.jp
 ;
-;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2016-05-23 10:50:26 -0700 (Mon, 23 May 2016) $
-;   $LastChangedRevision: 21176 $
+;   $LastChangedBy: egrimes $
+;   $LastChangedDate: 2016-12-13 10:48:28 -0800 (Tue, 13 Dec 2016) $
+;   $LastChangedRevision: 22455 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/geomag/erg_load_gmag_mm210.pro $
 ;-
 
@@ -127,8 +127,7 @@ source = file_retrieve(/struct)
 
 ;--- Set parameters for the data file class 
 source.local_data_dir  = root_data_dir() + 'ergsc/'
-;source.remote_data_dir = 'http://gemsissc.stelab.nagoya-u.ac.jp/data/ergsc/'
-source.remote_data_dir = 'http://ergsc.stelab.nagoya-u.ac.jp/data/ergsc/'
+source.remote_data_dir = 'http://ergsc.isee.nagoya-u.ac.jp/data/ergsc/'
 
 ;--- Download parameters
 if(keyword_set(downloadonly)) then source.downloadonly=1

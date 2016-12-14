@@ -23,15 +23,15 @@
 ;   erg_load_camera_omti_asi, site='sgk', wavelength=5577, trange=['2012-01-01/00:00:00','2012-01-02/00:00:00']
 ;
 ; NOTE: See the rules of the road.
-;       For more information, see http://stdb2.stelab.nagoya-u.ac.jp/omti/
+;       For more information, see http://stdb2.isee.nagoya-u.ac.jp/omti/
 ;
 ; Written by: Y. Miyashita, Mar 28, 2013
-;             ERG-Science Center, STEL, Nagoya Univ.
-;             erg-sc-core at st4a.stelab.nagoya-u.ac.jp
+;             ERG-Science Center, ISEE, Nagoya Univ.
+;             erg-sc-core at isee.nagoya-u.ac.jp
 ;
-;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2016-05-23 10:50:26 -0700 (Mon, 23 May 2016) $
-;   $LastChangedRevision: 21176 $
+;   $LastChangedBy: egrimes $
+;   $LastChangedDate: 2016-12-13 10:48:28 -0800 (Tue, 13 Dec 2016) $
+;   $LastChangedRevision: 22455 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/camera/erg_load_camera_omti_asi.pro $
 ;-
 
@@ -73,8 +73,7 @@ source = file_retrieve(/struct)
 
 ;--- Set parameters for the data file class 
 source.local_data_dir  = root_data_dir() + 'ergsc/'
-;source.remote_data_dir = 'http://gemsissc.stelab.nagoya-u.ac.jp/data/ergsc/'
-source.remote_data_dir = 'http://ergsc.stelab.nagoya-u.ac.jp/data/ergsc/'
+source.remote_data_dir = 'http://ergsc.isee.nagoya-u.ac.jp/data/ergsc/'
 
 ;--- Download parameters
 if(keyword_set(downloadonly)) then source.downloadonly=1

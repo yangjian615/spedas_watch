@@ -15,9 +15,9 @@
 ;   2010/03/10: Created
 ;   2014/08/12: Major changes to move on to the new "map2d" environment 
 ;   
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21070 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2016-12-13 10:48:28 -0800 (Tue, 13 Dec 2016) $
+; $LastChangedRevision: 22455 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/sd_init.pro $
 ;-
 pro sd_init, reset=reset
@@ -37,7 +37,7 @@ if (not keyword_set(exists)) or (keyword_set(reset)) then begin
       ,sd_polar: { $
                   charsize: 1.0 $
                 } $
-      ,remote_data_dir:'http://ergsc.stelab.nagoya-u.ac.jp/data/ergsc/ground/radar/sd/fitacf/' $
+      ,remote_data_dir:'http://ergsc.isee.nagoya-u.ac.jp/data/ergsc/ground/radar/sd/fitacf/' $
       , aacgm: { $
                   coefprefix:prefix $
                   , coefyrlist:yrlist $

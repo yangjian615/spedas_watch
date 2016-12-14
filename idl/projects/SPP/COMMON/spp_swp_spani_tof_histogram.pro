@@ -4,9 +4,10 @@ pro spp_swp_spani_tof_histogram,trange=trange,xrange=xrange,ylog=ylog,binsize=bi
 
   if ~keyword_set(trange) then ctime,trange,npoints=2
   csize = 2
-  spp_apid_data,'3B9'x,apdata=ap
+  ;spp_apid_data,'3B9'x,apdata=ap
   ;print_struct,ap
-  events = ap.data_array.array
+  ap = spp_apdat('3B9'x)
+  events = ap.data.array
   if not keyword_set(trange) then ctime,trange
 
   if keyword_set(trange) then begin
