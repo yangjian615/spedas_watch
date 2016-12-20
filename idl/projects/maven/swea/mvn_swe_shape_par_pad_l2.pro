@@ -36,6 +36,9 @@
 ;   POT: If set to 1, this program will correct the spacecraft potential for
 ;        the electron energy spectrum.
 ;
+;   NSMO: A number (>1) is set to smooth over "nsmo" spectra to calculate
+;         shape parameters 
+;
 ;OUTPUTS:
 ;
 ;   Tplot variable "Shape_PAD": store shape parameters for two directions, as well
@@ -53,7 +56,7 @@
 ;-
 
 Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
-    smo=smo, erange=erange, obins=obins, mask_sc=mask_sc, $
+    nsmo=nsmo, erange=erange, obins=obins, mask_sc=mask_sc, $
     abins=abins, dbins=dbins, mag_geo=mag_geo, pot=pot
 
     @mvn_swe_com
@@ -69,7 +72,12 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
         
     print, "Calculating shape parameter with PAD data"
 
-    if not keyword_set(smo) then smo = 1
+    ;smooth nsmo spectra to make shape parameters less noisy
+    if keyword_set(nsmo) then begin
+       data = mvn_swe_pad.data
+       mvn_swe_pad.data = smooth(data,[1,1,nsmo],/nan)
+    endif
+
     if not keyword_set(erange) then erange=[20,80]
 
     if (size(pot,/type) ne 0) then dopot=1 else dopot=0

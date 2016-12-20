@@ -25,9 +25,9 @@ End
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: muser $
-; $LastChangedDate: 2016-10-18 11:40:29 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22123 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2016-12-19 11:36:19 -0800 (Mon, 19 Dec 2016) $
+; $LastChangedRevision: 22462 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -192,17 +192,23 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
   datein = time_string(date)
   yyyy = strmid(datein, 0, 4)
   mmmm = strmid(datein, 5, 2)
+  dddd = strmid(datein, 8, 2)
   If(keyword_set(directory)) Then Begin
-     dir_out = directory 
+     dir_out0 = directory 
      If(keyword_set(xxx)) Then Begin
-        dir_out = dir_out+yyyy+'/'+mmmm+'/'
-     Endif
+        dir_out = dir_out0+yyyy+'/'+mmmm+'/'
+        dir_out_d1 = dir_out0+'d1_sav/'+yyyy+'/'+mmmm+'/'
+     Endif Else Begin
+        dir_out = dir_out0
+        dir_out_d1 = dir_out0+'d1_sav/'
+     Endelse
   Endif Else Begin
-     dir_out = '/disks/data/maven/data/sci/sta/l2/'
-     dir_out = dir_out+yyyy+'/'+mmmm+'/' 
+     dir_out0 = '/disks/data/maven/data/sci/sta/l2/'
+     dir_out = dir_out0+yyyy+'/'+mmmm+'/'
+     dir_out_d1 = dir_out0+'d1_sav/'+yyyy+'/'+mmmm+'/'
   Endelse
   If(~is_string(file_search(dir_out))) Then file_mkdir, dir_out
-
+  If(~is_string(file_search(dir_out_d1))) Then file_mkdir, dir_out_d1
 ;define the common blocks
   common mvn_2a, mvn_2a_ind, mvn_2a_dat ;this one is HKP data
   common mvn_c0, mvn_c0_ind, mvn_c0_dat
@@ -236,7 +242,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      If(~is_struct(mvn_2a_dat)) Then Begin
         mvn_sta_l0_load, files = filex ;filex is still defined.
      Endif Else mvn_sta_dead_load
-;Added dead_time_load, 2015-03-03, jmm
+;Added dead_time_load, 2015-03-03, jmm, shouldn't need it
 ;Add mag load, ephemeris_load, 2015-03-15, jmm
      mvn_sta_mag_load
      mvn_sta_qf14_load
@@ -256,8 +262,8 @@ skip_ephemeris_l2:
      If(ttest Gt 2.0*86400.0d0) Then Begin
         load_position = 'ephemeris_l0'
         mvn_sta_mag_load
-        mvn_sta_qf14_load
-        mvn_sta_dead_load
+;        mvn_sta_qf14_load -- these are done in L0 process
+;        mvn_sta_dead_load
         mk = mvn_spice_kernels(/all,/load,trange=timerange())
         If(is_struct(mvn_c8_dat)) Then mvn_sta_sc_bins_load
 ;ephemeris might crash, don't kill the process, jmm, 2016-02-03
@@ -356,6 +362,9 @@ skip_ephemeris_l0:
   skip_d0:
   load_position = 'D1' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d1_dat, directory = dir_out, _extra = _extra
+;special save of D1 data
+  If(is_struct(mvn_d1_dat)) Then $
+     save, mvn_d1_dat, file = dir_out_d1+'/mvn_sta_d1_'+yyyy+mmmm+dddd+'.sav'
   skip_d1:
   load_position = 'D2' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d2_dat, directory = dir_out, _extra = _extra
