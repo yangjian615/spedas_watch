@@ -78,9 +78,9 @@
 ;Notes: under construction!!
 ;
 ;Written by Hannes Schwarzl.
-; $LastChangedBy: crussell $
-; $LastChangedDate: 2016-11-29 13:28:11 -0800 (Tue, 29 Nov 2016) $
-; $LastChangedRevision: 22416 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2016-12-20 16:18:08 -0800 (Tue, 20 Dec 2016) $
+; $LastChangedRevision: 22467 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/fields/thm_cal_fgm.pro $
 ;Changes by Edita Georgescu
 ;eg 6/3/2007     - matrix multiplication
@@ -334,7 +334,7 @@ endif
 ;state data is loaded
 probe_letter = strmid(name_thx_fgx_in, 2, 1)
 if undefined(out_suf) then out_suf=''
-thm_autoload_support, vname=name_thx_fgx_in,suffix=out_suf[0], probe_in = probe_letter[0], /spinmodel, /spinaxis
+thm_autoload_support, vname=name_thx_fgx_in, probe_in = probe_letter[0], /spinmodel, /spinaxis
 preSpin=strmid(name_thx_fgx_in,0,4)
 name_thx_spinper=preSpin+'state_spinper'
 name_thx_spinphase=preSpin+'state_spinphase'

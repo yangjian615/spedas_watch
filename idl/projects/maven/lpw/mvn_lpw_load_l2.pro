@@ -96,7 +96,7 @@
 ;2015-11-30: CMF: made all produced tplot variables lower case.
 ;2016-06-09: CMF: bug fixed where, if multiple vars were requested, and one was not found, code would exit before trying to find the remaining requested vars. Success keyword is now a float
 ;                 array the same length as input vars, with a value for each requested variable.
-;
+;2016-12-20: CMF: added lines to bring through data.info field in the data structure.
 ;-
 
 
@@ -322,6 +322,9 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
                     str_element, data1, 'flag', flag, success=ok
                     if (not ok) then flag = replicate(NaN, Nx)    ; filler values
       
+                    str_element, data1, 'info', info, success=ok
+                    if (not ok) then info = replicate(NaN, Nx)    ; filler values
+                    
                     str_element, data1, 'v', v, success=ok
                     if (not ok) then v = replicate(NaN, Nx, Ny)   ; filler values
       
@@ -361,7 +364,11 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
                     str_element, data1, 'flag', flagNEW, success=ok
                     if (ok) then flag = [temporary(flag), temporary(flagNEW)] $
                             else flag = [temporary(flag), replicate(NaN, Mx)]
-      
+                    
+                    str_element, data1, 'info', infoNEW, success=ok
+                    if (ok) then info = [temporary(info), temporary(infoNEW)] $
+                            else info = [temporary(info), replicate(NaN, Mx)]
+                                      
                     str_element, data1, 'v', vNEW, success=ok
                     vOLD = temporary(v)
                     v = fltarr(Nx+Mx, Ny)
@@ -413,6 +420,7 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
       undefine, flag
       undefine, v
       undefine, dv
+      undefine, info
       xcount = 0l  ;make sure both are zero so we jump out below
       ycount = 0l  
     endif else begin
@@ -449,7 +457,7 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
           ;Store data:
       
           if (size(x,/type) ne 0) then begin
-            dataSTR = {x:x[indsKP], y:y[indsKP,*], dy:dy[indsKP,*], flag:flag[indsKP]}
+            dataSTR = {x:x[indsKP], y:y[indsKP,*], dy:dy[indsKP,*], flag:flag[indsKP], info:info[indsKP]}
             if (size(v,/type) ne 0) then str_element, dataSTR, 'v', v[indsKP,*], /add
             if (size(dv,/type) ne 0) then str_element, dataSTR, 'dv', dv[indsKP,*], /add
           endif
@@ -478,6 +486,7 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
           undefine, flag
           undefine, v
           undefine, dv
+          undefine, info
     
     endif  ;xcount gt 0
     

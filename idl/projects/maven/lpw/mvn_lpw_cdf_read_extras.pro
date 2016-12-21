@@ -19,6 +19,7 @@
 ;
 ;MODIFICATIONS:
 ;Created: 2015-04-14: CMF.
+;2016-12-20: CMF: bring in data.info information from data structure.
 ;
 ;NOTES: as of last edit, must check input tplot variable has dl.xFieldnam present. Check final outputs - check default value is NaN.
 ;
@@ -38,6 +39,7 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
     
     time = dd1.x   ;grab data and upper / lower limits
     flag = dd1.flag
+    info = dd1.info
     Nelectron   = dd1.y[*,0]
     NelectronDY = dd1.dy[*,0]
     NelectronDV = dd1.dv[*,0]
@@ -63,7 +65,9 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
       'y',    Nelectron,  $     ; most of the time float and 1-D or 2-D
       'dy',   NelectronDY,  $    ; same size as y
       'dv',   NelectronDV, $
-      'flag', flag)     ;1-D
+      'flag', flag       ,  $     ;1-D
+      'info', info  )
+      
     ;-------------------------------------------
     dlimit_l2=create_struct(   $
       'Product_name',                  'MAVEN LPW electron density Calibrated level L2', $
@@ -148,7 +152,8 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
       'y',    Telectron,  $     ; most of the time float and 1-D or 2-D
       'dy',   TelectronDY,  $    ; same size as y
       'dv',   TelectronDV,  $
-    'flag', flag)     ;1-D
+      'flag', flag    , $    ;1-D
+      'info', info  )
     ;-------------------------------------------
     dlimit_l2=create_struct(   $
       'Product_name',                  'MAVEN LPW electron temperature Calibrated level L2', $
@@ -233,7 +238,8 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
       'y',    Usc,  $     ; most of the time float and 1-D or 2-D
       'dy',   UscDY,  $    ; same size as y
       'dv',   UscDV,  $
-      'flag', flag)     ;1-D
+      'flag', flag    , $       ;1-D
+      'info', info)
     ;-------------------------------------------
     dlimit_l2=create_struct(   $
       'Product_name',                  'MAVEN LPW Spacecraft potential Calibrated level L2', $

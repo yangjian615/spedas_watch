@@ -153,6 +153,10 @@
 ;                         of the slice plane about it's x-axis
 ;
 ;  MSG_OBJ: Reference to dprint display object.
+;  
+;  DETERM_TOLERANCE:  tolerance of the determinant of the custom rotation matrix 
+;           (maximum acceptable difference from determ(C)=1 where C is the 
+;           user's custom rotation matrix)
 ; 
 ;
 ;Output:
@@ -204,8 +208,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-18 09:35:33 -0700 (Tue, 18 Oct 2016) $
-;$LastChangedRevision: 22116 $
+;$LastChangedDate: 2016-12-20 09:38:58 -0800 (Tue, 20 Dec 2016) $
+;$LastChangedRevision: 22464 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
@@ -218,6 +222,7 @@ function spd_slice2d, input1, input2, input3, input4, $
                       samples=samples, $
                     ; Orientations
                       custom_rotation=custom_rotation, $
+                      determ_tolerance=determ_tolerance, $
                       rotation=rotation, $
                       slice_norm=slice_z, $
                       slice_x=slice_x, $
@@ -476,7 +481,8 @@ spd_slice2d_get_support, slice_z, trange, output=slice_z_vec
 
 ; Custom rotation
 spd_slice2d_custom_rotation, custom_rotation=custom_rotation, trange=trange, fail=fail, $
-         vectors=xyz, bfield=bfield, vbulk=vbulk, sunvec=sunvec, matrix=custom_matrix
+         vectors=xyz, bfield=bfield, vbulk=vbulk, sunvec=sunvec, matrix=custom_matrix, $
+         determ_tolerance=determ_tolerance
 if keyword_set(fail) then return, invalid
 
 

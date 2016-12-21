@@ -10,7 +10,7 @@
 ;Input:
 ;  custom_rotation:  3x3 rotation matrix or name to tplot variable containing such matrix
 ;  trange:  time range of the slice, tplot vars will be averaged over this range
-;
+;  determ_tolerance: acceptable tolerance for determ=1, defaults to 1e-6
 ;
 ;Output:
 ;  matrix:  the transformation matrix
@@ -28,8 +28,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-11 07:49:52 -0700 (Tue, 11 Oct 2016) $
-;$LastChangedRevision: 22083 $
+;$LastChangedDate: 2016-12-20 09:38:58 -0800 (Tue, 20 Dec 2016) $
+;$LastChangedRevision: 22464 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/core/spd_slice2d_custom_rotation.pro $
 ;-
 pro spd_slice2d_custom_rotation, $ 
@@ -43,6 +43,8 @@ pro spd_slice2d_custom_rotation, $
                       sunvec=sunvec, $
                       
                       matrix=matrix, $
+                        
+                      determ_tolerance=determ_tolerance, $
 
                       fail=fail
     
@@ -54,6 +56,7 @@ pro spd_slice2d_custom_rotation, $
     matrix = [ [1.,0,0], [0,1,0], [0,0,1] ]
     return
   endif
+  if undefined(determ_tolerance) then determ_tolerance = 1e-6
 
   spd_slice2d_get_support, custom_rotation, trange, /matrix, output=matrix
   
@@ -74,7 +77,7 @@ pro spd_slice2d_custom_rotation, $
   endif
 
   ; Check that determ=1
-  if abs(determ(matrix)-1) gt 1e-6 then begin
+  if abs(determ(matrix)-1) gt determ_tolerance then begin
     fail = 'Custom rotation matrix may not be valid right-handed rotation'
     dprint, dlevel=1, fail
     return

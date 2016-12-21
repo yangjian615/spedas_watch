@@ -28,13 +28,13 @@
 ; 
 ; NOTES:
 ; 
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-09-30 10:16:20 -0700 (Fri, 30 Sep 2016) $
-;$LastChangedRevision: 21986 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2016-12-20 16:09:38 -0800 (Tue, 20 Dec 2016) $
+;$LastChangedRevision: 22466 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_autoload_support.pro $
 ;
 ;-
-Pro thm_autoload_support, vname=vname, suffix=suffix, spinmodel=spinmodel, spinaxis=spinaxis, slp=slp, history_out=history_out, probe_in=probe_in, trange=trange, progobj=progobj, _extra=_extra
+Pro thm_autoload_support, vname=vname, spinmodel=spinmodel, spinaxis=spinaxis, slp=slp, history_out=history_out, probe_in=probe_in, trange=trange, progobj=progobj
 
 ; Check to see if input variable name is specified
 if (~keyword_set(vname)) then begin
@@ -84,9 +84,13 @@ endif
           loadstate=1b
        endif
     endelse
-  endif
+  endif   ; Done with spinmodel
 
 ; Does loaded spin axis data cover the time range?
+; There are uncorrected and corrected versions of spinras and spindec.
+; If uncorrected data is present and covers the time range of interest,
+; but corrected data is altogether missing, skip reloading because the
+; corrected data is most likely unavailable.
 
   if (keyword_set(spinaxis)) then begin
      all_names = tnames()
@@ -98,28 +102,38 @@ endif
      get_data,var2,trange=tr2
      get_data,var3,trange=tr3
      get_data,var4,trange=tr4
-     if ( (n_elements(tr1) NE 2) OR (n_elements(tr2) NE 2) OR $
-          (n_elements(tr3) NE 2) OR (n_elements(tr4) NE 2)) then begin
+     if ( (n_elements(tr1) NE 2) OR (n_elements(tr2) NE 2)) then begin
+        ; Case 1: Uncorrected spinras or spindec are missing, need to load.     
         loadstate=1b
      endif else begin
+        ; Case 2: Uncorrected spinras & dec present, check time range of each
         tr1 += [-slop,slop]
         tr2 += [-slop,slop]
-        tr3 += [-slop,slop]
-        tr4 += [-slop,slop]
         if ((trange[0] LT tr1[0]) OR (trange[1] GT tr1[1])) then begin
-          loadstate=1b
+          loadstate=1b ; Load if uncorrected spinras outdated
         endif
         if ((trange[0] LT tr2[0]) OR (trange[1] GT tr2[1])) then begin
-          loadstate=1b
-        endif
-        if ((trange[0] LT tr3[0]) OR (trange[1] GT tr3[1])) then begin
-          loadstate=1b
-        endif
-        if ((trange[0] LT tr4[0]) OR (trange[1] GT tr4[1])) then begin
-          loadstate=1b
+          loadstate=1b  ; Load if uncorrected spindec outdated
         endif
      endelse
-  Endif
+     ; Uncorrected variables now accounted for. Check time ranges of
+     ; corrected variables. Reload if corrected var exists but 
+     ; doesn't cover time range of interest.
+     ; If corrected spinras is present...
+     if (n_elements(tr3) EQ 2) then begin
+       tr3 += [-slop,slop]
+       if ((trange[0] LT tr3[0]) OR (trange[1] GT tr3[1])) then begin
+         loadstate=1b    ; Load if corrected spinras outdated
+       endif
+     endif
+     ; If corrected spindec is present...
+     if (n_elements(tr4) EQ 2) then begin
+       tr4 += [-slop,slop]
+       if ((trange[0] LT tr4[0]) OR (trange[1] GT tr4[1])) then begin
+         loadstate=1b    ; Load if corrected spindec outdated
+       endif
+     endif
+  endif  ; done with spinaxis
 
 ; Does loaded SLP data cover the requested time range?
 
@@ -154,12 +168,12 @@ endif
           loadslp=1b
         endif
      endelse
-  endif
+  endif  ; done with SLP
  
   If(loadstate) Then Begin
     If(obj_valid(progobj)) Then progobj -> update, 0.0,  $
       text = 'Loading State data for Calibration, Probe: '+probe
-    thm_load_state, probe = probe, suffix=suffix, /get_support_data, trange = trange
+    thm_load_state, probe = probe, /get_support_data, trange = trange
     tj = time_string(trange)        ;for history
     history_out = 'thm_load_state, probe = '+''''+probe+''''+$
       ', trange = ['+''''+tj[0]+''''+', '+''''+tj[1]+''''+$
