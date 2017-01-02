@@ -32,7 +32,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
   perror = -1
   catch, error_status; !ERROR_STATE is set
   if error_status ne 0 then begin
-    catch, /cancel; Disable the catch system
+    ;catch, /cancel; Disable the catch system
     eva_error_message, error_status
     msg = [!Error_State.MSG,' ','...EVA will igonore this error.']
     if ~keyword_set(no_gui) then begin 
