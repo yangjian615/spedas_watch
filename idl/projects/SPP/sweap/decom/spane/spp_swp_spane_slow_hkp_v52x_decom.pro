@@ -281,6 +281,8 @@ endif
     GAP:            ccsds.gap}
 
 
+if ~finite(spae.time) then spae.time = ptp_header.ptp_time
+
 
   return,spae
 

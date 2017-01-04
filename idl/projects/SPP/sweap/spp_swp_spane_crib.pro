@@ -112,6 +112,11 @@ spp_msg_file_read, spp_file_retrieve( 'spp/data/sci/sweap/prelaunch/gsedata/EM/S
 spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-3/20160920_084426_BfltBigCalChamberEAscan/PTP_data.dat.gz')
 
 spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-3/20160923_165136_BfltContinuedPHDscan/PTP_data.dat')
+;spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/mgsehires1/20161229_001105_/PTP_data.dat')
+spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/mgsehires1/20161223_163710_test/PTP_data.dat') ;second cycling attempt cover open
+
+
+
 
 ;   spane B flight CO pre conformal coat
 files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8']) 
@@ -127,11 +132,43 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  trange =  '2016 11 '+ ['20/00','20/07'] ; SPAN-Ae FM thresh & MCP scan @ 2degrees Yaw
  trange =  '2016 11 '+ ['21/01','21/23'] ; SPAN-Ae FM deflector test
  trange =  '2016 11 '+ ['21/23','22/02'] ; SPAN-Ae FM spoiler test
- trange =  '2016 11 '+ ['21/01','22/12'] ; last load
+
+  
+
+ ;;SPANB PRE VIBE CAL
+ ; Note that these should be loaded as spanea
+ trange = '2016 12 '+ ['06/02','06/05']
+ trange = '2016 12 '+ ['05/12','06/00']
+ trange = '2016 12 '+ ['05/19','06/00'] ; SPAN-B FM pre-Vibe sweep yaw test w/ correction of yawlin (other version is yaw only)
+ trange = '2016 12 '+ ['05/23','06/02'] ; SPAN-B FM pre-Vibe low energy electrons grab
+
+ trange = '2016 12 '+ ['02/23','03/01'] ; SPAN-B FM pre-Vibe spoiler test @ 2degrees Yaw & full rotation @ 2degrees yaw
+ trange = '2016 12 '+ ['02/18','02/22'] ; SPAN-B FM pre-Vibe deflector test on anodes 14 & 15
+ trange = '2016 11 '+ ['30/01','30/03'] ; SPAN-B FM deflector test on anode 0
+ trange = '2016 11 '+ ['30/02','30/04'] ; SPAN-B FM deflector test on anode 1
+ ;anode 2 partial coverage
+ ;anode 3 partial coverage
+ ;anode 4 partial coverage
+ trange = '2016 11 '+ ['30/08','30/10'] ; SPAN-B FM deflector test on anode 5
+ ;anode 6 partial coverage
+ trange = '2016 11 '+ ['30/11','30/13'] ; SPAN-B FM deflector test on anode 7
+ trange = '2016 11 '+ ['30/12','30/14'] ; SPAN-B FM deflector test on anode 8
+ trange = '2016 11 '+ ['30/13','30/15'] ; SPAN-B FM deflector test on anode 9
+ ;anode 10 no coverage
+ ;anode 11 partial coverage
+ trange = '2016 11 '+ ['30/17','30/19'] ; SPAN-B FM deflector test on anode 12
+ trange = '2016 11 '+ ['30/18','30/22'] ; SPAN-B FM deflector test on anode 13
+ trange = '2016 11 '+ ['29/04','29/08'] ; SPAN-B FM ea quick scan - missing data for some anodes
+ 
+ ;; SPANB TBAL & cover opening Malfunction
+ trange = '2016 12 '+ ['22/06','22/11'] ; SPAN-B FM TBAL cover opening - failure. SPANB is XX
+ trange = '2016 12 '+ ['22/18','22/20'] ; SPAN-B FM TBAL cover opening - indicating open. SPANB is XX
+ trange = '2016 12 '+ ['23/16','24/03'] ; SPAN-B FM TBAL temeprature data - op heater. SPANB is Cold.
+ 
  
  files = spp_file_retrieve(/elec,/cal,trange=trange)
-
-
+ trange = '2016 12 '+ ['02/00','03/12'] ; SPAN-B FM pre-Vibe last load
+ trange = '2016 12 '+ ['01/00','02/00'] ; SPAN-B FM pre-Vibe contains nothing
 
 ;  Get recent data files:
 files = spp_file_retrieve(/spanea,/cal,recent=1/24.)   ; get last 1 hour of data from server

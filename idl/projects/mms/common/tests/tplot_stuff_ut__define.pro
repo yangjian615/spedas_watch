@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-18 09:45:35 -0800 (Fri, 18 Nov 2016) $
-; $LastChangedRevision: 22374 $
+; $LastChangedDate: 2017-01-03 09:10:21 -0800 (Tue, 03 Jan 2017) $
+; $LastChangedRevision: 22474 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/tplot_stuff_ut__define.pro $
 ;-
 
@@ -32,6 +32,11 @@ end
 
 ; ------- end of the regression tests -------
 
+function tplot_stuff_ut::test_tt2000_2_unix
+  unix_val = tt2000_2_unix([4.98e17, 4.99e17])
+  assert, array_equal(time_string(unix_val), ['2015-10-13/09:19:06', '2015-10-24/23:05:18']), 'Problem with tt2000_2_unix routine'
+  return, 1
+end
 
 function tplot_stuff_ut::test_mult_data
   store_data, 'test_data_to_multiply', data={x: time_double('2015-1-1')+indgen(15), y: indgen(15)+8}

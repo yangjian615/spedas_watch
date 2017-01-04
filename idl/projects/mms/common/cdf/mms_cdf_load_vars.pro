@@ -159,7 +159,7 @@ for fi=0,n_elements(files)-1 do begin
         dprint,dlevel=1,verbose=verbose,'File not found: "'+files[fi]+'"'
         continue
     endif
-    id=cdf_open(files[fi])
+    id=cdf_open(files[fi], /readonly)
     if not keyword_set(info) then begin
         info = cdf_info(id,verbose=verbose) ;, convert_int1_to_int2=convert_int1_to_int2)
     endif  

@@ -111,7 +111,8 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           
           ; delete most of the variables
           tn = tnames(sc+'*feeps*top*',jmax)
-          if jmax gt 0 then store_data, tn,/delete
+          idx = where(~strmatch(tn,'*clean_sun_removed'),ct)
+          if jmax gt 0 then store_data, tn[idx],/delete
           
           ; options
           tnf = sc+'_epd_feeps_srvy_sitl_electron_intensity_omni_spin'

@@ -6,10 +6,10 @@
 ;-----------------
 ; Magnetic Field
 ;-----------------
-;mms*_dfg_srvy_gsm_dmpa; Bx, By, Bz
-;mms*_dfg_srvy_gsm_dmpa_btot; |B|
-mms*_fpi_bentPipeB_DBCS;.... FPI Emergency parameters for when DFG/AFG not available.
-mms*_fpi_bentPipeB_Norm;... FPI Emergency parameters for when DFG/AFG not available.
+mms*_dfg_srvy_gsm_dmpa; Bx, By, Bz
+mms*_dfg_srvy_gsm_dmpa_btot; |B|
+;mms*_fpi_bentPipeB_DBCS;.... FPI Emergency parameters for when DFG/AFG not available.
+;mms*_fpi_bentPipeB_Norm;... FPI Emergency parameters for when DFG/AFG not available.
 
 ;---------------------
 ; S/C Potential
@@ -21,7 +21,7 @@ mms*_edp_scpot_fast_sitl; SC-potential
 ;----------------------------------
 mms*_fpi_density; ... FPI
 mms*_fpi_ion_vel_dbcs;... FPI
-;mms*_exb_fpi_vperp_z;....  Comparison between (ExB)z and FPI Vperp,z
+mms*_exb_fpi_vperp_z;....  Comparison between (ExB)z and FPI Vperp,z
 
 
 ;--------------------
