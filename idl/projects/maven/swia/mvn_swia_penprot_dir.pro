@@ -19,8 +19,8 @@
 ;	VTHRESH: Percentage difference from upstream velocity to allow
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2015-09-02 07:49:18 -0700 (Wed, 02 Sep 2015) $
-; $LastChangedRevision: 18689 $
+; $LastChangedDate: 2017-01-04 13:27:52 -0800 (Wed, 04 Jan 2017) $
+; $LastChangedRevision: 22491 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_dir.pro $
 ;
 ;-
@@ -136,6 +136,7 @@ nout = fltarr(norb)
 nbout = fltarr(norb)
 vout = fltarr(norb)
 tout = dblarr(norb)
+mmax = fltarr(norb)
 
 for i = 0,norb-1 do begin
 	if keyword_set(swea) then begin
@@ -156,13 +157,14 @@ for i = 0,norb-1 do begin
 		endelse
 		spec = spec-min(spec[wr]) > 0
 		bspec = bspec-min(bspec[wr]) > 0
-		nout(i) = Const*!pi/sqrt(2)*total(denergy[wr]*energy[wr]^(-1.5)*spec[wr])
-		nbout(i) = Const*total(denergy[wr]*energy[wr]^(-1.5)*bspec[wr])
+		nout[i] = Const*!pi/sqrt(2)*total(denergy[wr]*energy[wr]^(-1.5)*spec[wr])
+		nbout[i] = Const*total(denergy[wr]*energy[wr]^(-1.5)*bspec[wr])
 
 		maxc = max(spec[wr],maxi)
 		eout = energy(wr[maxi])
-		vout(i) = sqrt(2*eout*1.6e-19/1.67e-27)/1e3
-		tout(i) = mean(times(w),/double,/nan)
+		vout[i] = sqrt(2*eout*1.6e-19/1.67e-27)/1e3
+		tout[i] = mean(times[w],/double,/nan)
+		mmax[i] = maxc/mean(spec[wr])
 	endif
 endfor
 
@@ -178,5 +180,6 @@ endif
 store_data,'npen',data = {x:tout[w],y:nout[w]}
 store_data,'nbpen',data = {x:tout[w],y:nbout[w]}
 store_data,'vpen',data = {x:tout[w],y:vout[w]}
+store_data,'mmax',data = {x:tout[w],y:mmax[w]}
 
 end

@@ -17,10 +17,10 @@
 ;OUTPUTS:
 ;   d2f_away,d2f_twd
 ;
-; $LastChangedBy: xussui_lap $
-; $LastChangedDate: 2017-01-03 14:46:34 -0800 (Tue, 03 Jan 2017) $
-; $LastChangedRevision: 22485 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/mvn_swe_d2f_heii.pro $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2017-01-03 22:08:52 -0800 (Tue, 03 Jan 2017) $
+; $LastChangedRevision: 22489 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_d2f_heii.pro $
 ;
 ;CREATED BY:    Shaosui Xu  01-03-17
 ;-
