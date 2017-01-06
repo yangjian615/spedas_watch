@@ -9,8 +9,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 14:40:54 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21203 $
+;$LastChangedDate: 2017-01-05 10:01:55 -0800 (Thu, 05 Jan 2017) $
+;$LastChangedRevision: 22497 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_split_fgm_data.pro $
 ;-
 pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level = level, data_rate = data_rate, instrument = instrument
@@ -42,9 +42,7 @@ pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level =
             ; uncomment the following to remove the old variable
             ; del_data, tplot_name+suffix
             ; tplotnames = ssl_set_complement([tplot_name+suffix], tplotnames)
-        endif else begin
-            dprint, dlevel = 0, 'Error splitting the tplot variable: ', tplot_name+suffix
-        endelse
+        endif
     endfor
 
 ;;;; kludge to support different variable names for different versions of CDFs
@@ -72,8 +70,6 @@ pro mms_split_fgm_data, probe, tplotnames = tplotnames, suffix = suffix, level =
         ; uncomment the following to remove the old variable
         ; del_data, tplot_name+suffix
         ; tplotnames = ssl_set_complement([tplot_name+suffix], tplotnames)
-      endif else begin
-        dprint, dlevel = 0, 'Error splitting the tplot variable: ', tplot_name+suffix
-      endelse
+      endif
     endfor
 end

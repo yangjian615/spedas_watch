@@ -5,18 +5,33 @@
 ; Requires mgunit in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-29 08:29:38 -0700 (Tue, 29 Mar 2016) $
-; $LastChangedRevision: 20618 $
+; $LastChangedDate: 2017-01-05 17:12:41 -0800 (Thu, 05 Jan 2017) $
+; $LastChangedRevision: 22514 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_file_filter_ut__define.pro $
 ;-
 
-function mms_file_filter_ut::test_min_version
-    min_v = ['C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160117_v2.13.3.cdf',$
+function mms_file_filter_ut::test_major_version
+    all_versions = ['C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160117_v2.13.3.cdf',$
+             'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160119_v2.14.1.cdf', $
+             'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160120_v2.14.1.cdf', $
+             'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160120_v1.14.1.cdf', $
+             'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160120_v1.14.1.cdf', $
+             'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160120_v1.14.1.cdf']
+    major_versions_real = ['C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160117_v2.13.3.cdf',$
              'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160119_v2.14.1.cdf', $
              'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160120_v2.14.1.cdf']
-    min_versions = unh_mms_file_filter(self.testdata, trange=time_double(['2016-01-15', '2016-01-20']), min_version='2.13.3')
-    assert, array_equal(min_v, min_versions), 'Problem with min_version keyword'
+    major_versions = unh_mms_file_filter(all_versions, trange=time_double(['2016-01-15', '2016-01-20']), /major_version, /no_time)
+    assert, array_equal(major_versions_real, major_versions), 'Problem with major_version keyword'
     return, 1
+end 
+
+function mms_file_filter_ut::test_min_version
+  min_v = ['C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160117_v2.13.3.cdf',$
+    'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160119_v2.14.1.cdf', $
+    'C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160120_v2.14.1.cdf']
+  min_versions = unh_mms_file_filter(self.testdata, trange=time_double(['2016-01-15', '2016-01-20']), min_version='2.13.3')
+  assert, array_equal(min_v, min_versions), 'Problem with min_version keyword'
+  return, 1
 end
 
 function mms_file_filter_ut::test_latest_version

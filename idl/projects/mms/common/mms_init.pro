@@ -32,9 +32,9 @@
 ;HISTORY:
 ; 2015-04-10, moka, Created based on 'thm_init'
 ; 
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-07 11:29:48 -0700 (Fri, 07 Oct 2016) $
-; $LastChangedRevision: 22064 $
+; $LastChangedBy: moka $
+; $LastChangedDate: 2017-01-05 10:50:20 -0800 (Thu, 05 Jan 2017) $
+; $LastChangedRevision: 22507 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_init.pro $
 ;-
 
@@ -81,7 +81,7 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
 
   cdf_version_readmin = '3.1.0'
   cdf_version_writemin = '3.1.1'
-  cdf_version_mms = '3.6'
+  cdf_version_mms = '3.6.30';'3.6'
   
   if cdf_version lt cdf_version_readmin then begin
     print,'Your version of the CDF library ('+cdf_version+') is unable to read THEMIS and MMS data files.'
@@ -96,10 +96,10 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
     print,'http://cdf.gsfc.nasa.gov/html/idl62_or_earlier_and_cdf3_problems.html'
   endif
   if cdf_version lt cdf_version_mms then begin
-    msg = ['A leap second was inserted on June 30, 2015.']
+    msg = ['A leap second was inserted on December 31, 2016.']
     msg = [msg,' ']
     msg = [msg,'For correct interpretation of time tags for MMS data taken after this date,']
-    msg = [msg,'please upgrade your CDF software to version 3.6 at']
+    msg = [msg,'please upgrade your CDF software to its latest version at']
     msg = [msg,' ']
     msg = [msg,'http://cdf.gsfc.nasa.gov/html/cdf_patch_for_idl.html']
     result = dialog_message(msg,/center)

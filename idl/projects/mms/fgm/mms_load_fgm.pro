@@ -62,8 +62,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-08 10:47:41 -0800 (Tue, 08 Nov 2016) $
-;$LastChangedRevision: 22339 $
+;$LastChangedDate: 2017-01-05 10:00:45 -0800 (Thu, 05 Jan 2017) $
+;$LastChangedRevision: 22496 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -122,6 +122,8 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
 
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return
+    
+    if undefined(tplotnames) then return
     
     for probe_idx = 0, n_elements(probes)-1 do begin
         this_probe = 'mms'+strcompress(string(probes[probe_idx]), /rem)

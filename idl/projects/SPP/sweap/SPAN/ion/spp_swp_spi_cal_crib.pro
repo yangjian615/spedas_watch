@@ -108,8 +108,17 @@ pro spp_swp_spi_times
 
    message,'not to be run!'
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; SPAN-Ai First Calibration ;;;
+;;; SPAN-Ai 0th Calibration   ;;;
+;;;       2016-XX-XX          ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+   ;;; ASK DAVIN
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; SPAN-Ai 1st Calibration   ;;;
 ;;;       2016-10-24          ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -134,7 +143,7 @@ pro spp_swp_spi_times
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; SPAN-Ai Second Calibration ;;;
+;;; SPAN-Ai 2nd Calibration    ;;;
 ;;;         SNOUT2             ;;;
 ;;;       2016-12-03           ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -206,7 +215,7 @@ pro spp_swp_spi_times
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; SPAN-Ai Third Calibration ;;;
+;;; SPAN-Ai 3rd Calibration   ;;;
 ;;;      CAL Facility         ;;;
 ;;;       2016-12-12          ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -217,13 +226,68 @@ pro spp_swp_spi_times
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; SPAN-Ai 4th Calibration ;;;
+;;;      CAL Facility       ;;;
+;;;       2017-01-02        ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+   
+   ;; Limited Performance Test
+   trange = ['2017-01-02/18:10:00','2017-01-02/18:40:00']
+
+   ;; Ramp MCP 0x0 - 0xD000, RAW 0xD000, ACC 0x0
+   trange = ['2017-01-02/18:50:00', '2017-01-02/19:31:00']
+
+   ;; RAW 0xD000, MCP 0xD000, ACC 0x0
+   trange = ['2017-01-02/19:31:00', '2017-01-02/23:24:00']
+
+   ;; Ramp ACC 0x0 - 0xFF00, RAW 0xD000, MCP 0x0
+   trange = ['2017-01-02/23:34:00', '2017-01-03/01:36:00']
+
+   ;; RAW 0xD000, MCP 0x0, ACC 0xFF00
+   trange = ['2017-01-03/01:36:00', '2017-01-03/17:56:00']
+
+   ;; Ramp MCP 0x0 - 0xD000
+   ;; RAMP ACC 0x0 - 0xFF00
+   ;; RAW 0xD000
+   trange = ['2017-01-03/18:00:00', '2017-01-03/19:35:00']
+
+   ;; Rotation Scan
+   trange = ['2017-01-03/19:30:00' - '2017-01-03/22:00:00']
+   
+   ;; Threshold Scan of all STARTS and STOPS
+   ;; RAW 0xD000, ACC 0xFF00, MCP-0xD000 - gun-0.75mA-480V
+   ;; Thresh 60-5, AZ 0-3
+   trange = ['2017-01-04/06:00:00' - '2017-01-04/16:00:00']
+
+   ;; Long exposure on channel 15
+   ;; RAW 0xD000, ACC 0xFF00, MCP-0xD000 - gun-0.75mA-480V
+   trange=['2017-01-04/14:45:00','2017-01-04/19:50:00']
+
+   
+   ;; Threshold Scan of channel 12 (yellow)
+   ;; RAW 0xD000, ACC 0xFF00 - gun 480V
+   ;; MCP - 0xD000,0xD800,0xE000
+   ;; Gun - 0.70A, 0.75A, 0.80A
+   trange = ['2017-01-04/22:36:00', '2017-01-05/03:41:00']
 
 
+   ;; Long exposure on channe; 12
+   ;; RAW 0xD000, ACC 0xFF00, MCP-0xD000 - gun-0.75mA-480V
+   trange = ['2017-01-05/03:41:00', '2017-01-05/06:20:00']
 
+
+   ;; Gun Map (overnight 4th-5th)
+   trange = []
+
+
+   
+   
    ;; Load Selected Time Range
-   files=spp_file_retrieve(/cal,/spani,trange=trange)
-   files=spp_file_retrieve(/cal,/spani,trange=systime(1))
-   files =spp_file_retrieve(/cal,/spani,recent=2/24.)
+   files = spp_file_retrieve(/cal,/spani,trange=trange)
+   files = spp_file_retrieve(/cal,/spani,trange=systime(1))
+   files = spp_file_retrieve(/cal,/spani,recent=2/24.)
    spp_ptp_file_read, files
    spp_init_realtime,/cal,/spani,/exec,recent=.01
    spp_swp_tplot,/setlim

@@ -93,8 +93,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-16 15:20:58 -0800 (Wed, 16 Nov 2016) $
-;$LastChangedRevision: 22363 $
+;$LastChangedDate: 2017-01-05 17:10:02 -0800 (Thu, 05 Jan 2017) $
+;$LastChangedRevision: 22513 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -107,7 +107,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version, cdf_records = cdf_records, spdf = spdf, $
                   center_measurement = center_measurement, available = available, $
-                  versions = versions, always_prompt = always_prompt
+                  versions = versions, always_prompt = always_prompt, major_version=major_version
 
     ;temporary variables to track elapsed times
     t0 = systime(/sec)
@@ -242,7 +242,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
             if keyword_set(available) then begin
               ; filter the files first
               unfiltered_files = remote_file_info.filename
-              filtered_files = unh_mms_file_filter(unfiltered_files, min_version=min_version, version=cdf_version, latest_version=latest_version, /no_time)
+              filtered_files = unh_mms_file_filter(unfiltered_files, min_version=min_version, version=cdf_version, latest_version=latest_version, major_version=major_version, /no_time)
               
               if ~is_array(filtered_files) && filtered_files eq '' then continue
               
@@ -333,7 +333,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
                 suffix = suffix, get_support_data = get_support_data, /load_labels, $
                 min_version=min_version,version=cdf_version,latest_version=latest_version, $
                 number_records=cdf_records, center_measurement=center_measurement, $
-                loaded_versions = the_loaded_versions
+                loaded_versions = the_loaded_versions, major_version=major_version
             dt_load += systime(/sec) - lt0 ;temporary
         endif
 

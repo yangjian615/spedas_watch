@@ -12,8 +12,8 @@
 ;HISTORY:
 ;
 ;;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-28 14:17:18 -0700 (Thu, 28 Jul 2016) $
-;$LastChangedRevision: 21559 $
+;$LastChangedDate: 2017-01-05 18:06:23 -0800 (Thu, 05 Jan 2017) $
+;$LastChangedRevision: 22517 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_load_data_import.pro $
 ;
 ;-
@@ -60,6 +60,15 @@ pro mms_ui_load_data_import,$
      mms_load_fgm, probes=probes, level=level, trange=timeRange, instrument=instrument, data_rate=rate, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'FPI' then begin
      mms_load_fpi, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
+     
+     ; split the tensors into their components, so they can be imported into the GUI
+     for probe_idx = 0, n_elements(probes)-1 do begin
+        tensor_vars = tnames('mms'+strcompress(string(probes[probe_idx]), /rem)+'_d?s_*tensor_*_*')
+        for tensor_var_idx = 0, n_elements(tensor_vars)-1 do begin
+          mms_fpi_split_tensor, tensor_vars[tensor_var_idx]
+          append_array, tplotnames, tensor_vars[tensor_var_idx]+'_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz']
+        endfor
+     endfor
   endif else if instrument eq 'SCM' then begin
      mms_load_scm, probes=probes, level=level, trange=timeRange, data_rate=rate, datatype=datatype, tplotnames=tplotnames, /time_clip, spdf=spdf
   endif else if instrument eq 'FEEPS' then begin

@@ -15,6 +15,9 @@
 ;                       Number of output files that passed filter.
 ;       TRANGE:         in, optional, type=strarr(2), default=time_string(timerange())
 ;                       Time interval over which to select files.
+;       MAJOR_VERSION:  in, optional, type=boolean, default=0
+;                       If set, only the latest major version of each file is returned. Cannot
+;                           be used with `MIN_VERSION`, LATEST_VERSION or `VERSION`
 ;       LATEST_VERSION: in, optional, type=boolean, default=0
 ;                       If set, only the latest version of each file is returned. Cannot
 ;                           be used with `MIN_VERSION` or `VERSION`
@@ -33,13 +36,14 @@
 ;       LOADED_VERSIONS: The CDF version #s
 ;       
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-16 13:33:48 -0700 (Fri, 16 Sep 2016) $
-; $LastChangedRevision: 21843 $
+; $LastChangedDate: 2017-01-05 17:07:43 -0800 (Thu, 05 Jan 2017) $
+; $LastChangedRevision: 22511 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/unh_mms_file_filter.pro $
 ;-
 function unh_mms_file_filter, filenames, $
 COUNT=count, $
 TRANGE=trange_in, $
+MAJOR_VERSION=major_version, $
 LATEST_VERSION=latest_version, $
 MIN_VERSION=min_version, $
 NO_TIME=no_time, $
@@ -53,8 +57,10 @@ LOADED_VERSIONS=loaded_versions
 	tf_checkv = n_elements(version)     gt 0
 	tf_minv   = n_elements(min_version) gt 0
 	tf_latest = keyword_set(latest_version)
-	if tf_checkv + tf_minv + tf_latest gt 1 $
-		then message, 'VERSION, MIN_VERSION and LATEST_VERSION are mutually exclusive.'
+	tf_major = keyword_set(major_version)
+	
+	if tf_checkv + tf_minv + tf_latest + tf_major gt 1 $
+		then message, 'VERSION, MIN_VERSION, LATEST_VERSION and MAJOR_VERSION are mutually exclusive.'
 
 	;Results
 	files_out = filenames
@@ -112,6 +118,7 @@ LOADED_VERSIONS=loaded_versions
 		;   - With this, we look for the file that begins just prior to TRANGE[0] and
 		;     throw away any files that start before it.
 		istart = where( tt2000 le tt2000_start[0], count )
+
 		if count gt 0 then begin
 			;Select the file time that starts closest to the given time without
 			;going over.
@@ -124,7 +131,7 @@ LOADED_VERSIONS=loaded_versions
 				tt2000    = tt2000[ifiles]
 			endif
 		endif
-	
+
 		;Number of files kept
 		if count eq 0 then begin
 			message, 'No files in time interval.', /INFORMATIONAL
@@ -162,7 +169,7 @@ LOADED_VERSIONS=loaded_versions
   fv = fix(fversion[1:3,*])
 
 	;Filter by minimum version number
-	if count gt 0 && (tf_checkv || tf_minv || tf_latest) then begin
+	if count gt 0 && (tf_checkv || tf_minv || tf_latest || tf_major) then begin
 		;MINIMUM Version
 		if tf_minv then begin
 			;Version numbers to match
@@ -184,7 +191,7 @@ LOADED_VERSIONS=loaded_versions
 			if count gt 0 then files_out = files_out[iv]
 		
 		;LATEST Version
-		endif else begin
+		endif else if tf_latest then begin
 			;Step through X, Y, Z version numbers
 			for i = 0, 2 do begin
 				;Find latest X, Y, Z version
@@ -194,7 +201,15 @@ LOADED_VERSIONS=loaded_versions
 				fv        = fv[*,iv]
 				files_out = files_out[iv]
 			endfor
-		endelse
+		;LATEST major version
+		endif else if tf_major then begin
+      ;Find latest X version
+      iv = where( fv[0,*] eq max(fv[0,*]), count)
+
+      ;Select version
+      fv        = fv[*,iv]
+      files_out = files_out[iv]
+		endif
 		
 		;Apply filter
 		if count eq 0 then begin

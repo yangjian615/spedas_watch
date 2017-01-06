@@ -10,8 +10,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-14 14:31:06 -0800 (Mon, 14 Nov 2016) $
-;$LastChangedRevision: 22357 $
+;$LastChangedDate: 2017-01-05 10:06:57 -0800 (Thu, 05 Jan 2017) $
+;$LastChangedRevision: 22498 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -23,8 +23,7 @@ pro spd_ui_mms_init_struct,state,struct
   ; the reflect the system variables values (!mms) 
 
   widget_control,state.localdir,set_value=struct.local_data_dir
-  widget_control,state.remotedir,set_value=struct.remote_data_dir
-  
+
   if struct.no_download eq 1 then begin
     widget_control,state.nd_off_button,set_button=1
   endif else begin
@@ -88,13 +87,6 @@ PRO mms_ui_fileconfig_event, event
 
     END
 
-    'REMOTEDIR': BEGIN
-    
-        widget_control, state.remoteDir, get_value=currentDir
-        !mms.remote_data_dir = currentDir
-
-    END
-
     'VERBOSE': BEGIN
 
        !mms.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
@@ -108,7 +100,7 @@ PRO mms_ui_fileconfig_event, event
        ; initialization of the configuration window
        !mms=state.mms_cfg_save
        widget_control,state.localdir,set_value=!mms.local_data_dir
-       widget_control,state.remotedir,set_value=!mms.remote_data_dir
+
        if !mms.no_download eq 1 then begin
           widget_control,state.nd_off_button,set_button=1
        endif else begin
@@ -140,7 +132,7 @@ PRO mms_ui_fileconfig_event, event
 
       ; reset the widgets to these values
       widget_control,state.localdir,set_value=!mms.local_data_dir
-      widget_control,state.remotedir,set_value=!mms.remote_data_dir
+
       if !mms.no_download eq 1 then begin
          widget_control,state.nd_off_button,set_button=1
       endif else begin
@@ -206,11 +198,6 @@ PRO mms_ui_fileconfig, tab_id, historyWin, statusBar
                          uval = 'LOCALDIR', val = !mms.local_data_dir)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='LOCALBROWSE',/align_center)
 
-  rbase = widget_base(configbase, /row, /align_left, ypad=5)
-  flabel = widget_label(rbase, value = 'Remote data directory: ')
-  remotedir = widget_text(rbase, /edit, /all_events, xsiz = 50, $
-                          uval = 'REMOTEDIR', val = !mms.remote_data_dir)
-
 ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left)
   nd_labelbase = widget_base(nd_base,/col,/align_center)
@@ -239,7 +226,7 @@ PRO mms_ui_fileconfig, tab_id, historyWin, statusBar
   ;defaults for Cancel:
   def_values=[0,0,0,2]
   
-  state = {localdir:localdir, remotedir:remotedir, mms_cfg_save:mms_cfg_save, $
+  state = {localdir:localdir, mms_cfg_save:mms_cfg_save, $
            nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
            nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
            v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $

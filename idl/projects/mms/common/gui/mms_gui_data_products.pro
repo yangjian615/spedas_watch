@@ -12,8 +12,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-29 09:01:51 -0700 (Fri, 29 Jul 2016) $
-; $LastChangedRevision: 21571 $
+; $LastChangedDate: 2017-01-05 18:06:23 -0800 (Thu, 05 Jan 2017) $
+; $LastChangedRevision: 22517 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_data_products.pro $
 ;-
 
@@ -135,6 +135,10 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_energyspectr_perp_fast', $
                                     '_des_energyspectr_omni_avg', $
                                     '_des_pitchangdist_avg', $
+                                    '_des_temptensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_temptensor_gse_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_prestensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_prestensor_gse_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_des_temppara_fast', $
                                     '_des_tempperp_fast', $
                                     '_dis_pitchangdist_lowen_fast', $
@@ -171,6 +175,10 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_energyspectr_anti_fast', $
                                     '_dis_energyspectr_perp_fast', $
                                     '_dis_energyspectr_omni_avg', $
+                                    '_dis_temptensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_temptensor_gse_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_prestensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_prestensor_gse_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_pitchangdist_avg', $
                                     '_dis_temppara_fast', $
                                     '_dis_tempperp_fast']
@@ -210,6 +218,10 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_energyspectr_perp_brst', $
                                     '_des_energyspectr_omni_avg', $
                                     '_des_pitchangdist_avg', $
+                                    '_des_temptensor_err_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_temptensor_gse_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_prestensor_err_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_prestensor_gse_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_des_temppara_brst', $
                                     '_des_tempperp_brst', $
                                     '_dis_pitchangdist_lowen_brst', $
@@ -247,6 +259,10 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_energyspectr_perp_brst', $
                                     '_dis_energyspectr_omni_avg', $
                                     '_dis_pitchangdist_avg', $
+                                    '_dis_temptensor_err_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_temptensor_gse_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_prestensor_err_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_prestensor_gse_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_temppara_brst', $
                                     '_dis_tempperp_brst']
                                     

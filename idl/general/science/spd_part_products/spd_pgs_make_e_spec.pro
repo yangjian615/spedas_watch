@@ -25,19 +25,25 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-01-04 15:38:57 -0800 (Mon, 04 Jan 2016) $
-;$LastChangedRevision: 19672 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-01-05 14:21:18 -0800 (Thu, 05 Jan 2017) $
+;$LastChangedRevision: 22510 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_e_spec.pro $
 ;-
 
-pro spd_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
+pro spd_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, normalize=normalize, _extra=ex
 
     compile_opt idl2, hidden
   
   
   if ~is_struct(data) then return
   
+  ; if set, normalize spec between 0 and 1
+  if keyword_set(normalize) && normalize ne 0 then begin
+    data_energy = data.energy / max(data.energy,/NAN)
+  endif else begin
+    data_energy = data.energy
+  endelse
   
   dr = !dpi/180.
   
@@ -65,7 +71,7 @@ pro spd_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
   
   ;output the y-axis values
   ; *check for varying energy levels?
-  y = data.energy[*,0]
+  y = data_energy[*,0]
   
   
   ;set y axis
@@ -90,6 +96,6 @@ pro spd_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
   endif else begin
     spd_pgs_concat_spec, sigma, ave_s
   endelse 
-   
+    
   
 end

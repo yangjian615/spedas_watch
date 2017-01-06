@@ -13,3 +13,4 @@ data_processing: mms_ui_qcotrans_options, MMS QCoordinate Transform, SM
 data_processing: mms_ui_qcotrans_options, MMS QCoordinate Transform, GEO
 data_processing: mms_ui_qcotrans_options, MMS QCoordinate Transform, ECI
 data_processing: mms_ui_qcotrans_options, MMS QCoordinate Transform, J2000
+config: mms_ui_fileconfig
