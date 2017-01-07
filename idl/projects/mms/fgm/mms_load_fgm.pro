@@ -62,8 +62,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-05 10:00:45 -0800 (Thu, 05 Jan 2017) $
-;$LastChangedRevision: 22496 $
+;$LastChangedDate: 2017-01-06 15:12:30 -0800 (Fri, 06 Jan 2017) $
+;$LastChangedRevision: 22530 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -145,7 +145,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                       if is_struct(b_data_gsm) then b_data_gsm.Y[bad_data, *] = !values.d_nan
                       if is_struct(b_data_dmpa) then b_data_dmpa.Y[bad_data, *] = !values.d_nan
                       if is_struct(b_data_bcs) then b_data_bcs.Y[bad_data, *] = !values.d_nan
-                      
+
                       ; resave them
                       if is_struct(b_data_gse) then store_data, this_probe+'_'+instrument+'_b_gse_'+this_data_rate+'_'+level+suffix, data=b_data_gse, dlimits=gse_dl
                       if is_struct(b_data_gsm) then store_data, this_probe+'_'+instrument+'_b_gsm_'+this_data_rate+'_'+level+suffix, data=b_data_gsm, dlimits=gsm_dl
@@ -154,9 +154,9 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
                   endif
                 endif
             endif
-            
+
             ; force the FGM data to be monotonic
-            tplot_force_monotonic, this_probe+'_'+instrument+'_b_*_'+this_data_rate+'_'+level+suffix, /forward
+            if (tnames(this_probe+'_'+instrument+'_b_*_'+this_data_rate+'_'+level+suffix))[0] ne '' then tplot_force_monotonic, this_probe+'_'+instrument+'_b_*_'+this_data_rate+'_'+level+suffix, /forward
             
             if ~keyword_set(no_split_vars) then begin
                 ; split the FGM data into 2 tplot variables, one containing the vector and one containing the magnitude
@@ -164,26 +164,28 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             endif 
             
             ; delete the ephemeris variables if not requested
-            if ~keyword_set(get_fgm_ephemeris) then begin
-                del_data, this_probe+'_'+instrument+'_r_gse_'+this_data_rate+'_'+level+suffix
-                del_data, this_probe+'_'+instrument+'_r_gsm_'+this_data_rate+'_'+level+suffix
-                del_data, this_probe+'_pos_gse'+suffix
-                del_data, this_probe+'_pos_gsm'+suffix
-            endif else begin
-                dprint, dlevel = 0, 'Keeping ephemeris variables from FGM data files.'
-                ; force the ephemeris variables to be monotonic
-                tplot_force_monotonic, this_probe+'_'+instrument+'_r_*_'+this_data_rate+'_'+level+suffix, /forward
-                tplot_force_monotonic, this_probe+'_pos_gse'+suffix, /forward
-                tplot_force_monotonic, this_probe+'_pos_gsm'+suffix, /forward
-                if ~keyword_set(no_split_vars) then begin
-                    mms_split_fgm_eph_data, probe=this_probe, level = level, suffix = suffix, data_rate = data_rate, $
-                      instrument=instrument, tplotnames = tplotnames
-                endif
-            endelse
-            
+            if level ne 'ql' then begin
+                if ~keyword_set(get_fgm_ephemeris) then begin
+                    del_data, this_probe+'_'+instrument+'_r_gse_'+this_data_rate+'_'+level+suffix
+                    del_data, this_probe+'_'+instrument+'_r_gsm_'+this_data_rate+'_'+level+suffix
+                    del_data, this_probe+'_pos_gse'+suffix
+                    del_data, this_probe+'_pos_gsm'+suffix
+                endif else begin
+                    dprint, dlevel = 0, 'Keeping ephemeris variables from FGM data files.'
+                    ; force the ephemeris variables to be monotonic
+                    tplot_force_monotonic, this_probe+'_'+instrument+'_r_*_'+this_data_rate+'_'+level+suffix, /forward
+                    tplot_force_monotonic, this_probe+'_pos_gse'+suffix, /forward
+                    tplot_force_monotonic, this_probe+'_pos_gsm'+suffix, /forward
+                    if ~keyword_set(no_split_vars) then begin
+                        mms_split_fgm_eph_data, probe=this_probe, level = level, suffix = suffix, data_rate = data_rate, $
+                          instrument=instrument, tplotnames = tplotnames
+                    endif
+                endelse
+            endif 
+
             ; set some of the metadata
             mms_fgm_fix_metadata, tplotnames, prefix = 'mms' + probes, instrument = instrument, data_rate = this_data_rate, suffix = suffix, level=level
-            
+
         endfor
     endfor
 

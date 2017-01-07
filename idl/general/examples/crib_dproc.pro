@@ -136,7 +136,7 @@ print,  'Test Wavelet Transform:'
 tplot, var
 spd_ui_wavelet, var, new_var,  ['2007-03-23 06:00', '2007-03-23 9:00']
 print, 'For verification, spectrograms of wavelet transforms'
-tplot, var_new
+tplot, new_var
 stop
 
 print,  'Test Dpwrspec:'

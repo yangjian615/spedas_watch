@@ -58,8 +58,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-21 14:24:54 -0700 (Wed, 21 Sep 2016) $
-;$LastChangedRevision: 21896 $
+;$LastChangedDate: 2017-01-06 12:17:26 -0800 (Fri, 06 Jan 2017) $
+;$LastChangedRevision: 22525 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans.pro $
 ;-
 
@@ -330,6 +330,22 @@ for i = 0, n_elements(in_names)-1 do begin
 ;  spinper = 'mms'+probe+'???'+support_suffix
 ;  spinphase = 'mms'+probe+'_mec_ang_mom_phase'+support_suffix
 
+  ; check if the defatt spinras/spindec variables were loaded
+  ras = tnames(spinras)
+  decl = tnames(spindec)
+  if ras eq '' && decl eq '' then begin
+      ; couldn't find the defatt spinras/spindec, should
+      ; check if the RADec variable was loaded (exists in the 
+      ; AFG/DFG QL files)
+      ras_decl = tnames('mms'+probe+'_ql_RADec_gse'+support_suffix)
+      if ras_decl eq '' then begin
+          dprint, dlevel = 0, 'Error, couldnt find the right ascension/declination variables'
+      endif else begin
+          split_vec, ras_decl, names=ras_decl
+          spinras = ras_decl[0]
+          spindec = ras_decl[1]
+      endelse
+  endif
  
   mms_cotrans_transformer, in_name, out_name, in_c, out_coord, $
                            spinras, spindec, ignore_dlimits=ignore_dlimits

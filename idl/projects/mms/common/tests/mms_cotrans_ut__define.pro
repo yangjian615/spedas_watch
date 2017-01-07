@@ -6,10 +6,25 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-29 08:12:44 -0700 (Fri, 29 Jul 2016) $
-; $LastChangedRevision: 21569 $
+; $LastChangedDate: 2017-01-06 12:57:29 -0800 (Fri, 06 Jan 2017) $
+; $LastChangedRevision: 22527 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_cotrans_ut__define.pro $
 ;-
+
+function mms_cotrans_ut::test_state_radecl
+  mms_load_state, trange=['2016-11-01', '2016-11-02'], probe=1
+  mms_load_fgm, trange=['2016-11-01', '2016-11-02'], probe=1
+  mms_cotrans, 'mms1_fgm_b_dmpa_srvy_l2_bvec', in_coord='dmpa', out_coord='gse', out_suffix='_gse'
+  assert, spd_data_exists('mms1_fgm_b_dmpa_srvy_l2_bvec_gse', '2016-11-01', '2016-11-02'), 'Problem with state RADec variables'
+  return, 1
+end
+
+function mms_cotrans_ut::test_fgm_radecl
+  mms_load_fgm, level='ql', instrument='dfg', trange=['2016-11-01', '2016-11-02'], probe=1
+  mms_cotrans, 'mms1_dfg_srvy_dmpa_bvec', in_coord='dmpa', out_coord='gse', out_suffix='_gse'
+  assert, spd_data_exists('mms1_dfg_srvy_dmpa_bvec_gse', '2016-11-01', '2016-11-02'), 'Problem with FGM QL RADec variables'
+  return, 1
+end
 
 function mms_cotrans_ut::test_cotrans_eci2gse2000
   mms_qcotrans, 'mms1_mec_r_eci', out_coord='gse2000', out_suffix='_eci2gse2000'
