@@ -49,10 +49,17 @@
 ;                 background image is the north polar magnetic anomalies observed
 ;                 at 180-km altitude by MGS (from Acuna).
 ;
+;       ALT:      If set and keywords MARS and/or NPOLE are set, then indicate the
+;                 spacecraft altitude next its symbol.
+;
 ;       TERMINATOR: Overplot the terminator and sub-solar point onto the Mars
 ;                   topography plots (see MARS and NPOLE above).  SPICE must be 
 ;                   installed and initialized (e.g., mvn_swe_spice_init) before 
-;                   using this keyword.
+;                   using this keyword.  The following values are recognized:
+;                      0 : Do not plot any shadow boundary.  (default)
+;                      1 : Plot optical shadow boundary at surface.
+;                      2 : Plot optical shadow boundary at s/c altitude.
+;                      3 : Plot EUV shadow boundary at s/c altitude.
 ;
 ;       NOERASE:  Don't erase previously plotted positions.  Can be used to build
 ;                 up a visual representation of sampling.
@@ -76,21 +83,26 @@
 ;                 if the third component (would be Bz in XY plane) is positive 
 ;                 (red) or negative (blue).
 ;
+;       BCLIP:    Maximum amplitude for plotting B whisker.
+;
 ;       SCALE:    To change the scale/length of field lines, the default value is
 ;                 set to 0.05
 ;
 ;       THICK:    Line thickness.
 ;
+;       MAGNIFY:  Change size of plot windows.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 21:33:35 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22145 $
+; $LastChangedDate: 2017-01-09 16:52:25 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22551 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
 ;-
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
-    nodot=nodot, terminator=terminator, thick=thick, Bdir=Bdir, scale=scale, scsym=scsym
+    nodot=nodot, terminator=terminator, thick=thick, Bdir=Bdir, scale=scale, scsym=scsym, $
+    magnify=magnify, Bclip=Bclip, alt=doalt
 
   @maven_orbit_common
   @swe_snap_common
@@ -118,9 +130,12 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   if keyword_set(noerase) then noerase = 1 else noerase = 0
   if keyword_set(reset) then reset = 1 else reset = 0
   if keyword_set(nodot) then dodot = 0 else dodot = 1
-  if keyword_set(terminator) then doterm = 1 else doterm = 0
+  if (size(terminator,/type) gt 0) then doterm = fix(round(terminator)) < 3 else doterm = 0
+  if not keyword_set(magnify) then mag = 1. else mag = float(magnify)
+  if (size(Bclip,/type) eq 0) then Bclip = 1.e9
 
   if keyword_set(Bdir) then dob = 1 else dob = 0
+  doalt = keyword_set(doalt)
 
   if keyword_set(times) then begin
     times = time_double(times)
@@ -194,20 +209,20 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 ; Create snapshot windows
 
   if (xzflg) then begin
-    window,26,xsize=600,ysize=538
+    window,26,xsize=round(600.*mag),ysize=round(538.*mag)
     Owin = !d.window
   endif else begin
     device, get_screen_size=scr
     oscale = 0.965*(scr[1]/943.) < 1.06
 
-    xsize = round(350.*oscale)
-    ysize = round(943.*oscale)
+    xsize = round(350.*oscale*mag)
+    ysize = round(943.*oscale*mag)
     xpos = 0
     ypos = 0
 
     if (snap_index gt 0) then begin
-      xsize = Oopt.xsize
-      ysize = Oopt.ysize
+      xsize = round(Oopt.xsize*mag)
+      ysize = round(Oopt.ysize*mag)
       xpos = Oopt.xpos
       ypos = Oopt.ypos
     endif
@@ -217,19 +232,19 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   endelse
 
   if (gflg) then begin
-    window,/free,xsize=600,ysize=280
+    window,/free,xsize=round(600.*mag),ysize=round(280.*mag)
     Gwin = !d.window
   endif
 
   if (cyflg) then begin
     if (snap_index gt 0) then begin
-      xsize = OCopt.xsize
-      ysize = OCopt.ysize
+      xsize = round(OCopt.xsize*mag)
+      ysize = round(OCopt.ysize*mag)
       xpos = OCopt.xpos
       ypos = OCopt.ypos
     endif else begin
-      xsize = 600
-      ysize = 350
+      xsize = round(600.*mag)
+      ysize = round(350.*mag)
       xpos = 0
       ypos = 0
     endelse
@@ -249,6 +264,12 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     k = 0L
     if (k ge ntimes) then begin
       wdelete,Owin
+      if (gflg) then wdelete, Gwin
+      if (cyflg) then wdelete, Cwin
+      if (npflg gt 0) then wdelete, 27
+      if (mflg gt 0)  then wdelete, 29
+      if (nflg gt 0)  then wdelete, 30
+      if (bflg gt 0)  then wdelete, 31
       wset,Twin
       return
     endif
@@ -258,6 +279,12 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     ctime2,trange,npoints=1,/silent,button=button
     if (size(trange,/type) eq 2) then begin
       wdelete,Owin
+      if (gflg) then wdelete, Gwin
+      if (cyflg) then wdelete, Cwin
+      if (npflg gt 0) then wdelete, 27
+      if (mflg gt 0)  then wdelete, 29
+      if (nflg gt 0)  then wdelete, 30
+      if (bflg gt 0)  then wdelete, 31
       wset,Twin
       return
     endif
@@ -331,6 +358,11 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
         bt=bmso.x
         bdt=60 ;smooth over seconds
         for i=0,2 do bb0[*,i]=smooth(bb0[*,i],bdt)
+
+        bmag = sqrt(total(bb0*bb0,2,/nan))
+        indx = where(bmag gt Bclip, count)
+        if (count gt 0L) then bb0[indx,*] = !values.f_nan
+
         bb=fltarr(n_elements(rndx),3)
         bb[*,0]=interpol(bb0[*,0],bt,time[rndx])
         bb[*,1]=interpol(bb0[*,1],bt,time[rndx])
@@ -808,9 +840,10 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       if (pflg) then i = iref else i = rndx[imin]
       title = ''
       if (cflg) then j = color else j = 2
-      if (doterm) then ttime = trange[0] else ttime = 0
+      if (doterm gt 0) then ttime = trange[0] else ttime = 0
+      if (doalt) then sc_alt = hgt[i] else sc_alt = 0
       mag_mola_orbit, lon[i], lat[i], big=mbig, noerase=noerase, title=title, color=j, $
-                      terminator=ttime, psym=scsym
+                      terminator=ttime, psym=scsym, shadow=(doterm - 1), alt=sc_alt
     endif
 
 ; Put up Mars North polar plot
@@ -820,8 +853,9 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       title = ''
       if (cflg) then j = color else j = 2
       if (doterm) then ttime = trange[0] else ttime = 0
+      if (doalt) then sc_alt = hgt[i] else sc_alt = 0
       mag_Npole_orbit, lon[i], lat[i], noerase=noerase, title=title, color=j, $
-                       terminator=ttime
+                       terminator=ttime, alt=sc_alt
     endif
 
 ; Get the next button press

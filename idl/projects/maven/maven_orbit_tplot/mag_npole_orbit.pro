@@ -28,16 +28,22 @@
 ;
 ;       TERMINATOR: Overlay the terminator.
 ;
+;       SHADOW:     If TERMINATOR is set, specifies which "terminator" to
+;                   plot.
+;                      0 : Optical shadow boundary at surface.
+;                      1 : Optical shadow boundary at s/c altitude.
+;                      2 : EUV shadow boundary at s/c altitude.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-01 09:13:18 -0700 (Fri, 01 May 2015) $
-; $LastChangedRevision: 17464 $
+; $LastChangedDate: 2017-01-09 16:53:18 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22552 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mag_npole_orbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell  04-02-03
 ;-
 pro mag_npole_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
                      reset=reset, noerase=noerase, title=title, $
-                     terminator=ttime
+                     terminator=ttime, shadow=shadow, alt=alt
 
   common magpole_orb_com, img, ppos
 
@@ -51,6 +57,7 @@ pro mag_npole_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
   if (~size(color,/type)) then color = 2 else color = fix(color)
   if not keyword_set(noerase) then eflg = 1 else eflg = 0
   if keyword_set(ttime) then doterm = 1 else doterm = 0
+  if keyword_set(shadow) then sflg = shadow else sflg = 0
 
   if (psym gt 7) then psym = 8
   a = 0.8
@@ -91,17 +98,19 @@ pro mag_npole_orbit, lon, lat, psym=psym, lstyle=lstyle, color=color, $
     xtitle = 'This Way', ytitle = 'That Way', title=title
   
   if (doterm) then begin
-    mvn_mars_terminator, ttime, result=tdat
+    mvn_mars_terminator, ttime, result=tdat, shadow=sflg
     r = 90. - tdat.tlat
     phi = (tdat.tlon - 90.)*!dtor
-    oplot,r*cos(phi),r*sin(phi),linestyle=2,color=1,thick=2
+    oplot,r*cos(phi),r*sin(phi),color=1,psym=4,symsize=1
   endif
   
   r = 90. - lat
   phi = (lon - 90.)*!dtor
+  x = r*cos(phi)
+  y = r*sin(phi)
 
-  oplot,[r*cos(phi)],[r*sin(phi)],psym=psym,color=color, $
-    linestyle=lstyle,thick=2,symsize=1.4
+  oplot,[x],[y],psym=psym,color=color,linestyle=lstyle,thick=2,symsize=1.4
+  if keyword_set(alt) then xyouts,x+1,y+1,string(round(alt),format='(i4)'),color=color,charsize=1.2
 
   wset,twin
 

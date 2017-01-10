@@ -27,8 +27,8 @@
 ;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 14:03:22 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21754 $
+;$LastChangedDate: 2017-01-09 09:13:24 -0800 (Mon, 09 Jan 2017) $
+;$LastChangedRevision: 22533 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -63,6 +63,11 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
     
     pathformat = strarr(n_elements(probes)*n_elements(datatype))
     path_count = 0 
+    
+    if instrument eq 'dfg' or instrument eq 'afg' then begin
+        dprint, dlevel = 0, 'Error, no AFG/DFG data available at SPDF - these are only available via the SDC'
+        return
+    endif
 
     for probe_idx = 0, n_elements(probes)-1 do begin
         if data_rate eq 'brst' then time_format = 'YYYYMMDDhhmmss' else time_format = 'YYYYMMDD'
@@ -205,7 +210,9 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
         endfor
 
         files = spd_download(remote_file=relpathnames, remote_path=remote_data_dir, $
-          local_path = local_data_dir) 
+          local_path = local_data_dir)
+        
+        if n_elements(files) eq 1 && files eq '' then continue
 
         mms_cdf2tplot, files, tplotnames = new_tplotnames, varformat=varformat, $
                 suffix = suffix, get_support_data = get_support_data, /load_labels, $

@@ -54,6 +54,8 @@ pro swe_a2_snap, layout=layout, model=model, ddd=ddd, keepwins=keepwins, zrange=
                  archive=archive, enorm=enorm
 
   @mvn_swe_com
+  @swe_snap_common
+  if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
 
   Twin = !d.window
 
@@ -115,90 +117,23 @@ pro swe_a2_snap, layout=layout, model=model, ddd=ddd, keepwins=keepwins, zrange=
 
 ; Put up windows to hold the snapshot plot(s)
 
-  if not keyword_set(layout) then layout = 0
-
-  case layout of
-    0    : begin
-             window, /free, xsize=800, ysize=500
-             Swin = !d.window
+  window, /free, xsize=800, ysize=500, xpos=Popt.xpos, ypos=Popt.ypos
+  Swin = !d.window
   
-             if (hflg) then begin
-               window, /free, xsize=225, ysize=545
-               Hwin = !d.window
-             endif
+  if (hflg) then begin
+    window, /free, xsize=225, ysize=545, xpos=Fopt.xpos, ypos=Fopt.ypos
+    Hwin = !d.window
+  endif
 
-             if (mflg) then begin
-               window, /free, xsize=800, ysize=500
-               Mwin = !d.window
-             endif
+  if (mflg) then begin
+    window, /free, xsize=800, ysize=500
+    Mwin = !d.window
+  endif
 
-             if (dflg) then begin
-               window, /free, xsize=800, ysize=500
-               Dwin = !d.window
-             endif
-           end
-    
-    1    : begin
-             window, /free, xpos=225, ypos=-600
-             Swin = !d.window
-  
-             if (hflg) then begin
-               window, /free, xsize=225, ysize=545, xpos=1400, ypos=-550
-               Hwin = !d.window
-             endif
-           end
-    
-    2    : begin
-             window, /free, xsize=800, ysize=500, xpos=1120, ypos=640
-             Swin = !d.window
-  
-             if (hflg) then begin
-               window, /free, xsize=200, ysize=hsk_ysize, xpos=880, ypos=500
-               Hwin = !d.window
-             endif
-
-             if (mflg) then begin
-               window, /free, xsize=800, ysize=500, xpos=1120, ypos=100
-               Mwin = !d.window
-             endif
-
-             if (dflg) then begin
-               window, /free, xsize=800, ysize=500, xpos=1120, ypos=100
-               Dwin = !d.window
-             endif
-           end
-    
-    3    : begin
-             window, /free, xsize=800, ysize=500, xpos=1680, ypos=640
-             Swin = !d.window
-  
-             if (hflg) then begin
-               window, /free, xsize=200, ysize=hsk_ysize, xpos=2600, ypos=500
-               Hwin = !d.window
-             endif
-
-             if (mflg) then begin
-               window, /free, xsize=800, ysize=500, xpos=1680, ypos=100
-               Mwin = !d.window
-             endif
-
-             if (dflg) then begin
-               window, /free, xsize=800, ysize=500, xpos=1680, ypos=100
-               Dwin = !d.window
-             endif
-           end
-    
-    else : begin
-             window, /free
-             Swin = !d.window
-  
-             if (hflg) then begin
-               window, /free, xsize=225, ysize=545
-               Hwin = !d.window
-             endif
-           end
-
-  endcase
+  if (dflg) then begin
+    window, /free, xsize=800, ysize=500
+    Dwin = !d.window
+  endif
 
 ; Get the PAD closest the selected time
 
@@ -357,6 +292,7 @@ pro swe_a2_snap, layout=layout, model=model, ddd=ddd, keepwins=keepwins, zrange=
       fmt1 = '(f7.2," V")'
       fmt2 = '(f7.2," C")'
       fmt3 = '(Z2.2)'
+      fmt4 = '(i2)'
       
       j = jref
     
@@ -404,11 +340,20 @@ pro swe_a2_snap, layout=layout, model=model, ddd=ddd, keepwins=keepwins, zrange=
       xyouts,x2,y1[23],/normal,string(swe_hsk[j].LVPST,format=fmt2),charsize=csize,align=1.0
       xyouts,x1,y1[24],/normal,"DIGT",charsize=csize
       xyouts,x2,y1[24],/normal,string(swe_hsk[j].DIGT,format=fmt2),charsize=csize,align=1.0
-      xyouts,x1,y1[26],/normal,"CHKSUM",charsize=csize
-      xyouts,x2,y1[26],/normal,string(swe_hsk[j].CHKSUM[1],format=fmt3),charsize=csize,align=1.0,$
-                       color=col1
-      xyouts,x3,y1[26],/normal,string(swe_hsk[j].CHKSUM[0],format=fmt3),charsize=csize,align=1.0,$
-                       color=col0
+      xyouts,x1,y1[26],/normal,"LUT",charsize=csize
+      chksum = swe_hsk[j].CHKSUM[swe_hsk[j].SSCTL]
+      if (mvn_swe_validlut(chksum)) then begin
+        lut = mvn_swe_tabnum(chksum)
+        col0 = 4
+      endif else begin
+        lut = 0
+        col0 = 6
+      endelse
+      xyouts,x2,y1[26],/normal,string(lut,format=fmt4),charsize=csize,align=1.0,color=col0
+;      xyouts,x2,y1[26],/normal,string(swe_hsk[j].CHKSUM[1],format=fmt3),charsize=csize,align=1.0,$
+;                       color=col1
+;      xyouts,x3,y1[26],/normal,string(swe_hsk[j].CHKSUM[0],format=fmt3),charsize=csize,align=1.0,$
+;                       color=col0
     endif
 
 ; Get the next button press

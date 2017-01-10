@@ -62,8 +62,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-06 15:12:30 -0800 (Fri, 06 Jan 2017) $
-;$LastChangedRevision: 22530 $
+;$LastChangedDate: 2017-01-09 14:16:14 -0800 (Mon, 09 Jan 2017) $
+;$LastChangedRevision: 22540 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -166,10 +166,10 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
             ; delete the ephemeris variables if not requested
             if level ne 'ql' then begin
                 if ~keyword_set(get_fgm_ephemeris) then begin
-                    del_data, this_probe+'_'+instrument+'_r_gse_'+this_data_rate+'_'+level+suffix
-                    del_data, this_probe+'_'+instrument+'_r_gsm_'+this_data_rate+'_'+level+suffix
-                    del_data, this_probe+'_pos_gse'+suffix
-                    del_data, this_probe+'_pos_gsm'+suffix
+                    if (tnames(this_probe+'_'+instrument+'_r_gse_'+this_data_rate+'_'+level+suffix))[0] ne '' then del_data, this_probe+'_'+instrument+'_r_gse_'+this_data_rate+'_'+level+suffix
+                    if (tnames(this_probe+'_'+instrument+'_r_gsm_'+this_data_rate+'_'+level+suffix))[0] ne '' then del_data, this_probe+'_'+instrument+'_r_gsm_'+this_data_rate+'_'+level+suffix
+                    if (tnames(this_probe+'_pos_gse'+suffix))[0] ne '' then del_data, this_probe+'_pos_gse'+suffix
+                    if (tnames(this_probe+'_pos_gsm'+suffix))[0] ne '' then del_data, this_probe+'_pos_gsm'+suffix
                 endif else begin
                     dprint, dlevel = 0, 'Keeping ephemeris variables from FGM data files.'
                     ; force the ephemeris variables to be monotonic

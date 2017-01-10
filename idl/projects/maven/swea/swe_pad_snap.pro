@@ -155,8 +155,8 @@
 ;        NOTE:         Insert a text label.  Keep it short.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-28 09:09:33 -0800 (Mon, 28 Nov 2016) $
-; $LastChangedRevision: 22406 $
+; $LastChangedDate: 2017-01-09 11:19:36 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22535 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -352,7 +352,9 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
      free = 1
      wstat = 0
   endelse
-  IF keyword_set(dir) THEN wdy = 0.125*Nopt.ysize ELSE wdy = 0.
+
+  wdy = 0.
+  if keyword_set(dir) then if (dir gt 1) then wdy = 0.125*Nopt.ysize
 
   if (~rflg) then begin
     if (~free) then wstat = execute("wset, wnum",0,1)
@@ -759,6 +761,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         endif
 
         IF keyword_set(dir) THEN BEGIN
+        
+          oplot,[90.,90.],[0.1,10],line=2
            
           IF B_mso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
           IF B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
@@ -769,27 +773,29 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           FOR j=0, 3 DO $
             IF bperp[j] GT 0. THEN append_array, dircol, 6 ELSE append_array, dircol, 2
           FOR j=0, 3 DO $
-            XYOUTS, 17.5+45.*j, 15., dirname[j], color=!p.color, charsize=1.3, /data
+            XYOUTS, 17.5+45.*j, 7.5, dirname[j], color=!p.color, charsize=1.3, /data
 
-          PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.285892, 0.874722, 0.39075, 1.], $
-                 /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
-          OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
-          angle = ATAN(B_mso[2], B_mso[1])
-          IF B_mso[0] GT 0. THEN dircol = 6 ELSE dircol = 2
-          ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
-          XYOUTS, 0., -1.3, 'MSO', /data, alignment=0.5
-          XYOUTS, 0., 0.5, 'Z', /data, alignment=0.5
-          XYOUTS, 0.6, 0., 'Y', /data, alignment=0.5
+          if (dir gt 1) then begin
+            PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.285892, 0.874722, 0.39075, 1.], $
+                   /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
+            OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
+            angle = ATAN(B_mso[2], B_mso[1])
+            IF B_mso[0] GT 0. THEN dircol = 6 ELSE dircol = 2
+            ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
+            XYOUTS, 0., -1.3, 'MSO', /data, alignment=0.5
+            XYOUTS, 0., 0.5, 'Z', /data, alignment=0.5
+            XYOUTS, 0.6, 0., 'Y', /data, alignment=0.5
 
-          PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.708061, 0.874722, 0.812919, 1.], $
-                 /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
-          OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
-          angle = ATAN(-B_geo[1], -B_geo[0])
-          IF -B_geo[2] GT 0. THEN dircol = 6 ELSE dircol = 2
-          ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
-          XYOUTS, 0., -1.3, 'GEO', /data, alignment=0.5
-          XYOUTS, 0., 0.5, 'N', /data, alignment=0.5
-          XYOUTS, 0.6, 0., 'E', /data, alignment=0.5
+            PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.708061, 0.874722, 0.812919, 1.], $
+                   /noerase, yticks=1, xticks=1, xminor=1, yminor=1, xstyle=5, ystyle=5
+            OPLOT, 0.9*COS(FINDGEN(361)*!DTOR), 0.9*SIN(FINDGEN(361)*!DTOR)
+            angle = ATAN(-B_geo[1], -B_geo[0])
+            IF -B_geo[2] GT 0. THEN dircol = 6 ELSE dircol = 2
+            ARROW, 0., 0., 0.7*COS(angle), 0.7*SIN(angle), /data, color=dircol
+            XYOUTS, 0., -1.3, 'GEO', /data, alignment=0.5
+            XYOUTS, 0., 0.5, 'N', /data, alignment=0.5
+            XYOUTS, 0.6, 0., 'E', /data, alignment=0.5
+          endif
         ENDIF
 
         if (dflg) then begin

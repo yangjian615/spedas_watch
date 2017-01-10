@@ -45,6 +45,8 @@
 ;   NO1:       Include O+ density calculated from STATIC.  Has no effect unless
 ;              STATIC keyword is set.
 ;
+;   APID:      Additional STATIC APID's to load.  (Hint: D0, D1 might be useful.)
+;
 ;   LPW:       Include panel for electron density from LPW data.
 ;
 ;              Note: if two or more of O2+, O+, and electron densities are present
@@ -63,18 +65,20 @@
 ;   PADSMO:    Smooth the resampled PAD data in time with this smoothing interval,
 ;              in seconds.
 ;
+;   SHAPE:     Include a panel for the electron shape parameter.
+;
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-04 16:37:11 -0700 (Fri, 04 Nov 2016) $
-; $LastChangedRevision: 22315 $
+; $LastChangedDate: 2017-01-09 16:42:18 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22548 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
 pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
                      sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2, min_pad_eflux=min_pad_eflux, $
-                     loadonly=loadonly, pans=pans, padsmo=padsmo
+                     loadonly=loadonly, pans=pans, padsmo=padsmo, apid=apid, shape=shape
 
   compile_opt idl2
 
@@ -83,6 +87,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   
   if keyword_set(nO1) then doO1 = 1 else doO1 = 0
   if keyword_set(nO2) then doO2 = 1 else doO2 = 0
+  if not keyword_set(APID) then apid = 0
   
   if (size(min_pad_eflux,/type) eq 0) then min_pad_eflux = 6.e4
 
@@ -144,6 +149,15 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   
   mag_pan = 'mvn_mag_bamp mvn_mag_bang'
 
+; Shape Parameter
+
+  shape_pan = ''
+  if keyword_set(shape) then begin
+    mvn_swe_shape_par_pad_l2, spec=45, /pot, tsmo=16
+    shape_pan = 'Shape_PAD'
+    options, shape_pan, 'ytitle', 'Elec Shape'
+  endif
+
 ; SEP electron and ion data - sum all look directions for both units
 
   sep_pan = ''
@@ -157,7 +171,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 ; STATIC data
 
   sta_pan = ''
-  if keyword_set(static) then mvn_swe_addsta, pans=sta_pan, nO1=doO1, nO2=doO2
+  if keyword_set(static) then mvn_swe_addsta, pans=sta_pan, nO1=doO1, nO2=doO2, apid=apid
 
 ; LPW data
 
@@ -258,7 +272,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   pans = ram_pan + ' ' + sun_pan + ' ' + alt_pan + ' ' + euv_pan + ' ' + $
          swi_pan + ' ' + sta_pan + ' ' + mag_pan + ' ' + sep_pan + ' ' + $
          lpw_pan + ' ' + pad_pan + ' ' + pot_pan + ' ' + bst_pan + ' ' + $
-         engy_pan
+         shape_pan + ' ' + engy_pan
 
   pans = str_sep(pans,' ')
   

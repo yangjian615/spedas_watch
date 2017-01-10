@@ -20,24 +20,28 @@
 ;
 ;KEYWORDS:
 ;
-;   BURST: If set to 1, then use burst data to calculate the shape parameter,
-;          however, not tested yet
+;   BURST:    If set to 1, then use burst data to calculate the shape parameter,
+;             however, not tested yet
 ;
-;   SPEC: A pitch angle in degrees given to average.
-;         PA [0,SPEC] & [(180-SPEC),180] for two directions.
-;         The default value is 30
+;   SPEC:     A pitch angle in degrees given to average.
+;             PA [0,SPEC] & [(180-SPEC),180] for two directions.
+;             The default value is 30
 ;
-;   ERANGE: Shape parameter calculated based on the spectrum within this energy
-;           range. The default values are [20,80] eV
+;   ERANGE:  Shape parameter calculated based on the spectrum within this energy
+;            range. The default values are [20,80] eV
 ;
 ;   MAG_GEO: A MAG structure that contains magnetic elevation angle. If not given,
 ;            The program will load MAG data in GEO coordinates.
 ;
-;   POT: If set to 1, this program will correct the spacecraft potential for
-;        the electron energy spectrum.
+;   POT:     If set to 1, this program will correct the spacecraft potential for
+;            the electron energy spectrum.
 ;
-;   NSMO: A number (>1) is set to smooth over "nsmo" spectra to calculate
-;         shape parameters 
+;   NSMO:    Number of spectra to average over before calculating shape parameter.
+;            Default = 1 (no smoothing).
+;
+;   TSMO:    Boxcar smooth the PADs with this width (in seconds) before calculating
+;            the shape parameter.  This method is slower but handles data gaps and 
+;            changes in instrument mode.  Takes precedence over NSMO.
 ;
 ;OUTPUTS:
 ;
@@ -47,36 +51,44 @@
 ;
 ;   Tplot variable "EFlux_ratio": store the flux ratio for two directions
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-01-09 15:19:37 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22541 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_par_pad_l2.pro $
 ;
 ;CREATED BY:    Shaosui Xu  12-08-16
 ;-
 
 Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
     nsmo=nsmo, erange=erange, obins=obins, mask_sc=mask_sc, $
-    abins=abins, dbins=dbins, mag_geo=mag_geo, pot=pot
+    abins=abins, dbins=dbins, mag_geo=mag_geo, pot=pot, $
+    tsmo=tsmo
 
     @mvn_swe_com
     
-    aflg=0
-    if keyword_set(burst) eq 1 then aflg=1
+    aflg = keyword_set(burst)
     if (size(mvn_swe_pad,/type) ne 8) then begin ;if pad data not loaded
-        print,'PAD data not loaded, now loading L2 PAD Survey data'
-        mvn_swe_spice_init,/force
-        trange = timerange()
-        mvn_swe_load_l2,trange = trange,/pad,/noerase
+        print,'Loading L2 PAD Survey data ...'
+        mvn_swe_load_l2,/pad,burst=aflg,/noerase
     endif
         
     print, "Calculating shape parameter with PAD data"
 
-    ;smooth nsmo spectra to make shape parameters less noisy
-    if keyword_set(nsmo) then begin
-       data = mvn_swe_pad.data
-       mvn_swe_pad.data = smooth(data,[1,1,nsmo],/nan)
+; Smooth the data for better statistics
+
+    npad = n_elements(mvn_swe_pad)
+    pdat = mvn_swe_pad.data
+
+    if (size(tsmo,/type) gt 0) then begin
+      if (tsmo ge 4D) then begin
+        pdat = transpose(reform(mvn_swe_pad.data, 64L*16L, npad))
+        pdat = smooth_in_time(pdat, mvn_swe_pad.time, tsmo)
+        pdat = reform(transpose(pdat), 64, 16, npad)
+        nsmo = 0  ; only one smoothing method
+      endif
     endif
+
+    if keyword_set(nsmo) then pdat = smooth(mvn_swe_pad.data,[1,1,nsmo],/nan)
 
     if not keyword_set(erange) then erange=[20,80]
 
@@ -98,18 +110,19 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
 ;    if (size(mask_sc,/type) eq 0) then mask_sc = 1
 ;    if keyword_set(mask_sc) then obins = swe_sc_mask * obins
 
-    Nt = n_elements(mvn_swe_pad)
-    shape = fltarr(Nt, 3)
-    time = dblarr(Nt)
-    ratio = dblarr(Nt,64)
-    print, 'Total PAD data points: ', Nt
+    shape = fltarr(npad, 3)
+    time = dblarr(npad)
+    ratio = dblarr(npad,64)
+    print, 'Total PAD data points: ', npad
 
     ;Use B elevation angle to determine towards/away the planet
     if NOT keyword_set(mag_geo) then begin
-        trange = timerange()
-        mvn_mag_load,trange = trange
-        mvn_mag_geom
-        get_data,'mvn_B_1sec_iau_mars',data=mag_geo
+        get_data,'mvn_B_1sec_iau_mars',data=mag_geo,index=i
+        if (i eq 0) then begin
+          mvn_mag_load
+          mvn_mag_geom
+          get_data,'mvn_B_1sec_iau_mars',data=mag_geo
+        endif
      endif
 
     bdx = nn(mag_geo.x, mvn_swe_pad.time)
@@ -119,15 +132,16 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
     ;padall = mvn_swe_getpad(trange,archive=aflg,units='eflux')
     
     padall = mvn_swe_pad
-    faway = dblarr(64,Nt)
+    padall.data = pdat  ; don't overwrite mvn_swe_pad
+    faway = dblarr(64,npad)
     ftwd = faway
     fmid = faway
     Bindx = where(B_elev le 0)
-    parange = fltarr(Nt,2)
-    pots = fltarr(Nt)
+    parange = fltarr(npad,2)
+    pots = fltarr(npad)
     pots[*] = !values.f_nan
 
-    for n=0L, Nt-1L do begin
+    for n=0L, npad-1L do begin
         pad=padall[n]
         time[n] = pad.time
 ;        if (pad.time gt t_mtx[2]) then boom = 1 else boom = 0
@@ -183,9 +197,9 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
     faway[*,Bindx] = tmp2
     ratio = transpose(faway/ftwd)
 
-    mvn_swe_calc_shape_arr, Nt, faway, padall[1].energy[*,0], par_away, erange, aflg
-    mvn_swe_calc_shape_arr, Nt, fmid, padall[1].energy[*,0], par_mid, erange, aflg
-    mvn_swe_calc_shape_arr, Nt, ftwd, padall[1].energy[*,0], par_twd, erange, aflg
+    mvn_swe_calc_shape_arr, npad, faway, padall[1].energy[*,0], par_away, erange, aflg
+    mvn_swe_calc_shape_arr, npad, fmid, padall[1].energy[*,0], par_mid, erange, aflg
+    mvn_swe_calc_shape_arr, npad, ftwd, padall[1].energy[*,0], par_twd, erange, aflg
 
 
     shape[*, 0] = par_away
@@ -197,6 +211,7 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
         pots:pots,parange:parange}
     options,'Shape_PAD','ytitle','Shape_PAD'
     options,'Shape_PAD','labels',['Away','Towards']
+    options,'Shape_PAD','labflag',1
     options,'Shape_PAD','colors',[120,254]
     options,'Shape_PAD','constant',1.
 

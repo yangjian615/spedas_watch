@@ -120,8 +120,8 @@
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-28 09:08:23 -0800 (Mon, 28 Nov 2016) $
-; $LastChangedRevision: 22405 $
+; $LastChangedDate: 2017-01-09 16:39:04 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22546 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
@@ -496,7 +496,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
           endif
         endif
         dtime = ddd.time
-        tabok = ddd.chksum eq 'CC'X
+        tabok = mvn_swe_validlut(ddd.chksum)
         energy = average(ddd.energy, 2)
 
         IF keyword_set(swia) THEN $
@@ -526,7 +526,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
           endif
         endif
         dtime = pad.time
-        tabok = pad.chksum eq 'CC'X
+        tabok = mvn_swe_validlut(pad.chksum)
         dname = pad.data_name
         energy = average(pad.energy, 2)
         ;; pad.data *= REBIN(TRANSPOSE(obins[pad.k3d]), pad.nenergy, pad.nbins)

@@ -1,13 +1,9 @@
 ;+
 ;PROCEDURE:   swe_engy_snap
 ;PURPOSE:
-;  Plots energy spectrum snapshots in a separate window for times selected with the 
-;  cursor in a tplot window.  Hold down the left mouse button and slide for a movie 
-;  effect.  This procedure depends on running swe_plot_dpu first, which unpacks the
-;  A4 packets, creating 16 energy spectra per packet.
-;
-;  If housekeeping data exist (almost always the case), then they are displayed 
-;  as text in a small separate window.
+;  Plots omnidirectional energy spectrum snapshots in a separate window for times 
+;  selected with the cursor in a tplot window.  Hold down the left mouse button 
+;  and slide for a movie effect.
 ;
 ;USAGE:
 ;  swe_engy_snap
@@ -110,9 +106,15 @@
 ;
 ;       NOERASE:       Overplot all spectra after the first.
 ;
+;       VOFFSET:       Vertical offset when overplotting spectra.
+;
 ;       RAINBOW:       With NOERASE, overplot spectra using up to 6 different colors.
 ;
 ;       POPEN:         Set this to the name of a postscript file for output.
+;
+;       WSCALE:        Window size scale factor.
+;
+;       CSCALE:        Character size scale factor.
 ;
 ;       XRANGE:        Override the default horizontal axis range with this.
 ;
@@ -123,8 +125,8 @@
 ;                      interactive time range selection.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-27 13:58:06 -0800 (Sun, 27 Nov 2016) $
-; $LastChangedRevision: 22403 $
+; $LastChangedDate: 2017-01-09 11:21:43 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22536 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -137,7 +139,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
                    xrange=xrange,yrange=frange,sscale=sscale, popen=popen, times=times, $
                    flev=flev, pylim=pylim, k_e=k_e, peref=peref, error_bars=error_bars, $
-                   trange=tspan, tsmo=tsmo
+                   trange=tspan, tsmo=tsmo, wscale=wscale, cscale=cscale, voffset=voffset
 
   @mvn_swe_com
   @swe_snap_common
@@ -173,15 +175,18 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(bkg) then dobkg = 1 else dobkg = 0
   if keyword_set(shiftpot) then spflg = 1 else spflg = 0
   if (n_elements(xrange) ne 2) then xrange = [1.,1.e4]
+  if not keyword_set(wscale) then wscale = 1.
+  if not keyword_set(cscale) then cscale = 1.
+  if not keyword_set(voffset) then voffset = 1.
   if (size(popen,/type) eq 7) then begin
     psflg = 1
     psname = popen[0]
-    csize1 = 1.2
-    csize2 = 1.0
+    csize1 = 1.2*cscale
+    csize2 = 1.0*cscale
   endif else begin
     psflg = 0
-    csize1 = 1.2
-    csize2 = 1.4
+    csize1 = 1.2*cscale
+    csize2 = 1.4*cscale
   endelse
 
   tflg = 0
@@ -301,7 +306,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
   Twin = !d.window
 
-  window, /free, xsize=Eopt.xsize, ysize=Eopt.ysize, xpos=Eopt.xpos, ypos=Eopt.ypos
+  window, /free, xsize=wscale*Eopt.xsize, ysize=wscale*Eopt.ysize, xpos=Eopt.xpos, ypos=Eopt.ypos
   Ewin = !d.window
 
   if (hflg) then begin
@@ -314,7 +319,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     Pwin = !d.window
   endif
 
-; Get the spectrum closest the selected time
+; Get the spectrum closest to the selected time
   
   ok = 1
 
@@ -393,14 +398,16 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   nplot = 0
   xs = 0.68
   dys = 0.03
+  yoff = 1.
   
   while (ok) do begin
 
     x = spec.energy
-    y = spec.data
-    if (ebar) then dy = sqrt(spec.var)
+    y = spec.data * yoff
+    if (ebar) then dy = sqrt(spec.var) * yoff
     phi = spec.sc_pot
     ys = 0.90
+    if (~oflg) then yoff *= voffset
 
     if (psflg) then popen, psname + string(nplot,format='("_",i2.2)') $
                else wset, Ewin
@@ -415,7 +422,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
     if (ebar) then errplot,x,(y-dy)>tiny,y+dy,width=0
     
-    if (rflg) then oplot,x,y,psym=psym,color=(nplot mod 6)+1
+    if (rflg) then begin
+      col = (nplot mod 6) + 1
+      oplot,x,y,psym=psym,color=col
+      errplot,x,(y-dy)>tiny,y+dy,width=0,color=col
+    endif
 
     if (dflg) then begin
       if (npts gt 1) then ddd = mvn_swe_get3d(trange,/all,/sum) $

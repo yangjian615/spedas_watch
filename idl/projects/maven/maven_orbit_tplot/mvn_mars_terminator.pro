@@ -25,21 +25,43 @@
 ;                    s_lat : sub-solar point latitude (deg)
 ;                    frame : coordinate frame ("IAU_MARS")
 ;
+;       SHADOW:    Set to 1 to calculate boundary of optical shadow
+;                  cast by solid planet at spacecraft altitude.
+;                  Set to 2 to calculate boundary of EUV shadow cast
+;                  by atmosphere at spacecraft altitude.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-04-16 13:30:22 -0700 (Thu, 16 Apr 2015) $
-; $LastChangedRevision: 17343 $
+; $LastChangedDate: 2017-01-09 16:50:51 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22550 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mvn_mars_terminator.pro $
 ;
 ;CREATED BY:	David L. Mitchell
 ;-
-pro mvn_mars_terminator, time, result=result
+pro mvn_mars_terminator, time, result=result, shadow=shadow
 
 ; Terminator is the plane defined by X = 0 in the MSO frame
 
+  if keyword_set(shadow) then begin
+    R_m = 3389.9D
+    if (shadow gt 1) then R_m += 300D
+    get_data,'alt',data=alt
+    dt = min(abs(alt.x - time), i)
+    iref = (i > 3) < (n_elements(alt.x) - 4)
+    indx = lindgen(7) + iref - 3L
+    h = spline(alt.x[indx], alt.y[indx], time, /double)
+    sza = acos(R_m/(R_m + h)) + !dpi/2D
+    x = cos(sza)
+    s = sqrt(1D - x*x)
+  endif else begin
+    x = 0D
+    s = 1D
+  endelse
+
   phi = dindgen(361)*!dtor
   t_mso = dblarr(3,361)
-  t_mso[1,*] = cos(phi)
-  t_mso[2,*] = sin(phi)
+  t_mso[0,*] = x
+  t_mso[1,*] = s*cos(phi)
+  t_mso[2,*] = s*sin(phi)
 
   t = replicate(time_double(time), 361)
 
@@ -51,11 +73,12 @@ pro mvn_mars_terminator, time, result=result
   t_lat = reform(asin(t_geo[2,*])*!radeg)
   
   indx = where(t_lon lt 0., count)
-  if (count gt 0L) then t_lon[indx] = t_lon[indx] + 360.
-  
-  indx = sort(t_lon)
-  t_lon = t_lon[indx]
-  t_lat = t_lat[indx]
+  if (count gt 0L) then begin
+    t_lon[indx] = t_lon[indx] + 360.
+    indx = sort(t_lon)
+    t_lon = t_lon[indx]
+    t_lat = t_lat[indx]
+  endif
 
 ; Sun is at MSO coordinates of [X, Y, Z] = [1, 0, 0]
 

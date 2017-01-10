@@ -24,8 +24,8 @@
 ;   ISTP compliance scrub; DLM: 2016-04-08
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2016-11-22 12:31:03 -0800 (Tue, 22 Nov 2016) $
-;   $LastChangedRevision: 22397 $
+;   $LastChangedDate: 2017-01-09 16:38:47 -0800 (Mon, 09 Jan 2017) $
+;   $LastChangedRevision: 22545 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_pad.pro $
 ;
 ;-
@@ -63,8 +63,7 @@ pro mvn_swe_makecdf_pad, data, file = file, version = version, directory = direc
 ; account for spectra obtained during the sweep table change. 
 ; Exclude these data from the CDF.
 
-  cs = data.chksum
-  indx = where((cs ne 'C0'X) and (cs ne 'CC'X) and (cs ne '82'X), count)
+  indx = where(mvn_swe_validlut(data.chksum), count)
   if (count gt 0L) then begin
     data[indx].valid = 0B
     data[(indx - 1L) > 0L].valid = 0B

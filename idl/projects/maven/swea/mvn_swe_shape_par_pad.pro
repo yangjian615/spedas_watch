@@ -46,9 +46,9 @@
 ;   
 ;   Tplot variable "EFlux_ratio": store the flux ratio for two directions
 ;
-; $LastChangedBy: xussui_lap $
-; $LastChangedDate: 2016-06-22 17:20:14 -0700 (Wed, 22 Jun 2016) $
-; $LastChangedRevision: 21351 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-01-09 16:43:10 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22549 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_par_pad.pro $
 ;
 ;CREATED BY:    Shaosui Xu  06-22-16
@@ -108,9 +108,12 @@ Pro mvn_swe_shape_par_pad, burst=burst, spec=spec, $
 
     ;Use B elevation angle to determine towards/away the planet
     if NOT keyword_set(mag_geo) then begin
-        mvn_mag_load
-        mvn_mag_geom
-        get_data,'mvn_B_1sec_iau_mars',data=mag_geo       
+        get_data,'mvn_B_1sec_iau_mars',data=mag_geo,index=i
+        if (i eq 0) then begin
+          mvn_mag_load
+          mvn_mag_geom
+          get_data,'mvn_B_1sec_iau_mars',data=mag_geo
+        endif
     endif
     bdx = nn(mag_geo.x, trange)
     B_elev = mag_geo.elev[bdx]

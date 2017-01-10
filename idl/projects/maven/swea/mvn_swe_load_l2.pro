@@ -60,8 +60,8 @@
 ;                      this routine (or any other data loader).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 09:11:23 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19388 $
+; $LastChangedDate: 2017-01-09 16:36:56 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22542 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l2.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-02-15
@@ -243,10 +243,12 @@ pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pa
   
   if (~tspan_exists) then timespan, trange
 
-; Initialize SPICE only if asked
-; (Best practice is to initialize SPICE before calling this routine.)
+; Initialize SPICE if not already done or if asked
+;   Best practice is to initialize SPICE before calling this routine.
 
-  if keyword_set(spiceinit) then mvn_swe_spice_init,/force
+  mk = spice_test('*', verbose=-1)
+  indx = where(mk ne '', count)
+  if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init,/force
 
 ; Define decompression, telemetry conversion factors, and data structures
 

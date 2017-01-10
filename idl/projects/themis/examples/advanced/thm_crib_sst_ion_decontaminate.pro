@@ -7,8 +7,8 @@
 ;Notes:
 ;
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-03-11 13:36:01 -0700 (Wed, 11 Mar 2015) $
-; $LastChangedRevision: 17118 $
+; $LastChangedDate: 2017-01-09 09:37:04 -0800 (Mon, 09 Jan 2017) $
+; $LastChangedRevision: 22534 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_sst_ion_decontaminate.pro $
 ;-
 
@@ -49,6 +49,10 @@ thm_part_products,probe=probe,datatype='psif',trange=trange,outputs='moments ene
 ;this code assumes that psif/psef are matched in angle
 ;If they aren't, the code may throw and error.  Call this to match angle:
 ;thm_part_sphere_interpolate ;matches angle
+
+;get the number of elements for the loop
+thm_part_time_iterator,dist_psif,nelements=n
+
 
 for i = 0l,n-1 do begin
   thm_part_time_iterator,dist_psif,psif_data,index=i

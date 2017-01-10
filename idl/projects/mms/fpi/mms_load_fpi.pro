@@ -69,8 +69,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-04 15:06:23 -0700 (Tue, 04 Oct 2016) $
-;$LastChangedRevision: 22023 $
+;$LastChangedDate: 2017-01-09 08:39:04 -0800 (Mon, 09 Jan 2017) $
+;$LastChangedRevision: 22531 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -127,6 +127,8 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
 
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return
+    
+    if undefined(tplotnames) then return
 
     ; the following kludge is due to the errorflags variable in the dist and moments files having the
     ; same variable name, so loading d?s-dist and d?s-moms files at the same time will overwrite
