@@ -22,9 +22,9 @@
 ;            '/mydisks/home/maven/', don't forget the slash
 ;HISTORY:
 ; 22-jul-2014, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-07 12:15:18 -0700 (Tue, 07 Jul 2015) $
-; $LastChangedRevision: 18029 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2017-01-10 13:29:54 -0800 (Tue, 10 Jan 2017) $
+; $LastChangedRevision: 22568 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2file_save.pro $
 ;-
 Pro mvn_sta_cmn_l2file_save, otp_struct, fullfile0, temp_dir = temp_dir, $

@@ -25,9 +25,9 @@ End
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-12-19 11:36:19 -0800 (Mon, 19 Dec 2016) $
-; $LastChangedRevision: 22462 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2017-01-10 13:43:47 -0800 (Tue, 10 Jan 2017) $
+; $LastChangedRevision: 22569 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -363,8 +363,10 @@ skip_ephemeris_l0:
   load_position = 'D1' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d1_dat, directory = dir_out, _extra = _extra
 ;special save of D1 data
-  If(is_struct(mvn_d1_dat)) Then $
-     save, mvn_d1_dat, file = dir_out_d1+'/mvn_sta_d1_'+yyyy+mmmm+dddd+'.sav'
+  If(is_struct(mvn_d1_dat)) Then Begin
+     save, mvn_d1_dat, file = dir_out_d1+'mvn_sta_d1_'+yyyy+mmmm+dddd+'.sav'
+     message, /info, 'Saved: '+dir_out_d1+'mvn_sta_d1_'+yyyy+mmmm+dddd+'.sav'
+  Endif
   skip_d1:
   load_position = 'D2' & Print, load_position
   mvn_sta_cmn_l2gen, mvn_d2_dat, directory = dir_out, _extra = _extra

@@ -21,9 +21,9 @@
 ;             /get_support_data: keep the support data
 ;             /noephem:     Don't keep the ephemeris data
 ; 
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2014-07-16 10:29:42 -0700 (Wed, 16 Jul 2014) $
-; $LastChangedRevision: 15581 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-01-10 14:59:06 -0800 (Tue, 10 Jan 2017) $
+; $LastChangedRevision: 22571 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_load_data.pro $
 ;-
 pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffix = suffix, $
@@ -170,7 +170,9 @@ pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
         for j = 0, n_elements(pathformat)-1 do begin
             relpathnames = file_dailynames(file_format=pathformat[j],trange=tr,addmaster=addmaster, /unique)
             
-            files = file_retrieve(relpathnames, _extra=source, /last_version)
+            files = spd_download(remote_file=relpathnames, remote_path=!goes.remote_data_dir, $
+              local_path = !goes.local_data_dir)
+
             if keyword_set(downloadonly) then continue
 
             ; netcdf2tplot, files, varformat = varformat, prefix = prefix, suffix = suffix

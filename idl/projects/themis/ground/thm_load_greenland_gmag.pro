@@ -70,9 +70,9 @@
 ; 19-mar-2007, jmm, chnaged name from thm_load_gmag, to read greenland
 ;              gmag stations not included in the usual GMAG distribution
 ; 05-may-2011 lphilpott, updated site lists
-; $LastChangedBy: lphilpott $
-; $LastChangedDate: 2012-06-04 16:06:33 -0700 (Mon, 04 Jun 2012) $
-; $LastChangedRevision: 10505 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2017-01-10 09:41:22 -0800 (Tue, 10 Jan 2017) $
+; $LastChangedRevision: 22560 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_greenland_gmag.pro $
 ;-
 Function thm_load_greenland_gmag_relpath, sname = sname, $
@@ -172,7 +172,7 @@ Pro thm_load_greenland_gmag, site = site, datatype = datatype, trange = trange, 
 
   varcount = 0
 
-  vsnames = 'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf svs tdc thl tro umq upn'
+  vsnames = 'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop hov jan jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf sum svs tab tdc thl tro umq upn'
   thm_load_xxx,sname=site, datatype=datatype, trange=trange, $
                level=level, verbose=verbose, downloadonly=downloadonly, $
                no_download=no_download, relpathnames_all=relpathnames_all, $

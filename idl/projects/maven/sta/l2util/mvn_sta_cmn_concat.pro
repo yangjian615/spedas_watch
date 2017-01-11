@@ -61,8 +61,8 @@
 ;HISTORY:
 ; 19-may-2014, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-01-09 10:12:13 -0800 (Fri, 09 Jan 2015) $
-; $LastChangedRevision: 16611 $
+; $LastChangedDate: 2017-01-10 13:58:40 -0800 (Tue, 10 Jan 2017) $
+; $LastChangedRevision: 22570 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_concat.pro $
 ;-
 Function mvn_sta_cmn_concat, dat1, dat2

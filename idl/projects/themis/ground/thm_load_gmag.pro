@@ -107,8 +107,8 @@
 ; 04-Apr-2012, clrussell, Added units to the data_att structure
 ; 
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2016-11-01 10:18:09 -0700 (Tue, 01 Nov 2016) $
-; $LastChangedRevision: 22246 $
+; $LastChangedDate: 2017-01-10 09:08:04 -0800 (Tue, 10 Jan 2017) $
+; $LastChangedRevision: 22558 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag.pro $
 ;-
 
@@ -234,7 +234,7 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
       'ott pang pbk pblo pcel pg0 pg1 pg2 pg3 pg4 pg5 pgeo pina pine pks pokr ptrs puvr radi rank rbay redr rich rmus roth salu satx schf sept shu sit sjg snap snkq stfd stfl stj '+ $
       'swno tik tpas trap tuc ukia vic vldr whit whs wlps wrth ykc yknf'
     vsnames_arr = strsplit(vsnames, ' ', /extract)
-    vsnames_g =  'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf svs tdc thl tro umq upn'
+    vsnames_g =  'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop hov jan jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf sum svs tab tdc thl tro umq upn'
     vsnames_g_arr = strsplit(vsnames_g, ' ', /extract)
     vsnames_c = 'anna back cont daws eski fchp fchu gull isll lgrr mcmu mstk norm osak '+$
             'oxfo pols rabb sach talo thrf vulc weyb wgry'
@@ -256,11 +256,11 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
 ;  
   if ~keyword_set(thm_only) then begin
     if keyword_set(tgo_sites) then begin 
-      site_in =  array_concat(['nal','lyr','hop','bjn','nor','sor','tro','and','don','rvk','sol','kar','jck', 'dob'],site_in)
+      site_in =  array_concat(['nal','lyr','hop','bjn','nor','sor','tro','and','don','rvk','sol','kar', 'jan', 'jck', 'dob'],site_in)
     endif 
   
     if keyword_set(dtu_sites) then begin; dnb (not operational), nrd currently excluded because only old uncalibrated DMI data is available (atu, dmh, svs added back in in 2012)
-      site_in = array_concat(['atu','dmh','svs','tdc','bfe','roe','thl','kuv','upn','umq','gdh','stf','skt','ghb','fhb','naq','amk','sco'],site_in)
+      site_in = array_concat(['atu','dmh','svs','tdc','bfe','roe','thl','kuv','upn','umq','gdh','stf','skt','ghb','fhb','naq','amk','sco', 'tab', 'sum', 'hov'],site_in)
     endif
 
     if keyword_set(ua_sites) then begin

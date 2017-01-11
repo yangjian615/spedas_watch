@@ -67,9 +67,9 @@
 ;            here ends up in the structure for the common blocks
 ;HISTORY:
 ; 2014-05-12, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: muser $
-; $LastChangedDate: 2016-08-30 13:54:44 -0700 (Tue, 30 Aug 2016) $
-; $LastChangedRevision: 21774 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-01-10 13:58:40 -0800 (Tue, 10 Jan 2017) $
+; $LastChangedRevision: 22570 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_cmn_l2read.pro $
 ;-
 Function mvn_sta_cmn_l2read, filename, trange = trange, cdf_info = cdfi, _extra = _extra

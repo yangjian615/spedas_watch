@@ -8,27 +8,22 @@
 ;
 ;Notes:
 ;
-;$LastChangedBy: jimm $
-;$LastChangedDate: 2015-08-31 15:15:16 -0700 (Mon, 31 Aug 2015) $
-;$LastChangedRevision: 18679 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2017-01-10 11:21:27 -0800 (Tue, 10 Jan 2017) $
+;$LastChangedRevision: 22562 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/examples/advanced/thm_crib_mom_dead_time_correct.pro $
 ;-
 
 
 ;Set time span and load on-board moments
 ;------------------------------------------------------------------
-; As of 10-August-2011, the default for loading MOM L2 data includes the
-; dead time correction described here. For L1 data, this is not the
-; default, we provide keywords:
+; As of 7-Nov-2014, dead time correction is no longer the default
+; for L1 or L2 data, and the /no_dead_time_correction keyword is
+; no longer valid.  To enable dead time correction:
 ;   /dead_time_correct: If set, then calculate dead time correction
-;                       based on ESA moments, this is the default
-;                       for L2 input
-;   /no_dead_time_correct: If set, do not calculate a dead time
-;                          correction based on ESA ground-based
-;                          moments, this is the default for L1
-;                          data. If both the no_dead and dead
-;                          keywords are set, then NO correction is
-;                          applied.
+;                       based on ESA moments
+;            
+;
 ;------------------------------------------------------------------
 
 ; As of 7-November-2014, the dead-time correction is no longer the
@@ -109,7 +104,7 @@ stop
 del_data, '*'
 
 ;load data
-thm_load_mom,  probe = 'b', /no_dead_time_correct
+thm_load_mom,  probe = 'b'
 
 ;apply correction
 thm_apply_esa_mom_dtc, probe = 'b',  out_suffix = '_corrected'

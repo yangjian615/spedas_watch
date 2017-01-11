@@ -24,10 +24,10 @@
 ; 10-may-2011, jmm, jimm@ssl.berkeley.edu
 ; 27-may-2011, jmm, This version deletes the temporary ESA moments
 ; 5-dec-2014, jmm, uses thm_part_products directly
-; common blocks to using the dtc_private common block in thm_esa_convert_units
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; 10-jan-2017, jmm, set ESA background removal to 0
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-01-10 12:46:45 -0800 (Tue, 10 Jan 2017) $
+; $LastChangedRevision: 22565 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_esa_dtc4mom.pro $
 ;-
 
@@ -94,11 +94,12 @@ Pro thm_esa_dtc4mom, probe = probe, trange = trange, noload = noload, $
         thm_load_esa_pot, sc = sc, efi_datatype = 'mom'
         sc_pot_name = thx+'_esa_pot'
      Endif Else sc_pot_name = ''
-;now get moments - without dead time corrections
+;now get moments - without dead time corrections - and without
+;                  background removal
      For i = 0, 1 Do Begin
         thm_part_products, probe = sc, datatype = datat[i], /zero_dead_time, $
                            sc_pot_name = sc_pot_name, suffix = '_temp4dtc_0', $
-                           outputs = 'moments'
+                           outputs = 'moments', esa_bgnd_remove = 0
 
 ;'ptot' variable
         get_data, thx+'_'+datat[i]+'_ptens_temp4dtc_0', data = ptd, dlimits = dl
@@ -113,7 +114,7 @@ Pro thm_esa_dtc4mom, probe = probe, trange = trange, noload = noload, $
      For i = 0, 1 Do Begin
         thm_part_products, probe = sc, datatype = datat[i], $
                            sc_pot_name = sc_pot_name, suffix = '_temp4dtc', $
-                           outputs = 'moments'
+                           outputs = 'moments', esa_bgnd_remove = 0
 ;'ptot' variable
         get_data, thx+'_'+datat[i]+'_ptens_temp4dtc', data = ptd, dlimits = dl
         If(is_struct(ptd)) Then Begin

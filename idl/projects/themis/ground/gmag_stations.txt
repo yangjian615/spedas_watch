@@ -120,6 +120,7 @@ ae|Themis AE|hop|Hopen, Norway
 tgo|TGO|hop|Hopen, Norway
 epo|Themis EPO|hots|Hot Springs, MT
 step|STEP|hrp|Hornepayne, ON
+dtu|DTU|hov|Faroe Islands, Denmark
 falcon|FALCON|hris|Harris, MN
 maccs|MACCS|iglo|Igloolik, NU
 ae|Themis AE|inuk|Inukjuak, QC
@@ -129,6 +130,7 @@ aeold|Themis AE (pre 2015)|inuv|Inuvik, NT
 gbo|Themis GBO|inuv|Inuvik, NT
 asi|ASI|inuv|Inuvik, NT
 nrcan|NRCan|iqa|Iqaluit, NU
+tgo|TGO|jan|Jan Mayen, Norway
 ae|Themis AE|jck|Jackvik, Sweden
 tgo|TGO|jck|Jackvik, Sweden
 ae|Themis AE|kako|Kaktovik, AK
@@ -248,8 +250,10 @@ dtu|DTU|stf|Kangerlussuaq, Greenland
 falcon|FALCON|stfd|Stanford, CA
 autx|AUTUMNX|stfl|Saint-Felicien, QC
 nrcan|NRCan|stj|St. John, NL
+dtu|DTU|sum|Summit Icecap, Greenland
 dtu|DTU|svs|Savissivik, Greenland
 epo|Themis EPO|swno|Shawano, WI
+dtu|DTU|tab|Thule Air Fore Base, Greenland
 asi|ASI|talo|Taloyoak, NT
 cgsm|CGSM|talo|Taloyoak, NT
 dtu|DTU|tdc|Tristan Da Cunha (South Atlantic)

@@ -73,8 +73,8 @@
 ;  
 ;
 ;
-;$LastChangedDate: 2016-12-08 12:35:18 -0800 (Thu, 08 Dec 2016) $
-;$LastChangedRevision: 22446 $
+;$LastChangedDate: 2017-01-10 11:37:03 -0800 (Tue, 10 Jan 2017) $
+;$LastChangedRevision: 22564 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_part_products.pro $
 ;-
 
@@ -97,7 +97,11 @@ pro goes_uncor_flux_interpol, g_interpolate=g_interpolate
   
   if ~keyword_set(g_interpolate) || g_interpolate eq 0 then g_interpolate=0 else g_interpolate=1
   
-  names = tnames('*_dtc_uncor_flux')  
+  names = tnames('*_dtc_uncor_flux')
+  if n_elements(names) lt 1 or names[0] eq '' then begin
+    dprint, "Error. No uncorected data found."
+    return 
+  endif
   
   if g_interpolate eq 0 then begin
     ;without interpolation (default)
