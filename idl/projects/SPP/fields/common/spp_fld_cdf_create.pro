@@ -6,7 +6,8 @@
 ;   Creates a FIELDS CDF file using the CDF_CREATE function.
 ;
 ; CALLING SEQUENCE:
-;   Called by SPP_FLD_MAKE_CDF_L?.
+;   spp_fld_cdf_create, 1, 0, cdf_att, filename_timestring, $
+;     filename = filename, fileid = fileid
 ;
 ; INPUTS:
 ;   LEVEL: The level (L1, L2, ...) of the created CDF file
@@ -30,14 +31,16 @@
 ;   pulupa
 ;
 ; $LastChangedBy: pulupalap $
-; $LastChangedDate: 2017-01-10 16:08:44 -0800 (Tue, 10 Jan 2017) $
-; $LastChangedRevision: 22572 $
+; $LastChangedDate: 2017-01-11 16:14:34 -0800 (Wed, 11 Jan 2017) $
+; $LastChangedRevision: 22579 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_create.pro $
 ;-
 pro spp_fld_cdf_create, level, vers_num, cdf_att, filename_timestring, $
   filename = filename, fileid = fileid
 
   level_str = 'l' + string(level, format = '(I1)')
+
+; TODO: Decide if we need to keep version number
 
   vers_num_str = '_v' + string(vers_num, format = '(I02)')
 

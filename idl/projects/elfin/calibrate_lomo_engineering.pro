@@ -19,6 +19,7 @@ pro calibrate_lomo_engineering
       YSUBTITLE:'[Kelvin]', $
       YRANGE:[y1,y2]}
     store_data, temps[i], data={x:in_data.x[idx], y:cal_in_data}, dlimits=new_dl, limits=l
+    tplot_gui, temps[i], /no_verify, /no_draw
   endfor
 
   volts = tnames('ell_hsk_*volt_mon')
@@ -74,6 +75,7 @@ pro calibrate_lomo_engineering
       YSUBTITLE:'volt', $
       YRANGE:[y1,y2]}
     store_data, volts[i], data={x:in_data.x, y:volt}, dlimits=new_dl, limits=l
+    tplot_gui, volts[i], /no_verify, /no_draw
     endif
   endfor
 
@@ -90,6 +92,8 @@ pro calibrate_lomo_engineering
     YSUBTITLE:'', $
     YRANGE:[y1,y2]}
   store_data, 'ell_hsk_epd_biasl_volt_mon', data={x:in_data.x, y:new_biasl}, dlimits=dl, limits=l
+  tplot_gui, biasl, /no_verify, /no_draw
+
   
   biash= tnames('ell_hsk_epd_biash_volt_mon')
   get_data, biash, data=in_data, dlimits=dl, limits=l
@@ -102,6 +106,7 @@ pro calibrate_lomo_engineering
     COLORS:[2], $
     YSUBTITLE:'', $
     YRANGE:[y1,y2]}
-  store_data, 'ell_hsk_epd_biash_volt_mon', data={x:in_data.x, y:new_biash}, dlimits=new_dl, limits=l
+  store_data, 'ell_hsk_epd_biash_volt_mon', data={x:in_data.x, y:new_biash}, dlimits=dl, limits=l
+  tplot_gui, biash, /no_verify, /no_draw
 
 end

@@ -90,11 +90,12 @@ PRO elf_load_prm, datatype=datatype, level=level, trange=trange, $
     
       init_time=systime(/sec)
       cdf2tplot, file=local_file, get_support_data=1
-      
+     
       If level EQ 'l2' then begin
 
         ; calibrate on the fly for now
         get_data, 'ell_prm', data=d, dlimits=dl, limits=l
+
         d.y[*,0]=d.y[*,0]/106.4   ;27238.4
         d.y[*,1]=d.y[*,1]/97.9    ;25062.4
         d.y[*,2]=d.y[*,2]/104.5   ;26572.
@@ -107,7 +108,9 @@ PRO elf_load_prm, datatype=datatype, level=level, trange=trange, $
         maxy=max(d.y[*,0])
         newdl={cdf:dl.cdf, spec:0, log:0, colors:[2,4,6], labels:['x','y','z'], labflag:1, ytitle:'[nT]', $
             color_table:39, yrange:[miny,maxy]}
+
         store_data, 'ell_prm', data=d, dlimits=newdl, limits=l
+        tplot_gui, 'ell_prm', /no_verify, /no_draw
       Endif
     
 ;      if i EQ 0 then begin

@@ -15,9 +15,9 @@
 ;None, so far
 ;HISTORY:
 ; 26-nov-2014, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-07-31 14:28:05 -0700 (Fri, 31 Jul 2015) $
-; $LastChangedRevision: 18334 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2017-01-11 16:14:27 -0800 (Wed, 11 Jan 2017) $
+; $LastChangedRevision: 22578 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_l2file_compress.pro $
 ;-
 Pro mvn_l2file_compress, fullfile0, _extra = _extra
@@ -47,7 +47,7 @@ Pro mvn_l2file_compress, fullfile0, _extra = _extra
 
   file_id = file_basename(file, '.cdf')
 
-  spawn, '/usr/local/pkg/cdf-3.6.0_CentOS-6.6/bin/cdfconvert '+fullfile+' '+$
+  spawn, '/usr/local/pkg/cdf-3.6.3_CentOS-6.8/bin/cdfconvert '+fullfile+' '+$
          fullfile+' -compression cdf:none -delete'
 
   md5file = ssw_str_replace(fullfile, '.cdf', '.md5')
@@ -66,7 +66,7 @@ Pro mvn_l2file_compress, fullfile0, _extra = _extra
   printf, unit, md5outstr
   free_lun, unit
 
-  spawn, '/usr/local/pkg/cdf-3.6.0_CentOS-6.6/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:gzip.5 -delete'
+  spawn, '/usr/local/pkg/cdf-3.6.3_CentOS-6.8/bin/cdfconvert '+fullfile+' '+fullfile+' -compression cdf:gzip.5 -delete'
 
 ;chmod to g+w for the files
   spawn, 'chmod g+w '+fullfile
