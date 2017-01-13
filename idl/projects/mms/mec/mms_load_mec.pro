@@ -35,6 +35,7 @@
 ;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
+;         major_version: only open the latest major CDF version (e.g., X in vX.Y.Z) in the requested time interval
 ;         min_version:  specify a minimum CDF version # to load
 ;         cdf_records:  specify a number of records to load from the CDF files.
 ;                       e.g., cdf_records=1 only loads in the first data point in the file
@@ -59,8 +60,8 @@
 ;          
 ;          
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-04 10:59:52 -0700 (Fri, 04 Nov 2016) $
-;$LastChangedRevision: 22301 $
+;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
+;$LastChangedRevision: 22583 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_load_mec.pro $
 ;-
 
@@ -74,7 +75,7 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
     cdf_version = cdf_version, latest_version = latest_version, $
     min_version = min_version, cdf_records = cdf_records, $
     spdf = spdf, available = available, versions = versions, $
-    always_prompt = always_prompt
+    always_prompt = always_prompt, major_version=major_version
 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     if undefined(datatype) then datatype = 'ephts04d'
@@ -89,7 +90,7 @@ pro mms_load_mec, trange = trange, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
         cdf_records = cdf_records, spdf = spdf, available = available, versions = versions, $
-        always_prompt = always_prompt
+        always_prompt = always_prompt, major_version=major_version
         
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return

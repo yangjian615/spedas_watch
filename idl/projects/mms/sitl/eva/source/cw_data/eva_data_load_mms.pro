@@ -115,11 +115,11 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           if jmax gt 0 then store_data, tn[idx],/delete
           
           ; options
-          tnf = sc+'_epd_feeps_srvy_sitl_electron_intensity_omni_spin'
+          tnf = sc+'_epd_feeps_srvy_sitl_electron*intensity*'
           tn=tnames(tnf,jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
             options, tnf, ytitle=sc+'!CFEEPS!Cintnsty',ysubtitle='[keV]'
-            ylim, tnf, 30,500
+            ylim, tnf, 55,500
           endif
           answer = 'Yes'
         endif

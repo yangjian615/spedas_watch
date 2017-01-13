@@ -10,16 +10,15 @@
 ;         trange: time range of interest
 ;         probes: list of probes - values for MMS SC #
 ;         instrument: instrument, 'fpi', 'hpca', 'fgm', etc.
-;         datatypes: not implemented yet 
+;         datatypes: depends on instrument; see header of the instrument's load routine
 ;         levels: level of data processing 
 ;         data_rates: instrument data rate
-;         local_data_dir: local directory to store the CDF files; should be set if 
-;             you're on *nix or OSX, the default currently assumes the IDL working directory
+;         local_data_dir: local directory to store the CDF files
 ;         source: sets a different system variable. By default the MMS mission system variable 
 ;             is !mms
 ;         login_info: string containing name of a sav file containing a structure named "auth_info",
 ;             with "username" and "password" tags with your API login information
-;         tplotnames: set to override default names for tplot variables
+;         tplotnames: returns a list of the loaded tplot variables
 ;         get_support_data: when set this routine will load any support data
 ;             (support data is specified in the CDF file)
 ;         no_color_setup: don't setup graphics configuration; use this
@@ -31,10 +30,11 @@
 ;         suffix: append a suffix to tplot variables names
 ;         varformat: should be a string (wildcards accepted) that will match the CDF variables
 ;             that should be loaded into tplot variables
-;         cdf_filenames:  this keyword returns the names of the CDF files used when loading the data
+;         cdf_filenames:  returns the names of the CDF files used when loading the data
 ;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;             (e.g., /latest_version)
+;         major_version: only open the latest major CDF version (e.g., X in vX.Y.Z) in the requested time interval
 ;         min_version:  specify a minimum CDF version # to load
 ;         cdf_records: specify the # of records to load from the CDF files; this is useful
 ;             for grabbing one record from a CDF file
@@ -43,7 +43,7 @@
 ;             this is useful for finding which files would be downloaded (along with their sizes) if 
 ;             you didn't specify this keyword (also outputs total download size)
 ;         versions: this keyword returns the version #s of the CDF files used when loading the data
-;         always_prompt: set this keyword to always prompt for the user's username and password;
+;         always_prompt: set this keyword to always prompt for your username and password;
 ;             useful if you accidently save an incorrect password, or if your SDC password has changed
 ;         
 ;         
@@ -55,11 +55,9 @@
 ;     1) See the following regarding rules for the use of MMS data:
 ;         https://lasp.colorado.edu/galaxy/display/mms/MMS+Data+Rights+and+Rules+for+Data+Use
 ;          
-;     2) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
-;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
+;     2) CDF version 3.6.3+ is required to correctly handle leap seconds.  
 ;         
-;     3) The local paths should be set to mirror the SDC directory structure to avoid
-;         downloading data more than once
+;     3) The local paths will mirror the SDC directory structure
 ;         
 ;     4) Warning about datatypes and paths:
 ;           -- many of the MMS instruments contain datatype details in their path names; for these CDFs
@@ -93,8 +91,8 @@
 ;      
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-05 17:10:02 -0800 (Thu, 05 Jan 2017) $
-;$LastChangedRevision: 22513 $
+;$LastChangedDate: 2017-01-12 16:15:02 -0800 (Thu, 12 Jan 2017) $
+;$LastChangedRevision: 22585 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data.pro $
 ;-
 
@@ -134,7 +132,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
         datatypes = datatypes_in
     endelse
 
-    if undefined(local_data_dir) then local_data_dir = !mms.local_data_dir
+    if undefined(local_data_dir) then local_data_dir = source.local_data_dir
     ; handle shortcut characters in the user's local data directory
     spawn, 'echo ' + local_data_dir, local_data_dir
     if is_array(local_data_dir) then local_data_dir = local_data_dir[0]
@@ -161,7 +159,7 @@ pro mms_load_data, trange = trange, probes = probes, datatypes = datatypes_in, $
 
     ;combine these flags for now, if we're not downloading files then there is
     ;no reason to contact the server unless mms_get_local_files is unreliable
-    no_download = !mms.no_download or !mms.no_server or (response_code ne 200) or ~undefined(no_update) or keyword_set(spdf)
+    no_download = source.no_download or source.no_server or (response_code ne 200) or ~undefined(no_update) or keyword_set(spdf)
 
     ; only prompt the user if they're going to download data
     if no_download eq 0 then begin

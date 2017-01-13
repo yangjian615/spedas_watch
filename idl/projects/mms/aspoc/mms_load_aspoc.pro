@@ -37,6 +37,7 @@
 ;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
+;         major_version: only open the latest major CDF version (e.g., X in vX.Y.Z) in the requested time interval
 ;         min_version:  specify a minimum CDF version # to load
 ;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;         available:    returns a list of files available at the SDC for the requested parameters
@@ -66,8 +67,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-29 09:36:13 -0700 (Mon, 29 Aug 2016) $
-;$LastChangedRevision: 21764 $
+;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
+;$LastChangedRevision: 22583 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/aspoc/mms_load_aspoc.pro $
 ;-
 
@@ -80,7 +81,7 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
                   varformat = varformat, cdf_filenames = cdf_filenames, $
                   cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version, spdf = spdf, available = available, $
-                  versions = versions, always_prompt = always_prompt
+                  versions = versions, always_prompt = always_prompt, major_version=major_version
                   
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     ; for ASPOC data, datatype = instrument
@@ -99,7 +100,8 @@ pro mms_load_aspoc, trange = trange, probes = probes, datatype = datatype, $
         no_color_setup = no_color_setup, time_clip = time_clip, no_update = no_update, $
         suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf, available = available, versions = versions, always_prompt = always_prompt
+        spdf = spdf, available = available, versions = versions, always_prompt = always_prompt, $
+        major_version=major_version
          
 ; Commented out the following because it doesn't seem to help anymore
 ; egrimes, 2/29/2016

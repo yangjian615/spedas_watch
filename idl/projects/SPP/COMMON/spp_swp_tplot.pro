@@ -33,7 +33,7 @@ if keyword_set(name) then begin
     'SE':   tplot,'*sp?_AF0_ANODE_SPEC *sp?_AF1_*_SPEC spp_sp?_hkp_MRAM_*',ADD=ADD
     'SE_HV': tplot,'*sp?_hkp_ADC_VMON_* *sp?_hkp_ADC_IMON_*',ADD=ADD
     'SE_LV': tplot,'*sp?_hkp_RIO*',ADD=ADD
-    'SA_SPEC': tplot, 'spp_spa_hkp_ADC_VMON_HEM spp_spa_AF0_CNTS spp_spa_AF1_ANODE_SPEC spp_spa_AF1_NRG_SPEC spp_spa_AT0_CNTS spp_spa_AT1_ANODE_SPEC spp_spa_AT1_NRG_SPEC spp_spa_AT1_PEAK_BIN', ADD=ADD
+    'SA_SPEC': tplot, '*spa_*ADC_VMON_HEM *spa_AF0_CNTS *spa_*AF1_ANODE_SPEC spp_spa_AF1_NRG_SPEC spp_spa_AT0_CNTS spp_spa_AT1_ANODE_SPEC spp_spa_AT1_NRG_SPEC spp_spa_AT1_PEAK_BIN', ADD=ADD
     'SB_SPEC': tplot, 'spp_spb_hkp_ADC_VMON_HEM spp_spb_AF0_CNTS spp_spb_AF1_ANODE_SPEC spp_spb_AF1_NRG_SPEC spp_spb_AT0_CNTS spp_spb_AT1_ANODE_SPEC spp_spb_AT1_NRG_SPEC spp_spb_AT1_PEAK_BIN', ADD=ADD
     'SI_RATE': tplot,'*rate*CNTS',ADD=ADD
     'SI_RATE1': tplot,'*rates_'+strsplit(/extract,'VALID_* MULTI_* STARTS_* STOPS_*'),add=add
@@ -45,6 +45,8 @@ if keyword_set(name) then begin
     'SI': tplot,add=add,'Igun_* manip_*POS *rates_VAL*CNTS *rates_*NO*CNTS '
     'SI_SCAN':tplot,add=add,'*MCP_V *MRAM* *spi_AF0?_NRG_SPEC'
     'SC':  tplot,'spp_*spc*',ADD=ADD
+    'SA_COVER': tplot, '*spa_*ACT*CVR* spa_*ACTSTAT*FLAG* spa*CMD*UKN* spa*CLK*NYS', add = add
+    'SB_COVER': tplot, '*spb_*ACT*CVR* spb_*ACTSTAT*FLAG* spb*CMD*UKN* spb*CLK*NYS', add = add
     else:
   endcase
 endif

@@ -38,6 +38,7 @@
 ;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
 ;         latest_version: only grab the latest CDF version in the requested time interval
 ;                       (e.g., /latest_version)
+;         major_version: only open the latest major CDF version (e.g., X in vX.Y.Z) in the requested time interval
 ;         min_version:  specify a minimum CDF version # to load
 ;         spdf:         grab the data from the SPDF instead of the LASP SDC (only works for public access)
 ;         center_measurement: set this keyword to shift the data to the center of the measurement interval
@@ -69,8 +70,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-09 08:39:04 -0800 (Mon, 09 Jan 2017) $
-;$LastChangedRevision: 22531 $
+;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
+;$LastChangedRevision: 22583 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -84,7 +85,8 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
                   cdf_filenames = cdf_filenames, cdf_version = cdf_version, $
                   latest_version = latest_version, min_version = min_version, $
                   spdf = spdf, center_measurement=center_measurement, $
-                  available = available, versions = versions, always_prompt = always_prompt
+                  available = available, versions = versions, always_prompt = always_prompt, $
+                  major_version=major_version
 
     if undefined(probes) then probes = ['3'] ; default to MMS 3
     if undefined(datatype) then datatype = '*' ; grab all data in the CDF
@@ -123,7 +125,7 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
         spdf = spdf, center_measurement = center_measurement, available = available, $
-        versions = versions, always_prompt = always_prompt
+        versions = versions, always_prompt = always_prompt, major_version=major_version
 
     ; no reason to continue if the user only requested available data
     if keyword_set(available) then return
@@ -143,14 +145,14 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
             tplotnames = tplotnames_errflags_emom, no_color_setup = no_color_setup, time_clip = time_clip, $
             no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags* *compressionloss*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-            spdf = spdf, center_measurement=center_measurement
+            spdf = spdf, center_measurement=center_measurement, major_version=major_version
         mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'des-dist', get_support_data = 0, $
             tplotnames = tplotnames_errflags_edist, no_color_setup = no_color_setup, time_clip = time_clip, $
             no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags* *compressionloss*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-            spdf = spdf, center_measurement=center_measurement
+            spdf = spdf, center_measurement=center_measurement, major_version=major_version
     endif else begin
         if ~undefined(tplotnames) then begin
           for probe_idx = 0, n_elements(probes)-1 do begin
@@ -177,14 +179,14 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
             tplotnames = tplotnames_errflags_imom, no_color_setup = no_color_setup, time_clip = time_clip, $
             no_update = no_update, suffix = suffix+'_moms', varformat = '*errorflags* *compressionloss*',  $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-            spdf = spdf, center_measurement=center_measurement
+            spdf = spdf, center_measurement=center_measurement, major_version=major_version
         mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'fpi', $
             data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
             datatype = 'dis-dist', get_support_data = 0, $
             tplotnames = tplotnames_errflags_idist, no_color_setup = no_color_setup, time_clip = time_clip, $
             no_update = no_update, suffix = suffix+'_dist', varformat = '*errorflags* *compressionloss*', $
             cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-            spdf = spdf, center_measurement=center_measurement
+            spdf = spdf, center_measurement=center_measurement, major_version=major_version
     endif else begin
         if ~undefined(tplotnames) then begin
           for probe_idx = 0, n_elements(probes)-1 do begin
