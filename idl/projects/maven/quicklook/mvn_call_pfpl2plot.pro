@@ -1,12 +1,3 @@
-;Get current timespan from tplot_com or return 0's
-Function alttimerange
-@tplot_com.pro
-  If(is_struct(tplot_vars) && is_struct(tplot_vars.options)) Then Begin
-     t = tplot_vars.options.trange
-  Endif Else t = [0.0d0, 0.0d0]
-  Return, t
-End
-
 ;+
 ;NAME:
 ; mvn_call_pfpl2plot
@@ -38,8 +29,8 @@ End
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen.pro 2015-06-02, jmm
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-11-04 10:56:00 -0700 (Fri, 04 Nov 2016) $
-; $LastChangedRevision: 22300 $
+; $LastChangedDate: 2017-01-13 12:08:36 -0800 (Fri, 13 Jan 2017) $
+; $LastChangedRevision: 22596 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_call_pfpl2plot.pro $
 ;-
 Pro mvn_call_pfpl2plot, time_in = time_in, $
@@ -71,7 +62,7 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
         For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
         If(keyword_set(timei)) Then Begin
            printf, eunit, time_string(timei)
-        Endif Else printf, eunit, time_string(alttimerange())
+        Endif Else printf, eunit, 'Date unavailable' 
         free_lun, eunit
 ;mail it to jimm@ssl.berkeley.edu
         cmd_rq = 'mailx -s "Problem with PFPL2 process" jimm@ssl.berkeley.edu < '+efile

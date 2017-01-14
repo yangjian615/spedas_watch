@@ -21,22 +21,25 @@
 ;       and then split and save them into one-day files.
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-03-10 17:26:13 -0800 (Thu, 10 Mar 2016) $
-; $LastChangedRevision: 20403 $
+; $LastChangedDate: 2017-01-13 15:07:18 -0800 (Fri, 13 Jan 2017) $
+; $LastChangedRevision: 22599 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot_save.pro $
 ;
 ;CREATED BY:    Yuki Harada  03-04-16
 ;FILE: mvn_swe_lpw_scpot_save.pro
 ;-
-pro mvn_swe_lpw_scpot_save, start_day=start_day, ndays=ndays, norbwin=norbwin, _extra=_extra
+pro mvn_swe_lpw_scpot_save, start_day=start_day, ndays=ndays, norbwin=norbwin, _extra=_extra, suffix=suffix
+
+  if ~keyword_set(suffix) then suffix = ''
 
   dpath = root_data_dir() + 'maven/data/sci/swe/l3/swe_lpw_scpot/'
   froot = 'mvn_swe_lpw_scpot_'
-  tname = ['mvn_lpw_swp1_dIV_smo','mvn_lpw_swp1_IV_vinfl', $
+  tname = ['mvn_lpw_swp1_IV_vinfl', $ ;'mvn_lpw_swp1_dIV_smo',
            'mvn_lpw_swp1_IV_vinfl_qflag', $
            'mvn_swe_lpw_scpot_lin_para','mvn_swe_lpw_scpot_pow_para', $
            'mvn_swe_lpw_scpot_Ndata', $
-           'mvn_swe_lpw_scpot_lin','mvn_swe_lpw_scpot_pow']
+           'mvn_swe_lpw_scpot_lin','mvn_swe_lpw_scpot_pow', $
+           'mvn_swe_lpw_scpot']
   oneday = 86400D
 
 ;  if (size(interval,/type) eq 0) then interval = 1
@@ -73,7 +76,7 @@ pro mvn_swe_lpw_scpot_save, start_day=start_day, ndays=ndays, norbwin=norbwin, _
 
     opath = dpath + time_string(tstart,tf='YYYY/MM/')
     file_mkdir2, opath, mode='0775'o  ; create directory structure, if needed
-    ofile = opath + froot + time_string(tstart,tf='YYYYMMDD')
+    ofile = opath + froot + time_string(tstart,tf='YYYYMMDD') + suffix
 
     store_data,tname,/del
     for itn=0,n_elements(tname)-1 do begin
@@ -89,7 +92,10 @@ pro mvn_swe_lpw_scpot_save, start_day=start_day, ndays=ndays, norbwin=norbwin, _
        store_data,tname[itn],data=newd,dlim=dlim
     endfor
     validtname = tnames(tname,n)
-    if n gt 0 then tplot_save,validtname,file=ofile,/compress
+    if n gt 0 then begin
+       tplot_save,validtname,file=ofile,/compress
+       file_chmod,ofile+'.tplot','664'o
+    endif
  endfor
 
   for itn=0,n_elements(tname)-1 do tplot_rename,tname[itn]+'_all',tname[itn]

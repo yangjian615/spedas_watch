@@ -81,8 +81,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
-;$LastChangedRevision: 22583 $
+;$LastChangedDate: 2017-01-13 09:04:49 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22586 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -102,7 +102,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
     if undefined(data_units) then data_units = ['count_rate', 'intensity']
     if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
-    if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '5.5.0'
+    if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) && undefined(major_version) then min_version = '5.5.0'
     if undefined(get_support_data) then get_support_data = 1 ; support data needed for sun removal and spin averaging
     l1a_datatypes = ['electron-bottom', 'electron-top', 'ion-top', 'ion-bottom']
     

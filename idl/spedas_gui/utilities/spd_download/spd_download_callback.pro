@@ -12,16 +12,16 @@
 ;
 ;
 ;Input/Output:
-;  status:  See "Using Callbacks with the IDLnetURL Object" in IDL documention
-;  progress:  See "Using Callbacks with the IDLnetURL Object" in IDL documention
+;  status:  See "Using Callbacks with the IDLnetURL Object" in IDL documentation
+;  progress:  See "Using Callbacks with the IDLnetURL Object" in IDL documentation
 ;  data:  Custom data structure for passing variables from spd_download_file 
 ;         to this function.
 ;          {
-;            net_object:   refernce to current idlneturl object
+;            net_object:   reference to current idlneturl object
 ;            msg_time:  pointer to time of the last status message
-;            msg_data:  bytes transfered as of msg_time
+;            msg_data:  bytes transferred as of msg_time
 ;            progress_object:  reference to applicable status output object
-;            error: pointer to flag denoting whether an error occured in this code
+;            error: pointer to flag denoting whether an error occurred in this code
 ;                   (to be used by handler later)
 ;           }
 ;
@@ -33,9 +33,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-18 16:27:58 -0800 (Wed, 18 Feb 2015) $
-;$LastChangedRevision: 17004 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22594 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_callback.pro $
 ;
 ;-
@@ -71,9 +71,9 @@ if elapsed ge delay then begin
   if progress[0] then begin
 
     ;speed in kb/s
-    speed = '('+strtrim( string( (progress[2] - *(data.msg_data)) / elapsed / 1e3, format='(f12.1)'), 2)+' kb/s)'
+    speed = '('+strtrim( string( (progress[2] - *(data.msg_data)) / elapsed / 1e3, format='(f12.1)'), 2)+' KB/s)'
 
-    ;if total size is unknown then only print amount transfered and speed
+    ;if total size is unknown then only print amount transferred and speed
     if progress[1] eq 0 then begin
       complete = ' '+strtrim(progress[2],2) + ' bytes'
     endif else begin

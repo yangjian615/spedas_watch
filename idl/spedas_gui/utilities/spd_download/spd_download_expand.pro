@@ -15,14 +15,14 @@
 ;                 when wildcards result in multiple matches. 
 ;
 ;Output:
-;  url:  String array of matching remote files or emptry string if no matches are found.
+;  url:  String array of matching remote files or empty string if no matches are found.
 ;
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-07 19:15:22 -0700 (Thu, 07 May 2015) $
-;$LastChangedRevision: 17518 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22594 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_expand.pro $
 ;
 ;-

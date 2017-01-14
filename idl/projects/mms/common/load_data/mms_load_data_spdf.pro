@@ -27,8 +27,8 @@
 ;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-09 09:13:24 -0800 (Mon, 09 Jan 2017) $
-;$LastChangedRevision: 22533 $
+;$LastChangedDate: 2017-01-13 09:14:19 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22588 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -52,7 +52,7 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
     instrument = strlowcase(instrument)
     level = strlowcase(level)
     
-    if not keyword_set(remote_data_dir) then remote_data_dir = 'http://spdf.sci.gsfc.nasa.gov/pub/data/mms/'
+    if not keyword_set(remote_data_dir) then remote_data_dir = 'https://spdf.sci.gsfc.nasa.gov/pub/data/mms/'
 
     if (keyword_set(trange) && n_elements(trange) eq 2) $
       then tr = timerange(trange) $

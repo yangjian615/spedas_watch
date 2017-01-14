@@ -18,22 +18,20 @@
 ;
 
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-03-04 15:35:26 -0800 (Fri, 04 Mar 2016) $
-; $LastChangedRevision: 20328 $
+; $LastChangedDate: 2017-01-13 15:07:18 -0800 (Fri, 13 Jan 2017) $
+; $LastChangedRevision: 22599 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot_restore.pro $
 ;
 ;CREATED BY:    Yuki Harada  03-24-16
 ;FILE: mvn_swe_lpw_scpot_restore.pro
 ;-
-pro mvn_swe_lpw_scpot_restore, trange, orbit=orbit, loadonly=loadonly
-
-
-
+pro mvn_swe_lpw_scpot_restore, trange, orbit=orbit, loadonly=loadonly, suffix=suffix
 
 ; Process keywords
+  if ~keyword_set(suffix) then suffix = ''  ;- to be updated -> suffix = '_v??_r??'
 
   rootdir = 'maven/data/sci/swe/l3/swe_lpw_scpot/YYYY/MM/'
-  fname = 'mvn_swe_lpw_scpot_YYYYMMDD.tplot'
+  fname = 'mvn_swe_lpw_scpot_YYYYMMDD'+suffix+'.tplot'
 
   
   if keyword_set(orbit) then begin
@@ -54,7 +52,7 @@ pro mvn_swe_lpw_scpot_restore, trange, orbit=orbit, loadonly=loadonly
      trange = timerange()
   endif
   tmin = min(time_double(trange), max=tmax)
-  file = mvn_pfp_file_retrieve(rootdir+fname,trange=[tmin,tmax],/daily_names)
+  file = mvn_pfp_file_retrieve(rootdir+fname,trange=[tmin,tmax],/daily_names,/last_version)
   nfiles = n_elements(file)
   
   finfo = file_info(file)
@@ -75,10 +73,11 @@ pro mvn_swe_lpw_scpot_restore, trange, orbit=orbit, loadonly=loadonly
 
   tplot_restore,filename=file,/append
 
+  if suffix eq '' then begin
   dprint,'***********************************************'
   dprint,'*** mvn_swe_lpw_scpot is still experimental ***'
   dprint,'***********************************************'
-
+  endif
 
   return
 

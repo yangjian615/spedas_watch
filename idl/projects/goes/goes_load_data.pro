@@ -21,9 +21,9 @@
 ;             /get_support_data: keep the support data
 ;             /noephem:     Don't keep the ephemeris data
 ; 
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-10 14:59:06 -0800 (Tue, 10 Jan 2017) $
-; $LastChangedRevision: 22571 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-01-13 12:29:25 -0800 (Fri, 13 Jan 2017) $
+; $LastChangedRevision: 22598 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_load_data.pro $
 ;-
 pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffix = suffix, $
@@ -56,7 +56,7 @@ pro goes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
         sc = 'g'+string(probes[idx_probes], format='(I02)')
         prefix = sc + '_'
 
-        dprint,dlevel=2,verbose=source.verbose,'Loading GOES-',probes[idx_probes],' ',strupcase(datatype),' data'
+        dprint,dlevel=2,verbose=source.verbose,'Loading GOES-',string(probes[idx_probes], format='(I02)'),' ',strupcase(datatype),' data'
         
         fullavgpath = ['new_full', 'new_avg']
         goes_path_dir = fullavgpath[~undefined(avg_1m) or ~undefined(avg_5m)]

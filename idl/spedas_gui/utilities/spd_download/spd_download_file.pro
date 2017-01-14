@@ -55,8 +55,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-08 14:02:56 -0800 (Tue, 08 Mar 2016) $
-;$LastChangedRevision: 20350 $
+;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22594 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -147,7 +147,7 @@ endif else begin
   headers = array_concat('User-Agent: '+'SPEDAS IDL/'+!version.release+' ('+!version.os+' '+!version.arch+')', headers)
 endelse
 
-;The file will automatically be overwritten if server is not querried for 
+;The file will automatically be overwritten if server is not queried for 
 ;its modification time.  If no_update is set and a file is found then there 
 ;is nothing left to do.  If downloading to string array then no checks are needed 
 if ~keyword_set(string_array) && ~keyword_set(force_download) && local_info.exists then begin
@@ -253,7 +253,7 @@ if error eq 0 then begin
 
   endif else begin
 
-    ;ouput file's contents
+    ;output file's contents
     output = filepath
 
     dprint, dlevel=2, 'Download complete'

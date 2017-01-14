@@ -34,8 +34,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-12-10 11:16:11 -0800 (Thu, 10 Dec 2015) $
-;$LastChangedRevision: 19568 $
+;$LastChangedDate: 2017-01-13 10:04:19 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22593 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goes_overview_plot_wrapper.pro $
 ;----------
 
@@ -71,7 +71,7 @@ function check_goes_noaa_dir, base_dir, remote_http_dir
   
   oUrl = OBJ_NEW('IDLnetUrl')
   oUrl->SetProperty, VERBOSE = 1
-  oUrl->SetProperty, url_scheme = 'http'
+  oUrl->SetProperty, url_scheme = 'https'
   ;cd, base_dir
   oUrl->SetProperty, CALLBACK_function ='goes_url_callback'
   oUrl->SetProperty, URL_HOST = remote_http_dir

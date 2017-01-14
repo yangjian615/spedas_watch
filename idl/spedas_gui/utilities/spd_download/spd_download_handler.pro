@@ -17,7 +17,7 @@
 ;  net_object:  Reference to IDLnetURL object
 ;  url:  String specifying URL of remote file
 ;  filename:  String specifying path (full or partial) to (requested) local file
-;  callback_error:  Flag denoting that an exception occured in the the callback function
+;  callback_error:  Flag denoting that an exception occurred in the callback function
 ;
 ;
 ;Output:
@@ -28,9 +28,9 @@
 ;
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-02-18 16:27:58 -0800 (Wed, 18 Feb 2015) $
-;$LastChangedRevision: 17004 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22594 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_handler.pro $
 ;
 ;-
@@ -56,7 +56,7 @@ net_object->getproperty, response_code=response_code, response_header=response_h
 
 ;Handle http responses.
 ;  -handle common responses separately, other's will be printed with header
-;  -if there's no valid http response then it is likely a programatic error;
+;  -if there's no valid http response then it is likely a programmatic error;
 ;   the safest thing to do is to reissue the error for a higher level handler to catch
 case response_code of
  

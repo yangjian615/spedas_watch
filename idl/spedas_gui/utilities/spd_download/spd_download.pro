@@ -48,7 +48,7 @@
 ;       assumed that the url is a path to a local resource (e.g. /mount/data/)
 ;  
 ;    local_file:  String or string array of local destination file names
-;    local_path:  String constisting of a common local path for all local files
+;    local_path:  String consisting of a common local path for all local files
 ;
 ;      -The final local path(s) will be:  local_path + local_file
 ;      -The final path(s) can be full or relative
@@ -110,8 +110,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-05 09:16:42 -0700 (Wed, 05 Oct 2016) $
-;$LastChangedRevision: 22029 $
+;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22594 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download.pro $
 ;
 ;-
@@ -304,7 +304,7 @@ endif
 ; Aggregate filenames
 ;--------------------------------------------
 
-;if a file was successfully downloaded then add it to the ouput list
+;if a file was successfully downloaded then add it to the output list
 ;otherwise search locally and add existing local files
 ;the final output list should preserve the order of the input
 for i=0, n_elements(file_list)-1 do begin

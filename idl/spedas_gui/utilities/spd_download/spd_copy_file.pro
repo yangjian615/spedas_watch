@@ -10,7 +10,7 @@
 ;
 ;
 ;Calling Sequence:
-;  path = spd_copy_file( source=source, distination=destination 
+;  path = spd_copy_file( source=source, destination=destination 
 ;                       [,no_update=no_update] [,force_copy=force_copy] )
 ;
 ;
@@ -33,9 +33,9 @@
 ;     force_download > no_update > default behavior
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-05-08 11:26:49 -0700 (Fri, 08 May 2015) $
-;$LastChangedRevision: 17524 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
+;$LastChangedRevision: 22594 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_copy_file.pro $
 ;
 ;-
