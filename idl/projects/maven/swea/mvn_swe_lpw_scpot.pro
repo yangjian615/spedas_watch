@@ -55,8 +55,8 @@
 ;       Yuki Harada on 2016-02-29
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-01-13 15:57:55 -0800 (Fri, 13 Jan 2017) $
-; $LastChangedRevision: 22600 $
+; $LastChangedDate: 2017-01-14 12:28:29 -0800 (Sat, 14 Jan 2017) $
+; $LastChangedRevision: 22602 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
@@ -468,6 +468,8 @@ for iorb=iorb0,iorb1 do begin
          if nw gt 0 then scpot_lin[w] = 1.
          w = where( scpot_pow lt 1 , nw )
          if nw gt 0 then scpot_pow[w] = 1.
+         w = where( ~finite(scpot_lin) , nw )
+         if nw gt 0 then scpot_pow[w] = !values.f_nan
 
          ;;; Filter out shadow regions
          get_data, 'wake', data=dwake, dtype=dtype
