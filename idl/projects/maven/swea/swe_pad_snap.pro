@@ -155,8 +155,8 @@
 ;        NOTE:         Insert a text label.  Keep it short.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 11:19:36 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22535 $
+; $LastChangedDate: 2017-01-16 11:53:37 -0800 (Mon, 16 Jan 2017) $
+; $LastChangedRevision: 22605 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -761,13 +761,15 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         endif
 
         IF keyword_set(dir) THEN BEGIN
+          print,B_mso[0],B_elev
         
           oplot,[90.,90.],[0.1,10],line=2
+          dirname = replicate('',4)
            
-          IF B_mso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
-          IF B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
-          IF -B_mso[0] GT 0. THEN append_array, dirname, 'SUN' ELSE append_array, dirname, 'TAIL'
-          IF -B_elev GT 0. THEN append_array, dirname, 'UP' ELSE append_array, dirname, 'DOWN'
+          IF (B_mso[0] GT 0.) THEN dirname[0] = 'SUN' ELSE dirname[0] = 'TAIL'
+          IF (B_elev GT 0.)   THEN dirname[1] = 'UP'  ELSE dirname[1] = 'DOWN'
+          IF (B_mso[0] LT 0.) THEN dirname[2] = 'SUN' ELSE dirname[2] = 'TAIL'
+          IF (B_elev LT 0.)   THEN dirname[3] = 'UP'  ELSE dirname[3] = 'DOWN'
            
           bperp = [B_mso[1], B_mso[2], -B_geo[0], -B_geo[1]]
           FOR j=0, 3 DO $

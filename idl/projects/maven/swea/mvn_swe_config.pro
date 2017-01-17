@@ -5,6 +5,23 @@
 ;  Sweep table updates are handled by checksums (see mvn_swe_sweep) - times
 ;  are recorded here as documentation.
 ;
+;  Mission phases are as follows:
+;
+;    Event       Time (UTC)             Mission Phase
+;    -----------------------------------------------------------------------
+;    Launch      2013-11-18/18:28  - 
+;                                   |-> Cruise
+;    MOI         2014-09-22/01:50  -
+;                                   |-> Transition (Commissioning)
+;    Sci Ops     2014-11-15/00:00  -
+;                                   |-> Primary Mission    (PDS R1 - R4)
+;    Ext Ops 1   2015-11-15/00:00  -
+;                                   |-> Extended Mission 1 (PDS R5 - R7.5)
+;    Ext Ops 2   2016-10-01/00:00  - 
+;                                   |-> Extended Mission 2 (PDS R7.5 - R16)
+;    Ext Ops 3   2018-10-01/00:00  -
+;    -----------------------------------------------------------------------
+;
 ;USAGE:
 ;  mvn_swe_config
 ;
@@ -18,8 +35,8 @@
 ;                   changes in a tplot window (assumed to exist).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-27 13:58:56 -0800 (Sun, 27 Nov 2016) $
-; $LastChangedRevision: 22404 $
+; $LastChangedDate: 2017-01-16 11:51:33 -0800 (Mon, 16 Jan 2017) $
+; $LastChangedRevision: 22603 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13

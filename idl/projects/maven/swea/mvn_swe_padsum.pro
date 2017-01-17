@@ -16,8 +16,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 14:54:06 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22287 $
+; $LastChangedDate: 2017-01-16 11:52:29 -0800 (Mon, 16 Jan 2017) $
+; $LastChangedRevision: 22604 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_padsum.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -42,7 +42,9 @@ function mvn_swe_padsum, pad
     
   padsum.pa = total(pad.pa,3)/float(npts)         ; pitch angles can be blurred
   padsum.dpa = total(pad.dpa,3)/float(npts)
-    
+  padsum.pa_min = total(pad.pa_min,3)/float(npts)
+  padsum.pa_max = total(pad.pa_max,3)/float(npts)
+
   padsum.sc_pot = mean(pad.sc_pot, /nan)
   padsum.Baz = mean(pad.Baz, /nan)
   padsum.Bel = mean(pad.Bel, /nan)
