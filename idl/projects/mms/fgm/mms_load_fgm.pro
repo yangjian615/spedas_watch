@@ -53,7 +53,7 @@
 ;
 ; 
 ; EXAMPLE:
-;     See mms_load_fgm_crib.pro and mms_load_fgm_brst_crib.pro for usage examples
+;     See mms_load_fgm_crib.pro and mms_load_fgm_burst_crib.pro for usage examples
 ;     
 ;     load MMS FGM burst data for MMS 1
 ;     MMS>  mms_load_fgm, probes=['1'], data_rate='brst'
@@ -63,8 +63,8 @@
 ;
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
-;$LastChangedRevision: 22583 $
+;$LastChangedDate: 2017-01-17 11:10:19 -0800 (Tue, 17 Jan 2017) $
+;$LastChangedRevision: 22610 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 

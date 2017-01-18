@@ -55,8 +55,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
-;$LastChangedRevision: 22594 $
+;$LastChangedDate: 2017-01-17 14:40:44 -0800 (Tue, 17 Jan 2017) $
+;$LastChangedRevision: 22612 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -79,6 +79,8 @@ function spd_download_file, $
                   progress_object = progress_object, $
                   
                   string_array = string_array, $
+                  ssl_verify_peer = ssl_verify_peer, $
+                  ssl_verify_host = ssl_verify_host, $
                   
                   _extra = _extra
 
@@ -174,7 +176,6 @@ callback_error = ptr_new(0b)
 ;if the "url" keyword is passed to get() then all "url_*" properties are ignored,
 ;set them manually here to avoid that
 url_struct = parse_url(url)
-
 net_object->setproperty, $
             
             headers=headers, $
@@ -186,7 +187,8 @@ net_object->setproperty, $
             url_port=url_struct.port, $
             url_username=url_struct.username, $
             url_password=url_struct.password, $
-            
+            ssl_verify_peer = ssl_verify_peer, $
+            ssl_verify_host = ssl_verify_host, $
             _extra=_extra
 
 ;keep core properties from being overwritten by _extra

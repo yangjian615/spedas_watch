@@ -15,8 +15,8 @@
 ;         
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-04-29 07:25:04 -0700 (Fri, 29 Apr 2016) $
-; $LastChangedRevision: 20967 $
+; $LastChangedDate: 2017-01-17 08:20:31 -0800 (Tue, 17 Jan 2017) $
+; $LastChangedRevision: 22606 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/goesstruct_to_cdfstruct.pro $
 ;-
 function GOESstruct_to_cdfstruct, netCDFi
@@ -63,7 +63,7 @@ function GOESstruct_to_cdfstruct, netCDFi
         str_element, g_attributes, 'GENERATED_BY', 'THEMIS/IGPP', /add
         str_element, g_attributes, 'ACKNOWLEDGEMENT', 'NASA Contract NAS5-02099', /add
         str_element, g_attributes, 'LINK_TITLE', 'National Geophysical Data Center', /add
-        str_element, g_attributes, 'HTTP_LINK', 'http://satdat.ngdc.noaa.gov/sem/goes/data/', /add
+        str_element, g_attributes, 'HTTP_LINK', 'https://satdat.ngdc.noaa.gov/sem/goes/data/', /add
         str_element, g_attributes, 'FILE_NAMING_CONVENTION', 'source_descriptor_datatype', /add
         
         inq = create_struct('nzvars', netCDFi.nv)

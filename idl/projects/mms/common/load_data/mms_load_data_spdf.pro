@@ -27,8 +27,8 @@
 ;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-13 09:14:19 -0800 (Fri, 13 Jan 2017) $
-;$LastChangedRevision: 22588 $
+;$LastChangedDate: 2017-01-17 14:41:15 -0800 (Tue, 17 Jan 2017) $
+;$LastChangedRevision: 22613 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -210,7 +210,7 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
         endfor
 
         files = spd_download(remote_file=relpathnames, remote_path=remote_data_dir, $
-          local_path = local_data_dir)
+          local_path = local_data_dir, ssl_verify_peer=0, ssl_verify_host=0)
         
         if n_elements(files) eq 1 && files eq '' then continue
 

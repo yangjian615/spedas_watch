@@ -71,6 +71,9 @@
 ;    dir_mode:  Bit mask specifying permissions for new directories (see file_chmod)
 ;    
 ;    no_wildcards: assume no wild cards in the requested url/filename
+;    
+;    ssl_verify_peer: set this to verify the authenticity of the peer's SSL certificate (HTTPS)
+;    ssl_verify_host: set this to verify the authenticity of the server certificate (HTTPS)
 ;
 ;  IDLnetURL Properties
 ;  ---------------------
@@ -110,8 +113,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
-;$LastChangedRevision: 22594 $
+;$LastChangedDate: 2017-01-17 14:48:39 -0800 (Tue, 17 Jan 2017) $
+;$LastChangedRevision: 22614 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download.pro $
 ;
 ;-
@@ -142,6 +145,10 @@ function spd_download, $
               no_server = no_server, $
               no_clobber = no_clobber, $    
               valid_only = valid_only, $
+              
+              ; for avoiding verifying SSL certs
+              ssl_verify_peer = ssl_verify_peer, $
+              ssl_verify_host = ssl_verify_host, $
 
               no_wildcards = no_wildcards, $
 
@@ -214,7 +221,7 @@ endif
 ;if wildcards are used then contact the server(s) and expand list to include all matches
 if ~keyword_set(no_download) and ~keyword_set(no_wildcards) then begin
 
-  spd_download_expand, url, last_version=last_version
+  spd_download_expand, url, last_version=last_version, ssl_verify_peer = ssl_verify_peer, ssl_verify_host = ssl_verify_host
   
   if array_equal(url,'') then begin
     dprint, dlevel=1, 'No matching remote files found.'
@@ -252,7 +259,6 @@ file_list = strarr(n_elements(filename))
 
 ; Loop over URLs to download 
 ;--------------------------------------------
-
 if ~keyword_set(no_download) then begin
 
   for i=0, n_elements(url)-1 do begin
@@ -275,7 +281,8 @@ if ~keyword_set(no_download) then begin
                          dir_mode = dir_mode, $
                          
                          progress_object = progress_object, $
-                         
+                         ssl_verify_peer = ssl_verify_peer, $
+                         ssl_verify_host = ssl_verify_host, $
                          _extra=_extra )
     endif else begin
 
