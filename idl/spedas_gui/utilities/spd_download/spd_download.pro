@@ -113,8 +113,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-17 14:48:39 -0800 (Tue, 17 Jan 2017) $
-;$LastChangedRevision: 22614 $
+;$LastChangedDate: 2017-01-18 11:25:14 -0800 (Wed, 18 Jan 2017) $
+;$LastChangedRevision: 22619 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download.pro $
 ;
 ;-
@@ -221,7 +221,7 @@ endif
 ;if wildcards are used then contact the server(s) and expand list to include all matches
 if ~keyword_set(no_download) and ~keyword_set(no_wildcards) then begin
 
-  spd_download_expand, url, last_version=last_version, ssl_verify_peer = ssl_verify_peer, ssl_verify_host = ssl_verify_host
+  spd_download_expand, url, last_version=last_version, ssl_verify_peer=ssl_verify_peer, ssl_verify_host=ssl_verify_host, _extra=_extra
   
   if array_equal(url,'') then begin
     dprint, dlevel=1, 'No matching remote files found.'

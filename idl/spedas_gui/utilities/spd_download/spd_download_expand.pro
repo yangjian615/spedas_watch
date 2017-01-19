@@ -21,13 +21,13 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-17 14:40:44 -0800 (Tue, 17 Jan 2017) $
-;$LastChangedRevision: 22612 $
+;$LastChangedDate: 2017-01-18 11:25:14 -0800 (Wed, 18 Jan 2017) $
+;$LastChangedRevision: 22619 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_expand.pro $
 ;
 ;-
 
-pro spd_download_expand, url, last_version=last_version, ssl_verify_peer = ssl_verify_peer, ssl_verify_host = ssl_verify_host
+pro spd_download_expand, url, last_version=last_version, ssl_verify_peer=ssl_verify_peer, ssl_verify_host=ssl_verify_host, _extra=_extra
 
     compile_opt idl2, hidden
 
@@ -61,7 +61,7 @@ if n_remote gt 0 then begin
   for i=0, n_elements(unique_bases)-1 do begin
     
     ;download index file for current base
-    current = spd_download_file(url=unique_bases[i], /string_array, ssl_verify_peer = ssl_verify_peer, ssl_verify_host = ssl_verify_host)
+    current = spd_download_file(url=unique_bases[i], /string_array, ssl_verify_peer=ssl_verify_peer, ssl_verify_host=ssl_verify_host, _extra=_extra)
     
     ;extract URLs from index file
     links = spd_download_extract(current,/relative,/normal,no_parent=unique_bases[i])

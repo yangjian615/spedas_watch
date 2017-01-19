@@ -81,8 +81,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-13 09:04:49 -0800 (Fri, 13 Jan 2017) $
-;$LastChangedRevision: 22586 $
+;$LastChangedDate: 2017-01-18 16:01:35 -0800 (Wed, 18 Jan 2017) $
+;$LastChangedRevision: 22625 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -123,7 +123,13 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if undefined(tplotnames) || tplotnames[0] eq '' then return
     
     if level_in eq 'l1a' then return ; avoid the following for L1a data
+
+    ; apply flat field corrections for ions
+    mms_feeps_flat_field_corrections, data_rate = data_rate_in
     
+    ; remove bad eyes, bad energy channels, and replace energy centers with corrected energies (based on S/C)
+    mms_feeps_remove_bad_data
+
     for probe_idx = 0, n_elements(probes_in)-1 do begin
       this_probe = string(probes_in[probe_idx])
       for datatype_idx = 0, n_elements(datatype_in)-1 do begin
