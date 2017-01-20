@@ -25,8 +25,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-01 12:52:14 -0700 (Tue, 01 Nov 2016) $
-; $LastChangedRevision: 22252 $
+; $LastChangedDate: 2017-01-19 10:41:29 -0800 (Thu, 19 Jan 2017) $
+; $LastChangedRevision: 22629 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, $
@@ -92,12 +92,12 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
     
     store_data, newname[0], data={x:d.x, y:flux_avg, v:d.v}, dlimits=dl
     
-    ylim, newname[0], lower_en, 500., 1
+   ; ylim, newname[0], lower_en, 600., 1
     zlim, newname[0], 0, 0, 1
 
     options, newname[0], spec = 1, yrange = en_range, yticks=3, $
       ytitle = 'mms'+probe+'!Cfeeps!C'+datatype+'!Comni', $
-      ysubtitle='[keV]', ztitle=units_label, ystyle=1, /default
+      ysubtitle='[keV]', ztitle=units_label, ystyle=1, /default, /ylog
     append_array, tplotnames, newname[0]
 
   endif

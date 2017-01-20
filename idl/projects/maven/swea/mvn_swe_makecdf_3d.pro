@@ -23,8 +23,8 @@
 ;   ISTP compliance scrub; DLM: 2016-04-08
 ; VERSION:
 ;   $LastChangedBy: dmitchell $
-;   $LastChangedDate: 2017-01-09 16:38:24 -0800 (Mon, 09 Jan 2017) $
-;   $LastChangedRevision: 22544 $
+;   $LastChangedDate: 2017-01-19 13:02:08 -0800 (Thu, 19 Jan 2017) $
+;   $LastChangedRevision: 22635 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_makecdf_3d.pro $
 ;
 ;-
@@ -49,7 +49,7 @@ pro mvn_swe_makecdf_3d, data, file = file, version = version, directory = direct
 ; account for spectra obtained during the sweep table change. 
 ; Exclude these data from the CDF.
 
-  indx = where(mvn_swe_validlut(data.chksum), count)
+  indx = where(~mvn_swe_validlut(data.chksum), count)
   if (count gt 0L) then begin
     data[indx].valid = 0B
     data[(indx - 1L) > 0L].valid = 0B

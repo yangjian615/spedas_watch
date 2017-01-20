@@ -3,11 +3,9 @@
 ;       mvn_swe_lpw_scpot
 ; PURPOSE:
 ;
-;       !!! To load data quickly, use mvn_swe_lpw_scpot_restore !!!
+;       !!! This routine could take a very long time to generate the data !!!
+;       !!! To load pre-generated data quickly, use 'mvn_swe_lpw_scpot_restore' !!!
 ;
-;       ******************************************
-;       *** This routine is still experimental ***
-;       ******************************************
 ;       Empirically derives positive spacecraft potentials using SWEA and LPW.
 ;       Inflection points in LPW I-V curves are tuned to positive spacecraft
 ;       potentials estimated from SWEA energy spectra.
@@ -15,8 +13,8 @@
 ;       timespan,'16-01-01',14   ;- make sure to set a long time range
 ;       mvn_swe_lpw_scpot
 ; OUTPUT TPLOT VARIABLES:
-;       mvn_swe_lpw_scpot : default scpot data
-;                           (currently mvn_swe_lpw_scpot_pow)
+;       mvn_swe_lpw_scpot :     default scpot data
+;                               (currently mvn_swe_lpw_scpot_pow)
 ;       mvn_swe_lpw_scpot_lin : spacecraft potentials derived from
 ;                               linear fitting of Vswe v. -Vinfl
 ;       mvn_swe_lpw_scpot_pow : spacecraft potentials derived from
@@ -38,25 +36,27 @@
 ;       noangcorr: if set, do not conduct angular distribution correction
 ;                  in mvn_swe_sc_pot
 ; NOTES:
-;       1) Inflection points are unreliable before 2015-01-24.
+;       1) The data quality are not good before 2015-01-24.
 ;       2) The peak fitting algorithm sometimes breaks down
 ;          when multiple peaks are present in dI/dV curves.
 ;          Check the quality flag: mvn_lpw_swp1_IV_vinfl_qflag
 ;                                  1 = good, 0 = bad
-;       3) Sharp transitions will be smoothed out by default.
+;          As a rule of thumb, the quality is generally good if flag > 0.8
+;          You may need caution if 0.5 < flag < 0.8 (check the consistency with SWEA spectra)
+;       3) Short time scale variations will be smoothed out by default.
 ;          Setting ntsmo=1 will improve the time resolution
 ;          at the expense of better statistics.
 ;       4) Potential values < +3 V and > +20 V are extrapolated from
-;          the empirical relation between 3-20 V.
-;          They are not verified nor tuned by SWEA measurements.
-;          Also, potentials < +1 are replaced by +1.
+;          the empirical relation between 3-20 V
+;          - they are not verified nor tuned by SWEA measurements.
+;          If the estimated potentials < +1, they are replaced by +1.
 ;          Potential values < +3 V just mean that scpot is smaller than ~+3 V
 ; CREATED BY:
 ;       Yuki Harada on 2016-02-29
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-01-14 12:28:29 -0800 (Sat, 14 Jan 2017) $
-; $LastChangedRevision: 22602 $
+; $LastChangedDate: 2017-01-19 15:44:29 -0800 (Thu, 19 Jan 2017) $
+; $LastChangedRevision: 22636 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 

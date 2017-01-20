@@ -13,9 +13,14 @@
 ;       Minor modifications for SPEDAS by egrimes
 ;
 ;
+;    For more info on this method, see:
+;       Chanteur, G., Spatial Interpolation for Four Spacecraft: Theory, 
+;         Chapter 14 of Analysis methods for multi-spacecraft data, G. 
+;         Paschmann and P. W. Daly (Eds.) ISSI Scientific Report SR-001. 
+;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-29 08:40:37 -0800 (Tue, 29 Nov 2016) $
-; $LastChangedRevision: 22410 $
+; $LastChangedDate: 2017-01-19 08:37:17 -0800 (Thu, 19 Jan 2017) $
+; $LastChangedRevision: 22626 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/curlometer/mms_curl.pro $
 ;-
 

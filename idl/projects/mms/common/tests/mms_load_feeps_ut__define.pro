@@ -6,10 +6,84 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-18 13:53:33 -0800 (Wed, 18 Jan 2017) $
-; $LastChangedRevision: 22622 $
+; $LastChangedDate: 2017-01-19 11:14:34 -0800 (Thu, 19 Jan 2017) $
+; $LastChangedRevision: 22634 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_flatfield_corrections_l1b
+  mms_load_feeps, data_rate='brst', probe=4, suffix='_with_flatfield_correction', datatype='ion', level='l1b'
+  mms_load_feeps, data_rate='brst', probe=4, datatype='ion', /no_flatfield_corrections, level='l1b'
+  get_data, 'mms4_epd_feeps_brst_l1b_ion_top_intensity_sensorid_6_clean_sun_removed_with_flatfield_correction', data=corr
+  get_data, 'mms4_epd_feeps_brst_l1b_ion_top_intensity_sensorid_6_clean_sun_removed', data=d
+  factor = corr.Y[2000, 1]/d.Y[2000, 1]
+  assert, factor eq 0.8, 'Problem applying flat field corrections to ions (L1b)'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_flatfield_corrections_l2
+  mms_load_feeps, data_rate='brst', probe=4, suffix='_with_flatfield_correction', datatype='ion'
+  mms_load_feeps, data_rate='brst', probe=4, datatype='ion', /no_flatfield_corrections
+  get_data, 'mms4_epd_feeps_brst_l2_ion_top_intensity_sensorid_6_clean_sun_removed_with_flatfield_correction', data=corr
+  get_data, 'mms4_epd_feeps_brst_l2_ion_top_intensity_sensorid_6_clean_sun_removed', data=d
+  factor = corr.Y[2000, 1]/d.Y[2000, 1]
+  assert, factor eq 0.8, 'Problem applying flat field corrections to ions (L2)'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_bad_lower_channels_brst_l1b
+  mms_load_feeps, data_rate='brst', probes=[1, 2, 3, 4], level='l1b'
+  ; MMS1: Bottom Eyes: 2, 3, 4, 5, 9, 11, 12
+  get_data, 'mms1_epd_feeps_brst_l1b_electron_bottom_intensity_sensorid_2_clean_sun_removed', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (L1b)'
+
+  ; MMS2: Bottom Eyes: 1, 2, 3, 4, 5, 9, 10, 11, 12
+  get_data, 'mms2_epd_feeps_brst_l1b_electron_bottom_intensity_sensorid_4_clean_sun_removed', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (L1b)'
+
+  ; MMS3: Bottom Eyes: 1, 9, 10, 11
+  get_data, 'mms3_epd_feeps_brst_l1b_electron_bottom_intensity_sensorid_9_clean_sun_removed', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (L1b)'
+
+  ; MMS4: Bottom Eyes: 1, 3, 9, 12
+  get_data, 'mms4_epd_feeps_brst_l1b_electron_bottom_intensity_sensorid_3_clean_sun_removed', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (L1b)'
+
+  return, 1
+end
+
+function mms_load_feeps_ut::test_bad_lower_channels_srvy_sitl
+  mms_load_feeps, probes=[1, 2, 3, 4], level='sitl', trange=['2016-11-01', '2016-11-02']
+
+  get_data, 'mms2_epd_feeps_srvy_sitl_electron_top_intensity_sensorid_12_clean_sun_removed', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (sitl)'
+
+  get_data, 'mms3_epd_feeps_srvy_sitl_electron_top_intensity_sensorid_12_clean_sun_removed', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (sitl)'
+
+  return, 1
+end
+
+function mms_load_feeps_ut::test_bad_lower_channels_brst_suffix
+  mms_load_feeps, data_rate='brst', probes=[1, 2, 3, 4], suffix='_suffixtest'
+  ; MMS1: Bottom Eyes: 2, 3, 4, 5, 9, 11, 12
+  get_data, 'mms1_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_2_clean_sun_removed_suffixtest', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (with suffix)'
+
+  ; MMS2: Bottom Eyes: 1, 2, 3, 4, 5, 9, 10, 11, 12
+  get_data, 'mms2_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_4_clean_sun_removed_suffixtest', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (with suffix)'
+
+  ; MMS3: Bottom Eyes: 1, 9, 10, 11
+  get_data, 'mms3_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_9_clean_sun_removed_suffixtest', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (with suffix)'
+
+  ; MMS4: Bottom Eyes: 1, 3, 9, 12
+  get_data, 'mms4_epd_feeps_brst_l2_electron_bottom_intensity_sensorid_3_clean_sun_removed_suffixtest', data=d
+  assert, ~finite(d.Y[101, 0]), 'Problem removing bad lower energy channels! (with suffix)'
+
+  return, 1
+end
 
 function mms_load_feeps_ut::test_bad_lower_channels_brst
   mms_load_feeps, data_rate='brst', probes=[1, 2, 3, 4]
@@ -92,6 +166,15 @@ function mms_load_feeps_ut::test_bad_eyes_srvy_probe4
   get_data, 'mms4_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_4_clean_sun_removed', data=d
   w = where(finite(d.Y) ne 0, wherecount)
   assert, wherecount eq 0, 'Problem removing bad bottom sensor data for probe 4'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_energy_channel_brst_probe1_suffix
+  mms_load_feeps, data_rate='brst', probe=1, suffix='_shouldworkwithsuffix'
+  get_data, 'mms1_epd_feeps_brst_l2_electron_intensity_omni_shouldworkwithsuffix', data=d
+  mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
+    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]+14d
+  assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (brst, MMS1, with suffix)'
   return, 1
 end
 

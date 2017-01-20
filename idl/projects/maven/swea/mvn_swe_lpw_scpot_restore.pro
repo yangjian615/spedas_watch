@@ -2,10 +2,28 @@
 ;PROCEDURE:   mvn_swe_lpw_scpot_restore
 ;PURPOSE:
 ;  Reads in scpot data precalculated by mvn_swe_lpw_scpot_resample
-;  and stored in a tplot save/restore file.  Command line used to create the tplot
+;  and stored in a tplot save/restore file. 
 ;
 ;USAGE:
-;  mvn_swe_lpw_scpot_restore, trange
+;  timespan,'2016-01-01',2
+;  mvn_swe_lpw_scpot_restore
+;
+; NOTES:
+;       1) The data quality are not good before 2015-01-24.
+;       2) The peak fitting algorithm sometimes breaks down
+;          when multiple peaks are present in dI/dV curves.
+;          Check the quality flag: mvn_lpw_swp1_IV_vinfl_qflag
+;                                  1 = good, 0 = bad
+;          As a rule of thumb, the data quality is generally good if flag > 0.8
+;          You may need caution if 0.5 < flag < 0.8 (check the consistency with SWEA spectra)
+;       3) Short time scale variations will be smoothed out by default.
+;          Setting ntsmo=1 will improve the time resolution
+;          at the expense of better statistics.
+;       4) Potential values < +3 V and > +20 V are extrapolated from
+;          the empirical relation between 3-20 V
+;          - they are not verified nor tuned by SWEA measurements.
+;          If the estimated potentials < +1, they are replaced by +1.
+;          Potential values < +3 V just mean that scpot is smaller than ~+3 V
 ;
 ;INPUTS:
 ;       trange:        Restore data over this time range.  If not specified, then
@@ -16,10 +34,9 @@
 ;
 ;       LOADONLY:      Download but do not restore any pad data.
 ;
-
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-01-13 15:07:18 -0800 (Fri, 13 Jan 2017) $
-; $LastChangedRevision: 22599 $
+; $LastChangedDate: 2017-01-19 15:44:29 -0800 (Thu, 19 Jan 2017) $
+; $LastChangedRevision: 22636 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot_restore.pro $
 ;
 ;CREATED BY:    Yuki Harada  03-24-16
@@ -28,7 +45,7 @@
 pro mvn_swe_lpw_scpot_restore, trange, orbit=orbit, loadonly=loadonly, suffix=suffix
 
 ; Process keywords
-  if ~keyword_set(suffix) then suffix = ''  ;- to be updated -> suffix = '_v??_r??'
+  if ~keyword_set(suffix) then suffix = '_v??_r??'
 
   rootdir = 'maven/data/sci/swe/l3/swe_lpw_scpot/YYYY/MM/'
   fname = 'mvn_swe_lpw_scpot_YYYYMMDD'+suffix+'.tplot'

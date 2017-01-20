@@ -81,8 +81,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-18 16:01:35 -0800 (Wed, 18 Jan 2017) $
-;$LastChangedRevision: 22625 $
+;$LastChangedDate: 2017-01-19 11:13:46 -0800 (Thu, 19 Jan 2017) $
+;$LastChangedRevision: 22633 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -95,7 +95,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
                   cdf_version = cdf_version, latest_version = latest_version, $
                   min_version = min_version, spdf = spdf, num_smooth = num_smooth, $
                   available = available, versions = versions, always_prompt = always_prompt, $
-                  major_version=major_version
+                  major_version=major_version, no_flatfield_corrections=no_flatfield_corrections
 
     if undefined(level) then level_in = 'l2' else level_in = level
     if undefined(probes) then probes_in = ['1'] else probes_in = probes
@@ -125,10 +125,10 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if level_in eq 'l1a' then return ; avoid the following for L1a data
 
     ; apply flat field corrections for ions
-    mms_feeps_flat_field_corrections, data_rate = data_rate_in
+    if undefined(no_flatfield_corrections) then mms_feeps_flat_field_corrections, data_rate = data_rate_in, suffix = suffix
     
     ; remove bad eyes, bad energy channels, and replace energy centers with corrected energies (based on S/C)
-    mms_feeps_remove_bad_data
+    mms_feeps_remove_bad_data, suffix = suffix
 
     for probe_idx = 0, n_elements(probes_in)-1 do begin
       this_probe = string(probes_in[probe_idx])
