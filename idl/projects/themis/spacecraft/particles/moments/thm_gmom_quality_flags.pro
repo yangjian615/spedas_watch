@@ -10,17 +10,22 @@
 ;  bit1 = counter overflow flag
 ;  bit2 = solar wind mode flag(disabled)
 ;  bit3 = flow flag, flow less than threshold is flagged
-;  bit4 = manuever flag
+;  bit4 = earth shadow
+;  bit5 = lunar shadow
+;  bit6 = manuever flag
 ;  
 ;  SST:
 ;  Bit 8: saturated. (psef_count_rate > 10k)
 ;  Bit 9: attenuator error (stuck attenuator or incorrect indicator)
+;  Bit 10: too low(<2.5 s) or too high(>5s) spin period
+;  Bit 11: earth shadow
+;  Bit 12: lunar shadow
 ;  
 ;  Set timespan by calling timespan outside of this routine.(e.g. time/duration is not an argument)
 ;  
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2017-01-17 15:08:58 -0800 (Tue, 17 Jan 2017) $
-; $LastChangedRevision: 22616 $
+; $LastChangedDate: 2017-01-20 15:17:51 -0800 (Fri, 20 Jan 2017) $
+; $LastChangedRevision: 22641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_gmom_quality_flags.pro $
 ;-
 

@@ -65,8 +65,8 @@
 ;                 from L0 file, jmm, jimm@ssl.berkeley.edu
 ;LAST MODIFICATION:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-09-30 12:53:23 -0700 (Fri, 30 Sep 2016) $
-; $LastChangedRevision: 21987 $
+; $LastChangedDate: 2017-01-20 11:19:49 -0800 (Fri, 20 Jan 2017) $
+; $LastChangedRevision: 22640 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot2.pro $
 ;
 ;-
@@ -454,6 +454,13 @@ PRO mvn_ql_pfp_tplot2, var, orbit=orbit, verbose=verbose, no_delete=no_delete, $
         lname = 'YYYY/mvn_lpw_iv_YYYYMMDD.tplot'
         lfile = mvn_pfp_file_retrieve(lpath+lname, trange=trange, /daily)
         If(lfile[0] Ne '') Then Begin
+           tplot_restore_error = 0 ;Add catch for tplot_restore errors
+           catch, tplot_restore_error
+           If(tplot_restore_error Ne 0) Then Begin
+              catch, /cancel
+              message, /info, 'TPLOT_RESTORE ERROR'
+              goto, try_l0
+           Endif
            tplot_restore, filenames=lfile, /append
            get_data, 'mvn_lpw_iv', data= d
            If(~is_struct(d)) Then goto, try_l0 Else undefine, d

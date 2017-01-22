@@ -7,12 +7,15 @@
 ;  
 ;  Bit 0: saturated. (psef_count_rate > 10k)
 ;  Bit 1: attenuator error (stuck attenuator or incorrect indicator)
+;  Bit 2: too low(<2.5 s) or too high(>5s) spin period
+;  Bit 3: earth shadow
+;  Bit 4: lunar shadow
 ;  
 ;  Set timespan by calling timespan outside of this routine.(e.g. time/duration is not an argument)
 ;  
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2017-01-17 15:08:22 -0800 (Tue, 17 Jan 2017) $
-; $LastChangedRevision: 22615 $
+; $LastChangedDate: 2017-01-20 15:17:51 -0800 (Fri, 20 Jan 2017) $
+; $LastChangedRevision: 22641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_sst_quality_flags.pro $
 ;-
 
@@ -51,12 +54,19 @@
       bit2 = 0
     endelse
     
-    flags = bit0 or ishft(bit1,1) or ishft(bit2,2)
+    tinterpol_mxn,'th'+probe+'_state_roi','th'+probe+'_'+datatype+'_tot',/overwrite,/nearest_neighbor
+    get_data,'th'+probe+'_state_roi',data=d
+    
+    if is_struct(d) then begin
+      bit3 = d.y and 1
+      bit4 = ishft(d.y,-1) and 1
+    endif else begin
+      bit3 = 0
+      bit4 = 0
+    endelse
+    
+    flags = bit0 or ishft(bit1,1) or ishft(bit2,2) or ishft(bit3,3) or ishft(bit4,4)
     
     store_data,'th'+probe+'_'+datatype+'_data_quality',data={x:d.x,y:flags},dlimits={tplot_routine:'bitplot'}
-    store_data,'th'+probe+'_'+datatype+'_data_quality',data={x:d.x,y:flags},dlimits={tplot_routine:'bitplot'}
-       
-    
-    
    
   end

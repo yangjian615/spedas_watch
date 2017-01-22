@@ -8,7 +8,9 @@
 ;  bit1 = counter overflow flag
 ;  bit2 = solar wind mode flag(disabled)
 ;  bit3 = flow flag, flow less than threshold is flagged
-;  bit4 = manuever flag
+;  bit4 = earth shadow
+;  bit5 = lunar shadow
+;  bit6 = manuever flag
 ;  
 ;  Set timespan by calling timespan outside of this routine.(e.g. time/duration is not an argument)
 ;  
@@ -20,8 +22,8 @@
 ;  
 ;  
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2017-01-17 15:08:22 -0800 (Tue, 17 Jan 2017) $
-; $LastChangedRevision: 22615 $
+; $LastChangedDate: 2017-01-20 15:17:51 -0800 (Fri, 20 Jan 2017) $
+; $LastChangedRevision: 22641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_quality_flags.pro $
 ;-
 
@@ -213,6 +215,11 @@ pro thm_esa_quality_flags,probe=probe,datatype=datatype,noload=noload,flow_thres
       print, 'Probe: ', probe[0], '  Date: ', time_string(date[0])
     Endelse
   Endif
+  
+  if ~keyword_set(no_load) then begin
+    thm_load_state,probe=probe,/get_support
+  endif
+  
   ;One more flag, a maneuver flag, set to 64..
   man_flag = pot_flag & man_flag[*] = 0
   get_data, sc+'_state_man', data = dmn
@@ -223,8 +230,22 @@ pro thm_esa_quality_flags,probe=probe,datatype=datatype,noload=noload,flow_thres
     If(nssmn Gt 0) Then man_flag[ssmn] = 1
   Endif
   
+  tinterpol_mxn,sc+'_state_roi',scpot_name,/overwrite,/nearest_neighbor
+  get_data,sc+'_state_roi',data=d
+
+  if is_struct(d) then begin
+    earth_shadow_flag = d.y and 1
+    lunar_shadow_flag = ishft(d.y,-1) and 1
+  endif else begin
+    earth_shadow_flag = 0
+    lunar_shadow_flag = 0
+  endelse
+  
   all_flag = temporary(pot_flag)+2*temporary(flag255)+$
-    4*temporary(swflag)+8*temporary(flow_flag)+64*temporary(man_flag)
+    4*temporary(swflag)+8*temporary(flow_flag)+$
+    16*temporary(earth_shadow_flag)+32*temporary(lunar_shadow_flag)+$
+    64*temporary(man_flag)
+    
   store_data, sc+'_'+datatype_lc+'_data_quality', $
     data = {x:temp_scpot.x, y:temporary(all_flag)},dlimits={tplot_routine:'bitplot'}
    
