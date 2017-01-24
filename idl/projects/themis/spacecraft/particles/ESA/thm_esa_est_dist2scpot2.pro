@@ -1,3 +1,11 @@
+;Multiscale smoothing
+Function temp_multiscale_smooth, x, sm
+  nsm = n_elements(sm)
+  xout = x
+  For j = 0, nsm-1 Do xout = smooth(xout, sm[j])
+  Return, xout
+End
+
 ;Interpolate onto a high resolution energy grid
 Function temp_interp_hires, y, x, xout, xfactor = xfactor, _extra=_extra
   xout = -1
@@ -40,7 +48,7 @@ Function temp_tscale, x0, vrange = vrange, linear = linear, _extra=_extra
 End
 ;+
 ;NAME:
-; thm_esa_est_dist2scpot
+; thm_esa_est_dist2scpot2
 ;PURPOSE:
 ; For a given probe and date, estimates the SC potential from PEER
 ; data, and plots it. This differs from the original
@@ -70,8 +78,8 @@ End
 ;HISTORY:
 ; 3-mar-2016, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-08 13:30:05 -0800 (Tue, 08 Mar 2016) $
-; $LastChangedRevision: 20349 $
+; $LastChangedDate: 2017-01-23 15:09:39 -0800 (Mon, 23 Jan 2017) $
+; $LastChangedRevision: 22649 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_est_dist2scpot2.pro $
 ;-
 
@@ -142,18 +150,27 @@ Pro thm_esa_est_dist2scpot2, date, probe, trange=trange, yellow=yellow, $
   For j = 0, ntimes-1 Do Begin
      i = 0
      maxv = max(yy[j,0:5], maxpt)
-     If(yy[j, 0] Ge yellow And vv[j,maxpt] Le 25.0) Then Begin
+     do_this_j = 0b
+     If(vv[j, 0] Lt 1.0) Then Begin ;fix for zero energy modes
+        If(yy[j, 1] Ge yellow) Then do_this_j = 1b
+     Endif Else Begin
+        If(yy[j, 0] Ge yellow) Then do_this_j = 1b
+     Endelse
+     If(do_this_j) Then Begin
 ;interpolate to a higher resolution energy grid
-        yyy = temp_interp_hires(reform(yy[j,*]), alog(reform(vv[j,*])), vvv, _extra=_extra)
+        yyy0 = temp_interp_hires(reform(yy[j,*]), alog(reform(vv[j,*])), vvv, _extra=_extra)
+        yyy = temp_multiscale_smooth(yyy0, [31, 21, 11])
         If(yyy[0] Ne -1) Then Begin
            Repeat Begin
               i=i+1
               i1 = i+1
-              cc = yyy[i] lt yellow Or (i gt 20 and yyy[i1] gt yyy[i]) Or i1 Eq n_elements(yyy)-1
+              cc = yyy[i] lt yellow Or (yyy[i1] gt 1.1*yyy[i]) $
+                   Or i1 Eq n_elements(yyy)-1
            Endrep Until cc
         Endif
         scpot[j] = exp(vvv[i]) < 100.0
      Endif
+;     if(j eq 1340) then stop
   Endfor
 
   dlim = {ysubtitle:'[Volts]', units:'volts'}
@@ -164,7 +181,7 @@ Pro thm_esa_est_dist2scpot2, date, probe, trange=trange, yellow=yellow, $
      thm_spec_lim4overplot, thx+'_'+dtyp+'_en_eflux', zlog = 1, ylog = 1, /overwrite, ymin = 2.0
      scpot_overlay1 = scpot_overlay(thx+'_esa_pot', thx+'_'+dtyp+'_en_eflux', sc_line_thick = 2.0, /use_yrange)
      scpot_overlay2 = scpot_overlay(thx+'_est_scpot', thx+'_'+dtyp+'_en_eflux', sc_line_thick = 2.0, suffix = '_EST', /use_yrange)
-     window, xs = 1024, ys = 1024
-     tplot, [scpot_overlay1, scpot_overlay2]
+     If(~xregistered('tplot_window')) Then tplot_window, [scpot_overlay1, scpot_overlay2] $
+     Else tplot, [scpot_overlay1, scpot_overlay2]
   Endif
 End

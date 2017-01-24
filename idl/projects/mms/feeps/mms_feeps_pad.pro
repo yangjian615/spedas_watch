@@ -17,9 +17,9 @@
 ;             
 ;
 ; EXAMPLES:
-;
-;
-; OUTPUT:
+;         MMS> mms_load_feeps
+;         MMS> mms_feeps_pad, energy=[70, 600]
+;         MMS> tplot, '*70-600keV_pad'
 ;
 ;
 ; NOTES:
@@ -33,8 +33,8 @@
 ;                       Updated to use all telescopes for burst mode data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-18 16:45:21 -0800 (Fri, 18 Nov 2016) $
-;$LastChangedRevision: 22379 $
+;$LastChangedDate: 2017-01-23 07:41:59 -0800 (Mon, 23 Jan 2017) $
+;$LastChangedRevision: 22643 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 

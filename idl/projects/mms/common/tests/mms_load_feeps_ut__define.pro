@@ -6,10 +6,28 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-19 11:14:34 -0800 (Thu, 19 Jan 2017) $
-; $LastChangedRevision: 22634 $
+; $LastChangedDate: 2017-01-23 08:26:57 -0800 (Mon, 23 Jan 2017) $
+; $LastChangedRevision: 22645 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_ion_bad_eyes_brst
+  mms_load_feeps, data_rate='brst', probe=2, datatype='ion', level='l2'
+  get_data, 'mms2_epd_feeps_brst_l2_ion_top_intensity_sensorid_7_clean_sun_removed', data=top
+  get_data, 'mms2_epd_feeps_brst_l2_ion_bottom_intensity_sensorid_7_clean_sun_removed', data=bottom
+  wheretop = where(finite(top.Y) eq 1, topcount)
+  wherebot = where(finite(bottom.Y) eq 1, botcount)
+  assert, topcount eq 0 and botcount eq 0, 'Problem removing bad eyes for L2 ions (brst)'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_ion_bad_eyes_srvy
+  mms_load_feeps, probe=4, data_rate='srvy', datatype='ion'
+  get_data, 'mms4_epd_feeps_srvy_l2_ion_top_intensity_sensorid_7_clean_sun_removed', data=top
+  wheretop = where(finite(top.Y) eq 1, topcount)
+  assert, topcount eq 0, 'Problem removing bad eyes for L2 ions (srvy)'
+  return, 1
+end
 
 function mms_load_feeps_ut::test_flatfield_corrections_l1b
   mms_load_feeps, data_rate='brst', probe=4, suffix='_with_flatfield_correction', datatype='ion', level='l1b'

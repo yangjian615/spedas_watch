@@ -11,17 +11,14 @@
 ;         energy: energy range to include in the calculation
 ;         bin_size: size of the pitch angle bins
 ;
-; EXAMPLES:
-;
-;
-; OUTPUT:
-;
 ;
 ; NOTES:
+;         This routine is called automatically from mms_feeps_pad
+;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-28 12:45:02 -0700 (Thu, 28 Jul 2016) $
-;$LastChangedRevision: 21556 $
+;$LastChangedDate: 2017-01-23 08:02:23 -0800 (Mon, 23 Jan 2017) $
+;$LastChangedRevision: 22644 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $

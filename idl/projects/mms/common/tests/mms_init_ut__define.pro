@@ -11,8 +11,8 @@
 ; 
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-06 12:33:52 -0800 (Fri, 06 Jan 2017) $
-; $LastChangedRevision: 22526 $
+; $LastChangedDate: 2017-01-23 14:36:58 -0800 (Mon, 23 Jan 2017) $
+; $LastChangedRevision: 22647 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_init_ut__define.pro $
 ;-
 
@@ -22,11 +22,11 @@ function mms_init_ut::test_root_data_dir
   new_root_data_dir = '/root_data_dir/'
   setenv, "ROOT_DATA_DIR="+new_root_data_dir
   setenv, "MMS_DATA_DIR=" ; so MMS_DATA_DIR doesn't override ROOT_DATA_DIR
-  mms_init
-  print, 'LOCAL_DATA_DIR: ' + !mms.local_data_dir
+  mms_init, /reset
   assert, !mms.local_data_dir eq new_root_data_dir + 'mms/', 'Problem with ROOT_DATA_DIR environment variable'
   setenv, "ROOT_DATA_DIR="+current_root_data_dir
   setenv, "MMS_DATA_DIR="+current_mms_data_dir
+  mms_init, /reset
   return, 1
 end
 
@@ -37,12 +37,14 @@ function mms_init_ut::test_mms_data_dir
   mms_init
   assert, !mms.local_data_dir eq new_mms_data_dir, 'Problem with MMS_DATA_DIR environment variable'
   setenv, "MMS_DATA_DIR="+current_mms_data_dir ; reset the current MMS_DATA_DIR so this test doesn't clobber the current settings
+  mms_init, /reset
   return, 1
 end
 
 function mms_init_ut::test_reset
   mms_init, /reset, local_data_dir='/'
   assert, !mms.local_data_dir eq '/', 'Problem resetting local_data_dir with mms_init'
+  mms_init, /reset
   return, 1
 end
 
