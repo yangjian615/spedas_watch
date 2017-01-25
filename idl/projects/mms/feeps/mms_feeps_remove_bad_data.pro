@@ -11,8 +11,8 @@
 ;       work on the FEEPS data
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-19 10:58:07 -0800 (Thu, 19 Jan 2017) $
-; $LastChangedRevision: 22630 $
+; $LastChangedDate: 2017-01-24 14:18:16 -0800 (Tue, 24 Jan 2017) $
+; $LastChangedRevision: 22656 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_bad_data.pro $
 ;-
 
@@ -37,7 +37,7 @@ pro mms_feeps_remove_bad_data, suffix = suffix
   
 ;  MMS2:
 ;  Top Eyes: 5
-;  Bottom Eyes: None (all good)
+;  Bottom Eyes: None
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_count_rate_sensorid_5'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_intensity_sensorid_5'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_counts_sensorid_5'+suffix)
@@ -216,7 +216,7 @@ pro mms_feeps_remove_bad_data, suffix = suffix
   append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_count_rate_sensorid_11'+suffix)
   append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_intensity_sensorid_11'+suffix)
   append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_counts_sensorid_11'+suffix)
-
+  
 ;    MMS4: 
 ;    Top Eyes: 3
 ;    Bottom Eyes: 1, 3, 9, 12
@@ -263,9 +263,14 @@ pro mms_feeps_remove_bad_data, suffix = suffix
 ;  MMS2: 
 ;  Top Eyes: 8 (For Eye T8, both channels 1 AND 2 are bad, 0 and 1 in IDL indexing!)
 ;  Bottom Eyes: 6, 8
-  vars_bothchans = tnames('mms2_epd_feeps_*_ion_top_count_rate_sensorid_8'+suffix)
+  append_array, vars_bothchans, tnames('mms2_epd_feeps_*_ion_top_count_rate_sensorid_8'+suffix)
   append_array, vars_bothchans, tnames('mms2_epd_feeps_*_ion_top_intensity_sensorid_8'+suffix)
   append_array, vars_bothchans, tnames('mms2_epd_feeps_*_ion_top_counts_sensorid_8'+suffix)
+
+  ; update 1/23/17: electrons -> B12 on MMS2 (2 lowest channels)
+  append_array, vars_bothchans, tnames('mms2_epd_feeps_*_electron_bottom_count_rate_sensorid_12'+suffix)
+  append_array, vars_bothchans, tnames('mms2_epd_feeps_*_electron_bottom_intensity_sensorid_12'+suffix)
+  append_array, vars_bothchans, tnames('mms2_epd_feeps_*_electron_bottom_counts_sensorid_12'+suffix)
 
   append_array, vars, tnames('mms2_epd_feeps_*_ion_bottom_count_rate_sensorid_6'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_ion_bottom_intensity_sensorid_6'+suffix)
@@ -285,7 +290,12 @@ pro mms_feeps_remove_bad_data, suffix = suffix
   append_array, vars, tnames('mms3_epd_feeps_*_ion_top_count_rate_sensorid_7'+suffix)
   append_array, vars, tnames('mms3_epd_feeps_*_ion_top_intensity_sensorid_7'+suffix)
   append_array, vars, tnames('mms3_epd_feeps_*_ion_top_counts_sensorid_7'+suffix)
-;  
+
+  ; update 1/23/17: T01 on MMS3 -> 2 lowest channels
+  append_array, vars_bothchans, tnames('mms3_epd_feeps_*_electron_top_count_rate_sensorid_1'+suffix)
+  append_array, vars_bothchans, tnames('mms3_epd_feeps_*_electron_top_intensity_sensorid_1'+suffix)
+  append_array, vars_bothchans, tnames('mms3_epd_feeps_*_electron_top_counts_sensorid_1'+suffix)
+  
 ;  MMS4: 
 ;  Top Eyes: None (6 and 8 good)
 ;  Bottom Eyes: 6 (For Eye B6, both channels 1 AND 2 are bad, 0 and 1 in IDL indexing!)
@@ -322,57 +332,6 @@ pro mms_feeps_remove_bad_data, suffix = suffix
   ; For those equations, Eold is the original energy array (E0, E1, E2...E14) in units of
   ; keV and Enew is the corrected version of the arrays in keV using the factors listed below.
 
-
-  ; old values, taken from intensity spectra for 12/15/15 L2 electron data downloaded on 1/18/17
-  mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
-                  200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d, 575.80000d]
-;  MMS1:
-;  Ecorr = +14 keV
-  mms1_energies = mms_energies+14d
-  mms1_vars = tnames('mms1_epd_feeps_*_electron_*_count_rate_sensorid_*'+suffix)
-  append_array, mms1_vars, tnames('mms1_epd_feeps_*_electron_*_counts_sensorid_*'+suffix)
-  append_array, mms1_vars, tnames('mms1_epd_feeps_*_electron_*_intensity_sensorid_*'+suffix)
-  
-  for var_idx=0, n_elements(mms1_vars)-1 do begin
-    get_data, mms1_vars[var_idx], data=d, dlimits=dl, limits=l
-    if is_struct(d) then store_data, mms1_vars[var_idx], data={x: d.X, y: d.Y, v: mms1_energies}, dlimits=dl, limits=l
-  endfor
-
-;  MMS2:
-;  Ecorr = -1 keV
-  mms2_energies = mms_energies-1d
-  mms2_vars = tnames('mms2_epd_feeps_*_electron_*_count_rate_sensorid_*'+suffix)
-  append_array, mms2_vars, tnames('mms2_epd_feeps_*_electron_*_counts_sensorid_*'+suffix)
-  append_array, mms2_vars, tnames('mms2_epd_feeps_*_electron_*_intensity_sensorid_*'+suffix)
-  
-  for var_idx=0, n_elements(mms2_vars)-1 do begin
-    get_data, mms2_vars[var_idx], data=d, dlimits=dl, limits=l
-    if is_struct(d) then store_data, mms2_vars[var_idx], data={x: d.X, y: d.Y, v: mms2_energies}, dlimits=dl, limits=l
-  endfor
-  
-;  MMS3: 
-;  Ecorr = -3 keV
-  mms3_energies = mms_energies-3d
-  mms3_vars = tnames('mms3_epd_feeps_*_electron_*_count_rate_sensorid_*'+suffix)
-  append_array, mms3_vars, tnames('mms3_epd_feeps_*_electron_*_counts_sensorid_*'+suffix)
-  append_array, mms3_vars, tnames('mms3_epd_feeps_*_electron_*_intensity_sensorid_*'+suffix)
-  
-  for var_idx=0, n_elements(mms3_vars)-1 do begin
-    get_data, mms3_vars[var_idx], data=d, dlimits=dl, limits=l
-    if is_struct(d) then store_data, mms3_vars[var_idx], data={x: d.X, y: d.Y, v: mms3_energies}, dlimits=dl, limits=l
-  endfor
-
-;  MMS4:
-;  Ecorr = -3 keV
-  mms4_energies = mms_energies-3d
-  mms4_vars = tnames('mms4_epd_feeps_*_electron_*_count_rate_sensorid_*'+suffix)
-  append_array, mms4_vars, tnames('mms4_epd_feeps_*_electron_*_counts_sensorid_*'+suffix)
-  append_array, mms4_vars, tnames('mms4_epd_feeps_*_electron_*_intensity_sensorid_*'+suffix)
-  
-  for var_idx=0, n_elements(mms4_vars)-1 do begin
-    get_data, mms4_vars[var_idx], data=d, dlimits=dl, limits=l
-    if is_struct(d) then store_data, mms4_vars[var_idx], data={x: d.X, y: d.Y, v: mms4_energies}, dlimits=dl, limits=l
-  endfor
-
+  ; the above, (3), is now handled by mms_feeps_correct_energies, called directly from mms_load_feeps
 
 end

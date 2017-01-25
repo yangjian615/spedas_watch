@@ -3,7 +3,12 @@
 ;       mms_feeps_flat_field_corrections
 ;
 ; PURPOSE:
-;       Apply flat field correction factors to FEEPS ion data
+;       Apply flat field correction factors to FEEPS ion/electron data;
+;       correct factors are from the gain factor found in:
+;       
+;           FlatFieldResults_V3.xlsx
+;           
+;       from Drew Turner, 1/19/2017
 ;
 ; NOTES:
 ; 
@@ -49,8 +54,8 @@
 ;Bot8: Gcorr = 0.9
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-19 11:04:57 -0800 (Thu, 19 Jan 2017) $
-; $LastChangedRevision: 22632 $
+; $LastChangedDate: 2017-01-24 14:16:45 -0800 (Tue, 24 Jan 2017) $
+; $LastChangedRevision: 22655 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_flat_field_corrections.pro $
 ;-
 
@@ -63,10 +68,12 @@ pro mms_feeps_flat_field_corrections, data_rate = data_rate, suffix = suffix
   G_corr['mms1-top6'] = 0.7
   G_corr['mms1-top7'] = 2.5
   G_corr['mms1-top8'] = 1.5
+  G_corr['mms1-bot5'] = 1.2 ; updated 1/24
   G_corr['mms1-bot6'] = 0.9
-  G_corr['mms1-bot7'] = 1.2
+  G_corr['mms1-bot7'] = 2.2 ; updated 1/24
   G_corr['mms1-bot8'] = 1.0
 
+  G_corr['mms2-top4'] = 1.2 ; added 1/24
   G_corr['mms2-top6'] = 1.3
   G_corr['mms2-top7'] = 0 ; bad eye
   G_corr['mms2-top8'] = 0.8
@@ -87,30 +94,39 @@ pro mms_feeps_flat_field_corrections, data_rate = data_rate, suffix = suffix
   G_corr['mms4-bot6'] = 0.8
   G_corr['mms4-bot7'] = 0.6
   G_corr['mms4-bot8'] = 0.9
+  G_corr['mms4-bot9'] = 1.5 ; added 1/24
   
   probes = ['1', '2', '3', '4']
-  sensor_ids = ['6', '7', '8']
-  sensor_types = ['top', 'bot']
+  ;sensor_ids = ['6', '7', '8']
+  sensor_ids = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+  sensor_types = ['top', 'bottom']
   levels = ['l2', 'l1b', 'sitl']
+  species = ['ion', 'electron']
   
   for probe_idx = 0, n_elements(probes)-1 do begin
     for sensor_type = 0, n_elements(sensor_types)-1 do begin
       for sensor_id = 0, n_elements(sensor_ids)-1 do begin
-        correction = G_corr['mms'+probes[probe_idx]+'-'+sensor_types[sensor_type]+sensor_ids[sensor_id]]
+        
+        if G_corr.hasKey('mms'+probes[probe_idx]+'-'+strmid(sensor_types[sensor_type], 0, 3)+sensor_ids[sensor_id]) eq 1 then begin
+          correction = G_corr['mms'+probes[probe_idx]+'-'+strmid(sensor_types[sensor_type], 0, 3)+sensor_ids[sensor_id]]
+        endif else correction = 1.0
         
         for level = 0, n_elements(levels)-1 do begin
-
-          cr_var = 'mms'+probes[probe_idx]+'_epd_feeps_'+data_rate+'_'+levels[level]+'_ion_'+sensor_types[sensor_type]+'_count_rate_sensorid_'+sensor_ids[sensor_id]+suffix
-          i_var = 'mms'+probes[probe_idx]+'_epd_feeps_'+data_rate+'_'+levels[level]+'_ion_'+sensor_types[sensor_type]+'_intensity_sensorid_'+sensor_ids[sensor_id]+suffix
-          c_var = 'mms'+probes[probe_idx]+'_epd_feeps_'+data_rate+'_'+levels[level]+'_ion_'+sensor_types[sensor_type]+'_counts_sensorid_'+sensor_ids[sensor_id]+suffix
-          
-          get_data, cr_var, data=count_rate, dlimits=cr_dl, limits=cr_l
-          get_data, i_var, data=intensity, dlimits=i_dl, limits=i_l
-          get_data, c_var, data=counts, dlimits=c_dl, limits=c_l
-  
-          if is_struct(count_rate) then store_data, cr_var, data={x: count_rate.X, y: count_rate.Y*correction, v: count_rate.V}, dlimits=cr_dl, limits=cr_l
-          if is_struct(intensity) then store_data, i_var, data={x: intensity.X, y: intensity.Y*correction, v: intensity.V}, dlimits=i_dl, limits=i_l
-          if is_struct(counts) then store_data, c_var, data={x: counts.X, y: counts.Y*correction, v: counts.V}, dlimits=c_dl, limits=c_l
+          for spec_idx = 0, n_elements(species)-1 do begin
+            if correction ne 1.0 then begin
+              cr_var = 'mms'+probes[probe_idx]+'_epd_feeps_'+data_rate+'_'+levels[level]+'_'+species[spec_idx]+'_'+sensor_types[sensor_type]+'_count_rate_sensorid_'+sensor_ids[sensor_id]+suffix
+              i_var = 'mms'+probes[probe_idx]+'_epd_feeps_'+data_rate+'_'+levels[level]+'_'+species[spec_idx]+'_'+sensor_types[sensor_type]+'_intensity_sensorid_'+sensor_ids[sensor_id]+suffix
+              c_var = 'mms'+probes[probe_idx]+'_epd_feeps_'+data_rate+'_'+levels[level]+'_'+species[spec_idx]+'_'+sensor_types[sensor_type]+'_counts_sensorid_'+sensor_ids[sensor_id]+suffix
+              
+              get_data, cr_var, data=count_rate, dlimits=cr_dl, limits=cr_l
+              get_data, i_var, data=intensity, dlimits=i_dl, limits=i_l
+              get_data, c_var, data=counts, dlimits=c_dl, limits=c_l
+      
+              if is_struct(count_rate) then store_data, cr_var, data={x: count_rate.X, y: count_rate.Y*correction, v: count_rate.V}, dlimits=cr_dl, limits=cr_l
+              if is_struct(intensity) then store_data, i_var, data={x: intensity.X, y: intensity.Y*correction, v: intensity.V}, dlimits=i_dl, limits=i_l
+              if is_struct(counts) then store_data, c_var, data={x: counts.X, y: counts.Y*correction, v: counts.V}, dlimits=c_dl, limits=c_l
+            endif
+          endfor
         endfor
       endfor
     endfor

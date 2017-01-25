@@ -71,9 +71,21 @@ pro spp_swp_spi_cal_YAW_DEF_scan,trange=trange
 end
 
 
+
+
+
+
+
+
+
+
 PRO spp_swp_spi_thresh_scan, trange=trange
 
+
+   ;; Setup
    loadct2, 34
+   npoints = 200
+
    ;; --- Check keyword
    IF ~keyword_set(trange) THEN $
     stop, 'Error: Need trange.'
@@ -82,20 +94,33 @@ PRO spp_swp_spi_thresh_scan, trange=trange
    rates  = (spp_apdat('3bb'x)).array
    manips = (spp_apdat('7c3'x)).array
    hkps   = (spp_apdat('3be'x)).array
+   mons   = (spp_apdat('753'x)).array
 
    ;; --- Find time interval
    htime   = hkps.time
    rtime   = rates.time
+   mtime   = mons.time
    rtt = where(rtime GE trange[0] AND $
                rtime LE trange[1],rcc)
    htt = where(htime GE trange[0] AND $
                htime LE trange[1],hcc)
-   IF rcc EQ 0  OR hcc EQ 0 THEN $
+   mtt = where(mtime GE trange[0] AND $
+               mtime LE trange[1],mcc)
+   IF rcc EQ 0  OR hcc EQ 0 OR mcc EQ 0 THEN $
     stop, 'Error: Time interval not loaded.'
    rates = temporary(rates[rtt])
    rtime = temporary(rtime[rtt])
    hkps  = temporary(hkps[htt])
    htime = temporary(htime[htt])
+   mons  = temporary(mons[mtt])
+   mtime = temporary(mtime[mtt])
+
+   ;; --- Plot
+   popen, '~/Desktop/ch10_thresh_scan',/landscape
+   plot, [0,1],[0,1],$
+         xr=[10,60],   xs=1,xlog=1,xtitle='Threshold',$
+         yr=[1e1,1e4],ys=1,ylog=1,ytitle='Binned and Average Counts',$
+         Title='Channel 10 Threshold Scan',/nodata,thick=2
 
    ;; --- Define variables and interpolate to rates
    addr_hi = hkps.MRAM_ADDR_HI  AND '1F'x
@@ -105,92 +130,148 @@ PRO spp_swp_spi_thresh_scan, trange=trange
    mcp_dac = round(interp(reform(hkps.DACS[0,*]),htime,rtime))
    mcp_vvv =       interp(hkps.MON_MCP_V,htime,rtime)
    mcp_ccc =       interp(hkps.MON_MCP_C,htime,rtime)
+   fill    = round(interp(mons.P6I*100.,mtime,rtime))
 
    ;; --- Find autozero
-   autozero    = ishft(addr_lo,-9) and  '11'b
+   autozero = ishft(addr_lo,-9) and  '11'b
+   autozero =  round(interp(autozero,htime,rtime))
 
    ;; --- Find unique values for MCP, Anode, and Autozero
    un_auz = autozero[uniq(autozero,sort(autozero))]
    un_ano = anode[uniq(anode,sort(anode))]
    un_mcp = mcp_dac[uniq(mcp_dac,sort(mcp_dac))]
+   un_fil = fill[uniq(fill,sort(fill))]
    nn_auz = n_elements(un_auz)
    nn_ano = n_elements(un_ano)
    nn_mcp = n_elements(un_mcp)
+   nn_fil = n_elements(un_fil)
 
    ;; --- Structure
-   thresh_data  = ptrarr(nn_mcp,nn_auz,nn_ano,/alloc)
-
-   ;; --- Plot
-   ;popen, '~/Desktop/STOPS_thresh_scan',/landscape
-   plot, [0,1],[0,1],$
-         xr=[5,60],   xs=1,xlog=1,xtitle='Threshold',$
-         yr=[1e1,1e4],ys=1,ylog=1,ytitle='Binned and Average Counts',$
-         Title='STOPS Threshold Scan',/nodata,thick=2
+   thresh_data  = ptrarr(nn_fil,nn_mcp,nn_auz,nn_ano,/alloc)
 
    ;; --- Loop through unique MCPs, Anodes, and Autozeros
-   npoints = 200
-   FOR mcp=0, nn_mcp-1 DO BEGIN
-      mcp_val = un_mcp[mcp]
-      FOR auz=1, 1 DO BEGIN ;nn_auz-1 DO BEGIN
-         auz_val = un_auz[auz]
-         FOR ano=0, nn_ano-1 DO BEGIN 
-            ano_val = un_ano[ano]
-            good = (anode    EQ ano_val) AND $
-                   (mcp_dac  EQ mcp_val) AND $
-                   (autozero EQ auz_val) AND $
-                   (thresh   NE 0)
-            pp = where(good EQ 1,cc)
-            IF ano_val LT '10'x THEN $ 
-             cnts = reform(rates[pp].STARTS_CNTS[ano_val]) $
-            ELSE cnts = reform(rates[pp].STOPS_CNTS[ano_val-16])
-            IF cc GT npoints THEN BEGIN
-               cntsavg = average_hist(cnts,fix(thresh[pp]),$
-                                      binsize=1,$
-                                      xbins=cntsavg_bins)
-               dthavg = -deriv(cntsavg_bins,cntsavg)
-               pp = where(cntsavg LT 1e4,cc)
-               IF cc NE 0 THEN BEGIN
-                  cntsavg = temporary(cntsavg[pp])
-                  cntsavg_bins = temporary(cntsavg_bins[pp])
-                  dthavg  = temporary(dthavg[pp])
-               ENDIF
 
-               ;*(thresh_data[mcp,auz,ano]) = {$
-               ;                      az:           auz_val,$
-               ;                      mcp:          mcp_val,$
-               ;                      anode:        ano_val,$
-               ;                      ;mcp_v:        mcp_v,$
-               ;                      cnts:         cnts,$
-               ;                      thresh:       thresh,$
-               ;                      dthavg:       dthavg,$
-               ;                      cntsavg:      cntsavg,$
-               ;                      cntsavg_bins: cntsavg_bins}
-               IF ano_val ge '10'x THEN BEGIN
-                  ;clr = (ano_val-16)/16.*250.
-                  clr = ano_val/16.*250.
-                  oplot, cntsavg_bins, cntsavg, color=clr, thick=1,psym=-1
-                  ;popen, '~/Desktop/STOPS_thresh_scan',/landscape
-                  ;plot, cntsavg_bins, cntsavg, color=clr;,psym=-1, thick=2
-                  ;pclose
-                  ;return
-                  stop
-               ENDIF ;ELSE BEGIN
-                  ;clr = (ano_val-16)/16*250
-                  ;oplot, cntsavg_bins, cntsavg, color=clr
-               ;ENDELSE
-               ;print, 'Anode: ', ano_val
-            ENDIF
+
+   ;; Filament Current
+   FOR fil=0, nn_fil-1 DO BEGIN
+      fil_val = un_fil[fil]
+
+      ;; MCPs
+      FOR mcp=0, nn_mcp-1 DO BEGIN
+         mcp_val = un_mcp[mcp]
+
+         ;; Autozero
+         FOR auz=1, 1 DO BEGIN  ;nn_auz-1 DO BEGIN
+            auz_val = un_auz[auz]
+
+            ;; Anode
+            FOR ano=0, nn_ano-1 DO BEGIN 
+               ano_val = un_ano[ano]
+
+               ;; Find values that match all unique values
+               good = (anode    EQ ano_val) AND $
+                      (mcp_dac  EQ mcp_val) AND $
+                      (autozero EQ auz_val) AND $
+                      (fill     EQ fil_val) AND $
+                      (thresh   NE 0)
+               pp = where(good EQ 1,cc)
+               IF cc GT npoints THEN BEGIN
+
+                  IF ano_val LT '10'x THEN BEGIN
+                     ;; ---------------- STARTS ------------------
+                     ;; Setup counts
+                     cnts = reform(rates[pp].STARTS_CNTS[ano_val])
+                     ;; Bin according to threshold
+                     cntsavg = average_hist(cnts,fix(thresh[pp]),$
+                                            binsize=1,$
+                                            xbins=cntsavg_bins)
+                     ;; Derivative of threshold scan
+                     dthavg = -deriv(cntsavg_bins,cntsavg)
+                     ;; Exclude counts above 1e4
+                     pp = where(cntsavg LT 1e4,cc)
+                     IF cc NE 0 THEN BEGIN
+                        cntsavg = temporary(cntsavg[pp])
+                        cntsavg_bins = temporary(cntsavg_bins[pp])
+                        dthavg  = temporary(dthavg[pp])
+                     ENDIF
+                  ENDIF ELSE BEGIN 
+                     ;; ----------------- STOPS ------------------
+                     ;; Setup counts
+                     cnts = reform(rates[pp].STOPS_CNTS[ano_val-16])
+                     ;; Bin according to threshold
+                     cntsavg = average_hist(cnts,fix(thresh[pp]),$
+                                            binsize=1,$
+                                            xbins=cntsavg_bins)
+                     ;; Derivative of threshold scan
+                     dthavg = -deriv(cntsavg_bins,cntsavg)
+                     ;; Exclude counts above 1e4
+                     pp = where(cntsavg LT 1e4,cc)
+                     IF cc NE 0 THEN BEGIN
+                        cntsavg = temporary(cntsavg[pp])
+                        cntsavg_bins = temporary(cntsavg_bins[pp])
+                        dthavg  = temporary(dthavg[pp])
+                     ENDIF
+                  ENDELSE
+
+                  ;; Save data in structure
+                  *(thresh_data[fil,mcp,auz,ano]) = $                
+                   {az:           auz_val,$
+                    mcp:          mcp_val,$
+                    anode:        ano_val,$
+                    fillament:    fil_val,$
+                    ;mcp_v:        mcp_v,$
+                    cnts:         cnts,$
+                    thresh:       thresh,$
+                    dthavg:       dthavg,$
+                    cntsavg:      cntsavg,$
+                    cntsavg_bins: cntsavg_bins}                     
+               ENDIF
+            ENDFOR
          ENDFOR
       ENDFOR
    ENDFOR
-   ;pclose
 
+   pp=0
+   FOR i=0, nn_fil*nn_mcp*nn_auz*nn_ano-1 DO $
+    IF *(thresh_data)[i] NE !NULL THEN BEGIN
+      pp = [pp.i]
+      cc++
+   ENDIF
+   pp=[1,cc-1]
 
-
+   data = reform(thresh_data[pp],n_fil,nn_mcp,nn_auz,nn_ano)
+   ;spp_swp_spi_thresh_scan_plot,thresh_data
+   stop
 END
 
 
 
+
+
+
+PRO spp_swp_spi_thresh_scan_plot, data
+
+   IF ~keyword_set(data) THEN stop, 'Must provide data.'
+
+   ;; --- Plot
+   popen, '~/Desktop/ch10_thresh_scan',/landscape
+   plot, [0,1],[0,1],$
+         xr=[10,60],   xs=1,xlog=1,xtitle='Threshold',$
+         yr=[1e1,1e4],ys=1,ylog=1,ytitle='Binned and Average Counts',$
+         Title='Channel 10 Threshold Scan',/nodata,thick=2
+
+   ;; Color and Plot
+   clr = round((ano_val-16)/16*250+70)
+   oplot, cntsavg_bins, cntsavg, color=clr, thick=3,psym=-2
+
+   ;; Color and Plot
+   clr = round(ano_val/16.*250.)
+   oplot, cntsavg_bins, cntsavg, color=clr, thick=3,psym=-1
+
+   pclose
+
+
+END
 
 
 
@@ -464,6 +545,83 @@ END
 
 
 
+
+PRO spp_swp_spi_k_sweep, trange=trange
+
+
+   ;; Get Hemisphere DAC values from
+   ;; standard science table
+   spp_swp_sweepv_dacv, $
+    sweepv_dac,defv1_dac,defv2_dac,spv_dac
+
+   FOR i = 0,255 DO BEGIN
+      spp_swp_sweepv_new_tslut,$
+       sweepv, defv1, defv2, spv, fsindex, $
+       tsindex, nen = nen/4, edpeak = i, $
+       plot = plot, spfac = spfac
+      if i eq 0 then index = tsindex $
+      else index = [index,tsindex]
+   ENDFOR
+
+
+   
+   stop
+
+   ;; Setup
+   loadct2, 34
+   npoints = 200
+
+   ;; --- Check keyword
+   IF ~keyword_set(trange) THEN $
+    stop, 'Error: Need trange.'
+
+   ;; --- Get data
+   rates  = (spp_apdat('3bb'x)).array
+   manips = (spp_apdat('7c3'x)).array
+   hkps   = (spp_apdat('3be'x)).array
+   mons   = (spp_apdat('753'x)).array
+
+   ;; --- Find time interval
+   htime   = hkps.time
+   rtime   = rates.time
+   mtime   = mons.time
+   rtt = where(rtime GE trange[0] AND $
+               rtime LE trange[1],rcc)
+   htt = where(htime GE trange[0] AND $
+               htime LE trange[1],hcc)
+   mtt = where(mtime GE trange[0] AND $
+               mtime LE trange[1],mcc)
+   IF rcc EQ 0  OR hcc EQ 0 OR mcc EQ 0 THEN $
+    stop, 'Error: Time interval not loaded.'
+   rates = temporary(rates[rtt])
+   rtime = temporary(rtime[rtt])
+   hkps  = temporary(hkps[htt])
+   htime = temporary(htime[htt])
+   mons  = temporary(mons[mtt])
+   mtime = temporary(mtime[mtt])
+
+   ;; --- Plot
+   ;popen, '~/Desktop/ch10_thresh_scan',/landscape
+   ;plot, [0,1],[0,1],$
+   ;      xr=[10,60],   xs=1,xlog=1,xtitle='Threshold',$
+   ;      yr=[1e1,1e4],ys=1,ylog=1,ytitle='Binned and Average Counts',$
+   ;      Title='Channel 10 Threshold Scan',/nodata,thick=2
+
+   ;; --- Define variables and interpolate to rates
+   addr_hi = hkps.MRAM_ADDR_HI  AND '1F'x
+   addr_lo = hkps.MRAM_ADDR_LOW AND 'FFFF'x
+   anode   = round(interp(addr_hi,htime,rtime))
+   thresh  = round(interp(addr_lo,htime,rtime)) AND '1FF'x
+   mcp_dac = round(interp(reform(hkps.DACS[0,*]),htime,rtime))
+
+
+
+END
+
+
+
+
+
 pro spp_swp_spi_times
 
    message,'not to be run!'
@@ -671,6 +829,22 @@ pro spp_swp_spi_times
 
    ;; Threshold Scan
    trange = ['2017-01-19/07:45:00','2017-01-19/16:00:00']
+
+   ;; Threshold Scan channel 10 with varying mcps and gun filament
+   trange = ['2017-01-20/06:32:00','2017-01-20/11:15:00']
+
+   ;; K Sweep
+   trange = ['2017-01-23/05:30:30','2017-01-23/12:36:30']
+   trange = ['2017-01-23/04:30:30','2017-01-23/12:36:30']
+   trange = time_double(trange)
+   files = spp_file_retrieve(/cal,/spani,trange=trange)
+   spp_ptp_file_read, files
+
+   ;; Deflector Scan
+   trange = ['2017-01-24/07:25:00']
+   trange = time_double(trange)
+   files = spp_file_retrieve(/cal,/spani,trange=trange)
+   spp_ptp_file_read, files
 
 
 

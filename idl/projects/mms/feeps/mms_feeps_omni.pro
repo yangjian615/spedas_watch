@@ -25,8 +25,8 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-19 10:41:29 -0800 (Thu, 19 Jan 2017) $
-; $LastChangedRevision: 22629 $
+; $LastChangedDate: 2017-01-24 16:17:54 -0800 (Tue, 24 Jan 2017) $
+; $LastChangedRevision: 22660 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, $
@@ -90,6 +90,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
     
     flux_avg = average(flux_omni, 2, /nan)
     
+    str_element, /add, dl, 'num_sensors', sensor_count
     store_data, newname[0], data={x:d.x, y:flux_avg, v:d.v}, dlimits=dl
     
    ; ylim, newname[0], lower_en, 600., 1
