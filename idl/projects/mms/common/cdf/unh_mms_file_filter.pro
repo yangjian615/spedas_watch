@@ -36,8 +36,8 @@
 ;       LOADED_VERSIONS: The CDF version #s
 ;       
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-05 17:07:43 -0800 (Thu, 05 Jan 2017) $
-; $LastChangedRevision: 22511 $
+; $LastChangedDate: 2017-01-25 08:03:01 -0800 (Wed, 25 Jan 2017) $
+; $LastChangedRevision: 22663 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/unh_mms_file_filter.pro $
 ;-
 function unh_mms_file_filter, filenames, $
@@ -165,7 +165,7 @@ LOADED_VERSIONS=loaded_versions
 ;------------------------------------;
 
   ;Extract X, Y, Z version numbers from file
-  fversion = stregex(files_out, 'v([0-9]+)\.([0-9]+)\.([0-9])\.cdf$', /SUBEXP, /EXTRACT)
+  fversion = stregex(files_out, 'v([0-9]+)\.([0-9]+)\.([0-9]+)\.cdf$', /SUBEXP, /EXTRACT)
   fv = fix(fversion[1:3,*])
 
 	;Filter by minimum version number
@@ -219,7 +219,7 @@ LOADED_VERSIONS=loaded_versions
 	endif
 	
 	; again, this time only on filtered files_out
-	fversion = stregex(files_out, 'v([0-9]+)\.([0-9]+)\.([0-9])\.cdf$', /SUBEXP, /EXTRACT)
+	fversion = stregex(files_out, 'v([0-9]+)\.([0-9]+)\.([0-9]+)\.cdf$', /SUBEXP, /EXTRACT)
 	fv = fix(fversion[1:3,*])
 	if n_elements(files_out) eq 1 then loaded_versions = transpose(fv) else  loaded_versions = transpose(fv, [1, 0])
 

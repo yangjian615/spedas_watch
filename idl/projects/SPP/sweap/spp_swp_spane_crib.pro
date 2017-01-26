@@ -107,13 +107,8 @@ spp_ptp_file_read, spp_file_retrieve( 'spp/data/sci/sweap/prelaunch/gsedata/EM/S
 spp_msg_file_read, spp_file_retrieve( 'spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-2/20160727_115654_large_packet_test/GSE_all_msg.dat')
 
 spp_msg_file_read, spp_file_retrieve( 'spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-2/20160805_125639_ramp_up/GSE_all_msg.dat')  ; Ion ramp in which SWEMULATOR reset?
-
-
 spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-3/20160920_084426_BfltBigCalChamberEAscan/PTP_data.dat.gz')
-
 spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/SWEAP-3/20160923_165136_BfltContinuedPHDscan/PTP_data.dat')
-;spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/mgsehires1/20161229_001105_/PTP_data.dat')
-spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/mgsehires1/20161223_163710_test/PTP_data.dat') ;second cycling attempt cover open
 
 
 
@@ -124,51 +119,76 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
 
 
 
- trange =  '2016 10 '+ ['18/04','19/22']   ; SPANE - A flght in Cal chamber:  MCP test
- trange =  '2016 11 '+ ['18/21','18/23']  ; SPAN-Ae FM postcoat w/ attenuator: Full rotation (angles incorrect, ROT not zeroed)
-
- trange =  '2016 11 '+ ['19/00','19/02'] ; SPAN-Ae FM quick EA scan
- trange =  '2016 11 '+ ['19/02','19/04'] ; SPAN-Ae FM rotation @ 2degrees Yaw, which has been shown to be the beam emit angle
- trange =  '2016 11 '+ ['20/00','20/07'] ; SPAN-Ae FM thresh & MCP scan @ 2degrees Yaw
- trange =  '2016 11 '+ ['21/01','21/23'] ; SPAN-Ae FM deflector test
- trange =  '2016 11 '+ ['21/23','22/02'] ; SPAN-Ae FM spoiler test
+ trange =  '2016 10 '+ ['18/04','19/22']   ; SPANE - A flght in Cal chamber:  MCP test; NOT PREENV CAL
+ 
+ ; SPANAe Pre Env Cal data
+ trange = '2016 11 '+ ['18/16','18/18']  ; SPAN-Ae FM preEnv Cal 'spane_ph_thresh_scan' ; incomplete, need tony to parse file?
+ trange = '2016 11 '+ ['18/17','18/18']  ; SPAN-Ae FM preEnv Cal 'spane_thresh_scan' (No MCP)
+ trange = '2016 11 '+ ['18/21','18/23']  ; SPAN-Ae FM postcoat w/ attenuator: Full rotation (angles incorrect, ROT not zeroed)
+ trange = '2016 11 '+ ['19/00','19/02']  ; SPAN-Ae FM quick EA scan
+ trange = '2016 11 '+ ['19/02','19/04']  ; SPAN-Ae FM rotation @ 2degrees Yaw, which has been shown to be the beam emit angle
+ trange = '2016 11 '+ ['20/00','20/07']  ; SPAN-Ae FM thresh & MCP scan @ 2degrees Yaw named SPANAe_preEnvCal_mcpTest.png
+ trange = '2016 11 '+ ['21/01','21/23']  ; SPAN-Ae FM deflector test, ;skipped anode 11? ;MRAM (indicates Def dac) does not indicate correctly. will require fixes in the future
+ trange = '2016 11 '+ ['21/23','21/24']  ; SPAN-Ae FM full rotation: half @ 0DegYaw, half at 2DegYaw.
+ trange = '2016 11 '+ ['21/23','22/02']  ; SPAN-Ae FM spoiler test
+ ; currently the files cut off at 18:40 on the 23rd.
+ ; SPAN-Ae pre Env Pt 2
+ trange = '2016 12 '+ ['07/19','07/22'] ; SPAN-Ae FM pre-Vibe pt 2 EA scan at 1keV
+ trange = '2016 12 '+ ['08/00','08/03'] ; SPAN-Ae FM pre-Vibe pt 2 EA scan at 500eV
+ trange = '2016 12 '+ ['08/18','08/21'] ; SPAN-Ae FM pre-Vibe pt 2 IDL simulation replication
+ trange = '2016 12 '+ ['08/23','09/01'] ; SPAN-Ae FM pre-Vibe pt 2 full dual direction rotation
+ trange = '2016 12 '+ ['09/00','09/02'] ; SPAN-Ae FM pre-Vibe pt 2 Spoiler Test at 500eV
+ 
 
   
 
  ;;SPANB PRE VIBE CAL
  ; Note that these should be loaded as spanea
- trange = '2016 12 '+ ['06/02','06/05']
+ trange = '2016 11 '+ ['28/18','28/19'] ; SPAN-B FM FPGAcheck
+ trange = '2016 11 '+ ['28/19','28/21'] ; SPAN-B FM ph thresh scan (changing pulse height on test pulser)
+ trange = '2016 11 '+ ['28/20','28/21'] ; SPAN-B FM thresh scan. (changing threshold with no input but noise)
+ trange = '2016 11 '+ ['29/04','29/08'] ; SPAN-B FM ea quick scan - missing data for some anodes
+ trange = '2016 11 '+ ['29/15','29/21'] ; SPAN-B FM mcpTest - missing data because of cable? Or maybe because of maja.
+ trange = ['2016 11 29/23','2016 12 01/01'] ; SPAN-B FM deflector test - missing data because of cable.
+ 
  trange = '2016 12 '+ ['05/12','06/00']
+ trange = '2016 12 '+ ['05/19','06/00'] ; SPAN-B FM IDL sim test again, after cable got fixed.
+ trange = '2016 12 '+ ['06/02','06/05'] ; SPAN-B FM pre-Vibe 500eV EA scan
+
  trange = '2016 12 '+ ['05/19','06/00'] ; SPAN-B FM pre-Vibe sweep yaw test w/ correction of yawlin (other version is yaw only)
  trange = '2016 12 '+ ['05/23','06/02'] ; SPAN-B FM pre-Vibe low energy electrons grab
-
+ trange = '2016 12 '+ ['06/18','06/19'] ; SPAN-B FM pre-Vibe 500eV full rotation
+ trange = '2016 12 '+ ['06/18','06/20'] ; SPAN-B FM pre-Vibe 500eV Deflector test @ Anode 2
+ trange = '2016 12 '+ ['06/20','06/22'] ; SPAN-B FM pre-Vibe 500eV Deflector test @ Anode 8
+ 
  trange = '2016 12 '+ ['02/23','03/01'] ; SPAN-B FM pre-Vibe spoiler test @ 2degrees Yaw & full rotation @ 2degrees yaw
  trange = '2016 12 '+ ['02/18','02/22'] ; SPAN-B FM pre-Vibe deflector test on anodes 14 & 15
- trange = '2016 11 '+ ['30/01','30/03'] ; SPAN-B FM deflector test on anode 0
- trange = '2016 11 '+ ['30/02','30/04'] ; SPAN-B FM deflector test on anode 1
- ;anode 2 partial coverage
- ;anode 3 partial coverage
- ;anode 4 partial coverage
- trange = '2016 11 '+ ['30/08','30/10'] ; SPAN-B FM deflector test on anode 5
- ;anode 6 partial coverage
- trange = '2016 11 '+ ['30/11','30/13'] ; SPAN-B FM deflector test on anode 7
- trange = '2016 11 '+ ['30/12','30/14'] ; SPAN-B FM deflector test on anode 8
- trange = '2016 11 '+ ['30/13','30/15'] ; SPAN-B FM deflector test on anode 9
- ;anode 10 no coverage
- ;anode 11 partial coverage
- trange = '2016 11 '+ ['30/17','30/19'] ; SPAN-B FM deflector test on anode 12
- trange = '2016 11 '+ ['30/18','30/22'] ; SPAN-B FM deflector test on anode 13
- trange = '2016 11 '+ ['29/04','29/08'] ; SPAN-B FM ea quick scan - missing data for some anodes
- 
- ;; SPANB TBAL & cover opening Malfunction
- trange = '2016 12 '+ ['22/06','22/11'] ; SPAN-B FM TBAL cover opening - failure. SPANB is XX
- trange = '2016 12 '+ ['22/18','22/20'] ; SPAN-B FM TBAL cover opening - indicating open. SPANB is XX
- trange = '2016 12 '+ ['23/16','24/03'] ; SPAN-B FM TBAL temeprature data - op heater. SPANB is Cold.
- 
  
  files = spp_file_retrieve(/elec,/cal,trange=trange)
  trange = '2016 12 '+ ['02/00','03/12'] ; SPAN-B FM pre-Vibe last load
  trange = '2016 12 '+ ['01/00','02/00'] ; SPAN-B FM pre-Vibe contains nothing
+ 
+ 
+ ;; SPANB TBAL & cover opening Malfunction
+ trange = '2016 12 '+ ['22/06','22/11'] ;tli SPAN-B FM TBAL cover opening - failure. SPANB is XX
+ trange = '2016 12 '+ ['22/18','22/20'] ; SPAN-B FM TBAL cover opening - indicating open. SPANB is XX
+ trange = '2016 12 '+ ['23/16','24/03'] ; SPAN-B FM TBAL temeprature data - op heater. SPANB is Cold. No science data.
+ spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/mgsehires1/20161223_163710_test/PTP_data.dat') ;SPANB second cycling attempt cover open
+ trange = '2016 12 '+ ['28/23','29/12'] ; second attempt at opening cover; no DAG, after official TBAL. Cover opens when SPANB warms.
+ files = spp_file_retrieve(/spaneb,/snout2,trange=trange)
+ 
+ 
+ ;; SPANB TVAC
+ trange = '2017 01 '+ ['11/16','11/18'] ; SPAN-B FM Cover Test post tbal, pre tvac, turn on & cpt.
+ trange = '2017 01 '+ ['12/18','13/05'] ; SPAN-B FM turn on and low voltage CPT
+ trange = '2017 01 '+ ['13/17','14/10'] ; SPAN-B FM Anode 5 failure #1
+ trange = '2017 01 '+ ['14/19','15/09'] ; SPAN-B FM Anode 5 failure #2
+ 
+ 
+
+
+
+
 
 ;  Get recent data files:
 files = spp_file_retrieve(/spanea,/cal,recent=1/24.)   ; get last 1 hour of data from server
@@ -219,9 +239,6 @@ printdat,  hkp.data.array[-1]  ; return the current last element of the data arr
 
 
 
-
-
-; Get info on 
 
 
 

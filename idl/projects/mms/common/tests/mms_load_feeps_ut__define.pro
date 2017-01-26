@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-23 08:26:57 -0800 (Mon, 23 Jan 2017) $
-; $LastChangedRevision: 22645 $
+; $LastChangedDate: 2017-01-25 10:51:29 -0800 (Wed, 25 Jan 2017) $
+; $LastChangedRevision: 22667 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
 
@@ -46,6 +46,17 @@ function mms_load_feeps_ut::test_flatfield_corrections_l2
   get_data, 'mms4_epd_feeps_brst_l2_ion_top_intensity_sensorid_6_clean_sun_removed', data=d
   factor = corr.Y[2000, 1]/d.Y[2000, 1]
   assert, factor eq 0.8, 'Problem applying flat field corrections to ions (L2)'
+  return, 1
+end
+
+; regression test, previously failed due to incorrect sensor head type in mms_feeps_flat_field_corrections
+function mms_load_feeps_ut::test_flatfield_corrections_l2_bottom
+  mms_load_feeps, data_rate='brst', probe=4, suffix='_with_flatfield_correction', datatype='ion'
+  mms_load_feeps, data_rate='brst', probe=4, datatype='ion', /no_flatfield_corrections
+  get_data, 'mms4_epd_feeps_brst_l2_ion_bottom_intensity_sensorid_7_clean_sun_removed_with_flatfield_correction', data=corr
+  get_data, 'mms4_epd_feeps_brst_l2_ion_bottom_intensity_sensorid_7_clean_sun_removed', data=d
+  factor = corr.Y[4000, 2]/d.Y[4000, 2]
+  assert, factor eq 0.6, 'Problem applying flat field corrections to ions (L2) - bottom sensor head'
   return, 1
 end
 
@@ -292,7 +303,7 @@ end
 
 function mms_load_feeps_ut::test_load_l2_multi_datatypes
   mms_load_feeps, probe=2, level='l2', datatype=['ion', 'electron']
-  assert, spd_data_exists('mms2_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_3_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_12_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_3_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_12_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_3_clean_sun_removed', '2015-12-15', '2015-12-16'), $
+  assert, spd_data_exists('mms2_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_3_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_12_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_3_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_3_clean_sun_removed', '2015-12-15', '2015-12-16'), $
     'Problem with loading L2 FEEPS data with multiple datatypes'
   return, 1
 end

@@ -5,10 +5,19 @@
 ; Requires mgunit in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-05 17:12:41 -0800 (Thu, 05 Jan 2017) $
-; $LastChangedRevision: 22514 $
+; $LastChangedDate: 2017-01-25 08:09:15 -0800 (Wed, 25 Jan 2017) $
+; $LastChangedRevision: 22665 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_file_filter_ut__define.pro $
 ;-
+
+; the following is a regression test for the revision >= 10 bug
+function mms_file_filter_ut::test_revision_num_larger_than_9
+    files = ['C:\Users\admin\data\mms\mms1\feeps\srvy\sitl\electron\2017\01\mms1_feeps_srvy_sitl_electron_20170104000000_v5.5.10.cdf',$
+             'C:\Users\admin\data\mms\mms1\feeps\srvy\sitl\electron\2017\01\mms1_feeps_srvy_sitl_electron_20170106000000_v5.5.14.cdf']
+    two_files = unh_mms_file_filter(files, min_version='5.5.0', /no_time)
+    assert, array_equal(files, two_files), 'Problem with CDF filter when revision # is larger than 9'
+    return, 1
+end
 
 function mms_file_filter_ut::test_major_version
     all_versions = ['C:\Users\admin\data\mms/mms1/dfg/srvy/ql/2016/01/mms1_dfg_srvy_ql_20160117_v2.13.3.cdf',$

@@ -84,8 +84,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-24 16:29:07 -0800 (Tue, 24 Jan 2017) $
-;$LastChangedRevision: 22662 $
+;$LastChangedDate: 2017-01-25 08:04:15 -0800 (Wed, 25 Jan 2017) $
+;$LastChangedRevision: 22664 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -105,7 +105,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
     if undefined(data_units) then data_units = ['count_rate', 'intensity']
     if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
- ;   if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) && undefined(major_version) then min_version = '5.5.0'
+    if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) && undefined(major_version) then min_version = '5.5.0'
     if undefined(get_support_data) then get_support_data = 1 ; support data needed for sun removal and spin averaging
     l1a_datatypes = ['electron-bottom', 'electron-top', 'ion-top', 'ion-bottom']
     
@@ -127,12 +127,13 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     
     if level_in eq 'l1a' then return ; avoid the following for L1a data
 
+    ; correct energy tables based on probe, sensor head and sensor ID
     mms_feeps_correct_energies, data_rate = data_rate_in, level = level_in, suffix = suffix
     
     ; apply flat field corrections for ions
     if undefined(no_flatfield_corrections) then mms_feeps_flat_field_corrections, data_rate = data_rate_in, suffix = suffix
     
-    ; remove bad eyes, bad energy channels, and replace energy centers with corrected energies (based on S/C)
+    ; remove bad eyes, bad energy channels
     mms_feeps_remove_bad_data, suffix = suffix
 
     for probe_idx = 0, n_elements(probes_in)-1 do begin

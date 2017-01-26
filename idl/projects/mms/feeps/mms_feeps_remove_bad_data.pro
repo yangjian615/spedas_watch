@@ -3,7 +3,7 @@
 ;       mms_feeps_remove_bad_data
 ;
 ; PURPOSE:
-;       Removes bad eyes, bad lowest energy channels and corrects energy bin centers
+;       Removes bad eyes, bad lowest energy channels 
 ;       based on data from Drew Turner, 1/17/2017
 ;
 ; NOTES:
@@ -11,8 +11,8 @@
 ;       work on the FEEPS data
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-24 14:18:16 -0800 (Tue, 24 Jan 2017) $
-; $LastChangedRevision: 22656 $
+; $LastChangedDate: 2017-01-25 10:20:08 -0800 (Wed, 25 Jan 2017) $
+; $LastChangedRevision: 22666 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_bad_data.pro $
 ;-
 

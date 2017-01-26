@@ -77,8 +77,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
-;$LastChangedRevision: 22583 $
+;$LastChangedDate: 2017-01-25 10:54:19 -0800 (Wed, 25 Jan 2017) $
+;$LastChangedRevision: 22668 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -94,7 +94,7 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
                   versions = versions, always_prompt = always_prompt, major_version=major_version
                 
     if undefined(probes) then probes = ['1'] ; default to MMS 1
-    if undefined(datatype) then datatype = 'moments'
+    if undefined(datatype) then datatype = 'moments' else datatype = strlowcase(datatype)
     if undefined(level) then level = 'l2' else level = strlowcase(level)
     if undefined(data_rate) then data_rate = 'srvy'
     if undefined(suffix) then suffix=''
