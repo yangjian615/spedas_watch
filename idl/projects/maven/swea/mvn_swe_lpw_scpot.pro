@@ -55,12 +55,12 @@
 ;       Yuki Harada on 2016-02-29
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-01-19 15:44:29 -0800 (Thu, 19 Jan 2017) $
-; $LastChangedRevision: 22636 $
+; $LastChangedDate: 2017-01-26 16:07:45 -0800 (Thu, 26 Jan 2017) $
+; $LastChangedRevision: 22677 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
-pro mvn_swe_lpw_scpot, trange=trange, norbwin=norbwin, minndata=minndata, maxgap=maxgap, plot=plot, nol0load=nol0load, vrinfl=vrinfl, ntsmo=ntsmo, noangcorr=noangcorr, novinfl=novinfl, icur_thld=icur_thld, swel0=swel0, figdir=figdir, atrtname=atrtname, scatdir=scatdir
+pro mvn_swe_lpw_scpot, trange=trange, norbwin=norbwin, minndata=minndata, maxgap=maxgap, plot=plot, nol0load=nol0load, vrinfl=vrinfl, ntsmo=ntsmo, noangcorr=noangcorr, novinfl=novinfl, icur_thld=icur_thld, swel0=swel0, figdir=figdir, atrtname=atrtname, scatdir=scatdir, thld_out=thld_out
 
 
 if ~keyword_set(figdir) then begin
@@ -78,6 +78,7 @@ if ~keyword_set(ntsmo) then ntsmo = 3 ;- odd number, smooth IV curves in time
 if keyword_set(noangcorr) then angcorr = 0 else angcorr = 1
 if ~keyword_set(atrtname) then atrtname = 'mvn_lpw_atr_swp'
 if ~keyword_set(icur_thld) then icur_thld = -0.5 ;- 10^icur_thld drop from median -> invalid
+if ~keyword_set(thld_out) then thld_out = 2.5 ;- reject outliers of scatter plots
 
 ;;; obsolete
 ;; if ~keyword_set(icur_thld) then icur_thld = -8.3 ;- I_V0 > -10^icur_thld
@@ -436,7 +437,7 @@ for iorb=iorb0,iorb1 do begin
          alad = ladfit(x,y)        ;- initial fit
 
          ;;; filter out outliers and fit
-         w = where( abs(x-(y/alad[1]-alad[0]/alad[1])) lt 5 , nw )
+         w = where( abs(x-(y/alad[1]-alad[0]/alad[1])) lt thld_out , nw )
          Nscat = nw
          if nw gt minNdata then begin
             x2 = x[w]
@@ -534,8 +535,8 @@ for iorb=iorb0,iorb1 do begin
             xplot = findgen(401)/10.-10.
             oplot,xplot,a[0]+a[1]*xplot,color=2
             oplot,xplot,pow.bkg+pow.h*xplot^pow.p,color=6
-            oplot,xplot,alad[0]+alad[1]*(xplot+5),linestyle=2
-            oplot,xplot,alad[0]+alad[1]*(xplot-5),linestyle=2
+            oplot,xplot,alad[0]+alad[1]*(xplot+thld_out),linestyle=2
+            oplot,xplot,alad[0]+alad[1]*(xplot-thld_out),linestyle=2
             xyouts,/norm,color=2,.15,.97,'linear fit!c' + $
                    'y = '+string(a[0],f='(f5.2)') $
                    +string(a[1],f='(f+5.2)')+'x' $

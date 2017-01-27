@@ -84,8 +84,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-25 08:04:15 -0800 (Wed, 25 Jan 2017) $
-;$LastChangedRevision: 22664 $
+;$LastChangedDate: 2017-01-26 15:55:17 -0800 (Thu, 26 Jan 2017) $
+;$LastChangedRevision: 22675 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -151,7 +151,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
               tplotnames = tplotnames
     
           ; calculate the omni-directional spectra
-          mms_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units[data_units_idx], $
+          mms_feeps_omni_new, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units[data_units_idx], $
               data_rate = data_rate_in, suffix=suffix, level = level_in
     
           ; calculate the spin averages

@@ -101,13 +101,15 @@
 ;		 2009-11-10, cgabrielse, added xy_cursor keyword for
 ;		 sending cursor values up level
 ;                2012-07-02,  jmm, Added color_annotation keyword
+;                2017-01-26, jmm, Fixed proble with crashing on
+;                set_plot,'x' for windows
 ;
 ; NOTES:
 ;
 ; VERSION:
-;   $LastChangedBy: hfrey $
-;   $LastChangedDate: 2015-11-24 15:41:25 -0800 (Tue, 24 Nov 2015) $
-;   $LastChangedRevision: 19469 $
+;   $LastChangedBy: jimmpc1 $
+;   $LastChangedDate: 2017-01-26 12:47:28 -0800 (Thu, 26 Jan 2017) $
+;   $LastChangedRevision: 22672 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_asi_create_mosaic.pro $
 ;
 ;-
@@ -164,7 +166,11 @@ PRO THM_ASI_CREATE_MOSAIC,time,$
     block_moon=block_moon,$
     autocenter=autocenter
 
-	; input check
+
+; Z buffer might be set, and the keyword may not be, jmm, 2017-01-26
+if !d.name eq 'Z' then zbuffer = 1
+  
+    ; input check
 if keyword_set(verbose) then verbose=systime(1)
 if (strlen(time) ne 19) then begin
   dprint, 'Wrong time input'
@@ -414,7 +420,8 @@ if keyword_set(gif_out) then begin
 if keyword_set(zbuffer) then zbuffer=tvrd()
 if not keyword_set(keep_z) and keyword_set(zbuffer) then begin
      device,/close
-     set_plot,'x'
+     If(!version.os_family Eq 'Windows') Then set_plot,'win' $
+     Else set_plot, 'x'
    endif
 
 endfor
@@ -590,7 +597,8 @@ if keyword_set(gif_out) then begin
 if keyword_set(zbuffer) then zbuffer=tvrd()
 if not keyword_set(keep_z) and keyword_set(zbuffer) then begin
    device,/close
-   set_plot,'x'
+   If(!version.os_family Eq 'Windows') Then set_plot,'win' $
+   Else set_plot, 'x'
    endif
 
 endelse	; single time

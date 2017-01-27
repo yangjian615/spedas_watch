@@ -134,7 +134,7 @@ IF spd_check_tvar(Ename) then BEGIN
     return
   endif
 ENDIF ELSE BEGIN
-  thm_load_efi, probe=sc, datatype=['efw', 'vaw'], coord='dsl', trange=trange
+  thm_load_efi, probe=sc, datatype=['efw', 'vaw'], coord='dsl', trange=trange, /get_support_data
   Ename = 'th' + sc + '_efw'
   get_data, ename[0], data=E, dlim=elim
   IF size(/type,E) NE 8 then BEGIN
@@ -189,7 +189,7 @@ IF keyword_set(SpikeRemove) then BEGIN
       return
     endif
   ENDIF ELSE BEGIN
-    thm_load_efi, probe=sc, datatype=['efp', 'vap'], coord='dsl', trange=trange
+    thm_load_efi, probe=sc, datatype=['efp', 'vap'], coord='dsl', trange=trange, /get_support_data
     get_data, EfpName[0], data=Efp
     IF size(/type,Efp) NE 8 then BEGIN
       print, 'THM_EFI_CLEAN_EFW: Cannot get EFP data. Spikes cannot be removed.'
