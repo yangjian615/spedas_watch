@@ -10,8 +10,8 @@
 ;       [original variable]_500keV_int - the integral channel that was removed
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-26 09:16:24 -0700 (Tue, 26 Jul 2016) $
-;$LastChangedRevision: 21526 $
+;$LastChangedDate: 2017-01-27 11:26:21 -0800 (Fri, 27 Jan 2017) $
+;$LastChangedRevision: 22682 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
@@ -58,11 +58,13 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
      
       ; limit the lower energy plotted
       options, top_name_out+suffix, ystyle=1
-      options, bottom_name_out+suffix, ystyle=1
       ylim, top_name_out+suffix, bottom_en, 510., 1
-      ylim, bottom_name_out+suffix, bottom_en, 510., 1
       zlim, top_name_out+suffix, 0, 0, 1
-      zlim, bottom_name_out+suffix, 0, 0, 1
+      if level ne 'sitl' then begin
+        options, bottom_name_out+suffix, ystyle=1
+        ylim, bottom_name_out+suffix, bottom_en, 510., 1
+        zlim, bottom_name_out+suffix, 0, 0, 1
+      endif
   
       ; store the integral channel
       store_data, top_name+'_500keV_int'+suffix, data={x: top_data.X, y: top_data.Y[*, n_elements(top_data.V)-1]}
@@ -71,7 +73,7 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
       ; delete the variable that contains both the spectra and the integral channel
       ; so users don't accidently plot the wrong quantity (discussed with Drew Turner 2/4/16)
       del_data, top_name+suffix
-      del_data, bottom_name+suffix
+      if level ne 'sitl' then del_data, bottom_name+suffix
     endfor
   endfor
 end

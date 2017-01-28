@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-25 10:51:29 -0800 (Wed, 25 Jan 2017) $
-; $LastChangedRevision: 22667 $
+; $LastChangedDate: 2017-01-27 11:13:27 -0800 (Fri, 27 Jan 2017) $
+; $LastChangedRevision: 22681 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
 
@@ -200,7 +200,7 @@ end
 
 function mms_load_feeps_ut::test_energy_channel_brst_probe1_suffix
   mms_load_feeps, data_rate='brst', probe=1, suffix='_shouldworkwithsuffix'
-  get_data, 'mms1_epd_feeps_brst_l2_electron_intensity_omni_shouldworkwithsuffix', data=d
+  get_data, 'mms1_epd_feeps_brst_l2_electron_top_intensity_sensorid_1_clean_sun_removed_shouldworkwithsuffix', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
     200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]+14d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (brst, MMS1, with suffix)'
@@ -209,7 +209,7 @@ end
 
 function mms_load_feeps_ut::test_energy_channel_brst_probe1
   mms_load_feeps, data_rate='brst', probe=1
-  get_data, 'mms1_epd_feeps_brst_l2_electron_intensity_omni', data=d
+  get_data, 'mms1_epd_feeps_brst_l2_electron_top_intensity_sensorid_1_clean_sun_removed', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
     200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]+14d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (brst, MMS1)'
@@ -218,7 +218,7 @@ end
 
 function mms_load_feeps_ut::test_energy_channel_brst_probe2
   mms_load_feeps, data_rate='brst', probe=2
-  get_data, 'mms2_epd_feeps_brst_l2_electron_intensity_omni', data=d
+  get_data, 'mms2_epd_feeps_brst_l2_electron_top_intensity_sensorid_1_clean_sun_removed', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
     200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-1d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (brst, MMS2)'
@@ -227,43 +227,43 @@ end
 
 function mms_load_feeps_ut::test_energy_channel_brst_probe3
   mms_load_feeps, data_rate='brst', probe=3
-  get_data, 'mms3_epd_feeps_brst_l2_electron_intensity_omni', data=d
+  get_data, 'mms3_epd_feeps_brst_l2_electron_top_intensity_sensorid_5_clean_sun_removed', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
-    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-3d
+    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-5d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (brst, MMS3)'
   return, 1
 end
 
 function mms_load_feeps_ut::test_energy_channel_brst_probe4
   mms_load_feeps, data_rate='brst', probe=4
-  get_data, 'mms4_epd_feeps_brst_l2_electron_intensity_omni', data=d
+  get_data, 'mms4_epd_feeps_brst_l2_electron_top_intensity_sensorid_11_clean_sun_removed', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
-    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-3d
+    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-6d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (brst, MMS4)'
   return, 1
 end
 
 function mms_load_feeps_ut::test_energy_channel_srvy_probe1
   mms_load_feeps, data_rate='srvy', probe=1
-  get_data, 'mms1_epd_feeps_srvy_l2_electron_intensity_omni', data=d
+  get_data, 'mms1_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_4_clean_sun_removed', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
-    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]+14d
+    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]+13d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (srvy, MMS1)'
   return, 1
 end
 
 function mms_load_feeps_ut::test_energy_channel_srvy_probe2
   mms_load_feeps, data_rate='srvy', probe=2
-  get_data, 'mms2_epd_feeps_srvy_l2_electron_intensity_omni', data=d
+  get_data, 'mms2_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_5_clean_sun_removed', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
-    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-1d
+    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-2d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (srvy, MMS2)'
   return, 1
 end
 
 function mms_load_feeps_ut::test_energy_channel_srvy_probe3
   mms_load_feeps, data_rate='srvy', probe=3
-  get_data, 'mms3_epd_feeps_srvy_l2_electron_intensity_omni', data=d
+  get_data, 'mms3_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_12_clean_sun_removed', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
     200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-3d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (srvy, MMS3)'
@@ -272,9 +272,9 @@ end
 
 function mms_load_feeps_ut::test_energy_channel_srvy_probe4
   mms_load_feeps, data_rate='srvy', probe=4
-  get_data, 'mms4_epd_feeps_srvy_l2_electron_intensity_omni', data=d
+  get_data, 'mms4_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_12_clean_sun_removed', data=d
   mms_energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
-    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-3d
+    200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]-4d
   assert, array_equal(d.V, mms_energies), 'Problem with energy table in omni-directional intensity variable (srvy, MMS4)'
   return, 1
 end
