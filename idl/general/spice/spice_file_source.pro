@@ -17,9 +17,9 @@
 ; Structure:
 ;  see FILE_RETRIEVE for a description of the elements
 ;
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-11-06 11:38:49 -0800 (Fri, 06 Nov 2015) $
-; $LastChangedRevision: 19285 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-01-28 13:02:17 -0800 (Sat, 28 Jan 2017) $
+; $LastChangedRevision: 22686 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spice/spice_file_source.pro $
 ;-
 
@@ -31,8 +31,8 @@ common spice_file_source_com,  psource
 if keyword_set(reset) then psource=0
 
 if not keyword_set(psource) then begin
-    psource = file_retrieve(/default_structure,remote_data_dir='http://naif.jpl.nasa.gov/pub/naif/')
-;    psource.remote_data_dir = 'http://naif.jpl.nasa.gov/pub/naif/'
+    psource = file_retrieve(/default_structure,remote_data_dir='https://naif.jpl.nasa.gov/pub/naif/')
+;    psource.remote_data_dir = 'https://naif.jpl.nasa.gov/pub/naif/'
     psource.local_data_dir  += 'misc/spice/naif/'
     if file_test(psource.local_data_dir+'.master',/regular) then psource.no_server =1    ; local directory IS the server directory
 ;    psource.archive_ext = '.arc'   ; archive old files instead of deleting them
