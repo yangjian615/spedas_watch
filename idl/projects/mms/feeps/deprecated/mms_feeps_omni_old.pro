@@ -25,11 +25,11 @@
 ; CREATED BY: I. Cohen, 2016-01-19
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-27 11:30:36 -0800 (Fri, 27 Jan 2017) $
-; $LastChangedRevision: 22684 $
+; $LastChangedDate: 2017-01-30 14:37:59 -0800 (Mon, 30 Jan 2017) $
+; $LastChangedRevision: 22690 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/deprecated/mms_feeps_omni_old.pro $
 ;-
-pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, $
+pro mms_feeps_omni_old, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, $
   data_units = data_units, data_rate = data_rate, level = level
   if undefined(level) then level = 'l2'
   if undefined(probe) then probe = '1' else probe = strcompress(string(probe))
