@@ -24,11 +24,12 @@
 ;
 ; NOTES:
 ;       New version, 1/26/17 - egrimes
+;       Newer version, 1/31/17 - dturner
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-27 11:33:23 -0800 (Fri, 27 Jan 2017) $
-; $LastChangedRevision: 22685 $
+; $LastChangedDate: 2017-01-31 14:30:50 -0800 (Tue, 31 Jan 2017) $
+; $LastChangedRevision: 22695 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 
@@ -46,6 +47,10 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   if (data_units eq 'cps') then data_units = 'count_rate'
   units_label = data_units eq 'intensity' ? '1/(cm!U2!N-sr-s-keV)' : 'Counts/s'
   
+  probe = strcompress(string(probe), /rem)
+
+  prefix = 'mms'+probe+'_epd_feeps_'
+
   ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
   if datatype eq 'electron' then sensors = ['3', '4', '5', '11', '12'] else sensors = ['6', '7', '8']
   
@@ -60,72 +65,83 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
       200.20000d, 234.00000d, 273.40000, 319.40000d, 373.20000d, 436.00000d, 509.20000d]
   endif else energies = [57.900000d, 76.800000d, 95.400000d, 114.10000d, 133.00000d, 153.70000d, 177.60000d, $
        205.10000d, 236.70000d, 273.20000d, 315.40000d, 363.80000d, 419.70000d, 484.20000d,  558.60000d]
-
-  en_bins = bin_edges(energies)
-  n_enbins = n_elements(en_bins)-1
-  en_label = energies
   
-  probe = strcompress(string(probe), /rem)
+  ; Added by DLT on 31 Jan 2017: set unique energy and gain correction factors per spacecraft
+  eEcorr = [14.0, -1.0, -3.0, -3.0]
+  iEcorr = [0.0, 0.0, 0.0, 0.0]
+  eGfact = [1.0, 1.0, 1.0, 1.0]
+  iGfact = [0.84, 1.0, 1.0, 1.0]
+  
+  ; Added by DLT on 31 Jan 2017: set unique energy bins per spacecraft     
+  ; Electrons:
+  if probe eq '1' && datatype eq 'electron' then energies = energies + eEcorr[0]
+  if probe eq '2' && datatype eq 'electron' then energies = energies + eEcorr[1]
+  if probe eq '3' && datatype eq 'electron' then energies = energies + eEcorr[2]
+  if probe eq '4' && datatype eq 'electron' then energies = energies + eEcorr[3]
+  ; Ions:
+  if probe eq '1' && datatype eq 'ion' then energies = energies + iEcorr[0]
+  if probe eq '2' && datatype eq 'ion' then energies = energies + iEcorr[1]
+  if probe eq '3' && datatype eq 'ion' then energies = energies + iEcorr[2]
+  if probe eq '4' && datatype eq 'ion' then energies = energies + iEcorr[3]
 
-  prefix = 'mms'+probe+'_epd_feeps_'
 
+  ;en_bins = bin_edges(energies) ; commented by DLT on 31 Jan 2017
+  n_enbins = n_elements(energies) ; n_elements(en_bins)-1 ; changed by DLT on 31 Jan 2017
+  en_label = energies
+  en_chk = 0.10  ; percent error around energy bin center to accept data for averaging; anything outside of energies[i] +/- en_chk*energies[i] will be changed to NAN and not averaged 
+  
   var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[0])+'_clean_sun_removed'+suffix, /rem)
   get_data, var_name, data = d, dlimits=dl
-
-  en_flux = dblarr(n_elements(d.x), n_enbins)
-  en_num_in_bin = fltarr(n_elements(d.X), n_enbins)
-  
   if is_struct(d) then begin
-    flux_omni = dblarr(n_elements(d.x), n_elements(sensors)*2., n_elements(d.v))
-    sensor_count = 0
-
-    for i=0, n_elements(sensors)-1. do begin ; loop through each top sensor
-      var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[i])+'_clean_sun_removed'+suffix, /rem)
-      get_data, var_name, data = d
-      for time_idx = 0, n_elements(d.x)-1 do begin
-        for en_bin_idx = 0, n_enbins-1 do begin
-          wherethisen = where(d.v ge en_bins[en_bin_idx] and d.v le en_bins[en_bin_idx+1], wherecount)
-          if wherecount ne 0 then begin
-            en_flux[time_idx, en_bin_idx] += total(d.Y[time_idx, wherethisen], 2, /nan, /double)
-            en_num_in_bin[time_idx, en_bin_idx] += 1
-          endif
-        endfor
+    flux_omni = dblarr(n_elements(d.x), n_elements(d.v))
+    if level ne 'sitl' then begin
+      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), 2*n_elements(sensors))
+      for isen = 0, 2*n_elements(sensors)-1, 2 do begin
+        ; Top units:
+        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[fix(isen/2)])+'_clean_sun_removed'+suffix, /rem)
+        get_data, var_name, data = d, dlimits=dl
+        dalleyes[*,*,isen] = reform(d.y)
+        iE = where(abs(energies - d.v) gt en_chk*energies) ; Check for energies beyond en_chk [%] of the corrected energy bin center and replace with NAN
+        if iE[0] ne -1 then dalleyes[*,iE,isen] = !values.d_nan
+        ; Bottom units:
+        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_bottom_'+data_units+'_sensorid_'+string(sensors[fix(isen/2)])+'_clean_sun_removed'+suffix, /rem)
+        get_data, var_name, data = d, dlimits=dl
+        dalleyes[*,*,isen+1] = reform(d.y)     
+        iE = where(abs(energies - d.v) gt en_chk*energies) ; Check for energies beyond en_chk [%] of the corrected energy bin center and replace with NAN
+        if iE[0] ne -1 then dalleyes[*,iE,isen] = !values.d_nan
       endfor
-      sensor_count += 1
-    endfor
-    if level ne 'sitl' then begin ; no bottom sensors for SITL data
-      for i=0, n_elements(sensors)-1. do begin ; loop through each bottom sensor
-        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_bottom_'+data_units+'_sensorid_'+string(sensors[i])+'_clean_sun_removed'+suffix, /rem)
-        get_data, var_name, data = d
-        for time_idx = 0, n_elements(d.x)-1 do begin
-          for en_bin_idx = 0, n_enbins-1 do begin
-            wherethisen = where(d.v ge en_bins[en_bin_idx] and d.v le en_bins[en_bin_idx+1], wherecount)
-            if wherecount ne 0 then begin
-              en_flux[time_idx, en_bin_idx] += total(d.Y[time_idx, wherethisen], 2, /nan, /double)
-              en_num_in_bin[time_idx, en_bin_idx] += 1
-            endif
-          endfor
-        endfor
-        sensor_count += 1
+    endif else begin
+      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), n_elements(sensors))
+      for isen = 0, n_elements(sensors)-1 do begin
+        ; Only Top units in SITL product:
+        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[fix(isen)])+'_clean_sun_removed'+suffix, /rem)
+        get_data, var_name, data = d, dlimits=dl
+        dalleyes[*,*,isen] = reform(d.y)
+        iE = where(abs(energies - d.v) gt en_chk*energies) ; Check for energies beyond en_chk [%] of the corrected energy bin center and replace with NAN
+        if iE[0] ne -1 then dalleyes[*,iE,isen] = !values.d_nan
       endfor
-    endif
+    endelse
   endif
   
-  en_flux_out = dblarr(n_elements(d.x),n_enbins)
+  dalleyes[where(dalleyes eq 0.0)] = !values.d_nan 
+  flux_omni = reform(average(dalleyes,3,/NAN))
 
-  for time_idx = 0, n_elements(en_flux[*, 0])-1 do begin
-    for bin_idx = 0, n_elements(en_flux[time_idx, *])-1 do begin
-      if en_num_in_bin[time_idx, bin_idx] ne 0.0 then begin
-        en_flux_out[time_idx, bin_idx] = en_flux[time_idx, bin_idx]/float(en_num_in_bin[time_idx, bin_idx])
-      endif else en_flux_out[time_idx, bin_idx] = !values.d_nan
-    endfor
-  endfor
+  ; Added by DLT on 31 Jan 2017: set unique gain factors per spacecraft
+  ; Electrons:
+  if probe eq '1' && datatype eq 'electron' then flux_omni = flux_omni*eGfact[0]
+  if probe eq '2' && datatype eq 'electron' then flux_omni = flux_omni*eGfact[1]
+  if probe eq '3' && datatype eq 'electron' then flux_omni = flux_omni*eGfact[2]
+  if probe eq '4' && datatype eq 'electron' then flux_omni = flux_omni*eGfact[3]
+  ; Ions:
+  if probe eq '1' && datatype eq 'ion' then flux_omni = flux_omni*iGfact[0]
+  if probe eq '2' && datatype eq 'ion' then flux_omni = flux_omni*iGfact[1]
+  if probe eq '3' && datatype eq 'ion' then flux_omni = flux_omni*iGfact[2]
+  if probe eq '4' && datatype eq 'ion' then flux_omni = flux_omni*iGfact[3]
 
+  
   newname = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+data_units+'_omni'+suffix, /rem)
 
-  str_element, /add, dl, 'num_sensors', sensor_count
-  
-  store_data, newname, data={x: d.x, y: en_flux_out, v: en_label}, dlimits=dl
+  store_data, newname, data={x: d.x, y: flux_omni, v: en_label}
   options, newname, spec=1, /ylog, /zlog;,  yrange = [47, 523], yticks=3, ystyle=1, zrange=[1., 1.e6];, no_interp=0, y_no_interp=0, x_no_interp=0
 
-end
+end ; pro

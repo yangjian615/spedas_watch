@@ -17,8 +17,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-23 08:02:23 -0800 (Mon, 23 Jan 2017) $
-;$LastChangedRevision: 22644 $
+;$LastChangedDate: 2017-01-31 17:46:13 -0800 (Tue, 31 Jan 2017) $
+;$LastChangedRevision: 22700 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad_spinavg.pro $
 ;-
 pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -36,7 +36,7 @@ pro mms_feeps_pad_spinavg, probe=probe, species = species, data_units = data_uni
   if (data_units eq 'cps') then data_units = 'count_rate'
   units_label = data_units eq 'intensity' ? '1/(cm!U2!N-sr-s-keV)' : 'Counts/s'
 
-  en_range_string = strcompress(string(energy[0]), /rem) + '-' + strcompress(string(energy[1]), /rem) + 'keV'
+  en_range_string = strcompress(string(fix(energy[0])), /rem) + '-' + strcompress(string(fix(energy[1])), /rem) + 'keV'
  ; units_label = data_units eq 'Counts' ? 'Counts': '[(cm!E2!N s sr KeV)!E-1!N]'
 
   prefix = 'mms'+probe+'_epd_feeps_'

@@ -21,8 +21,8 @@
 ; 
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-01-30 13:46:07 -0800 (Mon, 30 Jan 2017) $
-; $LastChangedRevision: 22688 $
+; $LastChangedDate: 2017-01-31 10:24:10 -0800 (Tue, 31 Jan 2017) $
+; $LastChangedRevision: 22693 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear  $
@@ -177,7 +177,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         tr= timerange(trange)
         ; Get the Weekly files;
         att_weekly_format = 'MAVEN/kernels/ck/mvn_sc_rel_yyMMDD_??????_v??.bc'  ; use this line to get all files in time range
-        att_weekly_kern = mvn_pfp_spd_download(att_weekly_format, source=source, trange=tr, daily_names=7, shift=4, /valid_only)
+        att_weekly_kern = mvn_pfp_spd_download(att_weekly_format, source=source, trange=tr, daily_names=7, shift=4, /valid_only, /last_version)
         n_weekly = n_elements(att_weekly_kern) * keyword_set(att_weekly_kern)
         if n_weekly ge 1 then begin
           str = strmid(att_weekly_kern[n_weekly-1],/reverse_offset,12,6)
@@ -185,7 +185,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         endif
         ; Get Daily files to finish off
         att_daily_format = 'MAVEN/kernels/ck/mvn_sc_red_yyMMDD_v??.bc'  ; use this line to get all files in time range
-        if tr[0] lt tr[1] then att_daily_kern = mvn_pfp_spd_download(att_daily_format, source=source, trange=tr, /valid_only, /daily_names)
+        if tr[0] lt tr[1] then att_daily_kern = mvn_pfp_spd_download(att_daily_format, source=source, trange=tr, /valid_only, /daily_names, /last_version)
         n_daily = n_elements(att_daily_kern) * keyword_set(att_daily_kern)
         if n_daily ge 1 then begin
           str = strmid(att_daily_kern[n_daily-1],/reverse_offset,12,6)
@@ -194,7 +194,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         ; Daily quick files for most recent stuff
         if ~keyword_set(reconstruct) && (tr[0] le tr[1]) then begin
           att_quick_format = 'MAVEN/kernels/ck/mvn_sc_rec_yyMMDD_??????_v??.bc'  ; use this line to get all files in time range
-          att_quick_kern = mvn_pfp_spd_download(att_quick_format, source=source, trange=tr, /daily_names)    ;SC Attitude ???
+          att_quick_kern = mvn_pfp_spd_download(att_quick_format, source=source, trange=tr, /daily_names, /last_version)    ;SC Attitude ???
         endif
 
         if keyword_set(att_quick_kern) then append_array, kernels, att_quick_kern
@@ -205,7 +205,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         tr= timerange(trange)
         ; Start with the Weekly files;
         app_weekly_format = 'MAVEN/kernels/ck/mvn_app_rel_yyMMDD_??????_v??.bc'  ; use this line to get all files in time range
-        app_weekly_kern = mvn_pfp_spd_download(app_weekly_format, source=source, trange=tr,daily_names=7,shift=4,/valid_only)
+        app_weekly_kern = mvn_pfp_spd_download(app_weekly_format, source=source, trange=tr,daily_names=7,shift=4,/valid_only,/last_version)
         n_weekly = n_elements(app_weekly_kern) * keyword_set(app_weekly_kern)
         if n_weekly ge 1 then begin
           str = strmid(app_weekly_kern[n_weekly-1],/reverse_offset,12,6)
@@ -213,7 +213,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         endif
         ; Get Daily files to finish off
         app_daily_format = 'MAVEN/kernels/ck/mvn_app_red_yyMMDD_v??.bc'  ; use this line to get all files in time range
-        if tr[0] lt tr[1] then app_daily_kern = mvn_pfp_spd_download(app_daily_format, source=source, trange=tr,/daily_names,/valid_only)
+        if tr[0] lt tr[1] then app_daily_kern = mvn_pfp_spd_download(app_daily_format, source=source, trange=tr,/daily_names,/valid_only,/last_version)
         n_daily = n_elements(app_daily_kern) * keyword_set(app_daily_kern)
         if n_daily ge 1 then begin
           str = strmid(app_daily_kern[n_daily-1],/reverse_offset,12,6)
@@ -222,10 +222,12 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         ; Daily quick files for most recent stuff
         if ~keyword_set(reconstruct) && (tr[0] le tr[1]) then begin
           app_quick_format = 'MAVEN/kernels/ck/mvn_app_rec_yyMMDD_??????_v??.bc'  ; use this line to get all files in time range
-          app_quick_kern = mvn_pfp_spd_download(app_quick_format, source=source, trange=tr+[-2,0]*86400L,/daily_names,/valid_only)    ;SC Attitude ???
+          app_quick_kern = mvn_pfp_spd_download(app_quick_format, source=source, trange=tr+[-2,0]*86400L,/daily_names,/valid_only,/last_version)    ;SC Attitude ???
         endif
-
-        if tr[1] lt time_double('14-10-9') then append_array,kernels, spd_download('MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc',_extra=source)
+        if tr[1] lt time_double('14-10-9') then append_array,kernels, $
+           spd_download(remote_file = source.remote_data_dir+'MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc', $
+                        local_path = source.local_data_dir+'MAVEN/misc/app/', no_update = 0, $
+                        file_mode = '666'o, dir_mode = '777'o)
         if keyword_set(app_quick_kern) then append_array,kernels, app_quick_kern
         if keyword_set(app_daily_kern) then append_array,kernels, app_daily_kern
         if keyword_set(app_weekly_kern) then append_array,kernels, app_weekly_kern

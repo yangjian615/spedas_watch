@@ -54,13 +54,14 @@
 ;Bot8: Gcorr = 0.9
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-24 14:16:45 -0800 (Tue, 24 Jan 2017) $
-; $LastChangedRevision: 22655 $
+; $LastChangedDate: 2017-01-31 14:48:06 -0800 (Tue, 31 Jan 2017) $
+; $LastChangedRevision: 22697 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_flat_field_corrections.pro $
 ;-
 
 
-pro mms_feeps_flat_field_corrections, data_rate = data_rate, suffix = suffix
+pro mms_feeps_flat_field_corrections, probes = probes, data_rate = data_rate, suffix = suffix
+  if undefined(probes) then probes = ['1', '2', '3', '4'] else probes = strcompress(string(probes), /rem)
   if undefined(data_rate) then data_rate = 'brst'
   if undefined(suffix) then suffix = ''
 
@@ -96,7 +97,6 @@ pro mms_feeps_flat_field_corrections, data_rate = data_rate, suffix = suffix
   G_corr['mms4-bot8'] = 0.9
   G_corr['mms4-bot9'] = 1.5 ; added 1/24
   
-  probes = ['1', '2', '3', '4']
   ;sensor_ids = ['6', '7', '8']
   sensor_ids = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
   sensor_types = ['top', 'bottom']

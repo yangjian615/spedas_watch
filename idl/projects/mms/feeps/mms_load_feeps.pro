@@ -84,8 +84,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-27 11:30:36 -0800 (Fri, 27 Jan 2017) $
-;$LastChangedRevision: 22684 $
+;$LastChangedDate: 2017-01-31 14:48:06 -0800 (Tue, 31 Jan 2017) $
+;$LastChangedRevision: 22697 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -128,10 +128,10 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     if level_in eq 'l1a' then return ; avoid the following for L1a data
 
     ; correct energy tables based on probe, sensor head and sensor ID
-    mms_feeps_correct_energies, data_rate = data_rate_in, level = level_in, suffix = suffix
+    mms_feeps_correct_energies, probes=probes_in, data_rate = data_rate_in, level = level_in, suffix = suffix
     
     ; apply flat field corrections for ions
-    if undefined(no_flatfield_corrections) then mms_feeps_flat_field_corrections, data_rate = data_rate_in, suffix = suffix
+    if undefined(no_flatfield_corrections) then mms_feeps_flat_field_corrections, probes = probes_in, data_rate = data_rate_in, suffix = suffix
     
     ; remove bad eyes, bad energy channels
     mms_feeps_remove_bad_data, suffix = suffix
@@ -152,7 +152,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     
           ; calculate the omni-directional spectra
           mms_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units[data_units_idx], $
-              data_rate = data_rate_in, suffix=suffix, level = level_in
+            data_rate = data_rate_in, suffix=suffix, level = level_in
     
           ; calculate the spin averages
           mms_feeps_spin_avg, probe=this_probe, datatype=this_datatype, suffix = suffix, data_units = data_units[data_units_idx], $

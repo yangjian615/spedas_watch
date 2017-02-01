@@ -11,16 +11,16 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-24 11:35:51 -0800 (Tue, 24 Jan 2017) $
-; $LastChangedRevision: 22654 $
+; $LastChangedDate: 2017-01-31 14:44:52 -0800 (Tue, 31 Jan 2017) $
+; $LastChangedRevision: 22696 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_correct_energies.pro $
 ;-
 
-pro mms_feeps_correct_energies, data_rate = data_rate, level = level, suffix = suffix
+pro mms_feeps_correct_energies, probes = probes, data_rate = data_rate, level = level, suffix = suffix
     if undefined(suffix) then suffix = ''
     if undefined(level) then level = 'l2'
+    if undefined(probes) then probes =  ['1', '2', '3', '4'] else probes = strcompress(string(probes), /rem)
     
-    probes = ['1', '2', '3', '4']
     types = ['top', 'bottom']
     sensors = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
     units_types = ['intensity', 'count_rate', 'counts']

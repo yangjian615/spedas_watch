@@ -33,8 +33,8 @@
 ;   YY,  MM, DD, hh, mm, ss, .f  since these can be retranslated to
 ;   the time
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-01-30 13:44:20 -0800 (Mon, 30 Jan 2017) $
-; $LastChangedRevision: 22687 $
+; $LastChangedDate: 2017-01-31 10:51:43 -0800 (Tue, 31 Jan 2017) $
+; $LastChangedRevision: 22694 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_pfp_spd_download.pro $
 ;-
 function mvn_pfp_spd_download,pathname,trange=trange,verbose=verbose, source=src,files=files, $
@@ -105,9 +105,19 @@ if ~keyword_set(RT) then begin
       file_mkdir2,file_dirname( files ),_extra=source
       return,files
     endif
-    files = spd_download(remote_file = source.remote_data_dir+pathnames, $
-                         local_path = source.local_data_dir+file_dirname(pathnames, /mark_directory), $
-                         file_mode = '666'o, dir_mode = '777'o)
+    nfiles = n_elements(pathnames)
+    fc = 0
+    for j = 0, nfiles-1 do begin
+       filesj = spd_download(remote_file = source.remote_data_dir+pathnames[j], $
+                             local_path = source.local_data_dir+file_dirname(pathnames[j], /mark_directory), $
+                             last_version = last_version, no_update = no_update, valid_only = valid_only, $
+                             file_mode = '666'o, dir_mode = '777'o)
+       if is_string(filesj) then begin
+          if fc eq 0 then files = filesj else files = [files, filesj]
+          fc = fc+1
+       endif
+    endfor
+    if fc eq 0 then files = ''
     dprint,dlevel=3,verbose=verbose,systime(1)-tstart,' seconds to retrieve ',n_elements(files),' files'
   endif
   return,files
