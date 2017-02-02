@@ -455,6 +455,8 @@ end
 pro ksem_ccsds_pkt_handler,buffer,ptp_header=ptp_header
 
   ccsds=ksem_ccsds_decom(buffer)
+  
+  ;hexprint,buffer
 
   if ~keyword_set(ccsds) then begin
     dprint,dlevel=2,'Invalid CCSDS packet'
@@ -637,8 +639,8 @@ pro ksem_recorders
   ;host = '128.32.98.101'  ;  room 160 Silver
   ;host = '163.180.171.55'  ; 
   ;host = '128.32.13.37'   ;  room 133 addition
-  ;recorder,title='KSEM @ SSL-160',port=4040,host='128.32.98.101' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
-  recorder,title='KSEM @ KHU',port=4040,host='163.180.171.55' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  recorder,title='KSEM @ SSL-160',port=4040,host='128.32.98.101' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
+  ;recorder,title='KSEM @ KHU',port=4040,host='163.180.171.55' ,exec_proc='ksem_msg_stream_read',destination='ksem_YYYYMMDD_hhmmss_{HOST}.{PORT}.dat';,/set_proc,/set_connect,get_filename=filename
 end
 
 

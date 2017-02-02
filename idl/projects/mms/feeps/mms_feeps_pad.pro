@@ -1,6 +1,6 @@
 ;+
 ; PROCEDURE:
-;         mms_feeps_pad_beta
+;         mms_feeps_pad
 ;
 ; PURPOSE:
 ;         Calculate pitch angle distributions using data from the
@@ -38,7 +38,7 @@
 ;$URL: 
 ;-
 
-pro mms_feeps_pad_beta, bin_size = bin_size, probe = probe, energy = energy, level = level, $
+pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = level, $
   suffix = suffix_in, datatype = datatype, data_units = data_units, data_rate = data_rate, $
   num_smooth = num_smooth
 
@@ -66,10 +66,16 @@ pro mms_feeps_pad_beta, bin_size = bin_size, probe = probe, energy = energy, lev
   pa_bins = 180.*indgen(n_pabins+1)/n_pabins
   pa_label = 180.*indgen(n_pabins)/n_pabins+bin_size/2.
 
+  
   ; get the pitch angles
   ; tdeflag, prefix+'_epd_feeps_pitch_angle'+suffix_in, 'linear', /overwrite
   ; v5.5+ = mms1_epd_feeps_srvy_l2_electron_pitch_angle
-  get_data, prefix+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix_in, data=pa_data, dlimits=pa_dlimits
+ ; get_data, prefix+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix_in, data=pa_data, dlimits=pa_dlimits
+
+  ; temporary solution to issue with NaNs in the _pitch_angle variable
+  ; calculate the pitch angles from the magnetic field data
+  mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=data_rate, datatype=datatype, suffix=suffix_in
+  get_data, prefix+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pa'+suffix_in, data=pa_data, dlimits=pa_dlimits
 
   if ~is_struct(pa_data) then begin
     dprint, dlevel = 0, 'Error, couldn''t find the PA variable: ' + prefix+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix_in

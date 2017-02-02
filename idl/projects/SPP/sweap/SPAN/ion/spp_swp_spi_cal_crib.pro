@@ -1,3 +1,61 @@
+PRO spp_swp_spi_parameters, vals
+
+   ;; DAC to Voltage (DVM from HV Calibration Test)
+
+   ;; Hemisphere 
+   hemi_dacs = ['0000'x,'0040'x,'0080'x,'00C0'x,'0100'x,$
+                '0280'x,'0500'x,'0800'x,'0C00'x,'1000'x]
+   hemi_volt = [0.006,-3.903,-7.8,-11.7,-15.61,$
+                -39.04,-78.1,-125,-187.5,-250]
+
+   ;; Deflector 1
+   def1_dacs = ['0000'x,'0080'x,'0100'x,'0180'x,'0300'x,$
+                '0700'x,'0D00'x,'1300'x,'1C80'x,'2600'x]
+
+   def1_volt = [0.0016,-3.15,-6.31,-9.48,-18.98,-44.3,$
+                -82.3,-120.3,-180.5,-240.6]
+
+   ;; Deflector 2
+   def2_dacs = ['0000'x,'0080'x,'0100'x,'0180'x,'0300'x,$
+                '0700'x,'0D00'x,'1300'x,'1C80'x,'2600'x]
+
+   def2_volt = [0.0016,-3.15,-6.31,-9.48,-18.98,-44.3,$
+                -82.3,-120.3,-180.5,-240.6]
+
+   ;; Spoiler 
+   splr_dacs = ['0000'x,'0100'x,'0200'x,'0400'x,'1000'x,'4000'x]
+   splr_volt = [0.0003,-0.31,-0.62,-1.243,-4.974,-19.9]
+
+
+   hemi_fitt = linfit(hemi_dacs,hemi_volt)
+   def1_fitt = linfit(def1_dacs,def1_volt)
+   def2_fitt = linfit(def2_dacs,def2_volt)
+   splr_fitt = linfit(splr_dacs,splr_volt)
+
+
+   vals = {$
+
+          hemi_dacs:hemi_dacs,$
+          def1_dacs:def1_dacs,$
+          def2_dacs:def2_dacs,$
+          splr_dacs:splr_dacs,$
+          
+          hemi_volt:hemi_volt,$
+          def1_volt:def1_volt,$
+          def2_volt:def2_volt,$
+          splr_volt:splr_volt,$
+
+          hemi_fitt:hemi_fitt,$
+          def1_fitt:def1_fitt,$
+          def2_fitt:def2_fitt,$
+          splr_fitt:splr_fitt $
+          
+          }
+   
+
+END
+
+
 
 pro spp_swp_spi_cal_DEF_YAW_scan,trange=trange
 
@@ -45,6 +103,9 @@ pro spp_swp_spi_cal_DEF_YAW_scan,trange=trange
    makepng,'spani_cnts_vs_yaw',time=trange[0]
    
 end
+
+
+
 
 pro spp_swp_spi_cal_YAW_DEF_scan,trange=trange
 
@@ -546,26 +607,17 @@ END
 
 
 
+
+
+
 PRO spp_swp_spi_k_sweep, trange=trange
 
 
-   ;; Get Hemisphere DAC values from
-   ;; standard science table
-   spp_swp_sweepv_dacv, $
-    sweepv_dac,defv1_dac,defv2_dac,spv_dac
+   ;; Get Sweep DACs
+   spp_swp_spi_tables, tables,config='01'x
 
-   FOR i = 0,255 DO BEGIN
-      spp_swp_sweepv_new_tslut,$
-       sweepv, defv1, defv2, spv, fsindex, $
-       tsindex, nen = nen/4, edpeak = i, $
-       plot = plot, spfac = spfac
-      if i eq 0 then index = tsindex $
-      else index = [index,tsindex]
-   ENDFOR
-
-
-   
-   stop
+   ;; Get SPAN-Ai HV DAC to Volts
+   spp_swp_spi_parameters, vals 
 
    ;; Setup
    loadct2, 34
@@ -577,29 +629,45 @@ PRO spp_swp_spi_k_sweep, trange=trange
 
    ;; --- Get data
    rates  = (spp_apdat('3bb'x)).array
-   manips = (spp_apdat('7c3'x)).array
+   ;manips = (spp_apdat('7c3'x)).array
    hkps   = (spp_apdat('3be'x)).array
-   mons   = (spp_apdat('753'x)).array
+   mons   = (spp_apdat('761'x)).array
+   f_p0m0 = (spp_apdat('398'x)).array
+   t_p0m0 = (spp_apdat('3a4'x)).array
 
    ;; --- Find time interval
    htime   = hkps.time
    rtime   = rates.time
    mtime   = mons.time
+   ftime   = f_p0m0.time
+   ttime   = t_p0m0.time
+
    rtt = where(rtime GE trange[0] AND $
                rtime LE trange[1],rcc)
    htt = where(htime GE trange[0] AND $
                htime LE trange[1],hcc)
    mtt = where(mtime GE trange[0] AND $
                mtime LE trange[1],mcc)
+   ftt = where(ftime GE trange[0] AND $
+               ftime LE trange[1],fcc)
+   ttt = where(ttime GE trange[0] AND $
+               ttime LE trange[1],tcc)
+
+
    IF rcc EQ 0  OR hcc EQ 0 OR mcc EQ 0 THEN $
     stop, 'Error: Time interval not loaded.'
-   rates = temporary(rates[rtt])
-   rtime = temporary(rtime[rtt])
-   hkps  = temporary(hkps[htt])
-   htime = temporary(htime[htt])
-   mons  = temporary(mons[mtt])
-   mtime = temporary(mtime[mtt])
 
+   rates  = temporary(rates[rtt])
+   rtime  = temporary(rtime[rtt])
+   hkps   = temporary(hkps[htt])
+   htime  = temporary(htime[htt])
+   mons   = temporary(mons[mtt])
+   mtime  = temporary(mtime[mtt])
+   f_p0m0 = temporary(f_p0m0[ftt])
+   t_p0m0 = temporary(t_p0m0[ttt])
+   ftime  = temporary(ftime[ftt])
+   ttime  = temporary(ttime[ttt])
+   
    ;; --- Plot
    ;popen, '~/Desktop/ch10_thresh_scan',/landscape
    ;plot, [0,1],[0,1],$
@@ -608,13 +676,163 @@ PRO spp_swp_spi_k_sweep, trange=trange
    ;      Title='Channel 10 Threshold Scan',/nodata,thick=2
 
    ;; --- Define variables and interpolate to rates
-   addr_hi = hkps.MRAM_ADDR_HI  AND '1F'x
-   addr_lo = hkps.MRAM_ADDR_LOW AND 'FFFF'x
-   anode   = round(interp(addr_hi,htime,rtime))
-   thresh  = round(interp(addr_lo,htime,rtime)) AND '1FF'x
-   mcp_dac = round(interp(reform(hkps.DACS[0,*]),htime,rtime))
+   addr_hi   = hkps.MRAM_ADDR_HI  AND '1F'x
+   igun_volt = mons.volts
+   anode     = round(interp(addr_hi,htime,rtime))
+   igun      = round(interp(igun_volt,mtime,rtime))
+   ;mcp_dac = round(interp(reform(hkps.DACS[0,*]),htime,rtime))
+   nrgs = intarr(32,rcc)
+   FOR i=0,31 DO nrgs[i,*] = interpol(f_p0m0.NRG_SPEC[i],ftime,rtime)
 
 
+   ;; Cycle through all 16 anodes
+   center = fltarr(16,32)
+   FOR i=0, 15 DO BEGIN
+      
+      pp = where(anode EQ i,cc)
+      str = rates[pp].STARTS_CNTS[i]
+      stp = rates[pp].STOPS_CNTS[i]
+      val = rates[pp].VALID_CNTS[i]
+      volts = igun[pp]
+      nrg  = nrgs[*,pp]
+
+      IF cc GT 100 THEN BEGIN
+         maxx = max(nrg,loc,dim=1)
+         locc = array_indices(nrg,loc)
+         FOR j=0, 31 DO BEGIN
+            ;; Only Energy bins with max counts
+            pp=where(locc[0,*] EQ j)
+            nrg2 = nrg[locc[0,pp],locc[1,pp]]
+            IF max(nrg2) GT 10 THEN BEGIN
+               ;plot, volts[pp],nrg2,title=string(total(nrg2))+' '+ string(j)+' '+string(i)
+               tmp = gaussfit(volts[pp],nrg2,a1,nterms=3)
+               center[i,j] = a1[1]
+               ;oplot, volts[pp], tmp, color=50
+            ENDIF
+         ENDFOR
+      ENDIF
+   ENDFOR
+   plot, indgen(32), reform(center[0,*]), psym=-1
+   FOR i=1., 15 DO oplot, indgen(32),reform(center[i,*]),color=i/16*250.,psym=-1
+   tmp = reform((transpose(reform(tables.sweepv_dac[tables.fsindex[indgen(256)*4]],8,32)))[*,0])
+   ;; DAC to Hemisphere Volts
+   hemi_voltage = vals.hemi_fitt[0]+vals.hemi_fitt[1]*tmp
+   ;; Go through anode by anode and find k factor
+   kval = fltarr(16)
+   FOR i=0, 15 DO BEGIN
+      cntr = reform(center[i,*])
+      pp = where(cntr GT 0,cc)
+      IF cc LT 3 THEN stop
+      cntr1 = cntr[pp]
+      hv = hemi_voltage[pp]
+      tmp = total(sqrt((ABS(hv)*14-cntr1)^2))
+      FOR j=15., 20., 0.001 DO BEGIN
+         
+         tmp2 = total(sqrt((ABS(hv)*j-cntr1)^2))
+         IF tmp2 gt tmp THEN BEGIN
+            kval[i] = j         
+            plot, cntr1
+            oplot, abs(hv)*j,color=50
+            BREAK
+         ENDIF
+         tmp = tmp2
+      ENDFOR
+      kval[i] = j
+      print, 'KVAL', j
+   ENDFOR
+   stop
+END
+
+
+
+
+
+
+PRO spp_swp_spi_plot_tof, trange=trange, $
+                          anode=anode,   $
+                          normalized=normalized
+
+
+   ;; Setup
+   loadct2, 34
+
+   ;; --- Check keyword
+   IF ~keyword_set(trange) THEN BEGIN
+      print, 'Error: Need trange.'
+      ctime, trange
+   ENDIF
+
+   
+   IF ~keyword_set(anode) THEN $
+    anode = indgen(16)
+   nn_anode = n_elements(anode)
+
+   ;; --- Get data
+   events  = (spp_apdat('3b9'x)).array
+   ;rates  = (spp_apdat('3bb'x)).array
+   ;manips = (spp_apdat('7c3'x)).array
+   ;hkps   = (spp_apdat('3be'x)).array
+   ;mons   = (spp_apdat('761'x)).array
+   ;f_p0m0 = (spp_apdat('398'x)).array
+   ;t_p0m0 = (spp_apdat('3a4'x)).array
+
+
+   ;; --- Find time interval
+   etime   = events.time
+   ;htime   = hkps.time
+   ;rtime   = rates.time
+   ;mtime   = mons.time
+   ;ftime   = f_p0m0.time
+   ;ttime   = t_p0m0.time
+
+   e_good = where(events.time GE trange[0] AND $
+                  events.time LE trange[1],e_cc)
+
+   ;rtt = where(rtime GE trange[0] AND $
+   ;            rtime LE trange[1],rcc)
+   ;htt = where(htime GE trange[0] AND $
+   ;            htime LE trange[1],hcc)
+   ;mtt = where(mtime GE trange[0] AND $
+   ;            mtime LE trange[1],mcc)
+   ;ftt = where(ftime GE trange[0] AND $
+   ;            ftime LE trange[1],fcc)
+   ;ttt = where(ttime GE trange[0] AND $
+   ;            ttime LE trange[1],tcc)
+   
+   ;; Histograms
+   hh = fltarr(nn_anode,2048)
+   FOR i=0, nn_anode-1 DO BEGIN
+      hh[i,*] = histogram(events[e_good].tof,min=0,max=2047,binsize=1)
+      IF keyword_set(normalized) THEN hh[i,*] = hh[i,*]/max(hh[i,*])
+   ENDFOR
+
+   ;; Plot
+   title = time_string(trange[0])+' '+$
+           time_string(trange[1])
+   title = title+' Anodes: '
+   FOR i=0, nn_anode-1 DO $
+    title = title + ' ' + string(anode[i], format='(I2)') 
+   IF keyword_set(normzlied) THEN BEGIN
+      ytitle = 'Normalized Counts'
+      yrange = [1e-4,1]
+   ENDIF ELSE BEGIN 
+      ytitle = 'Counts per 1/4 NYS'
+      yrange = [1,max(hh)*1.1]
+   ENDELSE
+   
+   xx = indgen(2048)*0.101725
+   xtitle = 'ns'
+   xrange = [5,max(xx)]
+   xlog = 1
+   ylog = 1
+
+   plot, [1,1],[1,1],/nodata,$
+         ystyle=1,ytitle=ytitle,yrange=yrange,ylog=ylog,$
+         xstyle=1,xtitle=xtitle,xrange=xrange,xlog=xlog,$
+         title = title
+   
+   FOR i=0, nn_anode-1 DO $
+    oplot, xx, hh[i,*], color=i/16.*250. 
 
 END
 
@@ -622,7 +840,10 @@ END
 
 
 
-pro spp_swp_spi_times
+
+
+
+PRO spp_swp_spi_times
 
    message,'not to be run!'
 
@@ -834,19 +1055,27 @@ pro spp_swp_spi_times
    trange = ['2017-01-20/06:32:00','2017-01-20/11:15:00']
 
    ;; K Sweep
-   trange = ['2017-01-23/05:30:30','2017-01-23/12:36:30']
+   ;trange = ['2017-01-23/05:30:30','2017-01-23/12:36:30']
    trange = ['2017-01-23/04:30:30','2017-01-23/12:36:30']
    trange = time_double(trange)
    files = spp_file_retrieve(/cal,/spani,trange=trange)
    spp_ptp_file_read, files
 
    ;; Deflector Scan
-   trange = ['2017-01-24/07:25:00']
+   trange = ['2017-01-24/07:25:00','2017-01-24/19:00:00']
    trange = time_double(trange)
    files = spp_file_retrieve(/cal,/spani,trange=trange)
    spp_ptp_file_read, files
 
 
+   ;; Energy-Yaw Scan
+   
+
+   ;; Spoiler-Yaw Scan
+   
+   
+
+   
 
 
    ;; Load Selected Time Range

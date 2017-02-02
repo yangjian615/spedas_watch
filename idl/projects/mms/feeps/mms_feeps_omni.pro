@@ -28,8 +28,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-31 14:30:50 -0800 (Tue, 31 Jan 2017) $
-; $LastChangedRevision: 22695 $
+; $LastChangedDate: 2017-02-01 17:04:47 -0800 (Wed, 01 Feb 2017) $
+; $LastChangedRevision: 22710 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 
@@ -141,7 +141,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   
   newname = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+data_units+'_omni'+suffix, /rem)
 
-  store_data, newname, data={x: d.x, y: flux_omni, v: en_label}
+  store_data, newname, data={x: d.x, y: flux_omni, v: en_label}, dlimits=dl
   options, newname, spec=1, /ylog, /zlog;,  yrange = [47, 523], yticks=3, ystyle=1, zrange=[1., 1.e6];, no_interp=0, y_no_interp=0, x_no_interp=0
 
 end ; pro

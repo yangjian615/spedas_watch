@@ -33,12 +33,12 @@
 ;                       Updated to use all telescopes for burst mode data
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-31 17:51:00 -0800 (Tue, 31 Jan 2017) $
-;$LastChangedRevision: 22701 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/deprecated/mms_feeps_pad.pro $
+;$LastChangedDate: 2017-02-01 15:14:47 -0800 (Wed, 01 Feb 2017) $
+;$LastChangedRevision: 22708 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/deprecated/mms_feeps_pad_old.pro $
 ;-
 
-pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = level, $
+pro mms_feeps_pad_old, bin_size = bin_size, probe = probe, energy = energy, level = level, $
     suffix = suffix_in, datatype = datatype, data_units = data_units, data_rate = data_rate, $
     num_smooth = num_smooth
     
