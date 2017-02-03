@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-02 09:35:17 -0700 (Tue, 02 Aug 2016) $
-; $LastChangedRevision: 21589 $
+; $LastChangedDate: 2017-02-01 20:04:59 -0800 (Wed, 01 Feb 2017) $
+; $LastChangedRevision: 22716 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -45,8 +45,8 @@ endif
 mms_load_feeps, probe=probe, data_rate=data_rate, datatype='electron', suffix='_electrons', data_units = type, varformat='*spinsectnum* *top* *bottom* *pitch_angle*', level='l1b'
 mms_load_feeps, probe=probe, data_rate=data_rate, datatype='ion', suffix='_ions', data_units = type, varformat='*spinsectnum* *top* *bottom* *pitch_angle*', level='l1b'
 
-mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[70, 71], data_units = type, level='l1b'
-mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[200, 201], data_units = type, level='l1b'
+mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[84, 85], data_units = type, level='l1b'
+mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[214, 215], data_units = type, level='l1b'
 mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[76, 77], data_units = type, level='l1b'
 mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[205, 206], data_units = type, level='l1b'
 
@@ -91,8 +91,8 @@ spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
 
 panels = 'mms'+probe+['_dfg_srvy_dmpa_clipped', $
   '_epd_feeps_srvy_l1b_electron_'+type+'_omni_spin_electrons', $
-  '_epd_feeps_srvy_l1b_electron_'+type+'_70-71keV_pad_spin_electrons', $
-  '_epd_feeps_srvy_l1b_electron_'+type+'_200-201keV_pad_spin_electrons', $
+  '_epd_feeps_srvy_l1b_electron_'+type+'_84-85keV_pad_spin_electrons', $
+  '_epd_feeps_srvy_l1b_electron_'+type+'_214-215keV_pad_spin_electrons', $
   '_epd_feeps_srvy_l1b_ion_'+type+'_omni_spin_ions', $
   '_epd_feeps_srvy_l1b_ion_'+type+'_76-77keV_pad_spin_ions', $
   '_epd_feeps_srvy_l1b_ion_'+type+'_205-206keV_pad_spin_ions']

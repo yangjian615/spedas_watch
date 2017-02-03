@@ -14,8 +14,8 @@
 ;	LOAD: if set, load (and unload) the spice kernels
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-11-25 12:07:32 -0800 (Tue, 25 Nov 2014) $
-; $LastChangedRevision: 16301 $
+; $LastChangedDate: 2017-02-01 18:41:41 -0800 (Wed, 01 Feb 2017) $
+; $LastChangedRevision: 22714 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_inst2mso.pro $
 ;
 ;-
@@ -70,9 +70,9 @@ for i = 0,nt-1 do begin
 	npmatrix = cmati # pmatrix # transpose(cmati)
 
 
-	ntemp[i,0] = npmatrix[0,0]/dens.y(i)
-	ntemp[i,1] = npmatrix[1,1]/dens.y(i)
-	ntemp[i,2] = npmatrix[2,2]/dens.y(i)
+	ntemp[i,0] = npmatrix[0,0]/dens.y[i]
+	ntemp[i,1] = npmatrix[1,1]/dens.y[i]
+	ntemp[i,2] = npmatrix[2,2]/dens.y[i]
 endfor
 
 store_data,'mvn_swim_temperature_mso',data = {x:pr.x,y:ntemp}

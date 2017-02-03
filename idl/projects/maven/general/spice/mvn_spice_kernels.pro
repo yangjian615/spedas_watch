@@ -21,8 +21,8 @@
 ; 
 ;Author: Davin Larson  - January 2014
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-01-31 10:24:10 -0800 (Tue, 31 Jan 2017) $
-; $LastChangedRevision: 22693 $
+; $LastChangedDate: 2017-02-02 15:24:48 -0800 (Thu, 02 Feb 2017) $
+; $LastChangedRevision: 22721 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear  $
@@ -54,19 +54,19 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         'STD':    begin
            append_array, kernels, spice_standard_kernels(source=source,/mars,no_update=no_update) ;  "Standard" kernels
         end
-        ;swapped out file_retrieve calls for spd_download for https access, 2017-01-30, jmm
-        'CSS': append_array,kernels, spd_download(remote_file = source.remote_data_dir+'generic_kernels/spk/comets/siding_spring_v?.bsp', $
+        ;swapped out file_retrieve calls for spd_download_plus for https access, 2017-01-30, jmm
+        'CSS': append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/spk/comets/siding_spring_v?.bsp', $
                                                   local_path = source.local_data_dir+'generic_kernels/spk/comets/', no_update = no_update, $
                                                   last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-        'LSK': append_array,kernels, spd_download(remote_file = source.remote_data_dir+'generic_kernels/lsk/naif00??.tls', $
+        'LSK': append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/lsk/naif00??.tls', $
                                                   local_path = source.local_data_dir+'generic_kernels/lsk/', no_update = no_update, $
                                                   last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-        'SCK': append_array,kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/sclk/MVN_SCLKSCET.00???.tsc', $
+        'SCK': append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/sclk/MVN_SCLKSCET.00???.tsc', $
                                                   local_path = source.local_data_dir+'MAVEN/kernels/sclk/', no_update = no_update, $
                                                   last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
         'FRM':    begin         ; Frame kernels
            if 0 then begin
-              append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/fk/maven_v??.tf', $
+              append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/fk/maven_v??.tf', $
                                                   local_path = source.local_data_dir+'MAVEN/kernels/fk/', no_update = no_update, $
                                                   last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
            endif else begin
@@ -76,34 +76,34 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         end
         'IK':  begin          ; Instrument Kernels
         if 0 then begin
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_ant_v??.ti', $
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_ant_v??.ti', $
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_euv_v??.ti',$
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_euv_v??.ti',$
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_iuvs_v??.ti',$
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_iuvs_v??.ti',$
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_lpw_v??.ti',$
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_lpw_v??.ti',$
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_mag_v??.ti',$
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_mag_v??.ti',$
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_ngims_v??.ti',$
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_ngims_v??.ti',$
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_sep_v??.ti',$
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_sep_v??.ti',$
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_static_v??.ti',$
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_static_v??.ti',$
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_swea_v??.ti',$
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_swea_v??.ti',$
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
-          append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_swia_v??.ti', $
+          append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ik/maven_swia_v??.ti', $
                                               local_path = source.local_data_dir+'MAVEN/kernels/ik/', no_update = no_update, $
                                               last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
         endif else begin
@@ -122,7 +122,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
       'SPK':  begin     ; Spacecraft position
          tr= timerange(trange)  ; + [-1,1] * 3600d*24
          if (tr[1] gt time_double('2013-11-18')) && (tr[0] le time_double('2014-09-23')) then begin
-            append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/trj_c_131118-140923_rec_v?.bsp', $
+            append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/trj_c_131118-140923_rec_v?.bsp', $
                                                 local_path = source.local_data_dir+'MAVEN/kernels/spk/', no_update = no_update, $
                                                 last_version = last_version, file_mode = '666'o, dir_mode = '777'o)
          endif
@@ -135,7 +135,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
          ffiles = 'MAVEN/kernels/spk/maven_orb_rec_'+fstring[0:nftimes-2]+'_'+fstring[1:*]+'_v?.bsp'
          for j = 0, nftimes-2 do begin
             if(tr[1] gt ftimes[j] && tr[0] le ftimes[j+1]) then begin 
-               tmp_file = spd_download(remote_file = source.remote_data_dir+ffiles[j], $
+               tmp_file = spd_download_plus(remote_file = source.remote_data_dir+ffiles[j], $
                                        local_path = source.local_data_dir+'MAVEN/kernels/spk/', no_update = no_update, $
                                        file_mode = '666'o, dir_mode = '777'o)
 ;There's a time lag (40 days or so) between the end time of a
@@ -143,14 +143,14 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
 ;doesn't exist and j = nftimes-2, then replace it with the most recent file
                if(~keyword_set(tmp_file) && (j Eq nftimes-2)) then begin
                   if keyword_set(reconstruct) then begin
-                     tmp_file = spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb_rec.bsp', $
+                     tmp_file = spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb_rec.bsp', $
                                              local_path = source.local_data_dir+'MAVEN/kernels/spk/', no_update = 0, $
                                              file_mode = '666'o, dir_mode = '777'o)
                   endif else begin
-                     tmp_file = [spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb.bsp', $
+                     tmp_file = [spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb.bsp', $
                                               local_path = source.local_data_dir+'MAVEN/kernels/spk/', no_update = 0, $
                                               file_mode = '666'o, dir_mode = '777'o), $
-                                 spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb_rec.bsp', $
+                                 spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb_rec.bsp', $
                                               local_path = source.local_data_dir+'MAVEN/kernels/spk/', no_update = 0, $
                                               file_mode = '666'o, dir_mode = '777'o)]
                   endelse
@@ -160,14 +160,14 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
          endfor
          if (tr[1] gt ftimes[nftimes-1] && tr[0] le time_double('2035-07-01')) then begin
             if keyword_set(reconstruct) then begin
-               append_array,kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb_rec.bsp', $
+               append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb_rec.bsp', $
                                                   local_path = source.local_data_dir+'MAVEN/kernels/spk/', no_update = 0, $
                                                   file_mode = '666'o, dir_mode = '777'o)
             endif else begin
-               append_array,kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb.bsp',$
+               append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb.bsp',$
                                                   local_path = source.local_data_dir+'MAVEN/kernels/spk/', no_update = 0, $
                                                   file_mode = '666'o, dir_mode = '777'o)
-               append_array,kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb_rec.bsp',$
+               append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/spk/maven_orb_rec.bsp',$
                                                   local_path = source.local_data_dir+'MAVEN/kernels/spk/', no_update = 0, $
                                                   file_mode = '666'o, dir_mode = '777'o)
             endelse
@@ -225,7 +225,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
           app_quick_kern = mvn_pfp_spd_download(app_quick_format, source=source, trange=tr+[-2,0]*86400L,/daily_names,/valid_only,/last_version)    ;SC Attitude ???
         endif
         if tr[1] lt time_double('14-10-9') then append_array,kernels, $
-           spd_download(remote_file = source.remote_data_dir+'MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc', $
+           spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/misc/app/mvn_app_nom_131118_141031_v1.bc', $
                         local_path = source.local_data_dir+'MAVEN/misc/app/', no_update = 0, $
                         file_mode = '666'o, dir_mode = '777'o)
         if keyword_set(app_quick_kern) then append_array,kernels, app_quick_kern
@@ -240,7 +240,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
         ;       append_array,kernels,  appkern  ;APP Attitude ???
 
       end
-      'CK_SWE': append_array, kernels, spd_download(remote_file = source.remote_data_dir+'MAVEN/kernels/ck/mvn_swea_nom_131118_300101_v??.bc',  $
+      'CK_SWE': append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'MAVEN/kernels/ck/mvn_swea_nom_131118_300101_v??.bc',  $
                                                     local_path = source.local_data_dir+'MAVEN/kernels/ck/',no_update = 0, $
                                                     file_mode = '666'o, dir_mode = '777'o)
     endcase

@@ -33,8 +33,8 @@
 ;   YY,  MM, DD, hh, mm, ss, .f  since these can be retranslated to
 ;   the time
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-01-31 10:51:43 -0800 (Tue, 31 Jan 2017) $
-; $LastChangedRevision: 22694 $
+; $LastChangedDate: 2017-02-02 15:24:16 -0800 (Thu, 02 Feb 2017) $
+; $LastChangedRevision: 22720 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_pfp_spd_download.pro $
 ;-
 function mvn_pfp_spd_download,pathname,trange=trange,verbose=verbose, source=src,files=files, $
@@ -108,7 +108,7 @@ if ~keyword_set(RT) then begin
     nfiles = n_elements(pathnames)
     fc = 0
     for j = 0, nfiles-1 do begin
-       filesj = spd_download(remote_file = source.remote_data_dir+pathnames[j], $
+       filesj = spd_download_plus(remote_file = source.remote_data_dir+pathnames[j], $
                              local_path = source.local_data_dir+file_dirname(pathnames[j], /mark_directory), $
                              last_version = last_version, no_update = no_update, valid_only = valid_only, $
                              file_mode = '666'o, dir_mode = '777'o)

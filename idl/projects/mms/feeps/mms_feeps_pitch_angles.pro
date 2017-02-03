@@ -12,8 +12,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-01 17:47:19 -0800 (Wed, 01 Feb 2017) $
-;$LastChangedRevision: 22713 $
+;$LastChangedDate: 2017-02-01 19:45:37 -0800 (Wed, 01 Feb 2017) $
+;$LastChangedRevision: 22715 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pitch_angles.pro $
 ;-
 
@@ -23,14 +23,16 @@ pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=d
   if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
   if undefined(data_rate) then data_rate = 'srvy'
   if undefined(level) then level = 'l2'
+  
+  ; get the times from the currently loaded FEEPS data
+  get_data, 'mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix, data=pad_data, dlimits=pad_dl
+
+  if undefined(trange) then trange=timerange(minmax(pad_data.X))
 
   ; load the B-field data if not already loaded
   if (tnames('mms'+probe+'_fgm_b_bcs_srvy_l2_bvec'))[0] eq '' then mms_load_fgm, trange=trange, probe=probe
   get_data, 'mms'+probe+'_fgm_b_bcs_srvy_l2_bvec', data=b_field_data
   Bbcs = b_field_data.Y
-  
-  ; get the times from the currently loaded FEEPS data
-  get_data, 'mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix, data=pad_data, dlimits=pad_dl
   
   nbins = 13; number of pitch angle bins; 10 deg = 17 bins, 15 deg = 13 bins
   dpa = 180.0/nbins ; delta-pitch angle for each bin

@@ -47,18 +47,18 @@ if ~keyword_set(kernels) || (ct - retrievetime) gt waittime then begin     ;
 ;        CHANGE AND DO CHANGE REGULARLY
 ;    append_array,kernels,
 ; jmm, 2017-01-30, swapped out file_retrieve calls for spd_download
-    append_array, kernels, spd_download(remote_file = source.remote_data_dir+'generic_kernels/lsk/naif00??.tls', $
-                                        local_path = source.local_data_dir+'generic_kernels/lsk/', /last_version, $
-                                        file_mode = '666'o, dir_mode = '777'o)
-    append_array, kernels, spd_download(remote_file = source.remote_data_dir+'generic_kernels/pck/pck00010.tpc', $
+    append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/lsk/naif00??.tls', $
+                                             local_path = source.local_data_dir+'generic_kernels/lsk/', /last_version, $
+                                             file_mode = '666'o, dir_mode = '777'o)
+    append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/pck/pck00010.tpc', $
                                         local_path = source.local_data_dir+'generic_kernels/pck/', /last_version, $
                                         file_mode = '666'o, dir_mode = '777'o)
 ;    append_array,kernels,  file_retrieve('generic_kernels/spk/planets/de421.bsp',_extra=source)   ; Now obsolete ....  No longer on NAIF site!
 ;    append_array,kernels,  file_retrieve('generic_kernels/spk/planets/a_old_versions/de421.bsp',_extra=source)   ; archived location of de421.bsp
-    append_array, kernels, spd_download(remote_file = source.remote_data_dir+'generic_kernels/spk/planets/de430.bsp', $
+    append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/spk/planets/de430.bsp', $
                                         local_path = source.local_data_dir+'generic_kernels/spk/planets/', $
                                         file_mode = '666'o, dir_mode = '777'o)
-    if keyword_set(mars) then append_array, kernels, spd_download(remote_file = source.remote_data_dir+'generic_kernels/spk/satellites/mar097.bsp', $
+    if keyword_set(mars) then append_array, kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/spk/satellites/mar097.bsp', $
                                                                   local_path = source.local_data_dir+'generic_kernels/spk/satellites/', $
                                                                   file_mode = '666'o, dir_mode = '777'o) ; mar097.bsp is most recent as of 2014/1/1 ??    
     retrievetime = ct
