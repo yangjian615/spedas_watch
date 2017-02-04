@@ -106,7 +106,7 @@ end
 ;$LastChangedBy: aaflores $
 ;$LastChangedDate: 2015-02-18 16:27:58 -0800 (Wed, 18 Feb 2015) $
 ;$LastChangedRevision: 17004 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_extract.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download_extract.pro $
 ;
 ;-
 function spd_download_extract, string_array, $  

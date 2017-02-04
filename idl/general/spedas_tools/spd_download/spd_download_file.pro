@@ -57,7 +57,7 @@
 ;$LastChangedBy: egrimes $
 ;$LastChangedDate: 2017-01-17 14:40:44 -0800 (Tue, 17 Jan 2017) $
 ;$LastChangedRevision: 22612 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_file.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download_file.pro $
 ;
 ;-
 

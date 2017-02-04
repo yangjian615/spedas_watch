@@ -20,7 +20,7 @@
 ;$LastChangedBy: aaflores $
 ;$LastChangedDate: 2015-02-23 15:13:04 -0800 (Mon, 23 Feb 2015) $
 ;$LastChangedRevision: 17025 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_temp.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download_temp.pro $
 ;
 ;-
 

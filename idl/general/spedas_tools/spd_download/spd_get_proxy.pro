@@ -20,7 +20,7 @@
 ;$LastChangedBy: aaflores $
 ;$LastChangedDate: 2015-08-28 14:36:40 -0700 (Fri, 28 Aug 2015) $
 ;$LastChangedRevision: 18666 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_get_proxy.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_get_proxy.pro $
 ;-
 
 pro spd_get_proxy, s

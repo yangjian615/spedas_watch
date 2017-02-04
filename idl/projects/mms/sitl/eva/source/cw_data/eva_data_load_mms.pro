@@ -119,7 +119,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           tn=tnames(tnf,jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
             options, tnf, ytitle=sc+'!CFEEPS!Cintnsty',ysubtitle='[keV]'
-            ylim, tnf, 55,500
+            ylim, tnf, 30, 530
           endif
           answer = 'Yes'
         endif

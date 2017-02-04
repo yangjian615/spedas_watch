@@ -1,16 +1,42 @@
-; KEYWORD
-; 
-; *** A note on 2016-09-02 ***
-; THis keyword should NOT be used for a while because LaTis returns
-; an erratic data when the trange is expanded to a longer period.
-; ****************************
-; 
+;+
+; NAME: mms_bss_load
+;
+; PURPOSE: To return burst-segment status (aka 'back-structure') 
+;          within a given time interval. Ask super-SITLs for the meaning of 
+;          each tag in the returned structure.  
+;          
+; CALLING SEQUENCE: result = mms_bss_load(trange)
+;
+; INPUTS:  trange .... can be either string or double
+;
+; EXAMPLE:
+;
+;     MMS> tr = time_double('2015-11-04/'+['04:00','05:00'])
+;     MMS> s = mms_bss_load(trange=tr)
+;     MMS> help, s
+;     
+; NOTES: 
+;     
+;     1. If no burst-segment were found within the trange, then this function returns -1
+;     
+;     2. The timerange 'trange' should not be too big (like more than a month).
+;        because LaTis (at SDC) will return an erratic result (as of 2016-09-02).
+;     
+;     3. The FIN keyword is obsolete and should not be used if the above issue (item 2) 
+;        remains. 
+;        
 ;   FIN: Set this keyword to find segments that 'finished' within trange
-;        instead of querying segments that were defined within trange. 
-;        Because a segment can take many tens of days, 
+;        instead of querying segments that were defined within trange.
+;        Because a segment can take many tens of days,
 ;        trange is expand to [tlaunch,tnow] when retrieving segment info.
+;                
+; CREATED BY: M. Oka   August 2015
 ;
-;
+; $LastChangedBy: moka $
+; $LastChangedDate: 2017-02-02 21:31:34 -0800 (Thu, 02 Feb 2017) $
+; $LastChangedRevision: 22722 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/core/mms_bss_load.pro $
+;-
 FUNCTION mms_bss_load, trange=trange, fin=fin
   compile_opt idl2
 

@@ -105,7 +105,7 @@
 ;$LastChangedBy: jimm $
 ;$LastChangedDate: 2017-02-02 15:18:32 -0800 (Thu, 02 Feb 2017) $
 ;$LastChangedRevision: 22718 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_download/spd_download_plus.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download_plus.pro $
 ;
 ;-
 Function spd_download_plus, $
