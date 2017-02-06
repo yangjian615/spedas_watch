@@ -48,8 +48,8 @@
 ;       INIT:         Reinitialize the flatfield common block.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 19:10:40 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22295 $
+; $LastChangedDate: 2017-02-05 17:09:41 -0800 (Sun, 05 Feb 2017) $
+; $LastChangedRevision: 22732 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_flatfield.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2016-09-28
@@ -130,7 +130,8 @@ function mvn_swe_flatfield, time, nominal=nominal, off=off, set=set, silent=sile
                    0.919085 , 0.879561 , 0.928532 , 0.953215 , 0.839748 , 0.888123    ]
 
 ;   Solar wind calibration period 5  (2016-10-25 to present)
-;     preliminary -> assume calibration returns to that of periods 1 and 3
+;     preliminary -> calibration to date (using L1 MAG) is consistent with solar wind
+;                    calibration periods 1 and 3.
 
     swe_ff[*,5] = swe_ff[*,1]
 

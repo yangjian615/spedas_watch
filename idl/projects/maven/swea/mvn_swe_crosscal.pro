@@ -38,8 +38,8 @@
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-23 17:11:38 -0800 (Mon, 23 Jan 2017) $
-; $LastChangedRevision: 22650 $
+; $LastChangedDate: 2017-02-05 17:10:46 -0800 (Sun, 05 Feb 2017) $
+; $LastChangedRevision: 22733 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crosscal.pro $
 ;
 ;CREATED BY:    David L. Mitchell  05-04-16
@@ -48,6 +48,16 @@
 function mvn_swe_crosscal, time, on=on, off=off, silent=silent
 
   @mvn_swe_com
+  common swe_cc_com, tc, ac
+  
+  if (size(tc,/type) eq 0) then begin
+    tc = time_double(['2014-03-22','2014-11-12', '2015-12-20', '2016-10-25'])
+    ac = dblarr(3, n_elements(tc))
+    ac[*,0] = [2.6D   ,  0.0D     ,  0.0D     ]  ; MCPHV = 2500 V
+    ac[*,1] = [2.3368D, -9.9426d-4,  2.6014d-5]  ; MCPHV = 2600 V
+    ac[*,2] = [2.2143D,  7.9280d-4,  1.4300d-5]  ; MCPHV = 2700 V
+    ac[*,3] = [2.2573D,  2.0204d-4,  3.6708d-5]  ; MCPHV = 2750 V
+  endif
 
   domsg = ~keyword_set(silent)
   
@@ -67,48 +77,53 @@ function mvn_swe_crosscal, time, on=on, off=off, silent=silent
   if (~swe_cc_switch) then return, cc
 
   t = time_double(time)
-  day = (t - t_mcp[0])/86400D
 
   indx = where(t lt t_mcp[1], count)                        ; MCPHV = 2500 V
-  if (count gt 0L) then cc[indx] = 2.6     ; best overall value
+  if (count gt 0L) then cc[indx] = ac[0,0]
 
   indx = where((t ge t_mcp[1]) and (t lt t_mcp[2]), count)  ; MCPHV = 2600 V
-  if (count gt 0L) then cc[indx] = 2.3368  ; match polynomial starting at t_mcp[2]
+  if (count gt 0L) then cc[indx] = ac[0,1]
   
   indx = where((t ge t_mcp[2]) and (t lt t_mcp[3]), count)  ; MCPHV = 2600 V
   if (count gt 0L) then begin
-    day = (t - time_double('2014-11-12'))/86400D
-    cc[indx] = 2.3368D - day[indx]*(9.9426d-4 - day[indx]*2.6014d-5)
+    i = 1
+    day = (t[indx] - tc[i])/86400D
+    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
   endif
   
   indx = where((t ge t_mcp[3]) and (t lt t_mcp[4]), count)  ; MCPHV = 2700 V
   if (count gt 0L) then begin
-    day = (t - time_double('2015-12-20'))/86400D
-    cc[indx] = 2.2143D + day[indx]*(7.9280D-4 + day[indx]*1.4300D-5)
+    i = 2
+    day = (t[indx] - tc[i])/86400D
+    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
   endif
   
   indx = where((t ge t_mcp[4]) and (t lt t_mcp[5]), count)  ; MCPHV = 2600 V
   if (count gt 0L) then begin
-    day = (t - time_double('2014-11-12'))/86400D
-    cc[indx] = 2.3368D - day[indx]*(9.9426d-4 - day[indx]*2.6014d-5)
+    i = 1
+    day = (t[indx] - tc[i])/86400D
+    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
   endif
   
   indx = where((t ge t_mcp[5]) and (t lt t_mcp[6]), count)  ; MCPHV = 2700 V
   if (count gt 0L) then begin
-    day = (t - time_double('2015-12-20'))/86400D
-    cc[indx] = 2.2143D + day[indx]*(7.9280D-4 + day[indx]*1.4300D-5)
+    i = 2
+    day = (t[indx] - tc[i])/86400D
+    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
   endif
 
   indx = where((t ge t_mcp[6]) and (t lt t_mcp[7]), count)  ; MCPHV = 2750 V
   if (count gt 0L) then begin
-    day = (t - time_double('2016-10-25'))/86400D
-    cc[indx] = 2.2573D + day[indx]*(2.0204D-4 + day[indx]*3.6708D-5)
+    i = 3
+    day = (t[indx] - tc[i])/86400D
+    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
   endif
 
   indx = where(t ge t_mcp[7], count)  ; last SWE-SWI cross calibration
   if (count gt 0L) then begin
-    day = (t_mcp[7] - time_double('2016-10-25'))/86400D
-    cc[indx] = 2.2573D + day[indx]*(2.0204D-4 + day[indx]*3.6708D-5)
+    i = 3
+    day = (t_mcp[7] - tc[i])/86400D
+    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
     if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
                            time_string(t_mcp[7],prec=-3)
   endif

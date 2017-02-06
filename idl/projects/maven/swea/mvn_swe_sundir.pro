@@ -1,7 +1,7 @@
 ;+
 ;PROCEDURE:   mvn_swe_sundir
 ;PURPOSE:
-;  Determines the direction of the Sun in spacecraft coordinates.
+;  Calculates the direction of the Sun in SWEA coordinates.
 ;  Optionally, calculates the direction of the Sun in additional 
 ;  frames specified by keyword.  The results are stored in TPLOT 
 ;  variables.
@@ -11,6 +11,41 @@
 ;    Y --> +Y solar array axis
 ;    Z --> HGA axis
 ;
+;  SWEA frame:
+;    X --> boundary between Anodes 15 and 0
+;    Y --> boundary between Anodes 3 and 4
+;    Z --> instrument symmetry axis
+;          (points "down" from top cap to pedestal)
+;
+;  When boom is deployed, Z_sc = Z_swea
+;
+;  If [X,Y,Z] is a unit vector, then
+;    phi   = atan(Y,X)
+;    theta = asin(Z)
+;
+;  Some important angles:
+;
+;    theta (deg)   : significance
+;  ---------------------------------------------------------------
+;    90 to 87      : entire sensor in shadow of pedestal
+;    < 87          : toroidal grids illuminated
+;    < 77          : upper deflector illuminated
+;    < 37          : top cap (periphery) illuminated
+;    17 to   0     : scalloped part of top cap illuminated
+;     0 to -10     : photons enter gap between hemispheres
+;  ---------------------------------------------------------------
+;
+;  Negative values of theta are very unlikely in practice, since it
+;  means that the solar panels are facing away from the Sun.  The
+;  grids and upper deflector often become illuminated during comm
+;  passes and fly-Y.  The maximum angular separation between Earth
+;  and the Sun as seen from Mars is 47.5 deg.
+;
+;  Toroidal grid support ribs are located every 45 degrees.  Each
+;  rib is 7-deg wide at theta = 0, with centers at:
+;
+;    phi = 0, 45, 90, 135, 180, 225, 270, 315 degrees
+;
 ;USAGE:
 ;  mvn_swe_sundir, trange
 ;
@@ -18,7 +53,8 @@
 ;       trange:   Time range for calculating the Sun direction.
 ;
 ;KEYWORDS:
-;       DT:       Time resolution (sec).  Default = 1.
+;       DT:       Time resolution (sec).  Default = 1, which is plenty
+;                 fast to resolve spacecraft rotations.
 ;
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
@@ -26,8 +62,8 @@
 ;                 frames specified by this keyword.  Default = 'MAVEN_SWEA'
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-04 17:43:33 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19250 $
+; $LastChangedDate: 2017-02-05 16:54:00 -0800 (Sun, 05 Feb 2017) $
+; $LastChangedRevision: 22730 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -50,14 +86,6 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans, frame=frame
 
   if not keyword_set(dt) then dt = 1D else dt = double(dt[0])
   
-;  if (tmax lt t_mtx[2]) then begin
-;    print,"Using stowed SWEA frame."
-;    swe_frame = 'MAVEN_SWEA_STOW'
-;  endif else begin
-;    print,"Using deployed SWEA frame."
-;    swe_frame = 'MAVEN_SWEA'
-;  endelse
-  
   if (size(frame,/type) ne 7) then frame = 'MAVEN_SWEA'
 
 ; First calculate the Sun direction in the spacecraft frame
@@ -70,6 +98,8 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans, frame=frame
   options,'Sun','labflag',1
   options,'Sun',spice_frame='MAVEN_SSO',spice_master_frame='MAVEN_SPACECRAFT'
   spice_vector_rotate_tplot,'Sun','MAVEN_SPACECRAFT',trange=[tmin,tmax],check='MAVEN_SPACECRAFT'
+  
+  pans = ['Sun_MAVEN_SPACECRAFT']
 
 ; Next calculate the Sun direction in frame(s) specified by keyword FRAME
   
@@ -77,22 +107,25 @@ pro mvn_swe_sundir, trange, dt=dt, pans=pans, frame=frame
   for i=0,(nframes-1) do begin
     to_frame = strupcase(frame[indx[i]])
     spice_vector_rotate_tplot,'Sun',to_frame,trange=[tmin,tmax],check='MAVEN_SPACECRAFT'
+    pans = [pans, ('Sun_' + to_frame)]
+
+    if (to_frame eq 'MAVEN_SWEA') then begin
+      get_data,('Sun_' + to_frame),data=sun
+      xyz_to_polar, sun, theta=the, phi=phi, /ph_0_360
+      store_data,'Sun_The',data=the
+      store_data,'Sun_Phi',data=phi
+      options,'Sun_The','ynozero',1
+      options,'Sun_Phi','ynozero',1
+      options,'Sun_The','psym',3
+      options,'Sun_Phi','psym',3
+      options,'Sun_Phi','constant',[0, 45, 90, 135, 180, 225, 270, 315]  ; ribs
+      options,'Sun_The','constant',[-10, 0, 17, 37, 77, 87]  ; see header info
+  
+      pans = [pans, 'Sun_The','Sun_Phi']
+    endif
+
   endfor
 
-  if (nframes gt 0) then begin
-    get_data,('Sun_' + frame[0]),data=sun
-    xyz_to_polar, sun, theta=the, phi=phi, /ph_0_360
-    store_data,'Sun_The',data=the
-    store_data,'Sun_Phi',data=phi
-    options,'Sun_The','ynozero',1
-    options,'Sun_Phi','ynozero',1
-    options,'Sun_The','psym',3
-    options,'Sun_Phi','psym',3
-    options,'Sun_The','constant',[0,15]  ; sunlight incident on top cap
-  
-    pans = ['Sun_The','Sun_Phi']
-  endif else pans = ''
-  
   return
 
 end

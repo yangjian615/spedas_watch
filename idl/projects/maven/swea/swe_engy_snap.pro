@@ -125,8 +125,8 @@
 ;                      interactive time range selection.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 11:21:43 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22536 $
+; $LastChangedDate: 2017-02-05 16:53:10 -0800 (Sun, 05 Feb 2017) $
+; $LastChangedRevision: 22729 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -134,8 +134,8 @@
 pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, ddd=ddd, $
                    abins=abins, dbins=dbins, obins=obins, sum=sum, pot=pot, pdiag=pdiag, $
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
-                   noerase=noerase, thresh=thresh, scp=scp, fixy=fixy, pepeaks=pepeaks, $
-                   dEmax=dEmax, burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
+                   noerase=noerase, scp=scp, fixy=fixy, pepeaks=pepeaks, $
+                   burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
                    xrange=xrange,yrange=frange,sscale=sscale, popen=popen, times=times, $
                    flev=flev, pylim=pylim, k_e=k_e, peref=peref, error_bars=error_bars, $
@@ -143,6 +143,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
 
   @mvn_swe_com
   @swe_snap_common
+  common swe_pot_com, Espan, thresh, dEmax, minflux
 
   mass = 5.6856297d-06             ; electron rest mass [eV/(km/s)^2]
   c1 = (mass/(2D*!dpi))^1.5
@@ -165,8 +166,6 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if keyword_set(noerase) then oflg = 0 else oflg = 1
   if (size(scp,/type) eq 0) then scp = !values.f_nan else scp = float(scp[0])
-  if (size(thresh,/type) eq 0) then thresh = 0.05
-  if (size(dEmax,/type) eq 0) then dEmax = 6.
   if (size(fixy,/type) eq 0) then fixy = 1
   if keyword_set(fixy) then fflg = 1 else fflg = 0
   if keyword_set(rainbow) then rflg = 1 else rflg = 0
@@ -417,7 +416,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     psym = 10
 
     if ((nplot eq 0) or oflg) then plot_oo,x,y,yrange=yrange,/ysty,xrange=xrange, $
-            xtitle='Energy (eV)', ytitle=ytitle,charsize=csize2,psym=psym,title=time_string(spec.time) $
+            xtitle='Energy (eV)', ytitle=ytitle,charsize=csize2,psym=psym,title=time_string(spec.time), $
+            xmargin=[10,3] $
                               else oplot,x,y,psym=psym
 
     if (ebar) then errplot,x,(y-dy)>tiny,y+dy,width=0
@@ -786,7 +786,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       ys = 0.90
       dys = 0.03
 
-      if not keyword_set(pxlim) then xlim = [0.,30.] else xlim = minmax(pxlim)
+      if not keyword_set(pxlim) then xlim = Espan else xlim = minmax(pxlim)
       if not keyword_set(pylim) then begin
         indx = where((df.v ge xlim[0]) and (df.v le xlim[1]))
         ymin = min(df.y[indx],/nan) < min(d2f.y[indx],/nan)
@@ -813,10 +813,10 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       oplot,xlim,[thresh,thresh],line=2,color=5      
 
       if (ncross gt 0L) then begin
-;        k = max(indx)      ; lowest energy feature above threshold
-;        pymax = py[k]
-        pymax = max(py,k0)  ; largest slope feature above threshold
-        k = k0
+        k = max(indx)      ; lowest energy feature above threshold
+        pymax = py[k]
+;        pymax = max(py,k0)  ; largest slope feature above threshold
+;        k = k0
         pymin = pymax/3.
         
 
@@ -839,9 +839,18 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
           xyouts,xs,ys,string(px[k],format='("V = ",f6.2)'),color=col,charsize=csize1,/norm
           ys -= dys
           oplot,[px[k],px[k]],ylim,color=6,line=2
-        endif
+        endif else begin
+          xyouts,xs,ys,"V = NaN",color=col,charsize=csize1,/norm
+          ys -= dys
+        endelse
 
         xyouts,xs,ys,string(dE,format='("dE = ",f6.2)'),charsize=csize1,/norm
+        ys -= dys
+
+        xyouts,xs,ys,string(dEmax,format='("dEmax = ",f6.2)'),charsize=csize1,/norm
+        ys -= dys
+
+        xyouts,xs,ys,string(thresh,format='("thresh = ",f6.2)'),charsize=csize1,/norm
         ys -= dys
 
       endif

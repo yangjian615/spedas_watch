@@ -155,8 +155,8 @@
 ;        NOTE:         Insert a text label.  Keep it short.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-16 11:53:37 -0800 (Mon, 16 Jan 2017) $
-; $LastChangedRevision: 22605 $
+; $LastChangedDate: 2017-02-05 16:51:56 -0800 (Sun, 05 Feb 2017) $
+; $LastChangedRevision: 22728 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -171,10 +171,15 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   nomid=nomid, uncertainty=uncertainty, nospec90=nospec90, $
                   shiftpot=shiftpot,popen=popen, indspec=indspec, twopot=twopot, $
                   xrange=xrange, error_bars=error_bars, yrange=yrange, trange=tspan, $
-                  note=note, mincounts=mincounts, maxrerr=maxrerr, tsmo=tsmo
+                  note=note, mincounts=mincounts, maxrerr=maxrerr, tsmo=tsmo, $
+                  sundir=sundir
 
   @mvn_swe_com
   @swe_snap_common
+
+  a = 0.8
+  phi = findgen(49)*(2.*!pi/49)
+  usersym,a*cos(phi),a*sin(phi),/fill
 
   tiny = 1.e-31
   if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
@@ -256,6 +261,29 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif else dolab = 0
   if keyword_set(plotlims) then plot_pa_lims = 1 else plot_pa_lims = 0
   if keyword_set(nomid) then domid = 0 else domid = 1
+
+  if keyword_set(sundir) then begin
+    t = [0D]
+    the = [0.]
+    phi = [0.]
+    get_data,'Sun_MAVEN_SWEA_STOW',data=sun,index=i
+    if (i gt 0) then begin
+      t = [temporary(t), sun.x]
+      xyz_to_polar, sun, theta=th, phi=ph, /ph_0_360
+      the = [temporary(the), th.y]
+      phi = [temporary(phi), ph.y]
+    endif
+    get_data,'Sun_MAVEN_SWEA',data=sun,index=i
+    if (i gt 0) then begin
+      t = [temporary(t), sun.x]
+      xyz_to_polar, sun, theta=th, phi=ph, /ph_0_360
+      the = [temporary(the), th.y]
+      phi = [temporary(phi), ph.y]
+    endif
+    if (n_elements(t) gt 1) then begin
+      sun = {time:t[1L:*], the:the[1L:*], phi:phi[1L:*]}
+    endif else sundir = 0
+  endif
 
 ; Field of view masking
 
@@ -825,6 +853,18 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
           lab=strcompress(indgen(ddd.nbins),/rem)
           xyouts,reform(ddd.phi[63,*]),reform(ddd.theta[63,*]),lab,align=0.5
+
+          if keyword_set(sundir) then begin
+            dt = min(abs(sun.time - mean(ddd.time)),j)
+            Saz = sun.phi[j]
+            Sel = sun.the[j]
+            if (abs(Sel) gt 61.) then col=!p.color else col=!p.color
+            oplot,[Saz],[Sel],psym=8,color=5,thick=2,symsize=2.0
+;           Saz = (Saz + 180.) mod 360.
+;           Sel = -Sel
+;           oplot,[Saz],[Sel],psym=7,color=col,thick=2,symsize=1.2
+          endif
+
         endif
       endif
             
@@ -905,7 +945,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         
         plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /xsty, /ysty, $
           xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-          charsize=1.4
+          charsize=1.4, xmargin=[10,3]
 
         oplot, x1, Fp, psym=10, color=6
         oplot, x2, Fm, psym=10, color=2
@@ -982,7 +1022,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         ;first half of the PAD
         plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-            charsize=1.4
+            charsize=1.4, xmargin=[10,3]
                     
         xs = 0.36
         ys = 0.90
@@ -1033,7 +1073,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         ;second half of the PAD
         plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-            charsize=1.4
+            charsize=1.4, xmargin=[10,3]
 
         xs = 0.68
         ys = 0.90
@@ -1109,7 +1149,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   endif
 
   wset, Twin
-
+  
   return
 
 end

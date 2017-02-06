@@ -22,7 +22,7 @@
 ;	POTENTIAL: Returns a time-ordered array of spacecraft potentials
 ;
 ;   ERANGE:    Energy range over which to search for the potential.
-;              Default = [3.,20.]
+;              Default = [3.,30.]
 ;
 ;   THRESH:    Threshold for the minimum slope: d(logF)/d(logE). 
 ;              Default = 0.05
@@ -94,20 +94,33 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 16:41:12 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22547 $
+; $LastChangedDate: 2017-02-05 16:54:33 -0800 (Sun, 05 Feb 2017) $
+; $LastChangedRevision: 22731 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
-pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thresh, dEmax=dEmax, $
+pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thresh2, dEmax=dEmax2, $
                     pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
-                    mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr, minflux=minflux, $
+                    mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr, minflux=minflux2, $
                     negpot=negpot, sta_pot=sta_pot, lpw_pot=lpw_pot
 
   compile_opt idl2
   
   @mvn_swe_com
+  common swe_pot_com, Espan, thresh, dEmax, minflux
+  
+  if (size(Espan,/type) eq 0) then begin
+    Espan = [3.,30.]
+    thresh = 0.05
+    dEmax = 6.
+    minflux = 1.e6
+  endif
+  
+  if (n_elements(erange2)  gt 1) then Espan = float(minmax(erange2))
+  if (size(thresh2,/type)  gt 0) then thresh = float(thresh2)
+  if (size(dEmax2,/type)   gt 0) then dEmax = float(dEmax2)
+  if (size(minflux2,/type) gt 0) then minflux = float(minflux2)
 
   if (size(mvn_swe_engy,/type) ne 8) then begin
     print,"No energy data loaded.  Use mvn_swe_load_l0 first."
@@ -137,7 +150,6 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
   endif
   
   if (size(badval,/type) eq 0) then badval = !values.f_nan else badval = float(badval)
-  if (size(minflux,/type) eq 0) then minflux = 1.e6 else minflux = float(minflux[0])
   if (size(negpot,/type) eq 0) then negpot = 1
 
 ; Clear any previous potential calculations
@@ -169,8 +181,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
   
   if (not ok) then begin
 
-    if not keyword_set(erange) then erange = [3.,30.]
-    erange = minmax(float(erange))
+    Espan = minmax(float(Espan))
     if not keyword_set(fudge) then fudge = 1.
     if keyword_set(ddd) then dflg = 1 else dflg = 0
 
@@ -183,9 +194,6 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
     endif else obins = byte(obins # [1B,1B])
     if (size(mask_sc,/type) eq 0) then mask_sc = 1
    if keyword_set(mask_sc) then obins = swe_sc_mask * obins
-
-    if (size(thresh,/type) eq 0) then thresh = 0.05
-    if (size(dEmax,/type) eq 0) then dEmax = 6.
   
     if (dflg) then begin
       ok = 0
@@ -310,7 +318,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange, fudge=fudge, thresh=thre
 
 ; Trim to the desired energy search range
 
-    indx = where((ee[*,0] gt erange[0]) and (ee[*,0] lt erange[1]), n_e)
+    indx = where((ee[*,0] gt Espan[0]) and (ee[*,0] lt Espan[1]), n_e)
     ee = ee[indx,*]
     dfs = dfs[indx,*]
     d2fs = d2fs[indx,*]
