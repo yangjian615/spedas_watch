@@ -103,8 +103,8 @@
 ;   the local_file keyword is set, or the local_path and remote_file
 ;   keywords are set.
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2017-02-02 15:18:32 -0800 (Thu, 02 Feb 2017) $
-;$LastChangedRevision: 22718 $
+;$LastChangedDate: 2017-02-06 15:51:25 -0800 (Mon, 06 Feb 2017) $
+;$LastChangedRevision: 22741 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download_plus.pro $
 ;
 ;-
@@ -120,7 +120,10 @@ Function spd_download_plus, $
   files_out = spd_download(remote_path = remote_path, remote_file = remote_file, $
                            local_path = local_path, local_file = local_file, $
                            last_version = last_version, _extra = _extra)
-  
+  ;A file with either ? or * is a failure
+  q = strpos(files_out, '?')
+  s = strpos(files_out, '*')
+  If(q[0] ne -1 or s[0] ne -1) Then files_out = ''
   ;If nothing comes out, then do a file check
   If(~is_string(files_out)) Then Begin
      If(keyword_set(local_file)) Then Begin
@@ -135,7 +138,6 @@ Function spd_download_plus, $
         Endif
      Endif
   Endif
-
   Return, files_out
 End
            

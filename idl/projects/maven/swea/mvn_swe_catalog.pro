@@ -17,6 +17,10 @@
 ;       REVISION:      Look for L2 files with this revision number.
 ;                      Default is to look for the latest revision.
 ;
+;       CTIME:         Look for L2 files created after this time.
+;                      Default is to look for all files regardless of
+;                      creation time.
+;
 ;       RESULT:        Named variable to hold the result structure
 ;                      containing all valid file names organized by
 ;                      type, year and month.
@@ -26,20 +30,21 @@
 ;                      the default is 1 (yes).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-21 09:11:43 -0800 (Mon, 21 Nov 2016) $
-; $LastChangedRevision: 22386 $
+; $LastChangedDate: 2017-02-06 10:08:33 -0800 (Mon, 06 Feb 2017) $
+; $LastChangedRevision: 22736 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_catalog.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_catalog.pro
 ;-
-pro mvn_swe_catalog, version=version, revision=revision, result=dat, verbose=verbose
+pro mvn_swe_catalog, version=version, revision=revision, ctime=ctime, result=dat, verbose=verbose
 
 ; Process keywords
 
   if (size(version,/type) eq 0) then ver = '??' else ver = string(version, format='(i2.2)')
   if (size(revision,/type) eq 0) then rev = '??' else rev = string(revision, format='(i2.2)')
   if (size(verbose,/type) eq 0) then blab = 1 else blab = keyword_set(verbose)
+  if (size(ctime,/type) eq 0) then ctime = 0D else ctime = time_double(ctime)
 
   if (rev eq '??') then last = 1 else last = 0
 
@@ -103,7 +108,8 @@ pro mvn_swe_catalog, version=version, revision=revision, result=dat, verbose=ver
         t1 = time_double(yyyy + '-' + mm)
         t2 = time_double(yyyy + '-' + nm)
         files = file_retrieve(fname,/no_server,last_version=last,trange=[t1,t2])
-        valid = where((file_info(files)).exists, nvalid)
+        finfo = file_info(files)
+        valid = where((finfo.exists and (finfo.ctime ge ctime)), nvalid)
         if (nvalid gt 0) then begin
           dat[k].cat[i,j].files[0:(nvalid-1)] = files[valid]
           dat[k].cat[i,j].nfiles = nvalid

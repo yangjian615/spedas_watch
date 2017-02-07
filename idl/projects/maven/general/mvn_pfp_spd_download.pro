@@ -33,8 +33,8 @@
 ;   YY,  MM, DD, hh, mm, ss, .f  since these can be retranslated to
 ;   the time
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-02-02 15:24:16 -0800 (Thu, 02 Feb 2017) $
-; $LastChangedRevision: 22720 $
+; $LastChangedDate: 2017-02-06 15:54:57 -0800 (Mon, 06 Feb 2017) $
+; $LastChangedRevision: 22742 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_pfp_spd_download.pro $
 ;-
 function mvn_pfp_spd_download,pathname,trange=trange,verbose=verbose, source=src,files=files, $
@@ -85,6 +85,7 @@ endif
 ;vo = n_elements(valid_only) eq 0 ? 0 : valid_only
 
 source = mvn_file_source(src,verbose=verbose,user_pass=user_pass,no_server=no_server,valid_only=valid_only,last_version=last_version,no_update=no_update)
+if(keyword_set(no_download) or keyword_set(no_server)) then source.no_server = 1
 
 pos_start = strlen(source.local_data_dir)
 
@@ -109,9 +110,9 @@ if ~keyword_set(RT) then begin
     fc = 0
     for j = 0, nfiles-1 do begin
        filesj = spd_download_plus(remote_file = source.remote_data_dir+pathnames[j], $
-                             local_path = source.local_data_dir+file_dirname(pathnames[j], /mark_directory), $
-                             last_version = last_version, no_update = no_update, valid_only = valid_only, $
-                             file_mode = '666'o, dir_mode = '777'o)
+                                  local_path = source.local_data_dir+file_dirname(pathnames[j], /mark_directory), $
+                                  last_version = last_version, no_update = no_update, valid_only = valid_only, $
+                                  no_server = source.no_server, file_mode = '666'o, dir_mode = '777'o)
        if is_string(filesj) then begin
           if fc eq 0 then files = filesj else files = [files, filesj]
           fc = fc+1
