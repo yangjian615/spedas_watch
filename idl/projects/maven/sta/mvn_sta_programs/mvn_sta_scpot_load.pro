@@ -17,8 +17,14 @@
 ;	Assumption 1 - O2+ ram velocity only valid below 300 km
 ;	Assumption 2 - low energy cutoff only valid when (Ni>100/cc and alt>180km) or in shadow
 ;	Assumption 3 - when the above do not apply, s/c potential set to 0V 
+;
+;	TBDs - scpot is not valid 20151127/1:00UT - why is it invalid?
+;
+;
+;
+;
 ;-
-pro mvn_sta_scpot_load,tplot=tplot,max_alt=max_alt,max_nrg=max_nrg,ram_min=ram_min,max_den=max_den,max_ec=max_ec,skip=skip,kk2=kk2,swe=swe
+pro mvn_sta_scpot_load,tplot=tplot,max_alt=max_alt,max_nrg=max_nrg,ram_min=ram_min,max_den=max_den,max_ec=max_ec,skip=skip,kk2=kk2,swe=swe,pot_err=pot_err,alt_vo2=alt_vo2
 
 	common mvn_c6,mvn_c6_ind,mvn_c6_dat 
 	common mvn_c0,mvn_c0_ind,mvn_c0_dat 
@@ -35,11 +41,13 @@ pro mvn_sta_scpot_load,tplot=tplot,max_alt=max_alt,max_nrg=max_nrg,ram_min=ram_m
 	if not keyword_set(max_alt) then max_alt=10000.			; below this altitude s/c potential is assumed negative and algorithm valid when in sunlight 
 									; 	potential is also assumed negative and algorithm valid in eclipse at higher altitudes
 									;	as a default, we assume the algorithm works everywhere
-	if not keyword_set(max_nrg) then max_nrg=20.			; -1*max_nrg is the maximum negative s/c potential determined by ram flow
+	if not keyword_set(max_nrg) then max_nrg=30.			; -1*max_nrg is the maximum negative s/c potential determined by ram flow
 	if not keyword_set(ram_min) then ram_min=0.12 			; -1*ram_min is the minimum negative s/c potential determined by ram flow
 
-	if not keyword_set(max_den) then max_den=10. 			; if in sunlight and >250km and density<max_den and characteristic_energy>max_ec then s/c potential is set to 0
+	if not keyword_set(max_den) then max_den=8. 			; if in sunlight and >250km and density<max_den and characteristic_energy>max_ec then s/c potential is set to 0
 	if not keyword_set(max_ec) then max_ec=50. 			; if in sunlight and >250km and density<max_den and characteristic_energy>max_ec then s/c potential is set to 0
+	if not keyword_set(pot_err) then pot_err=3. 			; ion cutoff pot < pot_err indicates valid potential, when in sunlight and >250km and ec indicates sheath 
+	if not keyword_set(alt_vo2) then alt_vo2=300. 			; max alt where vel of O2+ can be used to estimate scpot - varies with local time  
  
 
 	time = (mvn_c6_dat.time + mvn_c6_dat.end_time)/2.
@@ -89,28 +97,38 @@ endif
 ; estimate density and characteristic energy without s/c potential corrections
 
 
-
 	get_data,'mvn_sta_test_density3',data=tmp
 	if size(tmp,/type) ne 8 or (not keyword_set(skip)) then begin
+
 		get_4dt,'ec_4d','mvn_sta_get_c6',mass=[0,1.7],name='mvn_sta_test_ec_p',energy=[0,30000.]
 			ylim,'mvn_sta_test_ec_p',1,1.e4,1
-			options,'mvn_sta_test_ec_p',colors=cols.green,ytitle='sta!Cc6!Ctest!Cec_p'
+			options,'mvn_sta_test_ec_p',colors=cols.green,ytitle='sta!Cc6!Ctest!Cec_p',labels='H+He+',labpos=1000
+
 		get_4dt,'ec_4d','mvn_sta_get_c6',mass=[10,100],name='mvn_sta_test_ec_o',energy=[0,30000.]
 			ylim,'mvn_sta_test_ec_o',1,1.e4,1
-			options,'mvn_sta_test_ec_o',colors=cols.red,ytitle='sta!Cc6!Ctest!Cec_o'
+			options,'mvn_sta_test_ec_o',colors=cols.red,ytitle='sta!Cc6!Ctest!Cec_o',labels='O+O++',labpos=10
 
 		get_4dt,'n_4d','mvn_sta_get_c6',mass=[.3,5],name='mvn_sta_test_density1',m_int=1.,energy=[0,30000.]
-			options,'mvn_sta_test_density1',colors=cols.green
+			options,'mvn_sta_test_density1',colors=cols.green,labels='H+He+',labpos=100
+
 		get_4dt,'n_4d','mvn_sta_get_c6',mass=[10.,100.],name='mvn_sta_test_density2',energy=[0,30000.]
-			options,'mvn_sta_test_density2',colors=cols.red
+			options,'mvn_sta_test_density2',colors=cols.red,labels='O+O++',labpos=1
 
-		get_4dt,'c_4d','mvn_sta_get_c6',mass=[.3,5],name='mvn_sta_test_cnts_p',m_int=1.,energy=[0,10.]
-			options,'mvn_sta_test_cnts_p',colors=cols.cyan,ytitle='sta!Cc6!CH+!C<10eV!Ccnts',psym=-1
-			ylim,'mvn_sta_test_cnts_p',1,30,1
+		get_4dt,'c_4d','mvn_sta_get_c6',mass=[.3,5],name='mvn_sta_test_cnts_p_low',m_int=1.,energy=[0,12.]
+			options,'mvn_sta_test_cnts_p_low',ytitle='sta!Cc6!CH+!C<12eV!Ccnts',psym=-1,colors=cols.green,labels='H+He+',labpos=100
+			ylim,'mvn_sta_test_cnts_p_low',1,1000,1
 
-		get_4dt,'c_4d','mvn_sta_get_c6',mass=[12,100],name='mvn_sta_test_cnts_o',m_int=32,energy=[30,40000.]
+		get_4dt,'c_4d','mvn_sta_get_c6',mass=[12,100],name='mvn_sta_test_cnts_o_med',m_int=32,energy=[0,30.]			; this energy range may be too high
+			options,'mvn_sta_test_cnts_o_med',colors=cols.cyan,ytitle='sta!Cc6!CO+,O++!C<30eV!Ccnts',psym=-1
+			ylim,'mvn_sta_test_cnts_o_med',1,1000,1
+
+		get_4dt,'c_4d','mvn_sta_get_c6',mass=[12,100],name='mvn_sta_test_cnts_o_low',m_int=32,energy=[0,12.]			; this energy range may be too high
+			options,'mvn_sta_test_cnts_o_low',ytitle='sta!Cc6!CO+,O++!C<12eV!Ccnts',psym=-1,colors=cols.red,labels='O+O++',labpos=10
+			ylim,'mvn_sta_test_cnts_o_low',1,1000,1
+
+		get_4dt,'c_4d','mvn_sta_get_c6',mass=[12,100],name='mvn_sta_test_cnts_o',m_int=32,energy=[30,40000.]			; this energy range may be too high
 			options,'mvn_sta_test_cnts_o',colors=cols.cyan,ytitle='sta!Cc6!CO+,O++!C>30eV!Ccnts',psym=-1
-			ylim,'mvn_sta_test_cnts_o',1,100,1
+			ylim,'mvn_sta_test_cnts_o',1,10000,1
 
 		get_4dt,'v_4d','mvn_sta_get_ca',name='mvn_sta_ca_vel3',m_int=1.,energy=[0,40000.]
 			get_data,'mvn_sta_ca_vel3',data=tmp
@@ -121,32 +139,47 @@ endif
 		get_data,'mvn_sta_test_density1',data=tmp1
 		get_data,'mvn_sta_test_density2',data=tmp2
 		store_data,'mvn_sta_test_density3',data={x:tmp1.x,y:tmp1.y+tmp2.y}
-			ylim,'mvn_sta_test_density3',100,1.e5,1
+			ylim,'mvn_sta_test_density3',1,100.,1
 	endif
 
+	get_data,'mvn_sta_test_density1',data=tmp1
+	get_data,'mvn_sta_test_density2',data=tmp2
 	get_data,'mvn_sta_test_density3',data=tmp
 	ind = where(tmp.y gt 0.,count)
 	if count gt 1 then begin
 		den = interp(tmp.y[ind],tmp.x[ind],time)
+		p_den = interp(tmp1.y[ind],tmp1.x[ind],time)
+		o_den = interp(tmp2.y[ind],tmp2.x[ind],time)
 	endif else begin
 		print,'Error - STATIC c6 data not loaded'
 		return
 	endelse
 
 	get_data,'mvn_sta_test_ec_p',data=tmp
-		c6_ec = interp(tmp.y[ind],tmp.x[ind],time)
-	get_data,'mvn_sta_test_cnts_p',data=tmp
+		p_ec = interp(tmp.y[ind],tmp.x[ind],time)
+	get_data,'mvn_sta_test_ec_o',data=tmp
+		o_ec = interp(tmp.y[ind],tmp.x[ind],time)
+	get_data,'mvn_sta_test_cnts_p_low',data=tmp
 		p_low = interp(tmp.y[ind]+.1,tmp.x[ind],time)
 	get_data,'mvn_sta_ca_vel',data=tmp
 		p_vel = interp(tmp.y,tmp.x,time)
 	get_data,'mvn_sta_test_cnts_o',data=tmp
 		o_cnt=interp(tmp.y,tmp.x,time)
+	get_data,'mvn_sta_test_cnts_o_med',data=tmp
+		o_med=interp(tmp.y,tmp.x,time)
+	get_data,'mvn_sta_test_cnts_o_low',data=tmp
+		o_low=interp(tmp.y,tmp.x,time)
 
 	store_data,'mvn_sta_test_density',data=['mvn_sta_test_density1','mvn_sta_test_density2']
-		ylim,'mvn_sta_test_density',.1,1.e5,1
+		options,'mvn_sta_test_density',ytitle='sta!C!Ctest!C!Cdensity'
+		ylim,'mvn_sta_test_density',.1,1000,1
 	store_data,'mvn_sta_test_ec',data=['mvn_sta_test_ec_p','mvn_sta_test_ec_o']
 		ylim,'mvn_sta_test_ec',1,2000,1
 		options,'mvn_sta_test_ec',ytitle='sta!Cc6!CH+,O+!C!CEc'
+
+	store_data,'mvn_sta_test_cnts_low',data=['mvn_sta_test_cnts_o_low','mvn_sta_test_cnts_p_low']
+		ylim,'mvn_sta_test_cnts_low',1,2000,1
+		options,'mvn_sta_test_cnts_low',ytitle='sta!Cc6!C<10eV!C!CCnts'
 
 ;**********************************************************
 ; determine when sc is in shadow and wake
@@ -182,11 +215,32 @@ endif
 
 	alt = (pos[*,0]^2+pos[*,1]^2+pos[*,2]^2)^.5 - mars_radius
 
-	vel = total((pos[1:npts-1,*] - pos[0:npts-2,*])^2,2)^.5/(time[1:npts-1]-time[0:npts-2])	
-	vel = [vel[0],[vel]]
+;**********************************************************
+; determine sc velocity relative to planet - this is ram velocity
+
+	get_data,'V_sc_MAVEN_APP',data=tmp81
+	if size(tmp81,/type) eq 8 then begin
+		vtot = (total(tmp81.y*tmp81.y,2))^.5
+		vel = interp(vtot,tmp81.x,mvn_c6_dat.time+2.)
+	endif else begin
+		mkernels = mvn_spice_kernels(/load)
+		trange = timerange()
+		mvn_sc_ramdir,trange,/app
+		get_data,'V_sc_MAVEN_APP',data=tmp81
+		if size(tmp81,/type) eq 8 then begin 
+			vtot = (total(tmp81.y*tmp81.y,2))^.5
+			vel = interp(vtot,tmp81.x,mvn_c6_dat.time+2.)
+		endif else begin			; approximate velocity from position motion - used prior to 20160805
+			vel = total((pos[1:npts-1,*] - pos[0:npts-2,*])^2,2)^.5/(time[1:npts-1]-time[0:npts-2])	
+			vel = [vel[0],[vel]]
+			print,'ERROR - mvn_sc_ramdir did not run!!! - using maven_orbit_tplot to estimate velocity ignoring planet rotation'
+			print,'ERROR - this approximation will introduce sc_pot error at periapsis!!!'
+		endelse
+	endelse
+
 	if keyword_set(tplot) then store_data,'mvn_sta_scpot_vel',data={x:time,y:vel}
 
-	nrg_offset=+.0
+	nrg_offset=+.0									; this is included incase sensor HV has an offset
 
 
 ;**********************************************************
@@ -271,10 +325,13 @@ if keyword_set(tplot) then store_data,'mvn_sta_c6_pot_ec',data={x:time,y:0.5*ms*
 	time2 = (mvn_c0_dat.time + mvn_c0_dat.end_time)/2.
 	npts2 = n_elements(time2)
 	pot2 = fltarr(npts2)
+	pot22 = fltarr(npts2)
+	pot_bad = fltarr(npts2)
+	cnts_lt_pot = fltarr(npts2)
 	swp_ind = mvn_c0_dat.swp_ind
 
-;	get_data,'mvn_sta_test_density3',data=tmp3
-;	den2 = interp(tmp3.x,tmp3.y,time2)
+	get_data,'mvn_sta_test_density3',data=tmp3
+	den2 = interp(tmp3.x,tmp3.y,time2)
 
 	oxgt30eV=mvn_c0_dat
 
@@ -285,21 +342,33 @@ if keyword_set(tplot) then store_data,'mvn_sta_c6_pot_ec',data={x:time,y:0.5*ms*
 
 	sha2 = interp(shadow,time,time2)
 	o_cnt2 = interp(o_cnt,time,time2)
+	p_low2 = interp(p_low,time,time2)
+	o_low2 = interp(o_low,time,time2)
+	o_med2 = interp(o_med,time,time2)
 
 for i=1l,npts2-2 do begin
 	if mvn_c0_dat.energy[mvn_c0_dat.swp_ind[i],63,0] lt 2. then begin	; the lower energy limit of the sweep must be less then 2 eV
 
 		modep = mvn_c0_dat.mode[i] eq mvn_c0_dat.mode[i+1] 
 		modem = mvn_c0_dat.mode[i] eq mvn_c0_dat.mode[i-1]
-		if (pot1[i] lt 3.) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25)) then begin				
+;		if (pot1[i] lt 3.) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25)) then begin					; used prior to 20161130, checked in on ?	
+;		if (pot1[i] lt 3.) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25) and (p_low2[i] lt 20)) then begin		; o_cnt2 >30eV, changed to only use protons when there are enough proton counts, fixed problem on 20160915/2307UT	
+;		if (pot1[i] lt 3.) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25) and (p_low2[i] lt 20)) $
+;			or ((alt2[i] gt 400.) and not sha2[i] and (o_low2[i] gt 5)) then begin					; o_cnt2 >30eV, changed to only use protons when there are enough proton counts, fixed problem on 20160915/2307UT	
+
+		if ((pot1[i] lt 3.) and (o_cnt2[i] lt 100)) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25) and (p_low2[i] lt 20)) then begin	; o_cnt2 >30eV, changed to only use protons when there are enough proton counts, fixed problem on 20160915/2307UT	
 			dat1c=total(reform(mvn_c0_dat.data[i,*,*]),2)
 			dat1p=total(reform(mvn_c0_dat.data[i+1,*,*]),2)
 			dat1m=total(reform(mvn_c0_dat.data[i-1,*,*]),2)
-		endif else begin						; this eliminates sputtereed O2+ when s/c charges to >5V
+		endif else begin						; this eliminates sputtereed O2+ when s/c charges to >5V, and just uses protons when there are enough counts
 			dat1c=reform(mvn_c0_dat.data[i,*,0])
 			dat1p=reform(mvn_c0_dat.data[i+1,*,0])
 			dat1m=reform(mvn_c0_dat.data[i-1,*,0])
 		endelse
+		if p_low2[i] gt 30 then begin
+			modep=0
+			modem=0
+		endif
 		dat2c = shift(dat1c,1)
 		dat2p = shift(dat1p,1)
 		dat2m = shift(dat1m,1)
@@ -326,14 +395,77 @@ for i=1l,npts2-2 do begin
 ;		endif else pot2[i] = 2.5
 ;		if alt2[i] ge 300. and den2[i] lt 1. then pot2[i] = 2.5
 		if (mvn_c0_dat.quality_flag[i] and 192) gt 0 then pot2[i]=pot2[(i-1)>0]
-		if (mvn_c0_dat.quality_flag[i] and 3) gt 0 then pot2[i]=0
+		if (mvn_c0_dat.quality_flag[i] and 3) gt 0 then pot2[i]=max_nrg
 
-	endif 
+	endif else pot2[i] = max_nrg
 endfor
 
-pot3 = interp(pot2,time2,time) 
 
-pot3 = pot3 > 0.
+; If counts <10eV exceed 10, just use the total count cutoff without averaging
+
+for i=1l,npts2-2 do begin
+	if mvn_c0_dat.energy[mvn_c0_dat.swp_ind[i],63,0] lt 2. then begin	; the lower energy limit of the sweep must be less then 2 eV
+
+		if ((alt2[i] gt 400.) and den2[i] gt 8. and ((o_low2[i]+p_low2[i]) gt 10)) then begin					; o_cnt2 >30eV, changed to only use protons when there are enough proton counts, fixed problem on 20160915/2307UT	
+			energy0 = reform(mvn_c0_dat.energy[swp_ind[i],*,0])
+			dat22=total(reform(mvn_c0_dat.data[i,*,*]),2)
+			minval = min(abs(energy0-max_nrg),max_nrg_ind)
+			dat22[0:max_nrg_ind]=0.
+			dat23=shift(dat22,1)
+			mincnts = 3. > (o_low2[i]+p_low2[i])/20. > (o_cnt2[i]+o_med2[i])/40.			; higher threshold to eliminate sputtered trapped O+ background
+
+			ind22 = where ((dat22 ge 1.) and (dat23 ge 1.) and ((dat22+dat23) ge mincnts),count)
+			if count ge 1 then begin								; interpolate between energy bins
+			if 1 then begin
+				mind22 = max(ind22)
+				d1 = dat22[mind22] 
+				d2 = dat22[mind22-1] 
+				e1 = energy0[mind22]
+				e2 = energy0[mind22-1]
+				pot22[i] = e1 + .5*(e2-e1)*(1.-(d1>3.)/(d2>d1>3.)) - .5*(e2-e1)*(1.-3./(d1>3.))
+;				pot22[i] = e1 
+			endif
+			if 0 then begin
+				mind22 = max(ind22)
+				energy = (energy0 + nrg_offset) > .01
+				denergy = reform(mvn_c0_dat.denergy[swp_ind[i],*,0])*energy/energy0
+				e0 = energy[mind22] - denergy[mind22]/2.
+				d1 = dat22[mind22] 
+				e1 = energy[mind22] - e0
+				d2 = dat22[mind22-1] 
+				e2 = energy[mind22-1] - e0
+				scale = 0. > (1-(d1/d2)*(e2/e1)^1) < 1.
+				pot22[i] = (energy[mind22] - denergy[mind22]/2. + denergy[mind22]*scale) < max_nrg
+			endif
+			endif else pot22[i]=max_nrg
+		endif else pot22[i] = max_nrg
+		if (mvn_c0_dat.quality_flag[i] and 192) gt 0 then pot22[i]=pot22[(i-1)>0]
+		if (mvn_c0_dat.quality_flag[i] and 3) gt 0 then pot22[i]=max_nrg
+
+	endif else pot22[i] = max_nrg
+endfor
+
+; eliminate data when there are significant counts below scpot
+
+for i=1l,npts2-2 do begin
+	if mvn_c0_dat.energy[mvn_c0_dat.swp_ind[i],63,0] lt 2. then begin	; the lower energy limit of the sweep must be less then 2 eV
+		energy0 = reform(mvn_c0_dat.energy[swp_ind[i],*,0])
+		pot_tmp = pot2[i] < pot22[i]
+		ind = where(energy0 lt pot_tmp/1.1,count)
+		if count gt 1 then cnts_lt_pot[i] = total(mvn_c0_dat.data[i,ind,*]) 
+		if cnts_lt_pot[i] gt 5. and alt2[i] gt 400. and sha2[i] then pot_bad[i] = 1
+	endif else pot_bad[i] = 1
+endfor
+
+if keyword_set(tplot) then store_data,'ion_cutoff_pot_bad',data={x:time2,y:pot_bad} & ylim,'ion_cutoff_pot_bad',-1,2,0
+if keyword_set(tplot) then store_data,'cnts_lt_pot',data={x:time2,y:cnts_lt_pot}
+
+
+pot3 = interp(pot2>max_nrg*pot_bad,time2,time)
+pot3a = pot3 
+pot33 = interp(pot22>max_nrg*pot_bad,time2,time) 
+pot3 = (pot3<pot33) > 0.
+
 
 ;**********************************************************
 ; estimate sc potential from swea data - this is turned off since it fails too often
@@ -459,19 +591,32 @@ endif
 ; combine potential estimates
 ; if in sunlight and >250km and density<max_den and characteristic_energy>max_ec then s/c potential is set to 0
 
+
 ;sc_neg = den gt max_den or alt lt max_alt or shadow
 ;sc_neg = alt lt max_alt or shadow
-;sc_pos = (alt gt max_alt or ((alt gt 250.) and (den lt max_den) and (c6_ec gt max_ec)) or ((alt gt 250.) and (c6_ec gt 400.) and (p_low lt 2.)) or ((alt gt 400.) and (c6_mode lt 2))) and (not shadow)
+;sc_pos = (alt gt max_alt or ((alt gt 250.) and (den lt max_den) and (p_ec gt max_ec)) or ((alt gt 250.) and (p_ec gt 400.) and (p_low lt 2.)) or ((alt gt 400.) and (c6_mode lt 2))) and (not shadow)
 
 if keyword_set(swe) then den2 = (den>swe_den) else den2=den
 
-sc_pos = (((alt gt 250.) and (den2 lt max_den) and (c6_ec gt max_ec))) and (not shadow)
-scpot_invalid =  (alt gt max_alt) or $
-		((alt gt 250.) and (c6_ec gt 400.) and (p_low lt 4.)) or $
-		((alt gt 400.) and (p_vel gt 120.) and (not shadow)) or $
-		((alt gt 400.) and (c6_mode lt 2) and (not shadow)) or $
-		((alt gt 400.) and (c6_mode lt 2) and (not shadow)) or $
-		((den lt .5) and (not shadow)) 
+; sc_pos = (((alt gt 250.) and (den2 lt max_den) and (p_ec gt max_ec))) and (not shadow)		; used to define sc_neg, p_ec is proton ec, low density and high proton ec and not shadow
+; sc_pos = ( (alt gt 250.) and (den2 lt max_den) and (p_ec gt max_ec) and (pot3 gt 2.5) ) and (not shadow)		; used to define sc_neg, p_ec is proton ec, low density and high proton ec and not shadow
+;  sc_pos = ( (alt gt 250.) and (den2 lt max_den) and (pot3 gt 2.5   ) ) and (not shadow)		; used to define sc_neg, p_ec is proton ec, low density and high proton ec and not shadow
+  sc_pos = ( (alt gt 250.) and (den2 lt max_den) and (pot3 gt pot_err   ) ) and (not shadow)		; changed 20161205 used to define sc_neg, p_ec is proton ec, low density and high proton ec and not shadow
+
+scpot_invalid =  (alt gt max_alt) 					or $			; max altitude for scpot calculation, generally no limit
+;		((alt gt 250.) and (p_ec gt 400.) and (p_low lt 4.)) or $			; eliminate sw or sheath data, p_ec is proton ec, p_low is proton counts less than 10eV - doesn't work well
+;		((alt gt 250.) and (p_ec gt 400.) and (p_low lt 4.) and (o_low lt 10)) or $	; changed 20161205, eliminate sw or sheath data, p_ec is proton ec, p_low is proton counts less than 10eV - doesn't work well
+		((alt gt 250.) and (p_ec gt 400.) and (p_den gt 2.)) or $			; changed 20161205, eliminate sw or sheath data, p_ec is proton ec, p_den is proton density - doesn't work that well
+		((alt gt 400.) and (p_vel gt 120.) and (not shadow)) or $			; eliminate sheath, 120 is too high for subsolar point - may need to modify if additional conditions don't work
+;		((alt gt 400.) and (p_ec gt 100.) and (o_ec gt 100.) and (not shadow)) or $	; added 20161130, eliminate sheath, 
+;		((alt gt 400.) and (p_ec gt 100.) and (o_ec gt 100.) and (pot3 gt 2.5) and (not shadow)) or $	; added 20161130, eliminate sheath, 
+;		((alt gt 400.) and (p_ec gt max_ec) and (o_ec gt max_ec) and (pot3 gt pot_err) and (not shadow)) or $	; added 20161130, eliminate sheath, 
+;		((alt gt 400.) and (p_ec gt 100.) and (o_med lt 20.) and (not shadow)) or $	; added 20161130, eliminate sheath, 
+;		((alt gt 400.) and (p_ec gt max_ec) and (o_med lt 20.) and (not shadow)) or $	; added 20161130, eliminate sheath, 
+		((alt gt 400.) and (p_low lt 4.) and (o_low lt (10>((o_cnt+o_med)/40.))) and (not shadow)) or $	; added 20161130, eliminate counts less than background, 
+		((alt gt alt_vo2) and (pot3 ge max_nrg*.99)) or $					; assume invalid operation ion cutoff exceeds max_nrg
+		((alt gt 400.) and (c6_mode lt 2) and (not shadow)) or $			; assume invalid operation when ram and conic mode are used at high altitude
+		((den lt .5) and (not shadow)) 							; assume it fails if density is too low
 
 sc_neg = 1-sc_pos
 
@@ -485,12 +630,12 @@ if keyword_set(tplot) then store_data,'alt_gt_250',data={x:time,y:(alt gt 250.)}
 	if keyword_set(tplot) then ylim,'alt_gt_250',-1,2,0
 if keyword_set(tplot) then store_data,'den_lt_max',data={x:time,y:(den2 lt max_den)}
 	if keyword_set(tplot) then ylim,'den_lt_max',-1,2,0
-if keyword_set(tplot) then store_data,'ec_gt_max',data={x:time,y:(c6_ec gt max_ec)}
+if keyword_set(tplot) then store_data,'ec_gt_max',data={x:time,y:(p_ec gt max_ec)}
 	if keyword_set(tplot) then ylim,'ec_gt_max',-1,2,0
 
-;pot_all = -(pot3 < (pot+1000.*(alt gt 300.)))*(1.*sc_neg) + (pot4 > 1.)*(-sc_neg+1.)
+;pot_all = -(pot3 < (pot+1000.*(alt gt alt_vo2)))*(1.*sc_neg) + (pot4 > 1.)*(-sc_neg+1.)
 
-pot_all = -(pot3 < (pot+1000.*(alt gt 300.)))*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid)
+pot_all = -(pot3 < (pot+1000.*(alt gt alt_vo2)))*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid)	; sc_pos comes into play, pot3 is ion cutoff, the alt cutoff at 300km should be variable
 
 ; fill in missing single potentials - mainly at attenuator changes
 
@@ -511,15 +656,27 @@ pot_valid = fltarr(npts) & pot_valid[ind]=1
 if keyword_set(tplot) then store_data,'mvn_sta_scpot_valid',data={x:time,y:pot_valid}
 	if keyword_set(tplot) then ylim,'mvn_sta_scpot_valid',-1,2,0
 
+
+;**********************************************************
+; testing
+; tplot,['alt2','scpot_invalid','sc_pos','mvn_shadow','mvn_sta_scpot_valid','mvn_sta_test_density','mvn_sta_test_ec','mvn_sta_ca_vel','mvn_sta_test_cnts_p_low','mvn_sta_test_cnts_o_med','mvn_sta_test_cnts_o','mvn_sta_c0_L_E_pot','mvn_sta_c0_E_pot_ec','mvn_sta_c6_O2+_sc_pot_all']
+; tplot,['alt2','sc_pos','mvn_sta_scpot_valid','mvn_sta_test_density','mvn_sta_c0_E','mvn_sta_c0_L_E_pot','mvn_sta_c0_E_pot_ec','mvn_sta_c6_O2+_sc_pot_all']
+; tplot,['alt2','swe_a4_pot','mvn_sta_scpot_valid','sc_pos','mvn_sta_scpot_valid','mvn_sta_c0_L_E_pot','mvn_sta_c0_E_pot_ec','mvn_sta_c6_O2+_sc_pot_all']
+
+; tplot,['alt2','swe_a4_pot','mvn_sta_scpot_valid','sc_pos','mvn_sta_scpot_valid','mvn_sta_test_ec','mvn_sta_test_density','mvn_sta_test_cnts_low','mvn_sta_c0_L_E_pot','mvn_sta_c0_E_pot_ec','mvn_sta_c6_O2+_sc_pot_all']
+; tplot,['mvn_sta_c0_P1A_H_E','mvn_sta_test_cnts_p_low','alt2','swe_a4_pot','mvn_sta_c0_L_E_pot','mvn_sta_c0_E_pot_ec','mvn_sta_c6_O2+_sc_pot_all']
+; tplot,['mvn_sta_c0_P1A_E','alt2','swe_a4_pot','mvn_sta_c0_L_E_pot','mvn_sta_c0_E_pot_ec','mvn_sta_c6_O2+_sc_pot_all']
+
 ;**********************************************************
 ; make some tplot structures if keyword is set
 
 if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_red',data={x:time,y:pot_all} & options,'mvn_sta_c6_O2+_sc_pot_red',colors=6,thick=2,yrange=[.1,50],ylog=1
 if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_blk',data={x:time,y:pot_all} & options,'mvn_sta_c6_O2+_sc_pot_blk',colors=0,thick=2,yrange=[.1,50],ylog=1
-if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_vo2',data={x:time,y:pot*1.1} & options,'mvn_sta_c6_O2+_sc_pot_vo2',colors=3,thick=2,yrange=[.1,50],ylog=1
-if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_h+',data={x:time,y:pot3*1.1} & options,'mvn_sta_c6_O2+_sc_pot_h+',colors=4,thick=2,yrange=[.1,50],ylog=1
+if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_vo2',data={x:time,y:pot*1.1} & options,'mvn_sta_c6_O2+_sc_pot_vo2',colors=3,thick=2,yrange=[.1,50],ylog=1	; the 1.1 is so they don't plot on top of one another
+if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_h+',data={x:time,y:pot3a*1.1} & options,'mvn_sta_c6_O2+_sc_pot_h+',colors=4,thick=2,yrange=[.1,50],ylog=1	; the 1.1 is so they don't plot on top of one another
+if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_o+h+',data={x:time,y:pot33*1.1} & options,'mvn_sta_c6_O2+_sc_pot_o+h+',colors=2,thick=2,yrange=[.1,50],ylog=1	; the 1.1 is so they don't plot on top of one another
 ;if keyword_set(tplot) then store_data,'mvn_sta_sc_pot',data={x:time,y:[[pot_all],[-pot_all]]} & options,'mvn_sta_sc_pot',colors=[4,6],thick=2,yrange=[.1,30],ylog=1
-if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_all',data=['mvn_sta_c6_O2+_sc_pot_blk','mvn_sta_c6_O2+_sc_pot_vo2','mvn_sta_c6_O2+_sc_pot_h+']
+if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_all',data=['mvn_sta_c6_O2+_sc_pot_blk','mvn_sta_c6_O2+_sc_pot_vo2','mvn_sta_c6_O2+_sc_pot_h+','mvn_sta_c6_O2+_sc_pot_o+h+']
 if keyword_set(tplot) then ylim,'mvn_sta_c6_O2+_sc_pot_all',0.1,50,1
 
 store_data,'mvn_sta_c6_scpot',data={x:time,y:pot_all}
@@ -527,8 +684,11 @@ store_data,'mvn_sta_c6_neg_scpot',data={x:time,y:-pot_all}
 	options,'mvn_sta_c6_neg_scpot',colors=cols.red
 
 if keyword_set(tplot) then store_data,'mvn_sta_c0_P1A_E_pot',data=['mvn_sta_c0_P1A_E','mvn_sta_c6_neg_scpot'] & options,'mvn_sta_c0_P1A_E_pot',yrange=[.3,30],ylog=1
+if keyword_set(tplot) then store_data,'mvn_sta_c0_P1A_H_E_pot',data=['mvn_sta_c0_P1A_H_E','mvn_sta_c6_neg_scpot'] & options,'mvn_sta_c0_P1A_H_E_pot',yrange=[.3,30],ylog=1,zrange=[1,1000],zlog=1
+if keyword_set(tplot) then store_data,'mvn_sta_c0_P1A_L_E_pot',data=['mvn_sta_c0_P1A_L_E','mvn_sta_c6_neg_scpot'] & options,'mvn_sta_c0_P1A_L_E_pot',yrange=[.3,30],ylog=1,zrange=[1,1000],zlog=1
 
-if keyword_set(tplot) then store_data,'mvn_sta_c0_E_pot_ec',data=['mvn_sta_c0_H_E','mvn_sta_c6_neg_scpot','mvn_sta_c6_pot_ec']
+if keyword_set(tplot) then store_data,'mvn_sta_c0_E_pot_ec',data=['mvn_sta_c0_E','mvn_sta_c6_neg_scpot','mvn_sta_c6_pot_ec'] & options,'mvn_sta_c0_E_pot_ec',yrange=[.3,30],ylog=1,zrange=[1.e4,1.e9],zlog=1
+if keyword_set(tplot) then store_data,'mvn_sta_c0_H_E_pot_ec',data=['mvn_sta_c0_H_E','mvn_sta_c6_neg_scpot','mvn_sta_c6_pot_ec'] & options,'mvn_sta_c0_H_E_pot_ec',yrange=[.3,30],ylog=1,zrange=[1.e4,1.e9],zlog=1
 
 if not keyword_set(tplot) then 	store_data,delete='mvn_sta_test*'
 
