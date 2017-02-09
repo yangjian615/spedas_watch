@@ -137,9 +137,10 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
 
   pa_flux = fltarr(n_elements(pa_data.x), n_pabins+1)
   delta_pa = (pa_bins[1]-pa_bins[0])/2.0
+  
   ; Now loop through PA bins and time, find the telescopes where there is data in those bins and average it up!
   for it = 0l, n_elements(dpa[*,0])-1 do begin
-    for ipa = 0, n_pabins-1 do begin
+    for ipa = 0, n_pabins do begin
       if pa_bins[ipa] eq 0.0 then begin
         ind = where((dpa[it,*] ge pa_bins[ipa]) and (dpa[it,*] lt pa_bins[ipa]+delta_pa))
       endif else if pa_bins[ipa] eq 180.0 then begin

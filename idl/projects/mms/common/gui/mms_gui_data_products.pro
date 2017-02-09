@@ -12,8 +12,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-05 18:06:23 -0800 (Thu, 05 Jan 2017) $
-; $LastChangedRevision: 22517 $
+; $LastChangedDate: 2017-02-08 13:46:13 -0800 (Wed, 08 Feb 2017) $
+; $LastChangedRevision: 22752 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_data_products.pro $
 ;-
 
@@ -124,6 +124,9 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_bulkz_dbcs_fast', $
                                     '_des_bulkz_gse_fast', $
                                     '_des_bulkz_err_fast', $
+                                    '_des_bulkv_dbcs_fast', $
+                                    '_des_bulkv_gse_fast', $
+                                    '_des_bulkv_err_fast', $
                                     '_des_energyspectr_px_fast', $
                                     '_des_energyspectr_mx_fast', $
                                     '_des_energyspectr_py_fast', $
@@ -165,6 +168,9 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_bulkz_dbcs_fast', $
                                     '_dis_bulkz_gse_fast', $
                                     '_dis_bulkz_err_fast', $
+                                    '_dis_bulkv_dbcs_fast', $
+                                    '_dis_bulkv_gse_fast', $
+                                    '_dis_bulkv_err_fast', $
                                     '_dis_energyspectr_px_fast', $
                                     '_dis_energyspectr_mx_fast', $
                                     '_dis_energyspectr_py_fast', $
@@ -207,6 +213,9 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_bulkz_dbcs_brst', $
                                     '_des_bulkz_gse_brst', $
                                     '_des_bulkz_err_brst', $
+                                    '_des_bulkv_dbcs_brst', $
+                                    '_des_bulkv_gse_brst', $
+                                    '_des_bulkv_err_brst', $
                                     '_des_energyspectr_px_brst', $
                                     '_des_energyspectr_mx_brst', $
                                     '_des_energyspectr_py_brst', $
@@ -248,6 +257,9 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_bulkz_dbcs_brst', $
                                     '_dis_bulkz_gse_brst', $
                                     '_dis_bulkz_err_brst', $
+                                    '_dis_bulkv_dbcs_brst', $
+                                    '_dis_bulkv_gse_brst', $
+                                    '_dis_bulkv_err_brst', $
                                     '_dis_energyspectr_px_brst', $
                                     '_dis_energyspectr_mx_brst', $
                                     '_dis_energyspectr_py_brst', $
