@@ -125,6 +125,8 @@
 ;             8)  Now calls spd_get_valid_trange.pro and cleaned up a little and
 ;                   moved to SPEDAS directory
 ;                                                                   [09/08/2016   v1.1.0]
+;             9)  Updated SPDF URL:  All NASA URLs are now https
+;                                                                   [02/09/2017   v1.1.1]
 ;
 ;   NOTES:      
 ;               1)  If the TRANGE keyword is not set, the routine will prompt the user
@@ -146,12 +148,12 @@
 ;
 ;   CREATED:  08/23/2016
 ;   CREATED BY:  Lynn B. Wilson III
-;    LAST MODIFIED:  09/08/2016   v1.1.0
+;    LAST MODIFIED:  02/09/2017   v1.1.1
 ;    MODIFIED BY: Lynn B. Wilson III
 ;
 ; $LastChangedBy: lbwilsoniii_desk $
-; $LastChangedDate: 2016-09-08 13:15:03 -0700 (Thu, 08 Sep 2016) $
-; $LastChangedRevision: 21805 $
+; $LastChangedDate: 2017-02-09 11:42:45 -0800 (Thu, 09 Feb 2017) $
+; $LastChangedRevision: 22754 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/waves/wi_tds_dustimpact_load.pro $
 ;
 ;*****************************************************************************************
@@ -211,7 +213,8 @@ local_base     = root_data_dir()           ;;  e.g., '/Users/lbwilson/data/'
 ;;  Define CDF file name formats
 fname_format   = 'wi_l3-dustimpact_waves_YYYYMMDD_v???.cdf'
 ;;  Define SPDF base data directory
-spdf_base_dir  = 'http://spdf.gsfc.nasa.gov/pub/data/'
+spdf_base_dir  = 'https://spdf.gsfc.nasa.gov/pub/data/'
+;spdf_base_dir  = 'http://spdf.gsfc.nasa.gov/pub/data/'
 ;;  Define SPDF path format to data [*** this is current ***]
 pathformat     = 'wind'+http_slash[0]+'waves'+http_slash[0]+$
                  'dust_impact_l3'+http_slash[0]+'YYYY'+http_slash[0]+fname_format[0]
