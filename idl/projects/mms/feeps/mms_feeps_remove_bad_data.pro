@@ -11,8 +11,8 @@
 ;       work on the FEEPS data
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-27 08:02:13 -0800 (Fri, 27 Jan 2017) $
-; $LastChangedRevision: 22679 $
+; $LastChangedDate: 2017-02-10 13:35:02 -0800 (Fri, 10 Feb 2017) $
+; $LastChangedRevision: 22756 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_bad_data.pro $
 ;-
 
@@ -36,16 +36,19 @@ pro mms_feeps_remove_bad_data, suffix = suffix
   append_array, vars, tnames('mms1_epd_feeps_*_electron_bottom_counts_sensorid_1'+suffix)
   
 ;  MMS2:
-;  Top Eyes: 5
+;  Top Eyes: 5 (update 2/10/17, MMS2, T12 is also bad)
 ;  Bottom Eyes: None
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_count_rate_sensorid_5'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_intensity_sensorid_5'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_counts_sensorid_5'+suffix)
+  append_array, vars, tnames('mms2_epd_feeps_*_electron_top_count_rate_sensorid_12'+suffix)
+  append_array, vars, tnames('mms2_epd_feeps_*_electron_top_intensity_sensorid_12'+suffix)
+  append_array, vars, tnames('mms2_epd_feeps_*_electron_top_counts_sensorid_12'+suffix)
   
  
 ;  MMS3: 
 ;  Top Eyes: 2, 12
-;  Bottom Eyes: 2, 5
+;  Bottom Eyes: 2, 5 (update 2/10/17 - MMS-3, B11 is also bad)
   append_array, vars, tnames('mms3_epd_feeps_*_electron_top_count_rate_sensorid_2'+suffix)
   append_array, vars, tnames('mms3_epd_feeps_*_electron_top_intensity_sensorid_2'+suffix)
   append_array, vars, tnames('mms3_epd_feeps_*_electron_top_counts_sensorid_2'+suffix)
@@ -61,6 +64,9 @@ pro mms_feeps_remove_bad_data, suffix = suffix
   append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_count_rate_sensorid_5'+suffix)
   append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_intensity_sensorid_5'+suffix)
   append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_counts_sensorid_5'+suffix)
+  append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_count_rate_sensorid_11'+suffix)
+  append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_intensity_sensorid_11'+suffix)
+  append_array, vars, tnames('mms3_epd_feeps_*_electron_bottom_counts_sensorid_11'+suffix)
 
 ;  MMS4:
 ;  Top Eyes: 1, 2
@@ -157,7 +163,7 @@ pro mms_feeps_remove_bad_data, suffix = suffix
   append_array, vars_bothchans, tnames('mms1_epd_feeps_*_electron_bottom_counts_sensorid_11'+suffix)
 ;    
 ;    MMS2: 
-;    Top Eyes: 2, 12, (updates, 1/27/17 -> 3, 10 are also bad)
+;    Top Eyes: 2, 12, (updates, 1/27/17 -> 3, 10 are also bad; updates, 2/10 -> 4 is also bad)
 ;    Bottom Eyes: 1, 2, 3, 4, 5, 9, 10, 11, 12
 
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_count_rate_sensorid_2'+suffix)
@@ -166,6 +172,9 @@ pro mms_feeps_remove_bad_data, suffix = suffix
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_count_rate_sensorid_3'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_intensity_sensorid_3'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_counts_sensorid_3'+suffix)
+  append_array, vars, tnames('mms2_epd_feeps_*_electron_top_count_rate_sensorid_4'+suffix)
+  append_array, vars, tnames('mms2_epd_feeps_*_electron_top_intensity_sensorid_4'+suffix)
+  append_array, vars, tnames('mms2_epd_feeps_*_electron_top_counts_sensorid_4'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_count_rate_sensorid_10'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_intensity_sensorid_10'+suffix)
   append_array, vars, tnames('mms2_epd_feeps_*_electron_top_counts_sensorid_10'+suffix)

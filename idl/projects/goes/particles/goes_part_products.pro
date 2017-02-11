@@ -73,8 +73,8 @@
 ;  
 ;
 ;
-;$LastChangedDate: 2017-01-10 11:37:03 -0800 (Tue, 10 Jan 2017) $
-;$LastChangedRevision: 22564 $
+;$LastChangedDate: 2017-02-10 15:48:45 -0800 (Fri, 10 Feb 2017) $
+;$LastChangedRevision: 22758 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_part_products.pro $
 ;-
 
@@ -446,7 +446,7 @@ pro goes_part_products, $
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
-      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y
+      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y, /colatitude
     endif
     
     ;Build gyrophase spectrogram
