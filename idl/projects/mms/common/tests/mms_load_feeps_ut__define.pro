@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-27 11:13:27 -0800 (Fri, 27 Jan 2017) $
-; $LastChangedRevision: 22681 $
+; $LastChangedDate: 2017-02-13 11:39:24 -0800 (Mon, 13 Feb 2017) $
+; $LastChangedRevision: 22764 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
 
@@ -303,7 +303,7 @@ end
 
 function mms_load_feeps_ut::test_load_l2_multi_datatypes
   mms_load_feeps, probe=2, level='l2', datatype=['ion', 'electron']
-  assert, spd_data_exists('mms2_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_3_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_12_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_3_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_3_clean_sun_removed', '2015-12-15', '2015-12-16'), $
+  assert, spd_data_exists('mms2_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_3_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_top_count_rate_sensorid_11_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_count_rate_sensorid_3_clean_sun_removed mms2_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_3_clean_sun_removed', '2015-12-15', '2015-12-16'), $
     'Problem with loading L2 FEEPS data with multiple datatypes'
   return, 1
 end

@@ -15,12 +15,12 @@
 ; thm_esa_overviews,'2007-03-23',dir='~/out',device='z'
 ;
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-05-09 13:12:46 -0700 (Mon, 09 May 2016) $
-; $LastChangedRevision: 21046 $
+; $LastChangedDate: 2017-02-13 13:35:09 -0800 (Mon, 13 Feb 2017) $
+; $LastChangedRevision: 22766 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_esa_overviews.pro $
 ;-
 
-pro thm_esa_overviews, date, directory = directory, $
+Pro thm_esa_overviews, date, directory = directory, $
                        device = device, nopng = nopng, $
                        mode = mode ;only plot the given mode, 'burst','reduced','full'
                                    ;only valid for the /nopng case
@@ -39,6 +39,7 @@ if not keyword_set(date) then begin
 endif
 
 date2 = time_string(date)
+trange = time_double(date)+[0.0d0, 24.0d0*3600.0d0]
 
 if keyword_set(directory) then dir=directory else dir='./'
 
@@ -92,17 +93,10 @@ for i = 0L,n_elements(probe_list)-1L do begin
     name = 'th'+sc+'_peeb_en_eflux'
     get_data, name, data = d
     If(is_struct(d)) Then Begin
-;change d.v for cases with 0 energy
-      xxx = where(d.v lt 1.0, nxxx)
-      If(nxxx Gt 0) Then Begin
-         d.v[xxx] = 0.01
-         store_data, name, data = d
-      Endif
+      thm_esa_lim4overplot, name, trange, zlog = 1, ylog = 1, /overwrite
       tdegap, name, /overwrite, dt = 600.0
       tdegap, 'th'+sc+'_peeb_sc_pot', /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeeb'
-      yminv = min(d.v) > 0.1
-      thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
       svar = scpot_overlay('th'+sc+'_peeb_sc_pot', name, sc_line_thick = 2.0)
       name = svar               ;name is the variable to plot
     Endif Else Begin
@@ -117,15 +111,9 @@ for i = 0L,n_elements(probe_list)-1L do begin
     name = 'th'+sc+'_peib_en_eflux'
     get_data, name, data = d
     If(is_struct(d)) Then Begin
-      xxx = where(d.v lt 1.0, nxxx)
-      If(nxxx Gt 0) Then Begin
-         d.v[xxx] = 0.01
-         store_data, name, data = d
-      Endif
+      thm_esa_lim4overplot, name, trange, zlog = 1, ylog = 1, /overwrite
       tdegap, name, /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeib'
-      yminv = min(d.v) > 0.1
-      thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
     Endif Else Begin
       store_data, name, data = {x:xfiller, y:filler, v:vfiller}
       options, name, 'spec', 1
@@ -137,16 +125,10 @@ for i = 0L,n_elements(probe_list)-1L do begin
     name = 'th'+sc+'_peer_en_eflux'
     get_data, name, data = d
     If(is_struct(d)) Then Begin
-      xxx = where(d.v lt 1.0, nxxx)
-      If(nxxx Gt 0) Then Begin
-         d.v[xxx] = 0.01
-         store_data, name, data = d
-      Endif
+      thm_esa_lim4overplot, name, trange, zlog = 1, ylog = 1, /overwrite
       tdegap, name, /overwrite, dt = 600.0
       tdegap, 'th'+sc+'_peer_sc_pot', /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeer'
-      yminv = min(d.v) > 0.1
-      thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
       svar = scpot_overlay('th'+sc+'_peer_sc_pot', name, sc_line_thick = 2.0)
       name = svar               ;name is the variable to plot
     Endif Else Begin
@@ -161,15 +143,9 @@ for i = 0L,n_elements(probe_list)-1L do begin
     name = 'th'+sc+'_peir_en_eflux'
     get_data, name, data = d
     If(is_struct(d)) Then Begin
-      xxx = where(d.v lt 1.0, nxxx)
-      If(nxxx Gt 0) Then Begin
-         d.v[xxx] = 0.01
-         store_data, name, data = d
-      Endif
+      thm_esa_lim4overplot, name, trange, zlog = 1, ylog = 1, /overwrite
       tdegap, name, /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeir'
-      yminv = min(d.v) > 0.1
-      thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
     Endif Else Begin
       store_data, name, data = {x:xfiller, y:filler, v:vfiller}
       options, name, 'spec', 1
@@ -181,16 +157,10 @@ for i = 0L,n_elements(probe_list)-1L do begin
     name = 'th'+sc+'_peef_en_eflux'
     get_data, name, data = d
     If(is_struct(d)) Then Begin
-      xxx = where(d.v lt 1.0, nxxx)
-      If(nxxx Gt 0) Then Begin
-         d.v[xxx] = 0.01
-         store_data, name, data = d
-      Endif
+      thm_esa_lim4overplot, name, trange, zlog = 1, ylog = 1, /overwrite
       tdegap, name, /overwrite, dt = 600.0
       tdegap, 'th'+sc+'_peef_sc_pot', /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeef'
-      yminv = min(d.v) > 0.1
-      thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
       svar = scpot_overlay('th'+sc+'_peef_sc_pot', name, sc_line_thick = 2.0)
       name = svar               ;name is the variable to plot
     Endif Else Begin
@@ -205,15 +175,9 @@ for i = 0L,n_elements(probe_list)-1L do begin
     name = 'th'+sc+'_peif_en_eflux'
     get_data, name, data = d
     If(is_struct(d)) Then Begin
-      xxx = where(d.v lt 1.0, nxxx)
-      If(nxxx Gt 0) Then Begin
-         d.v[xxx] = 0.01
-         store_data, name, data = d
-      Endif
+      thm_esa_lim4overplot, name, trange, zlog = 1, ylog = 1, /overwrite
       tdegap, name, /overwrite, dt = 600.0
       options, name, 'ytitle', 'th'+sc+'!Cpeif'
-      yminv = min(d.v) > 0.1
-      thm_spec_lim4overplot, name, zlog = 1, ylog = 1, /overwrite, ymin = yminv
     Endif Else Begin
       store_data, name, data = {x:xfiller, y:filler, v:vfiller}
       options, name, 'spec', 1

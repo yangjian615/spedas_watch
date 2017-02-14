@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-06 12:57:29 -0800 (Fri, 06 Jan 2017) $
-; $LastChangedRevision: 22527 $
+; $LastChangedDate: 2017-02-13 11:39:39 -0800 (Mon, 13 Feb 2017) $
+; $LastChangedRevision: 22765 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_cotrans_ut__define.pro $
 ;-
 
@@ -23,6 +23,17 @@ function mms_cotrans_ut::test_fgm_radecl
   mms_load_fgm, level='ql', instrument='dfg', trange=['2016-11-01', '2016-11-02'], probe=1
   mms_cotrans, 'mms1_dfg_srvy_dmpa_bvec', in_coord='dmpa', out_coord='gse', out_suffix='_gse'
   assert, spd_data_exists('mms1_dfg_srvy_dmpa_bvec_gse', '2016-11-01', '2016-11-02'), 'Problem with FGM QL RADec variables'
+  return, 1
+end
+
+function mms_cotrans_ut::test_cotrans_sm2gsm
+  mms_qcotrans, 'mms1_mec_r_sm', out_coord='gsm', out_suffix='_gsm'
+  get_data, 'mms1_mec_r_gsm', data=orig
+  get_data, 'mms1_mec_r_sm_gsm', data=transformed
+  diff = where(orig.Y[0, *]-transformed.Y[0, *] gt 1e-6, diffcount)
+  assert, diffcount eq 0, 'Problem qcotransing from SM to GSM
+  assert, spd_data_exists('mms1_mec_r_sm_gsm', '2015-12-1', '2015-12-2'), $
+    'Problem qcotransing from SM to GSM'
   return, 1
 end
 

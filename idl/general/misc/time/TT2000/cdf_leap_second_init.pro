@@ -13,9 +13,9 @@
 ;       #3 This routine may modify the environment variable CDF_LEAPSECONDTABLE and update the CDF leap second table if a new version is found.
 ;        
 ;
-;$LastChangedBy: kersten $
-;$LastChangedDate: 2013-07-16 10:55:55 -0700 (Tue, 16 Jul 2013) $
-;$LastChangedRevision: 12683 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-02-13 15:30:16 -0800 (Mon, 13 Feb 2017) $
+;$LastChangedRevision: 22768 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/TT2000/cdf_leap_second_init.pro $
 ;-
 pro cdf_leap_second_init,reset=reset,no_download=no_download,no_update=no_update,no_clobber=no_clobber,force_download=force_download
@@ -81,7 +81,7 @@ Endif
   !cdf_leap_seconds=tmp_struct
   ;SPDF maintains the master version of the leap second table here
   ;When a leap second occurs the table CDFLeapSeconds.txt, which is stored at this location will be updated
-  !cdf_leap_seconds.remote_data_dir = 'http://cdf.gsfc.nasa.gov/html/'
+  !cdf_leap_seconds.remote_data_dir = 'https://cdf.gsfc.nasa.gov/html/'
   
   ;where the leap second table will be stored
   !cdf_leap_seconds.local_data_dir = root_data_dir() + 'misc/'
@@ -91,7 +91,8 @@ Endif
   SETENV,'CDF_LEAPSECONDSTABLE='+!cdf_leap_seconds.local_data_dir+'CDFLeapSeconds.txt'
   
   ;download the leapsecond table
-  leapsecond_table = file_retrieve('CDFLeapSeconds.txt',_extra=!cdf_leap_seconds)
+  ;leapsecond_table = file_retrieve('CDFLeapSeconds.txt',_extra=!cdf_leap_seconds)
+  leapsecond_table = spd_download(remote_file='CDFLeapSeconds.txt', remote_path=!cdf_leap_seconds.remote_data_dir, local_path = !cdf_leap_seconds.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0)
   
   ;set init state
   !cdf_leap_seconds.init=1

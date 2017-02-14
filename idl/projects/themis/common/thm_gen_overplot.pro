@@ -328,7 +328,8 @@ for i=0,n_elements(fbk_tvars)-1 do begin
       If(is_struct(d)) Then zlim,  fbk_tvars[i], min(d.y), 2.0, 1
     Endif
   endelse
-
+;degap, jmm, 2017-02-13
+  tdegap, fbk_tvars[i], /overwrite, dt = 600.0
 endfor
 
 ;load SST spectrograms
@@ -741,35 +742,9 @@ esa_instr = ['f', 'r']
 For j = 0, 1 Do Begin
    ivar = thx+'_pei'+esa_instr[j]+'_en_eflux'
    evar = thx+'_pee'+esa_instr[j]+'_en_eflux'
-   get_data,  ivar, data = dion
-   get_data,  evar, data = dele
-   If(is_struct(dion) && is_struct(dele)) Then Begin
-;This needs to be done for data only in the original time interval
-      ss_ion = where(dion.x Ge t0 And dion.x lt t1, nss_ion)
-      ss_ele = where(dele.x Ge t0 And dele.x lt t1, nss_ele)
-      If(nss_ion Eq 0 Or nss_ele Eq 0) Then Begin
-         dprint, ivar+' Or '+evar+' missing'
-         print, time_string([t0, t1])
-         mineval = 0
-      Endif Else Begin
-         mineval = min([min(dion.v[ss_ion, *]), min(dele.v[ss_ele, *])]) > 0.10
-      Endelse
-;0 energy values will not plot correctly, so
-;reset any energy = 0 points to 0.01 eV
-      xxx = where(dion.v lt 1.0, nxxx)
-      If(nxxx Gt 0) Then Begin
-         dion.v[xxx] = 0.01
-         store_data,  ivar, data = dion
-      Endif
-      xxx = where(dele.v lt 1.0, nxxx)
-      If(nxxx Gt 0) Then Begin
-         dele.v[xxx] = 0.01
-         store_data,  evar, data = dele
-      Endif
-   Endif Else mineval = 0
-   thm_spec_lim4overplot, ivar, zlog = 1, ylog = 1, /overwrite, ymin = mineval
-   thm_spec_lim4overplot, evar, zlog = 1, ylog = 1, /overwrite, ymin = mineval
-;thm_spec_lim4overplot overrides any z-axis min/max with
+   thm_esa_lim4overplot, ivar, [t0, t1], zlog = 1, ylog = 1, /overwrite
+   thm_esa_lim4overplot, evar, [t0, t1], zlog = 1, ylog = 1, /overwrite
+;thm_esa_lim4overplot overrides any z-axis min/max with
 ;the min/max of the data if zeros are found, so reset zlimits
    zlim, ivar, 1d3, 7.5d8, 1
    zlim, evar, 1d4, 7.5d8, 1

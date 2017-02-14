@@ -5,8 +5,8 @@
 ;HISTORY
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-09-18 13:30:13 -0700 (Thu, 18 Sep 2014) $
-;$LastChangedRevision: 15821 $
+;$LastChangedDate: 2017-02-13 08:50:37 -0800 (Mon, 13 Feb 2017) $
+;$LastChangedRevision: 22761 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_init.pro $
 ;-
 pro poes_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -41,7 +41,7 @@ Endif else begin; use defaults
     endelse
 
     !poes.local_data_dir = spd_default_local_data_dir()
-    !poes.remote_data_dir = 'http://cdaweb.gsfc.nasa.gov/istp_public/data/'
+    !poes.remote_data_dir = 'https://cdaweb.gsfc.nasa.gov/istp_public/data/'
 endelse
 if file_test(!poes.local_data_dir+'poes/.master') then begin  ; Local directory IS the master directory
    !poes.no_server=1    ;   

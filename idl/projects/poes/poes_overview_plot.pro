@@ -20,8 +20,8 @@
 ;       
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-01-26 10:06:01 -0800 (Mon, 26 Jan 2015) $
-; $LastChangedRevision: 16736 $
+; $LastChangedDate: 2017-02-13 15:50:23 -0800 (Mon, 13 Feb 2017) $
+; $LastChangedRevision: 22770 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_overview_plot.pro $
 ;-
 
@@ -45,18 +45,18 @@ pro poes_overview_plot, date = date, probe = probe_in, duration = duration, erro
     window_xsize = 750
     window_ysize = 800
     
+    if undefined(date) then date = '2013-03-17/00:00:00'
+    if undefined(probe_in) then probe_in = 'noaa19'
+    if is_numeric(probe_in) then probe_in = 'noaa' + probe_in
+    if undefined(duration) then duration = 0.08333 ; days
+    ;if undefined(duration) then duration = 1 ; days
+    
     if undefined(directory) then dir = path_sep() + probe_in+path_sep() else dir = directory
     if ~undefined(device) then begin 
         set_plot, device
         device, set_resolution = [window_xsize, window_ysize]
     endif
     
-    if undefined(date) then date = '2013-03-17/00:00:00'
-    if undefined(probe_in) then probe_in = 'noaa19'
-    if is_numeric(probe_in) then probe_in = 'noaa' + probe_in
-    if undefined(duration) then duration = 0.08333 ; days
-    ;if undefined(duration) then duration = 1 ; days
-
     timespan, date, duration, /day
     
     poes_load_data, probes = probe_in

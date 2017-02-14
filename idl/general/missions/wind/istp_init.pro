@@ -7,9 +7,9 @@
 ;HISTORY
 ; Written by Davin Larson
 ;
-;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-12-20 22:30:17 -0800 (Sat, 20 Dec 2014) $
-;$LastChangedRevision: 16522 $
+;$LastChangedBy: pulupa $
+;$LastChangedDate: 2017-02-13 15:27:12 -0800 (Mon, 13 Feb 2017) $
+;$LastChangedRevision: 22767 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/istp_init.pro $
 ;-
 pro istp_init, reset=reset  ;, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -43,7 +43,7 @@ Endif else begin; use defaults
     ;URL is deprecated
     ;!istp.remote_data_dir = 'http://cdaweb.gsfc.nasa.gov/istp_public/data/'
     ;New url 2012/10 pcruce@igpp
-    !istp.remote_data_dir = 'http://spdf.gsfc.nasa.gov/pub/data/'
+    !istp.remote_data_dir = 'https://spdf.gsfc.nasa.gov/pub/data/'
 endelse
 !istp.archive_ext ='.arc'
 !istp.min_age_limit = 900    ; Don't check for new files if local file is less than 900 seconds old.

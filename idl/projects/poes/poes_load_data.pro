@@ -35,8 +35,8 @@
 ;             /downloadonly: Download the file but don't read it  
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-01-26 09:58:49 -0800 (Mon, 26 Jan 2015) $
-; $LastChangedRevision: 16735 $
+; $LastChangedDate: 2017-02-13 15:32:14 -0800 (Mon, 13 Feb 2017) $
+; $LastChangedRevision: 22769 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/poes/poes_load_data.pro $
 ;-
  
@@ -393,7 +393,9 @@ pro poes_load_data, trange = trange, datatype = datatype, probes = probes, suffi
     for j = 0, n_elements(pathformat)-1 do begin
         relpathnames = file_dailynames(file_format=pathformat[j], trange=tr, /unique)
 
-        files = file_retrieve(relpathnames, _extra=source, /last_version)
+        ;files = file_retrieve(relpathnames, _extra=source, /last_version)
+        files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, $
+          local_path = source.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0)
         
         if keyword_set(downloadonly) then continue
         ; warning: using /get_support_data with cdf2tplot will cause cdf2tplot to ignore the varformat keyword

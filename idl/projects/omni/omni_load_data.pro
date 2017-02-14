@@ -15,8 +15,8 @@
 ;     http://omniweb.gsfc.nasa.gov/html/HROdocum.html
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-04-22 15:41:37 -0700 (Wed, 22 Apr 2015) $
-; $LastChangedRevision: 17398 $
+; $LastChangedDate: 2017-02-13 15:32:14 -0800 (Mon, 13 Feb 2017) $
+; $LastChangedRevision: 22769 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_load_data.pro $
 ;-
 pro omni_load_data,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -49,7 +49,8 @@ pro omni_load_data,type,files=files,trange=trange,verbose=verbose,downloadonly=d
     
     relpathnames = file_dailynames(file_format=pathformat,trange=trange,/unique)
     
-    files = file_retrieve(relpathnames, _extra=source)
+    ;files = file_retrieve(relpathnames, _extra=source)
+    files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0)
     
     if keyword_set(downloadonly) then return
     

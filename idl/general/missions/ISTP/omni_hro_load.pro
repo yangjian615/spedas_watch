@@ -47,7 +47,8 @@ pathformat = 'omni/omni_cdaweb/hro_'+rstr+'/YYYY/omni_hro_'+rstr+'_YYYYMM01_v01.
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,/unique)
 
-files = file_retrieve(relpathnames, _extra=source)
+;files = file_retrieve(relpathnames, _extra=source)
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0)
 
 if keyword_set(downloadonly) then return
 

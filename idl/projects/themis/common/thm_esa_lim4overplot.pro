@@ -7,13 +7,13 @@
 ;value for ymin or ymax are present for less than 1 hour total,
 ;(actually 1/24 of the total number of time intervals) then ignore
 ;those values.
-Pro thm_esa_lim4overplot, var, zmin = zmin, zmax = zmax, zlog = zlog, $
+Pro thm_esa_lim4overplot, var, trange, zmin = zmin, zmax = zmax, zlog = zlog, $
                           ymin = ymin, ymax = ymax, ylog = ylog, $
                           overwrite = overwrite, _extra = _extra
 ;Version:
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-02-10 12:48:36 -0800 (Fri, 10 Feb 2017) $
-; $LastChangedRevision: 22755 $
+; $LastChangedDate: 2017-02-13 13:35:09 -0800 (Mon, 13 Feb 2017) $
+; $LastChangedRevision: 22766 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_esa_lim4overplot.pro $
 ;-
   If(keyword_set(zmin)) Then zmin0 = zmin Else zmin0 = 0
@@ -25,45 +25,61 @@ Pro thm_esa_lim4overplot, var, zmin = zmin, zmax = zmax, zlog = zlog, $
 
   zminv = zmin0 & zmaxv = zmax0
   yminv = ymin0 & ymaxv = ymax0
-  get_data, var, data = d, dlim = dl, lim = al
-  If(size(d, /type) Eq 8) Then Begin
-    vlv = where(finite(d.y) And (d.y Ne 0), nvlv)
-    If(nvlv Gt 0) Then Begin
-       If(zminv Eq 0) Then zminv = min(d.y[vlv])
-       If(zmaxv Eq 0) Then zmaxv = max(d.y[vlv])
-       y0 = where(d.y Eq 0, ny0)
-       If(ny0 Gt 0) Then Begin
-          d.y[y0] = zminv
-       Endif
-    Endif
-    If(tag_exist(d, 'v')) Then Begin
-       If(yminv Eq 0) Then Begin
-          yminv = min(d.v)
-          ;test for not many times at these
-          ;values, only do this once, but have
-          ;some margin
-          ntimes = float(n_elements(d.x))
-          ymin_all = min(d.v, dimension =2)
-          ss_yminv = where(ymin_all Le 2*yminv, nss_yminv)
-          frac_ymin = float(nss_yminv)/ntimes
-          If(frac_ymin Lt 1.0/24.0) Then Begin
-             ss_not_yminv = where(ymin_all Gt 2.0*yminv)
-             yminv = min(ymin_all[ss_not_yminv])
-          Endif
-       Endif
-       If(ymaxv Eq 0) Then Begin
-          ymaxv = max(d.v)
-          ymax_all = max(d.v, dimension =2)
-          ss_ymaxv = where(ymax_all Ge ymaxv/2.0, nss_ymaxv)
-          frac_ymax = float(nss_ymaxv)/ntimes
-          If(frac_ymax Lt 1.0/24.0) Then Begin
-             ss_not_ymaxv = where(ymax_all Lt ymaxv/2.0)
-             ymaxv = max(ymax_all[ss_not_ymaxv])
-          Endif
-       Endif
-    Endif
-  Endif
 
+;First, ditch zero energy values, this has been moved from
+;thm_gen_overplot.pro
+  get_data, var, data = d, dlim = dl, lim = al
+
+  tr = time_double(trange)
+  If(is_struct(d)) Then Begin
+;This needs to be done for data only in the original time interval
+     ss = where(d.x Ge tr[0] And d.x lt tr[1], nss)
+     If(nss Gt 0) Then Begin
+        dvss = d.v[ss, *]
+        minval = min(dvss) > 0.10
+;0 energy values will not plot correctly, so
+;reset any energy = 0 points to 0.01 eV
+        xxx = where(dvss lt 1.0, nxxx)
+        If(nxxx Gt 0) Then Begin
+           dvss[xxx] = 0.01
+           d.v[ss, *] = dvss
+           store_data, var, data = d
+        Endif
+;Y min and max
+        If(yminv Eq 0) Then Begin
+           yminv = min(dvss)
+;test for not many times at these
+;values, only do this once, but have
+;some margin
+           ymin_all = min(dvss, dimension =2)
+           ss_yminv = where(ymin_all Le 2*yminv, nss_yminv)
+           frac_ymin = float(nss_yminv)/nss
+           If(frac_ymin Lt 1.0/24.0) Then Begin
+              ss_not_yminv = where(ymin_all Gt 2.0*yminv)
+              yminv = min(ymin_all[ss_not_yminv])
+           Endif
+        Endif
+        If(ymaxv Eq 0) Then Begin
+           ymaxv = max(dvss)
+           ymax_all = max(dvss, dimension =2)
+           ss_ymaxv = where(ymax_all Ge ymaxv/2.0, nss_ymaxv)
+           frac_ymax = float(nss_ymaxv)/nss
+           If(frac_ymax Lt 1.0/24.0) Then Begin
+              ss_not_ymaxv = where(ymax_all Lt ymaxv/2.0)
+              ymaxv = max(ymax_all[ss_not_ymaxv])
+           Endif
+        Endif
+     Endif
+;Z min and max
+     vlv = where(finite(d.y) And (d.y Ne 0), nvlv)
+     If(nvlv Gt 0) Then Begin
+        If(zminv Eq 0) Then zminv = min(d.y[vlv])
+        If(zmaxv Eq 0) Then zmaxv = max(d.y[vlv])
+        y0 = where(d.y Eq 0, ny0)
+        If(ny0 Gt 0) Then d.y[y0] = zminv
+     Endif
+  Endif
+  
   If(keyword_set(overwrite)) Then varnew = var $
   Else varnew = var+'_limited'
   store_data, varnew, data = d, dlim = dl, lim = al

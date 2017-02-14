@@ -28,8 +28,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-01 17:04:47 -0800 (Wed, 01 Feb 2017) $
-; $LastChangedRevision: 22710 $
+; $LastChangedDate: 2017-02-13 16:00:15 -0800 (Mon, 13 Feb 2017) $
+; $LastChangedRevision: 22772 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 
@@ -144,4 +144,6 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   store_data, newname, data={x: d.x, y: flux_omni, v: en_label}, dlimits=dl
   options, newname, spec=1, /ylog, /zlog;,  yrange = [47, 523], yticks=3, ystyle=1, zrange=[1., 1.e6];, no_interp=0, y_no_interp=0, x_no_interp=0
 
+  options, newname, ysubtitle='[keV]', ztitle=units_label, ystyle=1, /default, /ylog
+  append_array, tplotnames, newname
 end ; pro

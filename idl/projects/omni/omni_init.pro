@@ -7,8 +7,8 @@
 ;HISTORY
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-04-22 15:41:37 -0700 (Wed, 22 Apr 2015) $
-;$LastChangedRevision: 17398 $
+;$LastChangedDate: 2017-02-13 08:31:58 -0800 (Mon, 13 Feb 2017) $
+;$LastChangedRevision: 22760 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_init.pro $
 ;-
 pro omni_init, reset=reset  ;, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -39,7 +39,7 @@ Endif else begin; use defaults
       print,'No OMNI config found...creating default configuration'
     endelse
     !omni.local_data_dir  = root_data_dir() + 'omni/' 
-    !omni.remote_data_dir = 'http://spdf.gsfc.nasa.gov/pub/data/'
+    !omni.remote_data_dir = 'https://spdf.gsfc.nasa.gov/pub/data/'
 endelse
 ; omniive_ext isn't needed because we use OMNI data from CDFs at SPDF now
 ;!omni.omniive_ext ='.arc'
