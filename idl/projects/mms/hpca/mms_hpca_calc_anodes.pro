@@ -25,8 +25,8 @@
 ;           *_flux
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-04-27 12:44:59 -0700 (Wed, 27 Apr 2016) $
-;$LastChangedRevision: 20935 $
+;$LastChangedDate: 2017-02-14 11:50:00 -0800 (Tue, 14 Feb 2017) $
+;$LastChangedRevision: 22778 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_calc_anodes.pro $
 ;-
 function mms_hpca_elevations
@@ -164,7 +164,7 @@ pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = 
         return
     endif
     if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
-    if undefined(tplotnames) then tplotnames = tnames()
+    if undefined(tplotnames) then tplotnames = tnames() else tplotnames = tnames(tplotnames)
     if undefined(suffix) then suffix = ''
     sum_anodes = ['*_count_rate', '*_RF_corrected', '*_bkgd_corrected', '*_norm_counts']+suffix
 
@@ -179,7 +179,7 @@ pro mms_hpca_calc_anodes, tplotnames=tplotnames, fov=fov, probe=probe, anodes = 
 
     for sum_idx = 0, n_elements(sum_anodes)-1 do begin
         vars_to_sum = strmatch(tplotnames, sum_anodes[sum_idx])
-
+        
         for vars_idx = 0, n_elements(vars_to_sum)-1 do begin
 
             if vars_to_sum[vars_idx] eq 1 then begin

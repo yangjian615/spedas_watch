@@ -77,8 +77,8 @@
 ; 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-25 10:54:19 -0800 (Wed, 25 Jan 2017) $
-;$LastChangedRevision: 22668 $
+;$LastChangedDate: 2017-02-14 12:04:47 -0800 (Tue, 14 Feb 2017) $
+;$LastChangedRevision: 22779 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_load_hpca.pro $
 ;-
 
@@ -131,7 +131,10 @@ pro mms_load_hpca, trange = trange_in, probes = probes, datatype = datatype, $
       dprint, dlevel = 0, 'Error, cannot specify both the varformat keyword and center measurement keyword in the same call (measurements won''t be centered).'
       return
     endif
-    if ~undefined(varformat) && varformat ne '*' then varformat = varformat + ' *_ion_energy *_start_azimuth'
+    if ~undefined(varformat) && (varformat[0] ne '*') then begin
+      if is_array(varformat) then varformat = [varformat, '*_ion_energy', '*_start_azimuth'] $
+        else varformat = varformat + ' *_ion_energy *_start_azimuth'
+    endif
     if ~undefined(varformat) && ~undefined(get_support_data) then undefine, get_support_data
     
     mms_load_data, trange = trange_in, probes = probes, level = level, instrument = 'hpca', $

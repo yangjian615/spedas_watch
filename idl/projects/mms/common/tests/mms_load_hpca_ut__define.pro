@@ -6,10 +6,26 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-09 14:11:44 -0700 (Tue, 09 Aug 2016) $
-; $LastChangedRevision: 21626 $
+; $LastChangedDate: 2017-02-14 12:48:47 -0800 (Tue, 14 Feb 2017) $
+; $LastChangedRevision: 22781 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_hpca_ut__define.pro $
 ;-
+
+function mms_load_hpca_ut::test_varformat_string
+  mms_load_hpca, varformat='*velocity* *tparallel', trange=['2015-12-15', '2015-12-16']
+  assert, (tnames('mms1_hpca_ion_energy'))[0] ne '', 'Varformat string regression'
+  assert, spd_data_exists('mms1_hpca_heplusplus_tparallel mms1_hpca_hplus_ion_bulk_velocity mms1_hpca_oplus_ion_bulk_velocity', '2015-12-15', '2015-12-16'), $
+    'Varformat string regression'
+   return, 1
+end
+
+function mms_load_hpca_ut::test_varformat_array
+  mms_load_hpca, varformat=['*velocity*', '*tparallel'],  trange=['2015-12-15', '2015-12-16']
+  assert, (tnames('mms1_hpca_ion_energy'))[0] ne '', 'Varformat array regression'
+  assert, spd_data_exists('mms1_hpca_heplusplus_tparallel mms1_hpca_hplus_ion_bulk_velocity mms1_hpca_oplus_ion_bulk_velocity', '2015-12-15', '2015-12-16'), $
+    'Varformat array regression'
+  return, 1
+end
 
 function mms_load_hpca_ut::test_center_burst_dist_spdf
   mms_load_hpca, data_rate='brst', level='l2', datatype='ion', /center, suffix='_centered', /SPDF

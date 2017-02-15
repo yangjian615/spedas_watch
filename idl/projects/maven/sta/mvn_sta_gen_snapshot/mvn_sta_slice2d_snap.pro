@@ -58,6 +58,8 @@
 ;
 ;    ERANGE:      Specifies the energy range used in analyses. 
 ;
+;   DATPLOT:      Returns a structure which contains data used to plot.
+;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
 ;                 ; Uses archive data, and shows the B field direction.
@@ -86,16 +88,16 @@
 ;CREATED BY:      Takuya Hara on 2015-05-22.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: xussui $
-; $LastChangedDate: 2016-11-21 10:03:07 -0800 (Mon, 21 Nov 2016) $
-; $LastChangedRevision: 22388 $
+; $LastChangedBy: hara $
+; $LastChangedDate: 2017-02-14 11:31:18 -0800 (Tue, 14 Feb 2017) $
+; $LastChangedRevision: 22777 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id,    $
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
-                          dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange
+                          dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange, datplot=datplot
 
   IF STRUPCASE(STRMID(!version.os, 0, 3)) EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
@@ -251,7 +253,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            undefine, dummy
         ENDIF
 
-        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel")
+        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=datplot")
         IF status EQ 1 THEN BEGIN
            x0 = !x.window[0]*1.2
            y0 = !y.window[1]*0.95

@@ -43,8 +43,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-10-19 12:36:49 -0700 (Wed, 19 Oct 2016) $
-; $LastChangedRevision: 22150 $
+; $LastChangedDate: 2017-02-14 11:10:35 -0800 (Tue, 14 Feb 2017) $
+; $LastChangedRevision: 22776 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/TT2000/add_tt2000_offset.pro $
 ;-
 
@@ -62,7 +62,7 @@ function add_tt2000_offset,dates,subtract=subtract,offsets=offsets
   if ~is_struct(leap_data) then begin
       ; reload the leap second file if there's trouble loading it
       dprint, dlevel = 0, 'Error, couldn''t find a valid CDFLeapSeconds.txt file; re-downloading from cdf.gsfc.nasa.gov...'
-      file_delete, !cdf_leap_seconds.local_data_dir+'/CDFLeapSeconds.txt'
+      file_delete, !cdf_leap_seconds.local_data_dir+'/CDFLeapSeconds.txt', /ALLOW_NONEXISTENT
       cdf_leap_second_init, /reset
       return, add_tt2000_offset(dates,subtract=subtract,offsets=offsets)
   endif

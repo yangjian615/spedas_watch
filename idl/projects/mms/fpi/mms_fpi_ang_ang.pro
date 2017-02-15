@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-07 08:25:34 -0800 (Tue, 07 Feb 2017) $
-;$LastChangedRevision: 22746 $
+;$LastChangedDate: 2017-02-14 14:05:12 -0800 (Tue, 14 Feb 2017) $
+;$LastChangedRevision: 22782 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_ang_ang.pro $
 ;-
 
@@ -45,7 +45,7 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
   if undefined(data_rate) then data_rate = 'fast'
 
   mms_load_fpi, datatype=['d'+species+'s-dist', 'd'+species+'s-moms'], data_rate=data_rate, trange=trange, probe=probe, center_measurement=center_measurement, /time_clip
-  mms_load_fgm, trange=trange, data_rate=data_rate
+  mms_load_fgm, trange=trange, data_rate=data_rate, probe=probe
 
   get_data, 'mms'+probe+'_d'+species+'s_dist_'+data_rate, data=d
 
@@ -112,11 +112,11 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
     if ~undefined(png) then makepng, 'azimuth_vs_energy'
     if ~undefined(postscript) then pclose
 
-   ; pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_'+data_rate+'_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, vname='mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate, units='df')
+    pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_'+data_rate+'_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, vname='mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate, units='df')
 
-   ; window, 4
-   ; plotxyz, pad.PA, pad.EGY, pad.DATA, /noisotropic, /ylog, /zlog, title=time_string(trange[0])+'-'+time_string(trange[1]), $
-   ;   xrange=[0,180], xtitle='Pitch angle (deg)', ytitle='Energy (eV)', ztitle=pad.units, window=4
+    window, 4
+    plotxyz, pad.PA, pad.EGY, pad.DATA, /noisotropic, /ylog, /zlog, title=time_string(trange[0])+'-'+time_string(trange[1]), $
+      xrange=[0,180], xtitle='Pitch angle (deg)', ytitle='Energy (eV)', ztitle=pad.units, window=4
   endif else if keyword_set(all_energies) then begin
     for en_idx=0, n_elements(idx_of_ens)-1 do begin
       window, en_idx, xsize=xsize, ysize=ysize
