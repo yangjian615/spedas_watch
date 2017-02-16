@@ -20,9 +20,9 @@
 ;PLEASE DO NOT USE this routine within general "LOAD" routines using the LOAD keyword. "LOAD" routines should assume that SPICE kernels are already loaded.
 ; 
 ;Author: Davin Larson  - January 2014
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-02-06 15:59:01 -0800 (Mon, 06 Feb 2017) $
-; $LastChangedRevision: 22743 $
+; $LastChangedBy: ali $
+; $LastChangedDate: 2017-02-14 18:29:05 -0800 (Tue, 14 Feb 2017) $
+; $LastChangedRevision: 22786 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/spice/mvn_spice_kernels.pro $
 ;-
 function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,verbose=verbose,source=source,valid_only=valid_only,sck=sck,clear=clear  $
@@ -56,7 +56,7 @@ function mvn_spice_kernels,names,trange=trange,all=all,load=load,reset=reset,ver
            append_array, kernels, spice_standard_kernels(source=source,/mars,no_update=no_update) ;  "Standard" kernels
         end
         ;swapped out file_retrieve calls for spd_download_plus for https access, 2017-01-30, jmm
-        'CSS': append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/spk/comets/siding_spring_v?.bsp', $
+        'CSS': append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/spk/comets/siding_spring_8-19-14.bsp', $
                                                   local_path = source.local_data_dir+'generic_kernels/spk/comets/', no_update = no_update, $
                                                   last_version = last_version, no_server = source.no_server, file_mode = '666'o, dir_mode = '777'o)
         'LSK': append_array,kernels, spd_download_plus(remote_file = source.remote_data_dir+'generic_kernels/lsk/naif00??.tls', $

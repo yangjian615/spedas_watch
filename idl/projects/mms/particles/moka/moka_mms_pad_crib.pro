@@ -9,8 +9,8 @@
 ;  Created by Mitsuo Oka on 2017-01-05
 ;
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-02-14 17:32:30 -0800 (Tue, 14 Feb 2017) $
-;$LastChangedRevision: 22785 $
+;$LastChangedDate: 2017-02-15 10:19:17 -0800 (Wed, 15 Feb 2017) $
+;$LastChangedRevision: 22789 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad_crib.pro $
 ;-
 PRO moka_mms_pad_crib
@@ -66,87 +66,43 @@ PRO moka_mms_pad_crib
   ; Energy Spectra (1D Cuts)
   ;----------------------------
 
-  i1DCUTS = 1
-  if i1DCUTS then begin
-    yrange = [1e+1, 1e+10]
-        
-    plot, pad.EGY, pad.SPEC_OMN,color=0,title=title, $
-      /xlog,xstyle=1,xrange=[10,30000],$
-      /ylog,ystyle=1,yrange=yrange
-    oplot, pad.EGY, pad.SPEC___0,color=2
-    oplot, pad.EGY, pad.SPEC__90,color=4
-    oplot, pad.EGY, pad.SPEC_180,color=6
-    
-    oplot, pad.EGY, pad.OCLV_OMN,color=0, linestyle=3; OCLV = one-count-level
-    oplot, pad.EGY, pad.OCLV___0,color=2, linestyle=3
-    oplot, pad.EGY, pad.OCLV__90,color=4, linestyle=3
-    oplot, pad.EGY, pad.OCLV_180,color=6, linestyle=3
-    
-    xlblpos = 10000.
-    xyouts, xlblpos, yrange[1]*0.1, 'omni',color=0,/data
-    xyouts, xlblpos, yrange[1]*0.03,'para',color=2,/data
-    xyouts, xlblpos, yrange[1]*0.01,'perp',color=4,/data
-    xyouts, xlblpos, yrange[1]*0.003,'anti-para',color=6,/data
-    stop
-  endif
-
-
+  yrange = [1e+1, 1e+10]
+      
+  plot, pad.EGY, pad.SPEC_OMN,color=0,title=title, $
+    /xlog,xstyle=1,xrange=[10,30000],$
+    /ylog,ystyle=1,yrange=yrange
+  oplot, pad.EGY, pad.SPEC___0,color=2
+  oplot, pad.EGY, pad.SPEC__90,color=4
+  oplot, pad.EGY, pad.SPEC_180,color=6
   
-  ;--------------
-  ; Velocity distribution
-  ;---------------
-  i2DCUTS = 0
-  if i2DCUTS then begin
-    imax = 100
-    vxmin = -2000.
-    vxmax =  2000.
-    dvx = (vxmax-vxmin)/float(imax-1)
-    wvx = vxmin + findgen(imax)*dvx 
-    
-    jmax = 100
-    vymin = -2000.
-    vymax =  2000.
-    dvy = (vymax-vymin)/float(jmax-1)
-    wvy = vymin + findgen(jmax)*dvy
-    
-    cut2d = fltarr(imax, jmax)
-    cnt2d = fltarr(imax, jmax)
-    ct_out = 0
-    nmax = n_elements(pad.dist.vx)
-    for n=0,nmax-1 do begin
-      ;if abs(pad.vz[n]) lt 1000. then begin
-        i = (floor((pad.dist.vx[n]- vxmin)/dvx) > 0) < (imax-1)
-        j = (floor((pad.dist.vy[n]- vymin)/dvy) > 0) < (jmax-1)
-        cut2d[i,j] += pad.dist.data_dat[n]
-        cnt2d[i,j] += 1.
-      ;endif else ct_out += 1
-    endfor
-    cut2d /= cnt2d
-    
-    plotxyz, wvx, wvy, cut2d, /noisotropic, zlog=1  
-    oplot, [vxmin,vxmax],[0,0], linestyle=2
-    oplot, [0,0], [vymin,vymax], linestyle=2
-    stop
-  endif
-;  
+  oplot, pad.EGY, pad.OCLV_OMN,color=0, linestyle=3; OCLV = one-count-level
+  oplot, pad.EGY, pad.OCLV___0,color=2, linestyle=3
+  oplot, pad.EGY, pad.OCLV__90,color=4, linestyle=3
+  oplot, pad.EGY, pad.OCLV_180,color=6, linestyle=3
+  
+  xlblpos = 10000.
+  xyouts, xlblpos, yrange[1]*0.1, 'omni',color=0,/data
+  xyouts, xlblpos, yrange[1]*0.03,'para',color=2,/data
+  xyouts, xlblpos, yrange[1]*0.01,'perp',color=4,/data
+  xyouts, xlblpos, yrange[1]*0.003,'anti-para',color=6,/data
+  stop
+  
   ;---------------------------------------
   ; Pitch-Angle vs Energy Plot (2D PAD)
   ;---------------------------------------
-  iPAD = 1
-  if iPAD then begin
-    PAD_ROTATE = 0
+
+  PAD_ROTATE = 0
+  
+  if PAD_ROTATE then begin
+    plotxyz,pad.PA, pad.EGY, pad.DATA,/noisotropic,ylog=0,zlog=1,$
+      xrange=[180,0],xtitle='pitch angle',ytitle='velocity',$;yrange=[0,1000],$;yrange=[10,27000],
+      xtickinterval=30,ztitle=pad.UNITS,title=title
+  endif else begin
+    plotxyz,pad.EGY, pad.PA, transpose(pad.DATA),/noisotropic,/xlog,ylog=0,zlog=1,$
+      yrange=[0,180],xrange=[10,27000],ytitle='pitch angle',xtitle='energy',$
+      ytickinterval=30,ztitle=pad.UNITS,title=title;,zrange=zrange
+  endelse
     
-    if PAD_ROTATE then begin
-      plotxyz,pad.PA, pad.EGY, pad.DATA,/noisotropic,ylog=0,zlog=1,$
-        xrange=[180,0],xtitle='pitch angle',ytitle='velocity',$;yrange=[0,1000],$;yrange=[10,27000],
-        xtickinterval=30,ztitle=pad.UNITS,title=title
-    endif else begin
-      plotxyz,pad.EGY, pad.PA, transpose(pad.DATA),/noisotropic,/xlog,ylog=0,zlog=1,$
-        yrange=[0,180],xrange=[10,27000],ytitle='pitch angle',xtitle='energy',$
-        ytickinterval=30,ztitle=pad.UNITS,title=title;,zrange=zrange
-    endelse
-    
-  endif
   
   toc
 END

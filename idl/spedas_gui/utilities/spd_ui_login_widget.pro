@@ -22,27 +22,27 @@
 ;           adding a note to the bottom of the widget
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-03-17 09:10:21 -0700 (Thu, 17 Mar 2016) $
-;$LastChangedRevision: 20483 $
+;$LastChangedDate: 2017-02-15 15:48:51 -0800 (Wed, 15 Feb 2017) $
+;$LastChangedRevision: 22793 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_ui_login_widget.pro $
 ;-
 
 ; Handle the widget's events.
-pro login_widget_event, event
+pro spd_login_widget_event, event
 
   widget_control, event.top, get_uvalue=info
   
   case event.id of
     info.cancelID: widget_control, event.top, /destroy
-    info.okID: handle_ok, event
-    info.passwordID: handle_password, event
+    info.okID: spd_handle_ok, event
+    info.passwordID: spd_handle_password, event
     info.saveID: (*info.ptr).save = event.select
     else:
   endcase
 
 end
 
-pro handle_ok, event
+pro spd_handle_ok, event
   widget_control, event.top, get_uvalue=info
   widget_control, info.usernameID, get_value=username
   (*info.ptr).username = username
@@ -54,12 +54,12 @@ end
 ; **NOTE: This routine will not handle ctrl+v & ctrl+x (paste/cut text)
 ;         on windows when a non-ending subset of the current text is selected
 ;         due to multiple delete events that are generated from those operations.
-pro handle_password, event
+pro spd_handle_password, event
 
   ;Handle return in the password field as hitting OK
   if event.type eq 0 then begin ;only insertion event types have "ch"
     if event.ch eq 10 then begin 
-      handle_ok, event
+      spd_handle_ok, event
       return
     endif
     ;do not insert non-printing characters (allows accelerators)
@@ -160,7 +160,7 @@ function spd_ui_login_widget, title=title, cancel=cancel, $
   
   widget_control, base, set_uvalue=info, /no_copy
   widget_control, base, default_button = okID
-  XManager, 'login_widget', base
+  XManager, 'spd_login_widget', base
   
    
   ; Create the return structure holding login credentials.

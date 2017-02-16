@@ -41,37 +41,11 @@
 ;  Created by Mitsuo Oka on 2016-05-15
 ;  Fixed energy bin mistake 2017-01-28 
 ;  
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-14 09:11:21 -0800 (Tue, 14 Feb 2017) $
-;$LastChangedRevision: 22774 $
+;$LastChangedBy: moka $
+;$LastChangedDate: 2017-02-15 10:19:17 -0800 (Wed, 15 Feb 2017) $
+;$LastChangedRevision: 22789 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
 ;-
-FUNCTION moka_mms_pad_unit_vth, T, m, nonrel=nonrel; T=[eV]
-  eV2J = 1.602176620898d-19
-  if keyword_set(nonrel) then begin
-    v = sqrt(1.d0*T*eV2J/m) / 1000.
-  endif else begin
-    mc2 = (m*!const.c^2)/eV2J; kg*(m/s)^2 = J --> eV
-    v = 0.001d0*!const.c*sqrt(1.d0 - 1.d0/((T/mc2 + 1.d0)^2) )
-  endelse
-
-  ; NOTE: This is how it is calculated in SPEDAS spd_slice2d_get_sphere.pro
-  ;
-  ;  ;calculate radial values
-  ;  if keyword_set(energy) then begin
-  ;    ;energy in eV
-  ;    rbounds = ebounds
-  ;  endif else begin
-  ;    ;convert mass from eV/(km/s)^2 to eV/c^2
-  ;    erest = dist.mass * c^2 / 1e6
-  ;    ;velocity in km/s (reletivistic calc for high energy electrons)
-  ;    rbounds = c * sqrt( 1 - 1/((ebounds/erest + 1)^2) )  /  1000.
-  ;  endelse
-
-  return, v
-END
-
-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
   norm=norm, ename=ename, pr___0 = pr___0, pr__90 = pr__90, pr_180=pr_180,$
   daPara=da,daPerp=da2,oclreal=oclreal, single_time=single_time
@@ -201,12 +175,9 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
     ;------------------------------------
     ; Particle Velocities & Pitch Angles
     ;------------------------------------
-
-    constmass = (spc eq 'e') ? !const.ME : !const.MP
-    vabs = moka_mms_pad_unit_vth(data.ENERGY,constmass);,/nonrel); eV -> km/s  
-    
+    erest = data.mass * !const.c^2 / 1e6; convert mass from eV/(km/s)^2 to eV
+    vabs = !const.c * sqrt( 1 - 1/((data.ENERGY/erest + 1)^2) )  /  1000.;velocity in km/s
     sphere_to_cart, vabs, data.theta, data.phi, vx, vy, vz
-
     if ~undefined(vname) then begin
       vx -= Vbulk[0]
       vy -= Vbulk[1]
@@ -217,15 +188,10 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
     idx = where(dp lt -1.d0, ct) & if ct gt 0 then dp[idx] = -1.d0
     pa  = rd*acos(dp)
     cart_to_sphere, vx, vy, vz, vnew, theta, phi, /ph_0_360
-    mc2 = (constmass*!const.c^2)/1.602176620898d-19; kg*(m/s)^2 = J --> eV
-    data.energy = mc2*(1.d0/sqrt(1.d0-(vnew*1000.d0/!const.c)^2)-1.d0); eV
+    data.energy = erest*(1.d0/sqrt(1.d0-(vnew*1000.d0/!const.c)^2)-1.d0); eV
     data.phi    = phi
     data.theta  = theta
     data.pa     = pa
-;    str_element,/add,data,'vx',vx
-;    str_element,/add,data,'vy',vy
-;    str_element,/add,data,'vz',vz
-;    str_element,/add,data,'vabs',vnew
 
     ;------------------------
     ; DISTRIBUTE

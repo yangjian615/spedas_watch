@@ -31,10 +31,11 @@
 ;
 ;HISTORY:
 ; 2015-04-10, moka, Created based on 'thm_init'
+; 2015-02-15, egrimes, commented out dialog_message in CDF version error due to a bug on MacOS X 10.11.6/IDL 8.5
 ; 
-; $LastChangedBy: moka $
-; $LastChangedDate: 2017-01-05 10:50:20 -0800 (Thu, 05 Jan 2017) $
-; $LastChangedRevision: 22507 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-02-15 14:18:31 -0800 (Wed, 15 Feb 2017) $
+; $LastChangedRevision: 22790 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_init.pro $
 ;-
 
@@ -102,7 +103,9 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
     msg = [msg,'please upgrade your CDF software to its latest version at']
     msg = [msg,' ']
     msg = [msg,'http://cdf.gsfc.nasa.gov/html/cdf_patch_for_idl.html']
-    result = dialog_message(msg,/center)
+    ; dialog_message commented out, 2/15/17, due to a bug on MacOS X 10.11.6/IDL 8.5
+    ; -> this call was causing the IDL session to close unexpectedly
+    ;result = dialog_message(msg,/center)
     print,'##########################'
     print,'     WARNING     '
     print,'##########################'
@@ -110,6 +113,7 @@ pro mms_init, reset=reset, local_data_dir=local_data_dir, remote_data_dir=remote
     print, msg
     print,' '
     print,'##########################'
+    stop
   endif
   
   cdf_leap_second_init

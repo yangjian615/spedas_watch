@@ -69,8 +69,8 @@
 ;   - Minor updates to defaults by egrimes@igpp
 ;    
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
-;$LastChangedRevision: 22583 $
+;$LastChangedDate: 2017-02-15 15:09:45 -0800 (Wed, 15 Feb 2017) $
+;$LastChangedRevision: 22791 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edp/mms_load_edp.pro $
 ;-
 pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
@@ -90,6 +90,7 @@ pro mms_load_edp, trange = trange, probes = probes, datatype = datatype, $
     if undefined(suffix) then suffix = ''
     if undefined(data_rate) then data_rate = 'fast'
     if undefined(varformat) && undefined(get_support_data) then get_support_data = 1
+    if undefined(time_clip) then time_clip = 1
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'edp', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
