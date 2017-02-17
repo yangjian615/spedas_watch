@@ -6,9 +6,9 @@
 ;HISTORY
 ; Written by Davin Larson
 ;
-;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-12-20 22:40:16 -0800 (Sat, 20 Dec 2014) $
-;$LastChangedRevision: 16523 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-02-16 14:54:44 -0800 (Thu, 16 Feb 2017) $
+;$LastChangedRevision: 22807 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wind_init.pro $
 ;-
 pro wind_init, reset=reset  ;, local_data_dir=local_data_dir, remote_data_dir=remote_data_dir
@@ -44,7 +44,7 @@ Endif else begin; use defaults
 
     ;!wind.local_data_dir = spd_default_local_data_dir() + 'wind' + path_sep()
     !wind.local_data_dir = root_data_dir()
-    !wind.remote_data_dir = 'http://sprg.ssl.berkeley.edu/data/
+    !wind.remote_data_dir = 'https://spdf.gsfc.nasa.gov/pub/data/'
 endelse
 if file_test(!wind.local_data_dir+'wind/.master') then begin  ; Local directory IS the master directory
    !wind.no_server=1    ;   

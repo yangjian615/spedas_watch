@@ -1,7 +1,7 @@
 
 ;+
 ;Procedure:
-;  mms_part_products_crib_v3
+;  mms_part_products_crib
 ;  
 ;  This version is meant to work with v3.0.0+ of the FPI CDFs
 ;
@@ -10,9 +10,9 @@
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-07 11:40:53 -0800 (Mon, 07 Nov 2016) $
-;$LastChangedRevision: 22329 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib_v3.pro $
+;$LastChangedDate: 2017-02-16 10:06:43 -0800 (Thu, 16 Feb 2017) $
+;$LastChangedRevision: 22803 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib.pro $
 ;-
 
 

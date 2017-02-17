@@ -19,9 +19,9 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-10-27 09:03:45 -0700 (Thu, 27 Oct 2016) $
-; $LastChangedRevision: 22214 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_basic_dayside_v3.pro $
+; $LastChangedDate: 2017-02-16 09:46:56 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22802 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_basic_dayside.pro $
 ;-
 start_time = systime(/sec)
 

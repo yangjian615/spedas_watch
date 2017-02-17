@@ -12,9 +12,9 @@
 ;  This routine is still in development.
 ; Author: Davin Larson
 ;
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-11-04 21:58:31 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19260 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-02-16 14:54:44 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22807 $
 ; $URL $
 ;-
 pro wi_mfi_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -48,7 +48,7 @@ endif
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-files = file_retrieve(relpathnames, _extra=source, /last_version)
+files = spd_download(remote_file=relpathnames, remote_path=!wind.remote_data_dir, local_path = !wind.local_data_dir)
 
 if keyword_set(downloadonly) then return
 

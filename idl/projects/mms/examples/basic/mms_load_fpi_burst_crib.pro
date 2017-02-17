@@ -7,9 +7,9 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-04 15:24:29 -0700 (Fri, 04 Nov 2016) $
-; $LastChangedRevision: 22304 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fpi_burst_crib_v3.pro $
+; $LastChangedDate: 2017-02-16 09:46:56 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22802 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fpi_burst_crib.pro $
 ;-
 
 trange = ['2015-10-16/13:05', '2015-10-16/13:10']

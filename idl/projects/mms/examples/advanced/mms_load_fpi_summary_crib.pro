@@ -1,7 +1,7 @@
 ;+ 
 ; MMS FPI summary crib sheet
 ; 
-; mms_load_fpi_summary_crib_v3.pro
+; mms_load_fpi_summary_crib.pro
 ; 
 ; Note:
 ;   This version is meant to work with v3.0.0 of the FPI CDFs
@@ -28,9 +28,9 @@
 ; SBoaardsen added query for brst or fast
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-07 11:25:47 -0800 (Mon, 07 Nov 2016) $
-; $LastChangedRevision: 22327 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib_v3.pro $
+; $LastChangedDate: 2017-02-16 10:06:43 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22803 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_load_fpi_summary_crib.pro $
 ;-
 
 start_time = systime(/seconds)

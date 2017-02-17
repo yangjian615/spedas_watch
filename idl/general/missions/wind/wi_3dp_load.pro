@@ -20,9 +20,9 @@
 ;Notes:
 ; Author: Davin Larson
 ;
-; $LastChangedBy: davin-win $
-; $LastChangedDate: 2011-02-11 16:01:27 -0800 (Fri, 11 Feb 2011) $
-; $LastChangedRevision: 8201 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-02-16 14:54:44 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22807 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wi_3dp_load.pro $
 ;-
 pro wi_3dp_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -37,29 +37,31 @@ wind_init
 if not keyword_set(source) then source = !wind
     masterfile=''
 
+; versions might change in the future 
+if not keyword_set(version) then version ='v??'
+
 case datatype of
   'k0':  begin
-    pathformat = 'wind/3dp/k0/YYYY/wi_k0_3dp_YYYYMMDD_v??.cdf'
+    pathformat = 'wind/3dp/3dp_k0/YYYY/wi_k0_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then  varformat = 'ion_density ion_vel ion_temp'
     if not keyword_set(prefix) then prefix = 'wi_3dp_k0_'
   end
 
   'pm': begin
-    pathformat = 'wind/3dp/pm/YYYY/wi_pm_3dp_YYYYMMDD_v03.cdf'
+    pathformat = 'wind/3dp/3dp_pm/YYYY/wi_pm_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '?_* TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_pm_'
   end
 
   'elpd_old': begin
-    pathformat = 'wind/3dp/elpd/YYYY/wi_elpd_3dp_YYYYMMDD_v0?.cdf'
+    pathformat = 'wind/3dp/3dp_elpd/YYYY/wi_elpd_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = 'FLUX EDENS TEMP QP QM QT MAGF TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_elpd_'
     addmaster=1
   end
 
   'elpd': begin
-    if not keyword_set(version) then version ='v06'
-    pathformat = 'wind/3dp/elpd2/YYYY/wi_3dp_elpd_YYYYMMDD_'+version+'.cdf'
+    pathformat = 'wind/3dp/3dp_elpd2/YYYY/wi_3dp_elpd_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'; 'FLUX EDENS TEMP QP QM QT MAGF TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_elpd_'
     fix_elpd_flux = 1
@@ -67,8 +69,7 @@ case datatype of
   end
 
   'elsp': begin
-    if not keyword_set(version) then version ='v01'
-    pathformat = 'wind/3dp/elsp/YYYY/wi_elsp_3dp_YYYYMMDD_'+version+'.cdf'
+    pathformat = 'wind/3dp/3dp_elsp/YYYY/wi_elsp_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'; 'FLUX EDENS TEMP QP QM QT MAGF TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_elsp_'
 ;    fix_elpd_flux = 1
@@ -76,8 +77,7 @@ case datatype of
   end
 
   'elm2': begin
-    if not keyword_set(version) then version ='v02'
-    pathformat = 'wind/3dp/elm2/YYYY/wi_elm2_3dp_YYYYMMDD_'+version+'.cdf'
+    pathformat = 'wind/3dp/3dp_elm2/YYYY/wi_elm2_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'; 'FLUX EDENS TEMP QP QM QT MAGF TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_elm2_'
 ;    fix_elpd_flux = 1
@@ -85,21 +85,21 @@ case datatype of
   end
 
   'sfpd': begin
-    pathformat = 'wind/3dp/sfpd/YYYY/wi_sfpd_3dp_YYYYMMDD_v0?.cdf'
+    pathformat = 'wind/3dp/3dp_sfpd/YYYY/wi_sfpd_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'  ; 'FLUX EDENS TEMP QP QM QT MAGF TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_sfpd_'
 ;    addmaster=0
   end
 
   'sfsp': begin
-    pathformat = 'wind/3dp/sfsp/YYYY/wi_sfsp_3dp_YYYYMMDD_v0?.cdf'
+    pathformat = 'wind/3dp/3dp_sfsp/YYYY/wi_sfsp_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'
     if not keyword_set(prefix) then prefix = 'wi_3dp_sfsp_'
 ;    addmaster=0
   end
 
   'plsp': begin
-    pathformat = 'wind/3dp/plsp/YYYY/wi_plsp_3dp_YYYYMMDD_v02.cdf'
+    pathformat = 'wind/3dp/3dp_plsp/YYYY/wi_plsp_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'
     if not keyword_set(prefix) then prefix = 'wi_3dp_plsp_'
     fix_sosp_flux =1
@@ -107,7 +107,7 @@ case datatype of
   end
 
   'phsp': begin
-    pathformat = 'wind/3dp/phsp/YYYY/wi_phsp_3dp_YYYYMMDD_v01.cdf'
+    pathformat = 'wind/3dp/3dp_phsp/YYYY/wi_phsp_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'
     if not keyword_set(prefix) then prefix = 'wi_3dp_phsp_'
    ; fix_sosp_flux =1
@@ -115,7 +115,7 @@ case datatype of
   end
 
   'sosp': begin
-    pathformat = 'wind/3dp/sosp/YYYY/wi_sosp_3dp_YYYYMMDD_v01.cdf'
+    pathformat = 'wind/3dp/3dp_sosp/YYYY/wi_sosp_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'  ; 'FLUX EDENS TEMP QP QM QT MAGF TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_sosp_'
     fix_sosp_flux =1
@@ -123,7 +123,7 @@ case datatype of
   end
 
   'sosp2': begin
-    pathformat = 'wind/3dp/sosp/YYYY/wi_3dp_sosp_YYYYMMDD_v02.cdf'
+    pathformat = 'wind/3dp/3dp_sosp/YYYY/wi_3dp_sosp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'  ; 'FLUX EDENS TEMP QP QM QT MAGF TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_sosp2_'
     fix_sosp_flux =1
@@ -131,7 +131,7 @@ case datatype of
   end
 
   'sopd': begin
-    pathformat = 'wind/3dp/sopd/YYYY/wi_sopd_3dp_YYYYMMDD_v02.cdf'
+    pathformat = 'wind/3dp/3dp_sopd/YYYY/wi_sopd_3dp_YYYYMMDD_'+version+'.cdf'
     if not keyword_set(varformat) then varformat = '*'  ; 'FLUX EDENS TEMP QP QM QT MAGF TIME'
     if not keyword_set(prefix) then prefix = 'wi_3dp_sopd_'
     fix_sopd_flux =1
@@ -142,7 +142,8 @@ endcase
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-files = file_retrieve(relpathnames, _extra=source,/last_version)
+files = spd_download(remote_file=relpathnames, remote_path=!wind.remote_data_dir, local_path = !wind.local_data_dir)
+
 if keyword_set(masterfile) then files= [masterfile,files]
 
 if keyword_set(downloadonly) then return

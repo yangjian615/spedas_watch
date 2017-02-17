@@ -20,14 +20,14 @@
 ;   13. DSP, fast, bpsd omni
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-10-04 15:48:53 -0700 (Tue, 04 Oct 2016) $
-; $LastChangedRevision: 22024 $
+; $LastChangedDate: 2017-02-16 09:43:26 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22801 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_basic_dayside_qlplots.pro $
 ;-
 tplot_options, 'xmargin', [15, 15]
 start_time = systime(/sec)
 
-date = '2016-10-01/00:00:00'
+date = '2016-9-26/00:00:00'
 timespan, date, 1, /day
 probe = '1'
 ; options for send_plots_to:

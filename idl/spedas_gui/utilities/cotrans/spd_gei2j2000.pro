@@ -29,6 +29,7 @@
 ;
 ;------------------------------------------------------------------
 
+@ic_gci_transf
 
 ;
 ; SPD_GCI_TO_GEO - return a transformation matrix
@@ -99,19 +100,6 @@ PRO spd_gci_to_geo, orb_pos_time, transform_matrix
 
   transform_matrix = TRANSPOSE( $
     TRANSPOSE(mean_matrix) # TRANSPOSE(cmatrix) )
-
-END
-
-
-;      STATEMENT FUNCTION DEFINITION FOR dxjul -- JULIAN EPHEMERIS
-;      DATE AT BEGINNING OF year.
-;
-
-FUNCTION dxjul,i
-
-  RETURN,DOUBLE((-32075+1461*(i+4800-13/12)/4  $
-    +367*(-1+13/12*12)/12-3         $
-    *((i+4900-13/12)/100)/4)-0.5 )
 
 END
 

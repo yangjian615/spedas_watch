@@ -27,9 +27,9 @@
 ;   and less for electrons.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-07 11:43:59 -0800 (Mon, 07 Nov 2016) $
-;$LastChangedRevision: 22330 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_slice2d_fpi_crib_v3.pro $
+;$LastChangedDate: 2017-02-16 09:46:56 -0800 (Thu, 16 Feb 2017) $
+;$LastChangedRevision: 22802 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_slice2d_fpi_crib.pro $
 ;-
 
 

@@ -12,9 +12,9 @@
 ;  This routine is still in development.
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2012-10-22 12:56:49 -0700 (Mon, 22 Oct 2012) $
-; $LastChangedRevision: 11095 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-02-16 14:54:44 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22807 $
 ; $URL $
 ;-
 pro wi_swe_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -32,11 +32,11 @@ pro wi_swe_load,type,files=files,trange=trange,verbose=verbose,downloadonly=down
    ;URL deprecated by reorg at SPDF
    ;if datatype eq 'h0' then    pathformat = 'wind/swe_h0/YYYY/wi_h0_swe_YYYYMMDD_v02.cdf'
    ;New URL 2012/10 pcruce@igpp
-   if datatype eq 'h0' then    pathformat = 'wind/swe/swe_h0/YYYY/wi_h0_swe_YYYYMMDD_v02.cdf'
+   if datatype eq 'h0' then    pathformat = 'wind/swe/swe_h0/YYYY/wi_h0_swe_YYYYMMDD_v0?.cdf'
    ;URL deprecated by reorg at SPDF
    ;if datatype eq 'h1' then    pathformat = 'wind/swe_h1/YYYY/wi_h1_swe_YYYYMMDD_v01.cdf'
    ;New URL 2012/10 pcruce@igpp
-   if datatype eq 'h1' then    pathformat = 'wind/swe/swe_h1/YYYY/wi_h1_swe_YYYYMMDD_v01.cdf'
+   if datatype eq 'h1' then    pathformat = 'wind/swe/swe_h1/YYYY/wi_h1_swe_YYYYMMDD_v0?.cdf'
    
 ;   source.remote_data_dir = 'ftp://cdaweb.gsfc.nasa.gov/pub/'
 ;   source.remote_data_dir ='http://themis.ssl.berkeley.edu/data/
@@ -47,7 +47,7 @@ endif
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-files = file_retrieve(relpathnames, _extra=source)
+files = spd_download(remote_file=relpathnames, remote_path=!wind.remote_data_dir, local_path = !wind.local_data_dir)
 
 if keyword_set(downloadonly) then return
 

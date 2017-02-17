@@ -138,10 +138,19 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
   By2Bx = abs(magmgse_smoothed.y[*,1]/magmgse_smoothed.y[*,0])
   Bz2Bx = abs(magmgse_smoothed.y[*,2]/magmgse_smoothed.y[*,0])
   store_data,'B2Bx_ratio',data={x:edata.x,y:[[By2Bx],[Bz2Bx]]}
-  ylim,'B2Bx_ratio',0,10
+  ylim,'B2Bx_ratio',0,40
   options,'B2Bx_ratio','ytitle','By/Bx (black)!CBz/Bx (red)'
   badyx = where(By2Bx gt limiting_ratio)
   badzx = where(Bz2Bx gt limiting_ratio)
+
+  ;Calculate specific limiting angles
+  angle_bybx = atan(1/By2Bx)/!dtor
+  angle_bzbx = atan(1/Bz2Bx)/!dtor
+  store_data,'angle_B2Bx',edata.x,[[angle_bzbx],[angle_bybx]]
+  options,'angle_B2Bx','ytitle','Limiting angles!CAngle Bz/Bx(black)!CAngle ByBx(red)'
+  options,'angle_B2Bx','colors',[0,250]
+  options,'angle_B2Bx','constant',anglemin
+  ylim,'angle_B2Bx',0.1,100,1
 
 
   ;calculate angles b/t despun spinplane antennas and Bo.
@@ -161,7 +170,7 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
   store_data,'rat',data={x:edata.x,y:rat}
   store_data,'e_sp',data={x:edata.x,y:e_sp}
   store_data,'e_sa',data={x:edata.x,y:abs(edata.y[*,0])}
-
+  options,'rat','constant',1
 
   ;Check for Spinfit saturation
   ;; get_data,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',data=tmpp
@@ -244,8 +253,18 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
   ylim,evar,-10,10
   ylim,'rbsp'+probe+'_mag_mgse',-200,200
   ylim,['e_sa','e_sp','rat'],0,10
+  ylim,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',-20,20
+  ylim,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit',-20,20
+
   ;	options,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit','labels',['xMGSE','yMGSE','zMGSE']
   options,evar,'labels',['xMGSE','yMGSE','zMGSE']
+
+  ;Create Emag variable. The Efield magnitude shouldn't change as a function
+  ;of the spinaxis angle to Bo if the calculated Ex component is accurate (assuming
+  ;a steady background Efield)
+  get_data,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',etimes,edata
+  emag = sqrt(edata[*,0]^2 + emag[*,1]^2 + emag[*,2]^2)
+  store_data,'emag',etimes,emag
 
 
   tplot_options,'title','RBSP-'+probe + ' ' + date
@@ -255,8 +274,9 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
       'rbsp'+probe+'_mag_mgse_smoothed',$
       'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',$
       'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_coro_removed_spinfit',$
-      'rbsp'+probe+'_E_coro_mgse',$
-      'angles',$
+;      'rbsp'+probe+'_E_coro_mgse',$
+      'emag',$
+      'angle_B2Bx',$
       'rat',$
       'e_sa',$
       'e_sp']
@@ -265,8 +285,9 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
       'rbsp'+probe+'_mag_mgse_smoothed',$
       'rbsp'+probe+'_efw_esvy_mgse_vxb_removed',$
       'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_coro_removed',$
-      'rbsp'+probe+'_E_coro_mgse',$
-      'angles',$
+;      'rbsp'+probe+'_E_coro_mgse',$
+      'angle_B2Bx',$
+      'emag',$
       'rat',$
       'e_sa',$
       'e_sp']

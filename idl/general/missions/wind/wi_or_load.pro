@@ -12,9 +12,9 @@
 ;  This routine is still in development.
 ; Author: Davin Larson
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2012-10-22 12:56:49 -0700 (Mon, 22 Oct 2012) $
-; $LastChangedRevision: 11095 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-02-16 14:54:44 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22807 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wi_or_load.pro $
 ;-
 pro wi_or_load,type,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -37,7 +37,7 @@ endif
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-files = file_retrieve(relpathnames, _extra=source, /last_version)
+files = spd_download(remote_file=relpathnames, remote_path=!wind.remote_data_dir, local_path = !wind.local_data_dir)
 
 if keyword_set(downloadonly) then return
 

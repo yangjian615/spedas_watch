@@ -1,5 +1,5 @@
 ;+
-; mms_fpi_dist_slice_comparison_crib_l2_v3.pro
+; mms_fpi_dist_slice_comparison_crib.pro
 ;
 ; This version is meant to work with v3.0.0+ of the FPI CDFs
 ;
@@ -9,9 +9,9 @@
 ;  changed ion burst mode time range   SAB
 ;  
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-02 15:07:31 -0700 (Wed, 02 Nov 2016) $
-; $LastChangedRevision: 22262 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_fpi_dist_slice_comparison_crib_v3.pro $
+; $LastChangedDate: 2017-02-16 10:06:43 -0800 (Thu, 16 Feb 2017) $
+; $LastChangedRevision: 22803 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_fpi_dist_slice_comparison_crib.pro $
 ;-
 
 start_time = systime(/sec)
@@ -205,7 +205,7 @@ for i=0, n_elements(*dist)-1 do begin
 
   plot,[0,1],[0,1],/nodata,/noerase,pos = [min(x0),min(y0[0]),max(x1),max(y1)],xstyle=5,ystyle=5    
   plot,[0,1],[0,1],/nodata,/noerase,pos = [0., 0.,1.,1.],xstyle=5,ystyle=5
-  xyouts,/norm,0.02,0.01,'created by mms_slice_comparison_crib_v3.pro data_rate='+data_rate
+  xyouts,/norm,0.02,0.01,'created by mms_slice_comparison_crib.pro data_rate='+data_rate
 
   ;place title
   xyouts, x0[0],y1[0]+0.025, align=0.0, charsize=1.5, /normal, $

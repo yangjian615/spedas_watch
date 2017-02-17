@@ -28,8 +28,8 @@
 ;  spd_cdf_compress, 'c:\temp\in.cdf', 'c:\temp\out.cdf', cdfconvert='C:\CDF Distribution\cdf36_1-dist\bin\cdfconvert.exe', replace=1, cdf_compress_error=cdf_compress_error
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-12-02 15:08:54 -0800 (Fri, 02 Dec 2016) $
-;$LastChangedRevision: 22431 $
+;$LastChangedDate: 2017-02-16 11:47:27 -0800 (Thu, 16 Feb 2017) $
+;$LastChangedRevision: 22804 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_cdf_compress.pro $
 ;
 ;-
@@ -85,7 +85,7 @@ pro spd_cdf_compress, file_in, file_out=file_out, replace=replace, cdfconvert=cd
     return
   endif
 
-  if ~keyword_set(cdfconvert) then cdfconvert='/usr/local/pkg/cdf-3.6.2_CentOS-6.7/bin/cdfconvert'
+  if ~keyword_set(cdfconvert) then cdfconvert='/usr/local/pkg/cdf-3.6.3_CentOS-6.8/bin/cdfconvert*'
   if ~keyword_set(cdfparams) then cdfparams='-delete -blockingfactor optimal -compressnonepoch -compression "cdf:none"'
 
   if ~file_test(cdfconvert, /regular) then begin
