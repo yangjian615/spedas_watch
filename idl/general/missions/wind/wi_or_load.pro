@@ -12,9 +12,9 @@
 ;  This routine is still in development.
 ; Author: Davin Larson
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-02-16 14:54:44 -0800 (Thu, 16 Feb 2017) $
-; $LastChangedRevision: 22807 $
+; $LastChangedBy: pulupalap $
+; $LastChangedDate: 2017-02-17 14:26:40 -0800 (Fri, 17 Feb 2017) $
+; $LastChangedRevision: 22822 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wi_or_load.pro $
 ;-
 pro wi_or_load,type,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -23,8 +23,8 @@ pro wi_or_load,type,trange=trange,verbose=verbose,downloadonly=downloadonly, $
 
 if not keyword_set(datatype) then datatype = 'pre'
 
-istp_init
-if not keyword_set(source) then source = !istp
+wind_init
+if not keyword_set(source) then source = !wind
 
 ;path deprecated by changes at SPDF
 ;pathformat = 'wind/'+datatype+'_or/YYYY/wi_or_'+datatype+'_YYYYMMDD_v0?.cdf'

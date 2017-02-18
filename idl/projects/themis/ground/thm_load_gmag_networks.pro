@@ -16,8 +16,8 @@
 ;
 ;HISTORY:
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2017-01-10 09:08:04 -0800 (Tue, 10 Jan 2017) $
-; $LastChangedRevision: 22558 $
+; $LastChangedDate: 2017-02-17 11:35:28 -0800 (Fri, 17 Feb 2017) $
+; $LastChangedRevision: 22818 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag_networks.pro $
 ;-
 
@@ -76,10 +76,10 @@ pro thm_load_gmag_networks, gmag_networks=gmag_networks, gmag_stations=gmag_stat
       'Themis AE (pre 2015)','Themis EPO','Themis GBO','USGS']
     gmag_stations=['abk','akul','amd','amer','amk','and','arct','atha','atu','benn','bett','bfe','bjn','blc','bmls','bou','brw','bsl','cbb','ccnv','cdrt','chbg', $
       'cigo','cmo','crvr','ded','dik','dmh','dnb','dob','don','drby','eagl','ekat','fcc','fhb','frd','frn','fsim','fsj','fsmi','ftn','fykn','fyts','gako','gbay', $
-      'gdh','ghb','gill','gjoa','glyn','gua','hlms','homr','hon','hop','hots', 'hov', 'hris', 'hrp','iglo','inuk','inuv','iqa','jan', 'jck','kako','kapu','kar','kian','kjpk', 'kodk','kuuj','kuv', $
-      'larg','lcl','leth','loys', 'lrel', 'lres','lrg','lrv','lyfd','lyr','mcgr','mea','nain','nal','naq','new','nor','nrd','nrsq','ott','pang','pbk', 'pblo','pcel','pg0','pg1','pg2','pg3', $
-      'pg4','pg5''pgeo','pina','pine','pks','pokr','ptrs','puvr','radi','rank','rbay','redr','rich','rmus','roe','roth','rvk','salu','satx','schf','sco','sept','shu','sit', $
-      'sjg','skt','snap','snkq','sol','sor','stf','stfd', 'stfl','stj','sum','svs','swno','tab','talo','tdc','thl','tik','tool','tpas','trap','tro','tuc','ukia','umq','upn','vic', 'vldr', 'whit', 'whs', 'wlps', 'wrth','ykc','yknf']
+      'gdh','ghb','gill','gjoa','glyn','gua','han','hlms','homr','hon','hop','hots', 'hov', 'hris', 'hrp','iglo','inuk','inuv','iqa','iva''jan', 'jck','kako','kapu','kar','kev','kian','kil','kjpk', 'kodk','kuuj','kuv', $
+      'larg','lcl','leth','loys', 'lrel', 'lres','lrg','lrv','lyfd','lyr','nur','mcgr','mas','mea','mek','muo','nain','nal','naq','new','nor','nrd','nrsq','ott','ouj','pang','pbk', 'pblo','pcel','pel','pg0','pg1','pg2','pg3', $
+      'pg4','pg5''pgeo','pina','pine','pks','pokr','ptrs','puvr','radi','ran','rank','rbay','redr','rich','rmus','roe','roth','rvk','salu','satx','schf','sco','sept','shu','sit', $
+      'sjg','skt','snap','snkq','sol','sor','stf','stfd', 'stfl','stj','sum','svs','swno','tab','talo','tar','tdc','thl','tik','tool','tpas','trap','tro','tuc','ukia','umq','upn','vic', 'vldr', 'whit', 'whs', 'wlps', 'wrth','ykc','yknf']
     selected_network=''
   endelse
 

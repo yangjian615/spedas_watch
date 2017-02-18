@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-26 15:53:10 -0700 (Tue, 26 Jul 2016) $
-; $LastChangedRevision: 21548 $
+; $LastChangedDate: 2017-02-17 09:14:36 -0800 (Fri, 17 Feb 2017) $
+; $LastChangedRevision: 22812 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps-eis_crib_qlplots.pro $
 ;-
 
@@ -38,6 +38,10 @@ endif
 
 ; load FEEPS data
 mms_load_feeps, probes=probe, level='l1b', datatype='electron', data_rate='srvy'
+
+tdeflag, tnames('*_intensity_*'), 'repeat', /overwrite
+tdeflag, tnames('*_count_rate_*'), 'repeat', /overwrite
+tdeflag, tnames('*_counts_*'), 'repeat', /overwrite
 
 ; load EIS extof, phxtof, and electron data:
 mms_load_eis, probes=probe, datatype='extof', level='l1b', data_rate='srvy'

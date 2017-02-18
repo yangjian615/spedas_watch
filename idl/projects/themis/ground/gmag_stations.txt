@@ -1,4 +1,4 @@
-ï»¿aari|AARI||
+œóòßaari|AARI||
 asi|ASI||
 autu|AUTUMN||
 autx|AUTUMNX||
@@ -7,6 +7,7 @@ cgsm|CGSM||
 dtu|DTU||
 gima|GIMA||
 falcon|FALCON||
+fmi|FMI||
 kyoto|KYOTO||
 leirv|Leirvogur||
 maccs|MACCS||
@@ -39,7 +40,7 @@ dtu|DTU|atu|Attu, Greenland
 mcmac|McMAC|benn|Bennington, NE
 gima|GIMA|bett|Bettles, AK
 dtu|DTU|bfe|Brorfelde, Denmark
-tgo|TGO|bjn|Bjï¿½rnï¿½ya, Norway
+tgo|TGO|bjn|Bjœóõ½rnœóõ½ya, Norway
 nrcan|NRCan|blc|Baker Lake, NU
 epo|Themis EPO|bmls|Bay Mills, MI
 usgs|USGS|bou|Boulder, CO
@@ -68,7 +69,7 @@ dtu|DTU|dmh|Danmarkshavn, Greenland
 dtu|DTU|dnb|Daneborg, Greenland
 ae|Themis AE|dob|Dombas, Norway
 tgo|TGO|dob|Dombas, Norway
-tgo|TGO|don|Dï¿½nna, Norway
+tgo|TGO|don|Dœóõ½nna, Norway
 epo|Themis EPO|drby|Derby, VT
 gima|GIMA|eagl|Eagle, AK
 aeold|Themis AE (pre 2015)|ekat|Ekati, NT
@@ -113,6 +114,7 @@ carisma|CARISMA|gill|Gillam, MB
 maccs|MACCS|gjoa|Gjoa Haven, NU
 mcmac|McMAC|glyn|Glyndon, MN
 usgs|USGS|gua|Dededo, Guam
+fmi|FMI|han|Hankasalmi, Finland
 gima|GIMA|hlms|High Lat Monitoring Station, AK
 gima|GIMA|homr|Homer, AK
 usgs|USGS|hon|Honolulu, HI
@@ -130,6 +132,7 @@ aeold|Themis AE (pre 2015)|inuv|Inuvik, NT
 gbo|Themis GBO|inuv|Inuvik, NT
 asi|ASI|inuv|Inuvik, NT
 nrcan|NRCan|iqa|Iqaluit, NU
+fmi|FMI|Ivalo, Finland
 tgo|TGO|jan|Jan Mayen, Norway
 ae|Themis AE|jck|Jackvik, Sweden
 tgo|TGO|jck|Jackvik, Sweden
@@ -138,11 +141,13 @@ gima|GIMA|kako|Kaktovik, AK
 aeold|Themis AE (pre 2015)|kapu|Kapuskasing, ON
 gbo|Themis GBO|kapu|Kapuskasing, ON
 asi|ASI|kapu|Kapuskasing, ON
-tgo|TGO|kar|Karmï¿½y, Norway
+tgo|TGO|kar|Karmœóõ½y, Norway
+fmi|FMI|kev|Kevo, Finland
 ae|Themis AE|kian|Kiana, AK
 aeold|Themis AE (pre 2015)|kian|Kiana, AK
 gbo|Themis GBO|kian|Kiana, AK
 asi|ASI|kian|Kiana, AK
+fmi|FMI|kil|Kilpisjarvi, Finland
 autx|AUTUMNX|kjpk|Kuujjuarapik, QC
 falcon|FALCON|kodk|Kodiak Island, AK
 aeold|Themis AE (pre 2015)|kuuj|Kuujjuaq, QC
@@ -163,14 +168,17 @@ kyoto|KYOTO|lrv|Leirvogur, Iceland
 leirv|Leirvogur|lrv|Leirvogur, Iceland
 mcmac|McMAC|lyfd|Lyford, TX
 tgo|TGO|lyr|Longyarbyen, Norway
+fmi|FMI|mas|Masi, Finland
 aeold|Themis AE (pre 2015)|mcgr|Mcgrath, AK
 gbo|Themis GBO|mcgr|Mcgrath, AK
 asi|ASI|mcgr|Mcgrath, AK
 nrcan|NRCan|mea|Meanook, AB
+fmi|FMI|mek|Mekrijarvi, Finland
+fmi|FMI|muo|Muono, Finland
 ae|Themis AE|nain|Nain, NL
 maccs|MACCS|nain|Nain, NL
-ae|Themis AE|nal|Ny ï¿½lesund, Norway
-tgo|TGO|nal|Ny ï¿½lesund, Norway
+ae|Themis AE|nal|Ny œóõ½lesund, Norway
+tgo|TGO|nal|Ny œóõ½lesund, Norway
 ae|Themis AE|naq|Narsarsuaq, Greenland
 asi|ASI|naq|Narsarsuaq, Greenland
 dtu|DTU|naq|Narsarsuaq, Greenland
@@ -181,13 +189,16 @@ tgo|TGO|nor|Nordkapp, Norway
 dtu|DTU|nrd|Nord, Greenland
 asi|ASI|nrsq|Narsarsuaq, Greenland
 dtu|DTU|nrsq|Narsarsuaq, Greenland
+fmi|FMI|nur|Nurmijarvi, Finland
 nrcan|NRCan|ott|Ottawa, ON
+fmi|FMI|ouj|Oulujarvi, Finland
 maccs|MACCS|pang|Pangnirtung, NU
 ae|Themis AE|pbk|Pevek, Russia
 aari|AARI|pbk|Pevek, Russia
 kyoto|KYOTO|pbk|Pevek, Russia
 falcon|FALCON|pblo|Pueblo, CO
 mcmac|McMAC|pcel|Purcell, OK
+fmi|FMI|pel|Pello, Finland
 pen|PENGUIn|pg0|Antarctica
 pen|PENGUIn|pg1|Antarctica
 pen|PENGUIn|pg2|Antarctica
@@ -207,6 +218,7 @@ gima|GIMA|pokr|Poker Flat, AK
 epo|Themis EPO|ptrs|Petersburg, AK
 autx|AUTUMNX|puvr|Puvirnituq, QC
 autx|AUTUMNX|radi|Radisson, QC
+fmi|FMI|ran|Ranua, Finland
 ae|Themis AE|rank|Rankin Inlet, NU
 aeold|Themis AE (pre 2015)|rank|Rankin Inlet, NU
 asi|ASI|rank|Rankin Inlet, NU
@@ -217,10 +229,10 @@ maccs|MACCS|rbay|Repulse Bay, NU
 autu|AUTUMN|redr|Red Deer, AB
 mcmac|McMAC|rich|Richardson, TX
 epo|Themis EPO|rmus|Remus, MI
-ae|Themis AE|roe|Rï¿½mï¿½, Denmark
-dtu|DTU|roe|Rï¿½mï¿½, Denmark
+ae|Themis AE|roe|Rœóõ½mœóõ½, Denmark
+dtu|DTU|roe|Rœóõ½mœóõ½, Denmark
 autu|AUTUMN|roth|Priddis, AB
-tgo|TGO|rvk|Rï¿½rvik, Norway
+tgo|TGO|rvk|Rœóõ½rvik, Norway
 ae|Themis AE|salu|Salluit, QC
 autx|AUTUMNX|salu|Salluit, QC
 mcmac|McMAC|satx|San Antonio, TX
@@ -244,7 +256,7 @@ kyoto|KYOTO|snkq|Sanikiluaq, NU
 carisma|CARISMA|snkq|Sanikiluaq, NU
 ae|Themis AE|sol|Solund, Norway
 tgo|TGO|sol|Solund, Norway
-tgo|TGO|sor|Sï¿½rï¿½ya, Norway
+tgo|TGO|sor|Sœóõ½rœóõ½ya, Norway
 ae|Themis AE|stf|Kangerlussuaq, Greenland
 dtu|DTU|stf|Kangerlussuaq, Greenland
 falcon|FALCON|stfd|Stanford, CA
@@ -256,6 +268,7 @@ epo|Themis EPO|swno|Shawano, WI
 dtu|DTU|tab|Thule Air Fore Base, Greenland
 asi|ASI|talo|Taloyoak, NT
 cgsm|CGSM|talo|Taloyoak, NT
+fmi|FMI|tar|Tartu, Estonia
 dtu|DTU|tdc|Tristan Da Cunha (South Atlantic)
 ae|Themis AE|thl|Qaanaaq, Greenland
 dtu|DTU|thl|Qaanaaq, Greenland
@@ -268,7 +281,7 @@ gbo|Themis GBO|tpas|The Pas, MB
 asi|ASI|tpas|The Pas, MB
 ae|Themis AE|trap|Trapper Creek, AK
 gima|GIMA|trap|Trapper Creek, AK
-tgo|TGO|tro|Tromsï¿½, Norway
+tgo|TGO|tro|Tromsœóõ½, Norway
 usgs|USGS|tuc|Tucson, AZ
 epo|Themis EPO|ukia|Ukiah, OR
 dtu|DTU|umq|Uummannaq, Greenland

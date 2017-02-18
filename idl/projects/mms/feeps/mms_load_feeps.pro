@@ -84,8 +84,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-31 14:48:06 -0800 (Tue, 31 Jan 2017) $
-;$LastChangedRevision: 22697 $
+;$LastChangedDate: 2017-02-17 09:10:32 -0800 (Fri, 17 Feb 2017) $
+;$LastChangedRevision: 22810 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -164,11 +164,5 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
         endfor
       endfor
     endfor
-    
-    ; interpolate to account for gaps in data near perigee for srvy data
-    if data_rate_in eq 'srvy' then begin
-      tdeflag, tnames('*_intensity_*'), 'repeat', /overwrite
-      tdeflag, tnames('*_count_rate_*'), 'repeat', /overwrite
-      tdeflag, tnames('*_counts_*'), 'repeat', /overwrite
-    endif
+   
 end

@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-01 20:04:59 -0800 (Wed, 01 Feb 2017) $
-; $LastChangedRevision: 22716 $
+; $LastChangedDate: 2017-02-17 09:12:57 -0800 (Fri, 17 Feb 2017) $
+; $LastChangedRevision: 22811 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -44,6 +44,10 @@ endif
 
 mms_load_feeps, probe=probe, data_rate=data_rate, datatype='electron', suffix='_electrons', data_units = type, varformat='*spinsectnum* *top* *bottom* *pitch_angle*', level='l1b'
 mms_load_feeps, probe=probe, data_rate=data_rate, datatype='ion', suffix='_ions', data_units = type, varformat='*spinsectnum* *top* *bottom* *pitch_angle*', level='l1b'
+
+tdeflag, tnames('*_intensity_*'), 'repeat', /overwrite
+tdeflag, tnames('*_count_rate_*'), 'repeat', /overwrite
+tdeflag, tnames('*_counts_*'), 'repeat', /overwrite
 
 mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[84, 85], data_units = type, level='l1b'
 mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[214, 215], data_units = type, level='l1b'

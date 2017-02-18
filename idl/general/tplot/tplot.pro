@@ -90,9 +90,9 @@
 ;Still have questions:
 ;   Send e-mail to:  tplot@ssl.berkeley.edu    someone might answer!
 ;
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-07-29 07:40:46 -0700 (Fri, 29 Jul 2016) $
-; $LastChangedRevision: 21564 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-02-17 13:10:33 -0800 (Fri, 17 Feb 2017) $
+; $LastChangedRevision: 22821 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot.pro $
 ;-
 
@@ -481,6 +481,7 @@ if (!d.flags and 256) ne 0  then begin    ; windowing devices
   str_element,tplot_vars,'settings.window',!d.window,/add_replace
   if def_opts.window ge 0 then wset,current_window
 endif
+
 !x = plt.x
 !y = plt.y
 !z = plt.z
