@@ -15,7 +15,7 @@
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu:36867/repos/idl_socware/trunk/projects/maven/general/mvn_file_source.pro $
 ;-
 
-pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,verbose=verbose,Quaternion=quaternion,Orbit_data=orbit_data
+pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,verbose=verbose,Quaternion=quaternion,Orbit_data=orbit_data,no_download=no_download
 
    ; Create
 
@@ -34,7 +34,7 @@ pro mvn_spice_load,trange=trange,kernels=kernels,download_only=download_only,ver
    endif
 
 
-   kernels = mvn_spice_kernels(/all,/clear,/load,trange=trange,verbose=2)
+   kernels = mvn_spice_kernels(/all,/clear,/load,trange=trange,verbose=2,no_download=no_download)
    if keyword_set(download_only) then return
    
    
