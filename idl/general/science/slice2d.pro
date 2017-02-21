@@ -67,8 +67,8 @@
 ;       Modified from 'thm_esa_slice2d' written by Arjun Raj & Xuzhi Zhou
 ;
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2016-02-23 16:03:11 -0800 (Tue, 23 Feb 2016) $
-; $LastChangedRevision: 20117 $
+; $LastChangedDate: 2017-02-20 17:11:57 -0800 (Mon, 20 Feb 2017) $
+; $LastChangedRevision: 22825 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/slice2d.pro $
 ;-
 
@@ -426,13 +426,13 @@ endelse
 
 ;- set contour levels
 if keyword_set(nozlog) then begin
-   levels = indgen(nlines)/float(nlines)*(cmtmax-cntmin) + cntmin
+   levels = indgen(nlines)/float(nlines)*(cntmax-cntmin) + cntmin
 endif else begin
    levels = 10.^( indgen(nlines)/float(nlines)*(alog10(cntmax)-alog10(cntmin)) + alog10(cntmin) )
 endelse
 if not keyword_set(noolines) then begin
    if keyword_set(nozlog) then begin
-      levels2 = indgen(numolines)/float(numolines)*(cmtmax-cntmin) + cntmin
+      levels2 = indgen(numolines)/float(numolines)*(cntmax-cntmin) + cntmin
    endif else begin
       levels2 = 10.^( indgen(numolines)/float(numolines)*(alog10(cntmax)-alog10(cntmin)) + alog10(cntmin) )
    endelse

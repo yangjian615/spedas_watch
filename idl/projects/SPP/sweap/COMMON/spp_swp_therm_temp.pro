@@ -8,7 +8,7 @@ function spp_swp_therm_temp,dval,parameter=p
      p = {func:'spp_swp_therm_temp',$
           R1:10000d, $
           xmax:1023d, $
-          Rv:1d7, $
+          Rv:1d9, $
           thm:'thermistor_resistance_ysi4908'}
   endif
   if n_params() eq 0 then return,p
