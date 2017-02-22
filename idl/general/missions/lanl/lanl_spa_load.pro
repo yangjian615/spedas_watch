@@ -59,8 +59,9 @@ if datatype eq 'sp' then begin
       if keyword_set(compress) then pathformat += '.gz'
       relpathnames = file_dailynames(file_format=pathformat,trange=trange,times=times)
 
-      files = file_retrieve(relpathnames, _extra=source)
-
+      ;files = file_retrieve(relpathnames, _extra=source)
+      files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir)
+      
       if keyword_set(downloadonly) then continue
 
       prefix = 'lanl_'+probe+'_'
@@ -162,7 +163,8 @@ if datatype eq 'k0' then begin
 
       relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-      files = file_retrieve(relpathnames, _extra=source, /last_version)
+      ;files = file_retrieve(relpathnames, _extra=source, /last_version)
+      files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir)
 
       if keyword_set(downloadonly) then continue
 

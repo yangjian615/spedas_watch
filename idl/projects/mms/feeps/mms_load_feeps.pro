@@ -84,8 +84,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-17 09:10:32 -0800 (Fri, 17 Feb 2017) $
-;$LastChangedRevision: 22810 $
+;$LastChangedDate: 2017-02-21 14:04:28 -0800 (Tue, 21 Feb 2017) $
+;$LastChangedRevision: 22836 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -113,6 +113,14 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
         dprint, dlevel = 0, 'Couldn''t find the datatype: "' + datatype_in + '" for L1a data; loading all data...'
         datatype_in = l1a_datatypes
     endif
+    
+    ; if the user requests a specific varformat, we'll need to load 
+    ; the support data required for sun removal and spin averaging
+    if ~undefined(varformat) && (varformat[0] ne '*') then begin
+      if is_array(varformat) then varformat = [varformat, '*_spinsectnum'] $
+      else varformat = varformat + ' *_spinsectnum'
+    endif
+    if ~undefined(varformat) && ~undefined(get_support_data) then undefine, get_support_data
     
     mms_load_data, trange = trange, probes = probes_in, level = level_in, instrument = 'feeps', $
         data_rate = data_rate_in, local_data_dir = local_data_dir, source = source, $

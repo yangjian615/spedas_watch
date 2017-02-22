@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-03 14:32:57 -0700 (Tue, 03 May 2016) $
-;$LastChangedRevision: 21012 $
+;$LastChangedDate: 2017-02-21 12:30:21 -0800 (Tue, 21 Feb 2017) $
+;$LastChangedRevision: 22833 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_mec_fix_metadata.pro $
 ;-
 
@@ -32,7 +32,9 @@ pro mms_mec_fix_metadata, probe, suffix = suffix
     eci_vars = 'mms'+probe+['_mec_r_eci', '_mec_v_eci']+suffix
     for eci_var=0, n_elements(eci_vars)-1 do begin
         get_data, eci_vars[eci_var], data=d, dlimits=dl, limits=l
-        cotrans_set_coord, dl, 'j2000'
-        store_data, eci_vars[eci_var], data=d, dlimits=dl, limits=l
+        if is_struct(d) then begin
+          cotrans_set_coord, dl, 'j2000'
+          store_data, eci_vars[eci_var], data=d, dlimits=dl, limits=l
+        endif
     endfor
 end

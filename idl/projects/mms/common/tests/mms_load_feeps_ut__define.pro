@@ -6,10 +6,28 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-13 11:39:24 -0800 (Mon, 13 Feb 2017) $
-; $LastChangedRevision: 22764 $
+; $LastChangedDate: 2017-02-21 14:04:59 -0800 (Tue, 21 Feb 2017) $
+; $LastChangedRevision: 22837 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_varformat_brst_count_rate
+  mms_load_feeps, data_rate='brst', probe=4, varformat='*count_rate*'
+  assert, spd_data_exists('mms4_epd_feeps_brst_l2_electron_count_rate_omni mms4_epd_feeps_brst_l2_electron_count_rate_omni_spin', '2015-12-15', '2015-12-16'), $
+    'Problem with varformat keyword in mms_load_feeps'
+  assert, ~spd_data_exists('mms4_epd_feeps_brst_l2_electron_intensity_omni mms4_epd_feeps_brst_l2_electron_intensity_omni_spin', '2015-12-15', '2015-12-16'), $
+    'Problem with varformat keyword in mms_load_feeps'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_varformat_brst_intensity
+  mms_load_feeps, data_rate='brst', probe=4, varformat='*intensity*'
+  assert, spd_data_exists('mms4_epd_feeps_brst_l2_electron_intensity_omni mms4_epd_feeps_brst_l2_electron_intensity_omni_spin', '2015-12-15', '2015-12-16'), $
+    'Problem with varformat keyword in mms_load_feeps'
+  assert, ~spd_data_exists('mms4_epd_feeps_brst_l2_electron_count_rate_omni mms4_epd_feeps_brst_l2_electron_count_rate_omni_spin', '2015-12-15', '2015-12-16'), $
+    'Problem with varformat keyword in mms_load_feeps'
+  return, 1
+end
 
 function mms_load_feeps_ut::test_ion_bad_eyes_brst
   mms_load_feeps, data_rate='brst', probe=2, datatype='ion', level='l2'

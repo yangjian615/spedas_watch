@@ -1,6 +1,25 @@
+;+
+;NAME:
+; ace_epm_load 
+; 
+;PURPOSE:
+; Downloads ACE data from SPDF
+; 
+;Typical Usage:
+;  ace_epm_load, trange=trange 
+;  
+; $LastChangedBy:$
+; $LastChangedDate:$
+; $LastChangedRevision:$
+; $URL:$
+;-
+
 pro ace_epm_load,pathnames=pathnames,trange=trange,files=files,download_only=download_only, $
         source=source,verbose=verbose,k0=k0,h1=h1
 
+istp_init
+if not keyword_set(source) then source = !istp
+      
 tstart=systime(1)
 dprint,'Loading ACE EPAM files at ',time_string(/local,tstart)
 
@@ -15,18 +34,15 @@ if keyword_set(h1) then begin
   prefix = 'ACE_EPM_H1_'
 endif
 
-
-source = spdf_file_source(no_update=1)
-
-
-;files = mvn_pfp_file_retrieve(pathname,/daily,trange=trange,source=source,verbose=verbose,files=files)
 tr = timerange(trange)
-files = file_retrieve(pathname,/daily,trange=tr,_extra=source,verbose=verbose,last_version=1)
+relpathnames = file_dailynames(file_format=pathname,trange=tr)
+
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir)
+
+
 dprint,/phelp,files
 
 if keyword_set(download_only) then return
-
-
 
 
 if 1 then begin

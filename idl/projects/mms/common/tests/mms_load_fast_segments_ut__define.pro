@@ -8,10 +8,18 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-06 15:00:12 -0700 (Tue, 06 Sep 2016) $
-; $LastChangedRevision: 21802 $
+; $LastChangedDate: 2017-02-21 14:04:59 -0800 (Tue, 21 Feb 2017) $
+; $LastChangedRevision: 22837 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fast_segments_ut__define.pro $
 ;-
+
+function mms_load_fast_segments_ut::test_no_kws
+  timespan, '15-12-15', 1, /day
+  mms_load_fast_segments
+  assert, spd_data_exists('mms_bss_fast', '2015-12-15', '2015-12-16'), 'Problem loading fast segments with no keywords specified'
+  return, 1
+end
+
 function mms_load_fast_segments_ut::test_overlap_start
   mms_load_fast_segments, trange=['2015-10-16/5:02:00', '2015-10-16/13:02:25']
   assert, spd_data_exists('mms_bss_fast', '2015-10-16/5:02:00', '2015-10-16/13:02:25'), $

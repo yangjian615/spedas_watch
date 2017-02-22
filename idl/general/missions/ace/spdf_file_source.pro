@@ -33,9 +33,11 @@
 ; Structure:
 ;  see "FILE_RETRIEVE" for a description of each structure element.
 ;
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2015-11-04 22:02:16 -0800 (Wed, 04 Nov 2015) $
-; $LastChangedRevision: 19261 $
+;Notes: this function isn't used any more, for downloads use the function spd_download
+;
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-02-21 10:31:00 -0800 (Tue, 21 Feb 2017) $
+; $LastChangedRevision: 22828 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/ace/spdf_file_source.pro $
 ;-
 
@@ -51,12 +53,12 @@ if not keyword_set(psource) then begin    ; Create the default
     if ~keyword_set(user) then user = getenv('USERNAME')   ; PC's 
     if ~keyword_set(user) then user = getenv('LOGNAME')    
     if ~keyword_set(user) then user = 'guest'              
-    psource = file_retrieve(remote_data_dir = 'http://spdf.gsfc.nasa.gov/pub/data/', master_file = '.htaccess')   ; get typical default values.    
+    psource = file_retrieve(remote_data_dir = 'https://spdf.gsfc.nasa.gov/pub/data/', master_file = '.htaccess')   ; get typical default values.    
     psource.local_data_dir = psource.local_data_dir+'misc/spdf/data/'
     
     if file_test(psource.local_data_dir+psource.master_file,/regular) then psource.no_server =1  $  ; local directory IS the server directory
     else begin   ; Files will be downloaded from the web
-       psource.remote_data_dir = 'http://spdf.gsfc.nasa.gov/pub/data/'
+       psource.remote_data_dir = 'https://spdf.gsfc.nasa.gov/pub/data/'
 ;       user_pass = ''
 ;       str_element,ex,'USER_PASS',user_pass                 ;  Get user_pass if it was passed in
 ;       if ~keyword_set(user_pass) then  user_pass = getenv('MAVENPFP_USER_PASS')

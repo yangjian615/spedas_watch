@@ -22,15 +22,22 @@
 ;  Bit 12: lunar shadow
 ;  
 ;  Set timespan by calling timespan outside of this routine.(e.g. time/duration is not an argument)
+;
+;  Keywords:
+;    probe:the probe letter string for the quality flags(e.g. 'a')
+;    esa_flow_threshold:  flow threshold for quality flag bit 3
+;    esa_datatype:  the datatype string for the esa flags (e.g. 'peif')
+;    sst_datatype: the datatype string for sst flags (e.g. 'psif')
+;    time_array: the time array(or tplot variable) for interpolation(if not provided, interpolates onto ESA)
 ;  
 ; $LastChangedBy: pcruce $
-; $LastChangedDate: 2017-01-20 15:17:51 -0800 (Fri, 20 Jan 2017) $
-; $LastChangedRevision: 22641 $
+; $LastChangedDate: 2017-02-21 14:20:10 -0800 (Tue, 21 Feb 2017) $
+; $LastChangedRevision: 22839 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_gmom_quality_flags.pro $
 ;-
 
 
-pro thm_gmom_quality_flags,probe=probe,esa_flow_threshold=esa_flow_threshold,esa_datatype=esa_datatype,sst_datatype=sst_datatype
+pro thm_gmom_quality_flags,probe=probe,esa_flow_threshold=esa_flow_threshold,esa_datatype=esa_datatype,sst_datatype=sst_datatype,time_array=time_time_array
 
   compile_opt idl2
  
@@ -47,8 +54,13 @@ pro thm_gmom_quality_flags,probe=probe,esa_flow_threshold=esa_flow_threshold,esa
   cmb_name = 'th'+probe+'_'+cmb_datatype+'_data_quality'
   
   ;guarantee same time grid.
-  ;since flag values are bit-coded, linear interpolation is inappropriate, nearest neighbor used instead 
-  tinterpol_mxn,sst_name,esa_name,/overwrite,/nearest_neighbor
+  ;since flag values are bit-coded, linear interpolation is inappropriate, nearest neighbor used instead
+  if ~undefined(time_array) then begin
+    tinterpol_mxn,sst_name,time_array,/overwrite,/nearest_neighbor  
+    tinterpol_mxn,esa_name,time_array,/overwrite,/nearest_neighbor    
+  endif else begin
+    tinterpol_mxn,sst_name,esa_name,/overwrite,/nearest_neighbor
+  endelse
   
   get_data,'th'+probe+'_'+esa_datatype+'_data_quality',data=esa_data
   get_data,'th'+probe+'_'+sst_datatype+'_data_quality',data=sst_data

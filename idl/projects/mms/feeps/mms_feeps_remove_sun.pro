@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-02 14:26:57 -0700 (Tue, 02 Aug 2016) $
-; $LastChangedRevision: 21593 $
+; $LastChangedDate: 2017-02-21 14:04:28 -0800 (Tue, 21 Feb 2017) $
+; $LastChangedRevision: 22836 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
@@ -65,6 +65,10 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
 
           
           get_data, var_name+suffix, data = top_data, dlimits=top_dlimits
+          
+          ; don't crash if the data couldn't be found
+          if ~is_struct(top_data) then continue
+          
           if mask_sectors.haskey('mms'+probe+'imaskt'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]] ne !NULL then begin
             bad_sectors = mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]]
     
@@ -91,6 +95,10 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
             var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_bottom_'+these_units+'_sensorid_'+string(sensors[sensor_idx])+'_clean', /rem)
 
             get_data, var_name+suffix, data = bottom_data, dlimits=bottom_dlimits
+            
+            ; don't crash if the data couldn't be found
+            if ~is_struct(bottom_data) then continue
+
             if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
               bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]
       

@@ -95,8 +95,8 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-01-05 14:21:18 -0800 (Thu, 05 Jan 2017) $
-;$LastChangedRevision: 22510 $
+;$LastChangedDate: 2017-02-21 18:05:49 -0800 (Tue, 21 Feb 2017) $
+;$LastChangedRevision: 22843 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_part_products.pro $
 ;-
 
@@ -155,7 +155,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
                     
                      display_object=display_object, $ ;object allowing dprint to export output messages
 
-                      normalize=normalize, $ ; divides flux with maximum flux
+                      enormalize=enormalize, $ ; divides flux with maximum flux
                      _extra=ex ;TBD: consider implementing as _strict_extra 
 
 
@@ -466,7 +466,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
 
     ;Build energy spectrogram
     if in_set(outputs_lc, 'energy') then begin
-      spd_pgs_make_e_spec, clean_data, spec=en_spec, sigma=en_sigma, yaxis=en_y, normalize=normalize
+      spd_pgs_make_e_spec, clean_data, spec=en_spec, sigma=en_sigma, yaxis=en_y, enormalize=enormalize
     endif
  
     ;regrid data for theta & phi spectra if regrid array was specified
@@ -529,7 +529,7 @@ pro thm_part_products,probe=probe,$ ;The requested spacecraft ('a','b','c','d','
     
     ;Build energy spectrogram from field aligned distribution
     if in_set(outputs_lc, 'fac_energy') then begin
-      spd_pgs_make_e_spec, clean_data, spec=fac_en_spec, sigma=fac_en_sigma, yaxis=fac_en_y, normalize=normalize
+      spd_pgs_make_e_spec, clean_data, spec=fac_en_spec, sigma=fac_en_sigma, yaxis=fac_en_y, enormalize=enormalize
     endif
     
   endfor

@@ -28,8 +28,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-14 07:37:04 -0800 (Tue, 14 Feb 2017) $
-; $LastChangedRevision: 22773 $
+; $LastChangedDate: 2017-02-21 14:04:28 -0800 (Tue, 21 Feb 2017) $
+; $LastChangedRevision: 22836 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 
@@ -122,6 +122,9 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
       endfor
     endelse
   endif
+  
+  ; if no data found, just return
+  if undefined(dalleyes) then return
   
   dalleyes[where(dalleyes eq 0.0)] = !values.d_nan 
   flux_omni = reform(average(dalleyes,3,/NAN))

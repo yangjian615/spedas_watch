@@ -47,7 +47,7 @@ endif
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-files = file_retrieve(relpathnames, _extra=source, /last_version)
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir)
 
 if keyword_set(downloadonly) then return
 

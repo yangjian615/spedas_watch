@@ -26,12 +26,12 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-01-05 14:21:18 -0800 (Thu, 05 Jan 2017) $
-;$LastChangedRevision: 22510 $
+;$LastChangedDate: 2017-02-21 18:05:49 -0800 (Tue, 21 Feb 2017) $
+;$LastChangedRevision: 22843 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_make_e_spec.pro $
 ;-
 
-pro spd_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, normalize=normalize, _extra=ex
+pro spd_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, enormalize=enormalize, _extra=ex
 
     compile_opt idl2, hidden
   
@@ -39,7 +39,7 @@ pro spd_pgs_make_e_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, normalize=no
   if ~is_struct(data) then return
   
   ; if set, normalize spec between 0 and 1
-  if keyword_set(normalize) && normalize ne 0 then begin
+  if keyword_set(enormalize) && enormalize ne 0 then begin
     data_energy = data.energy / max(data.energy,/NAN)
   endif else begin
     data_energy = data.energy

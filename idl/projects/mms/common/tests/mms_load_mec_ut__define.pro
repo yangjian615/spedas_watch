@@ -6,19 +6,29 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21557 $
+; $LastChangedDate: 2017-02-21 12:42:35 -0800 (Tue, 21 Feb 2017) $
+; $LastChangedRevision: 22834 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_mec_ut__define.pro $
 ;-
 
-;9 mms1_mec_quat_eci_to_smpa
-;10 mms1_mec_quat_eci_to_dsl
-;11 mms1_mec_quat_eci_to_ssl
-;26 mms1_mec_quat_eci_to_gsm
-;29 mms1_mec_quat_eci_to_geo
-;32 mms1_mec_quat_eci_to_sm
-;35 mms1_mec_quat_eci_to_gse
-;38 mms1_mec_quat_eci_to_gse2000
+function mms_load_mec_ut::test_varformat_r
+  mms_load_mec, probe=4, level='l2', varformat='*_r_*'
+  assert, spd_data_exists('mms4_mec_r_eci mms4_mec_r_gsm mms4_mec_r_geo mms4_mec_r_sm', '2016-2-10', '2016-2-11'), $
+    'Problem with varformat in mms_load_mec'
+  assert, ~spd_data_exists('mms4_mec_v_eci', '2016-2-10', '2016-2-11'), $
+    'varformat regression in mms_load_mec'
+  return, 1
+end
+
+function mms_load_mec_ut::test_varformat_v
+  mms_load_mec, probe=4, level='l2', varformat='*_v_*'
+  assert, spd_data_exists('mms4_mec_v_eci mms4_mec_v_gsm mms4_mec_v_geo mms4_mec_v_sm', '2016-2-10', '2016-2-11'), $
+    'Problem with varformat in mms_load_mec'
+  assert, ~spd_data_exists('mms4_mec_r_eci', '2016-2-10', '2016-2-11'), $
+    'varformat regression in mms_load_mec'
+  return, 1
+end
+
 function mms_load_mec_ut::test_multi_probe
   mms_load_mec, probe=[1, 2, '3', '4'], level='l2', data_rate='srvy'
   assert, spd_data_exists('mms1_mec_r_gsm mms2_mec_r_gsm mms3_mec_r_gsm mms4_mec_r_gsm', '2016-2-10', '2016-2-11'), $

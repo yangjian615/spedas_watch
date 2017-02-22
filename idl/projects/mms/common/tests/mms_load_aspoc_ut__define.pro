@@ -6,10 +6,16 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-28 13:00:42 -0700 (Thu, 28 Jul 2016) $
-; $LastChangedRevision: 21557 $
+; $LastChangedDate: 2017-02-21 14:04:59 -0800 (Tue, 21 Feb 2017) $
+; $LastChangedRevision: 22837 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_aspoc_ut__define.pro $
 ;-
+
+function mms_load_aspoc_ut::test_varformat
+  mms_load_aspoc, varformat='*ionc*'
+  assert, n_elements(tnames()) eq 3, 'Problem with varformat in mms_load_aspoc!'
+  return, 1
+end
 
 function mms_load_aspoc_ut::test_data_spdf
   mms_load_aspoc, level='l2', probes=[1, 4], /spdf

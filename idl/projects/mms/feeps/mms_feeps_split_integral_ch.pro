@@ -10,8 +10,8 @@
 ;       [original variable]_500keV_int - the integral channel that was removed
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-27 11:26:21 -0800 (Fri, 27 Jan 2017) $
-;$LastChangedRevision: 22682 $
+;$LastChangedDate: 2017-02-21 14:04:28 -0800 (Tue, 21 Feb 2017) $
+;$LastChangedRevision: 22836 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
@@ -45,6 +45,15 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
 
       get_data, top_name+suffix, data=top_data, dlimits=top_dl
       get_data, bottom_name+suffix, data=bottom_data, dlimits=bottom_dl
+      
+      if ~is_struct(top_data) then begin
+        dprint, dlevel = 0, 'Couldnt find the variable: ' + top_name+suffix
+        continue
+      endif
+      if ~is_struct(bottom_data) then begin
+        dprint, dlevel = 0, 'Couldnt find the variable: ' + bottom_name+suffix
+        continue
+      endif
 
 ;      top_name_out = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
 ;      bottom_name_out = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
