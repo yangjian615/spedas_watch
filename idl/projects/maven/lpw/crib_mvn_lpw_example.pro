@@ -3,8 +3,20 @@
 ; This is an example file for the LPW software
 ;********************************************
  
- 
- 
+;****************************************************
+;THIS IS THE LATEST AND EASIEST WAY TO LOAD LPW DATA: (edit added 2017-02-22 by CMF)
+;****************************************************
+;This method utilizes the timespan command, so that it is compatible with the other PFP instrument load routines. 
+timespan, '2015-01-01', 1.   ;set start date and number of days to get.
+mvn_lpw_load_l2, ['lpnt', 'wspecact']    ;get LPW data. Enter codes for which data products to get - set the preamble in mvn_lpw_load_l2.pro for descriptions.
+
+;An example of how to get ancillary information (such as altitude) using the LPW routines. These use the MAVEN SPICE routines underneath:
+time=dindgen(86400)+time_double('2015-01-01')  ;make a time array, un UNIX time. You can also use, get_data, for example, to get "actual" time arrays.
+
+mvn_lpw_anc_get_spice_kernels, time   ;this looks up the kernels to get, for the array time. The routine takes the earliest and latest times in the array, and looks for kernels covering this range.
+mvn_lpw_anc_spacecraft, time   ;this routine calculates various ancillary data, such as altitude and position, for each timestep in the array "time". Currently, several parameters
+                ;are calculated, which takes time. CMF will (at some point) add keywords so the user can decide exactly what to calculate.
+
  
 ;********************************************
 ; Read The CDF-files (including Level 2)  data

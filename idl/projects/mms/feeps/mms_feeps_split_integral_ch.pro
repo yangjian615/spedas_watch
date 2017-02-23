@@ -10,8 +10,8 @@
 ;       [original variable]_500keV_int - the integral channel that was removed
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-21 14:04:28 -0800 (Tue, 21 Feb 2017) $
-;$LastChangedRevision: 22836 $
+;$LastChangedDate: 2017-02-22 07:52:31 -0800 (Wed, 22 Feb 2017) $
+;$LastChangedRevision: 22844 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
@@ -50,7 +50,7 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
         dprint, dlevel = 0, 'Couldnt find the variable: ' + top_name+suffix
         continue
       endif
-      if ~is_struct(bottom_data) then begin
+      if level ne 'sitl' and ~is_struct(bottom_data) then begin
         dprint, dlevel = 0, 'Couldnt find the variable: ' + bottom_name+suffix
         continue
       endif

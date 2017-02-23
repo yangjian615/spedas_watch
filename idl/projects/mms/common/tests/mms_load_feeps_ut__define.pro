@@ -6,10 +6,20 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-21 14:04:59 -0800 (Tue, 21 Feb 2017) $
-; $LastChangedRevision: 22837 $
+; $LastChangedDate: 2017-02-22 11:42:51 -0800 (Wed, 22 Feb 2017) $
+; $LastChangedRevision: 22848 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+; the following is a regression test for the FEEPS PAD bug
+; where the last bin was always left off due to a -1 error
+function mms_load_feeps_ut::test_last_pad_bin
+  mms_load_feeps, probe=2
+  mms_feeps_pad, probe=2
+  get_data, 'mms2_epd_feeps_srvy_l2_electron_intensity_70-1000keV_pad', data=d
+  assert, total(d.Y[*, 12], /nan) ne 0, 'Problem with last bin in FEEPS PAD'
+  return, 1
+end
 
 function mms_load_feeps_ut::test_varformat_brst_count_rate
   mms_load_feeps, data_rate='brst', probe=4, varformat='*count_rate*'
@@ -509,8 +519,10 @@ function mms_load_feeps_ut::init, _extra=e
   self->addTestingRoutine, ['mms_load_feeps', 'mms_feeps_omni', $
                             'mms_feeps_pad_spinavg', 'mms_feeps_pad', $
                             'mms_feeps_remove_sun', 'mms_feeps_smooth', $
-                            'mms_feeps_spin_avg', 'mms_feeps_split_integral_ch']
-  self->addTestingRoutine, ['mms_read_feeps_sector_masks_csv'], /is_function
+                            'mms_feeps_spin_avg', 'mms_feeps_split_integral_ch', $
+                            'mms_feeps_correct_energies', 'mms_feeps_flat_field_corrections', $
+                            'mms_feeps_pitch_angles', 'mms_feeps_remove_bad_data']
+  self->addTestingRoutine, ['mms_read_feeps_sector_masks_csv', 'mms_feeps_energy_table'], /is_function
   return, 1
 end
 

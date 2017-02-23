@@ -84,8 +84,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-21 14:04:28 -0800 (Tue, 21 Feb 2017) $
-;$LastChangedRevision: 22836 $
+;$LastChangedDate: 2017-02-22 14:29:43 -0800 (Wed, 22 Feb 2017) $
+;$LastChangedRevision: 22852 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -117,8 +117,8 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     ; if the user requests a specific varformat, we'll need to load 
     ; the support data required for sun removal and spin averaging
     if ~undefined(varformat) && (varformat[0] ne '*') then begin
-      if is_array(varformat) then varformat = [varformat, '*_spinsectnum'] $
-      else varformat = varformat + ' *_spinsectnum'
+      if is_array(varformat) then varformat = [varformat, '*_spinsectnum', '*_pitch_angle'] $
+      else varformat = varformat + ' *_spinsectnum *_pitch_angle'
     endif
     if ~undefined(varformat) && ~undefined(get_support_data) then undefine, get_support_data
     

@@ -12,8 +12,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-06 13:55:49 -0800 (Mon, 06 Feb 2017) $
-;$LastChangedRevision: 22739 $
+;$LastChangedDate: 2017-02-22 11:42:20 -0800 (Wed, 22 Feb 2017) $
+;$LastChangedRevision: 22847 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pitch_angles.pro $
 ;-
 
@@ -27,6 +27,11 @@ pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=d
   ; get the times from the currently loaded FEEPS data
   get_data, 'mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix, data=pad_data, dlimits=pad_dl
 
+  if ~is_struct(pad_data) then begin
+    dprint, dlevel = 0, 'Error, could not find current pitch angle variable for time array'
+    return
+  endif
+  
   if undefined(trange) then trange=timerange(minmax(pad_data.X))
 
   ; load the B-field data if not already loaded

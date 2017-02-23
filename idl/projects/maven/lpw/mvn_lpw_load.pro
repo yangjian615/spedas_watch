@@ -79,7 +79,9 @@
 ;                       itself is created automatically within the routine.
 ;                       For example: get_clock_jumps='/Users/name/' will create the file /Users/name/yyyy-mm-dd_clk_jumps.sav
 ; 
-;      leavespice: set /leavespice to leave SPICE kernels in IDL memory at end of this routine. Default if not set is to clear them.
+;      leavespice: Default is to leave SPICE kernels intact on exit.  Set this keyword to 0 to clear the kernels on exit.
+;
+;      spiceinit: Force a re-initialization of SPICE for the input date (see utc_in above).  Default = 0 (no).
 ;      
 ;      success: Set this to a variable name. The returned value is 0. if the load was not successful for the given date, and 1 if it was successful.
 ;      
@@ -171,16 +173,24 @@
 ;2015-10-08: CMF: modified so that we don't spam NAIF with many requests for SPICE kernels. Kernels are looked up and downloaded (if needed) once at start of routine.
 ;                 SPICE kernels are cleared by default once all processing done, but remain as a tplot variable.
 ;2015-11-09: CMF: modified SPICE kernel finder routines - they now add 20 minutes to each end to make sure we cover all times within the day; sometimes packets can be outside of the day by a few minutes.
-;2015-12-22: CMF added success keyword.           
+;2015-12-22: CMF added success keyword.    
+;2017-02-22: DLM modified behavior regarding loading and clearing of SPICE kernels.  If SPICE has not yet
+;                been initialized, this routine will load kernels appropriate for the input date.  Once loaded,
+;                the kernels will remain in memory on exit.  If SPICE has already been initialized, this 
+;                routine will use the kernels currently in memory, and they will remain in memory on exit.
+;                Keywords LEAVESPICE and SPICEINIT can be used to alter this default behavior.
 ;           
 ;-
 
 pro mvn_lpw_load, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, nospice=nospice, noserver=noserver, $
-                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps, leavespice=leavespice, success=success
+                  notatlasp=notatlasp, get_file_info=get_file_info, get_clock_jumps = get_clock_jumps, leavespice=leavespice, spiceinit=spiceinit, $
+                  success=success
 
 common clock_check, jump_times_nospice
 jump_times_nospice = dblarr(1)
 tplot_var='all'  ;### CMF added this as default as keyword currently doesn't work
+
+if (size(leavespice,/type) eq 0) then leavespice = 1   ;### DLM changed default to NOT clear kernels on exit (2017-02-22).
 
 ;Clear all tplot variables. Kernel and data information can be retained in tplot variables. This must be updated for each run, particularly if
 ;you switch between using and not using SPICE
@@ -412,8 +422,21 @@ if filetype eq 'L0' then begin
           Tload = time_double(utc_in[0])
           Tload1 = Tload - 1200.d  ;1200s = 20 minutes
           Tload2 = Tload + 86400.d + 1200.d
-          print, "Locating correct SPICE kernels..."
-          mvn_lpw_anc_get_spice_kernels, [Tload1, Tload2], notatlasp = notatlasp, /load  ;add notatlasp, jmm, 2015-01-29     , CMF added /load keyword
+
+          ; Don't reinitialize SPICE by default, dlm, 2017-02-22
+          ; (Experienced users will initialize SPICE for themselves.
+          ;  Use keyword SPICEINIT to force re-initialization, if desired.)
+          kernels = spice_test('*', verbose=-1)
+          indx = where(kernels ne '', count)
+          if (keyword_set(spiceinit) or (count eq 0)) then begin
+            print, "Locating correct SPICE kernels..."
+            mvn_lpw_anc_get_spice_kernels, [Tload1, Tload2], notatlasp = notatlasp, /load  ;add notatlasp, jmm, 2015-01-29     , CMF added /load keyword
+          endif else begin
+            ; Inform LPW code that SPICE has already been loaded.  White lie about the time range.
+            store_data, 'mvn_lpw_load_kernel_files', data={x:1., y:1.}, dlimit={Kernel_files: kernels, $
+            Purpose: "Directories to kernel files needed for UTC date "+time_string(Tload1)+" - "+time_string(Tload2), $
+            Notes: "Load in order first entry to last entry to ensure correct coverage"}
+          endelse
       endif 
       
       ;==========================

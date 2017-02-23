@@ -6,10 +6,17 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-09-16 08:38:14 -0700 (Fri, 16 Sep 2016) $
-; $LastChangedRevision: 21840 $
+; $LastChangedDate: 2017-02-22 12:00:57 -0800 (Wed, 22 Feb 2017) $
+; $LastChangedRevision: 22849 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_edi_ut__define.pro $
 ;-
+
+function mms_load_edi_ut::test_multi_data_rates
+  mms_load_edi, probe=1, data_rate=['srvy', 'brst']
+  assert, spd_data_exists('mms1_edi_e_dsl_brst_l2 mms1_edi_e_dsl_srvy_l2', '2015-12-15', '2015-12-16'), $
+    'Problem with multiple data rates'
+  return, 1
+end
 
 function mms_load_edi_ut::test_load_spdf
   mms_load_edi, probes=[1, 4], level='l2', /spdf

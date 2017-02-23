@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-01 15:24:38 -0700 (Tue, 01 Nov 2016) $
-; $LastChangedRevision: 22254 $
+; $LastChangedDate: 2017-02-22 09:05:59 -0800 (Wed, 22 Feb 2017) $
+; $LastChangedRevision: 22846 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_eis_pad_crib_qlplots.pro $
 ;-
 
@@ -39,10 +39,7 @@ if errstats ne 0 then begin
 endif
 
 ; load ExTOF, PHxTOF and electron data:
-mms_load_eis, probes=probe, trange=trange, datatype=['extof', 'electronenergy'], level='l1b'
-
-; the following appears to be broken due to bad PHxTOF files
-;mms_load_eis, probes=probe, trange=trange, datatype='phxtof', level='l1b'
+mms_load_eis, probes=probe, trange=trange, datatype=['phxtof', 'extof', 'electronenergy'], level='l1b'
 
 mms_load_fgm, probes=probe, trange=trange, instrument='dfg', level='ql'
 spd_mms_load_bss, trange=trange, /include_labels
