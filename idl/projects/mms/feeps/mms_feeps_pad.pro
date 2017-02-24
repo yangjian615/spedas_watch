@@ -32,10 +32,10 @@
 ;     dturner, 26 Jan 2017, Modified mms_feeps_pad to produce results consistent with Drew's own PAD codes for FEEPS
 ;                       
 ;
-;$LastChangedBy: 
-;$LastChangedDate: 
-;$LastChangedRevision: 
-;$URL: 
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-02-23 10:33:29 -0800 (Thu, 23 Feb 2017) $
+;$LastChangedRevision: 22855 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
 pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = level, $

@@ -21,9 +21,9 @@
 ;  flow_threshold(optional): flow threshold for flow flag(default = 1.0, units undocumented)
 ;  
 ;  
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2017-01-20 15:17:51 -0800 (Fri, 20 Jan 2017) $
-; $LastChangedRevision: 22641 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-02-23 12:03:56 -0800 (Thu, 23 Feb 2017) $
+; $LastChangedRevision: 22858 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_quality_flags.pro $
 ;-
 
@@ -103,7 +103,7 @@ pro thm_esa_quality_flags,probe=probe,datatype=datatype,noload=noload,flow_thres
   endcase
   
   ;load ESA data
-  thm_load_esa_pkt, probe = probe, /no_time_clip
+  If(~keyword_set(noload)) Then thm_load_esa_pkt, probe = probe, /no_time_clip
     
   date = timerange()
   datatype_lc = strlowcase(datatype)

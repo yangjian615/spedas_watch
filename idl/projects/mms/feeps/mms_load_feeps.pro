@@ -84,8 +84,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-22 14:29:43 -0800 (Wed, 22 Feb 2017) $
-;$LastChangedRevision: 22852 $
+;$LastChangedDate: 2017-02-23 11:11:30 -0800 (Thu, 23 Feb 2017) $
+;$LastChangedRevision: 22856 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -140,14 +140,16 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     
     ; apply flat field corrections for ions
     if undefined(no_flatfield_corrections) then mms_feeps_flat_field_corrections, probes = probes_in, data_rate = data_rate_in, suffix = suffix
-    
-    ; remove bad eyes, bad energy channels
-    mms_feeps_remove_bad_data, suffix = suffix
 
     for probe_idx = 0, n_elements(probes_in)-1 do begin
       this_probe = string(probes_in[probe_idx])
       for datatype_idx = 0, n_elements(datatype_in)-1 do begin
         this_datatype = datatype_in[datatype_idx]
+        
+        ; remove bad eyes, bad energy channels
+        mms_feeps_remove_bad_data, probe=this_probe, datatype=this_datatype, $
+          data_rate=data_rate_in, level = level, suffix = suffix
+        
         ; split the extra integral channel from all of the spectrograms
         mms_feeps_split_integral_ch, data_units, this_datatype, this_probe, $
           suffix = suffix, data_rate = data_rate_in, level = level_in
