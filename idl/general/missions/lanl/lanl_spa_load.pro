@@ -35,7 +35,7 @@ if datatype eq 'sp' then begin
    if not keyword_set(source) then begin
       source = file_retrieve(/struct)
       source.remote_data_dir = 'http://sprg.ssl.berkeley.edu/data/misc/lanl/spa/'
-      source.local_data_dir = root_data_dir() + 'misc/lanl/spa/'
+      source.local_data_dir = root_data_dir() + '/misc/lanl/spa/'
       if file_test(/regular,source.local_data_dir+'.master') then   source.no_download = 1   ; Local directory IS the master directory
       if n_elements(verbose) ne 0 then source.verbose=verbose
    endif

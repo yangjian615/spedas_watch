@@ -112,9 +112,9 @@
 ;     ignore_filedate, archive_ext, archive_dir, min_age_limit
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-18 11:25:14 -0800 (Wed, 18 Jan 2017) $
-;$LastChangedRevision: 22619 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-02-23 20:09:00 -0800 (Thu, 23 Feb 2017) $
+;$LastChangedRevision: 22866 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download.pro $
 ;
 ;-
@@ -161,6 +161,9 @@ function spd_download, $
 ;---------------------------------------------
 
 output = ''
+
+if undefined(ssl_verify_peer) then ssl_verify_peer=0
+if undefined(ssl_verify_host) then ssl_verify_host=0
 
 if undefined(no_download) && ~undefined(no_server) then begin
   no_download = no_server

@@ -12,9 +12,9 @@
 ;  This routine is still in development.
 ;
 ;
-; $LastChangedBy: pulupalap $
-; $LastChangedDate: 2017-02-17 14:26:40 -0800 (Fri, 17 Feb 2017) $
-; $LastChangedRevision: 22822 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-02-23 19:23:48 -0800 (Thu, 23 Feb 2017) $
+; $LastChangedRevision: 22862 $
 ; $URL $
 ;-
 pro wi_swe_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -47,7 +47,7 @@ endif
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-files = spd_download(remote_file=relpathnames, remote_path=!wind.remote_data_dir, local_path = !wind.local_data_dir)
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir)
 
 if keyword_set(downloadonly) then return
 

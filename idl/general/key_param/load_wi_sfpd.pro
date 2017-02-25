@@ -37,10 +37,10 @@ if not keyword_set(source) then begin
    source = !wind
 endif
 
-file_format = 'wind/3dp/sfpd/YYYY/wi_sfpd_3dp_YYYYMMDD_v0?.cdf'
+file_format = 'wind/3dp/3dp_sfpd/YYYY/wi_sfpd_3dp_YYYYMMDD_v0?.cdf'
 pathnames = file_dailynames(file_format=file_format,trange=trange)
-filenames = file_retrieve(pathnames,_extra=source,/last_version)
-
+;filenames = file_retrieve(pathnames,_extra=source,/last_version)
+filenames = spd_download(remote_file=pathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir)
 
 d = 0
 nd = 0

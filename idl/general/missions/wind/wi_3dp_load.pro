@@ -21,8 +21,8 @@
 ; Author: Davin Larson
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-02-16 14:54:44 -0800 (Thu, 16 Feb 2017) $
-; $LastChangedRevision: 22807 $
+; $LastChangedDate: 2017-02-23 19:23:48 -0800 (Thu, 23 Feb 2017) $
+; $LastChangedRevision: 22862 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wi_3dp_load.pro $
 ;-
 pro wi_3dp_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -142,7 +142,7 @@ endcase
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-files = spd_download(remote_file=relpathnames, remote_path=!wind.remote_data_dir, local_path = !wind.local_data_dir)
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir)
 
 if keyword_set(masterfile) then files= [masterfile,files]
 
