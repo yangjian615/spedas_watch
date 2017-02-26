@@ -59,7 +59,7 @@ if keyword_set(plot) then $
           'xticklen','xtickname','xticks','xtickv','xtick_get','xtitle',     $
           'xtype','ycharsize','ygridstyle','ylog','ymargin','yminor',        $
           'ynozero','yrange','ystyle','ythick','ytickformat','yticklen','ytickinterval',     $
-          'ytickname','yticks','ytickv','ytick_get','ytitle','ytype',        $
+          'ytickname','yticks','ytickv','ytick_get','ytitle','ytype','ytickunits',        $
           'zcharsize','zgridstyle','zlog','zmargin','zminor','zrange',       $
           'zstyle','zthick','ztickformat','zticklen','ztickname','zticks',   $
           'ztickv','ztick_get','ztitle','zvalue','isotropic']
