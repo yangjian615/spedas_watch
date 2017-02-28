@@ -37,6 +37,7 @@ aeold|Themis AE (pre 2015)|atha|Athabasca, AB
 asi|ASI|atha|Athabasca, AB
 carisma|CARISMA|atha|Athabasca, AB
 dtu|DTU|atu|Attu, Greenland
+aari|AARI|bbg|Barentsburg, Russia
 mcmac|McMAC|benn|Bennington, NE
 gima|GIMA|bett|Bettles, AK
 dtu|DTU|bfe|Brorfelde, Denmark
@@ -44,6 +45,7 @@ tgo|TGO|bjn|Bjœóõ½rnœóõ½ya, Norway
 nrcan|NRCan|blc|Baker Lake, NU
 epo|Themis EPO|bmls|Bay Mills, MI
 usgs|USGS|bou|Boulder, CO
+aari|AARI|brn|Baronov, Russia
 ae|Themis AE|brw|Point Barrow, AK
 kyoto|KYOTO|brw|Point Barrow, AK
 usgs|USGS|brw|Point Barrow, AK
@@ -160,6 +162,7 @@ step|STEP|lcl|Lucky Lake, SK
 ae|Themis AE|leth|Lethbridge, AB
 autu|AUTUMN|leth|Lethbridge, AB
 epo|Themis EPO|loys|Loysburg, PA
+aari|AARI|loz|Lovozero, Russia
 falcon|FALCON|lrel|Laurel, MD
 mcmac|McMAC|lres|Linares, Mexico
 step|STEP|lrg|LaRonge, SK
@@ -287,6 +290,7 @@ epo|Themis EPO|ukia|Ukiah, OR
 dtu|DTU|umq|Uummannaq, Greenland
 dtu|DTU|upn|Upernavik, Greenland
 nrcan|NRCan|vic|Victoria, BC
+aari|AARI|viz|Vize Island, Russia
 ae|Themis AE|vldr|Val-d'Or, QC
 autu|AUTUMN|vldr|Val-d'Or, QC
 autx|AUTUMNX|vldr|Val-d'Or, QC

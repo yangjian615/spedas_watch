@@ -141,7 +141,7 @@
 ;            
 ;-
 
-pro mvn_lpw_load, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, nospice=nospice, noserver=noserver, $
+pro mvn_lpw_load_dlm, utc_in, data_dir=data_dir, tplot_var=tplot_var, filetype=filetype, packet=packet, board=board, nospice=nospice, noserver=noserver, $
                   notatlasp=notatlasp, get_file_info=get_file_info
 
 ;Clear all tplot variables. Kernel and data information can be retained in tplot variables. This must be updated for each run, particularly if

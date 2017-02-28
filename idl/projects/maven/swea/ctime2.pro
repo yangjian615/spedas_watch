@@ -3,20 +3,20 @@
 ;PURPOSE:
 ;  A version of ctime.  May become obsolete.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:15:03 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16106 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-02-27 13:15:35 -0800 (Mon, 27 Feb 2017) $
+; $LastChangedRevision: 22870 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/ctime2.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
 ;FILE:  ctime2.pro
 ;-
-pro ctime_get_exact_data,var,v,t,pan,hx,hy,subvar,yind,yind2,z,$
+pro ctime_get_exact_data2,var,v,t,pan,hx,hy,subvar,yind,yind2,z,$
          spec=spec,dtype=dtype,load=load,button=button
 ;+
 ;NAME:
-;   ctime_get_exact_data
-;PROCEDURE:     ctime_get_exact_data
+;   ctime_get_exact_data2
+;PROCEDURE:     ctime_get_exact_data2
 ;PURPOSE:       Get a data structure for ctime.  if var is a string or a strarr,
 ;               create a structure of data structures.
 ;               Get the new values for hx and hy, the crosshairs position.
@@ -47,7 +47,7 @@ common ctime_common, ptr        ;this should NOT appear in ctime, it is local
     case dtype of 
       1:  begin 
       endcase 
-      2:  begin   ;note that if dtype eq 2 ctime_get_exact_data does nothing
+      2:  begin   ;note that if dtype eq 2 ctime_get_exact_data2 does nothing
       endcase     ;ie:  ctime bahaves as if exact eq 0
       3:  begin 
         get_data,var,data=var_str
@@ -426,7 +426,7 @@ ind2 = -1
 lastvalidvar = var              ;record previous data variable (not 'Null')
 oldbutton    = 0                ;record last button pressed
 if (exact ne 0) and (var ne 'Null') then $
-  ctime_get_exact_data,var,v,t,pan,hx,hy,subvar,ind,ind2,z,$
+  ctime_get_exact_data2,var,v,t,pan,hx,hy,subvar,ind,ind2,z,$
   spec=spec,dtype=dtype,/load,button=button
 ;;;;;;
 
@@ -468,7 +468,7 @@ while n lt max do begin
     if exact ne 0 then begin 
       if var ne 'Null' then begin ;get data points
         load = var ne lastvalidvar
-        ctime_get_exact_data,var,v,t,pan,hx,hy,subvar,ind,ind2,z,$
+        ctime_get_exact_data2,var,v,t,pan,hx,hy,subvar,ind,ind2,z,$
           spec=spec,dtype=dtype,load=load,button=button
       endif
       plots,[0,1],[hy,hy], color=color,/norm,/thick,lines=0 ;plot new crosshairs

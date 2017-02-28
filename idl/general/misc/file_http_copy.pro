@@ -133,11 +133,11 @@
  ;       continue the download based on remote file modification time and file size. If the local version was current
  ;       then the connection would be closed
  ;
- ; $LastChangedBy: davin-mac $
- ; $LastChangedDate: 2016-01-23 15:14:44 -0800 (Sat, 23 Jan 2016) $
- ; $LastChangedRevision: 19802 $
+ ; $LastChangedBy: nikos $
+ ; $LastChangedDate: 2017-02-27 13:47:56 -0800 (Mon, 27 Feb 2017) $
+ ; $LastChangedRevision: 22872 $
  ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_http_copy.pro $
- ; $Id: file_http_copy.pro 19802 2016-01-23 23:14:44Z davin-mac $
+ ; $Id: file_http_copy.pro 22872 2017-02-27 21:47:56Z nikos $
  ;-
  
  
@@ -541,7 +541,7 @@ end
    ;; sockets supported in unix & windows since V5.4, Macintosh since V5.6
    tstart = systime(1)
    
-   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 19802 2016-01-23 23:14:44Z davin-mac $
+   dprint,dlevel=5,verbose=verbose,'Start; $Id: file_http_copy.pro 22872 2017-02-27 21:47:56Z nikos $
 
    if n_elements(strict_html) eq 0 then begin
       strict_html = 1      ;  set to 1 to be robust,  set to 0 to be much faster
@@ -549,7 +549,7 @@ end
    endif
 
    if keyword_set(user_agent) eq 0 then begin
-     swver = strsplit('$Id: file_http_copy.pro 19802 2016-01-23 23:14:44Z davin-mac $',/extract)
+     swver = strsplit('$Id: file_http_copy.pro 22872 2017-02-27 21:47:56Z nikos $',/extract)
      user = getenv('USER')
      if ~user then user=getenv('USERNAME')
      if ~user then user=getenv('LOGNAME')
@@ -894,6 +894,7 @@ end
      
      if url_info.status_code eq 301 then begin     ; Permanent redirect  (typically caused by server no longer supplying the files)
        dprint,dlevel=2,verbose=verbose,transpose(header)
+       location = file_http_header_element(header,'Location:')
        dprint,dlevel=1,verbose=verbose,'Permanent redirect to: '+location
        dprint,dlevel=1,verbose=verbose,'Request Aborted'
        goto , close_server
