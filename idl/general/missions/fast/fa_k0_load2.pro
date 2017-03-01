@@ -6,7 +6,7 @@
 ;    fa_k0_load,'dcf'
 ; Davin Larson
 ;-
-pro fa_k0_load,types,trange=trange,source=source,version=version,verbose=verbose
+pro fa_k0_load2,types,trange=trange,source=source,version=version,verbose=verbose
 
 source = fa_file_source(verbose=verbose)
 subdir = 'misc/'

@@ -1,4 +1,4 @@
-pro istp_fa_k0_load,types,trange=trange,verbose=verbose
+pro istp_fa_k0_load2,types,trange=trange,verbose=verbose
 
 istp_init
 source = !istp
