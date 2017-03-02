@@ -24,10 +24,10 @@
 ;
 ; NOTES:
 ;  Either 
-;$LastChangedBy: jwl $
-;$LastChangedDate: 2014-06-12 10:12:12 -0700 (Thu, 12 Jun 2014) $
-;$LastChangedRevision: 15355 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/state/thm_autoload_support.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-01 13:09:14 -0800 (Wed, 01 Mar 2017) $
+;$LastChangedRevision: 22883 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_autoload_support.pro $
 ;
 ;-
 Pro mms_autoload_support, vname=vname, attdata=attdata, ephdata=ephdata, history_out=history_out, probe_in=probe_in, trange=trange, progobj=progobj, _extra=_extra

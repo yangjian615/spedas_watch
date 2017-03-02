@@ -41,6 +41,10 @@
 ;       IALT:     Ionopause altitude.  Highly variable, but nominally ~400 km.
 ;                 For display only - not included in statistics.  Default is NaN.
 ;
+;       SHADOW:   Choose shadow boundary definition:
+;                    0 : optical shadow at spacecraft altitude (default)
+;                    1 : EUV shadow at spacecraft altitude
+;
 ;       SEGMENTS: Plot nominal altitudes for orbit segment boundaries as dotted
 ;                 horizontal lines.  Closely spaced lines are transitions, during
 ;                 which time the spacecraft is reorienting.  The actual segment 
@@ -102,8 +106,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-19 17:55:09 -0700 (Wed, 19 Oct 2016) $
-; $LastChangedRevision: 22157 $
+; $LastChangedDate: 2017-03-01 14:58:21 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22891 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -112,7 +116,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
                        colors=colors, reset_trange=reset_trange, nocrop=nocrop, spk=spk, $
-                       segments=segments
+                       segments=segments, shadow=shadow
 
   @maven_orbit_common
 
@@ -130,9 +134,10 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   if keyword_set(reset_trange) then treset = 1
   if (treset) then nocrop = 1
 
-  if keyword_set(domex) then domex = 1 else domex = 0
+  domex = keyword_set(domex)
+  eflg = keyword_set(ellip)
+  sflg = keyword_set(shadow)
   if not keyword_set(ialt) then ialt = !values.f_nan
-  if keyword_set(ellip) then eflg = 1 else eflg = 0
   if keyword_set(hires) then res = '20sec' else res = '60sec'
 
   mname = 'maven_spacecraft_mso_??????' + '.sav'
@@ -275,6 +280,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     r = sqrt(x*x + y*y + z*z)
     s = sqrt(y*y + z*z)
+    if (sflg) then shadow = 1D + (300D/R_m) else shadow = 1D  ; EUV shadow
     sza = atan(s,x)
     hgt = (r - 1.)*R_m
 
@@ -453,7 +459,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     pileup[indx,3] = !values.f_nan
   endif
 
-  indx = where((x gt 0D) or (s gt 1D), count)
+  indx = where((x gt 0D) or (s gt shadow), count)
   wake = ss
   if (count gt 0L) then begin
     wake[indx,0] = !values.f_nan
@@ -532,6 +538,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   if keyword_set(segments) then options,'alt2','constant',[500,1200,4970,5270] $
                            else options,'alt2','constant',-1
+
+  mvn_sun_bar
 
 ; Calculate statistics (orbit by orbit)
 

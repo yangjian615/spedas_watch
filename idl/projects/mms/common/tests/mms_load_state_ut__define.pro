@@ -7,10 +7,44 @@
 ;      
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-16 12:16:42 -0700 (Wed, 16 Mar 2016) $
-; $LastChangedRevision: 20477 $
+; $LastChangedDate: 2017-03-01 12:55:02 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22880 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_state_ut__define.pro $
 ;-
+
+@IC_GCI_TRANSF
+function mms_load_state_ut::test_j2000_conversion
+  mms_load_state, probe='1', datatype='pos', trange=['2015-09-01', '2015-09-02']
+  cotrans, 'mms1_defeph_pos', 'mms1_defeph_gei', /j20002gei
+  cotrans, 'mms1_defeph_gei', 'mms1_defeph_j2000', /gei2j2000
+
+  get_data, 'mms1_defeph_pos', data=dj2000, dlimits=dlj2000, limits=lj2000
+  get_data, 'mms1_defeph_gei', data=dgei, dlimits=dlgei, limits=lgei
+  get_data, 'mms1_defeph_j2000', data=dj20001, dlimits=dlj20001, limits=lj20001
+
+  tsgei=time_struct(dgei.x)
+  tsj2000=time_struct(dj2000.x)
+  tsj20001=time_struct(dj20001.x)
+
+  ; create an integer array for ic_conv_matrix
+  ; the format is  YYYYDDD for [n,0] and  sss (seconds of day) for [n,1]
+  orbtime = make_array(n_elements(dgei.x), 2, /long)
+  orbtime[*,0] = long((tsgei.year * 1000.) + tsgei.doy)
+  orbtime[*,1] = long(fix(tsgei.sod))
+  data_ic = dj2000
+
+  for i=0,n_elements(dgei.x)-1 do begin
+    ic_conv_matrix, reform(orbtime[i,*]), cmatrix
+    data_ic.y[i,*] = reform(dj2000.y[i,*]) # (cmatrix)
+  endfor
+
+  j2000_mag = sqrt(total(dj2000.y^2,2))
+  gei_mag = sqrt(total(dgei.y^2,2))
+  j20001_mag = sqrt(total(dj20001.y^2,2))
+
+  assert, array_equal(minmax(abs(j2000_mag-j20001_mag)) le 1e-4, [1, 1]), 'Problem with J2000 conversion'
+  return, 1
+end
 
 ; regression test for the MMS/THEMIS/RBSP orbit plots 
 function mms_load_state_ut::test_orbit_plots

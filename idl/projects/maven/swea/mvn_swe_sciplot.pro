@@ -31,6 +31,8 @@
 ;
 ;   RAM:       Create a panel for the RAM direction in spacecraft coordinates.
 ;
+;   NADIR:     Create a panel for the Nadir direction in spacecraft coordinates.
+;
 ;   SEP:       Include two panels for SEP data: one for ions, one for electrons.
 ;
 ;   SWIA:      Include panels for SWIA ion density and bulk velocity (coarse
@@ -70,15 +72,16 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 16:42:18 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22548 $
+; $LastChangedDate: 2017-03-01 14:51:23 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22887 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
 pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
                      sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2, min_pad_eflux=min_pad_eflux, $
-                     loadonly=loadonly, pans=pans, padsmo=padsmo, apid=apid, shape=shape
+                     loadonly=loadonly, pans=pans, padsmo=padsmo, apid=apid, shape=shape, $
+                     nadir=nadir
 
   compile_opt idl2
 
@@ -124,22 +127,25 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   alt_pan = 'alt2'
 
   if keyword_set(sun) then begin
-    mvn_swe_sundir
+    mvn_sundir, frame='MAVEN_SWEA'
     sun_pan = 'Sun_MAVEN_SPACECRAFT'
     get_data,sun_pan,index=i
-    if (i gt 0) then begin
-      options,sun_pan,'ytitle','Sun (PL)'
-    endif else sun_pan = ''
+    if (i eq 0) then sun_pan = ''
   endif else sun_pan = ''
 
   if keyword_set(ram) then begin
     mvn_sc_ramdir
     ram_pan = 'V_sc_MAVEN_SPACECRAFT'
     get_data,ram_pan,index=i
-    if (i gt 0) then begin
-      options,ram_pan,'ytitle','RAM (PL)!ckm/s'
-    endif else ram_pan = ''
+    if (i eq 0) then ram_pan = ''
   endif else ram_pan = ''
+
+  if keyword_set(nadir) then begin
+    mvn_nadir
+    ndr_pan = 'Nadir_MAVEN_SPACECRAFT'
+    get_data,ndr_pan,index=i
+    if (i eq 0) then ndr_pan = ''
+  endif else ndr_pan = ''
 
 ; MAG data
 
@@ -269,10 +275,10 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
 ; Assemble the panels and plot
 
-  pans = ram_pan + ' ' + sun_pan + ' ' + alt_pan + ' ' + euv_pan + ' ' + $
-         swi_pan + ' ' + sta_pan + ' ' + mag_pan + ' ' + sep_pan + ' ' + $
-         lpw_pan + ' ' + pad_pan + ' ' + pot_pan + ' ' + bst_pan + ' ' + $
-         shape_pan + ' ' + engy_pan
+  pans = ram_pan + ' ' + ndr_pan + ' ' + sun_pan + ' ' + alt_pan + ' ' + $
+         euv_pan + ' ' + swi_pan + ' ' + sta_pan + ' ' + mag_pan + ' ' + $
+         sep_pan + ' ' + lpw_pan + ' ' + pad_pan + ' ' + pot_pan + ' ' + $
+         bst_pan + ' ' + shape_pan + ' ' + engy_pan
 
   pans = str_sep(pans,' ')
   

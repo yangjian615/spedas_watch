@@ -25,14 +25,14 @@
 ;                    s_lat : sub-solar point latitude (deg)
 ;                    frame : coordinate frame ("IAU_MARS")
 ;
-;       SHADOW:    Set to 1 to calculate boundary of optical shadow
-;                  cast by solid planet at spacecraft altitude.
-;                  Set to 2 to calculate boundary of EUV shadow cast
-;                  by atmosphere at spacecraft altitude.
+;       SHADOW:    Choose which "shadow" to calculate:
+;                     0 : optical shadow at surface (default)
+;                     1 : optical shadow at spacecraft altitude
+;                     2 : EUV shadow at spacecraft altitude
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 16:50:51 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22550 $
+; $LastChangedDate: 2017-03-01 14:56:42 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22890 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/mvn_mars_terminator.pro $
 ;
 ;CREATED BY:	David L. Mitchell

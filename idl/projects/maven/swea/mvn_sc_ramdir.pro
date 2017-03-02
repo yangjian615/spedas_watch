@@ -58,8 +58,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-03-06 15:04:38 -0800 (Sun, 06 Mar 2016) $
-; $LastChangedRevision: 20335 $
+; $LastChangedDate: 2017-03-01 14:51:51 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22888 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -115,13 +115,22 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame, mso=mso
     endelse
   endelse
 
-; Spacecraft velocity in IAU_MARS frame --> rotate to S/C or APP frame
+; Spacecraft velocity in IAU_MARS frame --> rotate to desired frame
   
   store_data,'V_sc',data={x:Tsc, y:Vsc, v:[0,1,2]}
   options,'V_sc',spice_frame='IAU_MARS',spice_master_frame='MAVEN_SPACECRAFT'
   spice_vector_rotate_tplot,'V_sc',to_frame,trange=[tmin,tmax]
+  
+  i = strpos(to_frame,'_')
+  fname = strmid(to_frame,i+1)
+  case strupcase(fname) of
+    'MARS'       : fname = 'Mars'
+    'SPACECRAFT' : fname = 'PL'
+    else         : ; do nothing
+  endcase
 
   vname = 'V_sc_' + to_frame
+  options,vname,'ytitle','RAM (' + fname + ')!ckm/s'
   options,vname,'labels',['X','Y','Z']
   options,vname,'labflag',1
   options,vname,'constant',0
@@ -142,6 +151,8 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame, mso=mso
 
   store_data,phiname,data={x:V_ram.x, y:Vphi}
   store_data,thename,data={x:V_ram.x, y:Vthe}
+  options,phiname,'ytitle','Vphi (' + fname + ')'
+  options,thename,'ytitle','Vthe (' + fname + ')'
 
   return
 

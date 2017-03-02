@@ -61,14 +61,31 @@
 ;       FRAME:    Also calculate the Sun direction in one or more 
 ;                 frames specified by this keyword.  Default = 'MAVEN_SWEA'
 ;
+;       LIST:     List the key angles (as described above) and exit.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-02-05 16:54:00 -0800 (Sun, 05 Feb 2017) $
-; $LastChangedRevision: 22730 $
+; $LastChangedDate: 2017-03-01 14:50:37 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22886 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
 ;-
-pro mvn_swe_sundir, trange, dt=dt, pans=pans, frame=frame
+pro mvn_swe_sundir, trange, dt=dt, pans=pans, frame=frame, list=list
+
+  if keyword_set(list) then begin
+    print,' '
+    print,'    theta (deg)   : significance'
+    print,'  ---------------------------------------------------------------'
+    print,'    90 to 87      : entire sensor in shadow of pedestal'
+    print,'    < 87          : toroidal grids illuminated'
+    print,'    < 77          : upper deflector illuminated'
+    print,'    < 37          : top cap (periphery) illuminated'
+    print,'    17 to   0     : scalloped part of top cap illuminated'
+    print,'     0 to -10     : photons enter gap between hemispheres'
+    print,'  ---------------------------------------------------------------'
+    print,' '
+    return
+  endif
 
   if (size(trange,/type) eq 0) then begin
     tplot_options, get_opt=topt

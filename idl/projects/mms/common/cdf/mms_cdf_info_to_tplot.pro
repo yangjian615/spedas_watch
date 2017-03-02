@@ -8,9 +8,9 @@
 ; Forked for MMS, 10/22/2015, egrimes@igpp
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2015-11-10 13:42:19 -0800 (Tue, 10 Nov 2015) $
-; $LastChangedRevision: 19330 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/spedas/cdf/mms_cdf_info_to_tplot.pro $
+; $LastChangedDate: 2017-03-01 13:05:18 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22882 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/mms_cdf_info_to_tplot.pro $
 ;-
 pro mms_cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames, non_record_varying=non_record_varying, $
         prefix=prefix,midfix=midfix,midpos=midpos,suffix=suffix,newname=newname,  $
@@ -26,7 +26,7 @@ pro mms_cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames, non_record_varying=
         load_labels=load_labels ;copy labels from labl_ptr_1 in attributes into dlimits
                                       ;resolve labels implemented as keyword to preserve backwards compatibility
 
-dprint,verbose=verbose,dlevel=4,'$Id: mms_cdf_info_to_tplot.pro 19330 2015-11-10 21:42:19Z egrimes $'
+dprint,verbose=verbose,dlevel=4,'$Id: mms_cdf_info_to_tplot.pro 22882 2017-03-01 21:05:18Z egrimes $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 

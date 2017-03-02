@@ -11,8 +11,8 @@
 ; 
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-23 14:36:58 -0800 (Mon, 23 Jan 2017) $
-; $LastChangedRevision: 22647 $
+; $LastChangedDate: 2017-03-01 12:38:40 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22877 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_init_ut__define.pro $
 ;-
 
@@ -34,7 +34,7 @@ function mms_init_ut::test_mms_data_dir
   current_mms_data_dir = getenv('MMS_DATA_DIR')
   new_mms_data_dir = '/mms_data_dir/'
   setenv, "MMS_DATA_DIR="+new_mms_data_dir
-  mms_init
+  mms_init, /reset
   assert, !mms.local_data_dir eq new_mms_data_dir, 'Problem with MMS_DATA_DIR environment variable'
   setenv, "MMS_DATA_DIR="+current_mms_data_dir ; reset the current MMS_DATA_DIR so this test doesn't clobber the current settings
   mms_init, /reset

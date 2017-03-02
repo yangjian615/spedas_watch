@@ -34,8 +34,8 @@
 ;                 'MAVEN_APP', etc.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-19 17:53:55 -0700 (Wed, 19 Oct 2016) $
-; $LastChangedRevision: 22156 $
+; $LastChangedDate: 2017-03-01 14:47:54 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -79,7 +79,10 @@ pro mvn_sundir, trange, dt=dt, pans=pans, frame=frame
   for i=0,(nframes-1) do begin
     to_frame = strupcase(frame[indx[i]])
     spice_vector_rotate_tplot,'Sun',to_frame,trange=[tmin,tmax],check='MAVEN_SPACECRAFT'
-    pans = [pans, 'Sun_' + to_frame]
+    pname = 'Sun_' + to_frame
+    j = strpos(to_frame,'_')
+    options,pname,'ytitle','Sun (' + strmid(to_frame,j+1) + ')'
+    pans = [pans, pname]
   endfor
   
   return

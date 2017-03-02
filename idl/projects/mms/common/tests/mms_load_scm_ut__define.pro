@@ -7,10 +7,16 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-03-16 12:16:42 -0700 (Wed, 16 Mar 2016) $
-; $LastChangedRevision: 20477 $
+; $LastChangedDate: 2017-03-01 13:01:58 -0800 (Wed, 01 Mar 2017) $
+; $LastChangedRevision: 22881 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_scm_ut__define.pro $
 ;-
+
+function mms_load_scm_ut::test_tplotnames_nodata
+  mms_load_scm, probe=3, level='l2', trange=[systime(1)+60.*60.*48., systime(1)+2*60.*60.*48.], tplotnames=data_loaded
+  assert, undefined(data_loaded), 'Problem with tplotnames keyword in mms_load_scm'
+  return, 1
+end
 
 ; regression test for wavpol bug where there was a zero at the end of the data
 function mms_load_scm_ut::test_wavpol_zero_at_end
