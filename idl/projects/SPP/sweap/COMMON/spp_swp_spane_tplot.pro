@@ -36,8 +36,11 @@ pro spp_swp_spane_tplot,name,ADD=ADD,setlim=setlim
       'SA_SPEC': tplot, '*spa_*ADC_VMON_HEM *spa_AF0_CNTS *spa_*AF1_ANODE_SPEC spp_spa_AF1_NRG_SPEC spp_spa_AT0_CNTS spp_spa_AT1_ANODE_SPEC spp_spa_AT1_NRG_SPEC spp_spa_AT1_PEAK_BIN', ADD=ADD
       'SB_SPEC': tplot, 'spp_spb_hkp_ADC_VMON_HEM spp_spb_AF0_CNTS spp_spb_AF1_ANODE_SPEC spp_spb_AF1_NRG_SPEC spp_spb_AT0_CNTS spp_spb_AT1_ANODE_SPEC spp_spb_AT1_NRG_SPEC spp_spb_AT1_PEAK_BIN', ADD=ADD
       'MANIP':tplot,'manip*_POS',add=add
-      'SA_COVER': tplot, '*spa_*ACT*CVR* spa_*ACTSTAT*FLAG* spa*CMD*UKN* spa*CLK*NYS', add = add
-      'SB_COVER': tplot, '*spb_*ACT*CVR* spb_*ACTSTAT*FLAG* spb*CMD*UKN* spb*CLK*NYS', add = add
+      'SA_COVER': tplot, '*spa_*ACT*CVR* *spa_*ACTSTAT*FLAG* *spa_*ANAL*TEMP* *spa*ATO* *spa*ATI*', add = add
+      'SB_COVER': tplot, '*spb_*ACT*CVR* *spb_*ACTSTAT*FLAG* *spb_*ANAL*TEMP* *spb*ATO* *spb*ATI*', add = add
+      'SB_COVER_Greg': tplot, '*spb_*hkp*CMD*REC TEMP *spb*hkp*ACT*CVR*T *spb*hkp*ACTSTAT*FLAG', add = add
+      'SA_COVER_Greg': tplot, '*spa_*hkp*CMD*REC TEMP *spa_*hkp*ACT*CVR*T *spa_*hkp*ACTSTAT*FLAG', add = add
+
       else:
     endcase
   endif

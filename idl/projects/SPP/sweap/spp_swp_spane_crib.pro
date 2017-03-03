@@ -125,7 +125,7 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  trange = '2016 11 '+ ['18/16','18/18']  ; SPAN-Ae FM preEnv Cal 'spane_ph_thresh_scan' ; incomplete, need tony to parse file?
  trange = '2016 11 '+ ['18/17','18/18']  ; SPAN-Ae FM preEnv Cal 'spane_thresh_scan' (No MCP)
  trange = '2016 11 '+ ['18/21','18/23']  ; SPAN-Ae FM postcoat w/ attenuator: Full rotation (angles incorrect, ROT not zeroed)
- trange = '2016 11 '+ ['19/00','19/02']  ; SPAN-Ae FM quick EA scan
+ trange = '2016 11 '+ ['19/00','19/02']  ; SPAN-Ae FM quick EA scan ; no egun values present :(
  trange = '2016 11 '+ ['19/02','19/04']  ; SPAN-Ae FM rotation @ 2degrees Yaw, which has been shown to be the beam emit angle
  trange = '2016 11 '+ ['20/00','20/07']  ; SPAN-Ae FM thresh & MCP scan @ 2degrees Yaw named SPANAe_preEnvCal_mcpTest.png
  trange = '2016 11 '+ ['21/01','21/23']  ; SPAN-Ae FM deflector test, ;skipped anode 11? ;MRAM (indicates Def dac) does not indicate correctly. will require fixes in the future
@@ -176,6 +176,8 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/mgsehires1/20161223_163710_test/PTP_data.dat') ;SPANB second cycling attempt cover open
  trange = '2016 12 '+ ['28/23','29/12'] ; second attempt at opening cover; no DAG, after official TBAL. Cover opens when SPANB warms.
  files = spp_file_retrieve(/spaneb,/snout2,trange=trange)
+ trange = '2017 01 '+ ['05/00','05/01'] ; cover opening attempt semi cold - opened but after timeout.
+ trange = '2017 01 '+ ['06/22','06/23'] ; second cover opening attempt at cold - opened less than timeout
  
  
  ;; SPANB TVAC
@@ -184,11 +186,34 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  trange = '2017 01 '+ ['13/17','14/10'] ; SPAN-B FM Anode 5 failure #1
  trange = '2017 01 '+ ['14/19','15/09'] ; SPAN-B FM Anode 5 failure #2
  
+ ;; SPAN-Ae Cal chamber re-check
  
-
-
-
-
+ ;; SPAN-B Cal chamber re-check: started on Feb 13th. Instrument is noisy.
+ 
+ ;; SPAN-B Cal:
+ ; At some point before Feb 25th @ noon local time, maja quit recording.
+ 
+ ;; SPAN-Ae TVAC
+ 
+ ; started on Feb 13th, ops started the 15th.
+ trange = '2017 02 ' + ['15/00','16/00'] ; first op day
+ trange = '2017 02 ' + ['15/17','15/18'] ; cover opening cold (~-50)
+ 
+ ;; SPAN-Ae TBAL
+ trange = '2017 02 ' + ['26/20','27/12'] ; searching for cover open
+ trange = '2017 02 ' + ['27/10','27/11'] ; when cover finally opens
+ 
+ ;; SPAN-B postEnvCal
+ trange = '2017 02 ' + ['26/16','27/01'] ; MCP test
+ trange = '2017 02 ' + ['27/05', ; not an actua deflector scan - limit on yaw not set right..
+ trange = '2017 02 ' + ['27/18','27/20'] ; deflector test for anode zero
+ trange = '2017 02 ' + ['28/04','28/07'] ; spoiler test, attenuator out.
+ trange = '2017 02 ' + ['28/10','28/15'] ; EA scan w/ attenuator IN
+ trange = '2017 03 ' + ['01/17','01/19'] ; partial rotation at funky yaw + linear angle; looks like anodes 1&2 are not as well illuminated. Odd.
+ trange = '2017 03 ' + ['01/18','02/02'] ; deflector test on anodes 0,4,8,12,15
+ trange = '2017 03 ' + ['02/11','02/15'] ; yaw angle test, lower value got a bit scrambled.
+ trange = '2017 03 ' + ['02/17','02/19'] ; rotation scan back & forth @ 1keV 2deg yaw. 5 & 9 are a bit lopsided
+ 
 
 ;  Get recent data files:
 files = spp_file_retrieve(/spanea,/cal,recent=1/24.)   ; get last 1 hour of data from server
