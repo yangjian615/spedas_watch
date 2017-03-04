@@ -21,6 +21,10 @@
 ;     + ?, ?                          : created from rbsp_emfisis_config.pro
 ;     + Mar 2013,   K. Min            : ?
 ;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-03 08:08:58 -0800 (Fri, 03 Mar 2017) $
+;$LastChangedRevision: 22902 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/rbspice/rbsp_rbspice_config.pro $
 ;-
 pro rbsp_rbspice_config,caching=caching,colortable=colortable,$
            no_color_setup=no_color_setup,no_download=no_download

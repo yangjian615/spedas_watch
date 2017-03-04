@@ -12,9 +12,9 @@
 ;  This routine is still in development.
 ;
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-02-23 19:23:48 -0800 (Thu, 23 Feb 2017) $
-; $LastChangedRevision: 22862 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-03-03 17:40:23 -0800 (Fri, 03 Mar 2017) $
+; $LastChangedRevision: 22909 $
 ; $URL $
 ;-
 pro wi_swe_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -23,8 +23,8 @@ pro wi_swe_load,type,files=files,trange=trange,verbose=verbose,downloadonly=down
 
    if not keyword_set(datatype) then datatype = 'k0'
 
-   wind_init
-   if not keyword_set(source) then source = !wind
+   istp_init
+   if not keyword_set(source) then source = !istp
    ;URL deprecated by reorg at SPDF
    ;if datatype eq 'k0' then    pathformat = 'wind/swe/YYYY/wi_k0_swe_YYYYMMDD_v0?.cdf'
    ;New URL 2012/10 pcruce@igpp

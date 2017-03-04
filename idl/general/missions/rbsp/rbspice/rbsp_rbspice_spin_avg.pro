@@ -17,6 +17,10 @@
 ;       + 2016-12-09, I. Cohen      : created based on mms_eis_spin_avg.pro
 ;       + 2017-02-21, I. Cohen      : removed species keyword; defined species variable for y-axis labeling
 ;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-03 08:08:58 -0800 (Fri, 03 Mar 2017) $
+;$LastChangedRevision: 22902 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/rbspice/rbsp_rbspice_spin_avg.pro $
 ;-
 
 pro rbsp_rbspice_spin_avg, probe=probe, datatype = datatype, tplotnames = tplotnames, level=level

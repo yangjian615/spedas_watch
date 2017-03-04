@@ -18,6 +18,10 @@
 ;       + 2016-12-09, I. Cohen      : created based on mms_eis_omni.pro; added level keyword; removed data_units and data_rate keywords
 ;       + 2017-02-21, I. Cohen      : defined species variable for y-axis labeling
 ;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-03 08:08:58 -0800 (Fri, 03 Mar 2017) $
+;$LastChangedRevision: 22902 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/rbspice/rbsp_rbspice_omni.pro $
 ;-
 pro rbsp_rbspice_omni, probe=probe, datatype = datatype, tplotnames = tplotnames, level=level
   if undefined(probe) then probe = 'a'

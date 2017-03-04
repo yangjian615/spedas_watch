@@ -12,9 +12,9 @@
 ;  This routine is still in development.
 ; Author: Davin Larson
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-02-23 19:23:48 -0800 (Thu, 23 Feb 2017) $
-; $LastChangedRevision: 22862 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-03-03 17:38:58 -0800 (Fri, 03 Mar 2017) $
+; $LastChangedRevision: 22907 $
 ; $URL $
 ;-
 pro wi_mfi_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -24,8 +24,8 @@ pro wi_mfi_load,type,files=files,trange=trange,verbose=verbose,downloadonly=down
 if not keyword_set(datatype) then datatype = 'h0'
 if keyword_set(type) then datatype = type
 
-wind_init
-if not keyword_set(source) then source = !wind
+istp_init
+if not keyword_set(source) then source = !istp
 
 ;URL deprecated by reorg at SPDF
 ;if datatype eq 'k0'  then    pathformat = 'wind/mfi/YYYY/wi_k0_mfi_YYYYMMDD_v0?.cdf'

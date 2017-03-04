@@ -17,8 +17,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2017-01-06 08:26:24 -0800 (Fri, 06 Jan 2017) $
-; $LastChangedRevision: 22520 $
+; $LastChangedDate: 2017-03-03 17:18:05 -0800 (Fri, 03 Mar 2017) $
+; $LastChangedRevision: 22906 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_penprot_conv.pro $
 ;
 ;-
@@ -31,7 +31,7 @@ ecross = [200,500,1000,2000,3000,4000,5000,10000]
 csx = [22e-16,17e-16,15e-16,13.5e-16,13.3e-16,13.1e-16,12.9e-16,10e-16]
 strip = [0.2e-16,0.7e-16,1.2e-16,1.8e-16,2.4e-16,3.0e-16,3.3e-16,4e-16]
 
-formula = oscale*strip/csx
+formula = oscale*strip/(csx+strip)
 
 if keyword_set(stack) then begin
 

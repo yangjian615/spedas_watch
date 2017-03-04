@@ -20,6 +20,10 @@
 ;     + 2017-02-21, I. Cohen                    : reconfigured redefinition of '*_F*DU' variables to separate oxygen and helium; defined species and yticks variables for y-axis labeling; 
 ;                                                 changed yrange and zrange limits
 ;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-03 08:51:35 -0800 (Fri, 03 Mar 2017) $
+;$LastChangedRevision: 22904 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/rbspice/rbsp_load_rbspice_read.pro $
 ;-
 pro rbsp_load_rbspice_read, level=level, probe=probe, datatype=datatype, trange=trange
   if undefined(probe) then probe = 'a'
@@ -39,41 +43,41 @@ pro rbsp_load_rbspice_read, level=level, probe=probe, datatype=datatype, trange=
   
   for i = 0,n_elements(data_var)-1 do begin
     
-    get_data, (energy_var(i))[0], data = temp_energy, dlimits=temp_energydl
-    get_data,(data_var(i))[0],data=temp,dlimits=temp_dl
+    get_data, (energy_var[i])[0], data = temp_energy, dlimits=temp_energydl
+    get_data,(data_var[i])[0],data=temp,dlimits=temp_dl
     
-    species_str = strmid(data_var(i),3,2,/reverse)
+    species_str = strmid(data_var[i],3,2,/reverse)
     case species_str of
       'FP': begin
               species='proton'
               yticks = 1
               if (datatype ne 'TOFxPHHHELT') then begin
-                new_energy = temp_energy.y(*,0) * 1000.           ; convert energy from MeV to keV
+                new_energy = temp_energy.y[*,0] * 1000.           ; convert energy from MeV to keV
                 new_flux = temp.y / convert_factor                ; convert flux from 1/MeV to 1/keV
                 zrange = [5.,1.e5]
               endif else begin
-                new_energy = temp_energy.y(11:-1,0) * 1000.       ; convert energy from MeV to keV
-                new_flux = temp.y(*,11:-1,*) / convert_factor       ; convert energy from MeV to keV
+                new_energy = temp_energy.y[11:-1,0] * 1000.       ; convert energy from MeV to keV
+                new_flux = temp.y[*,11:-1,*] / convert_factor       ; convert energy from MeV to keV
                 zrange = [2.e2,1.e6]
               endelse
             end
       'He': begin
               species='helium'
               yticks = 1
-              new_energy = temp_energy.y(0:10,0) * 1000.          ; convert energy from MeV to keV
-              new_flux = temp.y(*,0:10,*) / convert_factor        ; convert flux from 1/MeV to 1/keV
+              new_energy = temp_energy.y[0:10,0] * 1000.          ; convert energy from MeV to keV
+              new_flux = temp.y[*,0:10,*] / convert_factor        ; convert flux from 1/MeV to 1/keV
               zrange = [1.,1.e3]
             end
       'FO': begin
               species='oxygen'
               yticks = 2
               if (datatype ne 'TOFxPHHHELT') then begin
-                new_energy = temp_energy.y(11:18,0) * 1000.       ; convert energy from MeV to keV
-                new_flux = temp.y(*,11:18,*) / convert_factor     ; convert flux from 1/MeV to 1/keV
+                new_energy = temp_energy.y[11:18,0] * 1000.       ; convert energy from MeV to keV
+                new_flux = temp.y[*,11:18,*] / convert_factor     ; convert flux from 1/MeV to 1/keV
                 zrange = [1.,1.e2]
               endif else begin
-                new_energy = temp_energy.y(0:10,0) * 1000.        ; convert energy from MeV to keV
-                new_flux = temp.y(*,0:10,*) / convert_factor      ; convert flux from 1/MeV to 1/keV
+                new_energy = temp_energy.y[0:10,0] * 1000.        ; convert energy from MeV to keV
+                new_flux = temp.y[*,0:10,*] / convert_factor      ; convert flux from 1/MeV to 1/keV
                 zrange = [1e1,1.e4]
               endelse
             end
@@ -85,7 +89,7 @@ pro rbsp_load_rbspice_read, level=level, probe=probe, datatype=datatype, trange=
       ytitle='rbsp'+probe+'!Crbspice!C'+species, ysubtitle='Energy!C[keV]', ztitle=units_label, yticks=yticks
   
     for j=0,5 do begin
-      store_data,new_name+'_T'+strtrim(string(j),2),data={x:temp.x,y:new_flux(*,*,j),v:new_energy},dlimits=temp_dl
+      store_data,new_name+'_T'+strtrim(string(j),2),data={x:temp.x,y:new_flux[*,*,j],v:new_energy},dlimits=temp_dl
       options,new_name+'_T'+strtrim(string(j),2), spec=1, ylog=1, zlog=1, yrange=minmax(new_energy), ystyle=1, zrange=zrange, zstyle=1, minzlog = .01, $
         ytitle='rbsp'+probe+'!Crbspice!C'+species+'!CT'+strtrim(string(j),2), ysubtitle='[keV]', ztitle=units_label, yticks=yticks
     endfor

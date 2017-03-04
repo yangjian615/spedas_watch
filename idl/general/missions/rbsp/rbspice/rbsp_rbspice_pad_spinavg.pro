@@ -20,6 +20,10 @@
 ; REVISION HISTORY:
 ;       + 2017-02-22, I. Cohen      : created based on mms_eis_pad_spinavg.pro and tailored to work with rbsp_rbspice_pad.pro
 ;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-03 08:08:58 -0800 (Fri, 03 Mar 2017) $
+;$LastChangedRevision: 22902 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/rbspice/rbsp_rbspice_pad_spinavg.pro $
 ;-
 pro rbsp_rbspice_pad_spinavg, probe=probe, datatype = datatype, level=level, $
     species=species, energy = energy, bin_size = bin_size, scopes=scopes

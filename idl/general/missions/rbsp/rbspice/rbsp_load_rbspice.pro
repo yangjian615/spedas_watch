@@ -31,6 +31,11 @@
 ;     + 2014-04, K. Keika           : ?
 ;     + 2016-12-08, I. Cohen        :defined L3 and L3PAP datatypes; added trange to rbsp_load_rbspice_read call; added omni-directional calculation and spin-averaging through calls to separate routines
 ;
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-03 08:56:11 -0800 (Fri, 03 Mar 2017) $
+;$LastChangedRevision: 22905 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/rbspice/rbsp_load_rbspice.pro $
 ;-
 
 pro rbsp_load_rbspice,probe=probe, trange=trange, datatype=datatype, $
@@ -139,7 +144,10 @@ pro rbsp_load_rbspice,probe=probe, trange=trange, datatype=datatype, $
           relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
           ;     if vb ge 4 then printdat,/pgmtrace,relpathnames
           dprint,dlevel=3,verbose=verbose,relpathnames,/phelp
-          files = file_retrieve(relpathnames, verbose=vb, /last_version, _extra=rbsp_rbspice_local)
+          
+          files = spd_download(remote_file=relpathnames, remote_path=rbsp_rbspice_local.remote_data_dir, $
+            local_path = rbsp_rbspice_local.local_data_dir)
+            
           ;printdat,files
           
           ; Check if DOWNLOADONLY is set
@@ -153,7 +161,7 @@ pro rbsp_load_rbspice,probe=probe, trange=trange, datatype=datatype, $
           suffix=''
           prefix = rbspx + '_rbspice_l'+lev_str.level+'_'+dtype+'_'
   
-          ; Take advantage of SPEDAS CDF importer for MMS
+          ; MMS version of cdf2tplot is required
           mms_cdf2tplot,file=files,varformat=varformat,all=0,prefix=prefix,suffix=suffix,verbose=vb, $
               tplotnames=tns,/convert_int1_to_int2,get_support_data=get_support_data ; load data into tplot variables
           
