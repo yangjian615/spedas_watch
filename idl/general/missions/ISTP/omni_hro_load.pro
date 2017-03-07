@@ -18,7 +18,7 @@
 ; $URL: $
 ;-
 pro omni_hro_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
-      varformat=varformat,datatype=datatype, $
+      varformat=varformat,datatype=datatype, no_download=no_download, no_update=no_update, $
       res5min=res5min,res1min=res1min, $
       addmaster=addmaster,data_source=data_source, $
       tplotnames=tn,source_options=source
@@ -48,7 +48,12 @@ pathformat = 'omni/omni_cdaweb/hro_'+rstr+'/YYYY/omni_hro_'+rstr+'_YYYYMM01_v01.
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,/unique)
 
 ;files = file_retrieve(relpathnames, _extra=source)
-files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0)
+
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
+ 
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0, $
+  no_download=source.no_download, no_update = source.no_update, /last_version )
 
 if keyword_set(downloadonly) then return
 

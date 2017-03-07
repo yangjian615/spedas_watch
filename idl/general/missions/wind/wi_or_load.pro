@@ -13,8 +13,8 @@
 ; Author: Davin Larson
 ;
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-03 17:39:54 -0800 (Fri, 03 Mar 2017) $
-; $LastChangedRevision: 22908 $
+; $LastChangedDate: 2017-03-06 13:25:12 -0800 (Mon, 06 Mar 2017) $
+; $LastChangedRevision: 22912 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wi_or_load.pro $
 ;-
 pro wi_or_load,type,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -37,7 +37,8 @@ endif
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
-files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir)
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, $
+                     no_download = source.no_download, no_update = source.no_update, /last_version)
 
 if keyword_set(downloadonly) then return
 
