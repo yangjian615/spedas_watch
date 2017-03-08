@@ -16,9 +16,9 @@
 ;  "make_cdf_index","loadcdf","loadcdfstr","loadallcdf"
 ;
 ;CREATED BY:	Davin Larson
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-02-23 19:27:28 -0800 (Thu, 23 Feb 2017) $
-; $LastChangedRevision: 22864 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-03-07 17:06:45 -0800 (Tue, 07 Mar 2017) $
+; $LastChangedRevision: 22922 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/key_param/load_wi_sfsp_3dp.pro $
 ;-
 pro load_wi_sfsp_3dp $
@@ -39,7 +39,11 @@ endif
 file_format = 'wind/3dp/3dp_sfsp/YYYY/wi_sfsp_3dp_YYYYMMDD_v01.cdf'
 pathnames = file_dailynames(file_format=file_format,trange=trange)
 ;filenames = file_retrieve(pathnames,_extra=source,/last_version)
-filenames = spd_download(remote_file=pathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir)
+filenames = spd_download(remote_file = pathnames, $
+                         remote_path = source.remote_data_dir, $
+                         local_path = source.local_data_dir, $
+                         no_download = source.no_download, $
+                         no_update = source.no_update, /last_version)
 
 
 cdfnames = ['FLUX',  'ENERGY' ]

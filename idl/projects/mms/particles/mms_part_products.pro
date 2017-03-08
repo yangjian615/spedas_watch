@@ -104,8 +104,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-06 09:35:27 -0700 (Thu, 06 Oct 2016) $
-;$LastChangedRevision: 22050 $
+;$LastChangedDate: 2017-03-07 09:27:44 -0800 (Tue, 07 Mar 2017) $
+;$LastChangedRevision: 22917 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -121,7 +121,7 @@ pro mms_part_products, $
                      energy=energy,$ ;two element energy range [min,max]
                      trange=trange,$ ;two element time range [min,max]
                                           
-                     phi=phi_in,$ ;angle limist 2-element array [min,max], in degrees, spacecraft spin plane
+                     phi=phi_in,$ ;angle limits 2-element array [min,max], in degrees, spacecraft spin plane
                      theta=theta,$ ;angle limits 2-element array [min,max], in degrees, normal to spacecraft spin plane
                      pitch=pitch,$ ;angle limits 2-element array [min,max], in degrees, magnetic field pitch angle
                      gyro=gyro_in,$ ;angle limits 2-element array [min,max], in degrees, gyrophase  
@@ -158,7 +158,7 @@ pro mms_part_products, $
                      
                      display_object=display_object, $ ;object allowing dprint to export output messages
 
-                     silent=silent, $ ;supress pop-up messages
+                     silent=silent, $ ;suppress pop-up messages
 
                      _extra=ex ;TBD: consider implementing as _strict_extra 
 
@@ -205,7 +205,7 @@ pro mms_part_products, $
   endif
 
   if undefined(regrid) then begin
-    regrid = [32,16] ;default 16 phi x 8 theta regrid
+    regrid = [32,16] ;default 32 phi x 16 theta regrid
   endif
 
   if undefined(pitch) then begin
@@ -220,7 +220,7 @@ pro mms_part_products, $
     phi = [0,360.]
   endif else begin
     if abs(phi_in[1]-phi_in[0]) gt 360 then begin
-      dprint, 'ERROR: Phi restrictons must have range no larger than 360 degrees'
+      dprint, 'ERROR: Phi restrictions must have range no larger than 360 degrees'
       return
     endif
     phi = spd_pgs_map_azimuth(phi_in)
@@ -232,7 +232,7 @@ pro mms_part_products, $
     gyro = [0,360.]
   endif else begin
     if abs(gyro_in[1]-gyro_in[0]) gt 360 then begin
-      dprint, 'ERROR: Gyrophase restrictons must have range no larger than 360 degrees'
+      dprint, 'ERROR: Gyrophase restrictions must have range no larger than 360 degrees'
       return
     endif
     gyro = spd_pgs_map_azimuth(gyro_in)
@@ -375,20 +375,20 @@ pro mms_part_products, $
   
     spd_pgs_progress_update,last_tm,i,n_elements(time_idx)-1,display_object=display_object,type_string=in_tvarname
   
-    ;Get the data structure for this samgple
+    ;Get the data structure for this sample
 
     dist = mms_get_dist(in_tvarname, time_idx[i], /structure, probe=probe, $
                         species=species, instrument=instrument, units=input_units)
 
     ;Sanitize Data.
-    ;#1 removes uneeded fields from struct to increase efficiency
+    ;#1 removes unneeded fields from struct to increase efficiency
     ;#2 Reforms into angle by energy data 
   
     mms_pgs_clean_data,dist,output=clean_data,units=units_lc
     
     ;Copy bin status prior to application of angle/energy limits.
     ;Phi limits will need to be re-applied later after phi bins
-    ;have been aligned across energy (in case of irregularl grid). 
+    ;have been aligned across energy (in case of irregular grid). 
     if fac_requested then begin
       pre_limit_bins = clean_data.bins 
     endif
@@ -449,7 +449,7 @@ pro mms_part_products, $
       ;apply gyro & pitch angle limits(identical to phi & theta, just in new coords)
       spd_pgs_limit_range,clean_data,phi=gyro,theta=pitch
       
-      ;agreggate transformed data structures if requested
+      ;aggregate transformed data structures if requested
       if arg_present(get_data_structures) then begin
         clean_data_all = array_concat(clean_data, clean_data_all,/no_copy)
       endif

@@ -42,9 +42,9 @@
 ;    thm_config (through thm_init)
 ;
 ;
-;$LastChangedBy: davin-mac $
-;$LastChangedDate: 2014-11-23 08:38:23 -0800 (Sun, 23 Nov 2014) $
-;$LastChangedRevision: 16274 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-03-07 12:50:33 -0800 (Tue, 07 Mar 2017) $
+;$LastChangedRevision: 22920 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/root_data_dir.pro $
 ;-
 
@@ -79,6 +79,7 @@ function root_data_dir,verbose=verbose
       dprint,verbose=verbose,'To define the Root Data Directory, see documentation in '+proc.filename
       last_warning_time = systime(1)
   endif
+  if strlen(rootdir) gt 0 && strmid(rootdir, 0, 1, /reverse_offset) ne path_sep() then rootdir = rootdir + path_sep()
   return,rootdir
 end
 

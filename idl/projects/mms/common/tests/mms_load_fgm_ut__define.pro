@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-08 11:01:33 -0800 (Tue, 08 Nov 2016) $
-; $LastChangedRevision: 22341 $
+; $LastChangedDate: 2017-03-07 12:29:12 -0800 (Tue, 07 Mar 2017) $
+; $LastChangedRevision: 22919 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
 
@@ -182,14 +182,14 @@ end
 
 function mms_load_fgm_ut::test_load_l2pre_dfg
     mms_load_fgm, instrument='dfg', level='l2pre', probe=1
-    assert, spd_data_exists('mms1_dfg_srvy_l2pre_dmpa_bvec mms1_dfg_srvy_l2pre_gse_bvec mms1_dfg_srvy_l2pre_bcs_bvec', '2015-12-15', '2015-12-16'), $
+    assert, spd_data_exists('mms1_dfg_b_dmpa_srvy_l2pre_bvec mms1_dfg_b_gse_srvy_l2pre_bvec mms1_dfg_b_bcs_srvy_l2pre_bvec', '2015-12-15', '2015-12-16'), $
       'Problem loading L2pre DFG data'
     return, 1
 end
 
 function mms_load_fgm_ut::test_load_l2pre_afg
   mms_load_fgm, instrument='afg', level='l2pre', probe=1
-  assert, spd_data_exists('mms1_afg_srvy_l2pre_dmpa_bvec mms1_afg_srvy_l2pre_gse_bvec mms1_afg_srvy_l2pre_bcs_bvec', '2015-12-15', '2015-12-16'), $
+  assert, spd_data_exists('mms1_afg_b_dmpa_srvy_l2pre_bvec mms1_afg_b_gse_srvy_l2pre_bvec mms1_afg_b_bcs_srvy_l2pre_bvec', '2015-12-15', '2015-12-16'), $
     'Problem loading L2pre AFG data'
   return, 1
 end

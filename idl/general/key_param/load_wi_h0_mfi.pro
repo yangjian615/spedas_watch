@@ -1,4 +1,3 @@
-
 ;+
 ;PROCEDURE:	load_wi_h0_mfi
 ;PURPOSE:
@@ -56,7 +55,13 @@ endif
 
 file_format = 'wind/mfi/mfi_h0/YYYY/wi_h0_mfi_YYYYMMDD_v0?.cdf'
 pathnames = file_dailynames(file_format=file_format,trange=trange)
-filenames = file_retrieve(pathnames,_extra=source,/last_version)
+
+;filenames = file_retrieve(pathnames,_extra=source,/last_version)
+filenames = spd_download(remote_file = pathnames, $
+                         remote_path = source.remote_data_dir, $
+                         local_path = source.local_data_dir, $
+                         no_download = source.no_download, $
+                         no_update = source.no_update, /last_version)
 
 
 d=0

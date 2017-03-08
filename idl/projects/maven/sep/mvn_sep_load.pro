@@ -35,7 +35,7 @@ if keyword_set(ancillary) then begin
         store_data, 'angles_1F', data = ['theta_1F','phi_1F']
         store_data,'theta_1R',data = {x: FOV_1R.x, y:theta_1R/!dtor}
         store_data,'phi_1R',data = {x: FOV_1R.x, y:phi_1R/!dtor}
-        optionns, 'theta_1R', 'linestyle', 0
+        options, 'theta_1R', 'linestyle', 0
         options, 'phi_1R', 'linestyle', 0
         store_data, 'angles_1R', data = ['theta_1R','phi_1R']
 

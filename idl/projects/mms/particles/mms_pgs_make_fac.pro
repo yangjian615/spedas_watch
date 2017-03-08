@@ -1,3 +1,26 @@
+;+
+;PROCEDURE: mms_pgs_make_fac
+;PURPOSE:
+;  Generate the field aligned coordinate transformation matrix
+;  Specifically
+;  #1 guarantee mag_data is in dsl and pos data is in  gei
+;  #2 guarantee that time grid matches particle data
+;
+;Inputs(required):
+;
+;Outputs:
+;
+;Keywords:
+;
+;Notes:
+;  Needs to be vectorized because thm_cotrans is waaaay too slow if fed single vectors at a time
+;  If an error occurs fac_output will be undfined on return
+;
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-07 10:46:21 -0800 (Tue, 07 Mar 2017) $
+;$LastChangedRevision: 22918 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_make_fac.pro $
+;-
 
 ;so we don't have one long routine of doom, all transforms should be separate helper functions
 pro mms_pgs_xgse,mag_temp,pos_temp,x_basis,y_basis,z_basis,probe=probe
@@ -88,29 +111,6 @@ pro mms_pgs_mphigeo,mag_temp,pos_temp,x_basis,y_basis,z_basis,probe=probe
 end
 
 
-;+
-;PROCEDURE: mms_pgs_make_fac
-;PURPOSE:
-;  Generate the field aligned coordinate transformation matrix
-;  Specifically
-;  #1 guarantee mag_data is in dsl and pos data is in  gei
-;  #2 guarantee that time grid matches particle data
-;
-;Inputs(required):
-;
-;Outputs:
-;
-;Keywords:
-;
-;Notes:
-;  Needs to be vectorized because thm_cotrans is waaaay too slow if fed single vectors at a time
-;  If an error occurs fac_output will be undfined on return
-;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-07-13 10:15:49 -0700 (Wed, 13 Jul 2016) $
-;$LastChangedRevision: 21454 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_make_fac.pro $
-;-
 pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
                   mag_tvar_in,$ ;tplot variable containing the mag data
                   pos_tvar_in,$ ;position variable containing the position data
@@ -162,7 +162,7 @@ pro mms_pgs_make_fac,times,$ ;the time grid of the particle data
     tinterpol_mxn,pos_temp,times,newname=pos_temp,/nan_extrapolate
   endif else begin
     dprint, 'Position variable not found: "' + pos_tvar_in + $
-            '"; skippingfield-aligned outputs', $
+            '"; skipping field-aligned outputs', $
             dlevel=1, display_object=display_object
     return
   endelse
