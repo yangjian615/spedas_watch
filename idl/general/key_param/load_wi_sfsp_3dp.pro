@@ -17,8 +17,8 @@
 ;
 ;CREATED BY:	Davin Larson
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-07 17:06:45 -0800 (Tue, 07 Mar 2017) $
-; $LastChangedRevision: 22922 $
+; $LastChangedDate: 2017-03-08 10:25:38 -0800 (Wed, 08 Mar 2017) $
+; $LastChangedRevision: 22924 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/key_param/load_wi_sfsp_3dp.pro $
 ;-
 pro load_wi_sfsp_3dp $
@@ -43,7 +43,8 @@ filenames = spd_download(remote_file = pathnames, $
                          remote_path = source.remote_data_dir, $
                          local_path = source.local_data_dir, $
                          no_download = source.no_download, $
-                         no_update = source.no_update, /last_version)
+                         no_update = source.no_update, /last_version, $
+                         file_mode = '666'o, dir_mode = '777'o)
 
 
 cdfnames = ['FLUX',  'ENERGY' ]

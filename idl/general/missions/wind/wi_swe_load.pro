@@ -13,8 +13,8 @@
 ;
 ;
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-06 13:25:23 -0800 (Mon, 06 Mar 2017) $
-; $LastChangedRevision: 22913 $
+; $LastChangedDate: 2017-03-08 10:35:22 -0800 (Wed, 08 Mar 2017) $
+; $LastChangedRevision: 22926 $
 ; $URL $
 ;-
 pro wi_swe_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -48,7 +48,8 @@ endif
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
 files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, $
-                     no_download = source.no_download, no_update = source.no_update, /last_version)
+                     no_download = source.no_download, no_update = source.no_update, /last_version, $
+                     file_mode = '666'o, dir_mode = '777'o)
 
 if keyword_set(downloadonly) then return
 

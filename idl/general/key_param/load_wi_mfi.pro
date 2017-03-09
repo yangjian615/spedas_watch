@@ -57,7 +57,8 @@ filenames = spd_download(remote_file = pathnames, $
                          remote_path = source.remote_data_dir, $
                          local_path = source.local_data_dir, $
                          no_download = source.no_download, $
-                         no_update = source.no_update, /last_version)
+                         no_update = source.no_update, /last_version, $
+                         file_mode = '666'o, dir_mode = '777'o)
 
 loadallcdf,filenames=filenames,masterfile=masterfile,cdfnames=cdfnames,data=d, $
    novarnames=novarnames,novard=nd,time_range=trange, $

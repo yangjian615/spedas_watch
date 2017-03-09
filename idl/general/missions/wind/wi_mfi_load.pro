@@ -13,12 +13,12 @@
 ; Author: Davin Larson
 ;
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-06 13:25:00 -0800 (Mon, 06 Mar 2017) $
-; $LastChangedRevision: 22911 $
+; $LastChangedDate: 2017-03-08 10:35:22 -0800 (Wed, 08 Mar 2017) $
+; $LastChangedRevision: 22926 $
 ; $URL $
 ;-
 pro wi_mfi_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
-      varformat=varformat,datatype=datatype, $
+      varformat=varformat,datatype=datatype, no_download=no_download, no_update=no_update, $
       addmaster=addmaster,tplotnames=tn,source_options=source
 
 if not keyword_set(datatype) then datatype = 'h0'
@@ -46,10 +46,14 @@ if not keyword_set(varformat) then begin
    if datatype eq  'h2' then    varformat = 'BF1 BGSE'
 endif
 
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
+
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
 
 files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, $
-                     no_download = source.no_download, no_update = source.no_update, /last_version)
+                     no_download = source.no_download, no_update = source.no_update, /last_version, $
+                     file_mode = '666'o, dir_mode = '777'o)
 
 if keyword_set(downloadonly) then return
 
