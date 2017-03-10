@@ -11,9 +11,9 @@ Pro thm_esa_lim4overplot, var, trange, zmin = zmin, zmax = zmax, zlog = zlog, $
                           ymin = ymin, ymax = ymax, ylog = ylog, $
                           overwrite = overwrite, _extra = _extra
 ;Version:
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-02-13 13:35:09 -0800 (Mon, 13 Feb 2017) $
-; $LastChangedRevision: 22766 $
+; $LastChangedBy: jimmpc1 $
+; $LastChangedDate: 2017-03-09 14:55:09 -0800 (Thu, 09 Mar 2017) $
+; $LastChangedRevision: 22931 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_esa_lim4overplot.pro $
 ;-
   If(keyword_set(zmin)) Then zmin0 = zmin Else zmin0 = 0
@@ -51,7 +51,9 @@ Pro thm_esa_lim4overplot, var, trange, zmin = zmin, zmax = zmax, zlog = zlog, $
 ;test for not many times at these
 ;values, only do this once, but have
 ;some margin
-           ymin_all = min(dvss, dimension =2)
+           ymin_all = fltarr(nss)
+           For j = 0, nss-1 Do ymin_all[j] = min(dvss[j, *])
+;           ymin_all = min(dvss, dimension =2)
            ss_yminv = where(ymin_all Le 2*yminv, nss_yminv)
            frac_ymin = float(nss_yminv)/nss
            If(frac_ymin Lt 1.0/24.0) Then Begin
@@ -61,7 +63,9 @@ Pro thm_esa_lim4overplot, var, trange, zmin = zmin, zmax = zmax, zlog = zlog, $
         Endif
         If(ymaxv Eq 0) Then Begin
            ymaxv = max(dvss)
-           ymax_all = max(dvss, dimension =2)
+           ymax_all = fltarr(nss)
+           For j = 0, nss-1 Do ymax_all[j] = max(dvss[j, *])
+;           ymax_all = max(dvss, dimension =2)
            ss_ymaxv = where(ymax_all Ge ymaxv/2.0, nss_ymaxv)
            frac_ymax = float(nss_ymaxv)/nss
            If(frac_ymax Lt 1.0/24.0) Then Begin

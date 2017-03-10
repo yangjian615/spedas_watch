@@ -7,8 +7,8 @@
 ;     test_auth_info_pub.sav - sav file containing an empty username and password
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-01 12:50:42 -0700 (Tue, 01 Nov 2016) $
-; $LastChangedRevision: 22250 $
+; $LastChangedDate: 2017-03-09 08:36:10 -0800 (Thu, 09 Mar 2017) $
+; $LastChangedRevision: 22928 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_data_ut__define.pro $
 ;-
 
@@ -21,7 +21,7 @@ function mms_load_data_ut::test_team_access_after_l2
     instrument='fgm', level='l2', data_rate='srvy', probe=1
   assert, tnames('*_fgm_r_gsm_srvy_l2') ne '', 'Problem loading L2 FGM data'
   mms_load_data, trange=['2016-01-05', '2016-01-06'], instrument='dfg', level='l2pre', data_rate='srvy', probe=1
-  assert, tnames('*_dfg_srvy_l2pre_gsm') ne '', 'Problem loading L2pre FGM data after loading L2 FGM data'
+  assert, tnames('*_dfg_b_gsm_srvy_l2pre') ne '', 'Problem loading L2pre FGM data after loading L2 FGM data'
   mms_sitl_logout
   return, 1
 end
@@ -30,7 +30,7 @@ end
 function mms_load_data_ut::test_team_access
   mms_load_data, login_info='test_auth_info_team.sav', trange=['2016-01-21', '2016-01-22'], $
       instrument='dfg', level='l2pre', data_rate='srvy', probe=1
-  get_data, 'mms1_dfg_srvy_l2pre_dmpa', data=d
+  get_data, 'mms1_dfg_b_dmpa_srvy_l2pre', data=d
   assert, is_struct(d), 'Problem accessing the SDC with an MMS username/password'
   mms_sitl_logout
   return, 1
@@ -44,7 +44,7 @@ function mms_load_data_ut::test_team_access_multi
     instrument='fpi', level='sitl', data_rate='fast', probe=1
   mms_load_data, login_info='test_auth_info_team.sav', trange=['2016-01-21', '2016-01-22'], $
     instrument='hpca', level='l1b', data_rate='srvy', probe=1
-  assert, tnames('mms1_dfg_srvy_l2pre_dmpa') ne '', 'Problem loading L2pre DFG data (team, multi-call test)'
+  assert, tnames('mms1_dfg_b_dmpa_srvy_l2pre') ne '', 'Problem loading L2pre DFG data (team, multi-call test)'
   assert, tnames('mms1_hpca_hplus_number_density') ne '', 'Problem loading L1b HPCA data (team, multi-call test)'
   assert, tnames('mms1_fpi_eEnergySpectr_pX') ne '', 'Problem loading SITL FPI data (team, multi-call test)'
   mms_sitl_logout

@@ -41,7 +41,7 @@ PRO moka_mms_part_products_crib
   name = 'mms'+probe+'_d'+species+'s_dist_'+data_rate
   ;mag_name = 'mms'+probe+'_fgm_b_dmpa_'+data_rate+'_l2_bvec'
   mag_name = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
-  vel_name = 'mms'+probe+'_d'+species+'s_bulkv_gse_'+data_rate
+  vel_name = 'mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate
   
   ;--------------
   ; LOAD
