@@ -12,14 +12,14 @@
 ;  This routine is still in development.
 ; Author: Davin Larson
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-08 10:35:22 -0800 (Wed, 08 Mar 2017) $
-; $LastChangedRevision: 22926 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-03-10 14:53:59 -0800 (Fri, 10 Mar 2017) $
+; $LastChangedRevision: 22941 $
 ; $URL $
 ;-
 pro wi_mfi_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
       varformat=varformat,datatype=datatype, no_download=no_download, no_update=no_update, $
-      addmaster=addmaster,tplotnames=tn,source_options=source
+      addmaster=addmaster,tplotnames=tn,source=source
 
 if not keyword_set(datatype) then datatype = 'h0'
 if keyword_set(type) then datatype = type

@@ -19,7 +19,7 @@
 ;-
 pro ace_swe_load,type,trange=trange,verbose=verbose,downloadonly=downloadonly, $
       varformat=varformat,datatype=datatype, $
-      addmaster=addmaster,tplotnames=tn,source_options=source
+      addmaster=addmaster,tplotnames=tn,source=source,no_download=no_download, no_update=no_update
 
 if not keyword_set(datatype) then datatype = 'k0'
 
@@ -44,10 +44,13 @@ if not keyword_set(varformat) then begin
 ;   if datatype eq  'h1' then    varformat = '*'
 endif
 
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
-
-files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir)
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, $
+                     no_download = source.no_download, no_update = source.no_update, /last_version, $
+                     file_mode = '666'o, dir_mode = '777'o)
 
 if keyword_set(downloadonly) then return
 

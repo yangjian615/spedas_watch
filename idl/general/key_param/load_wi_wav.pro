@@ -22,7 +22,8 @@
 ;LAST MODIFICATION: 99/05/27
 ;-
 pro load_wi_wav,time_range=trange,data=d,nvdata=nd $
-   ,masterfile=masterfile,resolution=res,ne_filter=ne_filter $
+   ,masterfile=masterfile,resolution=res,ne_filter=ne_filter $   
+   ,no_download=no_download, no_update=no_update, source=source $
    ,moon=moon,solar=solar
 
 if not keyword_set(masterfile) then masterfile = 'wi_k0_wav_files'
@@ -35,6 +36,9 @@ if not keyword_set(source) then begin
    istp_init
    source = !istp
 endif
+
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
 
 file_format = 'wind/waves/wav_k0/YYYY/wi_k0_wav_YYYYMMDD_v0?.cdf'
 pathnames = file_dailynames(file_format=file_format,trange=trange)

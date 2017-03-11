@@ -40,6 +40,8 @@ pro load_wi_mfi,time_range=trange,data=d,nvdata=nd,polar=polar, $
    resolution = res, $
    cdfnames = cdfnames, $
    bartel=bartel, $
+   no_download=no_download, no_update=no_update, $
+   source=source,$
    masterfile=masterfile
 
 if not keyword_set(masterfile) then masterfile = 'wi_k0_mfi_files'
@@ -50,6 +52,10 @@ if not keyword_set(source) then begin
    istp_init
    source = !istp
 endif
+
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
+
 file_format = 'wind/mfi/mfi_k0/YYYY/wi_k0_mfi_YYYYMMDD_v0?.cdf'
 pathnames = file_dailynames(file_format=file_format,trange=trange)
 ;filenames = file_retrieve(pathnames,_extra=source,/last_version)

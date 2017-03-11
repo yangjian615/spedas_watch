@@ -16,9 +16,9 @@
 ;  "make_cdf_index","loadcdf","loadcdfstr","loadallcdf"
 ;
 ;CREATED BY:	Davin Larson
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-08 10:25:38 -0800 (Wed, 08 Mar 2017) $
-; $LastChangedRevision: 22924 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-03-10 14:53:59 -0800 (Fri, 10 Mar 2017) $
+; $LastChangedRevision: 22941 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/key_param/load_wi_sfsp_3dp.pro $
 ;-
 pro load_wi_sfsp_3dp $
@@ -27,7 +27,9 @@ pro load_wi_sfsp_3dp $
    ,median = med $
    ,data=d $
    ,nvdata = nd $
-   ,masterfile=masterfile $
+   ,masterfile=masterfile $   
+   ,no_download=no_download, no_update=no_update $
+   ,source=source $
    ,prefix = prefix
 
 if not keyword_set(masterfile) then masterfile = 'wi_sfsp_3dp_files'
@@ -36,6 +38,10 @@ if not keyword_set(source) then begin
    wind_init
    source = !wind
 endif
+
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
+
 file_format = 'wind/3dp/3dp_sfsp/YYYY/wi_sfsp_3dp_YYYYMMDD_v01.cdf'
 pathnames = file_dailynames(file_format=file_format,trange=trange)
 ;filenames = file_retrieve(pathnames,_extra=source,/last_version)

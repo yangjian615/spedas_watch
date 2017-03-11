@@ -26,6 +26,7 @@ pro load_wi_sfpd $
    ,nvdata = nd $
    ,masterfile=masterfile $
    ,resolution=res $
+   ,no_download=no_download, no_update=no_update $
    ,prefix = prefix
 
 if not keyword_set(masterfile) then masterfile = 'wi_sfpd_3dp_files'
@@ -36,6 +37,9 @@ if not keyword_set(source) then begin
    wind_init
    source = !wind
 endif
+
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
 
 file_format = 'wind/3dp/3dp_sfpd/YYYY/wi_sfpd_3dp_YYYYMMDD_v0?.cdf'
 pathnames = file_dailynames(file_format=file_format,trange=trange)

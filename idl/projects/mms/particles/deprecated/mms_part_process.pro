@@ -22,10 +22,10 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21101 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_process.pro $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-10 09:00:31 -0800 (Fri, 10 Mar 2017) $
+;$LastChangedRevision: 22936 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/deprecated/mms_part_process.pro $
 ;-
 pro mms_part_process, in, out, units=units, _extra=_extra
 

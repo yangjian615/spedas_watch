@@ -15,7 +15,7 @@
 ;-
 
 pro ace_epm_load,pathnames=pathnames,trange=trange,files=files,download_only=download_only, $
-        source=source,verbose=verbose,k0=k0,h1=h1
+        source=source,verbose=verbose,k0=k0,h1=h1,no_download=no_download, no_update=no_update
 
 istp_init
 if not keyword_set(source) then source = !istp
@@ -35,9 +35,14 @@ if keyword_set(h1) then begin
 endif
 
 tr = timerange(trange)
-relpathnames = file_dailynames(file_format=pathname,trange=tr)
 
-files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir)
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
+
+relpathnames = file_dailynames(file_format=pathname,trange=tr)
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, $
+  no_download = source.no_download, no_update = source.no_update, /last_version, $
+  file_mode = '666'o, dir_mode = '777'o)
 
 
 dprint,/phelp,files

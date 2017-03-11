@@ -19,8 +19,8 @@
 ;-
 pro goes_mag_load,trange=trange,verbose=verbose,downloadonly=downloadonly, $
       varformat=varformat,datatype=datatype, $
-      probes=probes, $
-      addmaster=addmaster,tplotnames=tn,source_options=source
+      probes=probes, no_download=no_download, no_update=no_update, $
+      addmaster=addmaster,tplotnames=tn,source=source
 
 ;if not keyword_set(probes) then probes = ['0','6','7','8','9','11','12']
 if not keyword_set(probes) then probes = ['10','11','12']
@@ -72,12 +72,14 @@ if not keyword_set(varformat) then begin
 ;   if datatype eq  'h1' then    varformat = '*'
 endif
 
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
 
 relpathnames = file_dailynames(file_format=pathformat,trange=trange,addmaster=addmaster)
-
-;files = file_retrieve(relpathnames, _extra=source, /last_version)
-files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir)
-
+files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, $
+  no_download = source.no_download, no_update = source.no_update, /last_version, $
+  file_mode = '666'o, dir_mode = '777'o)
+  
 if keyword_set(downloadonly) then continue
 
 prefix = 'goes'+probe+'_'

@@ -14,9 +14,9 @@
 ;  error=error: 1 indicates error occured, 0 indicates no error occured
 ;
 ;
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2016-01-04 15:09:48 -0800 (Mon, 04 Jan 2016) $
-;$LastChangedRevision: 19671 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-10 11:44:24 -0800 (Fri, 10 Mar 2017) $
+;$LastChangedRevision: 22938 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_do_fac.pro $
 ;-
 
@@ -32,7 +32,7 @@ pro spd_pgs_do_fac,data,mat,output=output,error=error
   ;mat = [[1,0,0],[0,1,0],[0,0,1]]
 
   ;if nans are in the transform matrix, replace data with NANs instead.
-  ;Downstream code is not really equiped to properly handle NaNs in angles
+  ;Downstream code is not really equipped to properly handle NaNs in angles
   if total(finite(mat)) lt n_elements(mat) then begin
     output_t.data = !values.d_nan
   endif else begin

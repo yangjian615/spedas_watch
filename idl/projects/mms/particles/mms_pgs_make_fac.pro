@@ -13,12 +13,12 @@
 ;Keywords:
 ;
 ;Notes:
-;  Needs to be vectorized because thm_cotrans is waaaay too slow if fed single vectors at a time
-;  If an error occurs fac_output will be undfined on return
+;  Needs to be vectorized because mms_cotrans is waaaay too slow if fed single vectors at a time
+;  If an error occurs fac_output will be undefined on return
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-07 10:46:21 -0800 (Tue, 07 Mar 2017) $
-;$LastChangedRevision: 22918 $
+;$LastChangedDate: 2017-03-10 08:58:08 -0800 (Fri, 10 Mar 2017) $
+;$LastChangedRevision: 22935 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_make_fac.pro $
 ;-
 

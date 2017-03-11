@@ -21,7 +21,7 @@ pro omni_hro_load,type,files=files,trange=trange,verbose=verbose,downloadonly=do
       varformat=varformat,datatype=datatype, no_download=no_download, no_update=no_update, $
       res5min=res5min,res1min=res1min, $
       addmaster=addmaster,data_source=data_source, $
-      tplotnames=tn,source_options=source
+      tplotnames=tn,source=source
 
 ;if not keyword_set(datatype) then datatype = 'h0'
 

@@ -32,6 +32,7 @@ pro load_wi_h0_mfi,time_range=trange,polar=polar,data=d,  $
   prefix = prefix, $
   resolution = res,  $
   name = bname, $
+  no_download=no_download, no_update=no_update, $
   masterfile=masterfile, $
   hour = hour, minute=minute
 
@@ -52,6 +53,9 @@ if not keyword_set(source) then begin
    istp_init
    source = !istp
 endif
+
+if keyword_set(no_download) && no_download ne 0 then source.no_download = 1
+if keyword_set(no_update) && no_update ne 0 then source.no_update = 1
 
 file_format = 'wind/mfi/mfi_h0/YYYY/wi_h0_mfi_YYYYMMDD_v0?.cdf'
 pathnames = file_dailynames(file_format=file_format,trange=trange)

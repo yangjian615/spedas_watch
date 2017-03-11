@@ -23,8 +23,8 @@
 ;  
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-06 11:43:44 -0700 (Thu, 06 Oct 2016) $
-;$LastChangedRevision: 22051 $
+;$LastChangedDate: 2017-03-10 08:56:27 -0800 (Fri, 10 Mar 2017) $
+;$LastChangedRevision: 22934 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_convert_flux_units.pro $
 ;-
 pro mms_convert_flux_units,dist,units=units,output=output
@@ -47,7 +47,7 @@ if units_in eq units_out then begin
   return
 endif
 
-;handle synonomous notations
+;handle synonymous notations
 if units_in eq 'df_km' or units_in eq 'psd' then units_in = 'df'
 if units_out eq 'df_km' or units_out eq 'psd' then units_out = 'df'
 
