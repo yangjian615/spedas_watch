@@ -32,19 +32,19 @@
 ;-
 
 pro fa_k0_load,types, $
-			datatype=datatype, $
-            filenames=filenames, $
-            version=version, $
-            trange=trange, $
-	        orbitrange=orbitrange, $
-			stimes=stimes, $
-			sorbits=sorbits, $
-			var=var, $
-			dvar=dvar, $
-			no_opts=no_opts, $
-			ignore_existence=ignore_existence, $
-	        downloadonly=downloadonly, $
-			nodata=nodata
+               datatype=datatype, $
+               filenames=filenames, $
+               version=version, $
+               trange=trange, $
+               orbitrange=orbitrange, $
+               stimes=stimes, $
+               sorbits=sorbits, $
+               var=var, $
+               dvar=dvar, $
+               no_opts=no_opts, $
+               ignore_existence=ignore_existence, $
+               downloadonly=downloadonly, $
+               nodata=nodata
 
 fa_init
 nodata=1

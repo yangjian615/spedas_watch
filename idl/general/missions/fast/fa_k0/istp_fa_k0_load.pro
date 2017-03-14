@@ -7,10 +7,14 @@
 ;including endtime
 
 pro istp_fa_k0_load,types,trange=trange, $
-orbitrange=orbitrange,latestversion=latestversion
+orbitrange=orbitrange,latestversion=latestversion,$
+downloadonly=downloadonly,no_download=no_download,no_update=no_uptate
 
 istp_init
 source = !istp
+if(keyword_set(no_download)) then source.no_download=1
+if(keyword_set(no_update)) then source.no_update=1
+
 ;local_dir = root_data_dir() + 'fast/' ; '/data/fast/
 ;remote_dir = 'http://cdaweb.gsfc.nasa.gov/data/fast/'
 
@@ -27,12 +31,18 @@ for i=0,n_elements(types)-1 do begin
 
     if NOT keyword_set(latestversion) then begin
     type = types[i]
-    relpath = 'fast/'+type+'/'
-        prefix = 'fa_k0_'+type+'_'
+    relpath = type+'/'
+    prefix = 'fa_k0_'+type+'_'
     ending = '_v'+fa_config('version','K0_istp')+'.cdf'
     relpathnames = file_dailynames(relpath,prefix,ending,/YEARDIR,trange=trange)
 
-    filenames = file_retrieve(relpathnames,_extra=source)
+    remote_path = source.remote_data_dir+'fast/esa/k0/'
+    local_path = source.local_data_dir+'fast/'
+    filenames = spd_download(remote_file=relpathnames, remote_path=remote_path, $
+                             local_path = local_path, no_download = source.no_download, $
+                             no_update = source.no_update, $
+                             file_mode = '666'o, dir_mode = '777'o)
+;    filenames = file_retrieve(relpathnames,_extra=source)
     endif else begin
       type = types[i]
       relpath = 'fast/'+type+'/'
@@ -56,13 +66,20 @@ for i=0,n_elements(types)-1 do begin
           ;  break
           ;endif
           
-          filenames[j]=file_retrieve(relpathnames[j]+ending,_extra=source)
+          remote_path = source.remote_data_dir+'fast/esa/k0/'
+          local_path = local_data_dir+'fast/'
+          filenames[j] = spd_download(remote_file=relpathnames[j], remote_path=remote_path, $
+                                      local_path = local_path, no_download = source.no_download, $
+                                      no_update = source.no_update, $
+                                      file_mode = '666'o, dir_mode = '777'o)
+;          filenames[j]=file_retrieve(relpathnames[j]+ending,_extra=source)
           if file_test(filenames[j]) then break
           
         endfor
       endfor
     endelse
      
+stop
      if keyword_set(downloadonly) then continue
      ;cdf2tplot,file=files,all=all,verbose=verbose ,prefix = 'istp_fa_'    
      ; load data into tplot variables
@@ -193,7 +210,7 @@ endfor
 		 if endtime GT 1.2410834e+009 then endtime=1.2410834e+009
 		 startorbit=fa_time_to_orbit(starttime)
 		 endorbit=fa_time_to_orbit(endtime)
-		 fa_k0_orb_load,orbit=[startorbit,endorbit]
+		 fa_k0_load, 'orb',orbitrange=[startorbit,endorbit]
         
 ; Get modebar data if it exists
 

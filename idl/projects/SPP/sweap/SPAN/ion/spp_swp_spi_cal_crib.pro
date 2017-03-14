@@ -51,7 +51,6 @@ PRO spp_swp_spi_parameters, vals
           splr_fitt:splr_fitt $
           
           }
-   
 
 END
 
@@ -177,16 +176,24 @@ PRO spp_swp_spi_thresh_scan, trange=trange
    mtime = temporary(mtime[mtt])
 
    ;; --- Plot
-   popen, '~/Desktop/ch10_thresh_scan',/landscape
+   popen, '~/Desktop/2017-03-08_thresh_scan',/landscape
    plot, [0,1],[0,1],$
          xr=[10,60],   xs=1,xlog=1,xtitle='Threshold',$
          yr=[1e1,1e4],ys=1,ylog=1,ytitle='Binned and Average Counts',$
-         Title='Channel 10 Threshold Scan',/nodata,thick=2
+         Title=time_string(trange[0]),/nodata,thick=2
 
    ;; --- Define variables and interpolate to rates
    addr_hi = hkps.MRAM_ADDR_HI  AND '1F'x
    addr_lo = hkps.MRAM_ADDR_LOW AND 'FFFF'x
    anode   = round(interp(addr_hi,htime,rtime))
+
+   ;; Kludge
+   anode[where(anode EQ 1)] = 0
+   anode[where(anode EQ 3)] = 2
+   anode[where(anode EQ 5)] = 4
+   anode[where(anode EQ 7)] = 6
+   anode[where(anode EQ 9)] = 8
+
    thresh  = round(interp(addr_lo,htime,rtime)) AND '1FF'x
    mcp_dac = round(interp(reform(hkps.DACS[0,*]),htime,rtime))
    mcp_vvv =       interp(hkps.MON_MCP_V,htime,rtime)
@@ -212,7 +219,6 @@ PRO spp_swp_spi_thresh_scan, trange=trange
 
    ;; --- Loop through unique MCPs, Anodes, and Autozeros
 
-
    ;; Filament Current
    FOR fil=0, nn_fil-1 DO BEGIN
       fil_val = un_fil[fil]
@@ -222,7 +228,7 @@ PRO spp_swp_spi_thresh_scan, trange=trange
          mcp_val = un_mcp[mcp]
 
          ;; Autozero
-         FOR auz=1, 1 DO BEGIN  ;nn_auz-1 DO BEGIN
+         FOR auz=1, 1 DO BEGIN; nn_auz-1 DO BEGIN  ;nn_auz-1 DO BEGIN
             auz_val = un_auz[auz]
 
             ;; Anode
@@ -236,8 +242,8 @@ PRO spp_swp_spi_thresh_scan, trange=trange
                       (fill     EQ fil_val) AND $
                       (thresh   NE 0)
                pp = where(good EQ 1,cc)
+               ;IF cc LT npoints THEN print,' BAD: '+string(fil,mcp,auz,ano,cc,format='(2F10.2,3I5)')
                IF cc GT npoints THEN BEGIN
-
                   IF ano_val LT '10'x THEN BEGIN
                      ;; ---------------- STARTS ------------------
                      ;; Setup counts
@@ -254,6 +260,10 @@ PRO spp_swp_spi_thresh_scan, trange=trange
                         cntsavg = temporary(cntsavg[pp])
                         cntsavg_bins = temporary(cntsavg_bins[pp])
                         dthavg  = temporary(dthavg[pp])
+                        ;; Color and Plot
+                        ;clr = round(ano_val/16.*250.)
+                        clr = 0
+                        oplot, cntsavg_bins, cntsavg, color=clr, thick=3,psym=-1
                      ENDIF
                   ENDIF ELSE BEGIN 
                      ;; ----------------- STOPS ------------------
@@ -271,6 +281,11 @@ PRO spp_swp_spi_thresh_scan, trange=trange
                         cntsavg = temporary(cntsavg[pp])
                         cntsavg_bins = temporary(cntsavg_bins[pp])
                         dthavg  = temporary(dthavg[pp])
+                        ;; Color and Plot
+                        ;clr = round((ano_val-16.)/16.*250.)
+                        IF ano_val LT '1a'x THEN clr = 250 ELSE clr=50
+                        oplot, cntsavg_bins, cntsavg, color=clr, thick=3,psym=-1
+
                      ENDIF
                   ENDELSE
 
@@ -292,17 +307,19 @@ PRO spp_swp_spi_thresh_scan, trange=trange
       ENDFOR
    ENDFOR
 
-   pp=0
+   pp = 0
+   cc = 0
    FOR i=0, nn_fil*nn_mcp*nn_auz*nn_ano-1 DO $
-    IF *(thresh_data)[i] NE !NULL THEN BEGIN
-      pp = [pp.i]
+    IF *(thresh_data[i]) NE !NULL THEN BEGIN
+      pp = [pp,i]
       cc++
    ENDIF
-   pp=[1,cc-1]
-
-   data = reform(thresh_data[pp],n_fil,nn_mcp,nn_auz,nn_ano)
+   pp=[0:cc-1]
+   data = reform(thresh_data[pp],nn_fil,nn_mcp,nn_auz,nn_ano)
+   pclose
    ;spp_swp_spi_thresh_scan_plot,thresh_data
    stop
+   
 END
 
 
@@ -315,19 +332,45 @@ PRO spp_swp_spi_thresh_scan_plot, data
    IF ~keyword_set(data) THEN stop, 'Must provide data.'
 
    ;; --- Plot
-   popen, '~/Desktop/ch10_thresh_scan',/landscape
+   popen, '~/Desktop/2017-03-08_thresh_scan',/landscape
    plot, [0,1],[0,1],$
          xr=[10,60],   xs=1,xlog=1,xtitle='Threshold',$
          yr=[1e1,1e4],ys=1,ylog=1,ytitle='Binned and Average Counts',$
-         Title='Channel 10 Threshold Scan',/nodata,thick=2
+         Title='Threshold Scan',/nodata,thick=2
 
-   ;; Color and Plot
-   clr = round((ano_val-16)/16*250+70)
-   oplot, cntsavg_bins, cntsavg, color=clr, thick=3,psym=-2
+   nn_fil = (size(data))[1]
+   nn_mcp = (size(data))[2]
+   nn_auz = (size(data))[3]
+   nn_ano = (size(data))[4]
 
-   ;; Color and Plot
-   clr = round(ano_val/16.*250.)
-   oplot, cntsavg_bins, cntsavg, color=clr, thick=3,psym=-1
+   ;; Filament Current
+   FOR fil=0, nn_fil-1 DO BEGIN
+      fil_val = un_fil[fil]
+
+      ;; MCPs
+      FOR mcp=0, nn_mcp-1 DO BEGIN
+         mcp_val = un_mcp[mcp]
+
+         ;; Autozero
+         FOR auz=0, nn_auz-1 DO BEGIN  ;nn_auz-1 DO BEGIN
+            auz_val = un_auz[auz]
+
+            ;; Anode
+            FOR ano=0, nn_ano-1 DO BEGIN 
+               ano_val = un_ano[ano]
+
+               ;; Color and Plot
+               clr = round((ano_val-16)/16*250+70)
+               oplot, cntsavg_bins, cntsavg, color=clr, thick=3,psym=-2
+               
+               ;; Color and Plot
+               clr = round(ano_val/16.*250.)
+               oplot, cntsavg_bins, cntsavg, color=clr, thick=3,psym=-1
+               
+            ENDFOR
+         ENDFOR
+      ENDFOR
+   ENDFOR
 
    pclose
 
@@ -371,6 +414,10 @@ PRO spp_swp_spi_yaw_scan_response, trange=trange
    stop
 
 END
+
+
+
+
 
 
 
@@ -580,7 +627,7 @@ pro spp_swp_spi_rot_scan,trange=trange
    ;; PLOTTING
    ;!p.multi = [0,0,2]
    ns = 0.101725 ;* 1e-9
-   popen, 'adjusted_normalized_tof',/landscape
+   popen, '~/Desktop/adjusted_normalized_tof',/landscape
    plot, [0,1],[0,1],$
          xr=[50,2048]*ns, /xlog, xs=1,$
          yr=[1e-4,1],     /ylog, ys=1,$
@@ -594,7 +641,7 @@ pro spp_swp_spi_rot_scan,trange=trange
       oplot, xx*ns, yy, col=i/15.*250.
    ENDFOR
    pclose
-
+   
    stop
 
 END
@@ -746,6 +793,164 @@ END
 
 
 
+PRO spp_swp_spi_tof_boxcar, trange=trange, $
+                            anode=anode,   $
+                            normalized=normalized
+
+
+   ;; Setup
+   loadct2, 34
+
+   ;; --- Check keyword
+   IF ~keyword_set(trange) THEN BEGIN
+      print, 'Error: Need trange.'
+      ctime, trange
+   ENDIF
+
+   IF ~keyword_set(anode) THEN stop;$
+
+
+   ;; --- Get data
+   ;; Events
+   events  = (spp_apdat('3b9'x)).array
+
+   ;; TOF
+   get_data, 'spp_spi_tof_TOF', data=toff 
+
+   ;; APS 5 - Agilent
+   aps5 = (spp_apdat('755'x)).array
+
+   ;; --- Find time interval
+   etime   = events.time
+
+
+
+
+   
+   binsize = 500.
+   center = fltarr(100000)
+   jj = 0
+
+
+   ;; ------------------ TOFF
+   ;GOTO, skip
+   e_toff = where(toff.x GE trange[0] AND $
+                  toff.x LE trange[1],t_cc)
+
+   tim_bin = interpol(toff.x[e_toff],indgen(t_cc),reform(transpose(indgen(t_cc) # replicate(1,512)),t_cc*512))
+
+   current = interp(float(aps5.p6i),aps5.time,tim_bin)
+   tofs = reform(transpose(toff.y[e_toff,*]),t_cc*512)
+
+   ;; Compression:
+   ;; a. 11 bits -> Remove 2LSB -> 9 bits
+   
+   ;; b. 11 bits -> Remove 1LSB
+   xx = (indgen(2047)*0.101725)[indgen(1024)*2]
+   ;;    Compress 10 bits to 9 bits
+   ;;    N for <255, N/2+128 for 256-511, N/4+256 for >511 ->
+   xx_tof = fltarr(512)
+   xx_tof[0:255]   = xx[0:255]
+   xx_tof[256:383] = (xx[256:511])[findgen(128)*2]
+   xx_tof[384:511] = (xx[511:1023])[findgen(128)*4]
+
+   bin1 = 0.1
+   min1 = min(xx_tof)
+   max1 = max(xx_tof)
+   min2 = min(current)
+   max2 = max(current)
+   bin2 = 0.01
+
+   h2d =HIST_2D(tofs, current,$
+                bin1=bin1,min1=min1,max1=max1,$
+                bin2=bin2,min2=min2,max2=max2)
+   
+   stop
+   contour, h2d, xx_tof,indgen(n_elements(h2d[0,*])),$
+            /fill, nlevel=25,$
+            xrange=[0,130],xs=1,$
+            yrange=[0,170],ys=1.,$
+            title=time_string(trange[0])+$
+            ' -  EM3 - Colutron 1keV eV, 50V ExB - Anode 11',$
+            xtitle='Nanoseconds',ytitle='Magnet [mA]'
+   stop
+   ;skip:
+
+
+
+   ;; ----------------- EVENTS
+   e_good = where(events.time GE trange[0] AND $
+                  events.time LE trange[1] AND $
+                  events.channel EQ anode, e_cc)
+
+   current = interp(float(aps5.p6i),aps5.time,events[e_good].time)
+
+   h2d =HIST_2D(events[e_good].tof, current,$
+                bin1=1,bin2=bin2,min2=min2,max2=max2)
+
+
+   ;popen, '~/Desktop/201702022_spanai_tof_colutron_spec',/landscape
+   contour, h2d[0:2047,*],indgen(2048)*0.101725,indgen(n_elements(h2d[0,*])),$
+            /fill, nlevel=25,xrange=[0,130],yrange=[0,170],xs=1,ys=1.,$
+            title=time_string(trange[0])+$
+            ' -  EM3 - Colutron 480 eV, 50V ExB - Anode 11',$
+            xtitle='Nanoseconds',ytitle='Magnet [mA]'
+   ;pclose
+   stop
+
+   ;popen, '~/Desktop/201702022_spanai_tof_colutron_gas_mix',/landscape
+   plot, indgen(2416)*0.101725,total(h2d,2), $
+         /xlog, /ylog, xr=[6,200],yr=[10,1e4],xs=1,ys=1,$
+         title=time_string(trange[0])+' -  EM3 - Colutron 1 keV, 35V ExB - Anode 11',$
+         xtitle='Nanoseconds',ytitle='Counts'
+   ;pclose
+
+   stop
+
+   FOR ii=binsize/2., e_cc-binsize/2., 100 DO BEGIN
+
+      ind = e_good[ii-binsize/2.:ii+binsize/2.]
+      ;; Histograms
+      hh = histogram(events[ind].tof,min=0,max=2047,binsize=1)
+      IF keyword_set(normalized) THEN hh = hh/max(hh)
+      
+      ;; Plot
+      title = time_string(trange[0])+' '+$
+              time_string(trange[1])
+      title = title+' Anodes: '
+      title = title + ' ' + string(anode, format='(I2)') 
+      IF keyword_set(normalized) THEN BEGIN
+         ytitle = 'Normalized Counts'
+         yrange = [1e-4,1.]
+      ENDIF ELSE BEGIN 
+         ytitle = 'Counts per 1/4 NYS'
+         yrange = [1,max(hh)*1.1]
+         yrange = [1,100]
+      ENDELSE
+      
+      xx = indgen(2048)*0.101725
+      xtitle = 'ns'
+      xrange = [5,max(xx)]
+      xlog = 1
+      ylog = 1
+
+      ;plot, [1,1],[1,1],/nodata,$
+      ;      ystyle=1,ytitle=ytitle,yrange=yrange,ylog=ylog,$
+      ;      xstyle=1,xtitle=xtitle,xrange=xrange,xlog=xlog,$
+      ;      title = title
+      ;oplot, xx, smooth(hh,10), color=11/16.*250. 
+      tmp = gaussfit(xx,smooth(hh,10),a1,nterms=3)
+      ;tmp = gaussfit(volts[pp],nrg2,a1,nterms=3)
+      ;oplot, xx, tmp, color=anode/16.*250.
+      
+      center[jj] = a1[1]
+      jj=jj+1
+   ENDFOR
+   stop
+
+END
+
+
 
 
 PRO spp_swp_spi_plot_tof, trange=trange, $
@@ -802,7 +1007,8 @@ PRO spp_swp_spi_plot_tof, trange=trange, $
    ;; Histograms
    hh = fltarr(nn_anode,2048)
    FOR i=0, nn_anode-1 DO BEGIN
-      hh[i,*] = histogram(events[e_good].tof,min=0,max=2047,binsize=1)
+      ppan = where(events[e_good].channel EQ anode[i],cc_anode)
+      hh[i,*] = histogram(events[e_good[ppan]].tof,min=0,max=2047,binsize=1)
       IF keyword_set(normalized) THEN hh[i,*] = hh[i,*]/max(hh[i,*])
    ENDFOR
 
@@ -812,27 +1018,155 @@ PRO spp_swp_spi_plot_tof, trange=trange, $
    title = title+' Anodes: '
    FOR i=0, nn_anode-1 DO $
     title = title + ' ' + string(anode[i], format='(I2)') 
-   IF keyword_set(normzlied) THEN BEGIN
+   IF keyword_set(normalized) THEN BEGIN
       ytitle = 'Normalized Counts'
       yrange = [1e-4,1]
    ENDIF ELSE BEGIN 
       ytitle = 'Counts per 1/4 NYS'
       yrange = [1,max(hh)*1.1]
    ENDELSE
-   
+
    xx = indgen(2048)*0.101725
    xtitle = 'ns'
    xrange = [5,max(xx)]
-   xlog = 1
-   ylog = 1
+   xl = 1
+   yl = 1
 
    plot, [1,1],[1,1],/nodata,$
-         ystyle=1,ytitle=ytitle,yrange=yrange,ylog=ylog,$
-         xstyle=1,xtitle=xtitle,xrange=xrange,xlog=xlog,$
+         ystyle=1,ytitle=ytitle,yrange=yrange,ylog=yl,$
+         xstyle=1,xtitle=xtitle,xrange=xrange,xlog=xl,$
          title = title
    
    FOR i=0, nn_anode-1 DO $
     oplot, xx, hh[i,*], color=i/16.*250. 
+
+END
+
+
+
+
+PRO spp_swp_tof_energy, trange=trange
+
+   center_energy = 500.
+   deltaEE = 0.2
+   factor = deltaEE * center_energy
+   minn = center_energy - factor
+   maxx = center_energy + factor
+   sweepv_dacv,hem_dac,def1_dac,def2_dac,spl_dac,k=16.7,rmax=11.0,vmax=4000,$
+               nen=128,e0=minn,emax=maxx,spfac=0.,maxspen=500.
+
+   spfac   = 0.
+   nen = 128.
+   spp_swp_sweepv_new_fslut, sweepv, $
+                             defv1, $
+                             defv2, $
+                             spv, $
+                             findex, $
+                             nen = nen/4, $
+                             spfac = spfac
+
+   tmp=findex[indgen(1024/4)*4]
+   nrg_bins=reform(hem_dac[(reform(tmp,8,32))[0,*]])
+   for i = 0,255 do begin
+      spp_swp_sweepv_new_tslut, sweepv, $
+                                defv1, $
+                                defv2, $
+                                spv, $
+                                fsindex_tmp, $
+                                tsindex, $
+                                nen = nen/4,$
+                                spfac=spfac
+      if i eq 0 then index = tsindex $
+      else index = [index,tsindex]
+   endfor
+   tsindex=index
+
+   events = (spp_apdat('3b9'x)).array
+   rates  = (spp_apdat('3bb'x)).array
+   hkp    = (spp_apdat('3be'x)).array
+  
+   peak_step = hkp.peak_Step
+
+   e_good = where(events.time GE trange[0] AND $
+                  events.time LE trange[1],e_cc)
+
+   nn  = n_elements(rates.time)
+   tmp  = indgen(nn,/long)*2
+
+   step_time = indgen(nn*2*32,/long)/32. ;assuming 32 energy bins
+   full_1 = replicate(1,nn*32)
+   full_0 = intarr(nn*32)
+   full   = reform(transpose(reform([full_1, full_0],32,nn,2),[0,2,1]),32*nn*2)
+   targeted_1 = replicate(1,nn*32)
+   targeted_0 = intarr(nn*32)
+   targeted   = reform(transpose(reform([targeted_0, targeted_1],32,nn,2),[0,2,1]),32*nn*2)
+
+   tim_int = interpol(rates.time, tmp, step_time)
+   bin = value_locate(tim_int,events.time, /l64)
+   
+   targeted = temporary(targeted[bin])
+   full     = temporary(full[bin])
+   channel = 10
+   ;pp_f = where(full NE 0 AND e_good AND events.channel EQ channel)
+   ;pp_t = where(targeted NE 0 AND e_good AND events.channel EQ channel)
+   pp_f = where(full NE 0 AND e_good)
+   pp_t = where(targeted NE 0 AND e_good)
+
+   ;; Plot Full and Targeted
+   print, "Plotting ... "
+   ;popen, "~/Desktop/events_spec",/landscape
+   ;!p.multi=[0,0,2]
+   energy_bins = (bin MOD 32)[pp_t] > 0
+   ;energy_bins2 = nrg_bins[energy_bins]
+   tof = events[pp_t].tof
+   ;min2 = min(energy_bins2)
+   ;max2 = max(energy_bins2)
+   min2 = min(energy_bins)
+   max2 = max(energy_bins)
+   bin2 = 1
+   print, 'bin2', bin2
+   ;h2d_a =HIST_2D(tof, energy_bins2, bin1=1,bin2=bin2,min2=min2,max2=max2)
+   h2d_a =HIST_2D(tof, energy_bins, bin1=1,bin2=bin2,min2=min2,max2=max2)
+   m1 = floor((max2-min2)/bin2) + 1
+   energies = indgen(m1)*bin2+min2
+
+   xx_tof = indgen((size(h2d_a))[1])*0.101725
+   m1p = where(xx_tof GT 8 AND xx_tof LT 12,cc)
+   m2p = where(xx_tof GT 12 AND xx_tof LT 20,cc)
+
+   !p.multi=[0,0,2]
+   mass = m1p
+   contour, alog(h2d_a[mass,1:m1-1]>1e-2),xx_tof[mass],nrg_bins[1:m1-1],$
+            ;energies[0:m1-2],$
+            ;yrange=[400,600],$
+            /xlog,$
+            ;xr=[5,150],$
+            xs=1, $
+            nlevel=100,/fill,ys=1,zr=[1.,10.2],$
+            title='Full H+',xtitle='ns'
+
+   mass = m2p
+   contour, alog(h2d_a[mass,1:m1-1]>1e-2),xx_tof[mass],nrg_bins[1:m1-1],$
+            ;energies[0:m1-2],$
+            ;yrange=[400,600],$
+            /xlog,$
+            ;xr=[5,150],$
+            xs=1, $
+            nlevel=100,/fill,ys=1,zr=[1.,10.2],$
+            title='Full H2+',xtitle='ns'
+   !p.multi=0
+
+   ;energy_bins = (bin MOD 32)[pp_f]
+   ;tof = events[pp_f].tof
+   ;h2d_b =HIST_2D(tof, energy_bins, bin1=1,bin2=1)
+   ;contour,alog(h2d_b[*,1:31]>1e-4),$
+   ;        indgen(2465)*0.101725, indgen(31),$
+   ;        /xlog,xr=[5,150],xs=1,nlevel=100,$
+   ;        /fill,ys=1,zr=[4.,10],$
+   ;        title='Targeted',xtitle='ns'
+   ;pclose
+   stop
+
 
 END
 
@@ -1037,7 +1371,7 @@ PRO spp_swp_spi_times
    ;; First Rotation Scan
    ;; Gun at 0.728mA 480V
    trange = ['2017-01-13/18:20:00','2017-01-13/23:00:00']
-   
+
    ;; Second Rotation Scan (After adjusting TOF offsets)
    ;; Gun at 0.800mA 480V with adjustments
    trange = ['2017-01-17/17:43:00','2017-01-17/23:45:00']
@@ -1046,7 +1380,9 @@ PRO spp_swp_spi_times
    trange = ['2017-01-18/18:20:00','2017-01-18/20:30:00']
 
    ;; YAW Scan
-   ;; WHEN???
+ 
+
+  ;; WHEN???
 
    ;; Threshold Scan
    trange = ['2017-01-19/07:45:00','2017-01-19/16:00:00']
@@ -1069,13 +1405,210 @@ PRO spp_swp_spi_times
 
 
    ;; Energy-Yaw Scan
-   
+   trange = ['2017-02-01/20:41:30','2017-02-01/22:04:50']
 
    ;; Spoiler-Yaw Scan
+   ;; Same day as Energy-Yaw Scan but in the eveninig
+   trange = [0]
    
+
+
+
+;; Dates only include availability on MAJA
+
+;; NOTES ON DAY 17-02-15/17:00:00 -> 17-02-15/22:30:00
+;; Between -55C and -30C
+;; Incomplete actuation information in maja
+
+
+;; NOTES ON DAY 17-02-16/02:00:00 -> 17-02-17/00:00:00
+;; Hot Soak 04:00-12:00 Attenuator 07:45-08:00
+;; Cold Soak 19:00-21:00 Attenuator 20:00-21:15
+
+
+;; NOTES ON DAT 17-02-19/00:00 - 17-02-20/00:00:00
+;; Instrument cooled down from Hot to room temperatures
+
+;; NOTES ON DAT 17-02-20/00:00 - 17-02-21/00:00:00
+;; Going Cold
+
+
+
+
+;; Hot Cycle #1 - Actuation
+trange = ['2017-02-15/11:00:00','2017-02-15/12:00:00']
+
+;; Cold Cycle #1 - Actuation
+trange = ['2017-02-16/12:00:00','2017-02-16/13:00:00']
+
+;; Hot Cycle #2 - Actuation
+trange = ['2017-02-16/18:00:00','2017-02-16/19:00:00']
+
+;; Cold Cycle #2 - Actuation
+;trange = 
+
+;; Hot Cycle #3 - Actuation
+trange = ['2017-02-17/13:00:00','2017-02-17/14:00:00']
+
+;; Cold Cycle #3 - Actuation
+;trange = 
+
+;; Hot Cover Open
+
+;; Hot Cycle #4 - Actuation
+trange = ['2017-02-18/12:00:00','2017-02-18/13:00:00']
+
+;; Cold Cycle #4 - Actuation
+trange = ['2017-02-20/13:00:00','2017-02-20/14:00:00']
+
+;; Hot Cycle #5 - Actuation
+trange = ['2017-02-20/23:00:00','2017-02-21/00:00:00']
+
+;; Cold Cycle #5 - Actuation
+trange = ['2017-02-21/11:00:00','2017-02-21/12:00:00']
+
+
+
+;; Hot Cycle #6 - Actuation
+;trange = 
+
+;; Cold Cycle #6 - Actuation
+trange = ['2017-02-22/09:00:00','2017-02-22/09:00:00']
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; SPAN-Ai Thermal Vacuum  ;;;
+;;;     Snout2 Facility     ;;;
+;;;       2017-01-15        ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   
+   
+   ;; -------------------------- CPT --------------------------
+   ;; Delay Line Test
+   trange = ['2017-02-15/20:50:00','2017-02-15/21:10']
+   ;; Pulser Test
+   trange = ['2017-02-15/21:14:10','2017-02-15/21:49:30']
+
+
+   ;; ------------------------- CPT ---------------------------
+   trange = ['2017-02-16/06:37:05','2017-02-16/07:43:35']
+
+   ;; Delay Line Test
+   trange = ['2017-02-16/06:39:30','2017-02-16/06:53:50']
+   ;; Pulser Test
+   trange = ['2017-02-16/06:53:50','2017-02-16/07:26:42']
+   ;; Threshold Scan
+   trange = ['2017-02-16/07:26:42','2017-02-16/07:43:00']
+
+
+   ;; --------------------- Hot CPT ---------------------------
+   ;trange = []
+
+   ;; CPT HOT #3 with HV on
+   trange = ['2017-02-17/19:07:00']
+
+
+   ;; NOTE: Only turned on all products no
+
+   ;; Delay Line Test
+   trange = ['2017-02-17/19:09:14','2017-02-17/19:23:13']
+   ;; Pulser Test
+   trange = ['2017-02-17/19:23:13','']
+
+
+   ;; ------------------------- CPT ---------------------------
+   trange = ['2017-02-17/00:51:40','2017-02-17/02:07:20']
    
 
    
+
+
+
+
+
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;                SPAN-Ai Flight Calibration                    ;;;
+;;;                       CAL Facility                           ;;;
+;;;                        2017-03-07                            ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+   ;;---------------------------------------------------------------
+   ;; Gun Map
+   ;;
+   ;; INFO
+   ;;   - 
+   ;; CONFIG
+   ;;   - Table = 'spani_reduced_table,center_energy=500.,deltaEE=0.3'
+   ;;   - Resiudal Gas Gun
+   ;;     + Gun V = 480 [V]
+   ;;     + Filament I = 0.80 [A]
+   trange = ['2017-03-09/04:12:00','2017-03-09/22:36:00']
+
+
+   ;; Rotation Scan before TOF correction
+   trange = ['2017-03-10/07:28:20','2017-03-10/08:44:40']
+   ;; Rotation Scan after TOF correction
+   ;;trange = [
+   
+  
+   ;;---------------------------------------------------------------
+   ;; Threshold Scan
+   ;;
+   ;; INFO
+   ;;   - CFD Threshold scan of all START and STOP channels.
+   ;; CONFIG
+   ;;   - AZ  = [0,1,2,3]
+   ;;   - RAW = [0xD000]
+   ;;   - MCP = [0xD000]
+   ;;   - ACC = [0xFF00]
+   ;;   - Table = 'spani_reduced_table,center_energy=500.,deltaEE=0.3'
+   ;;   - Resiudal Gas Gun
+   ;;     + Gun V = 480 [V]
+   ;;     + Filament I = 0.85 [A]
+   trange = ['2017-03-12/05:47:00','2017-03-12/19:00:00']
+   
+   
+   ;;---------------------------------------------------------------
+   ;; Rotation Scan
+   ;; INFO
+   ;;   - 
+   ;; CONFIG
+   ;;   - Table = 'spani_reduced_table,center_energy=500.,deltaEE=0.3'
+   ;;   - Resiudal Gas Gun
+   ;;     + Gun V = 480 [V]
+   ;;     + Filament I = 0.85 [A]
+   trange = ['2017-03-13/07:12:35','2017-03-13/08:32:45']
+
+
+   ;;---------------------------------------------------------------
+   ;; Energy Angle Scan
+   ;;
+   ;; INFO
+   ;;   - CFD Threshold scan of all START and STOP channels.
+   ;; CONFIG
+   ;;   - Table = 'spani_reduced_table,center_energy=500.,deltaEE=0.3'
+   ;;   - Resiudal Gas Gun
+   ;;     + Gun V = 480 [V]
+   ;;     + Filament I = 0.85 [A]
+   trange = ['2017-03-13/18:21:00','2017-03-13/23:47:00']
+
+
+
+
+
+
+
 
 
    ;; Load Selected Time Range
@@ -1088,5 +1621,5 @@ PRO spp_swp_spi_times
    spp_swp_tplot,'si'
    spp_swp_gse_pressure_file_read ; load chamber pressure
    
+END
 
-end

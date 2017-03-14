@@ -30,6 +30,8 @@
 ;   ERANGE:  Shape parameter calculated based on the spectrum within this energy
 ;            range. The default values are [20,80] eV
 ;
+;   MIN_PAD_EFLUX: Minimum energy flux level.
+;
 ;   MAG_GEO: A MAG structure that contains magnetic elevation angle. If not given,
 ;            The program will load MAG data in GEO coordinates.
 ;
@@ -52,8 +54,8 @@
 ;   Tplot variable "EFlux_ratio": store the flux ratio for two directions
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 15:19:37 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22541 $
+; $LastChangedDate: 2017-03-13 10:29:56 -0700 (Mon, 13 Mar 2017) $
+; $LastChangedRevision: 22949 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_par_pad_l2.pro $
 ;
 ;CREATED BY:    Shaosui Xu  12-08-16
@@ -62,33 +64,47 @@
 Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
     nsmo=nsmo, erange=erange, obins=obins, mask_sc=mask_sc, $
     abins=abins, dbins=dbins, mag_geo=mag_geo, pot=pot, $
-    tsmo=tsmo
+    tsmo=tsmo, min_pad_eflux=min_pad_eflux
 
     @mvn_swe_com
+
+   if (size(min_pad_eflux,/type) eq 0) then min_pad_eflux = 6.e4
     
     aflg = keyword_set(burst)
     if (size(mvn_swe_pad,/type) ne 8) then begin ;if pad data not loaded
         print,'Loading L2 PAD Survey data ...'
         mvn_swe_load_l2,/pad,burst=aflg,/noerase
     endif
-        
-    print, "Calculating shape parameter with PAD data"
 
-; Smooth the data for better statistics
+    old_units = mvn_swe_pad[0].units_name
+    mvn_swe_convert_units, mvn_swe_pad, 'eflux'
+
+; Extract data from PAD structure
 
     npad = n_elements(mvn_swe_pad)
     pdat = mvn_swe_pad.data
 
+; Mask noisy data
+
+    print, "Masking noisy PAD data"
+
+    endx = where(abs(mvn_swe_pad[0].energy[*,0] - 130) lt 20.,n_e)
+    indx = where(mean(reform(pdat[endx,*,*],n_e*16,npad),dim=1,/nan) lt min_pad_eflux, count)
+    if (count gt 0L) then pdat[*,*,indx] = !values.f_nan
+
+; Smooth the data for better statistics
+
     if (size(tsmo,/type) gt 0) then begin
+      print, "Smoothing PAD data"
       if (tsmo ge 4D) then begin
-        pdat = transpose(reform(mvn_swe_pad.data, 64L*16L, npad))
+        pdat = transpose(reform(pdat, 64L*16L, npad))
         pdat = smooth_in_time(pdat, mvn_swe_pad.time, tsmo)
         pdat = reform(transpose(pdat), 64, 16, npad)
         nsmo = 0  ; only one smoothing method
       endif
     endif
 
-    if keyword_set(nsmo) then pdat = smooth(mvn_swe_pad.data,[1,1,nsmo],/nan)
+    if keyword_set(nsmo) then pdat = smooth(pdat,[1,1,nsmo],/nan)
 
     if not keyword_set(erange) then erange=[20,80]
 
@@ -109,6 +125,8 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
 ;    endif else obins = byte(obins # [1B,1B])
 ;    if (size(mask_sc,/type) eq 0) then mask_sc = 1
 ;    if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+
+    print, "Calculating shape parameter with PAD data"
 
     shape = fltarr(npad, 3)
     time = dblarr(npad)
@@ -228,5 +246,8 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
     options,ename,'x_no_interp',1
 
     ;stop
+
+    mvn_swe_convert_units, mvn_swe_pad, old_units
+
     return
 end

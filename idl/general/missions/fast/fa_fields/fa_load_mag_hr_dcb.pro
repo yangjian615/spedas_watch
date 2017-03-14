@@ -17,9 +17,9 @@
 ;  #2 Dataset and import advice courtesy of Bob Strangeway (strange@igpp.ucla.edu)
 ;  
 ;HISTORY:
-;$LastChangedBy: pcruce $
-;$LastChangedDate: 2014-02-28 16:39:25 -0800 (Fri, 28 Feb 2014) $
-;$LastChangedRevision: 14473 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2017-03-13 13:41:46 -0700 (Mon, 13 Mar 2017) $
+;$LastChangedRevision: 22956 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_fields/fa_load_mag_hr_dcb.pro $
 ;
 ;-
@@ -78,7 +78,9 @@ pro fa_load_mag_hr_dcb_metadata,varname
   
 end
 
-pro fa_load_mag_hr_dcb,trange=trange,tplotnames=tplotnames
+pro fa_load_mag_hr_dcb,trange=trange,tplotnames=tplotnames, $
+                       no_download = no_download, no_update = no_update, $
+                       downloadonly = downloadonly
 
   compile_opt idl2
 
@@ -87,15 +89,25 @@ pro fa_load_mag_hr_dcb,trange=trange,tplotnames=tplotnames
    
   version='v0?'
   source =!istp
+  if(keyword_set(no_download)) then source.no_download = no_download
+  if(keyword_set(no_update)) then source.no_update = no_update
+  if(keyword_set(downloadonly)) then source.downloadonly = downloadonly
   downloadonly = source.downloadonly
   verbose = source.verbose
    
   tr = timerange(trange)
    
   ;http://cdaweb.gsfc.nasa.gov/istp_public/data/fast/dcb/dcb_hr/1998/09/fast_hr_dcb_19980901002656_v01.cdf
-  file_format = 'fast/dcb/dcb_hr/YYYY/MM/fast_hr_dcb_YYYYMMDDhh????_'+version+'.cdf'
+  file_format = 'YYYY/MM/fast_hr_dcb_YYYYMMDDhh????_'+version+'.cdf'
+
   relpathnames = file_dailynames(file_format=file_format,trange=tr,/hour_res)
-  files = file_retrieve(relpathnames,_extra=source)
+  remote_path = source.remote_data_dir+'fast/dcf/l2/dcb/'
+  local_path = source.local_data_dir+'fast/dcb/dcb_hr/'
+
+  files = spd_download(remote_file=relpathnames, remote_path=remote_path, $
+                       local_path = local_path, no_download = source.no_download, $
+                       no_update = source.no_update, $
+                       file_mode = '666'o, dir_mode = '777'o)
    
   if downloadonly then return
   

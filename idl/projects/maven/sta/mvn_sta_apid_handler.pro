@@ -1,4 +1,4 @@
-function mvn_sta_apid_0x2A_hkp_decom,ccsds,lastpkt=lastpkt
+function mvn_sta_apid_0x2A_hkp_decom2,ccsds,lastpkt=lastpkt
 
 ; this function is obsolete, replaced by mvn_sta_hkp_decom.pro
 
@@ -49,7 +49,7 @@ end
 
 
 
-function mvn_sta_apid_0xd7_fsthkp_decom,ccsds,lastpkt=lastpkt
+function mvn_sta_apid_0xd7_fsthkp_decom2,ccsds,lastpkt=lastpkt
 
 ;dprint,dlevel=2,'APID ',ccsds.apid,ccsds.seq_cntr,ccsds.size ,format='(a,z03," ",i,i)'
 ;data = ccsds.data
@@ -79,7 +79,7 @@ end
 
 
 
-function mvn_sta_apid_xxxx_decom,ccsds,lastpkt=lastpkt
+function mvn_sta_apid_xxxx_decom2,ccsds,lastpkt=lastpkt
 
 ;dprint,dlevel=2,'APID ',ccsds.apid,ccsds.seq_cntr,ccsds.size ,format='(a,z03," ",i,i)'
 data = ccsds.data
@@ -141,7 +141,7 @@ pro mvn_sta_apid_handler,ccsds,decom=decom,reset=reset,debug=debug
       'D3'x: mav_gse_structure_append  ,0, realtime=realtime, tname='mvn_STA_D3',mvn_sta_apid_decom(ccsds,last=sta_d3,apid='D3',pcyc=1024,len=1024)
       'D4'x: mav_gse_structure_append  ,0, realtime=realtime, tname='mvn_STA_D4',mvn_sta_apid_decom(ccsds,last=sta_d4,apid='D4',pcyc= 128,len=1024)
       'D6'x: mav_gse_structure_append  ,0, realtime=realtime, tname='mvn_STA_D6',mvn_sta_apid_decom(ccsds,last=sta_d6,apid='D6',pcyc=1024,len=1024)
-      'D7'x: mav_gse_structure_append  ,0, realtime=realtime, tname='mvn_STA_D7',mvn_sta_apid_0xd7_fsthkp_decom(ccsds)
+      'D7'x: mav_gse_structure_append  ,0, realtime=realtime, tname='mvn_STA_D7',mvn_sta_apid_0xd7_fsthkp_decom2(ccsds)
       'D8'x: mav_gse_structure_append  ,0, realtime=realtime, tname='mvn_STA_D8',mvn_sta_apid_decom(ccsds,last=sta_d8,apid='D8',pcyc=  12,len= 192)
       'D9'x: mav_gse_structure_append  ,0, realtime=realtime, tname='mvn_STA_D9',mvn_sta_apid_decom(ccsds,last=sta_d9,apid='D9',pcyc= 768,len= 768)
       'DA'x: mav_gse_structure_append  ,0, realtime=realtime, tname='mvn_STA_DA',mvn_sta_apid_decom(ccsds,last=sta_da,apid='DA',pcyc=1024,len=1024)

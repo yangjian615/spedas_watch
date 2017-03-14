@@ -32,8 +32,8 @@ for i=0,n_elements(types)-1 do begin
        else : vxx = 'v0?'
    endcase
    if keyword_set(version) then vxx = version
-   relpathnames = subdir + 'fast/k0/'+type+'/fa_k0_'+type+'_'+orbits+'_'+vxx+'.cdf'
-
+   orbdir = string(1000*(long(orbits)/1000), format='(i5.5)')
+   relpathnames = subdir + 'fast/k0/'+type+'/'+orbdir+'/fa_k0_'+type+'_'+orbits+'_'+vxx+'.cdf'
    files = file_retrieve(relpathnames,_extra=source)
    if keyword_set(downloadonly) then continue
    cdf2tplot,file=files,/all,verbose=verbose,varformat='*' ,prefix = 'fa_'    ; load data into tplot variables

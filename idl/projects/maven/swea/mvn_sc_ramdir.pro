@@ -58,8 +58,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-01 14:51:51 -0800 (Wed, 01 Mar 2017) $
-; $LastChangedRevision: 22888 $
+; $LastChangedDate: 2017-03-13 10:31:42 -0700 (Mon, 13 Mar 2017) $
+; $LastChangedRevision: 22950 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -78,7 +78,7 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame, mso=mso
   endif
   tmin = min(time_double(trange), max=tmax)
 
-  if (size(state,/type) eq 0) then maven_orbit_tplot, /loadonly, /current
+  if (size(state,/type) eq 0) then maven_orbit_tplot, /loadonly
 
   if keyword_set(app) then to_frame = 'MAVEN_APP' $
                       else to_frame = 'MAVEN_SPACECRAFT'
@@ -121,8 +121,7 @@ pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame, mso=mso
   options,'V_sc',spice_frame='IAU_MARS',spice_master_frame='MAVEN_SPACECRAFT'
   spice_vector_rotate_tplot,'V_sc',to_frame,trange=[tmin,tmax]
   
-  i = strpos(to_frame,'_')
-  fname = strmid(to_frame,i+1)
+  fname = strmid(to_frame, strpos(to_frame,'_')+1)
   case strupcase(fname) of
     'MARS'       : fname = 'Mars'
     'SPACECRAFT' : fname = 'PL'

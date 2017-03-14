@@ -9,7 +9,8 @@
 ;  hyperbolic orbits.
 ;
 ;  Calculations assume a spherical central body with a spherically
-;  symmetric mass distribution.
+;  symmetric mass distribution, and that the mass of the central body
+;  dominates in the region of interest.
 ;
 ;  You can also specify an orientation for the orbit and then create a
 ;  'fly-through' in cartesian coordinates.
@@ -79,7 +80,10 @@
 ;                    Name   : 'name'           [optional]
 ;
 ;                  Default = 'Mars'.  If PLANET is unrecognized, you
-;                  will be prompted for mass and radius.
+;                  will be prompted for mass and radius.  This routine
+;                  is not expected to give good results for the Pluto-
+;                  Charon system, because they have masses within a 
+;                  factor of 10 of each other.
 ;
 ;       SHOCK:     If PLANET = 'Mars' or 'Earth', then setting this 
 ;                  keyword will show the nominal shock location on the
@@ -115,8 +119,8 @@
 ;       PS:        Postscript plots are produced for OPLOT and TPLOT.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2014-10-31 14:21:01 -0700 (Fri, 31 Oct 2014) $
-; $LastChangedRevision: 16107 $
+; $LastChangedDate: 2017-03-13 10:23:45 -0700 (Mon, 13 Mar 2017) $
+; $LastChangedRevision: 22946 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/morbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell
@@ -217,26 +221,28 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
   endif else tflg = 0
 
 ; Define some constants and change units ([M] = g, [R] = km)
+; Source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/index.html
+; Last Update: 2016-12-09.
 
   sflg = 0
   mflg = 0
 
   case (planet) of
     'SUN'     : begin
-                  M = 1.9891d33
-                  R = 6.96d5           ; photosphere
+                  M = 1.9885d33
+                  R = 6.957d5          ; volumetric mean (photosphere)
                 end
     'MERCURY' : begin
-                  M = 3.302d26
-                  R = 2440D            ; volumetric mean (surface)
+                  M = 3.3011d26
+                  R = 2439.7D          ; volumetric mean (surface)
                 end
     'VENUS'   : begin
-                  M = 4.8685d27
-                  R = 6051.84D         ; volumetric mean (surface)
+                  M = 4.8675d27
+                  R = 6051.8D          ; volumetric mean (surface)
                 end
     'EARTH'   : begin
-                  M = 5.9736d27
-                  R = 6371.01D         ; volumetric mean (surface)
+                  M = 5.9723d27
+                  R = 6371.0D          ; volumetric mean (surface)
 
                   x0 = 3.5             ; shock
                   psi = 1.02
@@ -245,12 +251,12 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
                   sflg = 1
                 end
     'MOON'    : begin
-                  M = 7.349d25
-                  R = 1737.53D         ; volumetric mean (surface)
+                  M = 7.346d25
+                  R = 1737.4D          ; volumetric mean (surface)
                 end
     'MARS'    : begin
-                  M = 6.4185d26
-                  R = 3389.9D          ; volumetric mean (surface)
+                  M = 6.4171d26
+                  R = 3389.5D          ; volumetric mean (surface)
 
                   x0 = 0.64            ; shock
                   psi = 1.03
@@ -268,35 +274,37 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
                   mflg = 1
                 end
     'CERES'   : begin
-                  M = 9.43d23
-                  R = 476.2D           ; volumetric mean (surface)
+                  M = 9.47d23
+                  R = 469.3D           ; volumetric mean (surface)
                 end
     'JUPITER' : begin
-                  M = 1.8986d30
+                  M = 1.8982d30
                   R = 69911D           ; volumetric mean (1 bar)
                 end
     'SATURN'  : begin
-                  M = 5.6846d29
+                  M = 5.6834d29
                   R = 58232D           ; volumetric mean (1 bar)
                 end
     'URANUS'  : begin
-                  M = 8.6832d28
+                  M = 8.6813d28
                   R = 25362D           ; volumetric mean (1 bar)
                 end
     'NEPTUNE' : begin
-                  M = 1.0243d29
-                  R = 24624D           ; volumetric mean (1 bar)
+                  M = 1.0241d29
+                  R = 24622D           ; volumetric mean (1 bar)
                 end
     'PLUTO'   : begin
-                  M = 1.309d25
-                  R = 1151D
+                  print,"Warning: gravitational influence of Charon could be significant."
+                  M = 1.303d25
+                  R = 1186D
                 end
     'CHARON'  : begin
-                  M = 1.90d24
-                  R = 593D
+                  print,"Warning: gravitational influence of Pluto could be significant."
+                  M = 1.586d24
+                  R = 606D
                 end
     'ERIS'    : begin
-                  M = 1.67d25
+                  M = 1.66d25
                   R = 1163D
                 end
     'USERDEF' : begin
@@ -320,7 +328,9 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
   endif
 
   twopi = 2D*!dpi
-  GM = (6.67259d-8)*M
+  GM = (6.673889d-8)*M
+;           |
+; Anderson, J.D., et al., EPL 110 (2015) 10002, doi:10.1209/0295-5075/110/10002
 
 ; Process the orbit parameter structure
 
@@ -509,8 +519,7 @@ OSHAPE:
 
 ; Perform the three rotations
 
-    ss = ((r1 # r2) # r3) # sc
-    ss = transpose(ss)
+    ss = transpose(((r1 # r2) # r3) # sc)
 
 ; Output the fly-through to a text file
 
@@ -837,10 +846,21 @@ OSHAPE:
             aalt   : aalt     , $       ; apoapsis altitude (km)
             ecc    : ecc      , $       ; orbital eccentricity
             incl   : incl     , $       ; orbital inclination (deg)
-            swfrac : swfrac   , $       ; orbit intersects bow shock
+            swfrac : swfrac   , $       ; fraction of time in solar wind
             planet : planet   , $       ; planet name
             radius : R        , $       ; planet radius (km)
             Vesc   : Vesc        }      ; escape velocity (km/s)
+
+; Output the orbit parameters
+
+  print,''
+  print,'Planet : ',result.planet
+  print,'  orbital period (hr)     : ',result.period,format='(a,f9.4)'
+  print,'  semi-major axis (km)    : ',result.sma,format='(a,f9.1)'
+  print,'  periapsis altitude (km) : ',result.palt,format='(a,f9.1)'
+  print,'  apoapsis altitude (km)  : ',result.aalt,format='(a,f9.1)'
+  print,'  eccentricity            : ',result.ecc,format='(a,f9.4)'
+  print,''
 
   return
 

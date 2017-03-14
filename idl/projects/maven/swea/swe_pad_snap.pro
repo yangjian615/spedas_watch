@@ -152,11 +152,15 @@
 ;                      format accepted by time_double.  (This disables the
 ;                      interactive time range selection.)
 ;
+;        WSCALE:       Scale all window sizes by this factor.  Default = 1.
+;
+;        CSCALE:       Scale all characters by this factor.  Default = 1.
+;
 ;        NOTE:         Insert a text label.  Keep it short.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-02-05 16:51:56 -0800 (Sun, 05 Feb 2017) $
-; $LastChangedRevision: 22728 $
+; $LastChangedDate: 2017-03-13 10:29:05 -0700 (Mon, 13 Mar 2017) $
+; $LastChangedRevision: 22948 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -172,7 +176,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                   shiftpot=shiftpot,popen=popen, indspec=indspec, twopot=twopot, $
                   xrange=xrange, error_bars=error_bars, yrange=yrange, trange=tspan, $
                   note=note, mincounts=mincounts, maxrerr=maxrerr, tsmo=tsmo, $
-                  sundir=sundir
+                  sundir=sundir, wscale=wscale, cscale=cscale
 
   @mvn_swe_com
   @swe_snap_common
@@ -193,6 +197,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
   if not keyword_set(zrange) then zrange = 0
   if keyword_set(ddd) then dflg = 1 else dflg = 0
   if keyword_set(resample) then rflg = 1 else rflg = 0
+  if not keyword_set(wscale) then wscale = 1.
+  if not keyword_set(cscale) then cscale = wscale
   if (n_elements(xrange) ge 2) then begin
     xrange = minmax(xrange)
     xflg = 1
@@ -386,28 +392,28 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
   if (~rflg) then begin
     if (~free) then wstat = execute("wset, wnum",0,1)
-    if wstat eq 0 then window, wnum, free=free, xsize=Popt.xsize, ysize=Popt.ysize, xpos=Popt.xpos, ypos=Popt.ypos
+    if wstat eq 0 then window, wnum, free=free, xsize=Popt.xsize*wscale, ysize=Popt.ysize*wscale, xpos=Popt.xpos, ypos=Popt.ypos
     Pwin = !d.window
     wnum += 1
   endif
 
   if (sflg) then begin
     if (~free) then wstat = execute("wset, wnum",0,1)
-    if wstat eq 0 then window, wnum, free=free, xsize=Nopt.xsize, ysize=Nopt.ysize + wdy, xpos=Nopt.xpos, ypos=Nopt.ypos
+    if wstat eq 0 then window, wnum, free=free, xsize=Nopt.xsize*wscale, ysize=(Nopt.ysize + wdy)*wscale, xpos=Nopt.xpos, ypos=Nopt.ypos
     Nwin = !d.window
     wnum += 1
   endif
   
   if (dflg) then begin
     if (~free) then wstat = execute("wset, wnum",0,1)
-    if wstat eq 0 then window, wnum, free=free, xsize=Copt.xsize, ysize=Copt.ysize, xpos=Copt.xpos, ypos=Copt.ypos
+    if wstat eq 0 then window, wnum, free=free, xsize=Copt.xsize*wscale, ysize=Copt.ysize*wscale, xpos=Copt.xpos, ypos=Copt.ypos
     Cwin = !d.window
     wnum += 1
   endif
   
   if (dospec) then begin
     if (~free) then wstat = execute("wset, wnum",0,1)
-    if wstat eq 0 then window, wnum, free=free, xsize=Fopt.xsize, ysize=Fopt.ysize, xpos=Fopt.xpos, ypos=Fopt.ypos
+    if wstat eq 0 then window, wnum, free=free, xsize=Fopt.xsize*wscale, ysize=Fopt.ysize*wscale, xpos=Fopt.xpos, ypos=Fopt.ypos
     Ewin = !d.window
     wnum += 1
   endif
@@ -417,7 +423,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
      if wstat eq 0 then begin
        ysize = Popt.ysize*0.5*(rflg+hflg+uflg)
        ypos = Popt.ypos + (Popt.ysize - ysize)
-       window, wnum, free=free, xsize=Popt.xsize, ysize=ysize, xpos=Popt.xpos, ypos=ypos
+       window, wnum, free=free, xsize=Popt.xsize*wscale, ysize=ysize*wscale, xpos=Popt.xpos, ypos=ypos
      endif
      Rwin = !d.window
      wnum += 1
@@ -425,7 +431,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
   if (doind) then begin
       if ~(free) then wstat = execute("wset, wnum",0,1)
-      if wstat eq 0 then window, wnum, free=free, xsize=Fopt.xsize*2, ysize=Fopt.ysize, xpos=Fopt.xpos+1, ypos=Fopt.ypos+1
+      if wstat eq 0 then window, wnum, free=free, xsize=(Fopt.xsize*2)*wscale, ysize=Fopt.ysize*wscale, xpos=Fopt.xpos+1, ypos=Fopt.ypos+1
       Iwin = !d.window
       wnum += 1
   endif
@@ -434,7 +440,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
   limits = {no_interp:1, xlog:1, xrange:xrange, xstyle:1, xtitle:'Energy (eV)', $
             yrange:[0,180], ystyle:1, yticks:6, yminor:3, ytitle:'Pitch Angle (deg)', $
-            zlog:1, ztitle:strupcase(units), xmargin:[15,15], charsize:1.4}
+            zlog:1, ztitle:strupcase(units), xmargin:[15,15], charsize:1.4*cscale}
 
   if keyword_set(zrange) then str_element, limits, 'zrange', zrange, /add
 
@@ -652,8 +658,8 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             rlim = limits
             if (rflg + hflg + uflg) eq 3 then begin
                ymargin = !y.margin
-               str_element, rlim, 'charsize', rlim.charsize * 1.5, /add_replace
-               str_element, rlim, 'xmargin', rlim.xmargin / 1.5, /add_replace
+               str_element, rlim, 'charsize', rlim.charsize * 1.5 * cscale, /add_replace
+               str_element, rlim, 'xmargin', rlim.xmargin / (1.5*cscale), /add_replace
                !y.margin /= 1.5
             endif 
             rtime = minmax(trange)
@@ -723,15 +729,15 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
                endif else htit = ''
                box, {xrange: minmax(ftime), xstyle: 1, yrange: [0., 360.], yticks: 4, yminor: 3, ystyle: 9, $
                      xtitle: 'Time (UT) Seconds after ' + time_string(pad.ftime[0], tformat='YYYY-MM-DD/hh:mm'), ytitle: 'Baz (deg)', $
-                     charsize: 0.7 * (rflg + uflg + hflg) > 1.4, xmargin: [15, 15] / ((rflg + uflg + hflg)/2. > 1.)}
+                     charsize: (0.7 * (rflg + uflg + hflg))*cscale > 1.4, xmargin: [15, 15] / ((rflg + uflg + hflg)/2. > 1.)}
                ;oplot, minmax(ftime), [180., 180.], lines=1
                oplot, minmax(ftime), replicate(pad.baz*!radeg, 2), lines=1
                oplot, minmax(ftime), replicate(2.*pad.bel*!radeg + 180., 2), color=254, lines=1
                oplot, ftime, pad.fbaz*!radeg, psym=1
                oplot, ftime, 2. * pad.fbel*!radeg + 180., psym=1, color=254
-               axis, /yaxis, yrange=[-90., 90.], color=254, ytitle='Bel (deg)', yticks=4, yminor=3, /ystyle, charsize=(0.7 * (rflg + uflg + hflg) > 1.4)
+               axis, /yaxis, yrange=[-90., 90.], color=254, ytitle='Bel (deg)', yticks=4, yminor=3, /ystyle, charsize=((0.7 * (rflg + uflg + hflg))*cscale > 1.4)
                ;axis, /xaxis, charsize=1.4, xrange=reverse(minmax(pad.energy)), xtitle='Energy [eV]', /xstyle, /xlog
-               xyouts, mean(!x.window), mean([!y.window[1], !y.region[1]]), htit, align=.5, charsize=1.4, /normal
+               xyouts, mean(!x.window), mean([!y.window[1], !y.region[1]]), htit, align=.5, charsize=1.4*cscale, /normal
             endif 
          endif 
          if (rflg + hflg + uflg) ge 2 then !p.multi = 0
@@ -762,7 +768,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         plot_io,[-1.],[0.1],psym=3,xtitle='Pitch Angle (deg)',ytitle='Normalized', $
                 yrange=[0.1,10.],ystyle=1,xrange=[0,180],xstyle=1,xticks=6,xminor=3, $
                 title=strtrim(string(tstring, energy, note, format='(a19,5x,f6.1," eV   ",a)')), $
-                charsize=1.4, pos=[0.140005, 0.124449 - (wdy/4000.), 0.958005, 0.937783 - (wdy/525.)]
+                charsize=1.4*cscale, pos=[0.140005, 0.124449 - (wdy/4000.), 0.958005, 0.937783 - (wdy/525.)]
 
         for j=0,15 do oplot,[ylo[j],yhi[j]],[zi[j],zi[j]],color=col[j]
         oplot,y[i,0:7],zi[0:7],linestyle=1,color=2
@@ -803,7 +809,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
           FOR j=0, 3 DO $
             IF bperp[j] GT 0. THEN append_array, dircol, 6 ELSE append_array, dircol, 2
           FOR j=0, 3 DO $
-            XYOUTS, 17.5+45.*j, 7.5, dirname[j], color=!p.color, charsize=1.3, /data
+            XYOUTS, 17.5+45.*j, 7.5, dirname[j], color=!p.color, charsize=1.3*cscale, /data
 
           if (dir gt 1) then begin
             PLOT, [-1., 1.], [-1., 1.], /nodata, pos=[0.285892, 0.874722, 0.39075, 1.], $
@@ -945,7 +951,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         
         plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /xsty, /ysty, $
           xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-          charsize=1.4, xmargin=[10,3]
+          charsize=1.4*cscale, xmargin=[10,3]
 
         oplot, x1, Fp, psym=10, color=6
         oplot, x2, Fm, psym=10, color=2
@@ -972,38 +978,38 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         dys = 0.03
         pa_min = round(swidth*!radeg)
         pa_max = 180 - pa_min
-        xyouts,xs,ys,string(pa_min, format='("  0 - ",i2)'),charsize=1.2,/norm,color=6
+        xyouts,xs,ys,string(pa_min, format='("  0 - ",i2)'),charsize=1.2*cscale,/norm,color=6
         ys -= dys
         if (domid) then begin
-          xyouts,xs,ys,string(pa_min, pa_max, format='(i3," - ",i3)'),charsize=1.2,/norm,color=4
+          xyouts,xs,ys,string(pa_min, pa_max, format='(i3," - ",i3)'),charsize=1.2*cscale,/norm,color=4
           ys -= dys
         endif
-        xyouts,xs,ys,string(pa_max, format='(i3," - 180")'),charsize=1.2,/norm,color=2
+        xyouts,xs,ys,string(pa_max, format='(i3," - 180")'),charsize=1.2*cscale,/norm,color=2
         ys -= dys
 
         if (doalt) then begin
           dt = min(abs(alt.x - pad.time), aref)
-          xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
+          xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2*cscale,/norm
           ys -= dys
-          xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+          xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2*cscale,/norm
           ys -= dys
         endif
         
         if (dopot) then begin
-          xyouts,xs,ys,string(pot, format='("SCP = ",f5.1)'),charsize=1.2,/norm
+          xyouts,xs,ys,string(pot, format='("SCP = ",f5.1)'),charsize=1.2*cscale,/norm
           ys -= dys
         endif
         
         if keyword_set(dir) then begin
           if (B_azim lt 0.) then B_azim = (B_azim + 360.) mod 360.
-          xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2,/norm
+          xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2*cscale,/norm
           ys -= dys
-          xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2,/norm          
+          xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2*cscale,/norm          
           ys -= dys
         endif
         
         if (strlen(note) gt 0) then begin
-          xyouts,xs,ys,note,charsize=1.2,/norm
+          xyouts,xs,ys,note,charsize=1.2*cscale,/norm
           ys -= dys
         endif
 
@@ -1022,7 +1028,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
         ;first half of the PAD
         plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-            charsize=1.4, xmargin=[10,3]
+            charsize=1.4*cscale, xmargin=[10,3]
                     
         xs = 0.36
         ys = 0.90
@@ -1035,7 +1041,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             if (pad.pa[63,ipa]*!radeg ge 90) then lst = 2 else lst = 0
             clr = 244./(npa/2-1)*ip + 10
             oplot,x,pad.data[*,ipa], color=clr, linestyle=lst
-            xyouts,xs,ys,string(mip, maap, format='(i3," - ",i3)'),charsize=1.2,/norm,color=clr
+            xyouts,xs,ys,string(mip, maap, format='(i3," - ",i3)'),charsize=1.2*cscale,/norm,color=clr
             ys -= dys
         endfor
         if (dopot) then begin
@@ -1051,29 +1057,29 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
         if (doalt) then begin
             dt = min(abs(alt.x - pad.time), aref)
-            xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
+            xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2*cscale,/norm
             ys -= dys
-            xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+            xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2*cscale,/norm
             ys -= dys
         endif
 
         if keyword_set(dir) then begin
             if (B_azim lt 0.) then B_azim = (B_azim + 360.) mod 360.
-            xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2,/norm
+            xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2*cscale,/norm
             ys -= dys
-            xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2,/norm
+            xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2*cscale,/norm
             ys -= dys
         endif
         
         if (strlen(note) gt 0) then begin
-          xyouts,xs,ys,note,charsize=1.2,/norm
+          xyouts,xs,ys,note,charsize=1.2*cscale,/norm
           ys -= dys
         endif
             
         ;second half of the PAD
         plot_oo, [0.1,0.1], drange, xrange=xrange, yrange=drange, /ysty, $
             xtitle='Energy (eV)', ytitle=ytitle, title=time_string(pad.time), $
-            charsize=1.4, xmargin=[10,3]
+            charsize=1.4*cscale, xmargin=[10,3]
 
         xs = 0.68
         ys = 0.90
@@ -1087,7 +1093,7 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
             if pad.pa[63,ipa]*!radeg ge 90 then lst=2 else lst=0
             clr=254.-244./(npa/2-1)*ip
             oplot,x,pad.data[*,ipa], color=clr, linestyle=lst
-            xyouts,xs,ys,string(mip, maap, format='(i3," - ",i3)'),charsize=1.2,/norm,color=clr
+            xyouts,xs,ys,string(mip, maap, format='(i3," - ",i3)'),charsize=1.2*cscale,/norm,color=clr
             ys -= dys
         endfor
         if (dopot) then begin
@@ -1103,22 +1109,22 @@ pro swe_pad_snap, keepwins=keepwins, archive=archive, energy=energy, $
 
         if (doalt) then begin
             dt = min(abs(alt.x - pad.time), aref)
-            xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2,/norm
+            xyouts,xs,ys,string(round(alt.y[aref]), format='("ALT = ",i5)'),charsize=1.2*cscale,/norm
             ys -= dys
-            xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2,/norm
+            xyouts,xs,ys,string(round(sza.y[aref]), format='("SZA = ",i5)'),charsize=1.2*cscale,/norm
             ys -= dys
         endif
 
         if keyword_set(dir) then begin
             if (B_azim lt 0.) then B_azim = (B_azim + 360.) mod 360.
-            xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2,/norm
+            xyouts,xs,ys,string(round(B_azim), format='("B_az = ",i4)'),charsize=1.2*cscale,/norm
             ys -= dys
-            xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2,/norm
+            xyouts,xs,ys,string(round(B_elev), format='("B_el = ",i4)'),charsize=1.2*cscale,/norm
             ys -= dys
         endif
         
         if (strlen(note) gt 0) then begin
-          xyouts,xs,ys,note,charsize=1.2,/norm
+          xyouts,xs,ys,note,charsize=1.2*cscale,/norm
           ys -= dys
         endif
 

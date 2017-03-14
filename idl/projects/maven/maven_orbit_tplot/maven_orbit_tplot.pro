@@ -106,8 +106,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-01 14:58:21 -0800 (Wed, 01 Mar 2017) $
-; $LastChangedRevision: 22891 $
+; $LastChangedDate: 2017-03-13 10:26:21 -0700 (Mon, 13 Mar 2017) $
+; $LastChangedRevision: 22947 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -280,7 +280,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     r = sqrt(x*x + y*y + z*z)
     s = sqrt(y*y + z*z)
-    if (sflg) then shadow = 1D + (300D/R_m) else shadow = 1D  ; EUV shadow
+    if (sflg) then shadow = 1D + (150D/R_m) else shadow = 1D  ; EUV shadow
     sza = atan(s,x)
     hgt = (r - 1.)*R_m
 
