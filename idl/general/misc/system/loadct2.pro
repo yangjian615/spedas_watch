@@ -55,7 +55,7 @@ if !d.name eq 'NULL' or !d.name eq 'HP' then begin   ; NULL device and HP device
    dprint,'Device ',!d.name,' does not support color tables. Command Ignored'
    return
 endif
-if ct le n_elements(file) then loadct,ct,bottom=bottom_c,file=file $
+if ct le 43 then loadct,ct,bottom=bottom_c,file=file $
     else loadct,ct,bottom=bottom_c ; this line is changed to be able to load color tables > 43
 color_table = ct
 

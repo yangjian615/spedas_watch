@@ -40,10 +40,11 @@
 ;History:
 ;  Created by Mitsuo Oka on 2016-05-15
 ;  Fixed energy bin mistake 2017-01-28 
+;  Fixed para and anti-para mistake (thanks to R. Mistry) 2017-03-14
 ;  
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-02-15 10:19:17 -0800 (Wed, 15 Feb 2017) $
-;$LastChangedRevision: 22789 $
+;$LastChangedDate: 2017-03-14 11:46:21 -0700 (Tue, 14 Mar 2017) $
+;$LastChangedRevision: 22963 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
 ;-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
@@ -219,16 +220,17 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
       if (pr__90[0] le data.pa[i]) and (data.pa[i] le pr__90[1]) then begin
         m = 1
       endif else begin
-        if (data.pa[i] lt pr__90[0]) then m = 0
-        if (data.pa[i] gt pr__90[1]) then m = 2
+        if (pr___0[0] le data.pa[i]) and (data.pa[i] le pr___0[1]) then m=0
+        if (pr_180[0] le data.pa[i]) and (data.pa[i] le pr_180[1]) then m=2
       endelse
-      if m eq -1 then stop
-      f_dat[j,m] += data.data_dat[i]
-      f_psd[j,m] += data.data_psd[i]
-      f_err[j,m] += data.data_err[i]
-      f_cnt[j,m] += data.data_cnt[i]
-      count_dat[j,m] += 1L
-       
+      if (m ge 0) and (m le 2) then begin
+        f_dat[j,m] += data.data_dat[i]
+        f_psd[j,m] += data.data_psd[i]
+        f_err[j,m] += data.data_err[i]
+        f_cnt[j,m] += data.data_cnt[i]
+        count_dat[j,m] += 1L
+      endif
+
       ; energy spectrum (omni-direction)
       m = 3
       f_dat[j,m] += data.data_dat[i]
