@@ -16,9 +16,9 @@
 ;Notes:
 ; Old version in particles/deprecated
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-05-09 14:03:20 -0700 (Fri, 09 May 2014) $
-;$LastChangedRevision: 15083 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-03-15 13:39:33 -0700 (Wed, 15 Mar 2017) $
+;$LastChangedRevision: 22971 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_getspec.pro $
 ;-
 
@@ -261,7 +261,7 @@ pro thm_part_getspec,$
     
     ;Ranges greater than 360 will no longer produce extended plots.
     ;This ensures that the range is modified in a way that will 
-    ;still include all data and be ploted along the same y axis.
+    ;still include all data and be plotted along the same y axis.
     ;This could be done in thm_part_products but would break the
     ;functional separation between start_angle and phi limits for 
     ;that code.

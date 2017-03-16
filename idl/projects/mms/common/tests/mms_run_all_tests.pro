@@ -9,8 +9,8 @@
 ;     
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-06 12:33:52 -0800 (Fri, 06 Jan 2017) $
-; $LastChangedRevision: 22526 $
+; $LastChangedDate: 2017-03-15 12:57:53 -0700 (Wed, 15 Mar 2017) $
+; $LastChangedRevision: 22970 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_run_all_tests.pro $
 ;-
 
@@ -31,6 +31,7 @@ pro mms_run_all_tests
                    'mms_load_edi_ut', $
                    'mms_load_aspoc_ut', $
                    'mms_part_products_ut', $
+                   'mms_pgs_regressions_ut', $
                    'mms_load_coverage_ut', $
                    'mms_load_brst_segments_ut', $
                    'mms_load_fast_segments_ut', $

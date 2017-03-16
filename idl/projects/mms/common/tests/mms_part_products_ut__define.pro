@@ -8,9 +8,9 @@
 ; and mgunit in the local path.
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-10-20 12:22:10 -0700 (Thu, 20 Oct 2016) $
-; $LastChangedRevision: 22168 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-03-15 12:40:57 -0700 (Wed, 15 Mar 2017) $
+; $LastChangedRevision: 22969 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_products_ut__define.pro $
 ;-
 
@@ -574,7 +574,11 @@ function mms_part_products_ut::init, _extra=e
                             'spd_pgs_moments', $
                             'spd_pgs_make_theta_spec', $
                             'spd_pgs_make_phi_spec', $
-                            'spd_pgs_make_e_spec', $  
+                            'spd_pgs_make_e_spec', $
+                            'spd_pgs_v_shift', $
+                            'spd_pgs_regrid', $
+                            'spd_pgs_do_fac', $
+                            'mms_pgs_split_hpca', $
                             'spd_pgs_limit_range']
   self->addTestingRoutine, ['mms_get_dist', $
                             'mms_get_fpi_dist', $
