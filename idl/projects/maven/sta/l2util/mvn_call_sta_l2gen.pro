@@ -28,9 +28,9 @@
 ;                days_in option. (passed through to mvn_sta_l2gen.pro)
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-11-04 10:48:02 -0700 (Fri, 04 Nov 2016) $
-; $LastChangedRevision: 22299 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2017-03-16 14:12:16 -0700 (Thu, 16 Mar 2017) $
+; $LastChangedRevision: 22977 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -121,13 +121,15 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
         days = time_string(days_in)
         timep_do = strmid(days, 0, 4)+strmid(days, 5, 2)+strmid(days, 8, 2)
      Endif Else Begin
-        Case instrk Of          ;some instruments require multiple directories
+        Case instrk Of          ;so instruments require multiple directories
 ;           'sta': instr_dir = [instrk, 'mag']
            'sta': instr_dir = instrk
            Else: instr_dir = instrk
         Endcase
 ;Set up check directories, l0 is first
-        sdir = '/disks/data/maven/data/sci/pfp/l0_all/*/*/mvn_pfp_all_l0_*.dat'
+;        sdir =
+;        '/disks/data/maven/data/sci/pfp/l0_all/*/*/mvn_pfp_all_l0_*.dat'
+        sdir = '/disks/data/maven/data/sci/pfp/l0/mvn_pfp_all_l0_*.dat'
         pfile = file_search(sdir)
         If(keyword_set(use_file4time)) Then Begin
  ;Get the file date
