@@ -17,7 +17,8 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
   L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
-  source_fi = file_info([source_files,prereq_files])
+;  source_fi = file_info([source_files,prereq_files]) ;Ali 2070317: commented out to prevent regeneration of SEP data products due to a change in the sep_sw_version file timestamp
+  source_fi = file_info([source_files,prereq_files[1]]) ;only considers the l0 file timestamp, not the sep_sw_version one.
   if lri.mtime lt max([source_fi.mtime,source_fi.ctime]) then begin
     mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
     sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
@@ -53,7 +54,8 @@ pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=
       L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
-  source_fi = file_info([source_files,prereq_files])
+;  source_fi = file_info([source_files,prereq_files]) ;Ali 2070317: commented out to prevent regeneration of SEP data products due to a change in the sep_sw_version file timestamp
+  source_fi = file_info([source_files,prereq_files[1]]) ;only considers the l0 file timestamp, not the sep_sw_version one.
   if lri.mtime lt max([source_fi.mtime,source_fi.ctime]) then begin
     mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
     sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
@@ -151,7 +153,8 @@ for i=0L,nd-1 do begin
 
   L1_filename = mvn_pfp_file_retrieve(L1fmt,/daily,trange=tr[0],source=source,verbose=verbose,create_dir=1)
 
-  prereq_info = file_info(prereq_files)
+;  prereq_info = file_info(prereq_files) ;Ali 2070317: commented out to prevent regeneration of SEP data products due to a change in the sep_sw_version file timestamp
+  prereq_info = file_info(prereq_files[1]) ;only considers the l0 file timestamp, not the sep_sw_version one.
   prereq_timestamp = max([prereq_info.mtime, prereq_info.ctime])
 
   target_info = file_info(l1_filename)
@@ -162,7 +165,7 @@ for i=0L,nd-1 do begin
     dprint,dlevel=1,'Generating L1 file: '+L1_filename
     prereq_info = file_checksum(prereq_files,/add_mtime)
     mvn_sep_var_save,l1_filename,prereq_info=prereq_info,description=description
-    mvn_mag_var_save
+;    mvn_mag_var_save
   endif  ; else begin
 ;    mvn_sep_var_restore,trange=tr ,prereq=prereq_info  ;,filename=l1_filename
 ;    printdat,prereq_info
