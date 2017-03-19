@@ -1,13 +1,13 @@
 ;+
 ;PROCEDURE:   mvn_sundir
 ;PURPOSE:
-;  Determines the direction of the Sun in one or more SPICE
-;  frames.  The results are stored in TPLOT variables.
+;  Determines the direction of the Sun at the position of the spacecraft in
+;  one or more coordinate frames.  The results are stored in TPLOT variables.
 ;
-;  If no frame is specified, the default is MAVEN_SPACECRAFT:
-;    X --> APP boom axis
-;    Y --> +Y solar array axis
-;    Z --> HGA axis
+;  You must have SPICE installed for this routine to work.  If SPICE is 
+;  already initialized (e.g., mvn_swe_spice_init), this routine will use the 
+;  current loadlist.  Otherwise, this routine will try to initialize SPICE
+;  based on the current timespan.
 ;
 ;USAGE:
 ;  mvn_sundir, trange
@@ -16,32 +16,28 @@
 ;       trange:   Optional.  Time range for calculating the Sun direction.
 ;                 If not specified, then use current range set by timespan.
 ;
-;                 Note: the user is responsible for making sure SPICE
-;                 kernels are loaded for the desired time range.
-;                 (See mvn_swe_spice_init for an example.)
-;
 ;KEYWORDS:
 ;       DT:       Time resolution (sec).  Default = 1.
 ;
-;       PANS:     Named variable to hold the tplot variables created.
-;
-;       FRAME:    Calculate the Sun direction in one or more frames
-;                 specified by this keyword.  Set this keyword to a
-;                 single string or an array of strings.  Some possible
-;                 frames are: 'MAVEN_SWEA', 'MAVEN_SWIA', 'MAVEN_STATIC', 
-;                 'MAVEN_APP', etc.  Default = 'MAVEN_SPACECRAFT'.
+;       FRAME:    String or string array for specifying one or more frames
+;                 to transform the Sun direction into.  Any frame recognized
+;                 by SPICE is allowed.  The default is 'MAVEN_SPACECRAFT'.
+;                 Other possibilities are: 'MAVEN_APP', 'MAVEN_STATIC', etc.
 ;
 ;       POLAR:    If set, convert the direction to polar coordinates and
 ;                 store as additional tplot variables.
 ;                    Phi = atan(y,x)*!radeg  ; [  0, 360]
 ;                    The = asin(z)*!radeg    ; [-90, +90]
 ;
+;       PANS:     Named variable to hold the tplot variables created.  For the
+;                 default frame, this would be 'Sun_MAVEN_SPACECRAFT'.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-13 11:29:50 -0700 (Mon, 13 Mar 2017) $
-; $LastChangedRevision: 22951 $
+; $LastChangedDate: 2017-03-18 16:08:40 -0700 (Sat, 18 Mar 2017) $
+; $LastChangedRevision: 22984 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_sundir.pro $
 ;
-;CREATED BY:    David L. Mitchell  09/18/13
+;CREATED BY:    David L. Mitchell
 ;-
 pro mvn_sundir, trange, dt=dt, pans=pans, frame=frame, polar=polar
 
@@ -88,7 +84,11 @@ pro mvn_sundir, trange, dt=dt, pans=pans, frame=frame, polar=polar
     spice_vector_rotate_tplot,'Sun',to_frame,trange=[tmin,tmax],check='MAVEN_SPACECRAFT'
     pname = 'Sun_' + to_frame
     fname = strmid(to_frame, strpos(to_frame,'_')+1)
-    if (fname eq 'SPACECRAFT') then fname = 'PL'
+    case fname of
+      'SPACECRAFT' : fname = 'PL'
+      'IAU_MARS'   : fname = 'Mars'
+      else         : ; do nothing
+    endcase
     options,pname,'ytitle','Sun (' + fname + ')'
     pans = [pans, pname]
 
@@ -122,6 +122,7 @@ pro mvn_sundir, trange, dt=dt, pans=pans, frame=frame, polar=polar
   endfor
   
   pans = pans[1:*]
+  store_data,'Sun',/delete
   
   return
 

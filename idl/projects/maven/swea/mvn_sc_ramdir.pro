@@ -58,8 +58,8 @@
 ;       PANS:     Named variable to hold the tplot variables created.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-13 10:31:42 -0700 (Mon, 13 Mar 2017) $
-; $LastChangedRevision: 22950 $
+; $LastChangedDate: 2017-03-18 16:09:56 -0700 (Sat, 18 Mar 2017) $
+; $LastChangedRevision: 22985 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sc_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -67,6 +67,8 @@
 pro mvn_sc_ramdir, trange, dt=dt, pans=pans, app=app, frame=frame, mso=mso
 
   @maven_orbit_common
+  
+  print,'WARNING: Obsolete. Use mvn_ramdir instead.'
 
   if (size(trange,/type) eq 0) then begin
     tplot_options, get_opt=topt

@@ -72,8 +72,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-01 14:51:23 -0800 (Wed, 01 Mar 2017) $
-; $LastChangedRevision: 22887 $
+; $LastChangedDate: 2017-03-18 16:16:25 -0700 (Sat, 18 Mar 2017) $
+; $LastChangedRevision: 22987 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -127,14 +127,14 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   alt_pan = 'alt2'
 
   if keyword_set(sun) then begin
-    mvn_sundir, frame='MAVEN_SWEA'
+    mvn_sundir, frame=['MAVEN_SPACECRAFT','MAVEN_SWEA'], /polar
     sun_pan = 'Sun_MAVEN_SPACECRAFT'
     get_data,sun_pan,index=i
     if (i eq 0) then sun_pan = ''
   endif else sun_pan = ''
 
   if keyword_set(ram) then begin
-    mvn_sc_ramdir
+    mvn_ramdir
     ram_pan = 'V_sc_MAVEN_SPACECRAFT'
     get_data,ram_pan,index=i
     if (i eq 0) then ram_pan = ''
