@@ -31,8 +31,8 @@
 ;                 default frame, this would be 'Nadir_MAVEN_SPACECRAFT'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-18 16:08:19 -0700 (Sat, 18 Mar 2017) $
-; $LastChangedRevision: 22983 $
+; $LastChangedDate: 2017-03-19 16:18:19 -0700 (Sun, 19 Mar 2017) $
+; $LastChangedRevision: 22988 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_nadir.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -80,14 +80,19 @@ pro mvn_nadir, trange, pans=pans, frame=frame, polar=polar
   for i=0,(nframes-1) do begin
     to_frame = strupcase(frame[indx[i]])
     spice_vector_rotate_tplot,'Nadir',to_frame,trange=[tmin,tmax],check='MAVEN_SPACECRAFT'
+
+    labels = ['X','Y','Z']
     pname = 'Nadir_' + to_frame
     fname = strmid(to_frame, strpos(to_frame,'_')+1)
     case fname of
       'SPACECRAFT' : fname = 'PL'
       'IAU_MARS'   : fname = 'Mars'
+      'APP'        : labels = ['I','J','K']
       else         : ; do nothing
     endcase
     options,pname,'ytitle','Nadir (' + fname + ')'
+    options,pname,'labels',labels
+    options,pname,'labflag',1
     pans = [pans, pname]
 
     if (dopol) then begin
