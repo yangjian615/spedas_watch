@@ -19,8 +19,8 @@
 ;         Paschmann and P. W. Daly (Eds.) ISSI Scientific Report SR-001. 
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-19 08:37:17 -0800 (Thu, 19 Jan 2017) $
-; $LastChangedRevision: 22626 $
+; $LastChangedDate: 2017-03-20 16:01:07 -0700 (Mon, 20 Mar 2017) $
+; $LastChangedRevision: 23000 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/curlometer/mms_curl.pro $
 ;-
 
@@ -175,7 +175,7 @@ pro mms_curl, trange=trange, fields=fields, positions=positions, suffix=suffix
   store_data,'jperp'+suffix, data = {x:timeb1, y:jperpvec[*,0:2]}
 
   split_vec, 'jperp'+suffix
-  store_data, 'jperppar'+suffix, data = ['jpar','jperp_3']
+  store_data, 'jperppar'+suffix, data = ['jpar','jperp']+suffix
 
   store_data,'alpha'+suffix, data = {x:timeb1, y:alpha}
   store_data,'alphaparallel'+suffix, data = {x:timeb1, y:alphaparallel}
@@ -184,14 +184,24 @@ pro mms_curl, trange=trange, fields=fields, positions=positions, suffix=suffix
   ;ylim, 'jtotal', [-1.75e-6,1.75e-6],0
   ;ylim, 'divB', [-1.0,1.0],0
   ;ylim, 'curlB', [-1.0,1.0],0
+  options, 'baryb'+suffix, 'ysubtitle', '[nT]'
+  options, 'divB'+suffix, 'ytitle', 'div(B)'
+  options, 'divB'+suffix, 'ysubtitle', '[nT/km]'
+  options, 'curlB'+suffix, 'ytitle', 'curl(B)'
+  options, 'curlB'+suffix, 'ysubtitle', '[nT/km]'
   options, 'curlB'+suffix, 'colors',[2,4,6]
-  options, 'curlB'+suffix, 'labels',['delbx','delby','delbz']
+  options, 'curlB'+suffix, 'labels',['delBx','delBy','delBz']
   options, 'curlB'+suffix,'labflag',-1
+  options, 'jtotal'+suffix, 'ytitle', 'J'
   options, 'jtotal'+suffix, 'colors',[2,4,6]
-  options, 'jtotal'+suffix, 'labels',['jx','jy','jz']
+  options, 'jtotal'+suffix, 'labels',['Jx','Jy','Jz']
   options, 'jtotal'+suffix,'labflag',-1
+  options, 'jtotal'+suffix, 'ysubtitle', '[A/m!U2!N]'
+  options, 'jperp'+suffix, 'ytitle', 'Jperp'
   options, 'jperp'+suffix, 'colors',[2,4,6]
-  options, 'jperp'+suffix, 'labels',['jperpx','jperpy','jperpz']
+  options, 'jperp'+suffix, 'labels',['Jperpx','Jperpy','Jperpz']
   options, 'jperp'+suffix,'labflag',-1
-
+  options, 'jperp'+suffix, 'ysubtitle', '[A/m!U2!N]'
+  options, 'jpar'+suffix, 'ysubtitle', '[A/m!U2!N]'
+  options, 'jpar'+suffix, 'ytitle', 'Jparallel'
 end

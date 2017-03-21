@@ -4,17 +4,17 @@
 ;     spd_neturl_error2msg
 ;     
 ; PURPOSE:
-;     returns a map of cURL error codes to the status message that the code represents;
+;     returns a list, where the index is the cURL error code and the item is the status message that the code represents;
 ;     useful for finding meaningful download error messages
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-06 09:34:12 -0800 (Fri, 06 Jan 2017) $
-; $LastChangedRevision: 22521 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_neturl_error2msg.pro $
+; $LastChangedDate: 2017-03-20 08:55:34 -0700 (Mon, 20 Mar 2017) $
+; $LastChangedRevision: 22990 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_neturl_error2msg.pro $
 ;-
 
 function spd_neturl_error2msg
-    out = hash()
+    out = strarr(75)
 
     out[1] = 'The URL you passed uses an unsupported protocol. The problem might be an unused compile-time option or a misspelled protocol string.'
     out[2] = 'Very early initialization code failed. This is likely an internal error or problem.'

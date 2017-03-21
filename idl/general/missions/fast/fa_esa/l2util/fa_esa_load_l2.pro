@@ -131,13 +131,13 @@ End
 ; 18-oct-2016, jmm, Checks to see if the time range is different than
 ;                   the saved time range before loading data
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-18 15:16:24 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22130 $
+; $LastChangedDate: 2017-03-20 16:03:41 -0700 (Mon, 20 Mar 2017) $
+; $LastChangedRevision: 23003 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_load_l2.pro $
 ;-
 Pro fa_esa_load_l2, datatype = datatype, type = type, $
    files = files, trange = trange, orbit = orbit, $
-   no_time_clip = no_time_clip, _extra = _extra
+   no_time_clip = no_time_clip, tplot = tplot, _extra = _extra
 
 ;fa_esa_init, initializes a system variable
   fa_esa_init
@@ -154,6 +154,11 @@ Pro fa_esa_load_l2, datatype = datatype, type = type, $
 ;common block clearing issues
   For j = 0, n_elements(type)-1 Do fa_esa_load_l2_type, type[j], $
      trange = trange, orbit = orbit, no_time_clip = no_time_clip, _extra = _extra
+
+  If(keyword_set(tplot)) Then Begin
+     For j = 0, n_elements(type)-1 Do fa_esa_l2_tplot, type = type[j], /all, _extra = _extra
+  Endif
+
   Return
 End
 

@@ -23,12 +23,12 @@
 ;         barycenter, RcurvB: the curvature radius
 ;         
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-29 08:45:38 -0800 (Tue, 29 Nov 2016) $
-; $LastChangedRevision: 22411 $
+; $LastChangedDate: 2017-03-20 16:01:27 -0700 (Mon, 20 Mar 2017) $
+; $LastChangedRevision: 23001 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/curlometer/mms_lingradest.pro $
 ;-
 
-pro mms_lingradest, fields=fields, positions=positions
+pro mms_lingradest, fields=fields, positions=positions, suffix=suffix
   if undefined(fields) || undefined(positions) then begin
     dprint, dlevel = 0, 'B-field and spacecraft position keywords required.'
     return
@@ -84,51 +84,61 @@ pro mms_lingradest, fields=fields, positions=positions
    
   ; ... store the results:
   ;                  
-  store_data, 'Bt', data={x: B1.x,  y: Bbc[*]}
-  store_data, 'Bx', data={x: B1.x,  y: Bxbc[*]}
-  options, 'Bx', 'color', 2
-  store_data, 'By', data={x: B1.x, y: Bybc[*]}
-  options, 'By', 'color', 4
-  store_data, 'Bz', data={x: B1.x, y: Bzbc[*]}
-  options, 'Bz', 'color', 6
+  store_data, 'Bt'+suffix, data={x: B1.x,  y: Bbc[*]}
+  store_data, 'Bx'+suffix, data={x: B1.x,  y: Bxbc[*]}
+  options, 'Bx'+suffix, 'color', 2
+  store_data, 'By'+suffix, data={x: B1.x, y: Bybc[*]}
+  options, 'By'+suffix, 'color', 4
+  store_data, 'Bz'+suffix, data={x: B1.x, y: Bzbc[*]}
+  options, 'Bz'+suffix, 'color', 6
   
-  store_data, 'Bbc', data=['Bt','Bx','By','Bz']
+  store_data, 'Bbc'+suffix, data=['Bt','Bx','By','Bz']+suffix
   
   ; ... B-field gradients
-  store_data, 'gradBx', data={x: B1.x, y: LGBx[*,*]}
-  store_data, 'gradBy', data={x: B1.x, y: LGBy[*,*]}
-  store_data, 'gradBz', data={x: B1.x, y: LGBz[*,*]}
+  store_data, 'gradBx'+suffix, data={x: B1.x, y: LGBx[*,*]}
+  store_data, 'gradBy'+suffix, data={x: B1.x, y: LGBy[*,*]}
+  store_data, 'gradBz'+suffix, data={x: B1.x, y: LGBz[*,*]}
   
   CB =  sqrt(LCxB[*]^2 + LCyB[*]^2 +  LCzB[*]^2);
-  store_data, 'absCB', data={x: B1.x,  y: CB[*]} ; in nT/1000km
-  store_data, 'CxB', data={x: B1.x,  y: LCxB[*]} ; in nT/1000km
-  options, 'CxB', 'colors', 2
-  store_data, 'CyB', data={x: B1.x,  y: LCyB[*]} ; in nT/1000km
-  options, 'CyB', 'colors', 4
-  store_data, 'CzB', data={x: B1.x,  y: LCzB[*]} ; in nT/1000km
-  options, 'CzB', 'colors', 6
+  store_data, 'absCB'+suffix, data={x: B1.x,  y: CB[*]} ; in nT/1000km
+  store_data, 'CxB'+suffix, data={x: B1.x,  y: LCxB[*]} ; in nT/1000km
+  options, 'CxB'+suffix, 'colors', 2
+  store_data, 'CyB'+suffix, data={x: B1.x,  y: LCyB[*]} ; in nT/1000km
+  options, 'CyB'+suffix, 'colors', 4
+  store_data, 'CzB'+suffix, data={x: B1.x,  y: LCzB[*]} ; in nT/1000km
+  options, 'CzB'+suffix, 'colors', 6
   
-  store_data, 'divB_nT/1000km', data={x: B1.x,  y: LD[*]} ; divB in nT/1000km
+  store_data, 'divB_nT/1000km'+suffix, data={x: B1.x,  y: LD[*]} ; divB in nT/1000km
   
-  store_data, 'curlB_nT/1000km', data=['absCB', 'CxB','CyB','CzB']
+  store_data, 'curlB_nT/1000km'+suffix, data=['absCB', 'CxB','CyB','CzB']+suffix
   
   
-  store_data, 'jx', data={x: B1.x,  y: 0.8*LCxB[*]} ; jx in nA/m^2
-  store_data, 'jy', data={x: B1.x,  y: 0.8*LCyB[*]} ; jy in nA/m^2
-  options, 'jy', 'colors', 4
-  store_data, 'jz', data={x: B1.x,  y: 0.8*LCzB[*]} ; jz in nA/m^2
-  options, 'jz', 'colors', 6
+  store_data, 'jx'+suffix, data={x: B1.x,  y: 0.8*LCxB[*]} ; jx in nA/m^2
+  options, 'jx'+suffix, 'colors', 2
+  options, 'jx'+suffix, 'ysubtitle', '[nA/m!U2!N]'
+  options, 'jx'+suffix, 'labels', 'Jx'
+  store_data, 'jy'+suffix, data={x: B1.x,  y: 0.8*LCyB[*]} ; jy in nA/m^2
+  options, 'jy'+suffix, 'colors', 4
+  options, 'jy'+suffix, 'ysubtitle', '[nA/m!U2!N]'
+  options, 'jy'+suffix, 'labels', 'Jy'
+  store_data, 'jz'+suffix, data={x: B1.x,  y: 0.8*LCzB[*]} ; jz in nA/m^2
+  options, 'jz'+suffix, 'colors', 6
+  options, 'jz'+suffix, 'ysubtitle', '[nA/m!U2!N]'
+  options, 'jz'+suffix, 'labels', 'Jz'
   
-  store_data, 'j_nA/m^2', data=['jx', 'jy', 'jz']
+  store_data, 'jtotal'+suffix, data=['jx', 'jy', 'jz']+suffix
+  options, 'jtotal'+suffix, 'labflag', -1
+  options, 'jtotal'+suffix, 'ytitle', 'J'
   
-  store_data, 'curvx', data={x: B1.x,  y: curv_x_B}
-  store_data, 'curvy', data={x: B1.x,  y: curv_y_B}
-  options, 'curvy', 'colors', 4
-  store_data, 'curvz', data={x: B1.x,  y: curv_z_B}
-  options, 'curvz', 'colors', 6
+  store_data, 'curvx'+suffix, data={x: B1.x,  y: curv_x_B}
+  options, 'curvx'+suffix, 'colors', 2
+  store_data, 'curvy'+suffix, data={x: B1.x,  y: curv_y_B}
+  options, 'curvy'+suffix, 'colors', 4
+  store_data, 'curvz'+suffix, data={x: B1.x,  y: curv_z_B}
+  options, 'curvz'+suffix, 'colors', 6
   
-  store_data, 'curvB', data=['curvx',  'curvy',  'curvz']
+  store_data, 'curvB'+suffix, data=['curvx',  'curvy',  'curvz']+suffix
   
-  store_data, 'Rc_1000km', data={x: B1.x, y: RcurvB}
+  store_data, 'Rc_1000km'+suffix, data={x: B1.x, y: RcurvB}
 
 end

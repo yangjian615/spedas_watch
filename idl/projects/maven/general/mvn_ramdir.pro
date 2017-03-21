@@ -52,8 +52,8 @@
 ;                 default frame, this would be 'V_sc_MAVEN_SPACECRAFT'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-18 16:07:47 -0700 (Sat, 18 Mar 2017) $
-; $LastChangedRevision: 22982 $
+; $LastChangedDate: 2017-03-20 09:42:50 -0700 (Mon, 20 Mar 2017) $
+; $LastChangedRevision: 22992 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -74,6 +74,7 @@ pro mvn_ramdir, trange, dt=dt, pans=pans, frame=frame, mso=mso, polar=polar
 
   if (size(state,/type) eq 0) then maven_orbit_tplot, /loadonly
   if (size(frame,/type) ne 7) then frame = 'MAVEN_SPACECRAFT'
+  frame = mvn_frame_name(frame)
   dopol = keyword_set(polar)
 
   mk = spice_test('*', verbose=-1)

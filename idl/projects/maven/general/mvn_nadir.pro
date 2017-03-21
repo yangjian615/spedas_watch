@@ -31,8 +31,8 @@
 ;                 default frame, this would be 'Nadir_MAVEN_SPACECRAFT'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-19 16:18:19 -0700 (Sun, 19 Mar 2017) $
-; $LastChangedRevision: 22988 $
+; $LastChangedDate: 2017-03-20 09:42:50 -0700 (Mon, 20 Mar 2017) $
+; $LastChangedRevision: 22992 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_nadir.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -60,6 +60,7 @@ pro mvn_nadir, trange, pans=pans, frame=frame, polar=polar
   dopol = keyword_set(polar)
   
   if (size(frame,/type) ne 7) then frame = 'MAVEN_SPACECRAFT'
+  frame = mvn_frame_name(frame)
 
 ; First store the nadir direction in the IAU_MARS frame
 

@@ -12,11 +12,10 @@
 ;		/RETREAT to return the previous data structure in the l2 common block.
 ;		INDEX=INDEX to return the INDEXth data structure in the l2 common block.
 ;		/TIMES returns array of starting times in l2 common block instead of data structure.
-;		UNITS=UNITS allows you to choose the returned data's units.  Default is compressed.
 ;UPDATES:	Hacked from fa_esa_struct_l1.pro, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-21 10:16:15 -0700 (Mon, 21 Mar 2016) $
-; $LastChangedRevision: 20534 $
+; $LastChangedDate: 2017-03-20 13:26:40 -0700 (Mon, 20 Mar 2017) $
+; $LastChangedRevision: 22998 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/cdf_load/struct/fa_esa_struct_l2.pro $
 ;-
 Function fa_esa_struct_l2, t, $
@@ -25,17 +24,14 @@ Function fa_esa_struct_l2, t, $
                            advance=advance, $
                            retreat=retreat, $
                            index=index, $
-                           calib=calib, $
                            times=times, $
-                           sdt=sdt, $
-                           units=units, $
                            all_dat=all_dat, $
                            get_ind=get_ind
   if(~keyword_set(all_dat) || ~is_struct(all_dat)) then begin
      dprint, 'Bad ALL_DAT input)'
      return, {data_name:'', valid:0}
   endif
-  if(~keywors_set(get_ind)) then get_ind = 0
+  if(~keyword_set(get_ind)) then get_ind = 0
 
   if keyword_set(times) then return, all_dat.time
   ntimes=n_elements(all_dat.time)
@@ -45,20 +41,20 @@ Function fa_esa_struct_l2, t, $
   if n_elements(index) EQ 0 then begin
      if keyword_set(advance) then begin
         if get_ind EQ ntimes-1 then begin
-           print,'Error: End of Data. Cannot Advance.'
+           dprint,'Error: End of Data. Cannot Advance.'
            return, {data_name:'', valid:0}
         endif
         index=get_ind+1
      endif
      if keyword_set(retreat) then begin
         if get_ind EQ 0 then begin
-           print,'Error: Beginning of Data. Cannot Retreat'
+           dprint,'Error: Beginning of Data. Cannot Retreat'
            return,{data_name:'', valid:0}
         endif
         index=get_ind-1
      endif
      if keyword_set(en) AND keyword_set(start) then begin
-        print,'Error: Both /EN and /START Keywords Set'
+        dprint,'Error: Both /EN and /START Keywords Set'
         return,{data_name:'', valid:0}
      endif
      if keyword_set(start) then index=0
@@ -73,13 +69,13 @@ Function fa_esa_struct_l2, t, $
            original_t=t
            index=index_tmp[0]
            if abs(min_tmp) GT 5 then begin
-              print,'Warning: All Data Samples Further than 5 Seconds from t'
+              dprint,'Warning: All Data Samples Further than 5 Seconds from t'
               original_flag=1
            endif
         endif else begin
            ctime,t,npoints=1
            if NOT keyword_set(t) then begin
-              print,'Error @ fa_esa_struct_1l.pro: CTIME Failure!'
+              dprint,'Error @ fa_esa_struct_1l.pro: CTIME Failure!'
               return,{data_name:'', valid:0}
            endif
            time_tmp=(all_dat.time+all_dat.end_time)/2
@@ -89,7 +85,7 @@ Function fa_esa_struct_l2, t, $
            original_t=t
            index=index_tmp[0]
            if abs(min_tmp) GT 5 then begin
-              print,'Warning: All Data Samples Further than 5 Seconds from t'
+              dprint,'Warning: All Data Samples Further than 5 Seconds from t'
               original_flag=1
            endif
         endelse
@@ -97,7 +93,7 @@ Function fa_esa_struct_l2, t, $
   endif
 
   if (index LT 0) OR (index GE ntimes) then begin
-     print,'Error: Index Out of Bounds!'
+     dprint,'Error: Index Out of Bounds!'
      return,{data_name:'', valid:0}
   endif
 ;t=all_dat.time[index]
@@ -123,14 +119,14 @@ Function fa_esa_struct_l2, t, $
   if keyword_set(original_t) AND (NOT keyword_set(original_flag)) then begin
      if (original_t LT (all_dat.time[index]-time_threshold)) OR $
         (original_t GT (end_time+time_threshold)) then $
-           print,'Warning: t Not Between TIME and END_TIME'
+           dprint,'Warning: t Not Between TIME and END_TIME'
   endif
 
   datastr={data_name:all_dat.data_name, $
            valid:valid, $
            data_quality:all_dat.data_quality[index], $
            project_name:'FAST', $
-           units_name:all_dat.units_name, $
+           units_name:'eflux', $
            units_procedure:units_procedure, $
            time:all_dat.time[index], $
            end_time:end_time, $
@@ -151,15 +147,13 @@ Function fa_esa_struct_l2, t, $
            geomfactor:all_dat.geom_factor[index], $
            sc_pot:all_dat.sc_pot[index], $
            charge:all_dat.charge, $
-           header_bytes:all_dat.header_bytes[*,index], $
+           header_bytes:reform(all_dat.header_bytes[index,*]), $
            index:index, $
-           eflux:all_dat.eflux[0:nenergy-1,0:nbins-1,all_dat.data_ind[index]], $
-           energy_full:all_dat.energy_full[0:nenergy-1,0:nbins-1,all_dat.data_ind[index]], $
-           denergy_full:all_dat.denergy_full[0:nenergy-1,0:nbins-1,all_dat.data_ind[index]], $
-           pitch_angle:all_dat.pitch_angle[0:nenergy-1,0:nbins-1,all_dat.data_ind[index]], $
-           domega:all_dat.domega[0:nenergy-1,0:nbins-1,all_dat.data_ind[index]]}
-
-  if keyword_set(units) AND (valid EQ 1) then call_procedure,units_procedure,datastr,units
+           eflux:reform(all_dat.eflux[index,0:nenergy-1,0:nbins-1]), $
+           energy_full:reform(all_dat.energy_full[index,0:nenergy-1,0:nbins-1]), $
+           denergy_full:reform(all_dat.denergy_full[index,0:nenergy-1,0:nbins-1]), $
+           pitch_angle:reform(all_dat.pitch_angle[index,0:nenergy-1,0:nbins-1]), $
+           domega:reform(all_dat.domega[index,0:nenergy-1,0:nbins-1])}
 
   return,datastr
 

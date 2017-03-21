@@ -21,16 +21,19 @@
 ;
 ;
 ;Output:
-;  None - Will reissue last error in case of no valid HTTP response
+;  None 
 ;
 ;
 ;Notes:
 ;
+;   egrimes, 3/20/17 - no longer reissuing last error, now meaningful printing error 
+;                      msg from spd_neturl_error2msg map
+;
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-13 11:24:43 -0800 (Fri, 13 Jan 2017) $
-;$LastChangedRevision: 22594 $
+;$LastChangedDate: 2017-03-20 10:49:45 -0700 (Mon, 20 Mar 2017) $
+;$LastChangedRevision: 22996 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download_handler.pro $
 ;
 ;-
@@ -51,16 +54,15 @@ if keyword_set(callback_error) then begin
 endif
 
 ;get response code and header
-net_object->getproperty, response_code=response_code, response_header=response_header
+net_object->getproperty, response_code=response_code, response_header=response_header, url_scheme=url_scheme
 
 
 ;Handle http responses.
 ;  -handle common responses separately, other's will be printed with header
 ;  -if there's no valid http response then it is likely a programmatic error;
-;   the safest thing to do is to reissue the error for a higher level handler to catch
 case response_code of
  
-    0: message, /reissue_last
+  ;  0: message, /reissue_last
     
     2: dprint, dlevel=0, sublevel=1, 'Unknown error initializing; cannot download:  '+url
 
@@ -72,11 +74,28 @@ case response_code of
   401: dprint, dlevel=1, sublevel=1, 'Unauthorized to access:  '+url
   403: dprint, dlevel=1, sublevel=1, 'Access forbidden:  '+url
   404: dprint, dlevel=1, sublevel=1, 'File not found:  '+url
+  405: dprint, dlevel=1, sublevel=1, 'Method not allowed: ' + url
+  406: dprint, dlevel=1, sublevel=1, 'Response not acceptable: '+url
+  407: dprint, dlevel=1, sublevel=1, 'Proxy authentication required: ' + url
+  408: dprint, dlevel=1, sublevel=1, 'Request timeout: ' + url
+  409: dprint, dlevel=1, sublevel=1, 'Conflict: ' + url
+  410: dprint, dlevel=1, sublevel=1, 'Gone: ' + url
+  500: dprint, dlevel=1, sublevel=1, 'Internal server error: ' + url
+  501: dprint, dlevel=1, sublevel=1, 'Not implemented: ' + url
+  502: dprint, dlevel=1, sublevel=1, 'Bad gateway: ' + url
+  503: dprint, dlevel=1, sublevel=1, 'Service unavailable: ' + url
+  504: dprint, dlevel=1, sublevel=1, 'Gateway timeout: ' + url
+  509: dprint, dlevel=1, sublevel=1, 'Bandwidth limit exceeded: ' + url
 
   else: begin
+    error_map = spd_neturl_error2msg()
     dprint, dlevel=1, sublevel=1,  'Unable to download file:  '+url
-    dprint, dlevel=2, sublevel=1,  ' HTTP Response: '+strtrim(response_code,2)+'
-    dprint, dlevel=2, sublevel=1,  ' HTTP Header: '+response_header
+    if response_code lt n_elements(error_map) then begin
+      dprint, dlevel=1, sublevel=1, strupcase(url_scheme)+' Error: ' + error_map[response_code]
+    endif else begin
+      dprint, dlevel=2, sublevel=1,  strupcase(url_scheme)+' Response: '+strtrim(response_code,2)
+      dprint, dlevel=2, sublevel=1,  strupcase(url_scheme)+' Header: '+response_header
+    endelse
   endelse
 
 endcase

@@ -104,8 +104,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-07 09:27:44 -0800 (Tue, 07 Mar 2017) $
-;$LastChangedRevision: 22917 $
+;$LastChangedDate: 2017-03-20 16:07:36 -0700 (Mon, 20 Mar 2017) $
+;$LastChangedRevision: 23004 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -167,6 +167,11 @@ pro mms_part_products, $
   
   twin = systime(/sec)
   error = 1
+  
+  if keyword_set(subtract_bulk) then begin
+    dprint, dlevel = 0, 'Error with keyword: subtract_bulk; not yet implemented - no bulk velocity subtraction will be applied.'
+    undefine, subtract_bulk
+  endif
   
   if ~is_string(in_tvarname) then begin
     dprint, dlevel=0, 'No input data, please specify tplot variable'

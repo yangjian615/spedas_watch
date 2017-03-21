@@ -21,11 +21,11 @@
 ;2015-09-14, jmm, jimm@ssl.berkeley.edu, hacked from fa_load_esa_l1
 ;and mvn_sta_l2_tplot.
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-04-25 12:55:28 -0700 (Mon, 25 Apr 2016) $
-; $LastChangedRevision: 20914 $
+; $LastChangedDate: 2017-03-20 16:03:41 -0700 (Mon, 20 Mar 2017) $
+; $LastChangedRevision: 23003 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_tplot.pro $
 ;-
-Pro fa_esa_l2_tplot, all = all, type = type, counts = counts
+Pro fa_esa_l2_tplot, all = all, type = type, counts = counts, _extra = _extra
 
 ;Unless all is set, delete old data
   IF(~keyword_set(all)) Then Begin
