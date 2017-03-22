@@ -23,12 +23,13 @@
 ;         barycenter, RcurvB: the curvature radius
 ;         
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-20 16:01:27 -0700 (Mon, 20 Mar 2017) $
-; $LastChangedRevision: 23001 $
+; $LastChangedDate: 2017-03-21 09:42:14 -0700 (Tue, 21 Mar 2017) $
+; $LastChangedRevision: 23009 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/curlometer/mms_lingradest.pro $
 ;-
 
 pro mms_lingradest, fields=fields, positions=positions, suffix=suffix
+   if undefined(suffix) then suffix = ''
   if undefined(fields) || undefined(positions) then begin
     dprint, dlevel = 0, 'B-field and spacecraft position keywords required.'
     return

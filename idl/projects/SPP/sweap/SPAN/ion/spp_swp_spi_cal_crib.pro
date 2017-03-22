@@ -1,5 +1,16 @@
 PRO spp_swp_spi_parameters, vals
 
+
+   ;;------------------------------------------------------
+   ;; DAC to Deflection (from deflector scan)
+   ;;
+   ;; Ion Gun: 0.85[A], 480 [eV]
+   ;;
+   ;; [0] + [1]*yaw + [2]*yaw^2 + [3]*yaw^3
+   ;;
+   anode0_poly = [-172.984,1110.45,0.5,-0.08]
+
+   ;;------------------------------------------------------
    ;; DAC to Voltage (DVM from HV Calibration Test)
 
    ;; Hemisphere 
@@ -130,6 +141,174 @@ pro spp_swp_spi_cal_YAW_DEF_scan,trange=trange
 
 end
 
+
+
+
+pro spp_swp_spi_cal_sweep_deflector,trange=trange,plotname=plotname,anode=anode
+
+   
+  IF n_elements(trange) ne 2 THEN ctime,trange
+  IF ~keyword_set(plotname)  THEN plotname='~/Desktop/spi_def_swp_new'
+  IF ~keyword_set(anode)     THEN anode=0
+
+  hkps   = (spp_apdat('3be'x)).array
+  rates  = (spp_apdat('3bb'x)).array
+  manips = (spp_apdat('7c3'x)).array
+  hkps_def = long(hkps.DACS[5])-long(hkps.DACS[6])
+  hkps_def = hkps.dac_defl 
+
+  ;store_data,hkp.tname+'DEF', hkps.time,  hkps_def
+  
+  w = where(rates.time GT trange[0] AND $
+            rates.time LE trange[1])
+
+  rates  = rates[w]
+  def    = interp(float(hkps_def),hkps.time,rates.time)
+  yaw    = interp(float(manips.yaw_pos),manips.time,rates.time)
+
+  counts = rates.valid_cnts[anode]
+  anode_s = string(anode,format='(I2)')
+
+  w = where(def NE 0)
+  
+  popen, plotname,/landscape
+  contour, counts[w],def[w], yaw[w], /irregular, /fill, nlevel=10,$
+           title  = time_string(trange[0])+' - Anode '+anode_s+' - 480eV',$
+           xtitle = 'Deflector [DAC]',$
+           ytitle = 'Yaw [Degrees]',$
+           yr = [-60,60],yst=1,$
+           xr = [-1.*'ffff'x,'ffff'x],xst=1
+  pclose
+
+  ;; Cycle through yaws and fit gaussian
+  ;window, 0, xsize=600,ysize=900
+  popen, "~/Desktop/2017-03-14_anode_"+anode_s+"_def_scan"
+  !P.multi=[0,0,2]
+  plot, [0,1], [0,1],$
+        xr = [-60,60],yst=1,$
+        yr = [-1.*'ffff'x,'ffff'x],xst=1,$
+        /nodata,$
+        title = time_string(trange[0])+' - Anode '+anode_s+' - 480eV',$
+        xtitle = 'Yaw [Degrees]',$
+        ytitle = 'DAC'
+
+  un_yaw = (round(yaw[w]))[uniq(round(yaw[w]),sort(round(yaw[w])))]  
+  nn = n_elements(un_yaw)  
+  fits = fltarr(3,nn)
+  ress = fltarr(4,nn)
+  integ1 = fltarr(nn)
+  integ2 = fltarr(nn)
+  integ3 = fltarr(nn)
+  FOR i=0, nn-1 DO BEGIN         
+     yaww = un_yaw[i]
+     pp = where(round(yaw[w]) EQ yaww,cc)
+     IF cc NE 0 THEN BEGIN
+
+        ;; KLUDGE to include def=0
+        ppp = where(rates.time GE min(rates[w[pp]].time) AND $
+                    rates.time LE max(rates[w[pp]].time))
+        deff = def[ppp]
+        countss = counts[ppp]
+
+        ;model = gaussfit(def[w[pp]], $
+        ;                 counts[w[pp]], $
+        ;                 aa,nterms=3)
+        model = gaussfit(deff, $
+                         countss, $
+                         aa,nterms=3)
+        fits[*,i] = aa
+        integ1[i] = sqrt(!PI*aa[2]^2*2)*aa[0]
+        ;tmp1 = def[w[pp]]
+        ;tmp2 = counts[w[pp]]
+        tmp1 = deff
+        tmp2 = countss
+        
+        ss = sort(tmp1)
+        tmp1 = tmp1[ss]
+        tmp2 = tmp2[ss]
+
+        unn = uniq(tmp1)
+        tmp1 = tmp1[unn]
+        tmp2 = tmp2[unn]
+        integ2[i] = int_tabulated(tmp1,tmp2)
+        integ2[i] = tsum(tmp1,tmp2)
+        integ3[i] = total(tmp2)*260.
+        oplot, [yaww,yaww],[aa[1]-aa[2], aa[1]+aa[2]],thick=2.4
+        oplot, [yaww,yaww],[aa[1],aa[1]], color=250,$
+               psym=1,symsize=0.5,thick=2.4
+        ress[*,i] = poly_fit(un_yaw, fits[1,*],3)
+        ;oplot, [yaww,yaww],[aa[1]-aa[2], aa[1]+aa[2]],[yaww,yaww]
+        ;oplot, [yaww,yaww],[aa[1],aa[1]],[yaww,yaww], color=250,psym=1
+     ENDIF ELSE stop
+  ENDFOR
+
+  ;;Polyfit
+  res = poly_fit(un_yaw, fits[1,*],3)
+  xx = findgen(120)-60
+  oplot, xx, res[0]+res[1]*xx+res[2]*xx^2+res[3]*xx^3, linestyle=2,thick=4
+  xyouts, 15, -5e4, $
+          string(res[0],format='(F6.1)')+' + '+$
+          string(res[1],format='(F6.1)')+'*yaw + '+$
+          string(res[2],format='(F6.1)')+'*yaw^2'
+
+
+  
+  ;plot, un_yaw,integ1,psym=-1
+  plot, un_yaw,integ2,psym=-1,$
+        xtitle = 'Yaw [Degrees]',xs=1,$
+        ytitle = 'Integral',ys=1,thick=4,yr=[0,6e6]
+
+  ;oplot, un_yaw,integ3,psym=-1,color=50
+  oplot, un_yaw,integ1,psym=-1,color=250,thick=4
+
+  xyouts, 10,1.7e6,'Trap. Integral'
+  xyouts, 10,1.5e6,'Gaussian Integral',color=250
+  pclose
+
+  data = {anode:anode,$
+          un_yaw:un_yaw,$
+          poly_res:ress,$
+          gauss_int:integ1,$
+          fit_res:fits}
+
+
+  save, filename='~/Desktop/def_scan_'+anode_s, data
+  ;plot, def[w], counts[w], xtitle='DEF1-DEF2',$
+  ;      ytitle='Counts in 1/4 NY Second',$
+  ;      xrange=[-1,1]*2d^16,/xstyle,charsize=1.4
+  ;makepng,'spani_cnts_vs_def',time=trange[0]
+
+end
+
+
+
+
+PRO rest_plot_def
+
+   popen, '~/Desktop/def_scan_all',/landscape
+   !p.multi = [0,0,2]
+   ;window, 1
+   xx = findgen(121)-60
+   plot, [0,1],[0,1],/nodata,xs=1,ys=1,yr=[-1*'ffff'x,'ffff'x],xr=minmax(xx)
+   FOR i=0, 8 DO BEGIN 
+      restore, '/Users/roberto/projects/sun/def_scan_'+string(i,format='(I1)')
+      res = reform(data.poly_res)
+      func = res[0]+res[1]*xx+res[2]*xx^2+res[3]*xx^3
+      clr = data.anode/16.*230. + 20.
+      oplot, xx, func, color=clr,psym=-1
+      xyouts, -55, -2e4+1e4*data.anode, 'Anode '+string(data.anode,format='(I1)'), color=clr
+   ENDFOR
+   plot, [0,1],[0,1],/nodata,xs=1,ys=1,/noerase,yr=[0,4e6],xr=[-60,60]
+   FOR i=0, 8 DO BEGIN 
+      restore, '/Users/roberto/projects/sun/def_scan_'+string(i,format='(I1)')
+      clr = data.anode/16.*230. + 20.
+      oplot, data.un_yaw, data.gauss_int, color=clr,psym=-1
+   ENDFOR
+   !P.multi = 0
+   pclose
+   stop
+
+END
 
 
 
@@ -424,7 +603,7 @@ END
 pro spp_swp_spi_rot_linyaw_response,trange=trange, verbose=verbose
 
    ;; --- Constants
-   time_offset=2.6
+   time_offset=0.0
    anode = 'a'x
 
    ;; --- Get data
@@ -459,31 +638,43 @@ pro spp_swp_spi_rot_linyaw_response,trange=trange, verbose=verbose
    ;; --- Sum and fit
    hh  = histogram(lins,binsize=0.01,reverse_indices=ri,loc=arrloc)
    arr = fltarr(n_elements(hh)) 
-   FOR j=0l, n_elements(hh)-1 DO IF ri[j+1] GT ri[j] THEN $
-    arr[j] = total(rates[ri[ri[j]:ri[j+1]-1]].valid_cnts[anode])
+   FOR j=0l, n_elements(hh)-1 DO IF ri[j+1] GT ri[j] THEN arr[j] = total(rates[ri[ri[j]:ri[j+1]-1]].valid_cnts[anode])
    model = gaussfit(arrloc, arr, aa,nterms=3)
 
 
+   
+   ;window, 1, xsize=600,ysize=900
+   !p.multi=[0,0,2]
    ;; ------------ PLOTTING --------------------
-   popen, '~/Desktop/spani_gun_map', /landscape
+   popen, '~/Desktop/spani_gun_map_3', /landscape
    plot,/nodata,yaws,total(rates.valid_cnts,1),$
         xtitle='Linear [cm]',$
         ytitle='Counts in 1/4 NYS (0.218 s)',$
-        charsize=1.5
+        title='Anode 10 - Time: '+time_string(trange[0]),$
+        xr = [4,14],$
+        yr = [0,1e3], ys = 1,$
+        charsize=1.2,charthick=1.5
    ;anodes = replicate(10,n_elements(anodes))
    ;FOR i=0,15 DO BEGIN
+   xyouts, aa[1]-3.5, 900, 'Yaw',$
+           charsize=1,charthick=2
    FOR j=-10, 10 DO BEGIN
-      w = where(yaws EQ j,/null)
-      if keyword_set(w) then BEGIN
+      w = where(yaws EQ j,/null,cc)
+      if keyword_set(w) AND cc GT 50 THEN BEGIN
          oplot,lins[w],rates[w].valid_cnts[anode],col = c[j]
-         xyouts, -8, 1000*(j+10)/20+500, 'Yaw '+string(j),$
-                 col=c[j],charsize=2,charthick=2
+         ;xyouts, aa[1]-2, 1000*(j+10)/20+500, 'Yaw '+string(j),$
+         xyouts, aa[1]-3.5+(-1*j)/4., 800, string(j),$
+                 col=c[j],charsize=1,charthick=2
       ENDIF
    ENDFOR
    oplot, [aa[1],aa[1]], [0.1, 1e4], thick=2, linestyle= 2
+   contour, rates.VALID_CNTS[anode], lins, yaws, /irr, /fill,$
+            nlevel=20,xtitle='Linear [cm]',ytitle='Yaw',$
+            xr=[4,14],xs=1,charsize=1.2,charthick=1.5,ys=1,yr=[-8,8]
+
    pclose
 
-   stop
+   !p.multi=0
 
 
 END
@@ -1595,7 +1786,7 @@ trange = ['2017-02-22/09:00:00','2017-02-22/09:00:00']
    ;; Energy Angle Scan
    ;;
    ;; INFO
-   ;;   - CFD Threshold scan of all START and STOP channels.
+   ;;   - 
    ;; CONFIG
    ;;   - Table = 'spani_reduced_table,center_energy=500.,deltaEE=0.3'
    ;;   - Resiudal Gas Gun
@@ -1604,11 +1795,64 @@ trange = ['2017-02-22/09:00:00','2017-02-22/09:00:00']
    trange = ['2017-03-13/18:21:00','2017-03-13/23:47:00']
 
 
+   ;;---------------------------------------------------------------
+   ;; Constant YAW, Sweeping Deflector - HIGH DETAIL - ANODE 0x0
+   ;;
+   ;; INFO
+   ;;   - 
+   ;; CONFIG
+   ;;   - Table = 'spani_reduced_table,center_energy=500.,deltaEE=0.3'
+   ;;   - Resiudal Gas Gun
+   ;;     + Gun V = 480 [V]
+   ;;     + Filament I = 0.85 [A]
+   trange=['2017-03-14/06:31:50','2017-03-14/10:04:30']
+
+
+   ;;---------------------------------------------------------------
+   ;; Constant YAW, Sweeping Deflector - COARSE - ALL ANODES
+   ;;
+   ;; INFO
+   ;;   - 
+   ;; CONFIG
+   ;;   - Table = 'spani_reduced_table,center_energy=500.,deltaEE=0.3'
+   ;;   - Resiudal Gas Gun
+   ;;     + Gun V = 480 [V]
+   ;;     + Filament I = 0.85 [A]
+
+   ;; Anode 0x0 - 0x1
+   trange=['2017-03-14/18:28:00','2017-03-14/22:30:00']
+
+   ;; Anode 0x2 - 13 or 14 (check)
+   trange=['2017-03-15/05:12:00','2017-03-15/22:02:00']
 
 
 
+   ;;---------------------------------------------------------------
+   ;; Constant YAW, Sweeping Deflector - Fine - anodes 9,10,11,12,13
+   ;;
+   ;; INFO
+   ;;   - 
+   ;; CONFIG
+   ;;   - Table = 'spani_reduced_table,center_energy=500.,deltaEE=0.3'
+   ;;   - Resiudal Gas Gun
+   ;;     + Gun V = 480 [V]
+   ;;     + Filament I = 0.80 [A]
+   trange=['2017-03-21/07:38:30','2017-03-21/17:46:00']
 
+   ;; Anode 0x9
+   trange=['2017-03-21/07:36:50','2017-03-21/09:16:05']
 
+   ;; Anode 0xA
+   trange=['2017-03-21/09:41:50','2017-03-21/11:21:50']
+
+   ;; Anode 0xB
+   trange=['2017-03-21/11:47:00','2017-03-21/13:30:00']
+
+   ;; Anode 0xC
+   trange=['2017-03-21/13:51:30','2017-03-21/15:33:30']
+
+   ;; Anode 0xD
+   trange=['2017-03-21/15:57:00','2017-03-21/17:33:50']
 
 
    ;; Load Selected Time Range

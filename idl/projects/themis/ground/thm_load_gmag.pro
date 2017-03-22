@@ -82,6 +82,8 @@
 ;
 ; /fmi_sites = Set this keyword to load magnetometers that are FMI sites
 ; 
+; /aari_sites = Set this keyword to load magnetometers that are AARI sites
+; 
 ;Example:
 ;   thm_load_gmag, site = 'bmls', trange =
 ;   ['2007-01-22/00:00:00','2007-01-24/00:00:00']
@@ -109,8 +111,8 @@
 ; 04-Apr-2012, clrussell, Added units to the data_att structure
 ; 
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2017-02-17 11:35:28 -0800 (Fri, 17 Feb 2017) $
-; $LastChangedRevision: 22818 $
+; $LastChangedDate: 2017-03-21 09:45:15 -0700 (Tue, 21 Mar 2017) $
+; $LastChangedRevision: 23010 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag.pro $
 ;-
 
@@ -136,7 +138,7 @@ pro thm_load_gmag_post, sname=sitei, datatype=dtj, $
 
   ;AARI stations provide only the variation in the field
   ; components are labelled as dH dD dZ so that this is clear to user
-  variation_site = ['amd','dik','pbk','tik'];AARI stations provide only the variation in the field
+  variation_site = ['amd','bbg','brn','dik','loz','pbk','tik','viz'];AARI stations provide only the variation in the field
   var = where(variation_site eq sitei, count)
   if count gt 0 then begin
     options, /def, varname, ytitle = sitei,ysubtitle='B (nT)', $
@@ -215,6 +217,7 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
                    nrcan_sites = nrcan_sites, $
                    step_sites = step_sites, $
                    fmi_sites = fmi_sites, $
+                   aari_sites = aari_sites, $
                    suffix=suffix
 ;                   _extra = _extra ;krb 5/4
 
@@ -232,10 +235,10 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
       site = 'all'
     Endif
   Endif else begin
-    vsnames = 'abk akul amd amer arct atha benn bett blc bmls bou brw bsl cbb ccnv cdrt chbg cigo cmo crvr ded dik drby eagl ekat fcc frd frn fsim fsj fsmi ftn fykn '+ $
-      'fyts gako gbay gill gjoa glyn gua han hlms homr hon hots hris hrp iglo inuk inuv iqa iva kako kapu kev kian kil kjpk kodk kuuj larg lcl leth loys lrel lrg lrv lyfd mas mcgr mea mek nain new muo nrsq nur'+ $
+    vsnames = 'abk akul amd amer arct atha bbg benn bett blc bmls bou brn brw bsl cbb ccnv cdrt chbg cigo cmo crvr ded dik drby eagl ekat fcc frd frn fsim fsj fsmi ftn fykn '+ $
+      'fyts gako gbay gill gjoa glyn gua han hlms homr hon hots hris hrp iglo inuk inuv iqa iva kako kapu kev kian kil kjpk kodk kuuj larg lcl leth loys loz lrel lrg lrv lyfd mas mcgr mea mek nain new muo nrsq nur'+ $
       'ott ouj pang pbk pblo pcel pel pg0 pg1 pg2 pg3 pg4 pg5 pgeo pina pine pks pokr ptrs puvr radi ran rank rbay redr rich rmus roth salu satx schf sept shu sit sjg snap snkq stfd stfl stj '+ $
-      'swno tar tik tpas trap tuc ukia vic vldr whit whs wlps wrth ykc yknf'
+      'swno tar tik tpas trap tuc ukia vic viz vldr whit whs wlps wrth ykc yknf'
     vsnames_arr = strsplit(vsnames, ' ', /extract)
     vsnames_g =  'amk and atu bfe bjn dob dmh dnb don fhb gdh ghb hop hov jan jck kar kuv lyr nal naq nor nrd roe rvk sco skt sol sor stf sum svs tab tdc thl tro umq upn'
     vsnames_g_arr = strsplit(vsnames_g, ' ', /extract)
@@ -305,6 +308,10 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
     
     if keyword_set(fmi_sites) then begin
       site_in = array_concat(['han', 'iva', 'kev', 'kil', 'mas', 'mek', 'muo', 'nur', 'ouj', 'pel', 'ran', 'tar'],site_in)
+    endif
+
+    if keyword_set(aair_sites) then begin
+      site_in = array_concat(['amd','bbg','brn','dik','loz','pbk','tik','viz'],site_in)
     endif
 
   ; if this list of valid names changes, please also update version in thm_load_gmag

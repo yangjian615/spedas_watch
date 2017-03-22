@@ -9,8 +9,8 @@
 ;     
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-15 12:57:53 -0700 (Wed, 15 Mar 2017) $
-; $LastChangedRevision: 22970 $
+; $LastChangedDate: 2017-03-21 09:57:16 -0700 (Tue, 21 Mar 2017) $
+; $LastChangedRevision: 23011 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_run_all_tests.pro $
 ;-
 
@@ -37,6 +37,7 @@ pro mms_run_all_tests
                    'mms_load_fast_segments_ut', $
                    'mms_file_filter_ut', $
                    'mms_init_ut', $
+                   'mms_curlometer_ut', $
                    'tplot_stuff_ut']
     
     file_out =   'mms_tests_output_'+time_string(systime(/sec), tformat='YYYYMMDD_hhmm')+'.txt'
