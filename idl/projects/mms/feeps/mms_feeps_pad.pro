@@ -33,8 +33,8 @@
 ;                       
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-23 10:33:29 -0800 (Thu, 23 Feb 2017) $
-;$LastChangedRevision: 22855 $
+;$LastChangedDate: 2017-03-23 14:08:18 -0700 (Thu, 23 Mar 2017) $
+;$LastChangedRevision: 23021 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -70,7 +70,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
   ; get the pitch angles
   ; tdeflag, prefix+'_epd_feeps_pitch_angle'+suffix_in, 'linear', /overwrite
   ; v5.5+ = mms1_epd_feeps_srvy_l2_electron_pitch_angle
- ; get_data, prefix+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix_in, data=pa_data, dlimits=pa_dlimits
+  ;get_data, prefix+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix_in, data=pa_data, dlimits=pa_dlimits
 
   ; temporary solution to issue with NaNs in the _pitch_angle variable
   ; calculate the pitch angles from the magnetic field data
@@ -134,20 +134,19 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
       dpa[*, pa_map[isen]] = reform(pa_data.y[*, pa_map[isen]])   
     endfor
   endfor
+  
+  ; we need to replace the 0.0s left in after populating dpa with NaNs; these 
+  ; 0.0s are left in there because these points aren't covered by sensors loaded
+  ; for this datatype/data_rate
+  dpa[where(dpa eq 0.0)] = !values.d_nan ; fill any missed bins with NAN
 
-  pa_flux = fltarr(n_elements(pa_data.x), n_pabins+1)
+  pa_flux = fltarr(n_elements(pa_data.x), n_pabins)
   delta_pa = (pa_bins[1]-pa_bins[0])/2.0
   
   ; Now loop through PA bins and time, find the telescopes where there is data in those bins and average it up!
   for it = 0l, n_elements(dpa[*,0])-1 do begin
-    for ipa = 0, n_pabins do begin
-      if pa_bins[ipa] eq 0.0 then begin
-        ind = where((dpa[it,*] ge pa_bins[ipa]) and (dpa[it,*] lt pa_bins[ipa]+delta_pa))
-      endif else if pa_bins[ipa] eq 180.0 then begin
-        ind = where((dpa[it,*] ge pa_bins[ipa]-delta_pa) and (dpa[it,*] lt pa_bins[ipa]))
-      endif else begin
-        ind = where((dpa[it,*] ge pa_bins[ipa]-delta_pa) and (dpa[it,*] lt pa_bins[ipa]+delta_pa))
-      endelse
+    for ipa = 0, n_pabins-1 do begin
+      ind = where((dpa[it,*] ge pa_label[ipa]-delta_pa) and (dpa[it,*] lt pa_label[ipa]+delta_pa))
       if ind[0] ne -1 then pa_flux[it, ipa] = reform(average(dflux[it, ind], 2, /NAN))
     endfor
   endfor
@@ -159,10 +158,11 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
   ;new_name = 'mms'+probe+'_epd_feeps_' + datatype + '_' + en_range_string + '_pad'+suffix_in
   new_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+data_units+'_'+ en_range_string +'_pad'+suffix_in, /rem)
 
-  store_data, new_name, data={x:pa_data.x, y:pa_flux, v:pa_bins}
+  store_data, new_name, data={x:pa_data.x, y:pa_flux, v:pa_label}
+
   options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1, minzlog = 0.01, $
     zlog = 1, ytitle = 'MMS'+probe+'!CFEEPS ' + datatype, ysubtitle=en_range_string+'!CPA [Deg]', ztitle=out_units
-
+  options, new_name, 'extend_y_edges', 1
   ; calculate the smoothed pad
   if ~undefined(num_smooth) then tsmooth_in_time, new_name, newname=new_name+'_smth', num_smooth, /double, /smooth_nans
 

@@ -13,9 +13,9 @@
 ;       #3 This routine may modify the environment variable CDF_LEAPSECONDTABLE and update the CDF leap second table if a new version is found.
 ;        
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-13 15:30:16 -0800 (Mon, 13 Feb 2017) $
-;$LastChangedRevision: 22768 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-03-23 12:51:43 -0700 (Thu, 23 Mar 2017) $
+;$LastChangedRevision: 23019 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/TT2000/cdf_leap_second_init.pro $
 ;-
 pro cdf_leap_second_init,reset=reset,no_download=no_download,no_update=no_update,no_clobber=no_clobber,force_download=force_download
@@ -92,7 +92,10 @@ Endif
   
   ;download the leapsecond table
   ;leapsecond_table = file_retrieve('CDFLeapSeconds.txt',_extra=!cdf_leap_seconds)
-  leapsecond_table = spd_download(remote_file='CDFLeapSeconds.txt', remote_path=!cdf_leap_seconds.remote_data_dir, local_path = !cdf_leap_seconds.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0)
+  leapsecond_table = spd_download(remote_file='CDFLeapSeconds.txt', remote_path=!cdf_leap_seconds.remote_data_dir, $
+    local_path = !cdf_leap_seconds.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0, $
+    no_download=!cdf_leap_seconds.no_download, no_update=!cdf_leap_seconds.no_update, $
+    force_download=!cdf_leap_seconds.force_download, no_clobber=!cdf_leap_seconds.no_clobber)
   
   ;set init state
   !cdf_leap_seconds.init=1

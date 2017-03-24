@@ -1,4 +1,4 @@
-œóòßaari|AARI||
+aari|AARI||
 asi|ASI||
 autu|AUTUMN||
 autx|AUTUMNX||
@@ -134,7 +134,7 @@ aeold|Themis AE (pre 2015)|inuv|Inuvik, NT
 gbo|Themis GBO|inuv|Inuvik, NT
 asi|ASI|inuv|Inuvik, NT
 nrcan|NRCan|iqa|Iqaluit, NU
-fmi|FMI|Ivalo, Finland
+fmi|FMI|iva|Ivalo, Finland
 tgo|TGO|jan|Jan Mayen, Norway
 ae|Themis AE|jck|Jackvik, Sweden
 tgo|TGO|jck|Jackvik, Sweden

@@ -33,8 +33,8 @@
 ;   YY,  MM, DD, hh, mm, ss, .f  since these can be retranslated to
 ;   the time
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-02-06 15:54:57 -0800 (Mon, 06 Feb 2017) $
-; $LastChangedRevision: 22742 $
+; $LastChangedDate: 2017-03-23 16:24:42 -0700 (Thu, 23 Mar 2017) $
+; $LastChangedRevision: 23022 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_pfp_spd_download.pro $
 ;-
 function mvn_pfp_spd_download,pathname,trange=trange,verbose=verbose, source=src,files=files, $
@@ -108,16 +108,30 @@ if ~keyword_set(RT) then begin
     endif
     nfiles = n_elements(pathnames)
     fc = 0
-    for j = 0, nfiles-1 do begin
-       filesj = spd_download_plus(remote_file = source.remote_data_dir+pathnames[j], $
-                                  local_path = source.local_data_dir+file_dirname(pathnames[j], /mark_directory), $
+;Check for different remote paths, if all are the same, then we will
+;not need a loop
+    fdir = file_dirname(pathnames, /mark_directory)
+    If(n_elements(fdir) gt 1) Then Begin
+       If(n_elements(uniq(fdir)) Eq 1) Then same_dir = 1b $
+       Else same_dir = 0b
+    Endif
+    If(same_dir) Then Begin
+       filesj = spd_download_plus(remote_file = source.remote_data_dir+pathnames, $
+                                  local_path = source.local_data_dir+fdir[0], $
                                   last_version = last_version, no_update = no_update, valid_only = valid_only, $
                                   no_server = source.no_server, file_mode = '666'o, dir_mode = '777'o)
-       if is_string(filesj) then begin
-          if fc eq 0 then files = filesj else files = [files, filesj]
-          fc = fc+1
-       endif
-    endfor
+    Endif Else Begin
+       for j = 0, nfiles-1 do begin
+          filesj = spd_download_plus(remote_file = source.remote_data_dir+pathnames[j], $
+                                     local_path = source.local_data_dir+fdir[j], $
+                                     last_version = last_version, no_update = no_update, valid_only = valid_only, $
+                                     no_server = source.no_server, file_mode = '666'o, dir_mode = '777'o)
+          if is_string(filesj) then begin
+             if fc eq 0 then files = filesj else files = [files, filesj]
+             fc = fc+1
+          endif
+       endfor
+    Endelse
     if fc eq 0 then files = ''
     dprint,dlevel=3,verbose=verbose,systime(1)-tstart,' seconds to retrieve ',n_elements(files),' files'
   endif
