@@ -30,8 +30,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp and Ian Cohen (APL)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-19 15:35:56 -0700 (Mon, 19 Sep 2016) $
-;$LastChangedRevision: 21861 $
+;$LastChangedDate: 2017-03-24 08:01:35 -0700 (Fri, 24 Mar 2017) $
+;$LastChangedRevision: 23023 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -190,6 +190,7 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
             ytitle = 'MMS'+probe+' EIS ' + ion_type[ion_type_idx], ysubtitle=en_range_string+'!CPA [Deg]', ztitle=units_label, minzlog=.01
           zlim, new_name, 0, 0, 1
                
+          options, new_name, 'extend_y_edges', 1
           ; now do the spin average
           mms_eis_pad_spinavg, probe=probe, species=ion_type[ion_type_idx], datatype=datatype, energy=energy, data_units=data_units, $
             bin_size=bin_size, data_rate = data_rate, scopes=scopes, suffix = suffix

@@ -107,8 +107,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2015-02-18 14:11:32 -0800 (Wed, 18 Feb 2015) $
-; $LastChangedRevision: 17001 $
+; $LastChangedDate: 2017-03-24 17:13:41 -0700 (Fri, 24 Mar 2017) $
+; $LastChangedRevision: 23034 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/models/mvn_model_bcrust.pro $
 ;
 ;-
@@ -420,7 +420,7 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
                       arkani=arkani, purucker=purucker, $
                       cain_2003=cain_2003, cain_2011=cain_2011, $
                       version=version, tplot=tplot, path=path, $
-                      morschhauser=morschhauser, pos=pos
+                      morschhauser=morschhauser, pos=pos, no_download=no_download
 
   IF keyword_set(sl) THEN silent = sl ELSE silent = 0
   IF keyword_set(vb) THEN verbose = vb ELSE verbose = 0
@@ -436,7 +436,7 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
      ENDIF 
      
      num = N_ELEMENTS(trange)  
-     get_mvn_eph, trange, eph, silent=silent
+     get_mvn_eph, trange, eph, silent=silent, no_download=no_download
   ENDIF ELSE BEGIN
      IF SIZE(pos, /n_dimension) EQ 2 THEN BEGIN
         sz = SIZE(pos, /dimension)
@@ -601,7 +601,7 @@ pro mvn_model_bcrust, var, resolution=resolution, data=modelmag, $
   ; Calculate model prediction in SS coords ;
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   IF SIZE(trange, /type) NE 0 THEN BEGIN
-     mk = mvn_spice_kernels(/all, /load, trange=[tmin, tmax], verbose=verbose)
+     mk = mvn_spice_kernels(/all, /load, trange=[tmin, tmax], verbose=verbose, no_download=no_download)
      bss = spice_vector_rotate(TRANSPOSE(bpc), trange, 'IAU_MARS', 'MAVEN_MSO',   $
                                check_objects='MAVEN_SPACECRAFT', verbose=verbose)
      bss = TRANSPOSE(bss)

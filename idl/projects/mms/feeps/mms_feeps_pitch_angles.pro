@@ -12,8 +12,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-22 11:42:20 -0800 (Wed, 22 Feb 2017) $
-;$LastChangedRevision: 22847 $
+;$LastChangedDate: 2017-03-24 14:43:32 -0700 (Fri, 24 Mar 2017) $
+;$LastChangedRevision: 23031 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pitch_angles.pro $
 ;-
 
@@ -37,14 +37,20 @@ pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=d
   ; load the B-field data if not already loaded
   if (tnames('mms'+probe+'_fgm_b_bcs_srvy_l2_bvec'))[0] eq '' then mms_load_fgm, trange=trange, probe=probe
   get_data, 'mms'+probe+'_fgm_b_bcs_srvy_l2_bvec', data=b_field_data
+  
   if ~is_struct(b_field_data) then begin
     ; couldn't find the L2 FGM data, try the L2pre DFG data instead:
-    mms_load_fgm, trange=trange, probe=probe, level='l2pre', instrument='dfg'
+    if (tnames('mms'+probe+'_dfg_b_bcs_srvy_l2pre_bvec') eq '') then mms_load_fgm, trange=trange, probe=probe, level='l2pre', instrument='dfg'
     get_data, 'mms'+probe+'_dfg_b_bcs_srvy_l2pre_bvec', data=b_field_data
     
     if ~is_struct(b_field_data) then begin
-      dprint, dlevel = 0, "Error, couldn't load B-field data for calculating FEEPS pitch angles"
-      return
+        ; one more fallback - L1b
+        if (tnames('mms'+probe+'_dfg_srvy_bcs_bvec') eq '') then mms_load_fgm, trange=trange, probe=probe, level='l1b', instrument='dfg'
+        get_data, 'mms'+probe+'_dfg_srvy_bcs_bvec', data=b_field_data
+        if ~is_struct(b_field_data) then begin
+          dprint, dlevel = 0, "Error, couldn't load B-field data for calculating FEEPS pitch angles"
+          return
+        endif
     endif
   endif
   Bbcs = b_field_data.Y

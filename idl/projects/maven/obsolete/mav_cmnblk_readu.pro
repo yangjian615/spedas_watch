@@ -1,11 +1,11 @@
 
 
-function gseos_cmnblk_decom_byte_pkt,buffer
+function gseos_cmnblk_decom_byte_pkt2,buffer
 
-    forward_function  gseos_cmnblk_decom_byte_pkt
+    forward_function  gseos_cmnblk_decom_byte_pkt2
 
     
-    if buffer[1] eq '90'x then return,gseos_cmnblk_decom_byte_pkt([byte(['EB'x,'92'x, 0b, 0b]),buffer[2:25],[0b,0b],buffer[28:*]])  ; kludge to make old format work.
+    if buffer[1] eq '90'x then return,gseos_cmnblk_decom_byte_pkt2([byte(['EB'x,'92'x, 0b, 0b]),buffer[2:25],[0b,0b],buffer[28:*]])  ; kludge to make old format work.
 
     dbuff = uint(buffer,0,16)
     byteorder,dbuff,/swap_if_little_endian
@@ -107,7 +107,7 @@ PRO mav_cmnblk_readu,fileunit,count=count,eofile=eofile, trange=trange,$
 
 
             if keyword_set(decom) then begin
-                cmnpkt =  gseos_cmnblk_decom_byte_pkt(pkbuff)
+                cmnpkt =  gseos_cmnblk_decom_byte_pkt2(pkbuff)
                 if ~((n_elements(trange) ge 1) && cmnpkt.time lt trange[0]) then $
                     mav_gse_cmnblk_pkt_handler,cmnpkt
             endif

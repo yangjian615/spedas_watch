@@ -33,8 +33,8 @@
 ;   YY,  MM, DD, hh, mm, ss, .f  since these can be retranslated to
 ;   the time
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-23 16:24:42 -0700 (Thu, 23 Mar 2017) $
-; $LastChangedRevision: 23022 $
+; $LastChangedDate: 2017-03-24 14:19:59 -0700 (Fri, 24 Mar 2017) $
+; $LastChangedRevision: 23030 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_pfp_spd_download.pro $
 ;-
 function mvn_pfp_spd_download,pathname,trange=trange,verbose=verbose, source=src,files=files, $
@@ -114,12 +114,12 @@ if ~keyword_set(RT) then begin
     If(n_elements(fdir) gt 1) Then Begin
        If(n_elements(uniq(fdir)) Eq 1) Then same_dir = 1b $
        Else same_dir = 0b
-    Endif
+    Endif Else same_dir = 1b
     If(same_dir) Then Begin
-       filesj = spd_download_plus(remote_file = source.remote_data_dir+pathnames, $
-                                  local_path = source.local_data_dir+fdir[0], $
-                                  last_version = last_version, no_update = no_update, valid_only = valid_only, $
-                                  no_server = source.no_server, file_mode = '666'o, dir_mode = '777'o)
+       files = spd_download_plus(remote_file = source.remote_data_dir+pathnames, $
+                                 local_path = source.local_data_dir+fdir[0], $
+                                 last_version = last_version, no_update = no_update, valid_only = valid_only, $
+                                 no_server = source.no_server, file_mode = '666'o, dir_mode = '777'o)
     Endif Else Begin
        for j = 0, nfiles-1 do begin
           filesj = spd_download_plus(remote_file = source.remote_data_dir+pathnames[j], $
@@ -131,8 +131,8 @@ if ~keyword_set(RT) then begin
              fc = fc+1
           endif
        endfor
+       if fc eq 0 then files = ''
     Endelse
-    if fc eq 0 then files = ''
     dprint,dlevel=3,verbose=verbose,systime(1)-tstart,' seconds to retrieve ',n_elements(files),' files'
   endif
   return,files

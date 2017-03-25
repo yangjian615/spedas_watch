@@ -33,8 +33,8 @@
 ;                       
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-23 14:08:18 -0700 (Thu, 23 Mar 2017) $
-;$LastChangedRevision: 23021 $
+;$LastChangedDate: 2017-03-24 14:56:35 -0700 (Fri, 24 Mar 2017) $
+;$LastChangedRevision: 23032 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -163,9 +163,10 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
   options, new_name, yrange = [0,180], ystyle=1, spec = 1, no_interp=1, minzlog = 0.01, $
     zlog = 1, ytitle = 'MMS'+probe+'!CFEEPS ' + datatype, ysubtitle=en_range_string+'!CPA [Deg]', ztitle=out_units
   options, new_name, 'extend_y_edges', 1
+  
   ; calculate the smoothed pad
-  if ~undefined(num_smooth) then tsmooth_in_time, new_name, newname=new_name+'_smth', num_smooth, /double, /smooth_nans
-
+  if ~undefined(num_smooth) then spd_smooth_time, new_name, newname=new_name+'_smth', num_smooth, /nan
+    
   ; calculate the spin averages
   mms_feeps_pad_spinavg, probe=probe, datatype=datatype, energy=energy, bin_size=bin_size, data_units=data_units, $
     suffix = suffix_in, data_rate = data_rate, level = level

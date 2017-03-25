@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-22 11:42:51 -0800 (Wed, 22 Feb 2017) $
-; $LastChangedRevision: 22848 $
+; $LastChangedDate: 2017-03-24 15:13:41 -0700 (Fri, 24 Mar 2017) $
+; $LastChangedRevision: 23033 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
 
@@ -17,7 +17,7 @@ function mms_load_feeps_ut::test_last_pad_bin
   mms_load_feeps, probe=2
   mms_feeps_pad, probe=2
   get_data, 'mms2_epd_feeps_srvy_l2_electron_intensity_70-1000keV_pad', data=d
-  assert, total(d.Y[*, 12], /nan) ne 0, 'Problem with last bin in FEEPS PAD'
+  assert, total(d.Y[*, 11], /nan) ne 0, 'Problem with last bin in FEEPS PAD'
   return, 1
 end
 
