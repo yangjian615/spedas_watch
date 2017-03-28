@@ -9,8 +9,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-04 15:45:57 -0700 (Fri, 04 Nov 2016) $
-; $LastChangedRevision: 22308 $
+; $LastChangedDate: 2017-03-27 13:01:47 -0700 (Mon, 27 Mar 2017) $
+; $LastChangedRevision: 23048 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_multi_axis_figure.pro $
 ;-
 
@@ -22,7 +22,24 @@ mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/14:00'], probe=1, datatype
 options, 'mms1_des_numberdensity_fast', labels='', colors=0 ; black
 options, 'mms1_des_tempperp_fast', labels='', colors=2 ; blue
 
+; turn off the time stamp for these examples
+time_stamp, /off
+
+; plot temperature and density on the same plot
 tplot_multiaxis, ['mms1_fgm_b_gse_srvy_l2_bvec', 'mms1_des_numberdensity_fast', 'mms1_des_bulkv_gse_fast', 'mms1_des_energyspectr_omni_fast'], $ ; left plots
                 'mms1_des_tempperp_fast', $ ; right plots
                 2 ; panel of the right plot (starts at 1)
+stop
+
+; you can also plot line plots over spectra
+tplot_multiaxis, ['mms1_fgm_b_gse_srvy_l2_bvec', 'mms1_des_numberdensity_fast', 'mms1_des_bulkv_gse_fast', 'mms1_des_energyspectr_omni_fast'], $ ; left plots
+  'mms1_des_tempperp_fast', 4
+stop
+
+; to get the color bar back for the spectra, simply increase the margins:
+tplot_options, 'xmargin', [15, 25]
+tplot_multiaxis, ['mms1_fgm_b_gse_srvy_l2_bvec', 'mms1_des_numberdensity_fast', 'mms1_des_bulkv_gse_fast', 'mms1_des_energyspectr_omni_fast'], $ ; left plots
+  'mms1_des_tempperp_fast', 4
+stop
+
 end

@@ -75,8 +75,8 @@ loc_start_error = where(new_fomstr.start gt new_fomstr.stop, count_start_error)
 
 error_flags = [count_fom_error gt 0, $
                count_seg_error gt 0, $
-               count_start_error gt 0, $
-               new_evaltime ne old_evaltime]
+               count_start_error gt 0] ;, $
+;               new_evaltime ne old_evaltime]
                
 error_times = ptrarr(n_elements(error_flags), /allocate_heap)
 error_indices = ptrarr(n_elements(error_flags), /allocate_heap)
@@ -118,20 +118,20 @@ eval_error_txt = 'ERROR: The evaluation times for the automated system and SITL 
                
 error_msg = [fom_error_txt, $
               seg_error_txt, $
-              start_error_txt, $
-              eval_error_txt]
+              start_error_txt];, $
+             ; eval_error_txt]
 
 
 ; Provides a list of time strings, as well as array indices for the fomstr.start where errors were found
 *(error_times[0]) = fom_error_times
 *(error_times[1]) = seg_error_times
 *(error_times[2]) = start_error_times
-*(error_times[3]) = 'Orbit-wide error - no error times'
+;*(error_times[3]) = 'Orbit-wide error - no error times'
 
 *(error_indices[0]) = loc_fom_error
 *(error_indices[1]) = loc_seg_error
-*(error_indices[2]) = !values.f_nan
-*(error_indices[3]) = loc_start_error
+*(error_indices[2]) = loc_start_error
+;*(error_indices[3]) = loc_start_error
 
 
 

@@ -13,7 +13,7 @@
 ;KEYWORDS:
 ;
 ;   SHADOW:   If keyword set, all the estimations outside of shadow
-;             are set to NANs
+;             at altitudes > 800 km are set to NANs
 ;   SWIDTH:   Field-aligned angle to calculate spectra for both
 ;             directions. The default value is 45 degrees. 
 ;
@@ -28,7 +28,7 @@
 ;
 ;CREATED BY:    Shaosui Xu  01-03-2017
 ;-
-Pro mvn_swe_sc_negpot_twodir_burst,shadow=shadow,swidth=swidth
+Pro mvn_swe_sc_negpot_twodir_burst,shadow=shadow,swidth=swidth,fill=fill
 
     @mvn_swe_com
     print,'This program is still under experimenting stage'
@@ -42,7 +42,9 @@ Pro mvn_swe_sc_negpot_twodir_burst,shadow=shadow,swidth=swidth
     if ~(keyword_set(swidth)) then $
            swidth=45.*!dtor $
     else swidth = swidth*!dtor
-
+    
+    ;if (size(fill,/type) eq 0) then fill=1
+    
     tmin = min(a3.time, max=tmax)
     data = a3.data
     ;tic
@@ -141,13 +143,31 @@ Pro mvn_swe_sc_negpot_twodir_burst,shadow=shadow,swidth=swidth
 
     if keyword_set(shadow) then begin
         get_data, 'wake', data=wk0, index=i
+        get_data, 'alt', data=alt0, index=j
         if (i eq 0) then begin
             maven_orbit_tplot, /loadonly
             get_data, 'wake', data=wk0
         endif
         wake = interpol(wk0.y,wk0.x,t)
-        inw = where(wake ne wake, cts)
+        alt = interpol(alt0.y,alt0.x,t)
+        inw = where((wake ne wake) and (alt ge 800), cts)
         if cts gt 0 then pot[inw,*] = !values.f_nan
+    endif
+
+    if keyword_set(fill) then begin
+        pot1 = max(pot,dim=2,/nan)
+        inx = where(pot1 eq pot1, cts)
+        if (cts gt 0) then begin
+            pot1 = pot1[inx]
+            t1 = t[inx]
+            indx = nn(mvn_swe_engy.time,t1)
+            mvn_swe_engy[indx].sc_pot  = pot1
+            indx = nn(swe_sc_pot.time,t1)
+            swe_sc_pot[indx].potential = pot1
+            store_data,'pot_inshdw',data={x:t1,y:pot1}
+            options,'pot_inshdw','psym',3
+        endif
+        
     endif
 
     ;create tplot variable

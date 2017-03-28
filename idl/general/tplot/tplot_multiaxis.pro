@@ -32,8 +32,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-23 13:17:20 -0700 (Thu, 23 Mar 2017) $
-;$LastChangedRevision: 23020 $
+;$LastChangedDate: 2017-03-27 09:20:06 -0700 (Mon, 27 Mar 2017) $
+;$LastChangedRevision: 23038 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_multiaxis.pro $
 ;-
 
@@ -47,11 +47,16 @@ pro tplot_multiaxis, left_names, right_names, positions, _extra=_extra
       return
     endif
     
-    ;allowing wildcards would be troublesome
-    if total(stregex([left_names,right_names],'\*\?\[\]',/bool)) gt 0 then begin
-      dprint, dlevel=1, 'No wildcards allowed in variable lists'
-      return
-    endif
+    ; the following allows for wildcards to be used in the list of tplot names
+    for left_name_idx = 0, n_elements(left_names)-1 do begin
+      append_array, left_names_clean, tnames(left_names[left_name_idx])
+    endfor
+    for right_name_idx = 0, n_elements(right_names)-1 do begin
+      append_array, right_names_clean, tnames(right_names[right_name_idx])
+    endfor
+    
+    left_names = left_names_clean
+    right_names = right_names_clean
     
     ;if inputs are single element assume they may be space separated list
     left = n_elements(left_names) eq 1 ? strsplit(left_names,' ',/ext) : left_names

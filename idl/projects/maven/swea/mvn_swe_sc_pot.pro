@@ -88,14 +88,20 @@
 ;              set this keyword to the full path and filename of a tplot 
 ;              save/restore file, if one exists.  Otherwise, this routine 
 ;              will determine the potential from SWEA alone.
+;              
+;   POT_IN_SHDW: Calculate negative potentials with 'mvn_swe_sc_negpot_twodir_burst',
+;                Default = 0 (no). This routine calculates He II in both field-aligned
+;                directions, and uses the less negative one as s/c potentials if detected
+;                in both directions. The results are filled to SWEA common block as well. 
+;                Right row, it requires keyword "NEGPOT" to be 1, which is default. 
 ;
 ;OUTPUTS:
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-02-05 16:54:33 -0800 (Sun, 05 Feb 2017) $
-; $LastChangedRevision: 22731 $
+; $LastChangedBy: xussui_lap $
+; $LastChangedDate: 2017-03-27 15:41:21 -0700 (Mon, 27 Mar 2017) $
+; $LastChangedRevision: 23052 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -103,7 +109,7 @@
 pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thresh2, dEmax=dEmax2, $
                     pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
                     mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr, minflux=minflux2, $
-                    negpot=negpot, sta_pot=sta_pot, lpw_pot=lpw_pot
+                    negpot=negpot, sta_pot=sta_pot, lpw_pot=lpw_pot, pot_in_shdw=pot_in_shdw
 
   compile_opt idl2
   
@@ -151,7 +157,8 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
   
   if (size(badval,/type) eq 0) then badval = !values.f_nan else badval = float(badval)
   if (size(negpot,/type) eq 0) then negpot = 1
-
+  ;if (size(pot_in_shdw,/type) eq 0) then pot_in_shdw=1
+  
 ; Clear any previous potential calculations
 
   mvn_swe_engy.sc_pot = badval
@@ -442,6 +449,8 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
 ; Estimate negative potentials
 
   if keyword_set(negpot) then begin
+    
+    if (pot_in_shdw) then mvn_swe_sc_negpot_twodir_burst,/fill,/shadow
     mvn_swe_sc_negpot, /fill
     indx = where(swe_sc_pot.potential lt 0., count)
     if (count gt 0L) then phi[indx] = swe_sc_pot[indx].potential
@@ -452,13 +461,17 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
     options,'swe_pot_lab','colors',[6,!p.color]
     options,'swe_pot_lab','labflag',1
     
-    store_data,pot_pan,data=['swe_pot_lab','mvn_swe_sc_pot','neg_pot']
+    store_data,pot_pan,data=['swe_pot_lab','mvn_swe_sc_pot','neg_pot','pot_inshdw']
     options,'neg_pot','constant',!values.f_nan
     options,'neg_pot','color',6
+    options,'pot_inshdw','constant',!values.f_nan
+    options,'pot_inshdw','color',1
     options,pot_pan,'ytitle','S/C Potential!cVolts'
     options,pot_pan,'constant',[-1,3]
   endif
 
+        
+    
 ; Incorporate STATIC-derived potential.  Only used to fill in times when
 ; SWEA/LPW potential is unavailable.
 
@@ -518,7 +531,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
       endif
     endif
   endif
-
+  
   return
 
 end

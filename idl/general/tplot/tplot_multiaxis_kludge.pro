@@ -24,8 +24,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-23 15:19:19 -0700 (Tue, 23 Aug 2016) $
-;$LastChangedRevision: 21697 $
+;$LastChangedDate: 2017-03-27 12:58:04 -0700 (Mon, 27 Mar 2017) $
+;$LastChangedRevision: 23047 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_multiaxis_kludge.pro $
 ;-
 pro tplot_multiaxis_kludge, names, left=left, right=right, reset=reset
@@ -68,7 +68,7 @@ for i=0, n_elements(names)-1 do begin
   
   str_element, lim, 'colors', this_color, success=s
   if s then str_element, axis, 'color', this_color[0], /add
-
+  
   ;copy & overwrite axis options from metadata into struct
   extract_tags, axis, dlim, /axis
   extract_tags, axis, lim, /axis
@@ -79,11 +79,21 @@ for i=0, n_elements(names)-1 do begin
   str_element, lim, 'ysubtitle', ysubtitle
   if ~undefined(ysubtitle) then axis.ytitle += '!c'+ysubtitle
   
+  str_element, lim, 'spec', spec, success=ls
+  str_element, dlim, 'spec', spec, success=ds
   
-  ;add options to limits struct
-  extract_tags, lim, {ystyle:1+4, axis:axis}
+  s = ls+ds ; 0 if never spec, > 0 otherwise
 
+  ;add options to limits struct
+  extract_tags, lim, {ystyle:1+4, axis:axis};, no_color_scale:1} ; now moving color scale outside of the margins
   store_data, names[i], lim=lim
+
+  if s gt 0 && spec eq 1 then begin
+    options, names[i], ystyle=9
+    ; instead of turning off color scale with no_color_scale, we'll move it off the screen
+    ; to get it back, simply change the margins on the right-hand side
+    options, names[i], 'zoffset', [12, 15]
+  endif
 
 endfor
 

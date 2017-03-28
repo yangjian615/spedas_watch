@@ -9,13 +9,13 @@
 ;
 ; KEYWORDS:
 ;        newname: name of the tplot variable to store the data in; default is input_name+"_smth"
-;        nan: ignore NaNs in the input
+;        nan: ignore NaNs in the input (treat as missing data)
 ;
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-24 12:30:56 -0700 (Fri, 24 Mar 2017) $
-;$LastChangedRevision: 23025 $
+;$LastChangedDate: 2017-03-27 07:57:43 -0700 (Mon, 27 Mar 2017) $
+;$LastChangedRevision: 23037 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_smooth_time.pro $
 ;-
 
