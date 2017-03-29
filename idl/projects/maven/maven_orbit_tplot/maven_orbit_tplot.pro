@@ -106,8 +106,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-13 10:26:21 -0700 (Mon, 13 Mar 2017) $
-; $LastChangedRevision: 22947 $
+; $LastChangedDate: 2017-03-28 10:39:33 -0700 (Tue, 28 Mar 2017) $
+; $LastChangedRevision: 23055 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -169,6 +169,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   if keyword_set(extended) then begin
     mname = 'maven_spacecraft_mso_predict.sav'
     gname = 'maven_spacecraft_geo_predict.sav'
+    treset = 1
+    nocrop = 1
   endif
 
   if (n_elements(timecrop) gt 1L) then begin

@@ -6,13 +6,12 @@ pro mvn_pui_results
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 common mvn_pui_results_common,sizenoefi,sizenhefi,meannoefi,meannhefi
-common mvn_swia_data
 
-ebinlimo=14 ;energy bin limit for oxygen
-ebinlimh=22 ;energy bin limit for hydrogen
+ebinlimo=20 ;energy bin limit for oxygen
+ebinlimh=23 ;energy bin limit for hydrogen
 radmin=5e3 ;minimum radius (km)
 radmax=20e3;maximum radius (km)
-szamax=60; max sza (degree)
+szamax=70; max sza (degree)
 
 ;ctime,trange,/silent
 ;timespan,trange
@@ -136,25 +135,28 @@ dprint,'meannhef='+strtrim(meannhef,2)
 
 w=getwindows(/current)
 if keyword_set(w) then w.erase
-;p11=scatterplot(noef,roef-rmars,/xlog,/ylog,xtitle='Neutral Density (cm-3)',ytitle='Altitude (km)',symbol='o',sym_size=.5,/sym_filled,magnitude=soefscaled,rgb_table=33,/current)
-;p11=scatterplot(nhef,rhef-rmars,/xlog,xtitle='Neutral Density (cm-3)',ytitle='Altitude (km)',symbol='o',sym_size=.5,/sym_filled,magnitude=shefscaled,rgb_table=33,/current)
-;p12=scatterplot3d(krxswio3def,kryswio3def,krzswio3def,xtitle='X (km)',ytitle='Y (km)',ztitle='Z (km)',symbol='o',sym_size=.5,/sym_filled,/aspect_z,/aspect_r,magnitude=soefscaled,rgb_table=33,/current)
+;p11=scatterplot(noef,roef-rmars,/xlog,/ylog,xtitle='Neutral Density (cm-3)',ytitle='Altitude (km)',symbol='o',sym_size=.2,/sym_filled,magnitude=soefscaled,rgb_table=33,/current)
+;p11=scatterplot(nhef,rhef-rmars,/xlog,xtitle='Neutral Density (cm-3)',ytitle='Altitude (km)',symbol='o',sym_size=.2,/sym_filled,magnitude=shefscaled,rgb_table=33,/current)
+;p12=scatterplot3d(krxswio3def,kryswio3def,krzswio3def,xtitle='X (km)',ytitle='Y (km)',ztitle='Z (km)',symbol='o',sym_size=.2,/sym_filled,/aspect_z,/aspect_r,magnitude=soefscaled,rgb_table=33,/current)
 ;p13=scatterplot3d(scp[*,0]/1e3,scp[*,1]/1e3,scp[*,2]/1e3,symbol='o',sym_size=.5,/sym_filled,/overplot)
 ;p13=scatterplot3d(krxswih3def,kryswih3def,krzswih3def,symbol='.',/overplot)
 ;p14=scatterplot3d([rmars,0,-rmars,0,0,0],[0,0,0,0,-rmars,rmars],[0,rmars,0,-rmars,0,0],symbol='o',sym_color='red',/sym_filled,/overplot)
 ;p10=colorbar(range=[0,100],position=[.2,.97,.8,1],title='Solar Zenith Angle (degrees)')
 ;p=plot([0],/xlog,title='Hot O Retrieval from SWIA Pickup Ions: 2016-02-21 to 2016-02-29',xtitle='Atomic Oxygen Exospheric Neutral Density (cm-3)',ytitle='Altitude (km)',xrange=[1,1e5],yrange=[0,5e4],/o)
-p0=plot(exp(noavg),alavg,color='red',linestyle='',symbol='o',/overplot,name='Average')
+p0=plot(exp(noavg),alavg,color='red',linestyle='',symbol='o',/overplot,name='Mean')
 p1=plot(exp(noseb),alavg,color='red',linestyle='-',/overplot,name='Standard Error')
 p2=plot(exp(nosea),alavg,color='red',linestyle='-',/overplot,name='1 SE above')
 p3=plot(exp(nosdb),alavg,color='red',linestyle='--',/overplot,name='Standard Deviation')
 p4=plot(exp(nosda),alavg,color='red',linestyle='--',/overplot,name='1 SD above')
-p5=legend(target=[p0,p1,p3],position=[.9,.85])
+p5=legend(target=[p0,p1,p3],position=[.77,.77])
 p0=plot(exp(nhavg),alavg,color='blue',linestyle='',symbol='o',/overplot,name='Average')
 p1=plot(exp(nhseb),alavg,color='blue',linestyle='-',/overplot,name='1 SE below')
 p2=plot(exp(nhsea),alavg,color='blue',linestyle='-',/overplot,name='1 SE above')
 p3=plot(exp(nhsdb),alavg,color='blue',linestyle='--',/overplot,name='1 SD below')
 p4=plot(exp(nhsda),alavg,color='blue',linestyle='--',/overplot,name='1 SD above')
 mvn_pui_plot_exoden,/overplot
+t1=text(.51,.3,'O',color='red')
+t2=text(.7,.3,'H',color='blue')
+p0.title='SWIA Pickup Ion Analysis, 2014-12-20, 17:30-19:30 UTC'
 
 end

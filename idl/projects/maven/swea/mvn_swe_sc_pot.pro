@@ -99,9 +99,9 @@
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: xussui_lap $
-; $LastChangedDate: 2017-03-27 15:41:21 -0700 (Mon, 27 Mar 2017) $
-; $LastChangedRevision: 23052 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-03-28 11:00:37 -0700 (Tue, 28 Mar 2017) $
+; $LastChangedRevision: 23057 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -157,7 +157,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
   
   if (size(badval,/type) eq 0) then badval = !values.f_nan else badval = float(badval)
   if (size(negpot,/type) eq 0) then negpot = 1
-  ;if (size(pot_in_shdw,/type) eq 0) then pot_in_shdw=1
+  ;if (size(pot_in_shdw,/type) eq 0) then pot_in_shdw = 1
   
 ; Clear any previous potential calculations
 
@@ -450,7 +450,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
 
   if keyword_set(negpot) then begin
     
-    if (pot_in_shdw) then mvn_swe_sc_negpot_twodir_burst,/fill,/shadow
+    if keyword_set(pot_in_shdw) then mvn_swe_sc_negpot_twodir_burst,/fill,/shadow
     mvn_swe_sc_negpot, /fill
     indx = where(swe_sc_pot.potential lt 0., count)
     if (count gt 0L) then phi[indx] = swe_sc_pot[indx].potential

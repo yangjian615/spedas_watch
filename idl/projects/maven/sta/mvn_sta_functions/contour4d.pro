@@ -172,7 +172,10 @@ if keyword_set(limits) then begin
         endif
     endif
     str_element,limits,'zlog',index=index
-    if index ge 0 then zlog=limits.zlog
+    if index ge 0 then zlog=limits.zlog
+
+    str_element,limits,'charsize',index=index
+    if index ge 0 then csize=limits.charsize else csize=1
 
 endif
 
@@ -212,12 +215,12 @@ endelse
         ydat=transpose(ydat)
         contour, zdat, ydat, xdat, title=title, xtitle=ytitle, ytitle=xtitle, $
           c_colors=c_colors, levels=levels, yrange=xrange, ystyle=xstyle, $
-          ylog=xlog, xrange=yrange, xstyle=ystyle, xlog=ylog, $
+          ylog=xlog, xrange=yrange, xstyle=ystyle, xlog=ylog, charsize=csize, $
 	  fill=fill, xmargin=xmargin, ymargin=ymargin, xticks=yticks, xtickv=ytickv
     endif else begin
         contour, zdat, xdat, ydat, title=title, xtitle=xtitle, ytitle=ytitle, $
           c_colors=c_colors, levels=levels, yrange=yrange, ystyle=ystyle, $
-          ylog=ylog, xrange=xrange, xstyle=xstyle, xlog=xlog, $
+          ylog=ylog, xrange=xrange, xstyle=xstyle, xlog=xlog, charsize=csize, $
           fill=fill, xmargin=xmargin, ymargin=ymargin, yticks=yticks, ytickv=ytickv
     endelse
 	if keyword_set(points) then begin

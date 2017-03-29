@@ -2,158 +2,137 @@
 ;binning of fluxes according to energy and angular response of SEP, SWIA, STATIC
 ;to be called by mvn_pui_model
 
-pro mvn_pui_binner,np=np,do3d=do3d
+pro mvn_pui_binner,dphi,do3d=do3d
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
-onesnp=replicate(1.,np)
+nt=pui0.nt
+np=pui0.np
+msub=pui0.msub
 
-sep1ldx=sep1ld[*,0]#onesnp; sep look directions
-sep1ldy=sep1ld[*,1]#onesnp
-sep1ldz=sep1ld[*,2]#onesnp
-sep2ldx=sep2ld[*,0]#onesnp
-sep2ldy=sep2ld[*,1]#onesnp
-sep2ldz=sep2ld[*,2]#onesnp
-
-swiyldx=sep1ldy*sep2ldz-sep2ldy*sep1ldz ;swia look directions
-swiyldy=sep1ldz*sep2ldx-sep2ldz*sep1ldx
-swiyldz=sep1ldx*sep2ldy-sep2ldx*sep1ldy
+sep1ld=transpose(rebin(pui.data.sep[0].fov,[3,nt,np]),[0,2,1])
+sep2ld=transpose(rebin(pui.data.sep[1].fov,[3,nt,np]),[0,2,1])
+staxld=transpose(rebin(pui.data.sta.fov.x, [3,nt,np]),[0,2,1])
+stazld=transpose(rebin(pui.data.sta.fov.z, [3,nt,np]),[0,2,1])
+swiyldx=sep1ld[1,*,*]*sep2ld[2,*,*]-sep2ld[1,*,*]*sep1ld[2,*,*]
+stayldx=stazld[1,*,*]*staxld[2,*,*]-staxld[1,*,*]*stazld[2,*,*]
+swiyldy=sep1ld[2,*,*]*sep2ld[0,*,*]-sep2ld[2,*,*]*sep1ld[0,*,*]
+stayldy=stazld[2,*,*]*staxld[0,*,*]-staxld[2,*,*]*stazld[0,*,*]
+swiyldz=sep1ld[0,*,*]*sep2ld[1,*,*]-sep2ld[0,*,*]*sep1ld[1,*,*]
+stayldz=stazld[0,*,*]*staxld[1,*,*]-staxld[0,*,*]*stazld[1,*,*]
+swiyld=[swiyldx,swiyldy,swiyldz]
+stayld=[stayldx,stayldy,stayldz]
 swixld=(sep1ld+sep2ld)/sqrt(2.)
 swizld=(sep1ld-sep2ld)/sqrt(2.)
-swixldx=swixld[*,0]#onesnp
-swixldy=swixld[*,1]#onesnp
-swixldz=swixld[*,2]#onesnp
-swizldx=swizld[*,0]#onesnp
-swizldy=swizld[*,1]#onesnp
-swizldz=swizld[*,2]#onesnp
 
-staxldx=staxld[*,0]#onesnp; static look directions
-staxldy=staxld[*,1]#onesnp
-staxldz=staxld[*,2]#onesnp
-stazldx=stazld[*,0]#onesnp
-stazldy=stazld[*,1]#onesnp
-stazldz=stazld[*,2]#onesnp
-stayldx=stazldy*staxldz-staxldy*stazldz
-stayldy=stazldz*staxldx-staxldz*stazldx
-stayldz=stazldx*staxldy-staxldx*stazldy
+vxyz=pui.model[msub].rv[3:5,*]
+vtot=pui2.vtot
+ke=pui2.ke/1e3 ;energy (keV)
+ke[where(~finite(ke),/null)]=0. ;in case energy is NaN due to bad inputs (eV)
+ke[where(ke ge 1000,/null)]=1000. ;in case energy is too high due to bad inputs (eV)
+rfov=mvn_pui_reduced_fov(ke) ;correction factor for SWIA and STATIC reduced FOV at E>5keV
 
-cosvsep1=-(sep1ldx*v3x+sep1ldy*v3y+sep1ldz*v3z)/vxyz; cosine of angle between detector FOV and pickup ion -velocity vector
-cosvsep2=-(sep2ldx*v3x+sep2ldy*v3y+sep2ldz*v3z)/vxyz;
-cosvswix=-(swixldx*v3x+swixldy*v3y+swixldz*v3z)/vxyz;
-cosvswiy=-(swiyldx*v3x+swiyldy*v3y+swiyldz*v3z)/vxyz;
-cosvswiz=-(swizldx*v3x+swizldy*v3y+swizldz*v3z)/vxyz;
-cosvstax=-(staxldx*v3x+staxldy*v3y+staxldz*v3z)/vxyz;
-cosvstay=-(stayldx*v3x+stayldy*v3y+stayldz*v3z)/vxyz;
-cosvstaz=-(stazldx*v3x+stazldy*v3y+stazldz*v3z)/vxyz;
+cosvsep1=-total(vxyz*sep1ld,1)/vtot ;cosine of angle between detector FOV and pickup ion -velocity vector
+cosvsep2=-total(vxyz*sep2ld,1)/vtot
+cosvswix=-total(vxyz*swixld,1)/vtot
+cosvswiy=-total(vxyz*swiyld,1)/vtot
+cosvswiz=-total(vxyz*swizld,1)/vtot
+cosvstax=-total(vxyz*staxld,1)/vtot
+cosvstay=-total(vxyz*stayld,1)/vtot
+cosvstaz=-total(vxyz*stazld,1)/vtot
 
-cosvsep1xy=cosvsep1/sqrt(cosvsep1^2+cosvswiy^2); cosine of angle b/w projected -v on sep1 xy plane and sep1 fov 
-cosvsep2xy=cosvsep2/sqrt(cosvsep2^2+cosvswiy^2); cosine of angle b/w projected -v on sep2 xy plane and sep2 fov
-cosvsep1xz=cosvsep1/sqrt(cosvsep1^2+cosvsep2^2); cosine of angle b/w projected -v on sep1 xz plane and sep1 fov
-cosvsep2xz=cosvsep2/sqrt(cosvsep1^2+cosvsep2^2); cosine of angle b/w projected -v on sep2 xz plane and sep2 fov
+phiswixy=atan(cosvswiy,cosvswix); swia phi angles (-pi to pi)
+phistaxy=atan(cosvstay,cosvstax); stat phi angles (-pi to pi)
+thevswiz=!radeg*acos(cosvswiz) ;swia theta angles (0-180 degrees)
+thevstaz=!radeg*acos(cosvstaz) ;stat theta angles (0-180 degrees)
 
-phiswipm=!dtor*(360+22.50) ;swia binning parameter
-phistapm=!dtor*(360+11.25) ;static binning parameter
-phiswixy=!pi+atan(-cosvswiy,-cosvswix); swia phi angles: between 0 and 2pi rad
-phistaxy=!pi+atan(-cosvstay,-cosvstax); static phi angles: between 0 and 2pi rad
-phiswixy=phiswipm-((phiswipm-phiswixy) mod (2*!pi)); swia phi angles: between 22.5 and 360+22.5 deg
-phistaxy=phistapm-((phistapm-phistaxy) mod (2*!pi)); static phi angles: between 11.25 and 360+11.25 deg
+binswixy=(floor(8. +8.*phiswixy/!pi)+7) mod 16 ;swia azimuth bin (22.5  to 360+22.5  deg -> 0 to 15)
+binstaxy=(floor(8.5+8.*phistaxy/!pi)+7) mod 16 ;stat azimuth bin (11.25 to 360+11.25 deg -> 0 to 15)
+binvswiz=2+floor(2.*rfov*(90.-thevswiz)/45.) ;swia elevation bin (+45 to -45 deg -> 0 to 3)
+binvstaz=2+floor(2.*rfov*(90.-thevstaz)/45.) ;stat elevation bin (+45 to -45 deg -> 0 to 3)
+binsepke=floor(ke); linear energy step binning (keV)
+bintotke=126-floor(alog(1e3*ke)/pui0.totdee); log energy step ln(eV) for all flux (edges: 328 keV to 14.9 eV with 10% resolution)
+binswike= 69-floor(alog(1e3*ke)/pui0.swidee); log energy step ln(eV) for SWIA (post Nov 2014)
+binstake= 63-floor(alog(1e3*ke)/pui0.stadee); log energy step ln(eV) for STATIC (only pickup mode)
+binsepke[where(binsepke gt pui0.sormd-1,/null)]=pui0.sormd-1 ;if bins are outside the range, put them at the last energy bin
+bintotke[where((bintotke lt 0) or (bintotke gt pui0.toteb-1),/null)]=pui0.toteb-1 ;(lowest energy)
+binswike[where((binswike lt 0) or (binswike gt pui0.swieb-1) or (binswixy lt 0) or (binvswiz lt 0) or (binvswiz gt 3),/null)]=pui0.swieb-1
+binstake[where((binstake lt 0) or (binstake gt pui0.staeb-1) or (binstaxy lt 0) or (binvstaz lt 0) or (binvstaz gt 3),/null)]=pui0.staeb-1
 
-keflux1=replicate(0.,inn,srmd) ;sep1 flux binning
-keflux2=replicate(0.,inn,srmd) ;sep2 flux binning
-keflux=replicate(0.,inn,toteb) ;total flux binning
-kefswi=replicate(0.,inn,swieb);swia flux binning
-kefsta=replicate(0.,inn,staeb);static flux binning
-
-if keyword_set(do3d) then begin
-  kefswi3d=replicate(0.,inn,swieb,swina,swine);swia 3d flux binning
-  kefsta3d=replicate(0.,inn,staeb,swina,swine);static 3d flux binning
-  krxswi3d=replicate(0.,inn,swieb,swina,swine);swia 3d particle position binning
-  kryswi3d=replicate(0.,inn,swieb,swina,swine)
-  krzswi3d=replicate(0.,inn,swieb,swina,swine)
-  knnswi3d=replicate(0.,inn,swieb,swina,swine);swia 3d particle number binning
-endif
-
-ke[where(~finite(ke),/null)]=1. ;in case energy is NaN due to bad inputs (eV)
-ke[where(ke ge 700e3,/null)]=1. ;in case energy is too high due to bad inputs (eV)
-kestep=floor(ke/1e3); %linear energy step binning (keV)
-lnkestep=126-floor(alog(ke)/totdee); %log energy step ln(eV) for all flux (edges: 328 keV to 14.9 eV with 10% resolution)
-lnkeswia=69-floor(alog(ke)/swidee); %log energy step ln(eV) for SWIA (post Nov 2014)
-lnkestat=63-floor(alog(ke)/stadee); %log energy step ln(eV) for STATIC (only pickup mode)
-lnkestep[where((lnkestep lt 0) or (lnkestep gt toteb-1),/null)]=toteb-1 ;if bins are outside the range...
-lnkeswia[where((lnkeswia lt 0) or (lnkeswia gt swieb-1),/null)]=swieb-1 ;put them at the last bin...
-lnkestat[where((lnkestat lt 0) or (lnkestat gt staeb-1),/null)]=staeb-1 ;(lowest energy bin)
-
-ke5=ke/1e3
-ke5[where(ke5 lt 5.,/null)]=5.
-rfov=1.+(ke5-5.)/5.; correction factor for SWIA and STATIC reduced FOV at E>5keV
-
-cosfovsep=cos(!dtor*30.) ;sep opening angle (assuming conic)
 sinfovswi=sin(!dtor*45./rfov) ;swia and static +Z opening angle
-phifovswi=!dtor*dindgen(swina+1,increment=22.5,start=22.50) ;swia anode phi angle bins (azimuth):between 22.5 and 360+22.5 deg
-phifovsta=!dtor*dindgen(swina+1,increment=22.5,start=11.25) ;static anode phi angle bins (azimuth):between 11.25 and 360+11.25 deg
-thefovswi=!dtor*dindgen(swine+1,increment=22.5,start=-45.0) ;swia and static deflection theta angles (elevation):between -45 and 45 deg
-
-cosfovsepxy=cos(!dtor*21.0) ;sep opening angle (full angular extent) in sep xy plane (s/c xz)
-cosfovsepxz=cos(!dtor*15.5) ;sep opening angle (full angular extent) in sep xz plane (s/c yz)
-
-sdea1xy=(cosvsep1xy-cosfovsepxy)/(1-cosfovsepxy) ;sep projected detector effective area on sep1 xy plane
-sdea2xy=(cosvsep2xy-cosfovsepxy)/(1-cosfovsepxy)
-sdea1xz=(cosvsep1xz-cosfovsepxz)/(1-cosfovsepxz)
-sdea2xz=(cosvsep2xz-cosfovsepxz)/(1-cosfovsepxz)
-
-sdea1=sdea1xy*sdea1xz ;sep detector effective area factor (cm2)
-sdea2=sdea2xy*sdea2xz
-
-;very small sep detector area within cosfovsep (cm2)
-sdea1[where((cosvsep1xy lt cosfovsepxy) or (cosvsep1xz lt cosfovsepxz),/null)]=1e-2
-sdea2[where((cosvsep2xy lt cosfovsepxy) or (cosvsep2xz lt cosfovsepxz),/null)]=1e-2
-sdea1[where(cosvsep1 lt cosfovsep,/null)]=0.
-sdea2[where(cosvsep2 lt cosfovsep,/null)]=0.
-
 rfovswia=rfov
 rfovstat=rfov
-rfovswia[where(abs(cosvswiz) gt sinfovswi,/null)]=0
-rfovstat[where(abs(cosvstaz) gt sinfovswi,/null)]=0
+rfovswia[where(abs(cosvswiz) gt sinfovswi,/null)]=0.
+rfovstat[where(abs(cosvstaz) gt sinfovswi,/null)]=0.
 
-for it=1,np-1 do begin ;loop over particles
-  ntotit=ntot[*,it]
-  rfovit=rfov[*,it]
-  kestep2=indgen(inn)+inn*kestep[*,it]; going from 2D to 1D array subscripts
-  lnkestep2=indgen(inn)+inn*lnkestep[*,it]
-  lnkeswia2=indgen(inn)+inn*lnkeswia[*,it]
-  lnkestat2=indgen(inn)+inn*lnkestat[*,it]
-  
-  keflux1[kestep2]+=ntotit*sdea1[*,it] ;bin pickup ion fluxes that are within the FOV
-  keflux2[kestep2]+=ntotit*sdea2[*,it]
-  keflux[lnkestep2]+=ntotit; %total energy flux
-  kefswi[lnkeswia2]+=ntotit*rfovswia[*,it]; %energy flux
-  kefsta[lnkestat2]+=ntotit*rfovstat[*,it]; %energy flux
+mvn_pui_sep_angular_response,cosvsep1,cosvsep2,cosvswiy,sdea1,sdea2
 
-  if keyword_set(do3d) then begin
-    for k=0,swine-1 do begin
-      sinfovswik0=sin(thefovswi[k]/rfovit)
-      sinfovswik1=sin(thefovswi[k+1]/rfovit)
-      rfovswi3d=rfovit
-      rfovsta3d=rfovit
-      rfovswi3d[where((cosvswiz[*,it] lt sinfovswik0) or (cosvswiz[*,it] gt sinfovswik1),/null)]=0
-      rfovsta3d[where((cosvstaz[*,it] lt sinfovswik0) or (cosvstaz[*,it] gt sinfovswik1),/null)]=0
-      for j=0,swina-1 do begin
-          rfovswia3d=rfovswi3d
-          rfovstat3d=rfovsta3d
-          rfovswia3d[where((phiswixy[*,it] lt phifovswi[j]) or (phiswixy[*,it] gt phifovswi[j+1]),/null)]=0
-          rfovstat3d[where((phistaxy[*,it] lt phifovsta[j]) or (phistaxy[*,it] gt phifovsta[j+1]),/null)]=0
-          lnkeswia3d=lnkeswia2+inn*swieb*j+inn*swieb*swina*k
-          lnkestat3d=lnkestat2+inn*staeb*j+inn*staeb*swina*k
-          kefswi3d[lnkeswia3d]+=ntotit*rfovswia3d; %energy flux
-          kefsta3d[lnkestat3d]+=ntotit*rfovstat3d; %energy flux
-          krxswi3d[lnkeswia3d]+=r3x[*,it]*rfovswia3d ;starting positions of pickup ions (m)
-          kryswi3d[lnkeswia3d]+=r3y[*,it]*rfovswia3d
-          krzswi3d[lnkeswia3d]+=r3z[*,it]*rfovswia3d
-          knnswi3d[lnkeswia3d]+=rfovswia3d ;number of particles in this bin (weighted by rfov)
-        endfor
-      endfor
-  endif
+secof=(ke-40.)/60. ;sep energy response for oxygen, 0 below 40 keV, linearly reaching 1 at 100 keV
+secof[where(ke lt 40.,/null)]=0.
+secof[where(ke gt 100.,/null)]=1.
+sdeaecof=transpose(rebin([[[sdea1*secof]],[[sdea2*secof]]],[np,nt,2,6]),[3,0,1,2])
 
+;sep detected particle sources
+for i=0,1 do begin ;loop over sep's
+  pui.model[msub].fluxes.sep[i].rv=total(pui.model[msub].rv*sdeaecof[*,*,*,i],2,/nan)/total(sdeaecof[*,*,*,i],2,/nan)
 endfor
 
+kfsep1=replicate(0.,pui0.sormd,nt) ;sep1 flux binning
+kfsep2=kfsep1 ;sep2 flux binning
+keflux=replicate(0.,pui0.toteb,nt) ;total flux binning
+kefswi=replicate(0.,pui0.swieb,nt) ;swia flux binning
+kefsta=replicate(0.,pui0.staeb,nt) ;static flux binning
+indgent=indgen(nt)
+for ip=1,np-1 do begin ;loop over particles
+  kfsep1[binsepke[ip,*],indgent]+=dphi[ip,*]*sdea1[ip,*] ;bin pickup ion fluxes that are within the FOV
+  kfsep2[binsepke[ip,*],indgent]+=dphi[ip,*]*sdea2[ip,*]
+  keflux[bintotke[ip,*],indgent]+=dphi[ip,*]; total energy flux
+  kefswi[binswike[ip,*],indgent]+=dphi[ip,*]*rfovswia[ip,*]; energy flux
+  kefsta[binstake[ip,*],indgent]+=dphi[ip,*]*rfovstat[ip,*]; energy flux
+endfor
+
+pui.model[msub].fluxes.sep[0].incident_rate=kfsep1
+pui.model[msub].fluxes.sep[1].incident_rate=kfsep2
+pui.model[msub].fluxes.toteflux=keflux/pui0.totdee; total pickup angle-integrated differential energy flux (eV/[cm2 s eV])
+pui.model[msub].fluxes.swi1d.eflux=kefswi/pui0.swidee/pui0.swiatsa; differential energy flux (eV/[cm2 s sr eV])
+pui.model[msub].fluxes.sta1d.eflux=kefsta/pui0.stadee/pui0.swiatsa; differential energy flux (eV/[cm2 s sr eV])
+
+if keyword_set(do3d) then begin
+  swi3d=replicate({ef:0.,nn:0.,rv:replicate(0.,6)},pui0.swieb,pui0.swina,pui0.swine,nt) ;swia 3d eflux binning
+  sta3d=replicate({ef:0.,nn:0.,rv:replicate(0.,6)},pui0.sd1eb,pui0.swina,pui0.swine,nt) ;swia 3d eflux binning
+
+  d1energy=pui.data.sta.d1.energy ;static d1 energy table
+  d1enedge=sqrt(d1energy[0:-2,*]*d1energy[1:-1,*]) ;static d1 energy bin edges (missing the ending points)
+  ebinedge=replicate(0.,pui0.sd1eb+1,nt) ;add the ending points
+  ebinedge[1:-2,*]=d1enedge
+  ebinedge[0,*]=d1energy[0,*]*(1+pui0.stadee)
+  ebinedge[-1,*]=d1energy[-1,*]/(1+pui0.stadee)
+
+  binstake=replicate(pui0.sd1eb-1,np,nt) ;initialize static bins at lowest energy
+  for ie=0,pui0.sd1eb-1 do begin ;bin according to energy
+    ebin1=replicate(1.,np)#ebinedge[ie,*]
+    ebin0=replicate(1.,np)#ebinedge[ie+1,*]
+    binstake[where((1e3*ke gt ebin0) and (1e3*ke lt ebin1),/null)]=ie
+  endfor
+
+  binstake[where((binstaxy lt 0) or (binvstaz lt 0) or (binvstaz gt 3),/null)]=pui0.sd1eb-1 ;(lowest energy bin)
+  binswixy[where((binswixy lt 0),/null)]=0 ;if not in swia's azimuth bin range due to NaN's in phiswixy
+  binstaxy[where((binstaxy lt 0),/null)]=0 ;if not in stat's azimuth bin range
+  binvswiz[where((binvswiz lt 0) or (binvswiz gt 3),/null)]=0 ;if outside swia's elevation fov
+  binvstaz[where((binvstaz lt 0) or (binvstaz gt 3),/null)]=0 ;if outside stat's elevation fov
+
+  for ip=1,np-1 do begin ;loop over particles
+    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].ef+=dphi[ip,*]*rfov[ip,*] ;energy flux
+    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].ef+=dphi[ip,*]*rfov[ip,*]
+    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].nn+=1 ;number of particles in this bin
+    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].nn+=1
+    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;swia 3d particle position and velocity binning
+    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;stat 3d particle position and velocity binning
+  endfor
+  pui.model[msub].fluxes.swi3d.eflux=swi3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/pui0.swidee; differential energy flux (eV/[cm2 s sr eV])
+  pui.model[msub].fluxes.sta3d.eflux=sta3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/pui0.stadee/2.
+  pui.model[msub].fluxes.swi3d.rv=swi3d.rv/transpose(rebin(swi3d.nn,[pui0.swieb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
+  pui.model[msub].fluxes.sta3d.rv=sta3d.rv/transpose(rebin(sta3d.nn,[pui0.sd1eb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
+endif
+;stop
 end

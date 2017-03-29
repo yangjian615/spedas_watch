@@ -17,6 +17,9 @@
 ;                 If not specified, then use current range set by timespan.
 ;
 ;KEYWORDS:
+;       DT:       Time resolution (sec).  Default is to use the time resolution
+;                 of maven_orbit_tplot (usually 10 sec).
+;
 ;       FRAME:    String or string array for specifying one or more frames
 ;                 to transform the nadir direction into.  Any frame recognized
 ;                 by SPICE is allowed.  The default is 'MAVEN_SPACECRAFT'.
@@ -31,13 +34,13 @@
 ;                 default frame, this would be 'Nadir_MAVEN_SPACECRAFT'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-20 09:42:50 -0700 (Mon, 20 Mar 2017) $
-; $LastChangedRevision: 22992 $
+; $LastChangedDate: 2017-03-28 14:02:00 -0700 (Tue, 28 Mar 2017) $
+; $LastChangedRevision: 23058 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_nadir.pro $
 ;
 ;CREATED BY:    David L. Mitchell
 ;-
-pro mvn_nadir, trange, pans=pans, frame=frame, polar=polar
+pro mvn_nadir, trange, dt=dt, pans=pans, frame=frame, polar=polar
 
   @maven_orbit_common
 
@@ -64,8 +67,18 @@ pro mvn_nadir, trange, pans=pans, frame=frame, polar=polar
 
 ; First store the nadir direction in the IAU_MARS frame
 
-  x = state.time
-  y = -(state.geo_x)  ; IAU_MARS direction of nadir
+  if keyword_set(dt) then begin
+    npts = ceil((tmax - tmin)/dt)
+    x = tmin + dt*dindgen(npts)
+    y = fltarr(npts,3)
+    y[*,0] = spline(state.time, -(state.geo_x[*,0]), x)
+    y[*,1] = spline(state.time, -(state.geo_x[*,1]), x)
+    y[*,2] = spline(state.time, -(state.geo_x[*,2]), x)
+  endif else begin
+    x = state.time
+    y = -(state.geo_x)
+  endelse
+
   ymag = sqrt(total(y*y,2)) # replicate(1.,3)
   store_data,'Nadir',data={x:x, y:y/ymag, v:indgen(3)}
   options,'Nadir','ytitle','Nadir (Mars)'
