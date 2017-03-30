@@ -6,10 +6,28 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-24 15:13:41 -0700 (Fri, 24 Mar 2017) $
-; $LastChangedRevision: 23033 $
+; $LastChangedDate: 2017-03-29 14:00:57 -0700 (Wed, 29 Mar 2017) $
+; $LastChangedRevision: 23069 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_omni_not_replacing_0s_with_nans
+  mms_load_feeps, probe=1
+  get_data, 'mms1_epd_feeps_srvy_l2_electron_intensity_omni', data=d
+  ; bug was replacing 0s with NaNs; the first time here should have 1 zero, no NaNs
+  assert, ~array_contains(d.Y[0, *], !values.d_nan), 'Regression in mms_feeps_omni??' 
+  assert, array_contains(d.Y[0, *], 0d), 'Regression in mms_feeps_omni??'
+  return, 1
+end
+
+; the following is a regression test for a bug in the FEEPS
+; omni-directional code that was fixed 3/29/17
+function mms_load_feeps_ut::test_omni_offbyone_err
+  mms_load_feeps, probe=1
+  get_data, 'mms1_epd_feeps_srvy_l2_electron_intensity_omni', data=d
+  assert, total(d.Y[0, *], /nan) lt 100., 'Regression in mms_feeps_omni??' ; bug was causing this to be a large #, > 3k
+  return, 1
+end
 
 ; the following is a regression test for the FEEPS PAD bug
 ; where the last bin was always left off due to a -1 error

@@ -25,11 +25,14 @@
 ; NOTES:
 ;       New version, 1/26/17 - egrimes
 ;       Newer version, 1/31/17 - dturner
+;       Fixed 2 bugs (3/29/17): 1) off by one bug when setting bottom sensor without data to NaNs, and
+;                               2) now initializing output as NaNs, to avoid setting channels with 
+;                                 counts=0 to NaN - egrimes
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-21 14:04:28 -0800 (Tue, 21 Feb 2017) $
-; $LastChangedRevision: 22836 $
+; $LastChangedDate: 2017-03-29 13:35:46 -0700 (Wed, 29 Mar 2017) $
+; $LastChangedRevision: 23068 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 
@@ -95,7 +98,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   if is_struct(d) then begin
     flux_omni = dblarr(n_elements(d.x), n_elements(d.v))
     if level ne 'sitl' then begin
-      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), 2*n_elements(sensors))
+      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), 2*n_elements(sensors))+!values.d_nan
       for isen = 0, 2*n_elements(sensors)-1, 2 do begin
         ; Top units:
         var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[fix(isen/2)])+'_clean_sun_removed'+suffix, /rem)
@@ -108,10 +111,10 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
         get_data, var_name, data = d, dlimits=dl
         dalleyes[*,*,isen+1] = reform(d.y)     
         iE = where(abs(energies - d.v) gt en_chk*energies) ; Check for energies beyond en_chk [%] of the corrected energy bin center and replace with NAN
-        if iE[0] ne -1 then dalleyes[*,iE,isen] = !values.d_nan
+        if iE[0] ne -1 then dalleyes[*,iE,isen+1] = !values.d_nan
       endfor
     endif else begin
-      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), n_elements(sensors))
+      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), n_elements(sensors))+!values.d_nan
       for isen = 0, n_elements(sensors)-1 do begin
         ; Only Top units in SITL product:
         var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[fix(isen)])+'_clean_sun_removed'+suffix, /rem)
@@ -126,7 +129,6 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   ; if no data found, just return
   if undefined(dalleyes) then return
   
-  dalleyes[where(dalleyes eq 0.0)] = !values.d_nan 
   flux_omni = reform(average(dalleyes,3,/NAN))
 
   ; Added by DLT on 31 Jan 2017: set unique gain factors per spacecraft

@@ -10,8 +10,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-05 10:06:57 -0800 (Thu, 05 Jan 2017) $
-;$LastChangedRevision: 22498 $
+;$LastChangedDate: 2017-03-29 12:04:50 -0700 (Wed, 29 Mar 2017) $
+;$LastChangedRevision: 23064 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -156,7 +156,7 @@ PRO mms_ui_fileconfig_event, event
       ; so the values will be set outside of the panel
       ; and/or gui
       ; these values will also be used each time mms_init is called
-      mms_config_write
+      mms_config_write, !mms
       state.statusBar->update,'Saved mms_config.txt'
       state.historyWin->update,'Saved mms_config.txt'
 

@@ -156,7 +156,7 @@
 ;  
 ;  DETERM_TOLERANCE:  tolerance of the determinant of the custom rotation matrix 
 ;           (maximum acceptable difference from determ(C)=1 where C is the 
-;           user's custom rotation matrix)
+;           user's custom rotation matrix); default is 1e-6
 ; 
 ;
 ;Output:
@@ -208,8 +208,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-12-20 09:38:58 -0800 (Tue, 20 Dec 2016) $
-;$LastChangedRevision: 22464 $
+;$LastChangedDate: 2017-03-29 09:42:14 -0700 (Wed, 29 Mar 2017) $
+;$LastChangedRevision: 23063 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
