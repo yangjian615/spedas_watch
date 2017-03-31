@@ -9,6 +9,7 @@
 ;	    cdfconvert: (optional) location of cdfconvert utility (eg. /usr/local/pkg/cdf-3.6.1_CentOS-6.6/bin/cdfconvert)
 ;	    cdfparams: (optional) cdf compression parameters
 ;	    cdf_compress_error: (optional) return string for compression errors 
+;	    cdf_tmp_dir: (optional) compression uses this directory for temporary files
 ;	    
 ; OUTPUTS:  CDF file named by the new_cdf_name input
 ; EXAMPLE:  dummy = cdf_save_vars(cdfi,'newcdf.cdf')
@@ -21,7 +22,7 @@
 
 ;------------------------------------------------------------------------------------------
 
-function cdf_save_vars, cdf_structure, new_cdf_name, compress_cdf=compress_cdf, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_compress_error=cdf_compress_error
+function cdf_save_vars, cdf_structure, new_cdf_name, compress_cdf=compress_cdf, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_compress_error=cdf_compress_error, cdf_tmp_dir=cdf_tmp_dir
 
 ;check input
 ;-----------
@@ -172,7 +173,7 @@ cdf_close,id
 
 ; after the file is produced, we can compress it
 if (compress_cdf eq 1) then begin
-  spd_cdf_compress, new_cdf_name, replace=1, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_compress_error=cdf_compress_error
+  spd_cdf_compress, new_cdf_name, replace=1, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_compress_error=cdf_compress_error, cdf_tmp_dir=cdf_tmp_dir
 endif
 
 end

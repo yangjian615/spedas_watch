@@ -28,8 +28,8 @@
 ;  spd_cdf_compress, 'c:\temp\in.cdf', 'c:\temp\out.cdf', cdfconvert='C:\CDF Distribution\cdf36_1-dist\bin\cdfconvert.exe', replace=1, cdf_compress_error=cdf_compress_error
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-02-16 11:47:27 -0800 (Thu, 16 Feb 2017) $
-;$LastChangedRevision: 22804 $
+;$LastChangedDate: 2017-03-30 12:56:39 -0700 (Thu, 30 Mar 2017) $
+;$LastChangedRevision: 23072 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_cdf_compress.pro $
 ;
 ;-
@@ -56,16 +56,17 @@ pro spd_cdf_compress, file_in, file_out=file_out, replace=replace, cdfconvert=cd
   endelse
   
   if ~keyword_set(cdf_tmp_dir) then begin
-    cdf_temp = GETENV('CDF_TMP')
+    cdf_temp = '/mydisks/home/thmsoc/' 
     if file_test(cdf_temp, /directory) then begin
       cdf_tmp_dir=cdf_temp
-    endif else begin ;if CDF_TMP doesn't exist, use the server temp dir
-      if file_test('/mydisks/home/thmsoc/', /directory) then begin
-        cdf_tmp_dir = '/mydisks/home/thmsoc/'
+    endif else begin ;if /mydisks/home/thmsoc/ doesn't exist, use the server CDF_TMP dir
+      cdf_temp = GETENV('CDF_TMP')
+      if file_test(cdf_temp, /directory) then begin
+        cdf_tmp_dir = cdf_temp 
       endif
-    endelse    
+    endelse
   endif
-  if file_test(cdf_tmp_dir, /directory) then begin
+  if ~file_test(cdf_tmp_dir, /directory) then begin
     cdf_tmp_dir = file_dirname(file_in)
   endif
   if strmid(cdf_tmp_dir, 0, /reverse_offset) ne path_sep() then begin

@@ -263,7 +263,7 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
   ;of the spinaxis angle to Bo if the calculated Ex component is accurate (assuming
   ;a steady background Efield)
   get_data,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',etimes,edata
-  emag = sqrt(edata[*,0]^2 + emag[*,1]^2 + emag[*,2]^2)
+  emag = sqrt(edata[*,0]^2 + edata[*,1]^2 + edata[*,2]^2)
   store_data,'emag',etimes,emag
 
 
