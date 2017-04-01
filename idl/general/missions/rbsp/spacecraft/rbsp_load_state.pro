@@ -123,9 +123,9 @@
 ;   2015-09-29: jmm, More error checking, for attitude history files
 ;   which fails for pre IDL 8.
 ; VERSION:
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-04-29 15:42:59 -0700 (Fri, 29 Apr 2016) $
-; $LastChangedRevision: 20985 $
+; $LastChangedBy: jimmpc1 $
+; $LastChangedDate: 2017-03-31 16:47:13 -0700 (Fri, 31 Mar 2017) $
+; $LastChangedRevision: 23076 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/spacecraft/rbsp_load_state.pro $
 ;
 ;-
@@ -222,7 +222,6 @@ for ip = 0, nsc-1 do begin
   tmpdir = datadir + mocdir
   ; Retrieve file names for downloading
   fnames = rbsp_load_state_get_attitude_filelist(remote_dir, localdir = tmpdir)
-
   ; Loop over files to load.
   nfile = n_elements(fnames)
   for i = 0L, nfile-1 do begin
@@ -297,13 +296,18 @@ for ip = 0, nsc-1 do begin
        'ephemerides/':fnames = rbsp_load_state_eph_kernel(sc, files_in=fnamesk)
        'ephemeris_predict_longterm/':fnames = rbsp_load_state_eph_predict_kernel(sc, files_in=fnamesk)
        'eclipse_predict/':Begin
+          ;this will return the full file path,
+          ;this is needed so that the eventual call
+          ;to rbsp_load_state_eclipse_time does
+          ;not fail , jmm 2017-03-31
+          ;so use file_basename to strip the path out here
           fnames = rbsp_load_state_eclipse_time_files(sc, files_in=fnamesk)
+          fnames = file_basename(fnames)
        End
        Else:fnames = fnamesk
     Endcase
     If(~is_string(fnames)) Then continue
     nfile = n_elements(fnames)
-
     for i = 0L, nfile-1 do begin
       fname = fnames[i]
       pathname = mocdir + subdir + fname
@@ -731,7 +735,7 @@ files = files[ind]
 ind = uniq(files)
 files = files[ind]
 
-return, ecl_dir + files
+return, ecl_dir+files
 
 end
 
