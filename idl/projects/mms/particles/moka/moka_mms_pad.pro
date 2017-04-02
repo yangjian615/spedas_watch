@@ -43,13 +43,14 @@
 ;  Fixed para and anti-para mistake (thanks to R. Mistry) 2017-03-14
 ;  
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-03-14 11:46:21 -0700 (Tue, 14 Mar 2017) $
-;$LastChangedRevision: 22963 $
+;$LastChangedDate: 2017-04-01 12:05:33 -0700 (Sat, 01 Apr 2017) $
+;$LastChangedRevision: 23077 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
 ;-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
   norm=norm, ename=ename, pr___0 = pr___0, pr__90 = pr__90, pr_180=pr_180,$
-  daPara=da,daPerp=da2,oclreal=oclreal, single_time=single_time
+  daPara=da,daPerp=da2,oclreal=oclreal, single_time=single_time, $
+  vlm=vlm; An additional frametransformation
   compile_opt idl2
 
   ;------------
@@ -176,18 +177,31 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
     ;------------------------------------
     ; Particle Velocities & Pitch Angles
     ;------------------------------------
+    
+    ; Spherical to Cartesian
     erest = data.mass * !const.c^2 / 1e6; convert mass from eV/(km/s)^2 to eV
     vabs = !const.c * sqrt( 1 - 1/((data.ENERGY/erest + 1)^2) )  /  1000.;velocity in km/s
     sphere_to_cart, vabs, data.theta, data.phi, vx, vy, vz
-    if ~undefined(vname) then begin
-      vx -= Vbulk[0]
-      vy -= Vbulk[1]
-      vz -= Vbulk[2]
-    endif
+    
+    ; Frame transformation
+;    if undefined(vlmpot) then begin
+      if ~undefined(vname) then begin; Plasma rest-frame
+        vx -= Vbulk[0]
+        vy -= Vbulk[1]
+        vz -= Vbulk[2]
+      endif
+;    endif else begin; Another frame (under development)
+;      bvec = double(moka_tplot_average(bname, tr,norm=0))
+;      moka_mms_vlm, vx, vy, vz, Vbulk, bvec, vlm
+;    endelse
+    
+    ; Pitch angles
     dp  = (bnrm[0]*vx + bnrm[1]*vy + bnrm[2]*vz)/sqrt(vx^2+vy^2+vz^2)
     idx = where(dp gt  1.d0, ct) & if ct gt 0 then dp[idx] =  1.d0
     idx = where(dp lt -1.d0, ct) & if ct gt 0 then dp[idx] = -1.d0
     pa  = rd*acos(dp)
+    
+    ; Cartesian to Spherical
     cart_to_sphere, vx, vy, vz, vnew, theta, phi, /ph_0_360
     data.energy = erest*(1.d0/sqrt(1.d0-(vnew*1000.d0/!const.c)^2)-1.d0); eV
     data.phi    = phi
@@ -303,6 +317,7 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
     spec___0:f_psd[*,0], spec__90:f_psd[*,1], spec_180:f_psd[*,2], spec_omn:f_psd[*,3], $
     cnts___0:f_cnt[*,0], cnts__90:f_cnt[*,1], cnts_180:f_cnt[*,2], cnts_omn:f_cnt[*,3], $
     oclv___0:f_ocl[*,0], oclv__90:f_ocl[*,1], oclv_180:f_ocl[*,2], oclv_omn:f_ocl[*,3], $
+    eror___0:f_err[*,0], eror__90:f_err[*,1], eror_180:f_err[*,2], eror_omn:f_err[*,3], $
     trange:tr, vbulk_para:vbulk_para, vbulk_perp_abs:vbulk_perp, vbulk_vxb:vbulk_vxb, vbulk_exb:vbulk_exb, bnrm:bnrm, Vbulk:Vbulk}
 
 END
