@@ -41,7 +41,7 @@
 
 pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=suffix,$
   noplot=noplot,nospinfit=nospinfit,ql=ql,boom_pair=bp,$
-  rerun=rerun,noremove=noremove,anglemin=anglemin
+  rerun=rerun,noremove=noremove,anglemin=anglemin,bad_probe=bad_probe
 
   if ~KEYWORD_SET(anglemin) then anglemin = 15.
 
@@ -82,10 +82,10 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
 
   ;Load spinfit MGSE Efield and Bfield
   if ~keyword_set(nospinfit) then begin
-    rbsp_efw_spinfit_vxb_subtract_crib,probe,/noplot,ql=ql,boom_pair=bp;,rerun=rerun
+    rbsp_efw_spinfit_vxb_subtract_crib,probe,/noplot,ql=ql,boom_pair=bp;,bad_probe=bad_probe;,rerun=rerun
     evar = 'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit'
   endif else begin
-    rbsp_efw_vxb_subtract_crib,probe,/noplot,ql=ql
+    rbsp_efw_vxb_subtract_crib,probe,/noplot,ql=ql,bad_probe=bad_probe
     evar = 'rbsp'+probe+'_efw_esvy_mgse_vxb_removed'
   endelse
 
@@ -262,7 +262,10 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
   ;Create Emag variable. The Efield magnitude shouldn't change as a function
   ;of the spinaxis angle to Bo if the calculated Ex component is accurate (assuming
   ;a steady background Efield)
-  get_data,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',etimes,edata
+  if ~KEYWORD_SET(nospinfit) then $
+    get_data,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed_spinfit',etimes,edata else $
+    get_data,'rbsp'+probe+'_efw_esvy_mgse_vxb_removed',etimes,edata
+
   emag = sqrt(edata[*,0]^2 + edata[*,1]^2 + edata[*,2]^2)
   store_data,'emag',etimes,emag
 

@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-01 13:01:58 -0800 (Wed, 01 Mar 2017) $
-; $LastChangedRevision: 22881 $
+; $LastChangedDate: 2017-04-03 09:24:09 -0700 (Mon, 03 Apr 2017) $
+; $LastChangedRevision: 23084 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_edp_ut__define.pro $
 ;-
 
@@ -194,7 +194,7 @@ function mms_load_edp_ut::test_load_edp_cdf_filenames
   mms_load_edp, probe=1, /spdf, suffix='_fromspdf', cdf_filenames=spdf_filenames, level='l2'
   mms_load_edp, probe=1, suffix='_fromsdc', cdf_filenames=sdc_filenames, level='l2'
   assert, spd_data_exists('mms1_edp_dce_gse_fast_l2_fromspdf', '2015-12-15', '2015-12-16'), 'Problem loading edp data with from spdf cdf filenames'
-  assert, array_equal(spdf_filenames, sdc_filenames), 'Problem with cdf_filenames keyword (SDC vs. SPDF) for edp data'
+  assert, array_equal(strlowcase(spdf_filenames), strlowcase(sdc_filenames)), 'Problem with cdf_filenames keyword (SDC vs. SPDF) for edp data'
   return, 1
 end
 

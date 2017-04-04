@@ -89,8 +89,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2017-02-14 11:31:18 -0800 (Tue, 14 Feb 2017) $
-; $LastChangedRevision: 22777 $
+; $LastChangedDate: 2017-04-03 14:22:23 -0700 (Mon, 03 Apr 2017) $
+; $LastChangedRevision: 23088 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
@@ -249,8 +249,13 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            dummy = d
            dummy = conv_units(dummy, 'df')
            dummy.data = FLOAT(dummy.bins_sc)
-           status = EXECUTE("slice2d, dummy, _extra=_extra, vel=vel, /noplot, datplot=block, /verbose")
-           undefine, dummy
+           IF SIZE(_extra, /type) EQ 8 THEN BEGIN
+              dummy_extra = _extra
+              IF tag_exist(dummy_extra, 'units', /quiet) THEN str_element, dummy_extra, 'units', /delete
+              IF tag_exist(dummy_extra, 'unit', /quiet) THEN str_element, dummy_extra, 'unit', /delete
+           ENDIF 
+           status = EXECUTE("slice2d, dummy, _extra=dummy_extra, vel=vel, /noplot, datplot=block, /verbose")
+           undefine, dummy, dummy_extra
         ENDIF
 
         status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=datplot")

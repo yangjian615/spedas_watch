@@ -9,8 +9,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-20 16:02:00 -0700 (Mon, 20 Mar 2017) $
-; $LastChangedRevision: 23002 $
+; $LastChangedDate: 2017-04-03 08:35:22 -0700 (Mon, 03 Apr 2017) $
+; $LastChangedRevision: 23083 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_curlometer_crib.pro $
 ;-
 
@@ -27,7 +27,7 @@ positions = 'mms'+['1', '2', '3', '4']+'_fgm_r_gse_brst_l2'
 mms_curl, trange=trange, fields=fields, positions=positions, suffix='_mms_curl'
 
 tplot, ['divB','curlB','jtotal','jperp','jpar','baryb']+'_mms_curl'
-
+stop
 
 ; method #2: mms_lingradest
 mms_lingradest, fields=fields, positions=positions, suffix='_lingradest'

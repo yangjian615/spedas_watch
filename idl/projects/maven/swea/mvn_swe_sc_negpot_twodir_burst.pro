@@ -33,11 +33,12 @@ Pro mvn_swe_sc_negpot_twodir_burst,shadow=shadow,swidth=swidth,fill=fill
     @mvn_swe_com
     print,'This program is still under experimenting stage'
     
-    a3 = mvn_swe_pad_arc
+    ;a3 = mvn_swe_pad_arc
     if (size(mvn_swe_pad_arc,/type) ne 8) then begin
        get_timespan,trange
        mvn_swe_load_l2,trange,/pad,/burst,/noerase
     endif
+    a3 = mvn_swe_pad_arc
 
     if ~(keyword_set(swidth)) then $
            swidth=45.*!dtor $

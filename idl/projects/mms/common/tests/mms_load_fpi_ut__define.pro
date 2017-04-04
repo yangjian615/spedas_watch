@@ -7,8 +7,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-01 13:01:58 -0800 (Wed, 01 Mar 2017) $
-; $LastChangedRevision: 22881 $
+; $LastChangedDate: 2017-04-03 08:15:42 -0700 (Mon, 03 Apr 2017) $
+; $LastChangedRevision: 23082 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
@@ -179,7 +179,7 @@ function mms_load_fpi_ut::test_noupdate_actually_works
   mms_load_fpi, trange=['2015-10-15', '2015-10-18'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_local, /no_update
   assert, spd_data_exists('mms1_dis_energyspectr_omni_fast', '2015-10-15', '2015-10-18'), $
     'Problem loading data from local drive'
-  assert, array_equal(fn_sdc, fn_local), $
+  assert, array_equal(strlowcase(fn_sdc), strlowcase(fn_local)), $
     'Problem loading data from local drive (different CDF filenames)'
   return, 1
 end
@@ -192,7 +192,7 @@ function mms_load_fpi_ut::test_noupdate_mem
   
   ; load the data locally
   mms_load_fpi, trange=['2015-10-16/13:06:00', '2015-10-16/13:08:00'], level='l2', probe=1, datatype='dis-moms', cdf_filenames=fn_local, /no_update
-  assert, array_equal(fn_sdc, fn_local), $
+  assert, array_equal(strlowcase(fn_sdc), strlowcase(fn_local)), $
     'Problem loading data from local drive (different CDF filenames)'
   return, 1
 end

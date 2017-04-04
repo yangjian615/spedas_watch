@@ -39,7 +39,7 @@ if total(strmatch(tplotnames, 'mvn_lpw_lp_n_t_l2')) eq 1. then begin
     
     time = dd1.x   ;grab data and upper / lower limits
     flag = dd1.flag
-    if tag_exist(dd1, 'info') then info = dd1.info else info = 'NA'
+    if tag_exist(dd1, 'info') then info = dd1.info else info = fltarr(n_elements(dd1.x))  ;as people want to combine many days, need an array so that combining doesn't crash if some dates have this and some don't
     Nelectron   = dd1.y[*,0]
     NelectronDY = dd1.dy[*,0]
     NelectronDV = dd1.dv[*,0]

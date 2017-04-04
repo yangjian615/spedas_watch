@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-01 13:01:58 -0800 (Wed, 01 Mar 2017) $
-; $LastChangedRevision: 22881 $
+; $LastChangedDate: 2017-04-03 09:24:09 -0700 (Mon, 03 Apr 2017) $
+; $LastChangedRevision: 23084 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_dsp_ut__define.pro $
 ;-
 
@@ -154,7 +154,7 @@ end
 function mms_load_dsp_ut::test_load_dsp_cdf_filenames
   mms_load_dsp, probe=3, datatype='epsd', /spdf, suffix='_fromspdf', data_rate='fast', level='l2', cdf_filenames=spdf_filenames
   mms_load_dsp, probe=3, datatype='epsd', suffix='_fromsdc', data_rate='fast', level='l2', cdf_filenames=sdc_filenames
-  assert, array_equal(spdf_filenames, sdc_filenames), 'Problem with cdf_filenames keyword (SDC vs. SPDF) for dsp data'
+  assert, array_equal(strlowcase(spdf_filenames), strlowcase(sdc_filenames)), 'Problem with cdf_filenames keyword (SDC vs. SPDF) for dsp data'
   return, 1
 end
 

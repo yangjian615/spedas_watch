@@ -8,6 +8,11 @@
 ; Routine determines angle between MAVEN x,y,z axes and the Sun.
 ; Routine gets MAVEN and Sun pointing directions in MAVEN spacecraft frame.
 ; SPICE is required to run this routine.
+; Routine loads and unloads SPICE kernels for you.
+; 
+; TO RUN:
+; mvn_lpw_anc_get_spice_kernels, time    ;find required SPICE kernels for the UNIX time array 'time'. Kernels are saved into a tplot variable
+; mvn_lpw_anc_spacecraft, time      ;calcualte pointing etc, using kernels stored previously in tplot. 
 ;
 ;
 ;USAGE:
@@ -51,7 +56,7 @@
 ;
 ;mvn_lpw_anc_mvn_vel_sc_iau: MAVEN velocity in the s/c frame, in km/s, based on the IAU frame.
 ;
-;mvn_lpw_anc_mvn_longlat_iau: array is [N,2]: top row is geodetic longitude, bottom is dgeodetic latitude, both in degrees, in IAU frame. Longitude is EAST positive.
+;mvn_lpw_anc_mvn_longlat_iau: array is [N,2]: top row is east longitude, bottom is latitude, both in degrees, in IAU frame. This is in the geodetic frame (Mars not a sphere).
 ;
 ;mvn_lpw_anc_mvn_alt_iau: MAVEN altitude from surface, in geodetic coords (IAU frame), in km.
 ;
@@ -85,7 +90,13 @@
 ;
 ;Setting /css will get position information of Comet Siding Spring in MSO and IAU frames.
 ;
+;Set /basic to only calculate MAVEN position and velocity in both the MSO and IAU frames, and altitude in the IAU frame. This helps speed up the routine.
+;
+;Setting /dont_unload will keep SPICE kernels stored in IDL memory. Default is to clear them after running through.
+;
 ;NOTE: even though kernel_dir is a key word it must still be set. See inputs above.
+;
+;
 ;
 ;CREATED BY:   Chris Fowler April 16th 2014
 ;FILE:
@@ -106,10 +117,12 @@
 ;141006: CF: update dlimits for ISTP compliance.
 ;141031: CF: added keyword /moons, so get position of Phobos and Deimos in MSO and IAU co-ords.
 ;150309: CF: added SPICE routines to get long, lat, and correct altitude based on geodetic co-ords. Also added Phobos and Deimos code as written by Brian Templeman.
+;2017-03-23: CMF: longlat calculation was incorrect (wrong frame). Corrected, longlat now in the IAU_MARS frame, as described above.
+;
 ;-
 ;=================
 
-pro mvn_lpw_anc_spacecraft, unix_in, not_quiet=not_quiet, moons=moons, css=css, dont_unload=dont_unload
+pro mvn_lpw_anc_spacecraft, unix_in, not_quiet=not_quiet, moons=moons, css=css, dont_unload=dont_unload, basic=basic
 
 t_routine = SYSTIME(0)
 
@@ -124,6 +137,8 @@ if size(unix_in, /type) ne 5 then begin
     print, "#######################"
     retall
 endif
+
+if keyword_set(basic) then basic = '1' else basic = '0'  ;reset keyword as it's quicker to check a value than if a keyword is set.
 
 ;======================
 ;---Kernel directory---
@@ -217,7 +232,8 @@ endelse
 spkcov = mvn_lpw_anc_covtest(unix_in, kernels_to_check, -202)  ;for now use unix times, may change to ET.   ### give spk kernel names here!
 if min(spkcov) eq 1 then spk_coverage = 'all' else begin
     spk_coverage = 'some'
-    print, "### WARNING ###: Position (spk) information not available for ", n_elements(where(spkcov) eq 0), " data point(s)."
+    tmp = where(spkcov eq 0, nTMP)
+    if nTMP gt 0. then print, "### WARNING ###: Position (spk) information not available for ", nTMP, " data point(s)."   
 endelse
 ;spkcov is an array nele long. 1 means timestep is covered, 0 means timestep is outside of coverage.
 
@@ -301,7 +317,8 @@ for aa = 0, nele_in-1 do begin
 endfor
 if min(ck_check) eq 1 then ck_coverage = 'all' else begin
     ck_coverage = 'some'
-    print, "### WARNING ###: Pointing information (ck) not available for ", n_elements(where(ck_check eq 0)), " data point(s)."
+    tmp = where(ck_check eq 0., nTMP)
+    if nTMP gt 0. then print, "### WARNING ###: Pointing information (ck) not available for ", nTMP, " data point(s)."
 endelse
     ;tick_time =strarr(nele)
     ;for aa = 0, nele-1 do begin   ;to test if we get back the sclk string, which we do
@@ -347,7 +364,9 @@ dl_ck = create_struct('Type'  ,   'ck: MAVEN pointing flags for associated unix 
 dl_spk = create_struct('Type'  ,   'spk: MAVEN position flags for associated unix times.'   , $
                        'Info'  ,   '0: coverage is present for this unix time. 1: flag: coverage is not present for this unix time.')
 store_data, 'mvn_lpw_anc_ck_flag', data={x:unix_in, y:ck_flag}, dlimit=dl_ck
+  ylim, 'mvn_lpw_anc_ck_flag', -1, 2
 store_data, 'mvn_lpw_anc_spk_flag', data={x:unix_in, y:spk_flag}, dlimit=dl_spk
+  ylim, 'mvn_lpw_anc_spk_flag', -1 , 2
 
 ;########
 ;Now et_time and utc_time contain the time steps of input data points, which can be used with Davins SPICE routines.
@@ -361,6 +380,7 @@ mvn_z = [0.d, 0.d, 1.d]
 ;=====
 ;==1==
 ;=====
+if basic eq '0' then begin
 ;Absolute angle between Sun and MAVEN
 ;Get Sun position relative to MAVEN in s/c frame:
 ;Information needed:
@@ -958,6 +978,8 @@ mvn_vel_j2000[*,2] = state[5,*]  ;velocities in km
                store_data, 'mvn_lpw_anc_mvn_vel_j2000', data={x:unix_in, y:mvn_vel_j2000, flag:spk_flag}, dlimit=dlimit, limit=limit
                ;---------------------------------
 
+endif  ;basic eq '0'
+
 ;========
 ;==6, 7==
 ;========
@@ -1344,6 +1366,7 @@ mvn_pos_iau_cp = stateezr2[0:2,*]  ;copy for getting long, lat, later on
 ;========
 ;==8, 9==
 ;========
+if basic eq '0' then begin
 ;Get MAVEN look vectors:
 ;Use SPICE to get the MAVEN s/c look vectors for X, Y, and Z:
 ;Convert from s/c frame to J2000 and MSO frame:
@@ -1774,6 +1797,8 @@ limit=create_struct(   $
 ;---------------------------------
 store_data, 'mvn_lpw_anc_mvn_vel_sc_iau', data={x:unix_in, y:mvn_vel_sc_iau2, flag:att_flag}, dlimit=dlimit, limit=limit  ;#### no velocity yet
 ;---------------------------------
+
+endif  ;basic eq 0.
 
 if keyword_set(moons) then begin
     ;Get the positions of the moons Phobos and Deimos in MSO and IAU frames:
@@ -2719,22 +2744,36 @@ if (found) then begin
       cspice_bodvrd, 'MARS', "RADII", 499, radii
       flat = (RADII[0] - RADII[2])/RADII[0]  ;flattening coefficient between polar and equatorial radii.
 
-      cspice_recgeo, mvn_pos_iau_cp, radii[0], flat, lon, lat, alt   ;mvn_pos_iau is 3XN matrix of position.
-
-      ;Covnert radians to degrees:
-      lon = lon * (180./!pi)
-      lat = lat * (180./!pi)
-
-      ;Rearrange arrays for tplot storage:
-      longlat = fltarr(nele,2)
-      longlat[*,0] = lon
-      longlat[*,1] = lat
+      cspice_recgeo, mvn_pos_iau_cp, radii[0], flat, lon, lat, alt   ;mvn_pos_iau is 3XN matrix of position. THIS GIVES CORRECT ALTITUDE BUT NOT EAST LON-LAT!!
 
       alt_iau = alt
+      
+        ;Calculate east lon-lat correctly! Convert MSO cartesian to IAU_Mars frame using cspice_pxform, then get long lat (from spherical).
+        cspice_pxform, 'MAVEN_MSO', 'IAU_MARS', et_time, rotate  ;rotate contains the rotation matrix to go from MAVEN_MSO to IAU_MARS.
+                                  ;rotate is 3x3xN, where N is number of time steps
+               
+        pos_IAU = fltarr(3, nele)  ;store position in IAUmars frame
+        get_data, 'mvn_lpw_anc_mvn_pos_mso', data=ddMSO
+        
+        for tp = 0., nele-1. do begin                       
+            cspice_mxv, rotate[*,*,tp], transpose(ddMSO.y[tp,0:2]), iauTMP   ;rotate into new frame
+            pos_IAU[*,tp] = iauTMP  ;store rotated position         
+        endfor
+        
+        ;Convert cartesian to spherical (lon-lat):
+        rIAU = sqrt(pos_IAU[0,*]^2 + pos_IAU[1,*]^2 + pos_IAU[2,*]^2)
+        phi = acos(pos_IAU[2,*]/rIAU) * (180./!pi)  ;0 is in +Z direction, adjust:
+            phi2=90.-phi   ;this is now latitude +90 => -90
+            
+        theta = atan(pos_IAU[1,*], pos_IAU[0,*]) * (180./!pi)  ;this should also be east longitude, NOTE: whenr you give atan() two arguments it does the sectors correctly.
+            iTMP = where(theta lt 0., niTMP)  ;range is -180=>180, negative values go to 180-360
+            if niTMP gt 0. then theta[iTMP] = 360. + theta[iTMP]  ;negative means values subtract
+        
+        longlat = [[transpose(theta)], [transpose(phi2)]]
 
-      ;Store data:
-      store_data, 'mvn_lpw_anc_mvn_longlat_iau', data={x:unix_in, y:longlat}
-      store_data, 'mvn_lpw_anc_mvn_alt_iau', data={x:unix_in, y:alt_iau}
+        ;Store data:
+        store_data, 'mvn_lpw_anc_mvn_longlat_iau', data={x:unix_in, y:longlat}
+        store_data, 'mvn_lpw_anc_mvn_alt_iau', data={x:unix_in, y:alt_iau}
 
     if keyword_set(notready) then begin
       ;COROTATION:

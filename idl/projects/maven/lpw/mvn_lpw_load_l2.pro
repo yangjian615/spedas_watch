@@ -342,10 +342,11 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
                   ;NOTE: here, I check data1 for each field. If it is present, I assume that that field 
                   ;already has a tmp array. This should always be true, unless a CDF file is bust and does 
                   ;not have all data in it.
-                                              
+                                             
                   str_element, data1, 'x', xNEW, success=ok
                   if (ok) then begin
                     Mx = n_elements(xNEW)
+                    
                     x = [temporary(x), temporary(xNEW)]
       
                     str_element, data1, 'y', yNEW, success=ok  ; where there's an X, there's a Y
@@ -391,6 +392,7 @@ for vv = 0., neleV-1. do begin  ;go over each requested variable.
                 endelse
               endif
         endif  ;ReadSuccess = '1'
+        
     endfor ;tt, dates
     
     ;Update Success value now that we have looked at all dates requested.
