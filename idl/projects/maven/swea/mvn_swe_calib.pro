@@ -63,9 +63,11 @@
 ;
 ;                     Any other tags are ignored.
 ;
+;       DEFAULT:      Reset calibration factors to the default values (see above).
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-21 09:12:29 -0800 (Mon, 21 Nov 2016) $
-; $LastChangedRevision: 22387 $
+; $LastChangedDate: 2017-04-04 17:28:05 -0700 (Tue, 04 Apr 2017) $
+; $LastChangedRevision: 23102 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_calib.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -106,7 +108,7 @@ pro mvn_swe_calib, tabnum=tabnum, chksum=chksum, setcal=setcal, default=default
     str_element, setcal, 'swe_Ke', value, success=ok
     if (ok) then begin
       swe_Ke = value
-      print, "Setting geometric factor: ",value
+      print, "Setting electron suppression constant: ",value
     endif
     str_element, setcal, 'swe_dead', value, success=ok
     if (ok) then begin

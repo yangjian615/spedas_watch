@@ -3,33 +3,40 @@
 ;	MVN_SWE_PAD_RESAMPLE
 ;
 ;PURPOSE:
-;	Resampling the pitch angle ditribution from SWEA PAD or 3D data.
-;       Results are plotted or created as tplot variable.
+;	Resamples the pitch angle distribution from SWEA PAD or 3D data,
+;   averaging the signals from bins that overlap in pitch angle space.
+;   Typically (and by default), pitch angle is oversampled by a factor
+;   of 16 to accurately treat partial overlap.
+;
+;   PAD or 3D data are obtained from SWEA common block.  If you set the
+;   time interval, then the snapshot of the pitch angle distribution at
+;   the specified time is plotted.
+;
+;   The result is stored in a tplot variable and can also be returned
+;   via keyword.
 ;
 ;CALLING SEQUENCE: 
 ;	mvn_swe_pad_resample, nbins=128., erange=[100., 150.]
 ;
 ;INPUTS: 
-;   none - PAD or 3D data are obtained from SWEA common block.
-;   If you set the time interval, then the snapshot of the pitch
-;   angle distribution at the specified time is plotted.
-;   (Noted that it might take more than 10 minutes to resample pitch
-;   angle distributions if you use PAD data for 1 day, depending on
-;   your machine spec and data amount.)
+;   Optional: Time range for resampling.  Default is to resample
+;   all data (PAD or 3D, survey or burst, depending on keywords).
+;   This routine might take more than 10 minutes to process PAD 
+;   survey data for one day, depending on your machine specs.
 ;
 ;KEYWORDS:
 ;   SILENT:    Minimize to show the processing information in the terminal.
 ;
-;   MASK:      Mask the expected angular bins whose field of view (FOV)
-;              is blocked by the spacecraft body and solar
-;              paddles. Automatically identifying the mission phases
-;              (cruise or science mapping). Default = 1. 
+;   MASK:      Mask angular bins that are blocked by the spacecraft.
+;              Automatically determines whether or not the SWEA boom is
+;              deployed.  Default = 1 (yes).
 ;
-;   NO_MASK:   If set, not masking the expected angular bins whose FOV is blocked.
-;              This keyword is identical to mask = 0.
+;   NO_MASK:   If set, do not mask angular bins blocked by the spacecraft.
+;              Equivalent to MASK = 0.
 ;
 ;   STOW:      (Obsolete). Mask the angular bins whose field of view
-;              is blocked before the boom deploy. 
+;              is blocked before the boom deploy. --> This is now done
+;              automatically.
 ;
 ;   DDD:       Use 3D data to resample pitch angle distribution.
 ;
@@ -46,40 +53,40 @@
 ;              include in the analysis: 0 = no, 1 = yes.
 ;              Default = replicate(1,6)
 ;
-;   ARCHIVE:   Use the archive data, instead of the survey data.
+;   MBINS:     Specify which solid angle bins to
+;              include in the analysis: 0 = no, 1 = yes.
+;              Default = ABINS # DBINS
+;
+;   ARCHIVE:   Use archive (burst) data, instead of survey data.
 ;
 ;   PANS:      Named varible to hold the tplot panels created.
 ;
 ;   WINDOW:    Set the window number to show the snapshot. Default = 0.
 ;
-;   RESULT:    Return the resampling pitch angle distribution data.
+;   RESULT:    Return the resampled pitch angle distribution data.
 ;
-;   UNITS:     Set the units to prefer to use. Default = 'EFLUX'.
+;   UNITS:     Set the units. Default = 'EFLUX'.
 ;
 ;   ERANGE:    Energy range over which to plot the pitch angle distribution.
 ;              For tplot case, default = 280 eV, based on the L0 tplot setting.
 ;
-;   NORMAL:    If set, then normalize each pad spectrum to have an
-;              average value of unity.
+;   NORMAL:    If set, then normalize the pitch angle distribution to have an
+;              average value of unity at each energy.
 ;
-;   SNAP:      Explicitly set to plot the snapshot.
+;   SNAP:      Plot a snapshot.  Default = 0 (no).
 ;
-;   TPLOT:     Explicitly set to make a tplot variable.
+;   TPLOT:     Make a tplot variable.  Default = 1 (yes).
 ;
 ;   MAP3D:     Take into account the pitch angle width even for 3D
 ;              data. This keyword only works 3D data. The mapping
 ;              method is based on 'mvn_swe_padmap'.
 ;
-;   SWIA:      Resampling PAD in the plasma rest frame, assuming to
-;              the charge nuetrality. Shifted velocity is taken from
-;              the SWIA Course data. So this keyword only works after
-;              loading (restoring) the SWIA data into the memory.  
+;   SWIA:      Resample PAD in the plasma rest frame, where electron
+;              angular distributions are typically gyrotropic. Plasma bulk
+;              velocity is taken from SWIA Course data.  This keyword only
+;              works after loading (restoring) SWIA data.  
 ;
-;   MBINS:     Specify which angular (both anode and deflection) bins
-;              to include in the analysis: 0 = no, 1 = yes.
-;              Default = replicate(1, 96)
-;
-;   SC_POT:    Account for the spacecraft potential correction.
+;   SC_POT:    Correct for the spacecraft potential.
 ;              (Not completely activated yet)
 ;  
 ;   SYMDIR:    Instead of the observed magnetic field vector, use the
@@ -120,11 +127,16 @@
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 16:39:04 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22546 $
+; $LastChangedDate: 2017-04-04 17:27:14 -0700 (Tue, 04 Apr 2017) $
+; $LastChangedRevision: 23101 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-
+
+; ----------------------------------------------------------------
+;  Calculate pitch angle mapping for 3D distributions
+; ----------------------------------------------------------------
+
 FUNCTION mvn_swe_pad_resample_map3d, var, prf=prf
   @mvn_swe_com
   ddd = var
@@ -202,7 +214,10 @@ FUNCTION mvn_swe_pad_resample_map3d, var, prf=prf
   RETURN, ddd
 END
 
-; Resampling PAD in the plasma rest frame.
+; ----------------------------------------------------------------
+; Resample PAD in the plasma rest frame.
+; ----------------------------------------------------------------
+
 FUNCTION mvn_swe_pad_resample_prf, var, type, archive=archive, silent=silent, energy=energy, $
                                    map3d=map3d, dformat=dformat, nbins=nbins, nene=nene, edx=edx
   nan = !values.f_nan
@@ -284,7 +299,11 @@ FUNCTION mvn_swe_pad_resample_prf, var, type, archive=archive, silent=silent, en
   undefine, tot, index  
   RETURN, result
 END
-; Converts the data to the plasma rest frame.
+
+; ----------------------------------------------------------------
+; Transform to the plasma rest frame.
+; ----------------------------------------------------------------
+
 FUNCTION mvn_swe_pad_resample_swia, var, archive=archive, silent=silent, $
                                     sc_pot=sc_pot, interpolate=interpolate
   COMPILE_OPT idl2
@@ -331,15 +350,20 @@ FUNCTION mvn_swe_pad_resample_cscale, data, mincol=mincol, maxcol=maxcol, mindat
   IF hicount NE 0 THEN dat[hidata] = maxdat
 
   RETURN, (dat - mindat) * colrange/FLOAT(datrange) + mincol
-END 
+END
+
+; ----------------------------------------------------------------
 ; Main routine
+; ----------------------------------------------------------------
+
 PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
                           nbins=nbins, abins=abins, dbins=dbins, archive=archive, $
                           pans=pans, window=wi, result=result, no_mask=no_mask, $
                           units=units, erange=erange, normal=normal, _extra=extra, $
                           snap=plot, tplot=tplot, map3d=map3d, swia=swia, $
                           mbins=mbins, sc_pot=sc_pot, symdir=symdir, interpolate=interpolate, $
-                          cut=cut, spec=spec, pstyle=pstyle, silent=sil, verbose=vb, hires=hires, fbdata=fbdata
+                          cut=cut, spec=spec, pstyle=pstyle, silent=sil, verbose=vb, $
+                          hires=hires, fbdata=fbdata
   COMPILE_OPT idl2
   @mvn_swe_com
   nan = !values.f_nan 
@@ -358,7 +382,9 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
      print, ptrace()
      print, '  No MAG1 data loaded.  Use mvn_swe_addmag first.'
      RETURN
-  ENDIF 
+  ENDIF
+  
+; Determine which data to process (pad or 3d, survey or burst)
 
   IF keyword_set(ddd) OR keyword_set(map3d) THEN dtype = 1
   IF keyword_set(pad) THEN dtype = 0
@@ -411,6 +437,8 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
      ENDIF 
   ENDELSE
 
+; Process time or time range, if specified
+
   IF SIZE(var, /type) NE 0 THEN BEGIN
      trange = var
      IF SIZE(trange, /type) EQ 7 THEN trange = time_double(trange)
@@ -440,8 +468,11 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
      idx = LINDGEN(ndat)
 
      IF SIZE(tplot, /type) EQ 0 THEN tplot = 1
-  ENDELSE 
-  IF keyword_set(swia) THEN mk = mvn_spice_kernels(/load, /all, trange=trange, verbose=verbose)
+  ENDELSE
+
+; Process keywords and set options
+
+  IF keyword_set(swia) THEN mvn_swe_spice_init, trange=trange
   IF NOT keyword_set(units) THEN units = 'eflux'
   IF NOT keyword_set(nbins) THEN nbins = 128.
   IF NOT keyword_set(wi) THEN wnum = 0 ELSE wnum = wi
@@ -484,7 +515,47 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
   start = SYSTIME(/sec)
   cet = 0.d0
   IF keyword_set(silent) THEN prt = 0 ELSE prt = 1
-  FOR i=0L, ndat-1L DO BEGIN
+
+; Select energy bins for processing
+;   Sweep table 5 is used almost all the time, and the energy bins
+;   of tables 5 and 6 are within 20% of each other.  So, select 
+;   energy bins using table 5 only.
+
+  mvn_swe_sweep, tab=5, result=sdat
+  energy = sdat.e
+
+  case n_elements(erange) of
+       0 : begin
+             nene = n_elements(energy)
+             edx = indgen(nene)
+           end
+       1 : begin
+             nene = 1
+             edx = nn(energy, erange)
+           end 
+    else : begin
+             emin = min(erange, max=emax)
+             edx = where((energy ge emin) and (energy le emax), nene)
+             if (nene eq 0) then begin
+                print, ptrace()
+                print, '  No energy bins within range: ',[emin,emax]
+                return
+             endif
+           end 
+  endcase
+
+  dformat = {time  : 0.d0                , $
+             xax   : FLTARR(nbins)       , $
+             index : FLTARR(nene, nbins) , $
+             avg   : FLTARR(nene, nbins) , $
+             std   : FLTARR(nene, nbins) , $
+             nbins : FLTARR(nene, nbins)    }
+        
+  result = REPLICATE(dformat, ndat)
+
+; Loop through data in time sequence
+
+  FOR i=0L,(ndat-1L) DO BEGIN
      IF keyword_set(dtype) THEN BEGIN
         ddd = mvn_swe_get3d(dat_time[idx[i]], units=units, archive=archive)
         if keyword_set(sc_pot) then begin
@@ -512,8 +583,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
         
         ;; ddd.data *= REBIN(TRANSPOSE(obins), ddd.nenergy, ddd.nbins)
         ddd.data *= REBIN(TRANSPOSE(mobins[*, boom[i]]), ddd.nenergy, ddd.nbins)
-        IF keyword_set(map3d) THEN $
-           ddd = mvn_swe_pad_resample_map3d(ddd, prf=interpolate)
+        IF keyword_set(map3d) THEN ddd = mvn_swe_pad_resample_map3d(ddd, prf=interpolate)
      ENDIF ELSE BEGIN
         pad = mvn_swe_getpad(dat_time[idx[i]], units=units, archive=archive)
         IF (hflg) THEN pad = mvn_swe_padmap_32hz(pad, fbdata=fbdata, verbose=verbose)
@@ -544,41 +614,9 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
         ENDIF 
         undefine, block, nblock
      ENDELSE 
-        
-     IF keyword_set(erange) THEN BEGIN
-        CASE N_ELEMENTS(erange) OF
-           1: BEGIN
-              nene = 1
-              edx = NN(energy, erange)
-           END 
-           2: BEGIN
-              edx = WHERE(energy GE MIN(erange) AND energy LE MAX(erange), nene)
-              IF nene EQ 0 THEN BEGIN
-                 PRINT, ptrace()
-                 PRINT, '  There is no energy step in the energy range you set.'
-                 RETURN
-              ENDIF
-           END 
-           ELSE: BEGIN
-              PRINT, ptrace()
-              PRINT, '  You must input 1 or 2 element(s) of energy range.'
-              RETURN
-           END 
-        ENDCASE 
-     ENDIF ELSE BEGIN
-        IF keyword_set(ddd) THEN nene = ddd.nenergy ELSE nene = pad.nenergy
-        edx = INDGEN(nene)
-     ENDELSE 
 
      IF i EQ 0L THEN BEGIN
         t0 = SYSTIME(/sec)
-        dformat = {time: 0.d0, xax: FLTARR(nbins), $
-                   index: FLTARR(nene, nbins), $
-                   avg: FLTARR(nene, nbins), $
-                   std: FLTARR(nene, nbins), $
-                   nbins: FLTARR(nene, nbins)}
-        
-        result = REPLICATE(dformat, ndat)
         dt = SYSTIME(/sec) - t0
         undefine, t0
      ENDIF 
@@ -668,9 +706,9 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
               ENDFOR 
               undefine, k
 
-              pa.avg[j,*] = tot/index            ; average signal of overlapping PA bins
-              pa.nbins[j,*] = index              ; normalization factor (# overlapping PA bins)
-              pa.index[j,*] = float(index gt 0.) ; bins that have signal (1=yes, 0=no)
+              pa.avg[j,*] = tot/index               ; average signal of overlapping PA bins
+              pa.nbins[j,*] = index                 ; normalization factor (# overlapping PA bins)
+              pa.index[j,*] = float(index gt 0.)    ; bins that have signal (1=yes, 0=no)
               pa.std[j,*] = SQRT(variance) / index  ; standard deviation (error propagation)
               undefine, k, cnt
               undefine, tot, index, variance
@@ -763,7 +801,7 @@ PRO mvn_swe_pad_resample, var, mask=mask, stow=stow, ddd=ddd, pad=pad,  $
   ENDIF 
 
   ;; IF keyword_set(tplot) THEN BEGIN
-  IF (pflg[1]) THEN BEGIN       ; Generate a tplot valiable section
+  IF (pflg[1]) THEN BEGIN       ; Generate a tplot variable
      ytit = 'SWE PAD!C('
      IF nene EQ 1 THEN ytit += STRING(energy[edx[0]], '(f0.1)') + ' eV)' $
      ELSE ytit += STRING(MIN(energy[edx]), '(f0.1)') + ' - ' + STRING(MAX(energy[edx]), '(f0.1)') + ' eV)' 

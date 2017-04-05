@@ -12,7 +12,7 @@
 ;          to construct Esvy UVW from any combination of antenna pairs.
 ; INPUT:    date -> 'yyyy-mm-dd'
 ;           probe -> 'a' or 'b'
-;           bad_probe -> probe to avoid (1,2,3, or 4)
+;           bad_probe -> (string) probe to avoid (1,2,3, or 4)
 ; KEYWORDS:
 ;           pairs -> can directly input antenna pairs to be used instead of
 ;                    just indicating the bad_antennas

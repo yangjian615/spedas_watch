@@ -16,7 +16,7 @@
 ;    APID:          Additional APID's to load.  This procedure always 
 ;                   loads c0, c6, and ca.  For example, set this keyword
 ;                   to 'd0' (4D distributions) or 'd1' (4D distributions,
-;                   burst).
+;                   burst) in order to calculate velocity distributions.
 ;
 ;    NO1:           Calculate O+ density from STATIC data using moments.
 ;                   Method is from McFadden's key parameter code.  This
@@ -31,14 +31,42 @@
 ;    PANS:          Named variable to hold a space delimited string containing
 ;                   the tplot variable(s) created.
 ;
+;    ADISC:         Enable anode-dependent ion suppression correction.
+;                   This is experimental and uses test code for STATIC.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-27 10:38:45 -0700 (Mon, 27 Jun 2016) $
-; $LastChangedRevision: 21369 $
+; $LastChangedDate: 2017-04-04 17:54:53 -0700 (Tue, 04 Apr 2017) $
+; $LastChangedRevision: 23103 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_addsta.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03/18/14
 ;-
-pro mvn_swe_addsta, apid=apid, nO1=nO1, nO2=nO2, pans=pans
+pro mvn_swe_addsta, apid=apid, nO1=nO1, nO2=nO2, pans=pans, adisc=adisc
+
+; Enable the anode-dependent ion suppression algorithm
+
+  common mvn_sta_kk3_anode, kk3_anode
+
+  kk3_anode = keyword_set(adisc)
+  if (kk3_anode) then begin
+    uinfo = get_login_info()
+    if (uinfo.user_name ne 'mitchell') then begin
+      print,"Please contact DLM if you want to use this option."
+      kk3_anode = 0
+    endif
+  endif
+
+  if (kk3_anode) then begin
+    kk3 = mvn_sta_get_kk3(mean(timerange()))
+    isuppress = 'nbc_4d'
+    print,'Using attenuator-dependent ion suppression correction.'
+    print,'kk3 = ',kk3
+  endif else begin
+    print,'Using basic ion suppression correction.'
+    isuppress = 'nb_4d'
+  endelse
+
+; Load STATIC data
 
   sta_apid = ['c0','c6','ca']
   if (size(apid,/type) eq 7) then sta_apid = [sta_apid, apid]
@@ -46,8 +74,7 @@ pro mvn_swe_addsta, apid=apid, nO1=nO1, nO2=nO2, pans=pans
 
   mvn_sta_l2_load, sta_apid=sta_apid
   if (dopot) then begin
-    tplot_options,get=topt
-    kk2 = mvn_sta_get_kk2(topt.trange_full[0])
+    kk2 = mvn_sta_get_kk2(mean(timerange()))
     if (kk2 gt 4.) then begin
       msg = string("Warning: STATIC ion suppression factor = ",kk2,format='(a,f3.1)')
       print,msg
@@ -85,8 +112,8 @@ pro mvn_swe_addsta, apid=apid, nO1=nO1, nO2=nO2, pans=pans
     m_o2 = 32.
     engy_o2 = [0.,100.]
     min_o2 = 25
-
-    get_4dt,'nb_4d','mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_raw_density',$
+    
+    get_4dt,isuppress,'mvn_sta_get_c6',mass=mass_o2,name='mvn_sta_O2+_raw_density',$
             energy=engy_o2,m_int=m_o2,mincnt=min_o2
     options,'mvn_sta_O2+_raw_density',ytitle='sta c6!C O2+!C!C1/cm!U3',colors=6
     ylim,'mvn_sta_O2+_raw_density',10,100000,1
@@ -100,16 +127,17 @@ pro mvn_swe_addsta, apid=apid, nO1=nO1, nO2=nO2, pans=pans
   
   if keyword_set(nO1) then begin
 
-	mass_o = [14,20]
-	m_o = 16
-	engy_o = [0.0,100.]
+	mass_o = [14.,20.]
+	m_o = 16.
+	engy_o = [0.,100.]
 	min_o = 25
-
-	get_4dt,'nb_4d','mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_raw_density',energy=engy_o,m_int=m_o,mincnt=min_o
-		options,'mvn_sta_O+_raw_density',ytitle='sta c6!C  O+!C!C1/cm!U3',colors=4
-		ylim,'mvn_sta_O+_raw_density',10,100000,1
+    
+	get_4dt,isuppress,'mvn_sta_get_c6',mass=mass_o,name='mvn_sta_O+_raw_density',$
+	        energy=engy_o,m_int=m_o,mincnt=min_o
+	options,'mvn_sta_O+_raw_density',ytitle='sta c6!C  O+!C!C1/cm!U3',colors=4
+	ylim,'mvn_sta_O+_raw_density',10,100000,1
 	get_data,'mvn_sta_O+_raw_density',data=tmp
-		tmp.y[ind_mode] = !Values.F_NAN
+	if (count gt 0L) then tmp.y[ind_mode] = !Values.F_NAN
 	store_data,'mvn_sta_O+_raw_density',data=tmp
       
     pans = pans + ' ' + 'mvn_sta_O+_raw_density'

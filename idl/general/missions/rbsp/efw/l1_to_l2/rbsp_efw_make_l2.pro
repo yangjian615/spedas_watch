@@ -22,7 +22,8 @@
 ;
 ;   type: Set to choose which type of L2 file you want to
 ;   create. Options are
-;           'combo'   (hidden combo files)                (working)
+;           'combo' (OBSOLETE)  (hidden combo files)      (working)
+;           'combo_efw' (new version of combo files)
 ;           'esvy_despun'  (official L2 product)          (working)
 ;           'spinfit_both_boompairs' (hidden L2 product that
 ;                calculates spinfit quantities with both V1V2 and V3V4
@@ -30,7 +31,7 @@
 ;           'spinfit' (default, official L2 product)      (working)
 ;           'combo_wygant' (no hires data)                (working)
 ;           'pfaff_esvy'                                  (working)
-;           'combo_pfaff'                                 (working)
+;           'combo_pfaff' (OBSOLETE)                      (working)
 ;
 ;   boom_pair -> specify for the spinfit routine. Defaults to '12' but
 ;   can be set to '34'
@@ -51,8 +52,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2016-07-20 08:01:54 -0700 (Wed, 20 Jul 2016) $
-; $LastChangedRevision: 21494 $
+; $LastChangedDate: 2017-04-04 07:33:06 -0700 (Tue, 04 Apr 2017) $
+; $LastChangedRevision: 23092 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -165,6 +166,7 @@ pro rbsp_efw_make_l2,sc,date,$
      get_data,'rbsp'+sc+'_efw_vsvy',data=vsvy
      epoch_v = tplot_time_to_epoch(vsvy.x,/epoch16)
      times_v = vsvy.x
+     vsvy_hires = vsvy
 
      ;; full resolution (V1+V2)/2
      vsvy_vavg = [[(vsvy.y[*,0] - vsvy.y[*,1])/2.],$
@@ -197,12 +199,16 @@ pro rbsp_efw_make_l2,sc,date,$
 ;Load the vxb subtracted data. If there isn't any vxb subtracted data
 ;then grab the regular Esvy MGSE data
 
-     if type eq 'combo' or type eq 'esvy_despun' or type eq 'combo_pfaff' then begin
-        if ~keyword_set(qa) then rbsp_efw_vxb_subtract_crib,sc,/no_spice_load,/noplot,bad_probe=bad_probe
-        if keyword_set(qa)  then rbsp_efw_vxb_subtract_crib,sc,/no_spice_load,/noplot,/qa
+     if type eq 'combo' or type eq 'combo_efw' or type eq 'esvy_despun' or type eq 'combo_pfaff' then begin
+        ;rbsp_efw_vxb_subtract_crib,sc,/no_spice_load,/noplot,bad_probe=bad_probe
+        ;Efield full cadence that includes the spinaxis component
+        ;get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed',data=esvy_vxb_mgse2
+
+        ;Efield FULL CADENCE that uses E*B=0
+        rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,$
+          /noplot,/nospinfit,boom_pair=bp,/noremove,bad_probe=bad_probe
 
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed',data=esvy_vxb_mgse
-        esvy_vxb_mgse.y[*,0] = -1.e31
 
         epoch_e = tplot_time_to_epoch(esvy_vxb_mgse.x,/epoch16)
         times_e = esvy_vxb_mgse.x
@@ -219,14 +225,15 @@ pro rbsp_efw_make_l2,sc,date,$
                                 ;Load ECT's magnetic ephemeris
      rbsp_read_ect_mag_ephem,sc
 
-                                ;Load both the spinfit data and also the E*B=0 version
-     if type ne 'spinfit_both_boompairs' then rbsp_efw_edotb_to_zero_crib,$
-        date,sc,/no_spice_load,/noplot,suffix='edotb',boom_pair=bp,ql=ql
+     ;Load both the spinfit data and also the E*B=0 version
+     if type ne 'spinfit_both_boompairs' then $
+        rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,/noplot,$
+          suffix='edotb',boom_pair=bp,ql=ql,/noremove,bad_probe=bad_probe
 
      if type eq 'spinfit_both_boompairs' then begin
 
-        rbsp_efw_edotb_to_zero_crib,$
-           date,sc,/no_spice_load,/noplot,suffix='edotb',boom_pair='12',ql=ql
+        rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,/noplot,$
+          suffix='edotb',boom_pair='12',ql=ql,/noremove,bad_probe=bad_probe
 
         copy_data,'rbsp'+sc+'_efw_esvy_spinfit',$
                   'tmp_sf_12'
@@ -240,8 +247,8 @@ pro rbsp_efw_make_l2,sc,date,$
                   'tmp_sf_vxb_coro_edotb_12'
 
 
-        rbsp_efw_edotb_to_zero_crib,$
-           date,sc,/no_spice_load,/noplot,suffix='edotb',boom_pair='34',ql=ql
+        rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,/noplot,$
+          suffix='edotb',boom_pair='34',ql=ql,/noremove,bad_probe=bad_probe
 
 
         ;;Temporarily rename these b/c the edotb routine deletes
@@ -292,6 +299,24 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 
+     ;Get By/Bx and Bz/Bx from E*B=0 calculation
+     get_data,'B2Bx_ratio',data=b2bx_ratio
+     badyx = where(b2bx_ratio.y[*,0] gt 3.732)
+     badzx = where(b2bx_ratio.y[*,1] gt 3.732)
+
+     ;Get spinaxis component
+     get_data,'rbspa_efw_esvy_mgse_vxb_removed_spinfit_edotb',data=diagEx
+     diagEx = diagEx.y[*,0]
+
+     ;Have two versions. First has all E*B=0 data, second has E*B=0 bad data removed
+     diagEx1 = diagEx
+     diagEx2 = diagEx
+     if badyx[0] ne -1 then diagEx2[badyx,0] = !values.f_nan
+     if badzx[0] ne -1 then diagEx2[badzx,0] = !values.f_nan
+
+
+
+
 
 ;Get the official times to which all quantities are interpolated to
 ;For spinfit data use the spinfit times. Otherwise use the ephemeris times (once/min)
@@ -311,7 +336,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
      ;;Get hires density values
-     if type eq 'combo' then begin
+     if type eq 'combo' or type eq 'combo_efw' then begin
         goo_str = rbsp_efw_get_flag_values(sc,times_v,density_min=dmin,boom_pair=bp)
         copy_data,'rbsp'+sc+'_density12','rbsp'+sc+'_density12_hires'
         copy_data,'rbsp'+sc+'_density34','rbsp'+sc+'_density34_hires'
@@ -541,7 +566,7 @@ pro rbsp_efw_make_l2,sc,date,$
 ;--------------------------------------------------
 
      ;;charging, autobias and eclipse flags all in one variable for convenience
-     flags = [[flag_arr[*,15]],[flag_arr[*,14]],[flag_arr[*,1]]]
+     flags = [[flag_arr[*,15]],[flag_arr[*,16]],[flag_arr[*,14]],[flag_arr[*,1]]]
 
 
 
@@ -606,8 +631,8 @@ pro rbsp_efw_make_l2,sc,date,$
      tinterpol_mxn,'rbsp'+sc+'_spinaxis_direction_gse',times,newname='rbsp'+sc+'_spinaxis_direction_gse'
      get_data,'rbsp'+sc+'_spinaxis_direction_gse',data=sa
 
-;     tinterpol_mxn,'angles',times,newname='angles'
-;     get_data,'angles',data=angles
+     tinterpol_mxn,'angles',times,newname='angles'
+     get_data,'angles',data=angles
 
 
   endif                         ;for skipping processing
@@ -625,6 +650,7 @@ pro rbsp_efw_make_l2,sc,date,$
   if type eq 'combo_pfaff' then type2 = 'combo_pfaff'
   if type eq 'combo_wygant' then type2 = 'combo_wygant'
   if type eq 'pfaff_esvy' then type2 = 'pfaff_esvy'
+  if type eq 'combo_efw' then type2 = 'combo_efw'
 
 ;  if keyword_set(hires) then $
 ;     datafile = folder + rbx + 'efw-l2_' + type2 + '_' + year + mm + dd + '_v' + vstr + '_hr.cdf' ;else $
@@ -644,6 +670,15 @@ pro rbsp_efw_make_l2,sc,date,$
 ;Questions
 ;--do we want to include both E12 and E34?
 ;--Add E*B=0 full vector or only MGSEx?
+
+
+
+;NEED TO fix
+;no actual hires efield-vxb-mgse data in file
+;Need to delete some fields.
+
+
+
 
   ;efield_coro_mgse
   ;vel_coro_mgse
@@ -695,6 +730,10 @@ pro rbsp_efw_make_l2,sc,date,$
           cdf_vardelete,cdfid,'vsvy_vavg_combo_v34'
           cdf_varput,cdfid,'vsvy_vavg_combo',sum12
 
+
+;ADD HERE THE DESPUN MGSE EFIELD WITH E*B=0
+
+
 ;          cdf_varput,cdfid,'e12_vxb_spinfit_mgse',transpose(spinfit_vxb)
           cdf_varrename,cdfid,'efield_spinfit_mgse_e12','efield_spinfit_mgse'
           cdf_varput,cdfid,'efield_spinfit_mgse',transpose(spinfit_vxb)
@@ -733,6 +772,7 @@ pro rbsp_efw_make_l2,sc,date,$
        cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
        cdf_varput,cdfid,'orbit_num',orbit_num
        cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
+       cdf_varput,cdfid,'diagBratio',transpose(b2bx_ratio.y)
 
 
        if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
@@ -740,8 +780,15 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
   ;full cadence (only for hires version)
-       cdf_varput,cdfid,'esvy_vxb_mgse',transpose(esvy_vxb_mgse.y)
+       cdf_varrename,cdfid,'esvy_vxb_mgse','efield_mgse_edotb_zero'
+       cdf_varput,cdfid,'efield_mgse_edotb_zero',transpose(esvy_vxb_mgse.y)
+       cdf_varput,cdfid,'diagEx1',diagEx1
+       cdf_varput,cdfid,'diagEx2',diagEx2
+       ;VSVY hires
+       cdf_varrename,cdfid,'vsvy','vsvy_antenna_potentials_hires'
+       cdf_varput,cdfid,'vsvy_antenna_potentials_hires',transpose(vsvy_hires.y)
   ;     if keyword_set(hires) then cdf_varput,cdfid,'esvy',transpose(esvy_vxb_mgse.y)
+
 
 
   ;variables to delete
@@ -764,15 +811,26 @@ pro rbsp_efw_make_l2,sc,date,$
        cdf_vardelete,cdfid,'efield_coro_mgse'
        cdf_vardelete,cdfid,'efield_uvw'
        cdf_vardelete,cdfid,'efield_raw_uvw'
-       cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse'
+;       cdf_vardelete,cdfid,'diagEx1'
+;       cdf_vardelete,cdfid,'diagEx2'
+       cdf_vardelete,cdfid,'esvy_vxb_mgse2'
+;       cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse'
+      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse_e12'
+      cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse_e34'
+      cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse_e12'
+      cdf_vardelete,cdfid,'efield_spinfit_vxb_edotb_mgse_e34'
 
-       cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
+
+;       cdf_vardelete,cdfid,'efield_spinfit_vxb_mgse'
        cdf_vardelete,cdfid,'vel_coro_mgse'
        cdf_vardelete,cdfid,'efield_mgse'
        cdf_vardelete,cdfid,'vsvy_vavg'
-       cdf_vardelete,cdfid,'vsvy'
+       ;cdf_vardelete,cdfid,'vsvy'
        cdf_vardelete,cdfid,'esvy'
-       if ~keyword_set(hires) then cdf_vardelete,cdfid,'esvy_vxb_mgse'
+       cdf_vardelete,cdfid,'magnitude_minus_modelmagnitude'
+       cdf_vardelete,cdfid,'mag_spinfit_mgse'
+       cdf_vardelete,cdfid,'mag_model_mgse'
+       cdf_vardelete,cdfid,'mag_minus_model_mgse'
 
        cdf_close, cdfid
 
@@ -780,7 +838,7 @@ pro rbsp_efw_make_l2,sc,date,$
        ;------------------------------------------------------------
        ;now do the lowres version
 
-       datafile = folder + rbx + 'efw-l2_' + type2 + '_' + year + mm + dd+ '_v' + vstr + '.cdf'
+       datafile = folder + rbx + 'efw-l2_' + type2 + '_' + year + mm + dd + '_v' + vstr + '.cdf'
 
        file_copy, skeletonFile, datafile, /overwrite ; Force to replace old file.
        cdfid = cdf_open(datafile)
@@ -870,7 +928,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
-	 cdf_vardelete,cdfid,'angle_Ey_Ez_Bo'
+	   cdf_vardelete,cdfid,'angle_Ey_Ez_Bo'
      cdf_vardelete,cdfid,'density_v12_hires'
      cdf_vardelete,cdfid,'density_v34_hires'
      cdf_vardelete,cdfid,'e_spinfit_mgse_efw_qual'
@@ -925,7 +983,7 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;--------------------------------------------------
-;spinfit E12 files
+;spinfit files
 ;--------------------------------------------------
 
 
@@ -950,6 +1008,9 @@ pro rbsp_efw_make_l2,sc,date,$
 ;     cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
 
+     cdf_varput,cdfid,'diagEx1',diagEx1
+     cdf_varput,cdfid,'diagEx2',diagEx2
+     cdf_varput,cdfid,'diagBratio',transpose(b2bx_ratio.y)
 
 
 ;variables to delete
@@ -1132,12 +1193,14 @@ pro rbsp_efw_make_l2,sc,date,$
 
 ;full resolution
 ;cdf_varput,cdfid,'efield_mgse',transpose(esvy_mgse.y)
-cdf_varput,cdfid,'efield_mgse',transpose(esvy_vxb_mgse.y)
+    esvy_vxb_mgsev2 = esvy_vxb_mgse.y
+    esvy_vxb_mgsev2[*,0] = -1.e31
+    cdf_varput,cdfid,'efield_mgse',transpose(esvy_vxb_mgsev2)
 
 
 
 ;variables to delete
-	 cdf_vardelete,cdfid,'angle_Ey_Ez_Bo'
+	   cdf_vardelete,cdfid,'angle_Ey_Ez_Bo'
      cdf_vardelete,cdfid,'vsvy_vavg_lowcadence'
      cdf_vardelete,cdfid,'density_v12_hires'
      cdf_vardelete,cdfid,'density_v34_hires'
