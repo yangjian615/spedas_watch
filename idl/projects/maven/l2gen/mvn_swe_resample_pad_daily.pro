@@ -21,8 +21,8 @@
 ;                     incomplete or not available.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-06-20 17:07:48 -0700 (Mon, 20 Jun 2016) $
-; $LastChangedRevision: 21342 $
+; $LastChangedDate: 2017-04-05 10:03:02 -0700 (Wed, 05 Apr 2017) $
+; $LastChangedRevision: 23109 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_swe_resample_pad_daily.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -48,6 +48,7 @@ pro mvn_swe_resample_pad_daily, trange, l2only=l2only
     dd = strmid(tstring,8,2)
     ofile = opath + yyyy + '/' + mm + '/' + froot + yyyy + mm + dd
 
+    mvn_swe_clear
     mvn_swe_load_l0,/spice
     mvn_swe_stat,npkt=npkt,/silent
     ok = npkt[2] gt 0L

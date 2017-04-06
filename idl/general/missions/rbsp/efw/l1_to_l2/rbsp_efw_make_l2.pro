@@ -52,8 +52,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2017-04-04 07:33:06 -0700 (Tue, 04 Apr 2017) $
-; $LastChangedRevision: 23092 $
+; $LastChangedDate: 2017-04-05 12:36:34 -0700 (Wed, 05 Apr 2017) $
+; $LastChangedRevision: 23117 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -305,7 +305,7 @@ pro rbsp_efw_make_l2,sc,date,$
      badzx = where(b2bx_ratio.y[*,1] gt 3.732)
 
      ;Get spinaxis component
-     get_data,'rbspa_efw_esvy_mgse_vxb_removed_spinfit_edotb',data=diagEx
+     get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb',data=diagEx
      diagEx = diagEx.y[*,0]
 
      ;Have two versions. First has all E*B=0 data, second has E*B=0 bad data removed
@@ -565,7 +565,7 @@ pro rbsp_efw_make_l2,sc,date,$
 ;Set a 3D flag variable for the survey plots
 ;--------------------------------------------------
 
-     ;;charging, autobias and eclipse flags all in one variable for convenience
+     ;;charging, extreme charging, autobias and eclipse flags all in one variable for convenience
      flags = [[flag_arr[*,15]],[flag_arr[*,16]],[flag_arr[*,14]],[flag_arr[*,1]]]
 
 
@@ -1200,7 +1200,9 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
-	   cdf_vardelete,cdfid,'angle_Ey_Ez_Bo'
+
+     cdf_vardelete,cdfid,'esvy_vxb_mgse2'
+     cdf_vardelete,cdfid,'angle_Ey_Ez_Bo'
      cdf_vardelete,cdfid,'vsvy_vavg_lowcadence'
      cdf_vardelete,cdfid,'density_v12_hires'
      cdf_vardelete,cdfid,'density_v34_hires'

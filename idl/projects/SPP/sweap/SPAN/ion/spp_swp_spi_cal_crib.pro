@@ -1,71 +1,3 @@
-PRO spp_swp_spi_parameters, vals
-
-
-   ;;------------------------------------------------------
-   ;; DAC to Deflection (from deflector scan)
-   ;;
-   ;; Ion Gun: 0.85[A], 480 [eV]
-   ;;
-   ;; [0] + [1]*yaw + [2]*yaw^2 + [3]*yaw^3
-   ;;
-   anode0_poly = [-172.984,1110.45,0.5,-0.08]
-
-   ;;------------------------------------------------------
-   ;; DAC to Voltage (DVM from HV Calibration Test)
-
-   ;; Hemisphere 
-   hemi_dacs = ['0000'x,'0040'x,'0080'x,'00C0'x,'0100'x,$
-                '0280'x,'0500'x,'0800'x,'0C00'x,'1000'x]
-   hemi_volt = [0.006,-3.903,-7.8,-11.7,-15.61,$
-                -39.04,-78.1,-125,-187.5,-250]
-
-   ;; Deflector 1
-   def1_dacs = ['0000'x,'0080'x,'0100'x,'0180'x,'0300'x,$
-                '0700'x,'0D00'x,'1300'x,'1C80'x,'2600'x]
-
-   def1_volt = [0.0016,-3.15,-6.31,-9.48,-18.98,-44.3,$
-                -82.3,-120.3,-180.5,-240.6]
-
-   ;; Deflector 2
-   def2_dacs = ['0000'x,'0080'x,'0100'x,'0180'x,'0300'x,$
-                '0700'x,'0D00'x,'1300'x,'1C80'x,'2600'x]
-
-   def2_volt = [0.0016,-3.15,-6.31,-9.48,-18.98,-44.3,$
-                -82.3,-120.3,-180.5,-240.6]
-
-   ;; Spoiler 
-   splr_dacs = ['0000'x,'0100'x,'0200'x,'0400'x,'1000'x,'4000'x]
-   splr_volt = [0.0003,-0.31,-0.62,-1.243,-4.974,-19.9]
-
-
-   hemi_fitt = linfit(hemi_dacs,hemi_volt)
-   def1_fitt = linfit(def1_dacs,def1_volt)
-   def2_fitt = linfit(def2_dacs,def2_volt)
-   splr_fitt = linfit(splr_dacs,splr_volt)
-
-
-   vals = {$
-
-          hemi_dacs:hemi_dacs,$
-          def1_dacs:def1_dacs,$
-          def2_dacs:def2_dacs,$
-          splr_dacs:splr_dacs,$
-          
-          hemi_volt:hemi_volt,$
-          def1_volt:def1_volt,$
-          def2_volt:def2_volt,$
-          splr_volt:splr_volt,$
-
-          hemi_fitt:hemi_fitt,$
-          def1_fitt:def1_fitt,$
-          def2_fitt:def2_fitt,$
-          splr_fitt:splr_fitt $
-          
-          }
-
-END
-
-
 
 pro spp_swp_spi_cal_DEF_YAW_scan,trange=trange
 
@@ -140,6 +72,244 @@ pro spp_swp_spi_cal_YAW_DEF_scan,trange=trange
   makepng,'spani_cnts_vs_def',time=trange[0]
 
 end
+
+
+
+
+
+
+
+
+pro spp_swp_spi_cal_sweep_magnet,trange=trange,plotname=plotname,anode=anode
+
+
+
+
+   IF n_elements(trange) ne 2 THEN ctime,trange
+   IF ~keyword_set(plotname)  THEN plotname='~/Desktop/spi_swp_mag'
+   IF ~keyword_set(anode)     THEN anode=0
+   
+   ;hkps   = (spp_apdat('3be'x)).array
+   ;rates  = (spp_apdat('3bb'x)).array
+   ;manips = (spp_apdat('7c3'x)).array
+   aps5   = (spp_apdat('755'x)).array
+   toff   = (spp_apdat('3ba'x)).array
+   ;hkps_def = long(hkps.DACS[5])-long(hkps.DACS[6])
+   ;hkps_def = hkps.dac_defl 
+
+
+   ;w = where(rates.time GT trange[0] AND $
+   ;          rates.time LE trange[1])
+
+   ;get_data, 'spp_spi_tof_TOF', data=toff 
+   spp_swp_spi_parameters, vals
+   ;rates  = rates[w]
+   ;def    = interp(hkps_def,hkps.time,rates.time)
+   ;yaw    = interp(float(manips.yaw_pos),manips.time,rates.time)
+
+   curr   = interp(aps5.p6i,aps5.time,toff.time)
+
+   ;counts = rates.valid_cnts[anode]
+
+   pp = where(toff.time GE trange[0] AND $
+              toff.time LE trange[1],cc)
+
+
+   ;; FLUX/DATA
+   tof = reform(transpose(float(reform(toff[pp].tof))),cc*512)
+
+   ;; X Axis
+   curr = curr[pp]
+   curs = reform(curr # replicate(1.,512),cc*512)
+
+   ;; Y Axis
+   tofs = reform(replicate(1.,cc) # vals.tof512,cc*512)
+
+   ;xbinsize=0.01
+   ;ybinsize=1.00
+   
+   fun = histbins2d(curs,tofs,flux=tof,$
+                    xnbins=xnbins,xbinsize=xbinsize,$;xrange=[0.5,1.5],$
+                    ynbins=ynbins,ybinsize=ybinsize);,yrange=[6,208])
+
+
+   xx = (findgen(xnbins)*xbinsize + 0.6) # replicate(1.,ynbins)
+   yy = replicate(1.,xnbins) # (findgen(ynbins)*ybinsize)
+   
+   
+  ;popen, '~/Desktop/yaw_scan',/landscape
+  ;!p.multi=[0,0,2]
+   contour, fun, xx, yy, /fill, nlevel=20,/irr
+  ;anode_s = string(anode,format='(I2)')
+   stop
+
+
+
+
+
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+pro spp_swp_spi_cal_sweep_yaw,trange=trange,plotname=plotname,anode=anode
+
+  IF n_elements(trange) ne 2 THEN ctime,trange
+  IF ~keyword_set(plotname)  THEN plotname='~/Desktop/spi_swp_yaw'
+  IF ~keyword_set(anode)     THEN anode=0
+
+  hkps   = (spp_apdat('3be'x)).array
+  rates  = (spp_apdat('3bb'x)).array
+  manips = (spp_apdat('7c3'x)).array
+  hkps_def = long(hkps.DACS[5])-long(hkps.DACS[6])
+  hkps_def = hkps.dac_defl 
+
+  w = where(rates.time GT trange[0] AND $
+            rates.time LE trange[1])
+
+  rates  = rates[w]
+  def    = interp(hkps_def,hkps.time,rates.time)
+  yaw    = interp(float(manips.yaw_pos),manips.time,rates.time)
+  counts = rates.valid_cnts[anode]
+
+  ;; Kludge: get rid of def=0
+  pp = where(def NE 0)
+  def = def[pp]
+  yaw = yaw[pp]
+  counts = counts[pp]
+
+
+  ;; Kludge def
+  ;def = fix((round(def/10.)*10.))
+
+  ;un_def = (def[w])[uniq(def[w],sort(def[w]))]  
+  un_def = (def)[uniq(def,sort(def))] 
+
+  ybinsize=1
+  xbinsize='500'x
+
+  fun = histbins2d(def,yaw,flux=counts,$
+                  xnbins=xnbins,xbinsize=xbinsize,xrange=[-'ffff'x,'ffff'x],$
+                  ynbins=ynbins,ybinsize=ybinsize,yrange=[-75,75])
+
+
+  xx = (findgen(xnbins)*xbinsize - 'ffff'x) # replicate(1.,ynbins)
+  yy = replicate(1.,xnbins) # (findgen(ynbins)*ybinsize - 75)
+
+
+  popen, '~/Desktop/yaw_scan',/landscape
+  !p.multi=[0,0,2]
+  contour, fun, xx, yy, /fill, nlevel=20,xr=[-'ffff'x,'ffff'x],xs=1
+  anode_s = string(anode,format='(I2)')
+
+  nn = n_elements(un_def)
+  fits = fltarr(3,nn)
+  ress = fltarr(4,nn)
+  integ1 = fltarr(nn)
+  integ2 = fltarr(nn)
+  integ3 = fltarr(nn)
+  FOR i=0, nn-1 DO BEGIN         
+
+     ;deff = def[i]
+     ;yaww = un_yaw[i]
+     ;pp = where(round(yaw[w]) EQ yaww,cc)
+     ;pp = where(def[w] EQ un_def AND def[w] NE 0,cc)
+     pp = where(def EQ un_def[i] AND def NE 0,cc)
+     IF cc GT 10 THEN BEGIN
+
+        yaww = yaw[pp]
+        countss = counts[pp]
+
+        ;model = gaussfit(def[w[pp]], $
+        ;                 counts[w[pp]], $
+        ;                 aa,nterms=3)
+        model = gaussfit(yaww, $
+                         countss, $
+                         aa,nterms=3)
+        fits[*,i] = aa
+        integ1[i] = sqrt(!PI*aa[2]^2*2)*aa[0]
+        ;tmp1 = def[w[pp]]
+        ;tmp2 = counts[w[pp]]
+        tmp1 = yaww
+        tmp2 = countss
+        
+        ss = sort(tmp1)
+        tmp1 = tmp1[ss]
+        tmp2 = tmp2[ss]
+
+        unn = uniq(tmp1)
+        tmp1 = tmp1[unn]
+        tmp2 = tmp2[unn]
+        integ2[i] = int_tabulated(tmp1,tmp2)
+        integ2[i] = tsum(tmp1,tmp2)
+        integ3[i] = total(tmp2)*260.
+        ;oplot, [yaww,yaww],[aa[1]-aa[2], aa[1]+aa[2]],thick=2.4
+        ;oplot, [yaww,yaww],[aa[1],aa[1]], color=250,$
+        ;       psym=1,symsize=0.5,thick=2.4
+        ress[*,i] = poly_fit(un_def, fits[1,*],3)
+        ;oplot, [yaww,yaww],[aa[1]-aa[2], aa[1]+aa[2]],[yaww,yaww]
+        ;oplot, [yaww,yaww],[aa[1],aa[1]],[yaww,yaww], color=250,psym=1
+     ENDIF ;ELSE print, 'Bad', i, cc, un_def[i]
+  ENDFOR
+
+  ;;Polyfit
+  res = poly_fit(un_def, fits[1,*],3)
+  xx = findgen(120)-60
+  oplot, xx, res[0]+res[1]*xx+res[2]*xx^2+res[3]*xx^3, linestyle=2,thick=4
+  xyouts, 15, -5e4, $
+          string(res[0],format='(F6.1)')+' + '+$
+          string(res[1],format='(F6.1)')+'*def + '+$
+          string(res[2],format='(F6.1)')+'*def^2'
+
+
+  
+  ;plot, un_def,integ1,psym=-1
+  pp = where(integ2 NE 0)
+  plot, un_def[pp],integ2[pp],psym=-1,$
+        xtitle = 'Deflector [DAC]',xs=1,xr=[-'ffff'x,'ffff'x],$
+        ytitle = 'Integral',ys=1,thick=4,yr=[0,6e3]
+
+  ;oplot, un_def,integ3,psym=-1,color=50
+
+
+  ;; Remove 0s from integral and plot
+  pp = where(integ1 NE 0)
+  oplot, un_def[pp],integ1[pp],psym=-1,color=250,thick=2
+
+  xyouts, 10,1.7e6,'Trap. Integral'
+  xyouts, 10,1.5e6,'Gaussian Integral',color=250
+  ;pclose
+
+  data = {anode:anode,$
+          un_def:un_def,$
+          poly_res:ress,$
+          gauss_int:integ1,$
+          fit_res:fits}
+
+
+  save, filename='~/Desktop/yaw_scan_'+anode_s, data
+  ;plot, def[w], counts[w], xtitle='DEF1-DEF2',$
+  ;      ytitle='Counts in 1/4 NY Second',$
+  ;      xrange=[-1,1]*2d^16,/xstyle,charsize=1.4
+  ;makepng,'spani_cnts_vs_def',time=trange[0]
+  
+  !p.multi=0
+  pclose
+
+
+END
 
 
 
@@ -852,7 +1022,7 @@ PRO spp_swp_spi_k_sweep, trange=trange
 
 
    ;; Get Sweep DACs
-   spp_swp_spi_tables, tables,config='01'x
+   spp_swp_spi_tables, tables, config='01'x
 
    ;; Get SPAN-Ai HV DAC to Volts
    spp_swp_spi_parameters, vals 
@@ -939,9 +1109,9 @@ PRO spp_swp_spi_k_sweep, trange=trange
          locc = array_indices(nrg,loc)
          FOR j=0, 31 DO BEGIN
             ;; Only Energy bins with max counts
-            pp=where(locc[0,*] EQ j)
+            pp=where(locc[0,*] EQ j,cc)
             nrg2 = nrg[locc[0,pp],locc[1,pp]]
-            IF max(nrg2) GT 10 THEN BEGIN
+            IF max(nrg2) GT 10 AND cc GT 10 THEN BEGIN
                ;plot, volts[pp],nrg2,title=string(total(nrg2))+' '+ string(j)+' '+string(i)
                tmp = gaussfit(volts[pp],nrg2,a1,nterms=3)
                center[i,j] = a1[1]
@@ -998,12 +1168,9 @@ PRO spp_swp_spi_tof_boxcar, trange=trange, $
       ctime, trange
    ENDIF
 
-   IF ~keyword_set(anode) THEN stop;$
+   IF ~keyword_set(anode) THEN stop
 
-
-   ;; --- Get data
-   ;; Events
-   events  = (spp_apdat('3b9'x)).array
+   spp_swp_spi_parameters, vals
 
    ;; TOF
    get_data, 'spp_spi_tof_TOF', data=toff 
@@ -1011,58 +1178,55 @@ PRO spp_swp_spi_tof_boxcar, trange=trange, $
    ;; APS 5 - Agilent
    aps5 = (spp_apdat('755'x)).array
 
-   ;; --- Find time interval
-   etime   = events.time
 
-
-
-
-   
-   binsize = 500.
-   center = fltarr(100000)
-   jj = 0
-
-
-   ;; ------------------ TOFF
-   ;GOTO, skip
+   ;; TOF
    e_toff = where(toff.x GE trange[0] AND $
                   toff.x LE trange[1],t_cc)
 
-   tim_bin = interpol(toff.x[e_toff],indgen(t_cc),reform(transpose(indgen(t_cc) # replicate(1,512)),t_cc*512))
+   c_toff = where(aps5.time GE trange[0] AND $
+                  aps5.time LE trange[1],c_cc)
 
-   current = interp(float(aps5.p6i),aps5.time,tim_bin)
-   tofs = reform(transpose(toff.y[e_toff,*]),t_cc*512)
+   tof      = toff.y[e_toff,*]
+   tof_time = toff.x[e_toff]
+   cur      = aps5[c_toff].p6i
+   cur_time = aps5[c_toff].time
 
-   ;; Compression:
-   ;; a. 11 bits -> Remove 2LSB -> 9 bits
-   
-   ;; b. 11 bits -> Remove 1LSB
-   xx = (indgen(2047)*0.101725)[indgen(1024)*2]
-   ;;    Compress 10 bits to 9 bits
-   ;;    N for <255, N/2+128 for 256-511, N/4+256 for >511 ->
-   xx_tof = fltarr(512)
-   xx_tof[0:255]   = xx[0:255]
-   xx_tof[256:383] = (xx[256:511])[findgen(128)*2]
-   xx_tof[384:511] = (xx[511:1023])[findgen(128)*4]
+   ind = fltarr(t_cc)
+   j = 0
+   FOR i=0, t_cc-1 DO BEGIN 
+      IF tof_time[i] LT cur_time[j] THEN BEGIN 
+         ind[i] = j 
+      ENDIF ELSE BEGIN 
+         j=j+1
+         ind[i] = j
+      ENDELSE 
+   ENDFOR
+
+   cur=cur[ind]
+
+   ind = reform(vals.tof512 ## replicate(1,t_cc),512.*t_cc)
+   cur = rform(transpose(cur ## replicate(1,512)),512*t_cc)
+   tof = reform(tof,512*t_cc)
 
    bin1 = 0.1
-   min1 = min(xx_tof)
-   max1 = max(xx_tof)
-   min2 = min(current)
-   max2 = max(current)
-   bin2 = 0.01
+   min1 = min(ind)
+   max1 = max(ind)
 
-   h2d =HIST_2D(tofs, current,$
+   bin2 = 0.01
+   min2 = min(cur)
+   max2 = max(cur)
+
+   h2d =HIST_2D(tof, cur,$
                 bin1=bin1,min1=min1,max1=max1,$
                 bin2=bin2,min2=min2,max2=max2)
    
-   stop
-   contour, h2d, xx_tof,indgen(n_elements(h2d[0,*])),$
+   contour, h2d, x,indgen(n_elements(h2d[0,*])),$
             /fill, nlevel=25,$
             xrange=[0,130],xs=1,$
             yrange=[0,170],ys=1.,$
             title=time_string(trange[0])+$
-            ' -  EM3 - Colutron 1keV eV, 50V ExB - Anode 11',$
+            ;' -  EM3 - Colutron 1keV eV, 50V ExB - Anode 11',$
+            ' -  FM - Colutron 1keV eV, 50V ExB - Anode 11',$
             xtitle='Nanoseconds',ytitle='Magnet [mA]'
    stop
    ;skip:
@@ -1854,6 +2018,29 @@ trange = ['2017-02-22/09:00:00','2017-02-22/09:00:00']
    ;; Anode 0xD
    trange=['2017-03-21/15:57:00','2017-03-21/17:33:50']
 
+   ;; Anode 0xE
+   ;trange=[]
+
+
+   ;Constant DEFL, Varying YAWLIN
+   ;trange=[]
+
+
+
+   ;;---------------------------------------------------------------
+   ;; Colutron
+   ;;
+   ;; INFO
+   ;;   - 
+   ;; CONFIG
+   ;;   - Table = 'spani_reduced_table,center_energy=1000.,deltaEE=0.3'
+   ;;   - Nitrogen Gas Gun
+   ;;     + Gun V = 1000 [V]
+   ;;     + Filament I = 15.0 [A]
+   ;;     + ExB - 200 [V] and varying current for magnet
+   ;trange=[]
+
+
 
    ;; Load Selected Time Range
    files = spp_file_retrieve(/cal,/spani,trange=trange)
@@ -1864,6 +2051,58 @@ trange = ['2017-02-22/09:00:00','2017-02-22/09:00:00']
    spp_swp_tplot,/setlim
    spp_swp_tplot,'si'
    spp_swp_gse_pressure_file_read ; load chamber pressure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;              SPAN-Ai Flight Post-Workmanship Vibe            ;;;
+;;;                      Snout2 Facility                         ;;;
+;;;                        2017-04-04                            ;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+   ;;---------------------------------------------------------------
+   ;; CPT
+   ;;
+   ;; INFO
+   ;;   - 
+   ;; CONFIG
+   ;;   - 
+   ;;   - 
+   ;;     
+   ;;     
+   ;;     
+   trange=['2017-04-05/02:33:21']
+
+
    
 END
 

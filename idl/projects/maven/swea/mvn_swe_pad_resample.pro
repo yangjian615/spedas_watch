@@ -19,10 +19,10 @@
 ;	mvn_swe_pad_resample, nbins=128., erange=[100., 150.]
 ;
 ;INPUTS: 
-;   Optional: Time range for resampling.  Default is to resample
-;   all data (PAD or 3D, survey or burst, depending on keywords).
-;   This routine might take more than 10 minutes to process PAD 
-;   survey data for one day, depending on your machine specs.
+;   trange:    Optional: Time range for resampling.  Default is to resample
+;              all data (PAD or 3D, survey or burst, depending on keywords).
+;              This routine might take more than 10 minutes to process PAD 
+;              survey data for one day, depending on your machine specs.
 ;
 ;KEYWORDS:
 ;   SILENT:    Minimize to show the processing information in the terminal.
@@ -127,8 +127,8 @@
 ;CREATED BY:      Takuya Hara on 2014-09-24.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-04 17:27:14 -0700 (Tue, 04 Apr 2017) $
-; $LastChangedRevision: 23101 $
+; $LastChangedDate: 2017-04-05 10:43:47 -0700 (Wed, 05 Apr 2017) $
+; $LastChangedRevision: 23114 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_pad_resample.pro $
 ;
 ;-

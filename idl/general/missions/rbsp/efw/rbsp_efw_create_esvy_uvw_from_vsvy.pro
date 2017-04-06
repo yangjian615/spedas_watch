@@ -12,7 +12,7 @@
 ;          to construct Esvy UVW from any combination of antenna pairs.
 ; INPUT:    date -> 'yyyy-mm-dd'
 ;           probe -> 'a' or 'b'
-;           bad_probe -> (string) probe to avoid (1,2,3, or 4)
+;           bad_probe -> (integer) probe to avoid (1,2,3, or 4)
 ; KEYWORDS:
 ;           pairs -> can directly input antenna pairs to be used instead of
 ;                    just indicating the bad_antennas
@@ -124,7 +124,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
     boom_length_adj = sqrt(2)*boom_length[0]/2.
 
 
-    if bad_probe eq '1' then begin
+    if bad_probe eq 1 then begin
 
       dif_data,rbv+'3',rbv+'4',newname='tmp'
       get_data,'tmp',data=dd
@@ -146,7 +146,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
 
     endif
 
-    if bad_probe eq '2' then begin
+    if bad_probe eq 2 then begin
 
       dif_data,rbv+'3',rbv+'4',newname='tmp'
       get_data,'tmp',data=dd
@@ -167,7 +167,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
       E12 = 1*sqrt(2)/2.*(E13 + E14)
     endif
 
-    if bad_probe eq '3' then begin
+    if bad_probe eq 3 then begin
 
       dif_data,rbv+'1',rbv+'2',newname='tmp'
       get_data,'tmp',data=dd
@@ -188,7 +188,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
       E34 = 1*sqrt(2)/2.*(E14 + E24)
     endif
 
-    if bad_probe eq '4' then begin
+    if bad_probe eq 4 then begin
 
       dif_data,rbv+'1',rbv+'2',newname='tmp'
       get_data,'tmp',data=dd
@@ -228,7 +228,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
     get_data,rbv+'3',times,v3
     get_data,rbv+'4',times,v4
 
-    if bad_probe eq '1' then begin
+    if bad_probe eq 1 then begin
 
       dif_data,rbv+'3',rbv+'4',newname='tmp'
       get_data,'tmp',data=dd
@@ -241,7 +241,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
       E12 = 1*1000.*(v3 + v4 - v2)/boom_length[0]
 
     endif
-    if bad_probe eq '2' then begin
+    if bad_probe eq 2 then begin
 
       dif_data,rbv+'3',rbv+'4',newname='tmp'
       get_data,'tmp',data=dd
@@ -254,7 +254,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
       E12 = -1*1000.*(v3 + v4 - v1)/boom_length[0]
 
     endif
-    if bad_probe eq '3' then begin
+    if bad_probe eq 3 then begin
 
       dif_data,rbv+'1',rbv+'2',newname='tmp'
       get_data,'tmp',data=dd
@@ -267,7 +267,7 @@ pro rbsp_efw_create_esvy_uvw_from_vsvy,$
       E34 = 1000.*(v1 + v2 - v4)/boom_length[1]
 
     endif
-    if bad_probe eq '4' then begin
+    if bad_probe eq 4 then begin
 
       dif_data,rbv+'1',rbv+'2',newname='tmp'
       get_data,'tmp',data=dd

@@ -60,6 +60,8 @@
 ;
 ;   DATPLOT:      Returns a structure which contains data used to plot.
 ;
+;     UNITS:      Specifies the units (e.g., 'eflux', 'df', etc). Default is 'df'.
+;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
 ;                 ; Uses archive data, and shows the B field direction.
@@ -89,13 +91,13 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: hara $
-; $LastChangedDate: 2017-04-03 14:22:23 -0700 (Mon, 03 Apr 2017) $
-; $LastChangedRevision: 23088 $
+; $LastChangedDate: 2017-04-05 10:48:55 -0700 (Wed, 05 Apr 2017) $
+; $LastChangedRevision: 23115 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
-                          bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id,    $
+                          bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id, units=units, $
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
                           dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange, datplot=datplot
 
@@ -249,16 +251,11 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            dummy = d
            dummy = conv_units(dummy, 'df')
            dummy.data = FLOAT(dummy.bins_sc)
-           IF SIZE(_extra, /type) EQ 8 THEN BEGIN
-              dummy_extra = _extra
-              IF tag_exist(dummy_extra, 'units', /quiet) THEN str_element, dummy_extra, 'units', /delete
-              IF tag_exist(dummy_extra, 'unit', /quiet) THEN str_element, dummy_extra, 'unit', /delete
-           ENDIF 
-           status = EXECUTE("slice2d, dummy, _extra=dummy_extra, vel=vel, /noplot, datplot=block, /verbose")
-           undefine, dummy, dummy_extra
+           status = EXECUTE("slice2d, dummy, _extra=_extra, vel=vel, /noplot, datplot=block, /verbose")
+           undefine, dummy
         ENDIF
 
-        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=datplot")
+        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=datplot, units=units")
         IF status EQ 1 THEN BEGIN
            x0 = !x.window[0]*1.2
            y0 = !y.window[1]*0.95

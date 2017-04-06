@@ -25,6 +25,7 @@
 ;			rbsp_load_spice_kernels ; (required)
 ;	/debug - prints debugging info
 ;	/qa - load the QA test file instead of standard L1 file
+; bad_probe -> integer indicating a bad probe.
 ;
 ;
 ; NOTES:
@@ -34,8 +35,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-07-18 16:58:37 -0700 (Mon, 18 Jul 2016) $
-;   $LastChangedRevision: 21483 $
+;   $LastChangedDate: 2017-04-05 10:09:53 -0700 (Wed, 05 Apr 2017) $
+;   $LastChangedRevision: 23110 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_load_efw_esvy_mgse.pro $
 ;
 ;-

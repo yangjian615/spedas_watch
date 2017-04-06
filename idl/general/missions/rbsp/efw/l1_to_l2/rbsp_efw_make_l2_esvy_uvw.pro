@@ -32,9 +32,9 @@
 ;
 ;
 ; VERSION:
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-06 16:51:43 -0700 (Thu, 06 Oct 2016) $
-; $LastChangedRevision: 22061 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2017-04-05 12:36:48 -0700 (Wed, 05 Apr 2017) $
+; $LastChangedRevision: 23118 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2_esvy_uvw.pro $
 ;
 ;-
@@ -137,7 +137,7 @@ endif
 
 	
 ; make sure we have the skeleton CDF
-skeletonFile=file_search(source_file,count=found) ; looking for single file, so count will return 0 or 1
+skeletonFile=file_search(skeletonfile,count=found) ; looking for single file, so count will return 0 or 1
 
 
 if ~found then begin

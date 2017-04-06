@@ -11,8 +11,8 @@
 ; HISTORY: Created by Aaron W Breneman, Jan 8, 2015
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2016-07-20 11:27:50 -0700 (Wed, 20 Jul 2016) $
-;   $LastChangedRevision: 21496 $
+;   $LastChangedDate: 2017-04-05 06:24:32 -0700 (Wed, 05 Apr 2017) $
+;   $LastChangedRevision: 23106 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_get_flag_values.pro $
 ;-
 
@@ -101,7 +101,7 @@ function rbsp_efw_get_flag_values,sc,times,density_min=dmin,boom_pair=bp
 
 
 ;For density we have a special requirement
-;.....Remove when (V1+V2)/2 > -1  AND
+;.....Remove when (V1+V2)/2 > 0 (CHANGED FROM -1) AND
 ;.....Lshell > 4  (avoids hot plasma sheet)
 ;.....AND remove when (V1+V2)/2 < -10
 ;But, we'll also remove values +/- 10 minutes at start and

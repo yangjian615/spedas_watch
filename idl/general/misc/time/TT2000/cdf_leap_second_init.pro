@@ -14,8 +14,8 @@
 ;        
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-03-23 12:51:43 -0700 (Thu, 23 Mar 2017) $
-;$LastChangedRevision: 23019 $
+;$LastChangedDate: 2017-04-05 16:40:06 -0700 (Wed, 05 Apr 2017) $
+;$LastChangedRevision: 23122 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/time/TT2000/cdf_leap_second_init.pro $
 ;-
 pro cdf_leap_second_init,reset=reset,no_download=no_download,no_update=no_update,no_clobber=no_clobber,force_download=force_download
@@ -48,23 +48,7 @@ pro cdf_leap_second_init,reset=reset,no_download=no_download,no_update=no_update
     !cdf_leap_seconds.downloadonly = ftest.downloadonly
     !cdf_leap_seconds.verbose = ftest.verbose
     !cdf_leap_seconds.preserve_tt2000=!cdf_leap_seconds.preserve_tt2000
-Endif
-
-  if keyword_set(no_download) then begin
-    !cdf_leap_seconds.no_download=1
-  endif
-
-  if keyword_set(no_update) then begin
-    !cdf_leap_seconds.no_update=1
-  endif 
-  
-  if keyword_set(no_clobber) then begin
-    !cdf_leap_seconds.no_clobber=1
-  endif 
-  
-  if keyword_set(force_download) then begin
-    !cdf_leap_seconds.force_download=1
-  endif
+  Endif
   
   cdf_lib_info,version=v,subincrement=si,release=r,increment=i,copyright=c
   cdf_version = string(format="(i0,'.',i0,'.',i0,a)",v,r,i,si)
@@ -73,18 +57,34 @@ Endif
  
   if cdf_version lt cdf_version_min then begin
      print,'Warning: Your version of the CDF library ('+cdf_version+') is unable to read TT2000 times.'
-     print,'Please go to the following url to learn how to patch your system:'
-     print,'http://cdf.gsfc.nasa.gov/html/cdf_patch_for_idl6x_new3400.html'
+     print,'Please go to the following url to find how to update your system:'
+     print,'https://cdf.gsfc.nasa.gov/html/sw_and_docs.html'
   endif   
 
   if ~keyword_set(exists) or keyword_set(reset) then begin
-  !cdf_leap_seconds=tmp_struct
-  ;SPDF maintains the master version of the leap second table here
-  ;When a leap second occurs the table CDFLeapSeconds.txt, which is stored at this location will be updated
-  !cdf_leap_seconds.remote_data_dir = 'https://cdf.gsfc.nasa.gov/html/'
-  
-  ;where the leap second table will be stored
-  !cdf_leap_seconds.local_data_dir = root_data_dir() + 'misc/'
+    !cdf_leap_seconds=tmp_struct
+    ;SPDF maintains the master version of the leap second table here
+    ;When a leap second occurs the table CDFLeapSeconds.txt, which is stored at this location will be updated
+    !cdf_leap_seconds.remote_data_dir = 'https://cdf.gsfc.nasa.gov/html/'
+    
+    ;where the leap second table will be stored
+    !cdf_leap_seconds.local_data_dir = root_data_dir() + 'misc/'
+  endif
+   
+  if keyword_set(no_download) then begin
+    !cdf_leap_seconds.no_download=1
+  endif
+
+  if keyword_set(no_update) then begin
+    !cdf_leap_seconds.no_update=1
+  endif
+
+  if keyword_set(no_clobber) then begin
+    !cdf_leap_seconds.no_clobber=1
+  endif
+
+  if keyword_set(force_download) then begin
+    !cdf_leap_seconds.force_download=1
   endif
   
   ;make sure that the NASA CDF library knows where to find the leapsecond table

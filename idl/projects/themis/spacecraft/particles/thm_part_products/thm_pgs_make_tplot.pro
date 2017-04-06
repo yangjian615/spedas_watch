@@ -24,9 +24,9 @@
 ;  
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-03-05 16:42:22 -0800 (Wed, 05 Mar 2014) $
-;$LastChangedRevision: 14506 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-04-05 13:48:59 -0700 (Wed, 05 Apr 2017) $
+;$LastChangedRevision: 23120 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_make_tplot.pro $
 ;-
 
@@ -59,7 +59,7 @@ pro thm_pgs_make_tplot, name, x=x, y=y, z=z, units=units, tplotnames=tplotnames,
 
   ;general settings for all spectrograms
   dlimits = {ylog:0, zlog:1, spec:1, ystyle:1, zstyle:1,$
-             extend_y_edges:1,$ ;if this option is set, tplot only plots to bin center on the top and bottom of the specplot
+             extend_y_edges:1,$ ;if this option is not set, tplot only plots to bin center on the top and bottom of the specplot
              x_no_interp:1,y_no_interp:1,$ ;copied from original thm_part_getspec, don't think this is strictly necessary, since specplot interpolation is disabled by default
              ztitle:units_s,minzlog:1,data_att:{units:units_s}} 
 

@@ -158,10 +158,13 @@ pro rbsp_efw_edotb_to_zero_crib,date,probe,no_spice_load=no_spice_load,suffix=su
   ang_ey = fltarr(n)
   ang_ez = fltarr(n)
 
-  for i=0L,n-1 do ang_ey[i] = acos(total([0,1,0]*magmgse_smoothed.y[i,*])/(bmag_smoothed[i]))/!dtor
-  for i=0L,n-1 do ang_ez[i] = acos(total([0,0,1]*magmgse_smoothed.y[i,*])/(bmag_smoothed[i]))/!dtor
-  store_data,'angles',data={x:edata.x,y:[[ang_ey],[ang_ez]]}
 
+  ;Don't do this calculation for esvy-despun. Takes too long
+  if n_elements(edata.x) le 86400. then begin
+    for i=0L,n-1 do ang_ey[i] = acos(total([0,1,0]*magmgse_smoothed.y[i,*])/(bmag_smoothed[i]))/!dtor
+    for i=0L,n-1 do ang_ez[i] = acos(total([0,0,1]*magmgse_smoothed.y[i,*])/(bmag_smoothed[i]))/!dtor
+    store_data,'angles',data={x:edata.x,y:[[ang_ey],[ang_ez]]}
+  endif
 
 
   ;Calculate ratio b/t spinaxis and spinplane components
