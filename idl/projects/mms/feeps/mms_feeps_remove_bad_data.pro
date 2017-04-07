@@ -9,8 +9,8 @@
 ; NOTES:
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-23 11:11:30 -0800 (Thu, 23 Feb 2017) $
-; $LastChangedRevision: 22856 $
+; $LastChangedDate: 2017-04-06 14:13:10 -0700 (Thu, 06 Apr 2017) $
+; $LastChangedRevision: 23124 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_bad_data.pro $
 ;-
 
@@ -33,11 +33,15 @@ pro mms_feeps_remove_bad_data, probe=probe, data_rate=data_rate, datatype=dataty
 
 ;  MMS1:
 ;  Top Eyes: None (all good)
-;  Bottom Eyes: 1
+;  Bottom Eyes: 1, 11
   if probe eq '1' then begin
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_count_rate_sensorid_1'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_intensity_sensorid_1'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_1'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_count_rate_sensorid_11'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_intensity_sensorid_11'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_11'+suffix)
+
   endif else if probe eq '2' then begin
       ;  MMS2:
       ;  Top Eyes: 5 (update 2/10/17, MMS2, T12 is also bad)
@@ -147,8 +151,14 @@ pro mms_feeps_remove_bad_data, probe=probe, data_rate=data_rate, datatype=dataty
 
   if probe eq '1' then begin   
       ;    MMS1:
-      ;    Top Eyes: None (all good)
+      ;    Top Eyes: 2, 5
       ;    Bottom Eyes: 2, 3, 4, 5, 9, 11, 12
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_2'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_2'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_2'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_5'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_5'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_5'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_count_rate_sensorid_2'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_intensity_sensorid_2'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_2'+suffix)
@@ -174,8 +184,11 @@ pro mms_feeps_remove_bad_data, probe=probe, data_rate=data_rate, datatype=dataty
   endif else if probe eq '2' then begin
       ;    
       ;    MMS2: 
-      ;    Top Eyes: 2, 12, (updates, 1/27/17 -> 3, 10 are also bad; updates, 2/10 -> 4 is also bad)
+      ;    Top Eyes: 1, 2, 9, 11, 12, (updates, 1/27/17 -> 3, 10 are also bad; updates, 2/10 -> 4 is also bad)
       ;    Bottom Eyes: 1, 2, 3, 4, 5, 9, 10, 11, 12
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_1'+suffix)
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_1'+suffix)
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_1'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_2'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_2'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_2'+suffix)
@@ -185,9 +198,15 @@ pro mms_feeps_remove_bad_data, probe=probe, data_rate=data_rate, datatype=dataty
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_4'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_4'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_4'+suffix)
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_9'+suffix)
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_9'+suffix)
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_9'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_10'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_10'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_10'+suffix)
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_11'+suffix)
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_11'+suffix)
+      append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_11'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_12'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_12'+suffix)
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_12'+suffix)
@@ -221,8 +240,11 @@ pro mms_feeps_remove_bad_data, probe=probe, data_rate=data_rate, datatype=dataty
       append_array, vars, tnames('mms2_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_12'+suffix)
   endif else if probe eq '3' then begin
       ;    MMS3:
-      ;    Top Eyes: 5, 10 (updates, 1/27/17 -> 4, 9 are also bad)
-      ;    Bottom Eyes: 1, 9, 10, 11  (updates, 1/27/17 -> 4, 12 are also bad)
+      ;    Top Eyes: 3, 5, 10, 11 (updates, 1/27/17 -> 4, 9 are also bad)
+      ;    Bottom Eyes: 1, 3, 9, 10, 11  (updates, 1/27/17 -> 4, 12 are also bad)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_3'+suffix)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_3'+suffix)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_3'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_4'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_4'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_4'+suffix)
@@ -235,10 +257,16 @@ pro mms_feeps_remove_bad_data, probe=probe, data_rate=data_rate, datatype=dataty
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_10'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_10'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_10'+suffix)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_11'+suffix)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_11'+suffix)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_11'+suffix)
       
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_count_rate_sensorid_1'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_intensity_sensorid_1'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_1'+suffix)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_count_rate_sensorid_3'+suffix)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_intensity_sensorid_3'+suffix)
+      append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_3'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_count_rate_sensorid_4'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_intensity_sensorid_4'+suffix)
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_4'+suffix)
@@ -256,17 +284,26 @@ pro mms_feeps_remove_bad_data, probe=probe, data_rate=data_rate, datatype=dataty
       append_array, vars, tnames('mms3_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_12'+suffix)
   endif else if probe eq '4' then begin
       ;    MMS4: 
-      ;    Top Eyes: 3 (updates, 1/27/17 -> 5, 9, 12 are also bad)
+      ;    Top Eyes: 3, 4, 10, 11 (updates, 1/27/17 -> 5, 9, 12 are also bad)
       ;    Bottom Eyes: 1, 3, 9, 12 
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_3'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_3'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_3'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_4'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_4'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_4'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_5'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_5'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_5'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_9'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_9'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_9'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_10'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_10'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_10'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_11'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_11'+suffix)
+      append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_11'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_12'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_12'+suffix)
       append_array, vars, tnames('mms4_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_12'+suffix)
