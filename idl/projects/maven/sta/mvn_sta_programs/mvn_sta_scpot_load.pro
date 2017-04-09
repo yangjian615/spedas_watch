@@ -20,11 +20,11 @@
 ;
 ;	TBDs - scpot is not valid 20151127/1:00UT - why is it invalid?
 ;
-;
+;	TBD - cutoff keyword forces the use of c0 cutoff for potential - needed if winds impact potential
 ;
 ;
 ;-
-pro mvn_sta_scpot_load,tplot=tplot,max_alt=max_alt,max_nrg=max_nrg,ram_min=ram_min,max_den=max_den,max_ec=max_ec,skip=skip,kk2=kk2,swe=swe,pot_err=pot_err,alt_vo2=alt_vo2
+pro mvn_sta_scpot_load,tplot=tplot,max_alt=max_alt,max_nrg=max_nrg,ram_min=ram_min,max_den=max_den,max_ec=max_ec,skip=skip,kk2=kk2,swe=swe,pot_err=pot_err,alt_vo2=alt_vo2,cutoff=cutoff
 
 	common mvn_c6,mvn_c6_ind,mvn_c6_dat 
 	common mvn_c0,mvn_c0_ind,mvn_c0_dat 
@@ -215,6 +215,8 @@ endif
 
 	alt = (pos[*,0]^2+pos[*,1]^2+pos[*,2]^2)^.5 - mars_radius
 
+	min_alt = min(alt)
+
 ;**********************************************************
 ; determine sc velocity relative to planet - this is ram velocity
 
@@ -303,7 +305,7 @@ for i=0l,npts-1 do begin
 		vd[i] = total(data)/(total(data/v)>1.e-20) 
 		vth[i] = (total(data*(v-vd[i])^2/v)/(total(data/v)>1.e-20))^.5
 
-		pot[i] = 0.5*ms*(vd[i]^2-vel[i]^2) > ram_min
+		pot[i] = 0.5*ms*(vd[i]^2-vel[i]^2) > ram_min							; ram_min=0.12  the minimum allowed negative potential
 		if total(cnts) lt 5. and alt[i] le 180. then pot[i]=pot[(i-1)>0] 
 		if total(cnts) lt 5. and alt[i] gt 180. then pot[i]=pot[(i-1)>0]
 ;		if total(cnts) lt 5. and alt[i] gt 180. and den[i] lt 1. then pot[i]=pot[(i-1)>0]
@@ -326,9 +328,12 @@ if keyword_set(tplot) then store_data,'mvn_sta_c6_pot_ec',data={x:time,y:0.5*ms*
 	npts2 = n_elements(time2)
 	pot2 = fltarr(npts2)
 	pot22 = fltarr(npts2)
+	pot2_cutoff_cnts = fltarr(npts2)
+	pot2_p_cutoff_cnts = fltarr(npts2)
 	pot_bad = fltarr(npts2)
 	cnts_lt_pot = fltarr(npts2)
 	swp_ind = mvn_c0_dat.swp_ind
+	pot0 = interp(pot,time,time2)
 
 	get_data,'mvn_sta_test_density3',data=tmp3
 	den2 = interp(tmp3.x,tmp3.y,time2)
@@ -367,6 +372,7 @@ for i=1l,npts2-2 do begin
 
 ; changed 20170228 -- needs testing, 
 		if ((pot1[i] lt 3.) and (o_cnt2[i] lt 100)) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25) and (p_low2[i] lt 20)) $
+;			or ((alt2[i] gt (min_alt+30.)) and (den[i] lt 3000.)) then begin	; changed to use all ions when the den<3000., modified 20170330 to use (min_alt+30.) - didn't seem to matter
 			or ((alt2[i] gt 150.) and (den[i] lt 3000.)) then begin			; changed to use all ions when the den<3000.	
 
 			dat1c=total(reform(mvn_c0_dat.data[i,*,*]),2)
@@ -408,12 +414,20 @@ for i=1l,npts2-2 do begin
 		ind0 = where ( 	   ( (data ge 1.) and (data2 ge 1.) and ((data+data2) ge 4.) and  (dat5c ge 1.)	) $
 				or ( ((dat3c+dat4c) ge 3.) and  (dat5c ge 1.)			) $
 				or ( ((dat3c+dat4c) ge 2.) and  (dat5c ge 2.)		   ) ,count)
-		if count gt 0 then mind0=max(ind0) else mind0=0
+		if count gt 0 then mind0=max(ind0) 
+		mind0 = mind0 > 1
 
+; interpolate if more than 10 counts
 
-; interpolate if more than 20 counts
+; don't average over time if dat1c has enough counts, added 20170331
+		if count gt 0 and (dat1c[mind0]+dat2c[mind0]+dat2c[(mind0-1)>0]) gt 10. then begin
+			if dat1c[mind0] eq 0 then mind0=(mind0-1)>1
+			data=dat1c
+			data2=dat2c
+		endif
 
-		if energy[mind0] lt max_nrg and ((alt2[i] gt 180.) or ((data[mind0]+data2[mind0]) gt 20.)) then begin
+;		if energy[mind0] lt max_nrg and ((alt2[i] gt 180.) or ((data[mind0]+data2[mind0]) gt 20.)) then begin
+		if energy[mind0] lt max_nrg and ((alt2[i] gt (min_alt+25.)) or ((data[mind0]+data2[mind0]) gt 20.)) then begin
 			e0 = energy[mind0] - denergy[mind0]/2.
 			d1 = data[mind0] 
 			e1 = energy[mind0] - e0
@@ -427,8 +441,25 @@ for i=1l,npts2-2 do begin
 ;		if alt2[i] ge 300. and den2[i] lt 1. then pot2[i] = 2.5
 		if (mvn_c0_dat.quality_flag[i] and 192) gt 0 then pot2[i]=pot2[(i-1)>0]
 		if (mvn_c0_dat.quality_flag[i] and 3) gt 0 then pot2[i]=max_nrg
+		if (alt2[i] lt (min_alt+25.)) then pot2[i]=max_nrg
 
 	endif else pot2[i] = max_nrg
+
+;**************************************
+; this added 20170330 this is used to determine validity of low energy cutoff for along track wind calculations
+
+	if pot2[i] lt (max_nrg*.9 > 10.) then begin
+		nrg = reform(mvn_c0_dat.energy[swp_ind[i],*,0])
+		minval = min(abs(nrg-pot2[i]),ind77)
+
+		minval = min(abs(nrg-(2.7+pot0[i])*.70),ind87)
+		if alt2[i] lt alt_vo2 then ind77=ind77>ind87		; this makes sure we don't count o2+ stragglers 
+
+		pot2_cutoff_cnts[i] = total(dat1c[0>(ind77-2):(ind77+1)<63]+dat1p[0>(ind77-2):(ind77+1)<63]+dat1m[0>(ind77-2):(ind77+1)<63])
+		pot2_p_cutoff_cnts[i] = total(dat3c[0>(ind77-1):(ind77+1)<63]+dat3p[0>(ind77-1):(ind77+1)<63]+dat3m[0>(ind77-1):(ind77+1)<63])
+	endif
+;**************************************
+
 endfor
 
 		if keyword_set(tplot) then store_data,'p_only',data={x:time2,y:p_only}
@@ -502,6 +533,8 @@ pot3a = pot3
 pot33 = interp(pot22>max_nrg*pot_bad,time2,time) 
 pot3 = (pot3<pot33) > 0.
 
+pot3_cutoff_cnts = interp(pot2_cutoff_cnts,time2,time)
+pot3_p_cutoff_cnts = interp(pot2_p_cutoff_cnts,time2,time)
 
 ;**********************************************************
 ; estimate sc potential from swea data - this is turned off since it fails too often
@@ -673,15 +706,28 @@ if keyword_set(tplot) then store_data,'den_lt_max',data={x:time,y:(den2 lt max_d
 if keyword_set(tplot) then store_data,'ec_gt_max',data={x:time,y:(p_ec gt max_ec)}
 	if keyword_set(tplot) then ylim,'ec_gt_max',-1,2,0
 
+
 ;pot_all = -(pot3 < (pot+1000.*(alt gt alt_vo2)))*(1.*sc_neg) + (pot4 > 1.)*(-sc_neg+1.)
 
-pot_all = -(pot3 < (pot+1000.*(alt gt alt_vo2)))*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid)	; sc_pos comes into play, pot3 is ion cutoff, the alt cutoff at 300km should be variable
+pot_all = -(pot3 < (pot+1000.*(alt gt alt_vo2)))*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid)	; sc_pos comes into play, pot3 is ion cutoff, the alt cutoff at alt_vo2=300km should be variable
+
+;pot_cutoff_valid = (pot3 lt 1.2*(pot+1000.*(alt gt alt_vo2)))*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid) and (alt gt ((min_alt+25.)>180.))		; pre-20170331 algorithm
+
+pot_cutoff_valid = (pot3_cutoff_cnts gt 5.1)*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid) and (pot3_p_cutoff_cnts gt 2.1 or alt gt alt_vo2) and (alt gt ((min_alt+25.)>180.))		; 
+
+	ind = where(not pot_cutoff_valid[1:npts-2] and pot_cutoff_valid[0:npts-3] and pot_cutoff_valid[2:npts-1],count)
+	if count gt 0 then pot_cutoff_valid[ind+1] = 1
+	ind = where(pot_cutoff_valid[1:npts-2] and not pot_cutoff_valid[0:npts-3] and not pot_cutoff_valid[2:npts-1],count)
+	if count gt 0 then pot_cutoff_valid[ind+1] = 0
+
+if keyword_set(cutoff) then pot_all = -(pot3*pot_cutoff_valid + pot*(1-pot_cutoff_valid))*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid)	; use pot3 when valid
 
 ; fill in missing single potentials - mainly at attenuator changes
 
 ind = where(pot_all[1:npts-2] eq 0 and pot_all[0:npts-3] ne 0 and pot_all[2:npts-1] ne 0,count)
 if count gt 0 then begin
 	pot_all[ind+1] = (pot_all[ind] + pot_all[ind+2])/2.
+	pot_cutoff_valid[ind+1] = fix((pot_cutoff_valid[ind] + pot_cutoff_valid[ind+2])/2)
 endif
 
 ; remove isolated single potentials - mainly at places where density is near 10/cc
@@ -689,6 +735,7 @@ endif
 ind = where(pot_all[1:npts-2] ne 0 and pot_all[0:npts-3] eq 0 and pot_all[2:npts-1] eq 0,count)
 if count gt 0 then begin
 	pot_all[ind+1] = 0.
+	pot_cutoff_valid[ind+1] = 0
 endif
 
 ind = where(pot_all ne 0.,count)
@@ -717,13 +764,17 @@ if keyword_set(tplot) then store_data,'mvn_sta_scpot_valid',data={x:time,y:pot_v
 ;**********************************************************
 ; make some tplot structures if keyword is set
 
+if keyword_set(tplot) then store_data,'mvn_sta_c6_pot_cutoff_valid',data={x:time,y:pot_cutoff_valid} & options,'mvn_sta_c6_pot_cutoff_valid',thick=2,yrange=[-1,2],ylog=0,ytitle='pot!Cion!Ccutoff!Cvalid'
+if keyword_set(tplot) then store_data,'mvn_sta_c6_pot3_cutoff_cnts',data={x:time,y:pot3_cutoff_cnts} & options,'mvn_sta_c6_pot3_cutoff_cnts',thick=2,yrange=[.1,20],ylog=1,ytitle='pot3!Cion!Ccutoff!Ccnts'
+if keyword_set(tplot) then store_data,'mvn_sta_c6_pot3_p_cutoff_cnts',data={x:time,y:pot3_p_cutoff_cnts} & options,'mvn_sta_c6_pot3_p_cutoff_cnts',thick=2,yrange=[.1,20],ylog=1,ytitle='pot3!Ch+!Ccutoff!Ccnts'
+
 if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_red',data={x:time,y:pot_all} & options,'mvn_sta_c6_O2+_sc_pot_red',colors=6,thick=2,yrange=[.1,50],ylog=1
 if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_blk',data={x:time,y:pot_all} & options,'mvn_sta_c6_O2+_sc_pot_blk',colors=0,thick=2,yrange=[.1,50],ylog=1
 if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_vo2',data={x:time,y:pot*1.1} & options,'mvn_sta_c6_O2+_sc_pot_vo2',colors=3,thick=2,yrange=[.1,50],ylog=1	; the 1.1 is so they don't plot on top of one another
 if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_h+',data={x:time,y:pot3a*1.1} & options,'mvn_sta_c6_O2+_sc_pot_h+',colors=4,thick=2,yrange=[.1,50],ylog=1	; the 1.1 is so they don't plot on top of one another
 if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_o+h+',data={x:time,y:pot33*1.1} & options,'mvn_sta_c6_O2+_sc_pot_o+h+',colors=2,thick=2,yrange=[.1,50],ylog=1	; the 1.1 is so they don't plot on top of one another
 ;if keyword_set(tplot) then store_data,'mvn_sta_sc_pot',data={x:time,y:[[pot_all],[-pot_all]]} & options,'mvn_sta_sc_pot',colors=[4,6],thick=2,yrange=[.1,30],ylog=1
-if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_all',data=['mvn_sta_c6_O2+_sc_pot_blk','mvn_sta_c6_O2+_sc_pot_vo2','mvn_sta_c6_O2+_sc_pot_h+','mvn_sta_c6_O2+_sc_pot_o+h+']
+if keyword_set(tplot) then store_data,'mvn_sta_c6_O2+_sc_pot_all',data=['mvn_sta_c6_neg_scpot','mvn_sta_c6_O2+_sc_pot_vo2','mvn_sta_c6_O2+_sc_pot_h+','mvn_sta_c6_O2+_sc_pot_o+h+']
 if keyword_set(tplot) then ylim,'mvn_sta_c6_O2+_sc_pot_all',0.1,50,1
 
 store_data,'mvn_sta_c6_scpot',data={x:time,y:pot_all}

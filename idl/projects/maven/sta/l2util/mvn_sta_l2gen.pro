@@ -16,143 +16,144 @@
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-01-13 12:09:25 -0800 (Fri, 13 Jan 2017) $
-; $LastChangedRevision: 22597 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2017-04-08 09:26:50 -0700 (Sat, 08 Apr 2017) $
+; $LastChangedRevision: 23127 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
                    directory = directory, use_l2_files = use_L2_files, $
-                   xxx = xxx, yyy = yyy, _extra = _extra
+                   xxx = xxx, yyy = yyy, nocatch = nocatch, _extra = _extra
 
 ;Run in Z buffer
   set_plot,'z'
 
   load_position = 'init'
   einit = 0
-  catch, error_status
-  if error_status ne 0 then begin
-     print, '%MVN_STA_L2GEN: Got Error Message'
-     help, /last_message, output = err_msg
-     For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
+  If(~keyword_set(nocatch)) Then Begin
+     catch, error_status
+     if error_status ne 0 then begin
+        print, '%MVN_STA_L2GEN: Got Error Message'
+        help, /last_message, output = err_msg
+        For ll = 0, n_elements(err_msg)-1 Do print, err_msg[ll]
 ;Open a file print out the error message, only once
-     If(einit Eq 0) Then Begin
-        einit = 1
-        openw, eunit, '/tmp/sta_l2_err_msg.txt', /get_lun
-        For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
-        If(keyword_set(datein)) Then Begin
-           printf, eunit, datein
-        Endif Else printf, eunit, 'Date unavailable'
-        free_lun, eunit
+        If(einit Eq 0) Then Begin
+           einit = 1
+           openw, eunit, '/tmp/sta_l2_err_msg.txt', /get_lun
+           For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
+           If(keyword_set(datein)) Then Begin
+              printf, eunit, datein
+           Endif Else printf, eunit, 'Date unavailable'
+           free_lun, eunit
 ;mail it to jimm@ssl.berkeley.edu
-        cmd_rq = 'mailx -s "Problem with STA L2 process" jimm@ssl.berkeley.edu < /tmp/sta_l2_err_msg.txt'
-        spawn, cmd_rq
-     Endif
-     case load_position of
-        'init':begin
-           print, 'Problem with initialization'
-           goto, skip_db
-        end
-        'ephemeris_l0':begin
-           print, 'Problem with SPICE'
-           goto, skip_ephemeris_l0
-        end
-        'ephemeris_l2':begin
-           print, 'Problem with SPICE'
-           goto, skip_ephemeris_l2
-        end
-        '2A':begin
-           print, 'Problem in '+load_position
-           goto, skip_2a
-        end
-        'C0':begin
-           print, 'Problem in '+load_position
-           goto, skip_c0
-        end
-        'C2':begin
-           print, 'Problem in '+load_position
-           goto, skip_c2
-        end
-        'C4':begin
-           print, 'Problem in '+load_position
-           goto, skip_c4
-        end
-        'C6':begin
-           print, 'Problem in '+load_position
-           goto, skip_c6
-        end
-        'C8':begin
-           print, 'Problem in '+load_position
-           goto, skip_c8
-        end
-        'CA':begin
-           print, 'Problem in '+load_position
-           goto, skip_ca
-        end
-        'CC':begin
-           print, 'Problem in '+load_position
-           goto, skip_cc
-        end
-        'CD':begin
-           print, 'Problem in '+load_position
-           goto, skip_cd
-        end
-        'CE':begin
-           print, 'Problem in '+load_position
-           goto, skip_ce
-        end
-        'CF':begin
-           print, 'Problem in '+load_position
-           goto, skip_cf
-        end
-        'D0':begin
-           print, 'Problem in '+load_position
-           goto, skip_d0
-        end
-        'D1':begin
-           print, 'Problem in '+load_position
-           goto, skip_d1
-        end
-        'D2':begin
-           print, 'Problem in '+load_position
-           goto, skip_d2
-        end
-        'D3':begin
-           print, 'Problem in '+load_position
-           goto, skip_d3
-        end
-        'D4':begin
-           print, 'Problem in '+load_position
-           goto, skip_d4
-        end
-        'D6':begin
-           print, 'Problem in '+load_position
-           goto, skip_d6
-        end
-        'D7':begin
-           print, 'Problem in '+load_position
-           goto, skip_d7
-        end
-        'D8':begin
-           print, 'Problem in '+load_position
-           goto, skip_d8
-        end
-        'D9':begin
-           print, 'Problem in '+load_position
-           goto, skip_d9
-        end
-        'DA':begin
-           print, 'Problem in '+load_position
-           goto, skip_da
-        end
-        'DB':begin
-           print, 'Problem in '+load_position
-           goto, skip_db
-        end
-        else: goto, skip_db
-     endcase
-  endif
-  
+           cmd_rq = 'mailx -s "Problem with STA L2 process" jimm@ssl.berkeley.edu < /tmp/sta_l2_err_msg.txt'
+           spawn, cmd_rq
+        Endif
+        case load_position of
+           'init':begin
+              print, 'Problem with initialization'
+              goto, skip_db
+           end
+           'ephemeris_l0':begin
+              print, 'Problem with SPICE'
+              goto, skip_ephemeris_l0
+           end
+           'ephemeris_l2':begin
+              print, 'Problem with SPICE'
+              goto, skip_ephemeris_l2
+           end
+           '2A':begin
+              print, 'Problem in '+load_position
+              goto, skip_2a
+           end
+           'C0':begin
+              print, 'Problem in '+load_position
+              goto, skip_c0
+           end
+           'C2':begin
+              print, 'Problem in '+load_position
+              goto, skip_c2
+           end
+           'C4':begin
+              print, 'Problem in '+load_position
+              goto, skip_c4
+           end
+           'C6':begin
+              print, 'Problem in '+load_position
+              goto, skip_c6
+           end
+           'C8':begin
+              print, 'Problem in '+load_position
+              goto, skip_c8
+           end
+           'CA':begin
+              print, 'Problem in '+load_position
+              goto, skip_ca
+           end
+           'CC':begin
+              print, 'Problem in '+load_position
+              goto, skip_cc
+           end
+           'CD':begin
+              print, 'Problem in '+load_position
+              goto, skip_cd
+           end
+           'CE':begin
+              print, 'Problem in '+load_position
+              goto, skip_ce
+           end
+           'CF':begin
+              print, 'Problem in '+load_position
+              goto, skip_cf
+           end
+           'D0':begin
+              print, 'Problem in '+load_position
+              goto, skip_d0
+           end
+           'D1':begin
+              print, 'Problem in '+load_position
+              goto, skip_d1
+           end
+           'D2':begin
+              print, 'Problem in '+load_position
+              goto, skip_d2
+           end
+           'D3':begin
+              print, 'Problem in '+load_position
+              goto, skip_d3
+           end
+           'D4':begin
+              print, 'Problem in '+load_position
+              goto, skip_d4
+           end
+           'D6':begin
+              print, 'Problem in '+load_position
+              goto, skip_d6
+           end
+           'D7':begin
+              print, 'Problem in '+load_position
+              goto, skip_d7
+           end
+           'D8':begin
+              print, 'Problem in '+load_position
+              goto, skip_d8
+           end
+           'D9':begin
+              print, 'Problem in '+load_position
+              goto, skip_d9
+           end
+           'DA':begin
+              print, 'Problem in '+load_position
+              goto, skip_da
+           end
+           'DB':begin
+              print, 'Problem in '+load_position
+              goto, skip_db
+           end
+           else: goto, skip_db
+        endcase
+     endif
+  Endif
 ;First load the data
   If(keyword_set(l0_input_file)) Then Begin
      filex = file_search(l0_input_file[0])
