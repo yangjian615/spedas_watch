@@ -29,8 +29,8 @@
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
 ; $LastChangedBy: muser $
-; $LastChangedDate: 2017-03-16 14:12:16 -0700 (Thu, 16 Mar 2017) $
-; $LastChangedRevision: 22977 $
+; $LastChangedDate: 2017-04-10 17:08:57 -0700 (Mon, 10 Apr 2017) $
+; $LastChangedRevision: 23133 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -46,7 +46,12 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
   load_position = 'init'
   einit = 0
   catch, error_status
-;create a random number for emails
+;create a random number for emails, use the input time for seed, so
+;that multiple processes do not generate the same files
+  If(keyword_set(time_in)) Then seed = long(time_double(time_in[0])) $
+  Else If(keyword_set(days_in)) Then seed = long(time_double(days_in[0])) $
+  Else seed = long(systime(/sec))
+     
   Ff_ext = strcompress(/remove_all, string(long(100000.0*randomu(seed))))
   if error_status ne 0 then begin
      print, '%MVN_CALL_STA_L2GEN: Got Error Message'

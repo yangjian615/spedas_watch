@@ -16,9 +16,9 @@
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: muser $
-; $LastChangedDate: 2017-04-08 09:26:50 -0700 (Sat, 08 Apr 2017) $
-; $LastChangedRevision: 23127 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-04-10 12:57:14 -0700 (Mon, 10 Apr 2017) $
+; $LastChangedRevision: 23129 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -244,7 +244,8 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
 ;ephemeris might crash, don't kill the process, jmm, 2016-02-03
      load_position = 'ephemeris_l2'
      mvn_sta_ephemeris_load
-     If(is_struct(mvn_c6_dat)) Then mvn_sta_scpot_load
+     If(is_struct(mvn_c6_dat) && is_struct(mvn_c0_dat) && $
+        is_struct(mvn_ca_dat)) Then mvn_sta_l2scpot
 skip_ephemeris_l2:
   Endif Else Begin
      mvn_sta_l0_load, files = filex
@@ -254,16 +255,17 @@ skip_ephemeris_l2:
      If(ttest Gt 2.0*86400.0d0) Then Begin
         load_position = 'ephemeris_l0'
         mvn_sta_mag_load
-;        mvn_sta_qf14_load -- these are done in L0 process
+;        mvn_sta_qf14_load -- these are done in L0 load process
 ;        mvn_sta_dead_load
         mk = mvn_spice_kernels(/all,/load,trange=timerange())
         If(is_struct(mvn_c8_dat)) Then mvn_sta_sc_bins_load
 ;ephemeris might crash, don't kill the process, jmm, 2016-02-03
         mvn_sta_ephemeris_load
 ;scpot uses c6 eflux, but only if it exists
-        If(is_struct(mvn_c6_dat)) Then Begin
+        If(is_struct(mvn_c6_dat) && is_struct(mvn_c0_dat) && $
+           is_struct(mvn_ca_dat)) Then Begin
            mvn_sta_l2eflux, mvn_c6_dat
-           mvn_sta_scpot_load
+           mvn_sta_l2scpot, /l0l2
         Endif
 skip_ephemeris_l0:
      Endif
