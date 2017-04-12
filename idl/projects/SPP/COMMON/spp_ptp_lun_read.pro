@@ -26,12 +26,13 @@ pro spp_ptp_lun_read,in_lun,out_lun,info=info
   
   on_ioerror, nextfile
     info.time_received = systime(1)
-    msg = time_string(info.time_received,tformat='hh:mm:ss - ',local=localtime)
+    msg = time_string(info.time_received,tformat='hh:mm:ss -',local=localtime)
 ;    in_lun = info.hfp
     out_lun = info.dfp
     buf = bytarr(17)
     remainder = !null
     nbytes = 0
+    run_proc = struct_value(info,'run_proc',default=1)
     while file_poll_input(in_lun,timeout=0) && ~eof(in_lun) do begin
       readu,in_lun,buf,transfer_count=nb
       nbytes += nb
@@ -65,7 +66,7 @@ pro spp_ptp_lun_read,in_lun,out_lun,info=info
       if debug(5) then begin
         hexprint,dlevel=3,ccsds_buf,nbytes=32
       endif
-      spp_ccsds_pkt_handler,ccsds_buf,ptp_header=ptp_header  
+      if run_proc then   spp_ccsds_pkt_handler,ccsds_buf,ptp_header=ptp_header  
 
       buf = bytarr(17)
       remainder=!null

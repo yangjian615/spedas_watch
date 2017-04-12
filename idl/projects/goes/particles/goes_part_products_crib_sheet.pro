@@ -5,8 +5,9 @@
 ;Purpose:
 ;  Demonstrate generation of spectrograms from GOES MAGED and MAGPD data.
 ;
-;$LastChangedDate: 2016-12-08 13:20:22 -0800 (Thu, 08 Dec 2016) $
-;$LastChangedRevision: 22447 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-04-11 09:42:10 -0700 (Tue, 11 Apr 2017) $
+;$LastChangedRevision: 23134 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_part_products_crib_sheet.pro $
 ;-
 

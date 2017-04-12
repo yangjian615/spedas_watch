@@ -68,7 +68,11 @@ function socket_recorder::struct
   return,strct
 END
 
-
+function socket_recorder::proc_name
+  proc_name_id = widget_info(self.base,find_by_uname='PROC_NAME')
+  if keyword_set(proc_name_id) then widget_control,proc_name_id,get_value=proc_name   else proc_name = self.exec_proc
+  return, proc_name
+end
 
 
 pro socket_recorder::timed_event
@@ -87,12 +91,12 @@ pro socket_recorder::timed_event
       self.next_filechange = self.file_timeres * ceil(self.time_received / self.file_timeres)
     endif
 
-    if widget_info(/button_set,wids.proc_button) then begin
-      widget_control,wids.proc_name,get_value = proc_name
-      info = self.struct()
-      if keyword_set(proc_name) then call_procedure,proc_name[0],self.hfp ,info=info               ; Execute exec_proc here
-      msg = info.msg
-    endif
+
+    proc_name = self.proc_name()  
+    info = self.struct()
+    if keyword_set(proc_name) then call_procedure,proc_name[0],self.hfp ,info=info               ; Execute exec_proc here
+    msg = info.msg
+
 
     dprint,dlevel=self.dlevel+3,self.title_num+self.msg,/no_check
 
@@ -124,6 +128,8 @@ pro socket_recorder::host_button_event
   widget_control,host_text_id, get_value=server_name
   widget_control,host_port_id, get_value=server_port
   server_n_port = server_name+':'+server_port
+  self.hostname = server_name
+  self.hostport = server_port
   case status of
     'Connect to': begin
       *self.buffer_ptr = !null                                  ; Get rid of previous buffer contents cache
@@ -229,8 +235,9 @@ pro socket_recorder::proc_button_event, on
   proc_button_id = widget_info(self.base,find_by_uname='PROC_BUTTON')
 
 ;  if n_elements(on) eq 0 then on =1
-  widget_control,proc_name_id,get_value=proc_name
-  widget_control,proc_name_id,sensitive = (on eq 0)
+  if keyword_set(proc_name_id) then widget_control,proc_name_id,get_value=proc_name  $
+  else proc_name=''
+  if keyword_set(prc_name_id) then  widget_control,proc_name_id,sensitive = (on eq 0)
   self.run_proc = on
   dprint,dlevel=self.dlevel,self.title_num+'"'+proc_name+ '" is '+ (self.run_proc ? 'ON' : 'OFF')
 end
@@ -294,72 +301,72 @@ PRO socket_recorder_template,buffer,info=info
 end
 
 
-
-function spp_ptp_header_struct,ptphdr
-  ptp_size = swap_endian(uint(ptphdr,0) ,/swap_if_little_endian )
-  ptp_code = ptphdr[2]
-  ptp_scid = swap_endian(/swap_if_little_endian, uint(ptphdr,3))
-  days  = swap_endian(/swap_if_little_endian, uint(ptphdr,5))
-  ms    = swap_endian(/swap_if_little_endian, ulong(ptphdr,7))
-  us    = swap_endian(/swap_if_little_endian, uint(ptphdr,11))
-  utime = (days-4383L) * 86400L + ms/1000d
-  if utime lt   1425168000 then utime += us/1d4   ;  correct for error in pre 2015-3-1 files
-  ;      if keyword_set(time) then dt = utime-time  else dt = 0
-  source   =    ptphdr[13]
-  spare    =    ptphdr[14]
-  path  = swap_endian(/swap_if_little_endian, uint(ptphdr,15))
-  ptp_header ={ptp_size:ptp_size, ptp_code:ptp_code, ptp_scid: ptp_scid, ptp_time:utime, ptp_source:source, ptp_spare:spare, ptp_path:path }
-  return,ptp_header
-end
-
-
+;
+;function spp_ptp_header_struct,ptphdr
+;  ptp_size = swap_endian(uint(ptphdr,0) ,/swap_if_little_endian )
+;  ptp_code = ptphdr[2]
+;  ptp_scid = swap_endian(/swap_if_little_endian, uint(ptphdr,3))
+;  days  = swap_endian(/swap_if_little_endian, uint(ptphdr,5))
+;  ms    = swap_endian(/swap_if_little_endian, ulong(ptphdr,7))
+;  us    = swap_endian(/swap_if_little_endian, uint(ptphdr,11))
+;  utime = (days-4383L) * 86400L + ms/1000d
+;  if utime lt   1425168000 then utime += us/1d4   ;  correct for error in pre 2015-3-1 files
+;  ;      if keyword_set(time) then dt = utime-time  else dt = 0
+;  source   =    ptphdr[13]
+;  spare    =    ptphdr[14]
+;  path  = swap_endian(/swap_if_little_endian, uint(ptphdr,15))
+;  ptp_header ={ptp_size:ptp_size, ptp_code:ptp_code, ptp_scid: ptp_scid, ptp_time:utime, ptp_source:source, ptp_spare:spare, ptp_path:path }
+;  return,ptp_header
+;end
 
 
-pro socket_recorder::read_lun,lun
-on_ioerror, nextfile
-isasocket = self.isasocket
-;lun = self.dfp
-
-buf = bytarr(17)
-remainder = !null
-while (isasocket ? file_poll_input(lun) : ~eof(lun) ) do begin
-  info.time_received = systime(1)
-  readu,lun,buf
-  hdrbuf = [remainder,buf]
-  sz = hdrbuf[0]*256 + hdrbuf[1]
-  if (sz lt 17) || (hdrbuf[2] ne 3) || (hdrbuf[3] ne 0) || (bhdrbuf[4] ne 'bb'x) then  begin     ;; Lost sync - read one byte at a time
-    remainder = hdrbuf[1:*]
-    buf = bytarr(1)
-    if debug(3) then begin
-      dprint,dlevel=3,'Lost sync:',dwait=10
-    endif
-    continue
-  endif
-  ptp_struct = spp_ptp_header_struct(hdrbuf)
-  ccsds_buf = bytarr(sz - n_elements(hdrbuf))
-  readu,lun,ccsds_buf,transfer_count=nb
-
-  if nb ne sz then begin
-    dprint,'File read error. Aborting @ ',fp,' bytes'
-    break
-  endif
-  spp_ccsds_pkt_handler,ccsds_buf,ptp_header=ptp_header
-  ;      if debug(2) then begin
-  ;        dprint,dwait=dwait,dlevel=2,'File percentage: ' ,(fp*100.)/fi.size
-  ;      endif
-  buf = bytarr(17)
-  remainder=!null
-endwhile
-
-if 0 then begin
-  nextfile:
-  dprint,!error_state.msg
-  dprint,'Skipping file'
-endif
-;    dprint,dlevel=2,'Compression: ',float(fp)/fi.size
-end
-
-
+;
+;
+;pro socket_recorder::read_lun,lun
+;on_ioerror, nextfile
+;isasocket = self.isasocket
+;;lun = self.dfp
+;
+;buf = bytarr(17)
+;remainder = !null
+;while (isasocket ? file_poll_input(lun) : ~eof(lun) ) do begin
+;  info.time_received = systime(1)
+;  readu,lun,buf
+;  hdrbuf = [remainder,buf]
+;  sz = hdrbuf[0]*256 + hdrbuf[1]
+;  if (sz lt 17) || (hdrbuf[2] ne 3) || (hdrbuf[3] ne 0) || (bhdrbuf[4] ne 'bb'x) then  begin     ;; Lost sync - read one byte at a time
+;    remainder = hdrbuf[1:*]
+;    buf = bytarr(1)
+;    if debug(3) then begin
+;      dprint,dlevel=3,'Lost sync:',dwait=10
+;    endif
+;    continue
+;  endif
+;  ptp_struct = spp_ptp_header_struct(hdrbuf)
+;  ccsds_buf = bytarr(sz - n_elements(hdrbuf))
+;  readu,lun,ccsds_buf,transfer_count=nb
+;
+;  if nb ne sz then begin
+;    dprint,'File read error. Aborting @ ',fp,' bytes'
+;    break
+;  endif
+;  spp_ccsds_pkt_handler,ccsds_buf,ptp_header=ptp_header
+;  ;      if debug(2) then begin
+;  ;        dprint,dwait=dwait,dlevel=2,'File percentage: ' ,(fp*100.)/fi.size
+;  ;      endif
+;  buf = bytarr(17)
+;  remainder=!null
+;endwhile
+;
+;if 0 then begin
+;  nextfile:
+;  dprint,!error_state.msg
+;  dprint,'Skipping file'
+;endif
+;;    dprint,dlevel=2,'Compression: ',float(fp)/fi.size
+;end
+;
+;
 
 
 
@@ -391,7 +398,7 @@ if ~(keyword_set(base) && widget_info(base,/managed) ) then begin
     ids = create_struct(ids,'proc_base',   widget_base(ids.base,/row, uname='PROC_BASE'))
     ids = create_struct(ids,'proc_base2',  widget_base(ids.proc_base ,/nonexclusive))
     ids = create_struct(ids,'proc_button', widget_button(ids.proc_base2,uname='PROC_BUTTON',value='Procedure:'))
-    ids = create_struct(ids,'proc_name',   widget_text(ids.proc_base,xsize=35, uname='PROC_NAME', value = keyword_set(exec_proc) ? exec_proc :'exec_proc_template',/editable, /no_newline))
+ ;   ids = create_struct(ids,'proc_name',   widget_text(ids.proc_base,xsize=35, uname='PROC_NAME', value = keyword_set(exec_proc) ? exec_proc :'exec_proc_template',/editable, /no_newline))
     ids = create_struct(ids,'done',        WIDGET_BUTTON(ids.proc_base, VALUE='Done', UNAME='DONE'))
     title_num = title+' ('+strtrim(ids.base,2)+'): '
     
@@ -417,7 +424,8 @@ endif else begin
     widget_control, base, get_uvalue= info   ; get all widget ID's
     ids = info.wids
 endelse
-if size(/type,exec_proc) eq 7 then    widget_control,ids.proc_name,set_value=exec_proc
+;if size(/type,exec_proc) eq 7 then    widget_control,ids.proc_name,set_value=exec_proc
+if size(/type,exec_proc) eq 7 then self.exec_proc = exec_proc
 if size(/type,destination) eq 7 then  widget_control,ids.dest_text,set_value=destination
 if size(/type,host) eq 7 then  widget_control,ids.host_text,set_value=host
 if n_elements(port) eq 1 then  widget_control,ids.host_port,set_value=strtrim(port,2)
@@ -449,23 +457,8 @@ END
 
 pro socket_recorder__define
   info = {socket_recorder, $
- ;   inherits idl_object, $
+    inherits idl_object, $
     base:0L ,$
-;    host_button_id: 0L ,$
-;    host_text_id: 0L ,$
-;    host_port_id: 0L ,$
-;    poll_int_id: 0L ,$
-;    destdir_text_id: 0L ,$
-;    dest_base_id: 0L ,$
-;    dest_button_id: 0L ,$
-;    dest_text_id: 0L ,$
-;    dest_flush_id: 0L ,$
-;    output_text_id: 0L ,$
-;    proc_base_id: 0L ,$
-;    proc_base2_id: 0L ,$
-;    proc_button_id: 0L ,$
-;    proc_name_id: 0L ,$
-;    done_id: 0L ,$  
     wids:ptr_new(), $
     hostname:'',$
     hostport:'', $

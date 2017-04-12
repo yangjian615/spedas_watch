@@ -12,6 +12,8 @@ pro sweepv_new, sweepv, $
                 maxspen = maxspen, $
                 plot = plot
 
+message,'obsolete'
+
   if not keyword_set(k)       then k       = 16.7
   if not keyword_set(rmax)    then rmax    = 11.0
   if not keyword_set(vmax)    then vmax    = 4000

@@ -12,6 +12,7 @@ pro spp_ptp_file_read,files,dwait=dwait
     spp_apdat_info,rt_flag=0,save_flag=1,/clear   
   endelse
   info = {socket_recorder   }
+  info.run_proc = 1
   on_ioerror, nextfile
 
 
@@ -58,6 +59,7 @@ endif else begin
       endif
     endwhile
 endelse    
+
     fst = fstat(lun)
     dprint,dlevel=2,'Compression: ',float(fst.cur_ptr)/fst.size
     free_lun,lun

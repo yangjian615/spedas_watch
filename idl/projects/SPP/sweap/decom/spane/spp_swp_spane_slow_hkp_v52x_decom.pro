@@ -283,6 +283,9 @@ endif
 
 if ~finite(spae.time) then spae.time = ptp_header.ptp_time
 
+  if debug(5) then begin
+    dprint,dlevel=3,time_string(spae.time),' ',spae.adc_ASIC_TEMP
+  endif
 
   return,spae
 

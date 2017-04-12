@@ -46,7 +46,7 @@ pro spp_swp_sweepv_new, sweepv, $
      sweepv = [sweepv,replicate(vsweep[i],nang)]
 
      ;; Spoiler cuts off above some energy
-     if vsweep(i) lt maxspen/k then spr = spfac else spr = 0.0	
+     if vsweep[i] lt maxspen/k then spr = spfac else spr = 0.0	
      
      ;; Spoiler multiplier
      spv = [spv,replicate(spr,nang)]				
@@ -78,7 +78,7 @@ pro spp_swp_sweepv_new, sweepv, $
   
   if keyword_set(plot) then begin
      ;print,nen,nang
-     window,0, xsize=900, ysize=1200
+     wi,10, xsize=900, ysize=1200
      !p.multi = [0,1,3]
      plot,sweepv,psym=10,$
           xtitle = 'Time Step',$

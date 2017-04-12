@@ -18,7 +18,7 @@ pro spp_swp_sweepv_new_tslut, sweepv, $
 
 
   ;; Get the full sweep table and index
-  sweepv_new_fslut,sweepv,$
+  spp_swp_sweepv_new_fslut,sweepv,$
                    defv1,$
                    defv2,$
                    spv,$
@@ -108,7 +108,7 @@ pro spp_swp_sweepv_new_tslut, sweepv, $
   plot=1
   if keyword_set(plot) then begin
       goto, skip
-      window,3
+      wi,3
      !p.multi = [0,1,3]
      plot,sweepv[tsindex],$
           psym=10,$
@@ -142,19 +142,20 @@ pro spp_swp_sweepv_new_tslut, sweepv, $
 
      skip:
      
-     window,5
+     wi,5
+     symsize=.5
      plot,sweepv,defv1-defv2,$
           psym = 7,$
           /xlog, $
           xtitle = 'V_SWEEP (Volts)',$
           ytitle = 'V_DEF/V_SWEEP (D1+, D2-)',$
           charsize = 2,$
+          symsize = symsize, $
           /xstyle,$
           /ystyle
-     plots,sweepv[tsindex],defv1[tsindex]-defv2[tsindex], $
-           psym = 7,color = 150
-     plots,sweepv[pindex],defv1[pindex]-defv2[pindex],$
-           psym = 7,color = 250,thick=2
+     plots,sweepv[tsindex],defv1[tsindex]-defv2[tsindex], psym=4,color = 150,symsize = symsize
+     oplot,sweepv[tsindex],defv1[tsindex]-defv2[tsindex], psym=-7,color=2,symsize = symsize
+     plots,sweepv[pindex],defv1[pindex]-defv2[pindex],    psym = 7,color = 250,thick=2,symsize = symsize
   endif
 
 end

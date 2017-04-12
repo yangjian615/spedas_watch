@@ -30,8 +30,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedDate: 2016-12-08 12:35:18 -0800 (Thu, 08 Dec 2016) $
-;$LastChangedRevision: 22446 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-04-11 09:42:10 -0700 (Tue, 11 Apr 2017) $
+;$LastChangedRevision: 23134 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_get_dist.pro $
 ;-
 

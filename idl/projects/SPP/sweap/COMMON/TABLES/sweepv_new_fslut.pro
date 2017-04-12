@@ -7,6 +7,8 @@ pro sweepv_new_fslut, sweepv, $
                       plot = plot, $
                       spfac = spfac
   
+message,'obsolete'
+
   ;; NOTE: Need to add peak-detect bit to 
   ;; this when I make it into a table
   

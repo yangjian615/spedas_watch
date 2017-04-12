@@ -193,7 +193,7 @@ function spp_swp_spi_prod_apdat::decom,ccsds,ptp_header
 
 pksize = ccsds.pkt_size
 if pksize le 20 then begin
-  dprint,dlevel = 2, 'size error - no data'
+  dprint,dlevel = 2, 'size error - no data ',ccsds.pkt_size,ccsds.apid
   return, 0
 endif
 
@@ -269,9 +269,9 @@ end
 pro spp_swp_spi_prod_apdat::handler,ccsds,ptp_header
 
   strct = self.decom(ccsds)
-
+  
   ns=1
-  if  ns gt 0 then begin
+  if keyword_set(strct) &&  ns gt 0 then begin
     case strct.ndat  of
       16:   self.prod_16a,  strct
       256:  self.prod_16Ax16M, strct

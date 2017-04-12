@@ -241,21 +241,21 @@ PRO spp_ptp_recorder_event, ev   ; recorder
 END
 
 
-PRO exec_proc_template,buffer,info=info
-;    savetomain,buffer
-;    savetomain,time
-
-    n = n_elements(buffer)
-    if n ne 0 then  begin
-    if debug(2) then begin
-      dprint,time_string(info.time_received,prec=3) +''+ strtrim(n_elements(buffer))
-      n = n_elements(buffer) < 512
-      hexprint,buffer[0:n-1]    ;,swap_endian(uint(buffer,0,n_elements(buffer)/2))
-    endif
-    endif else print,format='(".",$)'
-
-    return
-end
+;PRO exec_proc_template,buffer,info=info
+;;    savetomain,buffer
+;;    savetomain,time
+;
+;    n = n_elements(buffer)
+;    if n ne 0 then  begin
+;    if debug(2) then begin
+;      dprint,time_string(info.time_received,prec=3) +''+ strtrim(n_elements(buffer))
+;      n = n_elements(buffer) < 512
+;      hexprint,buffer[0:n-1]    ;,swap_endian(uint(buffer,0,n_elements(buffer)/2))
+;    endif
+;    endif else print,format='(".",$)'
+;
+;    return
+;end
 
 
 

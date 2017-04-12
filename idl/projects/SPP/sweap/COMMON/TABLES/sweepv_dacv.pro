@@ -15,6 +15,7 @@ pro sweepv_dacv, sweepv_dac, $
                  spgain = spgain, $
                  fixgain = fixgain
 
+message,'obsolete'
   max = 65536.
 
   if not keyword_set(k)       then k       = 16.7

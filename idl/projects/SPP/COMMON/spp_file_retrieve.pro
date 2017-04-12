@@ -28,16 +28,18 @@
 ; LIMITATIONS:
 ;   Beware of file pathnames that include the character sequences:  YY,  MM, DD, hh, mm, ss, .f  since these can be retranslated to the time
 ;-
-function spp_file_retrieve,pathname,trange=trange,verbose=verbose, source=src, $
+function spp_file_retrieve,pathname,trange=trange,ndays=ndays,nhours=nhours,verbose=verbose, source=src, $
    last_version=last_version, $
  ;  valid_only=valid_only,no_update=no_update,create_dir=create_dir,pos_start=pos_start, $
    daily_names=daily_names,hourly_names=hourly_names,resolution = res,shiftres=shiftres,valid_only=valid_only,  $
  ;  no_server=no_server,user_pass=user_pass,L0=L0, $
-   cal=cal,TVac=Tvac,snout2=snout2,snout1=snout1,ion=ion,recent=recent,spani=spani,spanea=spanea,spaneb=spaneb,spc=spc,swem=swem,elec=elec,instr=instr,router=router
+   cal=cal,TVac=Tvac,snout2=snout2,snout1=snout1,crypt=crypt,ion=ion,recent=recent,spani=spani,spanea=spanea,spaneb=spaneb,spc=spc,swem=swem,elec=elec,instr=instr,router=router
 
 tstart = systime(1)
 
 if keyword_set(recent) then trange = systime(1) - [recent,0] * 86400d ;    Obtain the last N*24 hours
+if keyword_set(ndays) then trange = time_double(trange[0]) + [0,ndays*86400L]
+if keyword_set(nhours) then trange = time_double(trange[0]) + [0,nhours*3600L]
 
 
 sweap_gsedata_dir = 'spp/data/sci/sweap/prelaunch/gsedata/'
@@ -65,6 +67,8 @@ if keyword_set(swem) then instr = 'swem'
 if keyword_set(cal) then   router = 'cal'
 if keyword_set(snout2) then router = 'snout2'
 if keyword_set(snout1) then router = 'snout1'
+if keyword_set(crypt) then router = 'crypt'
+if keyword_set(rm133) then router = 'rm133'
 
 
 if ~keyword_set(pathname) then begin

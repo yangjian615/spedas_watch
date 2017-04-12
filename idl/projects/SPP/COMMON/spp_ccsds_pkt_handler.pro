@@ -11,14 +11,14 @@ pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,rem
     ccsds = spp_swp_ccsds_decom(dbuffer,offset,buffer_length,remainder=remainder,dlevel=3)
     if ~keyword_set(ccsds) then begin
       if debug(2) then begin
-        dprint,dlevel=2,'Incomplete CCSDS, saving ',n_elements(remainder),' bytes for later '    ;,pkt_size,pkt_size - n_elements(b)
+        dprint,dlevel=3,'Incomplete CCSDS, saving ',n_elements(remainder),' bytes for later '    ;,pkt_size,pkt_size - n_elements(b)
       endif
       break
     endif
     npackets +=1
-    if debug(3) then begin
+    if debug(4) then begin
       ccsds_data = spp_swp_ccsds_data(ccsds)  
-      dprint,dlevel=2,format='(i3,i6," APID: ", Z03,"  SeqGrp:",i1, " Seqn: ",i5,"  Size: ",i5,"   ",8(" ",Z02))',npackets,offset,ccsds.apid,ccsds.seq_group,ccsds.seqn,ccsds.pkt_size,ccsds_data[12:17]
+      dprint,dlevel=4,format='(i3,i6," APID: ", Z03,"  SeqGrp:",i1, " Seqn: ",i5,"  Size: ",i5,"   ",8(" ",Z02))',npackets,offset,ccsds.apid,ccsds.seq_group,ccsds.seqn,ccsds.pkt_size,ccsds_data[12:17]
     endif
     offset += ccsds.pkt_size
         

@@ -3,7 +3,7 @@
 pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm320=rm320,rm333=rm333,tent=tent, $
     spani= spani, spanea=spanea, spaneb=spaneb,  spc=spc,SWEMGSE=SWEM, $
     router=router, instr=instr, recent=recent, $
-    exec=exec0,ion=ion,tv=tv,cal=cal,snout2=snout2,snout1=snout1
+    exec=exec0,ion=ion,tv=tv,cal=cal,snout2=snout2,snout1=snout1,crypt=crypt
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
@@ -30,6 +30,7 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
   if keyword_set(cal) then   router = 'cal'
   if keyword_set(snout2) then router = 'snout2'
   if keyword_set(snout1) then router = 'snout1'
+  if keyword_set(crypt) then router = 'crypt'
 
 
   
@@ -39,10 +40,10 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
   fileformat = 'YYYY/MM/DD/spp_socket_YYYYMMDD_hh.dat.gz'
   fileres =3600.d
 
-  ports= dictionary('spani',2028,'spanea',2128,'spaneb',2228,'spc',2328,'swem',2428)
+  ports= dictionary('spani',2028,'spanea',2128,'spaneb',2228,'spc',2328,'swem',2528)
   hosts= dictionary('cal','abiad-sw.ssl.berkeley.edu','snout1','?????','snout2','mgse2.ssl.berkeley.edu')
 
-  if keyword_set(recent) then spp_ptp_file_read, spp_file_retrieve(cal=cal,snout2=snout2,snout1=snout1,recent=recent,spani=spani,spanea=spanea,spaneb=spaneb,swem=swem)
+  if keyword_set(recent) then spp_ptp_file_read, spp_file_retrieve(cal=cal,snout2=snout2,snout1=snout1,recent=recent,spani=spani,spanea=spanea,spaneb=spaneb,swem=swem,router=router)
 
   
   if keyword_set(itf) then begin
@@ -68,17 +69,7 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
     if keyword_set(spanea) then spp_ptp_recorder,title='CAL SPANEA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spanea/',set_file_timeres=fileres
     if keyword_set(spaneb) then spp_ptp_recorder,title='CAL SPANEB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spaneb/',set_file_timeres=fileres
     if keyword_set(spc)    then spp_ptp_recorder,title='CAL SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/spc/',set_file_timeres=fileres
-    if keyword_set(swem)   then spp_ptp_recorder,title='CAL SWEM PTP',port=2428, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/swem/',set_file_timeres=fileres
-  endif
-  if  keyword_set(snout2) then begin
-    directory = rootdir + router+'/'+instr+'/'
-    host = 'mgse2.ssl.berkeley.edu'
-    exec_proc = 'spp_ptp_stream_read'
-    if keyword_set(spani) then spp_ptp_recorder,title='Snout2 SPANI PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spani/',set_file_timeres=fileres
-    if keyword_set(spanea) then spp_ptp_recorder,title='Snout2 SPANEA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spanea/',set_file_timeres=fileres
-    if keyword_set(spaneb) then spp_ptp_recorder,title='Snout2 SPANEB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spaneb/',set_file_timeres=fileres
-    if keyword_set(spc)    then spp_ptp_recorder,title='Snout2 SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spc/',set_file_timeres=fileres
-    if keyword_set(swem)   then spp_ptp_recorder,title='Snout2 SWEM PTP',port=2428, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/swem/',set_file_timeres=fileres
+    if keyword_set(swem)   then spp_ptp_recorder,title='CAL SWEM PTP',port=2528, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'cal/swem/',set_file_timeres=fileres
   endif
   if  keyword_set(snout1) then begin
     directory = rootdir + router+'/'+instr+'/'
@@ -88,7 +79,17 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
     if keyword_set(spanea) then spp_ptp_recorder,title='Snout1 SPANEA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/spanea/',set_file_timeres=fileres
     if keyword_set(spaneb) then spp_ptp_recorder,title='Snout1 SPANEB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/spaneb/',set_file_timeres=fileres
     if keyword_set(spc)    then spp_ptp_recorder,title='Snout1 SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/spc/',set_file_timeres=fileres
-    if keyword_set(swem)   then spp_ptp_recorder,title='Snout1 SWEM PTP',port=2428, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/swem/',set_file_timeres=fileres
+    if keyword_set(swem)   then spp_ptp_recorder,title='Snout1 SWEM PTP',port=2528, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/swem/',set_file_timeres=fileres
+  endif
+  if  keyword_set(crypt) then begin
+    directory = rootdir + router+'/'+instr+'/'
+    host = 'crypt.ssl.berkeley.edu'
+    exec_proc = 'spp_ptp_stream_read'
+    if keyword_set(spani) then spp_ptp_recorder,title='Crypt SPANI PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spani/',set_file_timeres=fileres
+    if keyword_set(spanea) then spp_ptp_recorder,title='Crypt SPANEA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spanea/',set_file_timeres=fileres
+    if keyword_set(spaneb) then spp_ptp_recorder,title='Crypt SPANEB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spaneb/',set_file_timeres=fileres
+    if keyword_set(spc)    then spp_ptp_recorder,title='Crypt SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spc/',set_file_timeres=fileres
+    if keyword_set(swem)   then spp_ptp_recorder,title='Crypt SWEM PTP',port=2528, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/swem/',set_file_timeres=fileres
   endif
 
   if keyword_set(exec0) then begin

@@ -42,6 +42,7 @@ function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
                gap: ccsds.gap}
         if debug(5) then begin
           dprint,dlevel=4,str,phelp=2
+          dprint,dlevel=3,time_string(str.time),' ',str.current
         endif
      end  
      80: begin   ; Agilent PS

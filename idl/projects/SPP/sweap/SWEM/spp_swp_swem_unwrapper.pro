@@ -1,6 +1,6 @@
 ; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-09-12 15:02:05 -0700 (Mon, 12 Sep 2016) $
-; $LastChangedRevision: 21816 $
+; $LastChangedDate: 2017-04-11 14:18:24 -0700 (Tue, 11 Apr 2017) $
+; $LastChangedRevision: 23136 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/sweap/SWEM/spp_swp_swem_unwrapper.pro $
 
 function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
@@ -28,8 +28,8 @@ function spp_swp_swem_unwrapper,ccsds,ptp_header=ptp_header,apdat=apdat
 
   if ccsds.seq_group eq 3 && keyword_set(ccsds_data) then begin   ; Loner packets
     spp_ccsds_pkt_handler,ccsds_data[12:*],remainder=remainder,ptp_header=ptp_header
-    if keyword_set(remainder) then begin
-      dprint,'error'
+    if keyword_set(remainder) && debug(2) then begin
+      dprint,'error',dlevel=2
       hexprint,remainder
     endif
   endif

@@ -76,7 +76,7 @@ pro spp_swp_sweepv_dacv, sweepv_dac,$
   spv_dac(w) = round(spv(w)*sweepv_dac(w)*hvgain/spgain) 
   
   if keyword_set(plot) then begin
-     window,1
+     wi,1
      !p.multi = [0,1,3]
      plot,sweepv_dac,psym=10,$
           xtitle = 'Time Step',$

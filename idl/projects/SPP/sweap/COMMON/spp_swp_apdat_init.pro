@@ -1,7 +1,7 @@
 
 pro spp_swp_apdat_init,reset=reset, save_flag = save_flag, $
                      rt_flag= rt_Flag, $
-                     clear = clear
+                     clear = clear, no_products =no_products
 
   common spp_swp_apdat_init, initialized
   if keyword_set(reset) then initialized = 0
@@ -62,6 +62,7 @@ pro spp_swp_apdat_init,reset=reset, save_flag = save_flag, $
      ;#############################
      ;######### ARCHIVE ###########
      ;#############################
+     
 
      ;;-----------------------------------------------------------------------------------------------------------------------------------------
      ;; SPAN-Ai Full Sweep Products
@@ -70,6 +71,7 @@ pro spp_swp_apdat_init,reset=reset, save_flag = save_flag, $
      decom_routine_obj = 'spp_swp_spi_prod_apdat'
      ;decom_routine_i = 'spp_swp_spani_product_decom'
      ttags = '*SPEC* *CNTS* *DATASIZE'
+   if not keyword_set(no_products) then begin
 
      spp_apdat_info,'380'x,name='spi_af00',apid_obj=decom_routine_obj,tname='spp_spi_AF00_', ttags=ttags,save_flag=save_flag,rt_flag=rt_flag 
      spp_apdat_info,'381'x,name='spi_af01',apid_obj=decom_routine_obj,tname='spp_spi_AF01_', ttags=ttags,save_flag=save_flag,rt_flag=rt_flag 
@@ -139,12 +141,13 @@ pro spp_swp_apdat_init,reset=reset, save_flag = save_flag, $
      spp_apdat_info,'3ae'x,apid_obj=decom_routine_obj,tname='spp_spi_ST22_', ttags=ttags,save_flag=save_flag,rt_flag=rt_flag 
      spp_apdat_info,'3af'x,apid_obj=decom_routine_obj,tname='spp_spi_ST23_', ttags=ttags,save_flag=save_flag,rt_flag=rt_flag 
      
-
+endif
 
   ;;############################################
   ;; SETUP SPAN-Ae APID
   ;;############################################
   spe_hkp_tags = 'RIO_???* ADC_*_* *_FLAG MRAM* CLKS_PER_NYS ALL_ADC EASIC_DAC *CMD_* PEAK*'
+  spe_hkp_tags = '*'
 
 
 

@@ -17,7 +17,7 @@ pro spp_swp_sweepv_new_fslut, sweepv, $
 
   ;;-----------------------------------
   ;; Create new S-LUT
-  sweepv_new,sweepv,$
+  spp_swp_sweepv_new,sweepv,$
              defv1,$
              defv2,$
              spv,$
@@ -29,7 +29,7 @@ pro spp_swp_sweepv_new_fslut, sweepv, $
   ;; taking into account sub-steps
   nang = 256/nen * 4            
   
-  index = 0.
+  index = 0
   
   ;; This makes sure we go one way w/ deflectors 
   ;; on even steps, and the other on odds
@@ -43,7 +43,7 @@ pro spp_swp_sweepv_new_fslut, sweepv, $
   index = index[1:1024]
   if keyword_set(plot) then begin
      ;print,nen,nang
-     window,2, xsize=900, ysize=1200
+     wi,2, xsize=900, ysize=1200
      !p.multi = [0,1,3]
      plot,sweepv[index],psym=10,$
           xtitle = 'Time Step',$
@@ -71,17 +71,16 @@ pro spp_swp_sweepv_new_fslut, sweepv, $
      oplot,defv2[index],color = 250,psym = 10
      oplot,spv[index],color = 150,psym = 10
      !p.multi = 0          
-     window,4     
-     plot,sweepv,defv1-defv2,$
+     wi,4     
+     plot,sweepv,defv1-defv2,$,xstyle=3,ystyle=3
           psym = 7,$
           /xlog, $
           xtitle = 'V_SWEEP (Volts)',$
           ytitle = 'V_DEF/V_SWEEP (D1+, D2-)',$
-          charsize = 2,$
-          /xstyle,$
-          /ystyle
+          charsize = 2
      plots,sweepv[index],defv1[index]-defv2[index], $
            psym = 7,color = 150
+     oplot,sweepv[index],defv1[index]-defv2[index],  psym = -7,color = 2
   endif
   
 end

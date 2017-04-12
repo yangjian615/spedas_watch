@@ -13,8 +13,8 @@
 ;         
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-20 16:36:10 -0700 (Mon, 20 Mar 2017) $
-;$LastChangedRevision: 23007 $
+;$LastChangedDate: 2017-04-11 14:28:32 -0700 (Tue, 11 Apr 2017) $
+;$LastChangedRevision: 23138 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -45,7 +45,8 @@ pro mms_part_getspec, probes=probes, $
                       forceload=forceload, $ --force data load (otherwise will try to use previously loaded data)
 
                       mag_suffix=mag_suffix,$
-                   ;   subtract_bulk=subtract_bulk, $
+                        
+                    ;  subtract_bulk=subtract_bulk, $
 
                       _extra=ex ;TBD: consider implementing as _strict_extra
 
@@ -81,13 +82,20 @@ pro mms_part_getspec, probes=probes, $
         probes = [1, 2, 3, 4]
     endif
     
+    if ~keyword_set(mag_suffix) then mag_suffix = ''
+    
     support_trange = trange + [-60,60]
     
+    for probe_idx = 0, n_elements(probes)-1 do begin
+      if (tnames('mms'+strcompress(string(probes[probe_idx]), /rem)+'_fgm_b_dmpa_srvy_l2_bvec'+mag_suffix) eq '') then append_array, fgm_to_load, probes[probe_idx]
+      if (tnames('mms'+strcompress(string(probes[probe_idx]), /rem)+'_defeph_pos') eq '') then append_array, state_to_load, probes[probe_idx]
+    endfor
+
     ; load state data (needed for coordinate transforms and field aligned coordinates)
-    mms_load_state, probes=probes, trange=support_trange
+    if defined(state_to_load) then mms_load_state, probes=state_to_load, trange=support_trange
 
     ; load magnetic field data
-    mms_load_fgm, probes=probes, trange=support_trange, level='l2', suffix=mag_suffix
+    if defined(fgm_to_load) then mms_load_fgm, probes=fgm_to_load, trange=support_trange, level='l2', suffix=mag_suffix
 
     if instrument eq 'fpi' then begin
         mms_load_fpi, probes=probes, trange=trange, data_rate=data_rate, level=level, $

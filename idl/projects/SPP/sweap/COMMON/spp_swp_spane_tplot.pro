@@ -18,7 +18,7 @@ pro spp_swp_spane_tplot,name,ADD=ADD,setlim=setlim
     options,'Igun_CURRENT',ytitle ='Ie- (uA)'
     options,'spp_spi_hkp_DAC_DEFL',ytitle='DEFL (dac)'
 
-    tplot,var_label=tnames('manip*_POS *DAC_DEFL Igun_VOLTS Igun_CURRENT')
+    tplot,var_label=tnames('manip*_POS *DAC_DEFL Egun_VOLTS Egun_CURRENT')
     !y.style=3
     dprint,setd=3
 

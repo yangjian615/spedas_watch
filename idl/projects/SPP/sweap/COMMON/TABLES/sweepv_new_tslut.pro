@@ -9,6 +9,7 @@ pro sweepv_new_tslut, sweepv, $
                       plot = plot, $
                       spfac = spfac
 
+message,'obsolete'
 
   ;;----------------------------------------
   ;; Number of energies in fine sweep table 

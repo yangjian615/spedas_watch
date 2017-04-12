@@ -73,8 +73,9 @@
 ;  
 ;
 ;
-;$LastChangedDate: 2017-02-10 15:48:45 -0800 (Fri, 10 Feb 2017) $
-;$LastChangedRevision: 22758 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-04-11 09:42:10 -0700 (Tue, 11 Apr 2017) $
+;$LastChangedRevision: 23134 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_part_products.pro $
 ;-
 

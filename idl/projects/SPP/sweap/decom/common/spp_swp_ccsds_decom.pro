@@ -61,7 +61,7 @@ function spp_swp_ccsds_decom,buffer,offset,buffer_length,remainder=remainder , e
 
   if buffer_length-offset lt 12 then begin
     if debug(3) then begin
-      dprint,'CCSDS Buffer length too short to include header: ',buffer_length-offset,dlevel=3
+      dprint,'CCSDS Buffer length too short to include header: ',buffer_length-offset,dlevel=2,offset
       hexprint,buffer
     endif
     error = 1b

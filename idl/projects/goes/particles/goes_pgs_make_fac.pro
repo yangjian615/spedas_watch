@@ -88,8 +88,9 @@ end
 ;Notes:
 ;
 ;
-;$LastChangedDate: 2016-08-02 19:05:30 -0700 (Tue, 02 Aug 2016) $
-;$LastChangedRevision: 21596 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-04-11 09:42:10 -0700 (Tue, 11 Apr 2017) $
+;$LastChangedRevision: 23134 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/goes/particles/goes_pgs_make_fac.pro $
 ;-
 pro goes_pgs_make_fac,times,$ ;the time grid of the particle data

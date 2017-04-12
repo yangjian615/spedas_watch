@@ -194,7 +194,7 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  ; At some point before Feb 25th @ noon local time, maja quit recording.
  
  ;; SPAN-Ae TVAC
- 
+  ;20170221_155456_TVAC-SPAI/PTP_data.dat' name of file that contains missing SPANAe data from MAJA
  ; started on Feb 13th, ops started the 15th.
  trange = '2017 02 ' + ['15/00','16/00'] ; first op day
  trange = '2017 02 ' + ['15/17','15/18'] ; cover opening cold (~-50)
@@ -203,17 +203,26 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  trange = '2017 02 ' + ['26/20','27/12'] ; searching for cover open
  trange = '2017 02 ' + ['27/10','27/11'] ; when cover finally opens
  
+ 
  ;; SPAN-B postEnvCal
+ trange = '2017 02 ' + ['26/03','26/08'] ; first EA scan at 1keV. Anode 4 is missed. data is missing on MAJA before this.
  trange = '2017 02 ' + ['26/16','27/01'] ; MCP test
- trange = '2017 02 ' + ['27/05', ; not an actua deflector scan - limit on yaw not set right..
+ ;trange = '2017 02 ' + ['27/05', ; not an actual deflector scan - limit on yaw not set right..
  trange = '2017 02 ' + ['27/18','27/20'] ; deflector test for anode zero
  trange = '2017 02 ' + ['28/04','28/07'] ; spoiler test, attenuator out.
- trange = '2017 02 ' + ['28/10','28/15'] ; EA scan w/ attenuator IN
  trange = '2017 03 ' + ['01/17','01/19'] ; partial rotation at funky yaw + linear angle; looks like anodes 1&2 are not as well illuminated. Odd.
  trange = '2017 03 ' + ['01/18','02/02'] ; deflector test on anodes 0,4,8,12,15
  trange = '2017 03 ' + ['02/11','02/15'] ; yaw angle test, lower value got a bit scrambled.
  trange = '2017 03 ' + ['02/17','02/19'] ; rotation scan back & forth @ 1keV 2deg yaw. 5 & 9 are a bit lopsided
- 
+ trange = '2017 03 ' + ['02/19','02/22'] ; EA scan w/ attenuator out, spoiler DAC = 1024s, 1keV
+ trange = '2017 03 ' + ['03/02','03/03'] ; wide scan in yaw with deflectors sweeping. Strange aliasing.
+ trange = '2017 03 ' + ['03/08','03/11'] ; EA scan with attenuator out at 5keV.
+ trange = '2017 03 ' + ['03/18','03/24'] ; MCP + Threshold test at 5keV.DIM
+
+ ;; SPAN-Ae postEnvCal
+ trange = ; ramp up MCPs
+ trange = '2017 03 ' + ['28/04', ; CPT
+
 
 ;  Get recent data files:
 files = spp_file_retrieve(/spanea,/cal,recent=1/24.)   ; get last 1 hour of data from server
