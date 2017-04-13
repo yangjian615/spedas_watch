@@ -17,8 +17,8 @@
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-04-10 12:57:14 -0700 (Mon, 10 Apr 2017) $
-; $LastChangedRevision: 23129 $
+; $LastChangedDate: 2017-04-12 10:15:47 -0700 (Wed, 12 Apr 2017) $
+; $LastChangedRevision: 23142 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -245,7 +245,7 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
      load_position = 'ephemeris_l2'
      mvn_sta_ephemeris_load
      If(is_struct(mvn_c6_dat) && is_struct(mvn_c0_dat) && $
-        is_struct(mvn_ca_dat)) Then mvn_sta_l2scpot
+        is_struct(mvn_ca_dat)) Then mvn_sta_scpot_load
 skip_ephemeris_l2:
   Endif Else Begin
      mvn_sta_l0_load, files = filex
@@ -265,7 +265,7 @@ skip_ephemeris_l2:
         If(is_struct(mvn_c6_dat) && is_struct(mvn_c0_dat) && $
            is_struct(mvn_ca_dat)) Then Begin
            mvn_sta_l2eflux, mvn_c6_dat
-           mvn_sta_l2scpot, /l0l2
+           mvn_sta_scpot_load
         Endif
 skip_ephemeris_l0:
      Endif
