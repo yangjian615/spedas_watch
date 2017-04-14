@@ -27,8 +27,8 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 19:10:04 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22294 $
+; $LastChangedDate: 2017-04-13 12:35:38 -0700 (Thu, 13 Apr 2017) $
+; $LastChangedRevision: 23149 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_get3d.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -243,6 +243,11 @@ function mvn_swe_get3d, time, archive=archive, all=all, sum=sum, units=units, bu
 
     Ke = mvn_swe_esuppress(ddd[n].time,/silent)
     dg = exp(-((1./swe_Ein) # Ke)^2.)
+    case ddd[n].group of
+        1  : for i=0,63,2 do dg[i:(i+1)] = mean(dg[i:(i+1)])
+        2  : for i=0,63,4 do dg[i:(i+3)] = mean(dg[i:(i+3)])
+      else : ; do nothing
+    endcase
 
     ddd[n].gf *= (dg # replicate(1.,96))
 

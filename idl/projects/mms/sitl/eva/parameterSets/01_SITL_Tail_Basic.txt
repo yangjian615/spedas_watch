@@ -1,8 +1,3 @@
-;===============================
-; Please use this set
-; when FPI data not available
-;===============================
-
 ;-------------
 ; AE index
 ;-------------
@@ -12,7 +7,8 @@ thg_idx_ae
 ; Magnetic Field
 ;-----------------
 mms*_dfg_srvy_gsm_dmpa; Bx, By, Bz
-mms*_dfg_srvy_gsm_dmpa_m; |B|
+mms*_dfg_srvy_gsm_dmpa_z; Bz
+mms*_dfg_srvy_gsm_dmpa_btot; |B|
 ;mms*_fpi_bentPipeB_DBCS;.... FPI Emergency parameters for when DFG/AFG not available.
 ;mms*_fpi_bentPipeB_Norm;... FPI Emergency parameters for when DFG/AFG not available.
 
@@ -21,20 +17,20 @@ mms*_dfg_srvy_gsm_dmpa_m; |B|
 ;---------------------
 mms*_edp_scpot_fast_sitl; SC-potential
 
-;--------------------
-; Density & Velocity
-;--------------------
-mms*_hpca_hplus_number_density
-mms*_hpca_hplus_ion_bulk_velocity
-mms*_exb_hpca_vperp_z;....  Comparison between (ExB)z and HPCA Vperp,z
+;----------------------------------
+; Density, Velocity
+;----------------------------------
+mms*_fpi_density; ... FPI
+mms*_fpi_ion_vel_dbcs;... FPI
 
 ;--------------------
 ; Spectrograms
 ;--------------------
 mms*_epd_eis_extof_proton_flux_omni_spin
-mms*_hpca_hplus_RF_corrected
+mms*_fpi_ions ;.............. FPI
 mms*_hpca_oplus_RF_corrected
-mms*_epd_feeps_srvy_sitl_electron_top_intensity_sensorid_11_clean_sun_removed
+mms*_epd_feeps_srvy_sitl_electron_intensity_omni_spin
+mms*_fpi_electrons;........... FPI
 
 ;--------------------
 ; Waves

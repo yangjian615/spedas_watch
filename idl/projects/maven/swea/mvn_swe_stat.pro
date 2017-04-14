@@ -10,14 +10,21 @@
 ;
 ;KEYWORDS:
 ;
+;    NPKT:          Returns the number of packets of each type.
+;
+;    FULL:          If set, then display version information about IDL
+;                   and the SPICE and CDF dynamic load modules.
+;
+;    SILENT:        Shhhh.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 19:09:26 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22292 $
+; $LastChangedDate: 2017-04-13 09:10:14 -0700 (Thu, 13 Apr 2017) $
+; $LastChangedRevision: 23144 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_stat.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
-pro mvn_swe_stat, npkt=npkt, silent=silent
+pro mvn_swe_stat, npkt=npkt, full=full, silent=silent
 
   @mvn_swe_com
 
@@ -81,8 +88,14 @@ pro mvn_swe_stat, npkt=npkt, silent=silent
     endif
 
     print,""
-  endif
 
+    if keyword_set(full) then begin
+      print, 'IDL ', !version.release
+      help,'cdf',/dlm
+      help,'icy',/dlm
+      print,""
+    endif
+  endif
 
   return
 

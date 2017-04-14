@@ -57,36 +57,36 @@ if keyword_set(smoothcounts) and keyword_set(lowres) then prefix='<mvn>_5min_SEP
   data = newdat.f_ion_eflux
   ddata = newdat.f_ion_eflux_unc
   bad = data lt .0* ddata
-  w = where(bad)
-  ;data[w] = !values.f_nan
+  w = where(bad, count)
+  ; if (count gt 0L) then data[w] = !values.f_nan
   store_data,prefix+'F_ion_eflux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1.,1e5],zlog:1,panel_size:panel_size}
 
   data = newdat.r_ion_eflux
   ddata = newdat.r_ion_eflux_unc
   bad = data lt .0* ddata
-  ;w = where(bad)
-  data[w] = !values.f_nan
+  w = where(bad, count)
+  ; if (count gt 0L) then data[w] = !values.f_nan
   store_data,prefix+'R_ion_eflux',newdat.time,transpose(data),transpose(newdat.R_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1.,1e5],zlog:1,panel_size:panel_size}
 
   data = newdat.f_elec_eflux
   ddata = newdat.f_elec_eflux_unc
   bad = data lt .0* ddata
-  w = where(bad)
-  ;data[w] = !values.f_nan
+  w = where(bad, count)
+  ; if (count gt 0L) then data[w] = !values.f_nan
   store_data,prefix+'F_elec_eflux',newdat.time,transpose(data),transpose(newdat.f_elec_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1.,1e5],zlog:1,panel_size:panel_size}
 
   data = newdat.r_elec_eflux
   ddata = newdat.r_elec_eflux_unc
   bad = data lt .0* ddata
-  ;w = where(bad)
-  data[w] = !values.f_nan
+  w = where(bad, count)
+  ; if (count gt 0L) then data[w] = !values.f_nan
   store_data,prefix+'R_elec_eflux',newdat.time,transpose(data),transpose(newdat.R_elec_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1.,1e5],zlog:1,panel_size:panel_size}
 
   data = newdat.f_ion_flux
   ddata = newdat.f_ion_flux_unc
   bad = data lt .0* ddata
-  w = where(bad)
-  ;data[w] = !values.f_nan
+  w = where(bad, count)
+  ; if (count gt 0L) then data[w] = !values.f_nan
   store_data,prefix+'F_ion_flux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1,1e4],zlog:1,panel_size:panel_size}
 
   data= rr # data
@@ -98,8 +98,8 @@ if keyword_set(smoothcounts) and keyword_set(lowres) then prefix='<mvn>_5min_SEP
   data = newdat.r_ion_flux
   ddata = newdat.r_ion_flux_unc
   bad = data lt .0* ddata
-  w = where(bad)
-  ;data[w] = !values.f_nan
+  w = where(bad, count)
+  ; if (count gt 0L) then data[w] = !values.f_nan
   store_data,prefix+'R_ion_flux',newdat.time,transpose(data),transpose(newdat.f_ion_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1,1e4],zlog:1,panel_size:panel_size}
 
   data= rr # data
@@ -111,8 +111,8 @@ if keyword_set(smoothcounts) and keyword_set(lowres) then prefix='<mvn>_5min_SEP
   data = newdat.f_elec_flux
   ddata = newdat.f_elec_flux_unc
   bad = data lt .0* ddata
-  w = where(bad)
-  ;data[w] = !values.f_nan
+  w = where(bad, count)
+  ; if (count gt 0L) then data[w] = !values.f_nan
   store_data,prefix+'F_elec_flux',newdat.time,transpose(data),transpose(newdat.f_elec_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1,1e4],zlog:1,panel_size:panel_size}
 
 if 0 then begin
@@ -126,8 +126,8 @@ endif
   data = newdat.r_elec_flux
   ddata = newdat.r_elec_flux_unc
   bad = data lt .0* ddata
-  w = where(bad)
-  ;data[w] = !values.f_nan
+  w = where(bad, count)
+  ; if (count gt 0L) then data[w] = !values.f_nan
   store_data,prefix+'R_elec_flux',newdat.time,transpose(data),transpose(newdat.f_elec_energy),dlim={spec:1,yrange:[10,6000.],ystyle:1,ylog:1,zrange:[1,1e4],zlog:1,panel_size:panel_size}
 
 if 0 then begin

@@ -336,7 +336,9 @@ if keyword_set(tplot) then store_data,'mvn_sta_c6_pot_ec',data={x:time,y:0.5*ms*
 	pot0 = interp(pot,time,time2)
 
 	get_data,'mvn_sta_test_density3',data=tmp3
-	den2 = interp(tmp3.x,tmp3.y,time2)
+	den2 = interp(tmp3.y,tmp3.x,time2)
+	ind_cutoff = fltarr(npts2)
+	p_only = fltarr(npts2)
 
 	oxgt30eV=mvn_c0_dat
 
@@ -351,7 +353,6 @@ if keyword_set(tplot) then store_data,'mvn_sta_c6_pot_ec',data={x:time,y:0.5*ms*
 	o_low2 = interp(o_low,time,time2)			; 0-12 eV
 	o_med2 = interp(o_med,time,time2)			; 0-30 eV
 
-	p_only = fltarr(n_elements(time2))
 
 ; Determine pot2, the following is stored as 'mvn_sta_c6_O2+_sc_pot_h+'
 ; Designed to not use oxygen during s/c charging events with scpot<-5 eV since sputtered-trapped O2+ ions at <pot
@@ -370,10 +371,12 @@ for i=1l,npts2-2 do begin
 ; this had problems on 20170223/1508-1528UT
 ;		if ((pot1[i] lt 3.) and (o_cnt2[i] lt 100)) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25) and (p_low2[i] lt 20)) then begin	; o_cnt2 >30eV, changed to only use protons when there are enough proton counts, fixed problem on 20160915/2307UT	
 
+
 ; changed 20170228 -- needs testing, 
-		if ((pot1[i] lt 3.) and (o_cnt2[i] lt 100)) or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25) and (p_low2[i] lt 20)) $
-;			or ((alt2[i] gt (min_alt+30.)) and (den[i] lt 3000.)) then begin	; changed to use all ions when the den<3000., modified 20170330 to use (min_alt+30.) - didn't seem to matter
-			or ((alt2[i] gt 150.) and (den[i] lt 3000.)) then begin			; changed to use all ions when the den<3000.	
+		if 	((pot1[i] lt 3.) and (o_cnt2[i] lt 100)) $
+		     or ((alt2[i] gt 400.) and sha2[i] and (o_cnt2[i] lt 25) and (p_low2[i] lt 20)) $
+;		     or ((alt2[i] gt (min_alt+30.)) and (den2[i] lt 3000.)) then begin			; changed to use all ions when the den<3000., modified 20170330 to use (min_alt+30.) - didn't seem to matter
+		     or ((alt2[i] gt 150.) and (den2[i] lt 3000.)) then begin				; changed to use all ions when the den<3000.	
 
 			dat1c=total(reform(mvn_c0_dat.data[i,*,*]),2)
 			dat1p=total(reform(mvn_c0_dat.data[i+1,*,*]),2)
@@ -401,8 +404,9 @@ for i=1l,npts2-2 do begin
 		dat4m = shift(dat3m,1)
 
 		dat5c = shift(dat1c,2)
+		dat6c = shift(dat3c,2)
 		
-		data = dat1c+modep*dat1p+modem*dat1m
+		data1 = dat1c+modep*dat1p+modem*dat1m
 		data2 = dat2c+modep*dat2p+modem*dat2m
 		energy0 = reform(mvn_c0_dat.energy[swp_ind[i],*,0])
 		energy = (energy0 + nrg_offset) > .01
@@ -411,9 +415,14 @@ for i=1l,npts2-2 do begin
 		ind0 = 0 
 ; 		ind0 = where (data ge 1. and data2 ge 1. and (data+data2) ge 4.,count)
 ; changed 20170228
-		ind0 = where ( 	   ( (data ge 1.) and (data2 ge 1.) and ((data+data2) ge 4.) and  (dat5c ge 1.)	) $
-				or ( ((dat3c+dat4c) ge 3.) and  (dat5c ge 1.)			) $
-				or ( ((dat3c+dat4c) ge 2.) and  (dat5c ge 2.)		   ) ,count)
+;		ind0 = where ( 	   ( (data1 ge 1.) and (data2 ge 1.) and ((data1+data2) ge 4.) and  (dat5c ge 1.)	) $
+;				or ( ((dat3c+dat4c) ge 3.) and  (dat5c ge 1.)			) $
+;				or ( ((dat3c+dat4c) ge 2.) and  (dat5c ge 2.)		   ) ,count)
+; changed 20170412
+		ind0 = where ( 	   ( ((dat1c ge 1.) or (data1 ge 2.)) and ((dat2c ge 1.) or (data2 ge 2.)) and ((dat1c+dat2c) ge 2.) and ((data1+data2) ge 4.) and ((data1+data2+dat5c) ge 5.)	) $
+				or ( ((dat1c ge 1.) or (data1 ge 2.)) and ((dat2c ge 1.) or (data2 ge 2.)) and ((dat1c+dat2c) ge 2.) and ((data1+data2) ge 3.) and ((dat1c+dat2c+dat5c) ge 4.)	) $
+				or ( (dat3c ge 1.) and ((dat3c+dat4c) ge 3.) and  ((dat3c+dat4c+dat6c) ge 4.) ) $
+				or ( (dat3c ge 1.) and ((dat3c+dat4c) ge 2.) and  ((dat3c+dat4c+dat6c) ge 5.) )		   ,count)
 		if count gt 0 then mind0=max(ind0) 
 		mind0 = mind0 > 1
 
@@ -428,13 +437,18 @@ for i=1l,npts2-2 do begin
 
 ;		if energy[mind0] lt max_nrg and ((alt2[i] gt 180.) or ((data[mind0]+data2[mind0]) gt 20.)) then begin
 		if energy[mind0] lt max_nrg and ((alt2[i] gt (min_alt+25.)) or ((data[mind0]+data2[mind0]) gt 20.)) then begin
-			e0 = energy[mind0] - denergy[mind0]/2.
-			d1 = data[mind0] 
-			e1 = energy[mind0] - e0
-			d2 = data[mind0-1] 
-			e2 = energy[mind0-1] - e0
-			scale = 0. > (1-(d1/d2)*(e2/e1)^1) < 1.
-			pot2[i]= (energy[mind0] - denergy[mind0]/2. + denergy[mind0]*scale) < max_nrg
+;			e0 = energy[mind0] - denergy[mind0]/2.
+;			d1 = data[mind0] 
+;			e1 = energy[mind0] - e0
+;			d2 = data[mind0-1] 
+;			e2 = energy[mind0-1] - e0
+;			scale = 0. > (1-(d1/d2)*(e2/e1)^1) < 1.
+;			pot2[i]= (energy[mind0] - denergy[mind0]/2. + denergy[mind0]*scale) < max_nrg
+			e0 = energy[mind0]
+			d0 = data[mind0] 
+			e1 = energy[mind0-1]
+			d1 = data[mind0-1] 
+			pot2[i] = e0 + .5*(e1-e0)*(d1-d0)/(d1+d0+3.)
 			if data[mind0-1] le 3. then pot2[i]=energy[mind0]
 		endif else pot2[i] = max_nrg
 ;		endif else pot2[i] = 2.5
@@ -450,17 +464,23 @@ for i=1l,npts2-2 do begin
 
 	if pot2[i] lt (max_nrg*.9 > 10.) then begin
 		nrg = reform(mvn_c0_dat.energy[swp_ind[i],*,0])
-		minval = min(abs(nrg-pot2[i]),ind77)
+;		minval = min(abs(nrg-pot2[i]),ind77)
+		ind77=mind0
 
 		minval = min(abs(nrg-(2.7+pot0[i])*.70),ind87)
 		if alt2[i] lt alt_vo2 then ind77=ind77>ind87		; this makes sure we don't count o2+ stragglers 
 
 		pot2_cutoff_cnts[i] = total(dat1c[0>(ind77-2):(ind77+1)<63]+dat1p[0>(ind77-2):(ind77+1)<63]+dat1m[0>(ind77-2):(ind77+1)<63])
 		pot2_p_cutoff_cnts[i] = total(dat3c[0>(ind77-1):(ind77+1)<63]+dat3p[0>(ind77-1):(ind77+1)<63]+dat3m[0>(ind77-1):(ind77+1)<63])
+		ind_cutoff[i]=ind77
 	endif
 ;**************************************
 
 endfor
+
+; for testing only
+if keyword_set(tplot) then store_data,'ind_cutoff',data={x:time2,y:ind_cutoff}
+
 
 		if keyword_set(tplot) then store_data,'p_only',data={x:time2,y:p_only}
 			ylim,'p_only',-1,2,0
@@ -645,7 +665,6 @@ if keyword_set(tplot) then 	store_data,'swe_id6',data={x:tmp6.x,y:fx6}
 ;		dens_e = 1.2*dens_e*(temp_e gt 13.)
 ;		dens_e = 1.2*dens_e*(temp_e gt 11.)
 		dens_e = 1.2*dens_e
-;		help,dens_e
 ;		print,'dens_e minmax = ',minmax(dens_e)
 	endif else begin
 		print,'Alert: No electron temperature data
@@ -713,7 +732,8 @@ pot_all = -(pot3 < (pot+1000.*(alt gt alt_vo2)))*(1.*sc_neg)*(1.*qf_valid)*(1.-s
 
 ;pot_cutoff_valid = (pot3 lt 1.2*(pot+1000.*(alt gt alt_vo2)))*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid) and (alt gt ((min_alt+25.)>180.))		; pre-20170331 algorithm
 
-pot_cutoff_valid = (pot3_cutoff_cnts gt 5.1)*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid) and (pot3_p_cutoff_cnts gt 2.1 or alt gt alt_vo2) and (alt gt ((min_alt+25.)>180.))		; 
+
+pot_cutoff_valid = (pot3_cutoff_cnts gt 5.1)*(1.*sc_neg)*(1.*qf_valid)*(1.-scpot_invalid) and (pot3_p_cutoff_cnts gt 2.1 or alt gt alt_vo2) and (alt gt ((min_alt+35.)>180.))		; are 35 and 180 the best parameters?
 
 	ind = where(not pot_cutoff_valid[1:npts-2] and pot_cutoff_valid[0:npts-3] and pot_cutoff_valid[2:npts-1],count)
 	if count gt 0 then pot_cutoff_valid[ind+1] = 1

@@ -9,9 +9,9 @@
 ; 
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-29 12:04:50 -0700 (Wed, 29 Mar 2017) $
-;$LastChangedRevision: 23064 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-04-13 13:08:34 -0700 (Thu, 13 Apr 2017) $
+;$LastChangedRevision: 23150 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_ui_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
@@ -197,6 +197,19 @@ PRO mms_ui_fileconfig, tab_id, historyWin, statusBar
   localdir = widget_text(lbase, /edit, /all_events, xsiz = 50, $
                          uval = 'LOCALDIR', val = !mms.local_data_dir)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='LOCALBROWSE',/align_center)
+
+; MMS_DATA_DIR as a label
+  mms_data_dir = getenv('MMS_DATA_DIR')
+  if mms_data_dir eq '' then begin
+    mms_data_dir_lbl = 'Not set' 
+    mms_data_dir_sen = 0
+  endif else begin
+    mms_data_dir_lbl = mms_data_dir
+    mms_data_dir_sen = 1
+  endelse
+  mdir_base = widget_base(configbase, /row, /align_left, ypad=5)
+  mdir_label = widget_label(mdir_base, value='MMS_DATA_DIR:', /align_left, xsize=95, SENSITIVE=mms_data_dir_sen)
+  mdir_value_label = widget_label(mdir_base, value=mms_data_dir_lbl, /align_left, SENSITIVE=mms_data_dir_sen)
 
 ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left)

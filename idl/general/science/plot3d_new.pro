@@ -51,8 +51,9 @@ pro plot3d_new,tbindata, latitude,longitude,rotation, $
    STACK = stack,        $     ;!p.multi[1:2]
    ROW_MAJOR = row_major,$     ;!p.multi[4]
    NOERASE = noerase,    $     ;!p.multi[0]
-   TITLE = title,	 $
+   TITLE = title,	     $
    NOTITLE = notitle,    $
+   SUBTITLE = subtitle,  $
    NOCOLORBAR = nocolorbar,	$
    NOBORDER = noborder,$
    log=log
@@ -195,6 +196,8 @@ for plot_num=0,n_p-1 do begin
            /remove_all)
    endelse
    ttl=strcompress(ttl)
+   
+   if keyword_set(subtitle) then ttl = subtitle[plot_num]
 
 nsteps = e2-e1+1
 
@@ -340,7 +343,7 @@ space = charsize * float(!d.x_ch_size)/!d.x_size
 pos =[xposmax+space,yposmin,xposmax+3*space,yposmax]
 
 if not keyword_set(nocolorbar) then $
-	draw_color_scale,range = [0.,1.],pos=pos,chars=charsize
+	draw_color_scale,range=range,pos=pos,chars=charsize
 
 return
 end

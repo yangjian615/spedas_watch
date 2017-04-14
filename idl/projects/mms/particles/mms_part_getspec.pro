@@ -13,8 +13,8 @@
 ;         
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-04-11 14:28:32 -0700 (Tue, 11 Apr 2017) $
-;$LastChangedRevision: 23138 $
+;$LastChangedDate: 2017-04-13 10:27:56 -0700 (Thu, 13 Apr 2017) $
+;$LastChangedRevision: 23146 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -46,7 +46,7 @@ pro mms_part_getspec, probes=probes, $
 
                       mag_suffix=mag_suffix,$
                         
-                    ;  subtract_bulk=subtract_bulk, $
+                      ;subtract_bulk=subtract_bulk, $
 
                       _extra=ex ;TBD: consider implementing as _strict_extra
 
@@ -121,7 +121,7 @@ pro mms_part_getspec, probes=probes, $
           name =  'mms'+probes[probe_idx]+'_hpca_'+species+'_phase_space_density'
           vel_name = 'mms'+probes[probe_idx]+'_hpca_'+species+'_ion_bulk_velocity'
         endif
-        mms_part_products, name, trange=trange, $
+        mms_part_products, name, trange=trange, units=units_lc, $
             mag_name=bname, pos_name=pos_name, vel_name=vel_name, energy=energy, $
             pitch=pitch, gyro=gyro_in, phi=phi_in, theta=theta, regrid=regrid, $
             outputs=outputs, suffix=suffix, datagap=datagap;, subtract_bulk=subtract_bulk
