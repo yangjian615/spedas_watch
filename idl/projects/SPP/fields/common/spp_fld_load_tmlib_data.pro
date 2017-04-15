@@ -1,4 +1,4 @@
-function spp_fld_load_tmlib_data, apid_name,  $
+function spp_fld_load_tmlib_data, l1_data_type,  $
   varformat = varformat, cdf_att = cdf_att, times = times, idl_att = idl_att, $
   success = success
 
@@ -10,12 +10,11 @@ function spp_fld_load_tmlib_data, apid_name,  $
 
   if n_elements(varformat) EQ 0 then varformat = '.*'
 
-  tmlib_config_dir = getenv('SPP_FLD_TMLIB_CONFIG_DIR')
+  cdf_xml_dir = getenv('SPP_FLD_CDF_XML_DIR')
 
-  apid_dir = tmlib_config_dir + '/config/definitions/spp/spp/fields/' + $
-    apid_name + '/'
+  cdf_xml_l0_to_l1_dir = cdf_xml_dir + 'l0_to_l1/'
 
-  apid_xml = apid_name + '.xml'
+  cdf_xml = cdf_xml_l0_to_l1_dir + l1_data_type + '.xml'
 
   ;
   ; Prepare data structure for storing the data
@@ -25,24 +24,22 @@ function spp_fld_load_tmlib_data, apid_name,  $
   ; (xml_extract) of ordered hashes, with each ordered hash containing an
   ; item from the definition file.
 
-  cd, tmlib_config_dir, current = current_dir
+  print, cdf_xml
 
-  print, tmlib_config_dir + apid_dir + apid_xml
-
-  xml_data = read_xml8(apid_dir + apid_xml)
-
-  cd, current_dir
+  xml_data = read_xml8(cdf_xml)
 
   ; Return global CDF attributes from XML file.
   ; If no CDF attributes are found, there will be no CDF file created.
 
-  if (xml_data['items']).HasKey('cdf_att') then begin
+  tmlib_event = ((xml_data['items'])['tmlib'])['tmlib_event']
 
-    cdf_att = (xml_data['items'])['cdf_att']
+  if (xml_data['items']).HasKey('cdf_global') then begin
+
+    cdf_att = (xml_data['items'])['cdf_global']
 
   endif else begin
 
-    dprint, 'No CDF metadata information found in XML file', dlevel = 2
+    dprint, 'No CDF global metadata information found in XML file', dlevel = 2
 
     return, 0
 
@@ -58,19 +55,19 @@ function spp_fld_load_tmlib_data, apid_name,  $
 
   endelse
 
-  xml_extract = (xml_data['items'])['extract']
+  xml_cdf_vars = (xml_data['items'])['cdf_var']
 
   ; From the list, make a hash object (data_hash).  We make the hash so that
   ; we can index by the item name.  Also make a list of the hash keys (item
   ; names (data_names).
 
-  data_hash = HASH()
+  data_hash = ORDEREDHASH()
 
-  for i = 0, n_elements(XML_Extract) - 1 do begin
+  foreach cdf_var, xml_cdf_vars do begin
 
-    data_hash[(xml_extract[i])['name']] = xml_extract[i]
+    data_hash[cdf_var['name']] = cdf_var
 
-  endfor
+  endforeach
 
   data_names = data_hash.Keys()
 
@@ -99,7 +96,7 @@ function spp_fld_load_tmlib_data, apid_name,  $
 
   if match_count GT 0 then begin
 
-    print, data_names[match_ind]
+    dprint, data_names[match_ind], dlevel = 2
 
     data_names = data_names[match_ind]
     data_hash = data_hash[data_names]
@@ -112,7 +109,7 @@ function spp_fld_load_tmlib_data, apid_name,  $
 
   endif else begin
 
-    print, 'No items which match VARFORMAT'
+    dprint, 'No items which match VARFORMAT', dlevel = 1
 
     return, 0
 
@@ -128,26 +125,26 @@ function spp_fld_load_tmlib_data, apid_name,  $
   t1 = sunseconds_to_ur8(time_double(trange[1]))
 
   ; Select TMlib server
-  
+
   defsysv, '!TMLIB', exists = exists
-  
+
   if exists then begin
-    
+
     server = !tmlib.server
-    
+
   endif else begin
-    
+
     print, 'No SPP FIELDS TMlib server selected, use SPP_FLD_TMLIB_INIT'
-    
+
     return, 0
-    
+
   endelse
-  
+
   err = tm_select_server(server)
   dprint, 'Select Server status: ', dlevel = 3
 
   ; Select MSIE (Mission, Spacecraft, Instrument, Event)
-  err = tm_select_domain(sid, "SPP", "SPP", "Fields", apid_name)
+  err = tm_select_domain(sid, "SPP", "SPP", "Fields", tmlib_event)
   dprint, 'Select MSIE status: ', dlevel = 3
   dprint, 'Stream ID: ', dlevel = 3
   if err NE 0 then print_error_stack, err, sid
@@ -176,10 +173,18 @@ function spp_fld_load_tmlib_data, apid_name,  $
     err = tm_get_position(sid, ur8)
     err = tm_get_item_r8(sid, "ccsds_scet_ur8", ur8_ccsds, 1, size)
 
+    err = tm_get_item_i4(sid, "ccsds_total_packet_length", $
+      ccsds_pkt_len, 1, size)
+
     ;err = tm_get_item_i4(sid, "ccsds_met_sec", met_ccsds, 1, size)
 
     time = ur8_to_sunseconds(ur8_ccsds)
     times.Add, time
+
+    dprint, n_elements(times), ' / ', ur8_ccsds, ' / ', $
+      time_string(time), dlevel = 4
+
+    dprint, ccsds_pkt_len, dlevel = 4
 
     t0 = systime(1)
 
@@ -229,6 +234,10 @@ function spp_fld_load_tmlib_data, apid_name,  $
 
       (data_hash[data_name])['data'].Add, returned_item
 
+      item_str = n_elements(returned_item) GT 1 ? string(returned_item[0]) + $
+        ', ...' : string(returned_item)
+
+      dprint, '    ', data_name, item_str, dlevel = 4
 
     endfor
 

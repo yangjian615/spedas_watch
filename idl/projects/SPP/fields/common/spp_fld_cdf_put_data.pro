@@ -33,9 +33,9 @@
 ; CREATED BY:
 ;   pulupa
 ;
-; $LastChangedBy: pulupalap $
-; $LastChangedDate: 2017-01-11 16:14:34 -0800 (Wed, 11 Jan 2017) $
-; $LastChangedRevision: 22579 $
+; $LastChangedBy: pulupa $
+; $LastChangedDate: 2017-04-14 16:44:14 -0700 (Fri, 14 Apr 2017) $
+; $LastChangedRevision: 23160 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_put_data.pro $
 ;-
 pro spp_fld_cdf_put_data, fileid, data, close = close
@@ -54,6 +54,8 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
       ; create a non-sparse variable.
 
       ; TODO: enable selective addition for sparse CDFs
+
+      ; TODO: save raw data in CDF file as well as converted data
 
       cdf_sparse = (null_count NE 0)
 
