@@ -3,8 +3,8 @@
 ; activate = 2; sensitive (initialize)
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-06-24 12:13:17 -0700 (Wed, 24 Jun 2015) $
-; $LastChangedRevision: 17956 $
+; $LastChangedDate: 2017-04-15 09:34:58 -0700 (Sat, 15 Apr 2017) $
+; $LastChangedRevision: 23163 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_update_board.pro $
 ;
 PRO eva_sitl_update_board, state, activate
@@ -53,6 +53,7 @@ PRO eva_sitl_update_board, state, activate
   cblue   = [  0B,  0B,255B]
   cyellow = [255B,255B,  0B]
   cblack  = [  0B,  0B,  0B]
+  
   
   
   ; initialize
@@ -159,13 +160,19 @@ PRO eva_sitl_update_board, state, activate
     
   endif
   
-  ; update
+  ; Make sure 'val' tag exists when activate = 1
   if activate eq 1 then begin
-    ok = 1
+    tgn = tag_names(state)
+    i = where(strmatch(tgn,'val'),ct)
+    if ct eq 0 then activate = 0
+  endif
+  
+  ; Update
+  if activate eq 1 then begin
     if state.PREF.EVA_BAKSTRUCT then begin
       mywindow->Draw, sg.myviewB
     endif else begin
-    ;if ok then begin
+
       get_data,'mms_stlm_fomstr',lim=lim
       f = lim.unix_FOMStr_mod
       
@@ -242,7 +249,7 @@ PRO eva_sitl_update_board, state, activate
         mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
         mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
         header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
-        vcase = (state.USER_FLAG eq 4) ? 3 : 0
+        vcase = 0;(state.USER_FLAG eq 4) ? 3 : 0
         r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, header=header, /quiet, vcase=vcase,$
           valstruct=state.val)
         terr = r.error.COUNT

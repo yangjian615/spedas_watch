@@ -125,7 +125,7 @@ FUNCTION eva_sitl_pref, parent, GROUP_LEADER=group_leader, $
   
   lblSpace = widget_label(mainbase,VALUE=' ')
   lblSuper = widget_label(mainbase,VALUE="Options for super-SITL:")
-  bsAdvanced = widget_base(mainbase,space=0,ypad=0,SENSITIVE=(state_data.USER_FLAG eq 3)); Super SITL only
+  bsAdvanced = widget_base(mainbase,space=0,ypad=0,SENSITIVE=(state_data.USER_FLAG eq 2)); Super SITL only
     str_element,/add,state,'bsAdvanced',bsAdvanced
     str_element,/add,state,'bgAdvanced',cw_bgroup(bsAdvanced,'Enable advanced features (i.e., editing back-structure)',$
      /NONEXCLUSIVE,SET_VALUE=state.PREF.EVA_BAKSTRUCT)

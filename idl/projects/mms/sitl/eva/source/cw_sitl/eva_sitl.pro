@@ -176,14 +176,14 @@ PRO eva_sitl_seg_add, trange, state=state, var=var
     ;  RealFOM   = (total(seg[sort(seg)]*FOMWindow) <255.0) > 2.0
     ;RealFOM = 40
     
-    if (state.USER_FLAG eq 4) then begin
-      RealFOM = 200
-      valval = mms_load_fom_validation()
-      tedef = trange[0] + valval.FPI_SEG_BOUNDS[1]*10d0
-    endif else begin
+;    if (state.USER_FLAG eq 4) then begin
+;      RealFOM = 200
+;      valval = mms_load_fom_validation()
+;      tedef = trange[0] + valval.FPI_SEG_BOUNDS[1]*10d0
+;    endif else begin
       RealFOM = 40
       tedef = trange[1]
-    endelse
+;    endelse
     
     ; segSelect
     if n_elements(var) eq 0 then message,'Must pass tplot-variable name'
@@ -559,7 +559,7 @@ FUNCTION eva_sitl_event, ev
         mms_convert_fom_unix2tai, lmod.unix_FOMStr_mod, tai_FOMstr_mod; Modified FOM to be checked
         mms_convert_fom_unix2tai, lorg.unix_FOMStr_org, tai_FOMstr_org; Original FOM for reference
         header = eva_sitl_text_selection(lmod.unix_FOMstr_mod)
-        vcase = (state.USER_FLAG eq 4) ? 3 : 0
+        vcase = 0;(state.USER_FLAG eq 4) ? 3 : 0
         r = eva_sitl_validate(tai_FOMstr_mod, tai_FOMstr_org, vcase=vcase, header=header, valstruct=state.val)
       endelse
       end
@@ -678,7 +678,7 @@ FUNCTION eva_sitl_event, ev
           store_data,'mms_stlm_fomstr',data=Dmod, lim=lmod, dl=dlmod
           if contin then begin
             print,'EVA: Continue Submission....'
-            vcase = (state.USER_FLAG eq 4) ? 3 : 0
+            vcase = 0;(state.USER_FLAG eq 4) ? 3 : 0
             eva_sitl_submit_fomstr,ev.top, state.PREF.EVA_TESTMODE_SUBMIT, vcase, user_flag=state.USER_FLAG
           endif else print,'EVA:  but just saved...'
         endif else begin
@@ -695,23 +695,23 @@ FUNCTION eva_sitl_event, ev
     else: print, 'EVA: else'
   endcase
 
-  FPI = (state.USER_FLAG eq 4)
-  if(FPI and sanitize_fpi) then begin; Revert hacked FOMstr (i.e. remove the fake segment)
-    get_data,'mms_stlm_fomstr',data=D,dl=dl,lim=lim
-    s = lim.unix_FOMstr_mod
-    snew = s
-    if (s.NSEGS gt 1) and (s.START[0] eq 0) and (s.STOP[0] eq 1) and (s.FOM[0] eq 0.) then begin
-      str_element,/add,snew, 'FOM', s.FOM[1:s.NSEGS-1]
-      str_element,/add,snew, 'START', s.START[1:s.NSEGS-1]
-      str_element,/add,snew, 'STOP', s.STOP[1:s.NSEGS-1]
-      str_element,/add,snew, 'NSEGS', s.NSEGS-1L
-      str_element,/add,snew, 'NBUFFS', s.NBUFFS-1L
-      str_element,/add,snew, 'FPICAL', 0L; Set 0 because the dummy segment does not exist anymore
-      str_element,/add,lim,'unix_FOMstr_mod',snew
-      D_hacked = eva_sitl_strct_read(snew,min(snew.START,/nan))
-      store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl
-    endif
-  endif
+;  FPI = (state.USER_FLAG eq 4)
+;  if(FPI and sanitize_fpi) then begin; Revert hacked FOMstr (i.e. remove the fake segment)
+;    get_data,'mms_stlm_fomstr',data=D,dl=dl,lim=lim
+;    s = lim.unix_FOMstr_mod
+;    snew = s
+;    if (s.NSEGS gt 1) and (s.START[0] eq 0) and (s.STOP[0] eq 1) and (s.FOM[0] eq 0.) then begin
+;      str_element,/add,snew, 'FOM', s.FOM[1:s.NSEGS-1]
+;      str_element,/add,snew, 'START', s.START[1:s.NSEGS-1]
+;      str_element,/add,snew, 'STOP', s.STOP[1:s.NSEGS-1]
+;      str_element,/add,snew, 'NSEGS', s.NSEGS-1L
+;      str_element,/add,snew, 'NBUFFS', s.NBUFFS-1L
+;      str_element,/add,snew, 'FPICAL', 0L; Set 0 because the dummy segment does not exist anymore
+;      str_element,/add,lim,'unix_FOMstr_mod',snew
+;      D_hacked = eva_sitl_strct_read(snew,min(snew.START,/nan))
+;      store_data,'mms_stlm_fomstr',data=D_hacked,lim=lim,dl=dl
+;    endif
+;  endif
   
   ;When not refreshing the dashboard, we update validation structure as often as possible.
   ;The dashboard, whenever refreshing, will use the updated validation structure to
@@ -779,7 +779,8 @@ FUNCTION eva_sitl, parent, $
     rehighlight: 0,$
     launchtime: systime(1,/utc),$
     user_flag: 0, $
-    userType: ['Guest','MMS member','SITL','Super SITL']};,'FPI cal']}
+    userType: ['MMS member','SITL','Super SITL']};,'FPI cal']}
+    ;userType: ['Guest','MMS member','SITL','Super SITL']};,'FPI cal']}
 
   ; ----- CONFIG (READ) -----
   cfg = mms_config_read()         ; Read config file and

@@ -2,7 +2,7 @@
 ;PROCEDURE: 
 ;	mvn_swe_convert_units
 ;PURPOSE:
-;	Convert the units for a SWEA 3d data structure.
+;	Convert units for SPEC, PAD, and 3D data.
 ;AUTHOR: 
 ;	David L. Mitchell
 ;CALLING SEQUENCE: 
@@ -18,13 +18,13 @@
 ;            E2FLUX : energy flux per energy bin (eV/cm^2-s-ster-bin)
 ;            DF     : distribution function (1/(cm^3-(km/s)^3))
 ;KEYWORDS:
-;	SCALE: Returns an array of conversion factors used
+;	SCALE: Returns the array of conversion factors used
 ;OUTPUTS:
 ;	Returns the same data structure in the new units
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 13:59:04 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22128 $
+; $LastChangedDate: 2017-04-15 16:39:58 -0700 (Sat, 15 Apr 2017) $
+; $LastChangedRevision: 23165 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_convert_units.pro $
 ;
 ;-
@@ -41,7 +41,7 @@ pro mvn_swe_convert_units, data, units, scale=scale
   mass = (5.10998910D5)/(c*c)     ; electron rest mass [eV/(km/s)^2]
   m_conv = 2D5/(mass*mass)        ; mass conversion factor (flux to distribution function)
 
-; Get information from input 3D structure
+; Get information from input structure
 
   energy  = data.energy           ; [eV]
   denergy = data.denergy          ; [eV]
@@ -50,9 +50,24 @@ pro mvn_swe_convert_units, data, units, scale=scale
   dt_arr  = data.dt_arr           ; #energies * #anodes per bin for rate and dead time corrections
   dtc     = data.dtc              ; dead time correction: 1. - (raw count rate)*dead
 
-; Dead time calculation is done in mvn_swe_package, where the calibrated data structure is first created
-; from the raw counts.  This makes it possible to convert back and forth between units with and without 
+; The dead time correction (dtc) is stored separately in the data structure.
+; This makes it possible to convert back and forth between units with and without 
 ; the dead time correction applied.
+
+; Use the same energy scale factor for adjacent energy steps that are binned.
+; (This is not needed for denergy, which is used only for units of e2flux.)
+
+  grp = 0
+  str_element, data, 'group', grp
+  unity2 = replicate(1.,2)
+  unity4 = replicate(1.,4)
+  case grp of
+     1   : for i=0,63,2 do energy[i:(i+1),*] = unity2 # average(energy[i:(i+1),*],1)
+     2   : for i=0,63,4 do energy[i:(i+3),*] = unity4 # average(energy[i:(i+3),*],1)
+    else : ; do nothing
+  endcase
+
+; Calculate the conversion factors
 
   case strupcase(data[0].units_name) of 
     'COUNTS' : scale = 1D				                          ; Raw counts			

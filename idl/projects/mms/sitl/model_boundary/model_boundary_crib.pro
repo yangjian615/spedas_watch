@@ -1,11 +1,25 @@
+; To show usage of model_boundary programs originally developed for EVA.
+;
 PRO model_boundary_crib
   compile_opt idl2
 
-  ;-------------------------
-  ; Draw a bow shock model
-  ;-------------------------
-  model = model_boundary_draw()
-  plot, model.xgse, model.ygse
+  ;----------------------------------------
+  ; Draw a bow shock model that is scaled to the given location
+  ;----------------------------------------
+  scx = [16., 10, 0.]
+  scy = [0., 15, 35.]
+  scz = [1., 0., 0.]
+  mBS = model_boundary_draw(pos=[scx,scy,scz],model='peredo')
+  mMP = model_boundary_draw(sigma = mBS.sigma, model='roelof')
+  zero_x = [-1000,1000]
+  zero_y = [0,0]
+  plot, mBS.xgse, mBS.ygse,xrange=[20,-20],yrange=[20,-20],$
+    xtitle='X (GSE)',ytitle='Y (GSE)'
+  oplot, mBS.xgse2, mBS.ygse2
+  oplot, mMP.xgse,  mMP.ygse
+  oplot, mMP.xgse2, mMP.ygse2
+  oplot, zero_x, zero_y, linestyle=2
+  oplot, zero_y, zero_x, linestyle=2
   stop
   
   ;---------------------------------------------------------------------------

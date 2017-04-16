@@ -1,13 +1,33 @@
-; This routine returns arrays (xgse, ygse, zgse) for a specified model.
-; You can draw the model by, for example, 
-; plot, xgse, ygse
+;+
+; NAME: model_boundary_draw
+;
+; PURPOSE: To draw bow shock and magnetopause. (Originally created for EVA)
+; 
+;   This routine will return some arrays for plotting.
+;     e.g. 
+;     MMS> model = model_boundary_draw()
+;     MMS> plot, model.xgse, model.ygse,xrange=[20,-20],yrange=[20,-20]
+;     MMS> oplot, model.xgse2, model.ygse2
+;     
+; KEYWORDS:
+;   MODEL_NAME: Currenly supported for 'peredo' and 'roelof'
+;   THETA_RANGE: Default range is [0,180]
+;   POS:         Position (x,y,z) of a spacecraft in a 3-element array. 
+;                The model will be scalled to the given position.
+;
+; CREATED BY: Mitsuo Oka
+;
+; $LastChangedBy: moka $
+; $LastChangedDate: 2017-04-15 09:31:13 -0700 (Sat, 15 Apr 2017) $
+; $LastChangedRevision: 23161 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/model_boundary/model_boundary_draw.pro $
 ;
 FUNCTION model_boundary_draw, theta_range=theta_range, phi=phi, model_name=model_name, Pdyn=Pdyn,$
   pos=pos, sigma_in=sigma_in
   compile_opt idl2
   
   if undefined(model_name) then model_name='peredo'
-  if undefined(theta_range) then theta_range = [0, 135]
+  if undefined(theta_range) then theta_range = [0, 180]
   if undefined(phi) then phi = 0; phi = 0 for a cut at z=0
   
   ; Set a model

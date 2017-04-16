@@ -1,6 +1,6 @@
 PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
 
-  if n_elements(user_flag) eq 0 then user_flag = 2
+  if n_elements(user_flag) eq 0 then user_flag = 1
   ; initialize 
   title = 'FOM Submission'
     
@@ -38,7 +38,7 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
     return
   endif
   
-  if (r.orange.COUNT ne 0) and (user_flag ne 3) then begin
+  if (r.orange.COUNT ne 0) and (user_flag ne 2) then begin
     rst = dialog_message('Only Super SITL can override orange warnings.',/center,/error)
     return
   endif

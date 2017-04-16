@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-11-07 10:41:35 -0800 (Mon, 07 Nov 2016) $
-; $LastChangedRevision: 22324 $
+; $LastChangedDate: 2017-04-15 09:37:28 -0700 (Sat, 15 Apr 2017) $
+; $LastChangedRevision: 23164 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -233,7 +233,7 @@ FUNCTION eva_data_login, state, evTop
     state.paramID = 0
     state = eva_data_paramSetList(state)
     widget_control, state.sbMMS, SENSITIVE=1
-    widget_control, state.drpSet, SET_VALUE=state.paramSetList
+    ;widget_control, state.drpSet, SET_VALUE=state.paramSetList
     
     ;---------------------
     ; Get Target Time
@@ -257,13 +257,13 @@ FUNCTION eva_data_login, state, evTop
       sitl_stash = WIDGET_INFO(id_sitl, /CHILD)
       widget_control, sitl_stash, GET_UVALUE=sitl_state, /NO_COPY;******* GET
       widget_control, sitl_state.lblTgtTimeMain, SET_VALUE=lbl; target time time label
-      widget_control, sitl_state.bsAction0, SENSITIVE=(user_flag ge 2); main SITL control
-      widget_control, sitl_state.bsActionSubmit, SENSITIVE=(user_flag ge 2); submit button
-      this_hlSet = (user_flag ge 3) ? sitl_state.hlSet2 : sitl_state.hlSet; hightlight list
+      widget_control, sitl_state.bsAction0, SENSITIVE=(user_flag ge 1); main SITL control
+      widget_control, sitl_state.bsActionSubmit, SENSITIVE=(user_flag ge 1); submit button
+      this_hlSet = (user_flag ge 2) ? sitl_state.hlSet2 : sitl_state.hlSet; hightlight list
       widget_control, sitl_state.drpHighlight, SET_VALUE=this_hlSet; highlight droplit
       str_element,/add,sitl_state,'user_flag',user_flag; synchronize user_flag/userType
       str_element,/add,sitl_state,'userType',state.userType;
-      widget_control, sitl_state.btnSplit, SENSITIVE= (user_flag ne 4); disable "split" if FPI-cal
+      ;widget_control, sitl_state.btnSplit, SENSITIVE= (user_flag ne 4); disable "split" if FPI-cal
       val = mms_load_fom_validation(); Add/update validation structure
       if n_tags(val) eq 0 then begin
         message,'Failed to load validation structure.'
@@ -293,7 +293,7 @@ FUNCTION eva_data_login, state, evTop
     msg = 'Log-in Failed'
   endif else begin
     msg = 'Logged-in!'
-    if(user_flag ge 2)then begin
+    if(user_flag ge 1)then begin
       ut = state.userType[user_flag]
       nl = ssl_newline()
       msg = 'Logged-in as a '+ut
@@ -303,8 +303,9 @@ FUNCTION eva_data_login, state, evTop
   return, state
 END
 
+; The purpose of this routine is to extract necessary parameter-set from 
+; all available parameter-sets in the directory.
 FUNCTION eva_data_paramSetList, state
-  user_flag = state.USER_FLAG
   ; 'dir' produces the directory name with a path separator character that can be OS dependent.
   dir = file_search(ProgramRootDir(/twoup)+'parameterSets',/MARK_DIRECTORY,/FULLY_QUALIFY_PATH); directory
   paramFileList_tmp = file_search(dir,'*',/FULLY_QUALIFY_PATH,count=cmax); full path to the files
@@ -323,12 +324,15 @@ FUNCTION eva_data_paramSetList, state
   paramFileList = ['dummy']
   for c=0,cmax-1 do begin; for each file
     spl = strsplit(filename[c],'_',/extract)
-    case spl[0] of
-      'THM': skip = 0
-      'MMS': skip = (user_flag eq 0); skip if guest_user
-      'SITL': skip = (user_flag eq 0) ; skip if guest_user
-      else: skip = 0
-    endcase
+;    case spl[1] of
+;      'THM': skip = 0
+;      'MMS': skip = (state.user_flag eq 0); skip if guest_user (public user)
+;      'SITL': skip = (state.user_flag eq 0) ; skip if guest_user (public user)
+;      else: skip = 0
+;    endcase
+    ;/////////// ; Inserted on 2017 Apr 15
+    skip = 0     ; No need to skip because MMS data is open to public
+    ;/////////// ; 
     if ~skip then begin
       tmp = strjoin(spl,' '); replace '_' with ' '
       paramSetList = [paramSetList, strmid(tmp,0,strlen(tmp)-4)]; remove file extension .txt etc.
@@ -337,6 +341,24 @@ FUNCTION eva_data_paramSetList, state
   endfor
   str_element,/add,state,'paramSetList',paramSetList[1:*]
   str_element,/add,state,'paramFileList',paramFileList[1:*]
+  return, state
+END
+
+FUNCTION eva_data_drpSet, state, evindex
+  print,'EVA: ***** EVENT: drpSet *****'
+  str_element,/add,state,'paramID',evindex
+  fname = state.paramFileList[state.paramID]
+  fname_broken=strsplit(fname,'/',/extract,count=count)
+  fname_param = fname_broken[count-1]
+  result = read_ascii(fname,template=eva_data_template(),count=count)
+  if count gt 0 then begin
+    str_element,/add,state,'paramlist',result.param
+    print, 'EVA: reading '+fname_param
+  endif else begin; if parameterSet list invalid
+    msg = 'The selected parameter-set is not valid. Check the file: '+fname_param
+    result = dialog_message(msg,/center)
+    print,'EVA: '+msg
+  endelse
   return, state
 END
 
@@ -363,10 +385,12 @@ FUNCTION eva_data_event, ev
       print,'EVA: ***** EVENT: drpUserType *****'
       str_element,/add,state,'user_flag',ev.INDEX
       str_element,/add,state,'trangeChanged',1
-      if state.USER_FLAG ne 0 then begin
+      
+      ;;;;;;;;;; userType = ['Public','SITL','Super SITL']
+      if state.USER_FLAG ne 0 then begin; if not 'Public'....  Get time range from FOMstr
         state = eva_data_login(state,ev.TOP)
       endif
-      if state.USER_FLAG eq 0 then begin;userType = ['Guest','MMS member','SITL','Super SITL']
+      if state.USER_FLAG eq 0 then begin; ............... Use default time range
         print,'EVA: resetting cw_data start and end times'
         start_time = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/00:00:00'
         end_time   = strmid(time_string(systime(/seconds,/utc)-86400.d*4.d),0,10)+'/24:00:00'
@@ -374,9 +398,13 @@ FUNCTION eva_data_event, ev
         str_element,/add,state,'end_time',end_time
         eva_data_update_time, state,/update
         state = eva_data_paramSetList(state)
-        widget_control, state.sbMMS, SENSITIVE=0
-        widget_control, state.drpSet, SET_VALUE=state.paramSetList
+        ;widget_control, state.sbMMS, SENSITIVE=0
+        ;widget_control, state.drpSet, SET_VALUE=state.paramSetList
       endif
+      end
+    state.btnUpdateABS: begin
+      msg = 'This feature should be ready by May 2017'
+      result = dialog_message(msg,/center)
       end
     state.fldStartTime: begin
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
@@ -416,26 +444,13 @@ FUNCTION eva_data_event, ev
     end
     state.bgTHM: state = eva_data_probelist(state)
     state.bgMMS: state = eva_data_probelist(state)
-    state.drpSet: begin
-      print,'EVA: ***** EVENT: drpSet *****'
-      str_element,/add,state,'paramID',ev.index
-      fname = state.paramFileList[state.paramID]
-      fname_broken=strsplit(fname,'/',/extract,count=count)
-      fname_param = fname_broken[count-1]
-      result = read_ascii(fname,template=eva_data_template(),count=count)
-      if count gt 0 then begin
-        str_element,/add,state,'paramlist',result.param
-        print, 'EVA: reading '+fname_param
-      endif else begin; if parameterSet list invalid
-        msg = 'The selected parameter-set is not valid. Check the file: '+fname_param
-        result = dialog_message(msg,/center)
-        print,'EVA: '+msg
-      endelse
-    end
+    state.drpSet: state = eva_data_drpSet(state, ev.index)
     state.load: begin
       print,'EVA: --------------'
       print,'EVA:  EVENT: load '
       print,'EVA: --------------'
+      widget_note = 'You must have a valid MMS/SITL account in order to use EVA.'
+      connected = mms_login_lasp(username = username, widget_note = widget_note)
       state = eva_data_load_and_plot(state)
       end
     state.loadforce: begin
@@ -474,7 +489,8 @@ FUNCTION eva_data, parent, $
   ProbeNamesMMS = ['MMS 1', 'MMS 2', 'MMS 3', 'MMS 4']
   SetTimeList = ['Default','SITL Current Target Time', 'SITL Back-Structure Time']
   user_flag = 0
-  userType = ['Guest','MMS member','SITL','Super SITL']
+  ;userType = ['Guest','MMS member','SITL','Super SITL'];'FPI-cal'
+  userType = ['Public','SITL','Super SITL']; MMS data is open to public; No meaning for having Guest 
   
   ;----- PREFERENCES -----
   
@@ -528,9 +544,10 @@ FUNCTION eva_data, parent, $
     XSIZE = xsize, YSIZE = ysize)
   str_element,/add,state,'mainbase',mainbase
   
-  str_element,/add,state,'drpUserType',widget_droplist(mainbase,VALUE=state.userType,$
-    TITLE='User Type ')
-  
+  baseUserType = widget_base(mainbase,/row,SPACE=0, YPAD=0)
+  str_element,/add,state,'drpUserType',widget_droplist(baseUserType,VALUE=state.userType,TITLE='User Type ')
+  spaceUserType = widget_base(baseUserType,xsize=20)
+  str_element,/add,state,'btnUpdateABS',widget_button(baseUserType,VALUE=" Reload ABS ");,ysize=10);,xsize=100)
   
   ; calendar icon
   getresourcepath,rpath
@@ -550,7 +567,7 @@ FUNCTION eva_data, parent, $
   subbase = widget_base(mainbase,/row,/frame, space=0, ypad=0)
     str_element,/add,state,'bgTHM',cw_bgroup(subbase, ProbeNamesTHM, /COLUMN, /NONEXCLUSIVE,$
       SET_VALUE=[0,0,0,0,0],BUTTON_UVALUE=bua,ypad=0,space=0)
-    sbMMS = widget_base(subbase,space=0,ypad=0,SENSITIVE=0)
+    sbMMS = widget_base(subbase,space=0,ypad=0,SENSITIVE=1)
       str_element,/add,state,'sbMMS',sbMMS
       str_element,/add,state,'bgMMS',cw_bgroup(sbMMS, ProbeNamesMMS, /COLUMN, /NONEXCLUSIVE,$
         SET_VALUE=[0,0,1,0],BUTTON_UVALUE=bua,ypad=0,space=0)
