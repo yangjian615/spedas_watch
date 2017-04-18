@@ -82,8 +82,8 @@
 ;                  standard name or id.  Example: OBJECT='-200000'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-04-25 20:00:49 -0700 (Mon, 25 Apr 2016) $
-; $LastChangedRevision: 20921 $
+; $LastChangedDate: 2017-04-17 13:37:18 -0700 (Mon, 17 Apr 2017) $
+; $LastChangedRevision: 23172 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_makeeph.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
@@ -132,6 +132,9 @@ pro maven_orbit_makeeph, tstep=tstep, eph=eph, frame=frame, tstart=tstart, tstop
 
     indx = where(kernels ne '', count)
     if (count gt 0) then kernels = kernels[indx] else return
+
+    indx = uniq(kernels)
+    kernels = kernels[indx] ; only one version of each kernel
 
     cspice_furnsh, kernels
     print," "

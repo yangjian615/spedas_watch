@@ -15,8 +15,8 @@
 ;                 updated.  Set this keyword to rebuild the entire database.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-24 11:26:04 -0700 (Sun, 24 May 2015) $
-; $LastChangedRevision: 17691 $
+; $LastChangedDate: 2017-04-17 13:36:58 -0700 (Mon, 17 Apr 2017) $
+; $LastChangedRevision: 23171 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_update.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-10-13
@@ -39,8 +39,8 @@ pro maven_orbit_update, tstep=tstep, rebuild=rebuild
   
   tmin = min(eph.t, max=tmax)
   
-  k = where(stat.name eq 'maven_orb_rec.bsp')
-  if (k ge 0) then trec = stat[k].trange[1] else trec = 0D
+  k = where(stat.name eq 'maven_orb_rec.bsp',nk)
+  if (nk gt 0) then trec = stat[k[0]].trange[1] else trec = 0D
   if keyword_set(rebuild) then trec = 0D
   
   dmonth = 0
