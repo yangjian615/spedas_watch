@@ -53,7 +53,7 @@
 ;	
 ;-
 
-pro thm_load_esa_pot,sc=sc,probe=probe,themishome=themishome,datatype=datatype,efi_datatype=efi_datatype,pot_scale=pot_scale,offset=offset,min_pot=min_pot,make_plot=make_plot,trange=trange,tr4_min_pot=tr4_min_pot, use_vaf_offset=use_vaf_offset,use_dist2scpot=use_dist2scpot,est_scpot_datatype=est_scpot_datatype
+pro thm_load_esa_pot,sc=sc,probe=probe,themishome=themishome,datatype=datatype,efi_datatype=efi_datatype,pot_scale=pot_scale,offset=offset,min_pot=min_pot,make_plot=make_plot,trange=trange,tr4_min_pot=tr4_min_pot, use_vaf_offset=use_vaf_offset,use_dist2scpot=use_dist2scpot,est_scpot_datatype=est_scpot_datatype,default_v1234=default_v1234
 
 compile_opt idl2, hidden
 
@@ -506,65 +506,46 @@ compile_opt idl2, hidden
               get_data,'th'+probes[i]+'_vaf',data=tmp1,index=index2
 
               if index2 ne 0 then begin
-;			get rid of bad points
+;get rid of bad points
                  bad_frac=1.05 
                  vaf1 = -1.*reform(tmp1.y[*,0])
                  vaf2 = -1.*reform(tmp1.y[*,1])
                  vaf3 = -1.*reform(tmp1.y[*,2])
                  vaf4 = -1.*reform(tmp1.y[*,3])
-
-                 ind1 = where(bad_frac lt 3.*vaf1/(vaf2+vaf3+vaf4),cnt1) ;
-                 ind2 = where(bad_frac lt 3.*vaf2/(vaf1+vaf3+vaf4),cnt2)
-                 ind3 = where(bad_frac lt 3.*vaf3/(vaf4+vaf1+vaf2),cnt3)
-                 ind4 = where(bad_frac lt 3.*vaf4/(vaf3+vaf1+vaf2),cnt4)
-                 if cnt1 gt 0 then vaf1[ind1]=vaf2[ind1]
-                 if cnt2 gt 0 then vaf2[ind2]=vaf1[ind2] ;If both 1 and 2 are bad, then v2 is kept?
-                 if cnt3 gt 0 then vaf3[ind3]=vaf4[ind3]
-                 if cnt4 gt 0 then vaf4[ind4]=vaf3[ind4]
-                 vaf12 = (vaf1+vaf2)/2.
-                 vaf34 = (vaf3+vaf4)/2.
-                 ind5 = where(vaf12/vaf34 gt bad_frac and vaf34 gt 1.,cnt5) 
-                 if cnt5 gt 0 then vaf12[ind5]=vaf34[ind5]		
-                 ind6 = where(vaf34/vaf12 gt bad_frac and vaf12 gt 1.,cnt6) 
-                 if cnt6 gt 0 then vaf34[ind6]=vaf12[ind6]		
-                 vaf1234 = (vaf12+vaf34)/2.
-                 dprint, 'Bad point counts=',cnt1,cnt2,cnt3,cnt4,cnt5,cnt6
-                 t1234 = tmp1.x
-
-;			vaf1234_3a=time_average(tmp1.x,vaf1234,resolution=avg_spin_period,newtime=newtime)
-;			ind = where(finite(vaf1234_3a))
-;			newtime=newtime(ind)
-;			vaf1234_3a=vaf1234_3a(ind)
-;			if keyword_set(make_plot) then store_data,'th'+sc+'_vaf1234_3a_pot',data={x:newtime,y:vaf1234_3a}
-
-
-;2014-09-15, jmm, replaced this whole bad points section with code
-;that gets rid of any point that is bad for any one of v1, v2, v3, or
-;v4. The original code block keeps bad points if all four are bad...
-                 if keyword_set(use_vaf_offset) then begin
-                    ok_pts = where(3.*vaf1/(vaf2+vaf3+vaf4) Lt bad_frac And 3.*vaf2/(vaf1+vaf3+vaf4) Lt bad_frac And $
-                                   3.*vaf3/(vaf4+vaf1+vaf2) Lt bad_frac And 3.*vaf4/(vaf3+vaf1+vaf2) Lt bad_frac, nok)       
-
-                    dprint, 'Ok point count = ', nok, ' of total =', n_elements(vaf1)
-                    If(nok Gt 0) then Begin
-                       vaf1234 = (vaf1[ok_pts]+vaf2[ok_pts]+vaf3[ok_pts]+vaf4[ok_Pts])/4.0
-                       t1234 = tmp1.x[ok_pts]
-                    Endif Else Begin
-                       dprint, 'No good VAF data'
-                       vaf1234 = vaf1 & vaf1234[*] = min_pot
-                       t1234 = tmp1.x
-                    Endelse
-                 endif 
+                 If(probes[i] Eq 'a' And tmp1.x[0] Gt time_double('2016-02-01') And ~keyword_set(default_v1234)) Then Begin
+;use only v34 data for probe = 'a' 
+                    vaf1234 = (vaf3+vaf4)/2.
+                    t1234 = tmp1.x                    
+                 Endif Else Begin
+;get rid of bad points - changed to handle negative potentials correctly, jmm, 2017-04-17
+                    ind1 = where(abs((3.0*vaf1/(vaf2+vaf3+vaf4))-1.0) Gt (bad_frac-1.0), cnt1)
+                    ind2 = where(abs((3.0*vaf2/(vaf1+vaf3+vaf4))-1.0) Gt (bad_frac-1.0), cnt2)
+                    ind3 = where(abs((3.0*vaf3/(vaf1+vaf2+vaf4))-1.0) Gt (bad_frac-1.0), cnt3)
+                    ind4 = where(abs((3.0*vaf4/(vaf1+vaf2+vaf3))-1.0) Gt (bad_frac-1.0), cnt4)
+                    if cnt1 gt 0 then vaf1[ind1]=vaf2[ind1]
+                    if cnt2 gt 0 then vaf2[ind2]=vaf1[ind2] ;If both 1 and 2 are bad, then v2 is kept?
+                    if cnt3 gt 0 then vaf3[ind3]=vaf4[ind3]
+                    if cnt4 gt 0 then vaf4[ind4]=vaf3[ind4]
+                    vaf12 = (vaf1+vaf2)/2.
+                    vaf34 = (vaf3+vaf4)/2.
+                    ind5 = where(vaf12/vaf34 gt bad_frac and vaf34 gt 1.,cnt5) 
+                    if cnt5 gt 0 then vaf12[ind5]=vaf34[ind5]		
+                    ind6 = where(vaf34/vaf12 gt bad_frac and vaf12 gt 1.,cnt6) 
+                    if cnt6 gt 0 then vaf34[ind6]=vaf12[ind6]		
+                    vaf1234 = (vaf12+vaf34)/2.
+                    dprint, 'Bad point counts=',cnt1,cnt2,cnt3,cnt4,cnt5,cnt6
+                    t1234 = tmp1.x
+                 Endelse
 
                  vaf1234_3s=smooth_in_time(vaf1234, t1234, avg_spin_period)
                  if keyword_set(make_plot) then store_data,'th'+sc+'_vaf1234_3s_pot',data={x:t1234,y:vaf1234_3s}
                  if keyword_set(make_plot) then store_data,'th'+sc+'_mom_pot',data={x:time,y:scpot}
-      
+
 ; Previously we were trying to combine on-board data (pxxm) with
 ; ground data (vaf) However, there are some differences on the way
 ; those two are computed which leads to scale differences and produces
 ; spikes.  So, at this point we prefer 1) the vaf data when available,
-; averaged over 3s or 2) the on-board values when this is not
+; smoothed over 3s or 2) the on-board values when this is not
 ; available
                  if index ne 0 then begin
 ;here we have both types of data
@@ -645,28 +626,10 @@ compile_opt idl2, hidden
                     scpot=vaf1234_3s
                  endelse
               endif
-
-;			if index ne 0 then begin
-;;				t3 = [time,newtime]
-;;				d3 = [scpot,vaf1234_3a]
-;				t3 = [time,tmp1.x]
-;				d3 = [scpot,vaf1234_3s]
-;				s = sort(t3)
-;				time=t3[s]
-;				scpot=d3[s]
-;			endif else begin
-;; bug, newtime no longer defined
-;;				time=newtime
-;				time = tmp1.x  		; bug fix by Jim McTiernan, failed when no mom data existed
-;				scpot=vaf1234_3s
-;			endelse
-
-
               scpot=(scale*(scpot+offset)) > min_pot
               store_data,'th'+probes[i]+'_esa_pot',data={x:time,y:scpot}
 ;End of default block
            endif else if string(efi_datatype) eq 'mom' then begin
-
               thm_load_mom,probe=probes[i], trange=trange
               get_data,'th'+probes[i]+'_pxxm_pot',data=tmp,index=index
               if index ne 0 then begin
@@ -751,16 +714,16 @@ compile_opt idl2, hidden
               thm_load_efi,probe=probes[i],datatype='vaf',level=1, trange=trange
               get_data,'th'+probes[i]+'_vaf',data=tmp1,index=index2
               if index2 ne 0 then begin
-;			get rid of bad points
+;get rid of bad points - changed to handle negative potentials correctly, jmm, 2017-04-17
                  bad_frac=1.05 
                  vaf1 = -1.*reform(tmp1.y[*,0])
                  vaf2 = -1.*reform(tmp1.y[*,1])
                  vaf3 = -1.*reform(tmp1.y[*,2])
                  vaf4 = -1.*reform(tmp1.y[*,3])
-                 ind1 = where(bad_frac lt 3.*vaf1/(vaf2+vaf3+vaf4),cnt1)
-                 ind2 = where(bad_frac lt 3.*vaf2/(vaf1+vaf3+vaf4),cnt2)
-                 ind3 = where(bad_frac lt 3.*vaf3/(vaf4+vaf1+vaf2),cnt3)
-                 ind4 = where(bad_frac lt 3.*vaf4/(vaf3+vaf1+vaf2),cnt4)
+                 ind1 = where(abs((3.0*vaf1/(vaf2+vaf3+vaf4))-1.0) Gt (bad_frac-1.0), cnt1)
+                 ind2 = where(abs((3.0*vaf2/(vaf1+vaf3+vaf4))-1.0) Gt (bad_frac-1.0), cnt2)
+                 ind3 = where(abs((3.0*vaf3/(vaf1+vaf2+vaf4))-1.0) Gt (bad_frac-1.0), cnt3)
+                 ind4 = where(abs((3.0*vaf4/(vaf1+vaf2+vaf3))-1.0) Gt (bad_frac-1.0), cnt4)
                  if cnt1 gt 0 then vaf1[ind1]=vaf2[ind1]
                  if cnt2 gt 0 then vaf2[ind2]=vaf1[ind2]
                  if cnt3 gt 0 then vaf3[ind3]=vaf4[ind3]

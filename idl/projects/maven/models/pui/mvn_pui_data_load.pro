@@ -14,7 +14,6 @@ endif
 if ~keyword_set(noswia) then begin
   mvn_swia_load_l2_data,/loadmom,/loadspec,loadcoarse=do3d,/eflux,/tplot,qlevel=0.1 ;load SWIA data
 
-  ylim,'mvn_swim_swi_mode',0,1
   ylim,'mvn_swim_density',.01,100,1
   ylim,'mvn_swim_velocity_mso',100,-800
   options,'mvn_swim_velocity_mso','colors','bgr'
@@ -26,6 +25,7 @@ endif
 if ~keyword_set(nostatic) then begin
   mvn_sta_l2_load,sta_apid='c0' ;load STATIC 1D spectra
   mvn_sta_l2_tplot ;store STATIC data in tplot variables
+  ylim,'mvn_swim_swi_mode',0,1 ;because mvn_sta_l2_tplot messes with 'mvn_swim_swi_mode' !!!
   if keyword_set(do3d) then mvn_sta_l2_load,sta_apid='d1' ;load STATIC 3D spectra
 
   ylim,'mvn_sta_c0_?_E',1,32e3,1
@@ -63,8 +63,8 @@ endif
 
 if ~keyword_set(noswea) then begin
   mvn_swe_load_l2,/spec ;load SWEA spec data
-  mvn_swe_sumplot,eph=0,/loadonly ;plot SWEA data, without calling maven_orbit_tplot and without plotting anything!
-  tlimit,/full ;revert back to full time period, since swea may change tlimit to its available trange
+  mvn_swe_sumplot,eph=0,orb=0,/loadonly ;plot SWEA data, without calling maven_orbit_tplot, changing orbnum tplot variable, or plotting anything!
+;  tlimit,/full ;revert back to full time period, since swea may change tlimit to its available trange
   mvn_swe_sc_pot ;calculate the spacecraft potential from SWEA data
 
   zlim,'swe_a4',1e4,1e9

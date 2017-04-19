@@ -18,6 +18,38 @@ strct = {time:header_str.time, $
 return,strct
 end
 
+function spp_swp_spane_32E, data, header_str=header_str, apdat=apdat,pname=pname
+
+  pname = '32E_'
+  strct = {time:header_str.time, $
+    SPEC:float(data),  $
+    gap: 0}
+
+  ;if apdat.rt_flag && apdat.rt_tags then begin
+  ;  ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
+  ;  store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+  ;endif
+  return,strct
+end
+
+function spp_swp_spane_8Dx32E, data, header_str=header_str, apdat=apdat,pname=pname
+  pname = '8Dx32E_'
+  
+  spec1 = total(reform(data,8*32),2)
+  spec2 = total( total(reform(data,8,32),1) ,2 )
+
+  strct = {time:header_str.time, $
+    spec1:spec1, $
+    spec2:spec2, $
+    gap: 0}
+    
+  ;  if apdat.rt_flag && apdat.rt_tags then begin
+  ;    ;if ccsds.gap eq 1 then strct = [fill_nan(strct),strct]
+  ;    store_data,apdat.tname+pname,data=strct, tagnames=apdat.rt_tags, /append
+  ;  endif
+  return, strct
+
+end
 
 ;;----------------------------------------------
 ;;Product Full Sweep: Archive - 32Ex16A - '361'x
@@ -74,13 +106,17 @@ function spp_swp_spane_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
   if isa(apdat.data,'dynamicarray') && apdat.data.size eq 0  then begin    ; initialization
     hdr = dynamicarray(name='hdr_')
     a0016 = dynamicarray(name='16A_')
+    a0032 = dynamicarray(name='32E_')
+    a0256 = dynamicarray(name='16Ax32E_')
     a0512 = dynamicarray(name='16Ax32E_')
     a4096 = dynamicarray(name='16Ax8Dx32E_') 
-    apdat.data.append, [hdr,a0016,a0512,a4096]
+    apdat.data.append, [hdr,a0016,a0032,a00256,a0512,a4096]
   endif else if isa(apdat.data) then begin
     darrays = apdat.data.array
     hdr = darrays[0]
     a0016 = darrays[1]
+    a0032 = darrays[4]
+    a0256 = darrays[5]
     a0512 = darrays[2]
     a4096 = darrays[3]
   endif
@@ -176,6 +212,14 @@ function spp_swp_spane_product_decom2, ccsds, ptp_header=ptp_header, apdat=apdat
     16: begin
        res = spp_swp_spane_16A(cnts, header_str=str, apdat=apdat,pname=pname)
        spp_save_data,a0016,res,apdat=apdat,pname=pname
+    end
+    32: begin
+       res = spp_swp_spane_32E(cnts, header_str=str, apdat=apdat,pname=pname)
+       spp_save_data,a0032,res,apdat=apdat,pname=pname
+    end
+    256: begin
+        res = spp_swp_spane_8Dx32E(cnts, header_str=str, apdat=apdat,pname=pname)
+      spp_save_data,a0256,res,apdat=apdat,pname=pname
     end
     512: begin
         res = spp_swp_spane_16Ax32E(cnts, header_str=str, apdat=apdat,pname=pname)

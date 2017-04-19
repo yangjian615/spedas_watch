@@ -1,6 +1,7 @@
 ;20170104 Ali
 ;flux calculator: calculates pickup ion number flux, momentum flux, energy flux, density
-;nden is input, dphi is output
+;input: nden is pickup ion source neutral density (cm-3)
+;output: dphi is pickup ion differential number flux (cm-2 s-1)
 
 pro mvn_pui_flux_calculator,nden,dphi
 

@@ -33,8 +33,8 @@
 ;
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2017-04-14 09:02:43 -0700 (Fri, 14 Apr 2017) $
-; $LastChangedRevision: 23157 $
+; $LastChangedDate: 2017-04-18 07:46:43 -0700 (Tue, 18 Apr 2017) $
+; $LastChangedRevision: 23174 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_mse_plot.pro $
 ;
 ;-
@@ -373,25 +373,25 @@ if ptype eq 'scalar' then begin
 	endif
 	
 	window,0,xsize = 600,ysize = 600
-	specplot,xp,yp,binxy[*,*,0],limits = {xrange:xrange,yrange:yrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Y [km]',position:[0.1,0.15,0.85,0.9],charsize:1.5}
+	specplot,xp,yp,binxy[*,*,0],limits = {xrange:xrange,yrange:yrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Y [km]',position:[0.15,0.15,0.9,0.9],charsize:1.5}
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,1,xsize = 600,ysize = 600
-	specplot,xp,zp,binxz[*,*,0],limits = {xrange:xrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Z [km]',position:[0.1,0.15,0.85,0.9],charsize:1.5}
+	specplot,xp,zp,binxz[*,*,0],limits = {xrange:xrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'Z [km]',position:[0.15,0.15,0.9,0.9],charsize:1.5}
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,2,xsize = 840,ysize = 600
-	specplot,xp,rp,bincyl[*,*,0],limits = {xrange:xrange,yrange:rrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'R_YZ [km]',position:[0.1,0.15,0.85,0.9],charsize:1.5}
+	specplot,xp,rp,bincyl[*,*,0],limits = {xrange:xrange,yrange:rrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'X [km]',ytitle:'R_YZ [km]',position:[0.15,0.15,0.9,0.9],charsize:1.5}
 	oplot,RM*cos(ang),RM*sin(ang),thick = 2
 	oplot,xshock,yshock,linestyle = 2,thick = 2
 	oplot,xpileup,ypileup,linestyle = 2,thick = 2
 
 	window,3,xsize = 600,ysize = 600
-	specplot,yp,zp,binyz[*,*,0],limits = {xrange:yrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'Y [km]',ytitle:'Z [km]',position:[0.1,0.15,0.85,0.9],charsize:1.5}
+	specplot,yp,zp,binyz[*,*,0],limits = {xrange:yrange,yrange:zrange,xstyle:1,ystyle:1,zrange:prange,zlog:plog,no_interp:1,xtitle:'Y [km]',ytitle:'Z [km]',position:[0.15,0.15,0.9,0.9],charsize:1.5}
 	plots,RM*cos(ang),RM*sin(ang),thick = 2
 	
 endif else begin

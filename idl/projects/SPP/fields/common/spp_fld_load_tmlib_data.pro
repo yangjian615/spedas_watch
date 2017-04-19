@@ -1,3 +1,10 @@
+;
+;  $LastChangedBy: pulupalap $
+;  $LastChangedDate: 2017-04-18 14:29:39 -0700 (Tue, 18 Apr 2017) $
+;  $LastChangedRevision: 23183 $
+;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
+;
+
 function spp_fld_load_tmlib_data, l1_data_type,  $
   varformat = varformat, cdf_att = cdf_att, times = times, idl_att = idl_att, $
   success = success
@@ -147,7 +154,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   err = tm_select_domain(sid, "SPP", "SPP", "Fields", tmlib_event)
   dprint, 'Select MSIE status: ', dlevel = 3
   dprint, 'Stream ID: ', dlevel = 3
-  if err NE 0 then print_error_stack, err, sid
+  if err NE 0 then spp_fld_print_error_stack, err, sid
 
   ; Select a time range
   err = tm_select_stream_timerange(sid, t0, t1)

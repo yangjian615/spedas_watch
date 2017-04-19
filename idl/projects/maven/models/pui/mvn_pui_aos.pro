@@ -2,11 +2,12 @@
 ;creates the time array of structures containting the reduced time resolution data and model results.
 ;also defines instrument and model constants.
 
-pro mvn_pui_aos,nt=nt,np=np,binsize=binsize,trange=trange,do3d=do3d
+pro mvn_pui_aos,nt=nt,np=np,ns=ns,binsize=binsize,trange=trange,do3d=do3d
 
 if n_elements(nt) eq 0 then nt=1
 if n_elements(np) eq 0 then np=1
 if n_elements(binsize) eq 0 then binsize=0.
+if n_elements(trange) eq 0 then trange=0.
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -28,7 +29,7 @@ pui0={              $ ;instrument and model constants structure
   totdee:.1,        $ ;total flux binning dE/E
   np:np,            $ ;number of simulated particles
   nt:nt,            $ ;number of time steps
-  ns:2,             $ ;number of species [0:hydrogen, 1:oxygen, 2:other stuff]
+  ns:ns,            $ ;number of species [0:hydrogen, 1:oxygen, 2:other stuff]
   ngps:[1.,1.],     $ ;number of gyro-periods solved
   mamu:[1.,16.],    $ ;mass of [H=1 C=12 N=14 O=16] (amu)
   msub:0,           $ ;species subscript (0=H, 1=O)

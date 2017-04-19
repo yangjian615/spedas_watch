@@ -1,4 +1,10 @@
-pro print_error_stack,err, stream_id
+;
+;  $LastChangedBy: pulupalap $
+;  $LastChangedDate: 2017-04-18 14:29:39 -0700 (Tue, 18 Apr 2017) $
+;  $LastChangedRevision: 23183 $
+;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_print_error_stack.pro $
+;
+pro spp_fld_print_error_stack,err, stream_id
 
   ErrorBuffSize = 2500
   print, "Error = ", err

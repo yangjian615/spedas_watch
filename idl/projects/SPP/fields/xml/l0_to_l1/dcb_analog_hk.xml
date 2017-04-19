@@ -14,14 +14,14 @@
       Data_version = "0"
       TEXT = "SPP FIELDS DCB Analog Housekeeping Data"
       Mods = "Revision 0"
-      Logical_source = "SPP_FLD_DCB_HK"
+      Logical_source = "SPP_FLD_DCB_ANALOG_HK"
       Logical_source_description = "SPP FIELDS DCB Analog Housekeeping"
       Dependencies = "None"
       >
   </cdf_global>
 
   <idl_att
-      convert_routine = 'spp_fld_dcb_hk_convert'>
+      convert_routine = 'spp_fld_dcb_analog_hk_convert'>
   </idl_att>
 
   <cdf_var

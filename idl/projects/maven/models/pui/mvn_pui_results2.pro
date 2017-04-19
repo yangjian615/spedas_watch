@@ -1,36 +1,28 @@
-;20160525 Ali
-;manipulating pickup ion model results, doing statistics, etc.
+;20170417 Ali
+;statistical analysis of pickup ion model results
 ;can be used to compute exospheric neutral densities using a reverse method
 
 pro mvn_pui_results2
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
-ebinlimo=20 ;energy bin limit for oxygen
-ebinlimh=23 ;energy bin limit for hydrogen
-radmin=5e3 ;minimum radius (km)
-radmax=20e3;maximum radius (km)
-szamax=70; max sza (degree)
+  kefswih3d=transpose(pui.model[0].fluxes.swi3d.eflux,[3,0,1,2])
+  kefswio3d=transpose(pui.model[1].fluxes.swi3d.eflux,[3,0,1,2])
+  kefstah3d=transpose(pui.model[0].fluxes.sta3d.eflux,[3,0,1,2])
+  kefstao3d=transpose(pui.model[1].fluxes.sta3d.eflux,[3,0,1,2])
 
-;mvn_pui_model,/do3d,/exoden,binsize=32,trange=tr
-;mvn_pui_tplot,/tplot1d
+  ;swap swia dimentions to match the model (time-energy-az-el)
+  ;also, reverse the order of elevation (deflection) angles to start from positive theta (like static)
+  swiaef3d=reverse(transpose(pui.data.swi.swica.data,[3,0,2,1]),4)
+  d1eflux=transpose(pui.data.sta.d1.eflux,[4,0,1,2,3])
 
-kefswih3d=pui.model[0].fluxes.swi3d.eflux
-kefswio3d=pui.model[1].fluxes.swi3d.eflux
-kefstah3d=pui.model[0].fluxes.sta3d.eflux
-kefstao3d=pui.model[1].fluxes.sta3d.eflux
+swio=swiaef3d/kefswio3d/(~kefswih3d) ;exospheric neutral O density (cm-3) data/model ratio
+swih=swiaef3d/kefswih3d/(~kefswio3d)
+stao=d1eflux[*,*,*,*,4]/kefstao3d
+stah=d1eflux[*,*,*,*,0]/kefstah3d
 
-;swap swia dimentions to match the model (energy-az-el-time)
-;also, reverse the order of elevation (deflection) angles
-swiaef3d=reverse(transpose(pui.data.swi.swica.data,[0,2,1,3]),3)
-
-d1eflux=pui.data.sta.d1.eflux
-
-no=swiaef3d/kefswio3d/(~kefswih3d) ;exospheric neutral O density (cm-3) data/model ratio
-nh=swiaef3d/kefswih3d/(~kefswio3d) ;exospheric neutral H density (cm-3) data/model ratio
-
-subset=no[0:3,*,*,*]
-p=plot(subset,/ylog,'.')
+subset=stah[*,0:24,*,*]
+p=plot(transpose(subset),/ylog,'.')
 avg=exp(mean(alog(subset),/nan))
 stop
 

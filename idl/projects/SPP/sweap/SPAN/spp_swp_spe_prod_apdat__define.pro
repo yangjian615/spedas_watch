@@ -44,7 +44,26 @@ pro spp_swp_spe_prod_apdat::prod_32E, strct
 end
 
 
+;;----------------------------------------------
+;;Product Full Sweep: Archive - 32Ex16A -
+pro spp_swp_spe_prod_apdat::prod_8Dx32E, strct
+  pname = '8Dx32E_'
+  cnts = *strct.pdata
 
+  cnts = reform(cnts,8,32,/over)
+  strct.anode_spec = 0.
+  strct.nrg_spec = total(cnts,1)
+  strct.def_spec =  total(cnts,2)
+
+
+  strct2 = {time:strct.time, $  ; add more in the future
+    cnts:cnts, $
+    gap: strct.gap}
+
+  self.prod_16Ax32E.append, strct2
+  ; if self.rt_flag then  self.store_data, strct2, pname
+
+end
 
 ;;----------------------------------------------
 ;;Product Full Sweep: Archive - 32Ex16A -
@@ -181,6 +200,7 @@ pro spp_swp_spe_prod_apdat::handler,ccsds,ptp_header
     case strct.ndat  of
       16:   self.prod_16a,  strct
       32:   self.prod_32e,  strct
+      256:  self.prod_8Dx32E, strct
       512:  self.prod_16Ax32E, strct
       4096: self.prod_16Ax8Dx32E, strct
       else:  dprint,dlevel=2,'Size not recognized: ',strct.ndat
@@ -207,7 +227,8 @@ end
 FUNCTION spp_swp_spe_prod_apdat::Init,apid,name,_EXTRA=ex
   void = self->spp_gen_apdat::Init(apid,name)   ; Call our superclass Initialization method.
   self.prod_16A        = obj_new('dynamicarray',name='prod_16A_')
-  self.prod_32E        = obj_new('dynamicarray',name='prod_32E_')
+  self.prod_32E       =  obj_new('dynamicarray',name='prod_32E_')
+  self.prod_8Dx32E    =  obj_new('dynamicarray',name='prod_8Dx32E_')
   self.prod_16Ax32E    = obj_new('dynamicarray',name='prod_16Ax32E_')
   self.prod_16Ax8Dx32E=  obj_new('dynamicarray',name='prod_16Ax8Dx32E_')
   RETURN, 1
@@ -219,6 +240,7 @@ PRO spp_swp_spe_prod_apdat::Clear
   self->spp_gen_apdat::Clear
   self.prod_16A.array     = !null
   self.prod_32E.array     = !null
+  self.prod_8Dx32E.array  = !null
   self.prod_16Ax32E.array = !null
   self.prod_16Ax8Dx32E.array = !null
 END
@@ -242,6 +264,7 @@ void = {spp_swp_spe_prod_apdat, $
   inherits spp_gen_apdat, $    ; superclass
   prod_16A     : obj_new(), $
   prod_32E     : obj_new(), $
+  prod_8Dx32E  :obj_new(), $
   prod_16Ax32E : obj_new(), $
   prod_16Ax8Dx32E:  obj_new() $
   }

@@ -6,10 +6,12 @@
 ;   swia3d: plots SWIA pickup hydrogen and oxygen 3d spectra
 ;   stah3d: plots STATIC 3d spectra, pickup hydrogen, D1 data product, mass channel=0 or sum of 0,1,2
 ;   stao3d: plots STATIC 3d spectra  pickup oxygen,   D1 data product, mass channel=4 or sum of 3,4,5
+;   datimage: plots 3d data images instead of tplots (use instead of 'store' with one of the above 3d keywords)
+;   modimage: plots 3d model images instead of tplots
+;   d2mimage: plots 3d images of data to model ratios
 ;   tohban: plots Tohban-related data
-;   datimage and modimage: plot 3d images instead of tplots (use instead of 'store' with one of the above 3d keywords)
 
-pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,tohban=tohban,datimage=datimage,modimage=modimage
+pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,datimage=datimage,modimage=modimage,d2mimage=d2mimage,tohban=tohban
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -57,6 +59,7 @@ store_data,'Pickup_Number_Density_(cm-3)',data={x:centertime,y:[[transpose(pui.m
 store_data,'Pickup_Number_Flux_(cm-2.s-1)',data={x:centertime,y:[[transpose(pui.model[0:1].params.totphi)],[fsw]]},limits={yrange:[1e4,1e9],ylog:1,labels:['H+','O+','SWIA'],colors:'brg',labflag:1}
 store_data,'Pickup_Momentum_Flux_(g.cm-1.s-2)',data={x:centertime,y:[[transpose(pui.model[0:1].params.totmph)],[mfsw]]},limits={yrange:[1e-11,1e-7],ylog:1,labels:['H+','O+','SWIA'],colors:'brg',labflag:1}
 store_data,'Pickup_Energy_Flux_(eV.cm-2.s-1)',data={x:centertime,y:[[transpose(pui.model[0:1].params.toteph)],[efsw]]},limits={yrange:[1e8,1e12],ylog:1,labels:['H+','O+','SWIA'],colors:'brg',labflag:1}
+store_data,'O+_Max_Energy_(keV)',centertime,pui.model[1].params.kemax/1e3 ;pickup oxygen max energy (keV)
 
 store_data,'mvn_model_puh_tot',data={x:centertime,y:transpose(pui.model[0].fluxes.toteflux),v:pui1.totet},limits={ylog:1,zlog:1,spec:1,yrange:[10.,30e3],zrange:[1e2,1e6],ztitle:'Eflux'}
 store_data,'mvn_model_puo_tot',data={x:centertime,y:transpose(pui.model[1].fluxes.toteflux),v:pui1.totet},limits={ylog:1,zlog:1,spec:1,yrange:[100.,300e3],zrange:[1e2,1e6],ztitle:'Eflux'}
@@ -64,9 +67,11 @@ store_data,'mvn_model_puo_tot',data={x:centertime,y:transpose(pui.model[1].fluxe
 
 rmars=3400e3 ;mars radius (m)
 for i=0,1 do begin ;loop over 2 seps
+  sepx=pui.model[1].fluxes.sep[i].rv[0:2]
+  sepv=pui.model[1].fluxes.sep[i].rv[3:5]
 store_data,'mvn_model_puo_sep'+strtrim(i+1,2),data={x:centertime,y:transpose(pui.model[1].fluxes.sep[i].model_rate),v:pui1.sepet[i].sepbo},limits={spec:1,ylog:1,zlog:1,yrange:[10,1e3],zrange:[.1,1e4],ztitle:'counts/s',ztickunits:'scientific',ytickunits:'scientific'}
-store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_source_MSO_(Rm)',data={x:centertime,y:[[transpose(pui.model[1].fluxes.sep[i].rv[0:2])],[sqrt(total(pui.model[1].fluxes.sep[i].rv[0:2]^2,1))]]/rmars},limits={labels:['x','y','z','r'],colors:'bgrk',labflag:1}
-store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_MSO_(km/s)',data={x:centertime,y:[[transpose(pui.model[1].fluxes.sep[i].rv[3:5])],[sqrt(total(pui.model[1].fluxes.sep[i].rv[3:5]^2,1))]]/1e3},limits={labels:['x','y','z','v'],colors:'bgrk',labflag:1}
+store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_source_MSO_(Rm)',data={x:centertime,y:[[transpose(sepx)],[sqrt(total(sepx^2,1))]]/rmars},limits={labels:['x','y','z','r'],colors:'bgrk',labflag:1}
+store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_MSO_(km/s)',data={x:centertime,y:[[transpose(sepv)],[sqrt(total(sepv^2,1))]]/1e3},limits={labels:['x','y','z','v'],colors:'bgrk',labflag:1}
 store_data,'mvn_model_puh_raw_sep'+strtrim(i+1,2),data={x:centertime,y:transpose(pui.model[0].fluxes.sep[i].incident_rate)},limits={spec:1,zlog:1,yrange:[0,10],zrange:[1,1e4]}
 store_data,'mvn_model_puo_raw_sep'+strtrim(i+1,2),data={x:centertime,y:transpose(pui.model[1].fluxes.sep[i].incident_rate)},limits={spec:1,zlog:1,yrange:[0,200],zrange:[1,1e4]}
 ;store_data,'mvn_model_pux_raw_sep'+strtrim(i+1,2),centertime,transpose(pui.model[2].fluxes.sep[i].incident_rate)
@@ -103,7 +108,7 @@ ylim,'*_sta_c0',1,35e3,1
 zlim,'*_sta_c0',1e3,1e8,1
 
 ;*************STORE 3D DATA*************
-if keyword_set (datimage) or keyword_set (modimage) then img=1
+if keyword_set (datimage) or keyword_set (modimage) or keyword_set (d2mimage) then img=1
 if switch3d and (keyword_set(store) or keyword_set(img)) then begin
   store_data,'mvn_s*_model*_A*D*',/delete
   store_data,'mvn_s*_data*_A*D*',/delete
@@ -131,9 +136,10 @@ if switch3d and (keyword_set(store) or keyword_set(img)) then begin
       if keyword_set(swia3d) then begin
         kefswi3d=kefswih3d[*,*,jj,k]+kefswio3d[*,*,jj,k]
         if keyword_set(img) then begin
-          if j eq 0 and k eq 0 then p=window()
+          if j eq 0 and k eq 0 then p=window(background_color='k')
           if keyword_set(modimage) then p=image(alog10(kefswi3d),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=4,max=7,axis_style=0,background_color='b',/order)
           if keyword_set(datimage) then p=image(alog10(swiaef3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=4,max=7,axis_style=0,background_color='b',/order)
+          if keyword_set(d2mimage) then p=image(alog10(swiaef3d[*,*,jj,k]/kefswi3d),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
         endif else begin
           store_data,'mvn_swia_model_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,kefswi3d,pui1.swiet,verbose=verbose
           if keyword_set(swica) then store_data,'mvn_swia_data_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,swiaef3d[*,*,jj,k],swicaen,verbose=verbose
@@ -146,9 +152,10 @@ if switch3d and (keyword_set(store) or keyword_set(img)) then begin
 
       if keyword_set(stao3d) then begin
         if keyword_set(img) then begin
-          if j eq 0 and k eq 0 then p=window()
+          if j eq 0 and k eq 0 then p=window(background_color='k')
           if keyword_set(modimage) then p=image(alog10(kefstao3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=4,max=7,axis_style=0,background_color='b',/order)
           if keyword_set(datimage) then p=image(alog10(d1eflux[*,*,jj,k,4]),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=4,max=7,axis_style=0,background_color='b',/order)
+          if keyword_set(d2mimage) then p=image(alog10(d1eflux[*,*,jj,k,4]/kefstao3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
         endif else begin
           store_data,'mvn_stat_model_puo_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,kefstao3d[*,*,jj,k],d1energy,verbose=verbose
           ;        if keyword_set(mvn_d1_dat) then store_data,'mvn_stat_data_HImass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,total(d1eflux[*,*,jj,k,3:5],5),d1energy,verbose=verbose
@@ -158,9 +165,10 @@ if switch3d and (keyword_set(store) or keyword_set(img)) then begin
         
       if keyword_set(stah3d) then begin
         if keyword_set(img) then begin
-          if j eq 0 and k eq 0 then p=window()
+          if j eq 0 and k eq 0 then p=window(background_color='k')
           if keyword_set(modimage) then p=image(alog10(kefstah3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=4,max=7,axis_style=0,background_color='b',/order)
           if keyword_set(datimage) then p=image(alog10(d1eflux[*,*,jj,k,0]),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=4,max=7,axis_style=0,background_color='b',/order)
+          if keyword_set(d2mimage) then p=image(alog10(d1eflux[*,*,jj,k,0]/kefstah3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=0.1,rgb_table=33,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
         endif else begin
           store_data,'mvn_stat_model_puh_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,kefstah3d[*,*,jj,k],d1energy,verbose=verbose
           ;        if keyword_set(mvn_d1_dat) then store_data,'mvn_stat_data_LOmass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,total(d1eflux[*,*,jj,k,0:2],5),d1energy,verbose=verbose
@@ -227,7 +235,7 @@ tplot,window=20,'mvn_mag_Btot_(nT) Sin(thetaUB) E_Motional_(V/km) Pickup_* Ioniz
 wi,30 ;tplot other stuff
 tplot,window=30,'mvn_model_pu?_tot mvn_model_pu*_raw_sep1 mvn_model_puo_sep1_source_MSO_(Rm) mvn_model_puo_sep1_MSO_(km/s) mvn_model_pu*_raw_sep2 mvn_model_puo_sep2_source_MSO_(Rm) mvn_model_puo_sep2_MSO_(km/s) redures_d1H_sta_c0 redures_d1L_sta_c0'
 wi,0 ;tplot main results (model-data comparison)
-tplot,window=0,'alt2 mvn_redures_swea_pot mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_redures_swia mvn_model_swia mvn_mag_MSO_(nT) mvn_data_redures_sep1 mvn_model_puo_sep1 mvn_data_redures_sep2 mvn_model_puo_sep2 mvn_SEPS_svy_ATT mvn_redures_H_sta_c0 mvn_model_H_sta_c0 mvn_redures_L_sta_c0 mvn_model_L_sta_c0'
+tplot,window=0,'alt2 mvn_redures_swea_pot mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_redures_swia mvn_model_swia mvn_mag_MSO_(nT) mvn_data_redures_sep1 mvn_model_puo_sep1 mvn_SEPS_svy_ATT mvn_data_redures_sep2 mvn_model_puo_sep2 O+_Max_Energy_(keV) mvn_redures_H_sta_c0 mvn_model_H_sta_c0 mvn_redures_L_sta_c0 mvn_model_L_sta_c0'
 endif
 
 if keyword_set(tohban) then tplot,'alt2 swea_a4_pot mvn_swis_en_eflux mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_sep1_A-F_Rate_Energy mvn_sep1_B-O_Rate_Energy mvn_mag_MSO_(nT) mvn_mag_Btot_(nT) mvn_redures_L_sta_c0 mvn_redures_H_sta_c0'
