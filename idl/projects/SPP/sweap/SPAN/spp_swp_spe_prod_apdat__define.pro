@@ -49,12 +49,13 @@ end
 pro spp_swp_spe_prod_apdat::prod_8Dx32E, strct
   pname = '8Dx32E_'
   cnts = *strct.pdata
+  cnts_orig = cnts
 
   cnts = reform(cnts,8,32,/over)
   strct.anode_spec = 0.
   strct.nrg_spec = total(cnts,1)
   strct.def_spec =  total(cnts,2)
-
+  strct.full_spec = cnts_orig
 
   strct2 = {time:strct.time, $  ; add more in the future
     cnts:cnts, $
@@ -182,6 +183,7 @@ str = { $
   anode_spec:  fltarr(16),  $  
   nrg_spec:    fltarr(32),  $
   def_spec:    fltarr(8) ,  $
+  full_spec:   fltarr(256), $
   pdata:        ptr_new(cnts), $
   gap:         ccsds.gap  }
 

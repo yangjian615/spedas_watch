@@ -55,7 +55,7 @@
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "AEB1 PA1_TMON Voltage, in C"
+        CATDESC = "AEB1 PA1_TMON Temperature, in C"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -76,7 +76,7 @@
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "AEB1 PA2_TMON Voltage, in C"
+        CATDESC = "AEB1 PA2_TMON Temperature, in C"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -97,7 +97,7 @@
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "AEB1 XFL_TMON Voltage, in C"
+        CATDESC = "AEB1 XFL_TMON Temperature, in C"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -118,7 +118,7 @@
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "AEB1 AEB1_TMON Voltage, in C"
+        CATDESC = "AEB1 AEB1_TMON Temperature, in C"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -139,7 +139,7 @@
         SCALEMIN = "-1000"
         SCALEMAX = "1000"
         UNITS = "mA"
-        CATDESC = "AEB1 XFL_IMON Voltage, in mA"
+        CATDESC = "AEB1 XFL_IMON Current, in mA"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -496,7 +496,7 @@
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "AEB1 PA5_TMON Voltage, in C"
+        CATDESC = "AEB1 PA5_TMON Temperature, in C"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -517,7 +517,7 @@
         SCALEMIN = "-1000"
         SCALEMAX = "1000"
         UNITS = "mA"
-        CATDESC = "AEB1 ZFL_IMON Voltage, in mA"
+        CATDESC = "AEB1 ZFL_IMON Current, in mA"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -538,7 +538,7 @@
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "AEB1 ZFL_TMON Voltage, in C"
+        CATDESC = "AEB1 ZFL_TMON Temperature, in C"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>

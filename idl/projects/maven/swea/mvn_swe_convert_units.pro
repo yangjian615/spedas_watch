@@ -23,8 +23,8 @@
 ;	Returns the same data structure in the new units
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-16 18:56:17 -0700 (Sun, 16 Apr 2017) $
-; $LastChangedRevision: 23166 $
+; $LastChangedDate: 2017-04-19 13:58:52 -0700 (Wed, 19 Apr 2017) $
+; $LastChangedRevision: 23195 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_convert_units.pro $
 ;
 ;-
@@ -57,21 +57,28 @@ pro mvn_swe_convert_units, data, units, scale=scale
 ; Use the same energy scale factor for adjacent energy steps that are binned.
 ; (This is not needed for denergy, which is used only for units of e2flux.)
 
+  n_a = 1
+  n_e = 64
   grp = replicate(0, n_elements(data))
+
+  str_element, data[0], 'nbins', n_a
+  str_element, data[0], 'nenergy', n_e
   str_element, data, 'group', grp
+
   indx = where(grp eq 1, count)
   if (count gt 0) then begin
     unity = replicate(1.,2)
-    energy1 = reform(energy[*,*,indx], 64, 16*count)
-    for i=0,63,2 do energy1[i:(i+1),*] = unity # average(energy1[i:(i+1),*],1)
-    energy[*,*,indx] = reform(energy1, 64, 16, count)
+    energy1 = reform(energy[*,*,indx], n_e, n_a*count)
+    for i=0,(n_e-1),2 do energy1[i:(i+1),*] = unity # average(energy1[i:(i+1),*],1)
+    energy[*,*,indx] = reform(energy1, n_e, n_a, count)
   endif
+
   indx = where(grp eq 2, count)
   if (count gt 0) then begin
     unity = replicate(1.,4)
-    energy1 = reform(energy[*,*,indx], 64, 16*count)
-    for i=0,63,4 do energy1[i:(i+3),*] = unity # average(energy1[i:(i+3),*],1)
-    energy[*,*,indx] = reform(energy1, 64, 16, count)
+    energy1 = reform(energy[*,*,indx], n_e, n_a*count)
+    for i=0,(n_e-1),4 do energy1[i:(i+3),*] = unity # average(energy1[i:(i+3),*],1)
+    energy[*,*,indx] = reform(energy1, n_e, n_a, count)
   endif
 
 ; Calculate the conversion factors

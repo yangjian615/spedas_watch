@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2017-04-15 09:37:28 -0700 (Sat, 15 Apr 2017) $
-; $LastChangedRevision: 23164 $
+; $LastChangedDate: 2017-04-18 22:47:44 -0700 (Tue, 18 Apr 2017) $
+; $LastChangedRevision: 23192 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -230,7 +230,7 @@ FUNCTION eva_data_login, state, evTop
     ;---------------------
     ; Update DATA MODULE
     ;---------------------
-    state.paramID = 0
+    ;state.paramID = 0
     state = eva_data_paramSetList(state)
     widget_control, state.sbMMS, SENSITIVE=1
     ;widget_control, state.drpSet, SET_VALUE=state.paramSetList
@@ -402,10 +402,10 @@ FUNCTION eva_data_event, ev
         ;widget_control, state.drpSet, SET_VALUE=state.paramSetList
       endif
       end
-    state.btnUpdateABS: begin
-      msg = 'This feature should be ready by May 2017'
-      result = dialog_message(msg,/center)
-      end
+;    state.btnUpdateABS: begin
+;      msg = 'This feature should be ready by May 2017'
+;      result = dialog_message(msg,/center)
+;      end
     state.fldStartTime: begin
       widget_control, ev.id, GET_VALUE=new_time;get new eventdate
       str_element,/add,state,'start_time',new_time
@@ -546,8 +546,8 @@ FUNCTION eva_data, parent, $
   
   baseUserType = widget_base(mainbase,/row,SPACE=0, YPAD=0)
   str_element,/add,state,'drpUserType',widget_droplist(baseUserType,VALUE=state.userType,TITLE='User Type ')
-  spaceUserType = widget_base(baseUserType,xsize=20)
-  str_element,/add,state,'btnUpdateABS',widget_button(baseUserType,VALUE=" Reload ABS ");,ysize=10);,xsize=100)
+  ;spaceUserType = widget_base(baseUserType,xsize=20)
+  ;str_element,/add,state,'btnUpdateABS',widget_button(baseUserType,VALUE=" Reload ABS ");,ysize=10);,xsize=100)
   
   ; calendar icon
   getresourcepath,rpath

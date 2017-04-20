@@ -3,8 +3,8 @@
 ; activate = 2; sensitive (initialize)
 ; 
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2017-04-15 09:34:58 -0700 (Sat, 15 Apr 2017) $
-; $LastChangedRevision: 23163 $
+; $LastChangedDate: 2017-04-18 22:08:12 -0700 (Tue, 18 Apr 2017) $
+; $LastChangedRevision: 23190 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_sitl/eva_sitl_update_board.pro $
 ;
 PRO eva_sitl_update_board, state, activate
@@ -161,11 +161,11 @@ PRO eva_sitl_update_board, state, activate
   endif
   
   ; Make sure 'val' tag exists when activate = 1
-  if activate eq 1 then begin
-    tgn = tag_names(state)
-    i = where(strmatch(tgn,'val'),ct)
-    if ct eq 0 then activate = 0
-  endif
+;  if activate eq 1 then begin
+;    tgn = tag_names(state)
+;    i = where(strmatch(tgn,'val'),ct)
+;    if ct eq 0 then activate = 0
+;  endif
   
   ; Update
   if activate eq 1 then begin

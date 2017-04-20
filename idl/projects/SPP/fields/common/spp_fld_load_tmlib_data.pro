@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupalap $
-;  $LastChangedDate: 2017-04-18 14:29:39 -0700 (Tue, 18 Apr 2017) $
-;  $LastChangedRevision: 23183 $
+;  $LastChangedBy: spfuser $
+;  $LastChangedDate: 2017-04-19 16:48:26 -0700 (Wed, 19 Apr 2017) $
+;  $LastChangedRevision: 23199 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -21,7 +21,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   cdf_xml_l0_to_l1_dir = cdf_xml_dir + 'l0_to_l1/'
 
-  cdf_xml = cdf_xml_l0_to_l1_dir + l1_data_type + '.xml'
+  cdf_xml = cdf_xml_l0_to_l1_dir + 'l1_' + l1_data_type + '.xml'
 
   ;
   ; Prepare data structure for storing the data
@@ -52,6 +52,18 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   endelse
 
+  if (xml_data['items']).HasKey('cdf_var') then begin
+
+    xml_cdf_vars = (xml_data['items'])['cdf_var']
+
+  endif else begin
+
+    dprint, 'No CDF variable information found in XML file', dlevel = 2
+
+    return, 0
+
+  endelse
+
   if (xml_data['items']).HasKey('idl_att') then begin
 
     idl_att = (xml_data['items'])['idl_att']
@@ -62,7 +74,6 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   endelse
 
-  xml_cdf_vars = (xml_data['items'])['cdf_var']
 
   ; From the list, make a hash object (data_hash).  We make the hash so that
   ; we can index by the item name.  Also make a list of the hash keys (item

@@ -798,7 +798,7 @@ FUNCTION eva_sitl, parent, $
   hlSet = ['Default','isPending','inPlaylist','Held','Complete','Overwritten']
   hlSet2 = ['Default','isPending','inPlaylist','Held','Complete','New','Modified',$
     'Deleted','Aborted','Finished','Incomplete','Derelict', 'Demoted','Realloc', 'Deferred']
-  svSet = ['Save As', 'Restore From'];svSet = ['Save','Restore','Save As', 'Restore From']
+  svSet = ['Restore From','Save As'];svSet = ['Save','Restore','Save As', 'Restore From']
   
   mainbase = WIDGET_BASE(parent, UVALUE = uval, UNAME = uname, TITLE=title,$
     EVENT_FUNC = "eva_sitl_event", $
