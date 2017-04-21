@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-04-19 16:48:26 -0700 (Wed, 19 Apr 2017) $
-;  $LastChangedRevision: 23199 $
+;  $LastChangedBy: pulupa $
+;  $LastChangedDate: 2017-04-20 14:59:32 -0700 (Thu, 20 Apr 2017) $
+;  $LastChangedRevision: 23203 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -170,14 +170,14 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   ; Select a time range
   err = tm_select_stream_timerange(sid, t0, t1)
   dprint, 'Select timerange status: ', dlevel = 3
-  if err NE 0 then print_error_stack, err, sid
+  if err NE 0 then spp_fld_print_error_stack, err, sid
 
   ; Find an event
   serr = tm_find_event(sid)
   dprint, 'First event status', dlevel = 3
   if serr NE 0 then begin
 
-    print_error_stack, serr, sid
+    spp_fld_print_error_stack, serr, sid
     return, 0
 
   end

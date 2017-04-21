@@ -33,9 +33,9 @@
 ; CREATED BY:
 ;   pulupa
 ;
-; $LastChangedBy: pulupa $
-; $LastChangedDate: 2017-04-14 16:44:14 -0700 (Fri, 14 Apr 2017) $
-; $LastChangedRevision: 23160 $
+; $LastChangedBy: spfuser $
+; $LastChangedDate: 2017-04-20 17:10:16 -0700 (Thu, 20 Apr 2017) $
+; $LastChangedRevision: 23205 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_put_data.pro $
 ;-
 pro spp_fld_cdf_put_data, fileid, data, close = close
@@ -62,6 +62,8 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
       if non_null_count GT 0 then begin
 
         if data_item.HasKey('convert_routine') then begin
+
+          ; TODO: Check for presence of convert routine, print error if not found
 
           raw_data_array = data_item['data'].ToArray()
           data_array = call_function(data_item['convert_routine'], raw_data_array)

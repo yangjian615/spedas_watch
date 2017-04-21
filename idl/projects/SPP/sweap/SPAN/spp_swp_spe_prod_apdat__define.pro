@@ -155,7 +155,7 @@ ndat = ns / bps
 if ns gt 0 then begin
   data      = ccsds_data[20:*]
   ; data_size = n_elements(data)
-  if compression then    cnts = spp_swp_log_decomp(data,0) $
+  if compression then    cnts = float( spp_swp_log_decomp(data,0) ) $
   else    cnts = float(swap_endian(ulong(data,0,ndat) ,/swap_if_little_endian ))
   tcnts = total(cnts)
 endif else begin
