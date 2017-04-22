@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-04-20 14:59:32 -0700 (Thu, 20 Apr 2017) $
-;  $LastChangedRevision: 23203 $
+;  $LastChangedBy: spfuser $
+;  $LastChangedDate: 2017-04-21 11:43:26 -0700 (Fri, 21 Apr 2017) $
+;  $LastChangedRevision: 23207 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -240,7 +240,10 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
         nelem = spp_fld_tmlib_item_nelem(data_hash[data_name])
 
-        delvarx, returned_item
+    ; TODO: Make sure this is doing the right thing
+    
+        returned_item = !NULL
+        ;delvarx, returned_item
 
         err = tm_get_item_i4(sid, data_name, returned_item, nelem, n_returned)
 

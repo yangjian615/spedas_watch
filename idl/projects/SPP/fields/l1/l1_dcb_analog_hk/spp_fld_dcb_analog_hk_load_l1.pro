@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-04-20 14:59:32 -0700 (Thu, 20 Apr 2017) $
-;  $LastChangedRevision: 23203 $
+;  $LastChangedBy: spfuser $
+;  $LastChangedDate: 2017-04-21 11:43:26 -0700 (Fri, 21 Apr 2017) $
+;  $LastChangedRevision: 23207 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/l1/l1_dcb_analog_hk/spp_fld_dcb_analog_hk_load_l1.pro $
 
 pro spp_fld_dcb_analog_hk_load_l1, file
@@ -12,7 +12,7 @@ pro spp_fld_dcb_analog_hk_load_l1, file
 
   dcb_hk_names = tnames(prefix + '*')
 
-  if dcb_hk_names NE '' then begin
+  if dcb_hk_names[0] NE '' then begin
 
     for i = 0, n_elements(dcb_hk_names)-1 do begin
 

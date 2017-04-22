@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-04-20 14:59:32 -0700 (Thu, 20 Apr 2017) $
-;  $LastChangedRevision: 23203 $
+;  $LastChangedBy: spfuser $
+;  $LastChangedDate: 2017-04-21 11:43:26 -0700 (Fri, 21 Apr 2017) $
+;  $LastChangedRevision: 23207 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/l1/l1_aeb1_hk/spp_fld_aeb1_hk_load_l1.pro $
 ;
 
@@ -13,7 +13,7 @@ pro spp_fld_aeb1_hk_load_l1, file
 
   aeb_hk_names = tnames(prefix + '*')
 
-  if aeb_hk_names NE '' then begin
+  if aeb_hk_names[0] NE '' then begin
 
     foreach name, aeb_hk_names do begin
 
