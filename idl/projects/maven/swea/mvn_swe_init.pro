@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-08-24 08:57:44 -0700 (Wed, 24 Aug 2016) $
-; $LastChangedRevision: 21714 $
+; $LastChangedDate: 2017-04-22 13:28:45 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23212 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-01-15
@@ -81,6 +81,34 @@ pro mvn_swe_init
             1.000        ]  ; 23: ground/spare
 
   swe_t = [1.6484d2, 3.9360d-2, 5.6761d-6, 4.4329d-10, 1.6701d-14, 2.4223d-19]
+
+  pfp_v = [ 0.000173  , $   ;  0: DCB -5V Analog Voltage
+            0.000173  , $   ;  1: DCB +5V Analog Voltage
+            0.000173  , $   ;  2: DCB +5V Digital Voltage
+            0.000108  , $   ;  3: DCB +3.3V Digital Voltage
+            0.000076  , $   ;  4: DCB +1.3V Digital Voltage
+            0.001046  , $   ;  5: PFP +28V Voltage
+            0.006409  , $   ;  6: SWEA 28V Primary Current
+            1.000     , $   ;  7: PFP Regulator Temperature
+            0.019302  , $   ;  8: SWIA 28V Primary Current
+            0.025558  , $   ;  9: STATIC 28V Primary Current
+            0.009918  , $   ; 10: MAG1 28V Primary Current
+            0.009918  , $   ; 11: MAG2 28V Primary Current
+            0.020676  , $   ; 12: SEP 28V Primary Current
+            0.025406  , $   ; 13: LPW 28V Primary Current
+            0.001425  , $   ; 14: PFP 28V Primary Voltage
+            7.7065d-5 , $   ; 15: PFP 28V Primary Current
+            1.000     , $   ; 16: DCB Temperature
+            1.000     , $   ; 17: DCB FPGA Daughter Board Temperature
+            0.000153  , $   ; 18: Flash Bank 0 Voltage
+            0.000153  , $   ; 19: Flash Bank 1 Voltage
+            0.000153  , $   ; 20: +3.3V Digital Voltage
+            0.000076  , $   ; 21: +1.5V Digital Voltage
+            0.000076  , $   ; 22: Voltage Ref (Spare)
+            0.000000  , $   ; 23: Analog Ground
+            1.000        ]  ; 24: Spare
+
+  pfp_t = [1.6828d2, -3.3664d-2, 4.0411d-6, -2.5861d-10, 7.9111d-15, -9.2462d-20]
 
 ; Grouping and Period
 

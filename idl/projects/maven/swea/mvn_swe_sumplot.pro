@@ -60,8 +60,8 @@
 ;       BURST:        Plot a color bar showing PAD burst coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-11-17 09:20:40 -0800 (Tue, 17 Nov 2015) $
-; $LastChangedRevision: 19394 $
+; $LastChangedDate: 2017-04-22 13:32:57 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23217 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -111,9 +111,35 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   TCcol = round(findgen(8)*(247./7.)) + 7
   Vlab = TClab
   Tlab = TClab[0:2]
+  store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)} 
 
   dTmax = 10.
   dCmax = 10.
+
+; PFP Analog Housekeeping (APID 23)
+
+  if (size(pfp_hsk,/type) eq 8) then n_pfp = n_elements(pfp_hsk) else n_pfp = 0L
+
+  if (n_pfp gt 2L) then begin
+    tmin = min(pfp_hsk.time, max=tmax)
+    tsp = [tsp, tmin, tmax]
+
+    store_data,'SWE28I' ,data={x:pfp_hsk.time, y:pfp_hsk.SWE28I}
+    store_data,'PFP28V',data={x:pfp_hsk.time, y:pfp_hsk.P28V}
+    store_data,'SC28V',data={x:pfp_hsk.time, y:pfp_hsk.PFP28V}
+    store_data,'PF28V',data=['TV_frame','PFP28V','SC28V']
+
+    options,'SWE28I','ytitle','Current (mA)'
+    options,'SWE28I','ynozero',1
+    options,'SC28V' ,'ynozero',1
+    options,'PFP28V','ynozero',1
+    options,'PF28V' ,'ynozero',1
+    options,'PF28V' ,'labflag',-1
+    options,'PF28V' ,'colors',[4,6]
+    options,'PF28V' ,'labels',['S/C','PFP']
+
+    pans = [pans,'SWE28I']
+  endif
 
 ; SWEA Housekeeping (APID 28)
 ;
@@ -191,7 +217,6 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     store_data,'P5AV'  ,data={x:swe_hsk.time, y:(swe_hsk.P5AV-vnorm[2])}
     store_data,'N5AV'  ,data={x:swe_hsk.time, y:(swe_hsk.N5AV+vnorm[2])}
     store_data,'P28V'  ,data={x:swe_hsk.time, y:(swe_hsk.P28V-vnorm[0])}
-    store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)} 
     if (vflg) then begin
       options,'P28V',  'color',TCcol[0]   ; magenta
       options,'P12V',  'color',TCcol[1]   ; blue

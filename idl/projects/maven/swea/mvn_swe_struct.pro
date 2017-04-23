@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-06-01 15:41:38 -0700 (Mon, 01 Jun 2015) $
-; $LastChangedRevision: 17777 $
+; $LastChangedDate: 2017-04-22 13:32:25 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23216 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -24,6 +24,41 @@ pro mvn_swe_struct
   n_a  = n_az*n_el                ; number of solid angle bins
 
 ; Raw telemetry structures
+
+  pfp_hsk_str =  {time    : 0D            , $    ; packet unix time
+                  met     : 0D            , $    ; packet mission elapsed time
+                  addr    : -1L           , $    ; packet address
+                  ver     : 0B            , $    ; CCSDS Version
+                  type    : 0B            , $    ; CCSDS Type
+                  hflg    : 0B            , $    ; CCSDS Secondary header flag
+                  APID    : 0U            , $    ; CCSDS APID
+                  gflg    : 0B            , $    ; CCSDS Group flags
+                  npkt    : 0B            , $    ; packet counter
+                  plen    : 0U            , $    ; packet length
+                  N5AV    : 0.            , $    ; DCB -5V Analog (V)
+                  P5AV    : 0.            , $    ; DCB +5V Analog (V)
+                  P5DV    : 0.            , $    ; DCB +5V Digital (V)
+                  P3P3DV  : 0.            , $    ; DCB +3.3V Digital (V)
+                  P1P5DV  : 0.            , $    ; DCB +1.5V Digital (V)
+                  P28V    : 0.            , $    ; PFP 28V (V)
+                  SWE28I  : 0.            , $    ; SWEA 28V Primary Current (mA)
+                  REGT    : 0.            , $    ; PFP Regulator Temperature (C)
+                  SWI28I  : 0.            , $    ; SWIA 28V Primary Current (mA)
+                  STA28I  : 0.            , $    ; STATIC 28V Primary Current (mA)
+                  MAG128I : 0.            , $    ; MAG1 28V Primary Current (mA)
+                  MAG228I : 0.            , $    ; MAG2 28V Primary Current (mA)
+                  SEP28I  : 0.            , $    ; SEP 28V Primary Current (mA)
+                  LPW28I  : 0.            , $    ; LPW 28V Primary Current (mA)
+                  PFP28V  : 0.            , $    ; PFP 28V Primary Voltage (V)
+                  PFP28I  : 0.            , $    ; PFP 28V Primary Current (mA)
+                  DCBT    : 0.            , $    ; DCB Temperature (C)
+                  FPGAT   : 0.            , $    ; FPGA Daughter Temperature (C)
+                  FLASH0V : 0.            , $    ; Flash Bank 0 Voltage (V)
+                  FLASH1V : 0.            , $    ; Flash Bank 1 Voltage (V)
+                  PF3P3DV : 0.            , $    ; +3.3V Digital (V)
+                  PF1P5DV : 0.            , $    ; +1.5V Digital (V)
+                  PFPVREF : 0.            , $    ; PFP Voltage Reference
+                  PFPAGND : 0.               }   ; PFP Analog Ground
 
   swe_hsk_str =  {time    : 0D            , $    ; packet unix time
                   met     : 0D            , $    ; packet mission elapsed time

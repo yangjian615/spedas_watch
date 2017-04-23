@@ -80,8 +80,8 @@
 ;       REALTIME:      Use realtime file naming convention: YYYYMMDD_HHMMSS_*_l0.dat
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-04-08 16:58:31 -0700 (Fri, 08 Apr 2016) $
-; $LastChangedRevision: 20768 $
+; $LastChangedDate: 2017-04-22 13:29:24 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23213 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -239,6 +239,11 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 ; Filter out duplicate packets
 
   if keyword_set(nodupe) then begin
+
+    if (size(pfp_hsk,/type) eq 8) then begin
+      indx = uniq(pfp_hsk.met,sort(pfp_hsk.met))
+      pfp_hsk = temporary(pfp_hsk[indx])
+    endif
 
     if (size(swe_hsk,/type) eq 8) then begin
       indx = uniq(swe_hsk.met,sort(swe_hsk.met))

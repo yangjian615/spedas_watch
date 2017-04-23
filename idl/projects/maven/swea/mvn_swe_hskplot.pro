@@ -22,8 +22,8 @@
 ;                     (Full path and name required.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-13 10:49:46 -0700 (Thu, 13 Apr 2017) $
-; $LastChangedRevision: 23147 $
+; $LastChangedDate: 2017-04-22 13:27:58 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23211 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_hskplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2017-04-06
@@ -110,6 +110,10 @@ pro mvn_swe_hskplot, trange=trange, orbit=orbit, hsk=hsk
     vflg = 1
 
     if (vflg) then vnorm = [28., 12., 5., 3.3, 2.5] else vnorm = replicate(0.,5)
+
+    store_data,'SWE28I',data={x:pfp_hsk.time, y:pfp_hsk.SWE28I}
+    options,'SWE28I','ynozero',1
+    options,'SWE28I','ytitle','Current (mA)'
 
     store_data,'LVPST' ,data={x:swe_hsk.time, y:swe_hsk.LVPST}
     store_data,'MCPHV' ,data={x:swe_hsk.time, y:swe_hsk.MCPHV}

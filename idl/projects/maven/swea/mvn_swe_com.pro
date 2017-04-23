@@ -13,8 +13,8 @@
 ;     a6:       fast housekeeping
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-10-18 15:27:22 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22136 $
+; $LastChangedDate: 2017-04-22 13:26:49 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23209 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_com.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-03-18
@@ -22,7 +22,7 @@
 ;-
 common swe_raw, a0, a1, a2, a3, a4, a5, a6, swe_hsk, swe_3d, swe_3d_arc, $
                 swe_a0_str, swe_a2_str, swe_a4_str, swe_a6_str, swe_hsk_str, $
-                swe_chksum, swe_active_chksum
+                swe_chksum, swe_active_chksum, pfp_hsk, pfp_hsk_str
 
 common swe_dat, swe_3d_struct, swe_pad_struct, swe_engy_struct, swe_mag_struct, $
                 swe_engy_l2_str, swe_pad_l2_str, swe_3d_l2_str, $
@@ -36,7 +36,7 @@ common swe_cal, decom, swe_v, swe_t, swe_ne, swe_dt, swe_duty, swe_gf, swe_swp, 
                 swe_integ_t, swe_padlut, swe_mcp_eff, swe_rgf, swe_dgf, devar, $
                 mass_e, swe_min_dtc, swe_sc_mask, swe_energy, swe_denergy, $
                 swe_cc_switch, swe_es_switch, swe_G, swe_Ein, swe_Ke, swe_ogf, $
-                swe_ff_state
+                swe_ff_state, pfp_v, pfp_t
 
 common swe_cfg, mvn_swe_version, t_swp, t_mtx, t_dsf, t_mcp, t_sup, t_cfg
 

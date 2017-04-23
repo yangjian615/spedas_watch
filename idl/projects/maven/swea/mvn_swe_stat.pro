@@ -18,8 +18,8 @@
 ;    SILENT:        Shhhh.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-13 09:10:14 -0700 (Thu, 13 Apr 2017) $
-; $LastChangedRevision: 23144 $
+; $LastChangedDate: 2017-04-22 13:31:45 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23215 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_stat.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -38,6 +38,7 @@ pro mvn_swe_stat, npkt=npkt, full=full, silent=silent
   endif
 
   if (n_elements(swe_hsk) eq 2) then begin
+    n_pfp = 0L
     n_hsk = 0L
     n_a6 = 0L
     if (size(mvn_swe_3d,/type) eq 8)       then n_a0 = n_elements(mvn_swe_3d)       else n_a0 = 0L
@@ -47,6 +48,7 @@ pro mvn_swe_stat, npkt=npkt, full=full, silent=silent
     if (size(mvn_swe_engy,/type) eq 8)     then n_a4 = n_elements(mvn_swe_engy)     else n_a4 = 0L
     if (size(mvn_swe_engy_arc,/type) eq 8) then n_a5 = n_elements(mvn_swe_engy_arc) else n_a5 = 0L
   endif else begin
+    if (size(pfp_hsk,/type) eq 8) then n_pfp = n_elements(pfp_hsk) else n_pfp = 0L
     if (size(swe_hsk,/type) eq 8) then n_hsk = n_elements(swe_hsk) else n_hsk = 0L
     if (size(swe_3d,/type) eq 8) then n_a0 = n_elements(swe_3d) else n_a0 = 0L
     if (size(swe_3d_arc,/type) eq 8) then n_a1 = n_elements(swe_3d_arc) else n_a1 = 0L
@@ -57,11 +59,12 @@ pro mvn_swe_stat, npkt=npkt, full=full, silent=silent
     if (size(a6,/type) eq 8) then n_a6 = n_elements(a6) else n_a6 = 0L
   endelse
   
-  npkt = [n_a0, n_a1, n_a2, n_a3, n_a4, n_a5, n_a6, n_hsk]
+  npkt = [n_a0, n_a1, n_a2, n_a3, n_a4, n_a5, n_a6, n_hsk, n_pfp]
 
   if not keyword_set(silent) then begin
     print,""
     print,"SWEA Common Block:"
+    print,n_pfp," Housekeeping packets (PFDPU)"
     print,n_hsk," Housekeeping packets (normal)"
     print,n_a6," Housekeeping packets (fast)"
     print,n_a0," 3D distributions (survey)"

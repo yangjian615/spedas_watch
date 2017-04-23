@@ -10,6 +10,7 @@
 ;
 ;    Housekeeping:      normal rate  (APID 28)
 ;                       fast rate    (APID A6)
+;                       pfp analog   (APID 23)
 ;
 ;    3D Distributions:  survey mode  (APID A0)
 ;                       archive mode (APID A1)
@@ -57,8 +58,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-08-21 14:40:29 -0700 (Fri, 21 Aug 2015) $
-; $LastChangedRevision: 18565 $
+; $LastChangedDate: 2017-04-22 13:30:39 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23214 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -68,16 +69,14 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
                      badpkt=badpkt, append=append, verbose=verbose
 
   @mvn_swe_com
-
-  if keyword_set(verbose) then vflg = 1 else vflg = 0
-  order = n_elements(swe_t) - 1
   
   if keyword_set(trange) then begin
     tstart = min(time_double(trange), max=tstop)
     tflg = 1
   endif else tflg = 0
   
-  if keyword_set(cdrift) then dflg = 1 else dflg = 0
+  dflg = keyword_set(cdrift)
+  vflg = keyword_set(verbose)
 
 ; Read in the telemetry file and store the packets in a byte array
 
@@ -108,6 +107,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 
 ; Counters for each SWEA packet type.
 
+  n_23 = 0L   ; PFP analog housekeeping
   n_28 = 0L   ; SWEA Housekeeping
   n_A0 = 0L   ; 3D survey
   n_A1 = 0L   ; 3D archive
@@ -119,7 +119,8 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
   n_XX = 0L   ; Unrecognized packets
 
 ; Packet pointer arrays
-  
+
+  ptr_23 = lonarr(nbytes/60L   + 1L)
   ptr_28 = lonarr(nbytes/112L  + 1L)
   ptr_A0 = lonarr(nbytes/1296L + 1L)
   ptr_A1 = lonarr(nbytes/1296L + 1L)
@@ -137,6 +138,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 ;   byte 4 --> MSB of packet length (variable for compressed and uncompressed SWEA packets)
 ;   byte 5 --> LSB of packet length (09 for uncompressed SWEA packets, variable otherwise)
 
+  s_23 = '082303'X
   s_28 = '082803'X
   s_A0 = '08A003'X
   s_A1 = '08A103'X
@@ -169,6 +171,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
       sync = head[13]/64L + 256L*(head[12] + 256L*head[11])  ; PFP header
 
       case sync of
+        s_23 : ptr_23[n_23++] = n
         s_28 : ptr_28[n_28++] = n
         s_A0 : ptr_A0[n_A0++] = n
         s_A1 : ptr_A1[n_A1++] = n
@@ -187,6 +190,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
   endwhile
   
   if (vflg) then begin
+    print,n_23," PFP Analog packets   (APID 28)"
     print,n_28," Housekeeping packets (APID 28)"
     print,n_A0," 3D Survey packets    (APID A0)"
     print,n_A1," 3D Archive packets   (APID A1)"
@@ -198,6 +202,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
     print,n_XX," unrecognized packets"
   endif
   
+  ptr_23 = ptr_23[0L:((n_23 - 1L) > 0L)]
   ptr_28 = ptr_28[0L:((n_28 - 1L) > 0L)]
   ptr_A0 = ptr_A0[0L:((n_A0 - 1L) > 0L)]
   ptr_A1 = ptr_A1[0L:((n_A1 - 1L) > 0L)]
@@ -230,6 +235,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 ; the splitter).
 
   if keyword_set(append) then begin
+    pfp_hsk_s = pfp_hsk
     swe_hsk_s = swe_hsk
     a0_s = a0
     a1_s = a1
@@ -240,6 +246,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
     a6_s = a6
   endif
 
+  if (n_23 gt 0L) then pfp_hsk = replicate(pfp_hsk_str, n_23)
   if (n_28 gt 0L) then swe_hsk = replicate(swe_hsk_str, n_28)
   if (n_A0 gt 0L) then a0 = replicate(swe_a0_str, n_A0)
   if (n_A1 gt 0L) then a1 = replicate(swe_a0_str, n_A1)
@@ -253,6 +260,117 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 
   n = 0L
   if (size(badpkt,/type) ne 8) then badpkt = replicate(bad_str,1)
+
+; PFP Analog Housekeeping (APID 23)
+;   PFP analog housekeeping temperature, voltage and current monitors
+;   This includes a SWEA current monitor, and the primary regulated 28V
+;   supply voltage that powers SWEA.
+
+  order = n_elements(pfp_t) - 1
+
+  for k=0L,(n_23 - 1L) do begin
+    n = ptr_23[k]
+    head = long(tlm[lindgen(17) + n])                   ; spacecraft header
+    pklen = 7L + head[5] + 256L*head[4]
+    i = n + 11L                                         ; first index of packet
+    j = (i + 6L + head[16] + 256L*head[15]) < lastbyte  ; last index of packet
+
+	pkt = tlm[i:j]  ; housekeeping packets are never compressed
+	plen = n_elements(pkt)
+
+	if (plen ne 60) then begin
+	  print,"Bad PFP packet: ",n,format='(a,Z)'
+
+	  bad_str.addr = n
+	  m = (plen < maxlen) - 1L
+	  bad_str.dump[0L:m] = pkt[0L:m]
+
+	  msb = 2*indgen(5)
+	  lsb = msb + 1
+	  ccsds = uint(pkt[msb])*256 + uint(pkt[lsb])
+
+	  bad_str.apid = '23'X
+	  bad_str.npkt = mvn_swe_getbits(ccsds[1],[13,0])
+	  bad_str.plen = plen
+
+	  bad_str.met = double(ccsds[3])*65536D + double(ccsds[4])
+	  bad_str.time = mvn_spc_met_to_unixtime(bad_str.met,correct=dflg)
+
+	  badpkt = [temporary(badpkt), bad_str]
+
+    endif else begin
+
+	  pfp_hsk[k].addr = n
+
+; Header (bytes 0-9)
+
+	  msb = 2*indgen(5)
+	  lsb = msb + 1
+	  ccsds = uint(pkt[msb])*256 + uint(pkt[lsb])
+
+	  pfp_hsk[k].ver  = mvn_swe_getbits(ccsds[0],[15,13])
+	  pfp_hsk[k].type = mvn_swe_getbits(ccsds[0],12)
+	  pfp_hsk[k].hflg = mvn_swe_getbits(ccsds[0],11)
+	  pfp_hsk[k].APID = mvn_swe_getbits(ccsds[0],[10,0])
+	  pfp_hsk[k].gflg = mvn_swe_getbits(ccsds[1],[15,14])
+	  pfp_hsk[k].npkt = mvn_swe_getbits(ccsds[1],[13,0])
+	  pfp_hsk[k].plen = ccsds[2]
+			   
+	  pfp_hsk[k].met  = double(ccsds[3])*65536D + double(ccsds[4])
+	  pfp_hsk[k].time = mvn_spc_met_to_unixtime(pfp_hsk[k].met,correct=dflg)
+
+; PFP Analog Housekeeping (bytes 10-57)
+
+	  msb = 2L*lindgen(24) + 10L
+	  lsb = msb + 1L
+	  ahsk = float(fix(pkt[msb])*256 + fix(pkt[lsb]))
+
+	  pfp_hsk[k].N5AV    = ahsk[0]*pfp_v[0]
+	  pfp_hsk[k].P5AV    = ahsk[1]*pfp_v[1]
+	  pfp_hsk[k].P5DV    = ahsk[2]*pfp_v[2]
+      pfp_hsk[k].P3P3DV  = ahsk[3]*pfp_v[3]
+	  pfp_hsk[k].P1P5DV  = ahsk[4]*pfp_v[4]
+	  pfp_hsk[k].P28V    = ahsk[5]*pfp_v[5]
+	  pfp_hsk[k].SWE28I  = ahsk[6]*pfp_v[6]
+
+	  T = pfp_t[order] & for i=(order-1),0,-1 do T = pfp_t[i] + T*ahsk[7]
+	  pfp_hsk[k].REGT    = T
+
+	  pfp_hsk[k].SWI28I  = ahsk[8]*pfp_v[8]
+	  pfp_hsk[k].STA28I  = ahsk[9]*pfp_v[9]
+	  pfp_hsk[k].MAG128I = ahsk[10]*pfp_v[10]
+	  pfp_hsk[k].MAG228I = ahsk[11]*pfp_v[11]
+	  pfp_hsk[k].SEP28I  = ahsk[12]*pfp_v[12]
+	  pfp_hsk[k].LPW28I  = ahsk[13]*pfp_v[13]
+	  pfp_hsk[k].PFP28V  = ahsk[14]*pfp_v[14]
+	  pfp_hsk[k].PFP28I  = ahsk[15]*pfp_v[15]
+
+	  T = pfp_t[order] & for i=(order-1),0,-1 do T = pfp_t[i] + T*ahsk[16]
+	  pfp_hsk[k].DCBT   = T
+
+	  T = pfp_t[order] & for i=(order-1),0,-1 do T = pfp_t[i] + T*ahsk[17]
+	  pfp_hsk[k].FPGAT   = T
+
+	  pfp_hsk[k].FLASH0V = ahsk[18]*swe_v[18]
+	  pfp_hsk[k].FLASH1V = ahsk[19]*swe_v[19]
+	  pfp_hsk[k].PF3P3DV = ahsk[20]*swe_v[20]
+	  pfp_hsk[k].PF1P5DV = ahsk[21]*swe_v[21]
+	  pfp_hsk[k].PFPVREF = ahsk[22]*swe_v[22]
+	  pfp_hsk[k].PFPAGND = ahsk[23]*swe_v[23]
+
+; 2 spare bytes (58-59)
+
+	endelse
+
+  endfor
+  
+  if (n_23 gt 0L) then begin
+    indx = where(pfp_hsk.addr ne -1L, n_23)
+    if (n_23 gt 0L) then pfp_hsk = temporary(pfp_hsk[indx]) else begin
+      print,"No PFP housekeeping (APID 23)!"
+      pfp_hsk = 0
+    endelse
+  endif
 
 ; Housekeeping (APID 28)
 ;   SWEA housekeeping includes 3 temperatures (thermistors on the LVPS, 
@@ -302,6 +420,8 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 ;     23      -       (unused)
 ;  -----------------------------------------
 ;
+
+  order = n_elements(swe_t) - 1
 
   for k=0L,(n_28 - 1L) do begin
     n = ptr_28[k]
@@ -937,6 +1057,27 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 
   t0 = mvn_spc_met_to_unixtime(10D)
 
+  if (n_23 gt 0L) then begin
+    indx = where(pfp_hsk.time lt t0, count, complement=jndx, ncomp=n_23)
+    if (count gt 0L) then begin
+      for i=0,(count-1) do begin
+        n = pfp_hsk[indx[i]].addr
+        print,"Zero MET in PFP HSK: ",n,format='(a,Z)'
+      endfor
+      if (n_23 eq 0L) then begin
+        print,"No valid PFP HSK packets!"
+        pfp_hsk = 0
+      endif else pfp_hsk = temporary(pfp_hsk[jndx])
+    endif
+    if (tflg) then begin
+      indx = where((pfp_hsk.time ge tstart) and (pfp_hsk.time le tstop), n_23)
+      if (n_23 eq 0L) then begin
+        print,"No PFP HSK packets within TRANGE."
+        pfp_hsk = 0
+      endif else pfp_hsk = temporary(pfp_hsk[indx])
+    endif
+  endif
+
   if (n_28 gt 0L) then begin
     indx = where(swe_hsk.time lt t0, count, complement=jndx, ncomp=n_28)
     if (count gt 0L) then begin
@@ -1132,6 +1273,10 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 ; Append to previously loaded data
 
   if keyword_set(append) then begin
+    if (size(pfp_hsk_s,/type) eq 8) then begin
+      if (size(pfp_hsk,/type) eq 8) then pfp_hsk = [temporary(pfp_hsk_s), temporary(pfp_hsk)] $
+                                    else pfp_hsk = temporary(pfp_hsk_s)
+    endif
     if (size(swe_hsk_s,/type) eq 8) then begin
       if (size(swe_hsk,/type) eq 8) then swe_hsk = [temporary(swe_hsk_s), temporary(swe_hsk)] $
                                     else swe_hsk = temporary(swe_hsk_s)

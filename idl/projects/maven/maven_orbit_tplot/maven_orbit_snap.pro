@@ -93,8 +93,8 @@
 ;       MAGNIFY:  Change size of plot windows.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 16:52:25 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22551 $
+; $LastChangedDate: 2017-04-22 13:25:23 -0700 (Sat, 22 Apr 2017) $
+; $LastChangedRevision: 23208 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -132,6 +132,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   if keyword_set(nodot) then dodot = 0 else dodot = 1
   if (size(terminator,/type) gt 0) then doterm = fix(round(terminator)) < 3 else doterm = 0
   if not keyword_set(magnify) then mag = 1. else mag = float(magnify)
+  csize = 2.0*mag
   if (size(Bclip,/type) eq 0) then Bclip = 1.e9
 
   if keyword_set(Bdir) then dob = 1 else dob = 0
@@ -394,7 +395,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       szaref = acos(cos(mlon)*cos(mlat))
 
       plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
-           xtitle='X (Rp)',ytitle='Y (Rp)',charsize=2.0,title=title,thick=thick
+           xtitle='X (Rp)',ytitle='Y (Rp)',charsize=csize,title=title,thick=thick
       oplot,xm,ym,color=6,thick=thick
       oplot,x,y,thick=thick
 
@@ -510,7 +511,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     if (xzflg) then msg = title else msg = ''
 
     plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
-         xtitle='X (Rp)',ytitle='Z (Rp)',charsize=2.0,title=msg,thick=thick
+         xtitle='X (Rp)',ytitle='Z (Rp)',charsize=csize,title=msg,thick=thick
     oplot,xm,ym,color=6,thick=thick
     oplot,x,z,thick=thick
 
@@ -623,7 +624,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
       endif
 
       plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty,/noerase, $
-           xtitle='Y (Rp)',ytitle='Z (Rp)',charsize=2.0,thick=thick
+           xtitle='Y (Rp)',ytitle='Z (Rp)',charsize=csize,thick=thick
       oplot,xm,ym,color=6,thick=thick
       oplot,y,z,thick=thick
 
@@ -698,7 +699,7 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
      s = sqrt(y*y + z*z)
 
      plot,xm,ym,xrange=xrange,yrange=[0,yrange[1]],/xsty,/ysty,/noerase, $
-          xtitle='X (Rp)',ytitle='S (Rp)',charsize=2.0,title=title,thick=thick
+          xtitle='X (Rp)',ytitle='S (Rp)',charsize=csize,title=title,thick=thick
      oplot,xm,ym,color=6,thick=thick
      oplot,x,s,thick=thick
 
