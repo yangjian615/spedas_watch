@@ -81,6 +81,17 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
     if keyword_set(spc)    then spp_ptp_recorder,title='Snout1 SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/spc/',set_file_timeres=fileres
     if keyword_set(swem)   then spp_ptp_recorder,title='Snout1 SWEM PTP',port=2528, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout1/swem/',set_file_timeres=fileres
   endif
+  if  keyword_set(snout2) then begin
+    directory = rootdir + router+'/'+instr+'/'
+    host = 'mgse2.ssl.berkeley.edu'
+    exec_proc = 'spp_ptp_stream_read'
+    if keyword_set(spani) then spp_ptp_recorder,title='Snout2 SPANI PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'snout2/spani/',set_file_timeres=fileres
+    if keyword_set(spanea) then spp_ptp_recorder,title='Snout2 SPANEA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'Snout2/spanea/',set_file_timeres=fileres
+    if keyword_set(spaneb) then spp_ptp_recorder,title='Snout2 SPANEB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'Snout2/spaneb/',set_file_timeres=fileres
+    if keyword_set(spc)    then spp_ptp_recorder,title='Snout2 SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'Snout2/spc/',set_file_timeres=fileres
+    if keyword_set(swem)   then spp_ptp_recorder,title='Snout2 SWEM PTP',port=2528, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'Snout2/swem/',set_file_timeres=fileres
+  endif
+
   if  keyword_set(crypt) then begin
     directory = rootdir + router+'/'+instr+'/'
     host = 'crypt.ssl.berkeley.edu'
