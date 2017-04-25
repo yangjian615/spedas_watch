@@ -12,18 +12,18 @@
 ;   2015-10-16: 13:03:34.000 - 13:04:54.000
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-06 12:24:50 -0800 (Mon, 06 Feb 2017) $
-; $LastChangedRevision: 22737 $
+; $LastChangedDate: 2017-04-24 08:15:35 -0700 (Mon, 24 Apr 2017) $
+; $LastChangedRevision: 23219 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_brst_segments_ut__define.pro $
 ;-
 
 ; regression test to make sure last week's burst intervals are available (added 10/5/2016)
-function mms_load_brst_segments_ut::test_load_last_weeks_intervals
-  lastweek = systime(/seconds)-6.*24*60*60
-  trange = lastweek+[0, 4.*24*60*60]
+function mms_load_brst_segments_ut::test_load_recent_intervals
+  lastweek = systime(/seconds)-14.*24*60*60
+  trange = lastweek+[0, 12.*24*60*60]
   mms_load_brst_segments, trange=trange
   assert, spd_data_exists('mms_bss_burst', time_string(trange[0]), time_string(trange[1])), $
-    'Problem loading last weeks burst segments!!'
+    'Problem loading recent burst segments!!'
   return, 1
 end
 

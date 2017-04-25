@@ -14,6 +14,15 @@ function get_fa2_eeb,t,_EXTRA=extra
 
 common fa_eeb_l2,get_ind,all_dat
 
-return,fa_esa_struct_l2(t,all_dat=all_dat,get_ind=get_ind,_EXTRA=extra)
+;convert to something useable in other programs, by changing the eflux
+;tag to 'data'
+otp = fa_esa_struct_l2(t,all_dat=all_dat,get_ind=get_ind,_EXTRA=extra)
+str_element, otp, 'eflux', success = l2_struct
+If(l2_struct) Then Begin
+   eflux = otp.eflux
+   str_element, otp, 'data', eflux, /add_replace
+Endif
+
+return, otp
 
 end

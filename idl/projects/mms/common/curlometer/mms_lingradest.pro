@@ -23,8 +23,8 @@
 ;         barycenter, RcurvB: the curvature radius
 ;         
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-21 09:42:14 -0700 (Tue, 21 Mar 2017) $
-; $LastChangedRevision: 23009 $
+; $LastChangedDate: 2017-04-24 12:31:29 -0700 (Mon, 24 Apr 2017) $
+; $LastChangedRevision: 23222 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/curlometer/mms_lingradest.pro $
 ;-
 
@@ -36,36 +36,47 @@ pro mms_lingradest, fields=fields, positions=positions, suffix=suffix
   endif
   ;... interpolate the magnetic field data all onto the same timeline (MMS1):
   ;... should be in GSE coordinates
-  tinterpol, fields[1], fields[0], newname=fields[1]+'_i'
-  tinterpol, fields[2], fields[0], newname=fields[2]+'_i'
-  tinterpol, fields[3], fields[0], newname=fields[3]+'_i'
+  tinterpol, fields[1], fields[0], newname=fields[1]+'_i', error=b_error_1
+  tinterpol, fields[2], fields[0], newname=fields[2]+'_i', error=b_error_2
+  tinterpol, fields[3], fields[0], newname=fields[3]+'_i', error=b_error_3
     
+  if b_error_1 ne 1 or b_error_2 ne 1 or b_error_3 ne 1 then begin
+    dprint, dlevel =0, 'Error interpolating magnetic field data all onto the same timeline (MMS1)'
+    return
+  endif
+  
   ;... interpolate the definitive ephemeris onto the magnetic field timeseries
   ;... should be in GSE coordinates
-  tinterpol, positions[0], fields[0], newname=positions[0]+'_i'
-  tinterpol, positions[1], fields[0], newname=positions[1]+'_i'
-  tinterpol, positions[2], fields[0], newname=positions[2]+'_i'
-  tinterpol, positions[3], fields[0], newname=positions[3]+'_i'
+  tinterpol, positions[0], fields[0], newname=positions[0]+'_i', error=p_error_1
+  tinterpol, positions[1], fields[0], newname=positions[1]+'_i', error=p_error_2
+  tinterpol, positions[2], fields[0], newname=positions[2]+'_i', error=p_error_3
+  tinterpol, positions[3], fields[0], newname=positions[3]+'_i', error=p_error_4
+  
+  if p_error_1 ne 1 or p_error_2 ne 1 or p_error_3 ne 1 or p_error_4 ne 1 then begin
+    dprint, dlevel =0, 'Error interpolating S/C position data onto the magnetic field timeseries'
+    return
+  endif
   
   ; ... get data
   get_data, fields[0], data=B1
   datarrLength = n_elements(B1.x)
-  Bx1 = B1.y[*,0] & By1 = B1.y[*,1] & Bz1 = B1.y[*,2] & Bt1 = B1.y[*,3]
+
+  Bx1 = B1.y[*,0] & By1 = B1.y[*,1] & Bz1 = B1.y[*,2] & Bt1 = sqrt(B1.y[*,0]^2+B1.y[*,1]^2+B1.y[*,2]^2)
   get_data, positions[0]+'_i', data=R1
   R1=R1.y
   
   get_data, fields[1]+'_i', data=B2
-  Bx2 = B2.y[*,0] & By2 = B2.y[*,1] & Bz2 = B2.y[*,2] & Bt2 = B2.y[*,3]
+  Bx2 = B2.y[*,0] & By2 = B2.y[*,1] & Bz2 = B2.y[*,2] & Bt2 = sqrt(B2.y[*,0]^2+B2.y[*,1]^2+B2.y[*,2]^2)
   get_data, positions[1]+'_i', data=R2
   R2=R2.y
   
   get_data, fields[2]+'_i', data=B3
-  Bx3 = B3.y[*,0] & By3 = B3.y[*,1] & Bz3 = B3.y[*,2] & Bt3 = B3.y[*,3]
+  Bx3 = B3.y[*,0] & By3 = B3.y[*,1] & Bz3 = B3.y[*,2] & Bt3 = sqrt(B3.y[*,0]^2+B3.y[*,1]^2+B3.y[*,2]^2)
   get_data, positions[2]+'_i', data=R3
   R3=R3.y
   
   get_data, fields[3]+'_i', data=B4
-  Bx4 = B4.y[*,0] & By4 = B4.y[*,1] & Bz4 = B4.y[*,2] & Bt4 = B4.y[*,3]
+  Bx4 = B4.y[*,0] & By4 = B4.y[*,1] & Bz4 = B4.y[*,2] & Bt4 = sqrt(B4.y[*,0]^2+B4.y[*,1]^2+B4.y[*,2]^2)
   get_data, positions[3]+'_i', data=R4
   R4=R4.y
   

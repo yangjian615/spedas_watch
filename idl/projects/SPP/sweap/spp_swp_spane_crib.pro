@@ -147,10 +147,11 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  trange = '2016 11 '+ ['28/18','28/19'] ; SPAN-B FM FPGAcheck
  trange = '2016 11 '+ ['28/19','28/21'] ; SPAN-B FM ph thresh scan (changing pulse height on test pulser)
  trange = '2016 11 '+ ['28/20','28/21'] ; SPAN-B FM thresh scan. (changing threshold with no input but noise)
+ trange = '2016 11 '+ ['28/21','29/05'] ; contains a rotation scan
  trange = '2016 11 '+ ['29/04','29/08'] ; SPAN-B FM ea quick scan - missing data for some anodes
  trange = '2016 11 '+ ['29/15','29/21'] ; SPAN-B FM mcpTest - missing data because of cable? Or maybe because of maja.
  trange = ['2016 11 29/23','2016 12 01/01'] ; SPAN-B FM deflector test - missing data because of cable.
- 
+ trange = '2016 11 '+ ['29/01','29/02'] ; SPAN-B FM rotation @ 1keV
  trange = '2016 12 '+ ['05/12','06/00']
  trange = '2016 12 '+ ['05/19','06/00'] ; SPAN-B FM IDL sim test again, after cable got fixed.
  trange = '2016 12 '+ ['06/02','06/05'] ; SPAN-B FM pre-Vibe 500eV EA scan
@@ -187,6 +188,8 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  trange = '2017 01 '+ ['14/19','15/09'] ; SPAN-B FM Anode 5 failure #2
  
  ;; SPAN-Ae Cal chamber re-check
+ trange = '2017 02 '+ ['06/00','07/00'] ; SPAN-Ae re-check after correction of MCP support structure. Ramp up and manipulations
+ trange = '2017 02 '+ ['07/11','07/12'] ; SPAN-Ae rotation
  
  ;; SPAN-B Cal chamber re-check: started on Feb 13th. Instrument is noisy.
  
@@ -221,7 +224,18 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
 
  ;; SPAN-Ae postEnvCal
  trange = ; ramp up MCPs
- trange = '2017 03 ' + ['28/04', ; CPT
+ ;trange = ['2017 03 28/02','2017 03 29/00']
+ trange = '2017 03 ' + ['28/04','28/06'] ; CPT at HV, begins with threshold tests
+ trange = '2017 03 ' + ['28/22','29/01'] ; Gun scan @ 900eV
+ trange = '2017 03 ' + ['29/01','29/03'] ; rotations @ 900eV
+ trange = '2017 03 ' + ['29/08','29/10'] ; spoiler test
+ trange = '2017 03 ' + ['29/05','29/08'] ; EA scan
+ trange = '2017 03 ' + ['29/15','29/17'] ; EA scan
+ trange = '2017 03 ' + ['29/18','29/20'] ; rotation both ways
+ trange = '2017 03 ' + ['29/19','29/23'] ; spoiler + rotation test (mode 2)
+ trange = '2017 03 ' + ['30/01','31/01'] ; spoiler tests.
+ trange = '2017 03 ' + ['31/17','31/
+ trange = ['2017 03 28/02','2017 03 29/00'] ; loaded currently
 
 
 ;  Get recent data files:

@@ -5,6 +5,11 @@
 ; PURPOSE:
 ;       This routine calculates div B and curl B for a specified time interval
 ;
+; KEYWORDS:
+;       trange: time range over which to compute the curl (will be prompted if not provided)
+;       fields: array of tplot variables containing the B-field for each spacecraft (in GSE coordinates)
+;       positions: array of tplot variables containing the S/C position vectors for each spacecraft (also GSE coordinates) 
+; 
 ; NOTES:  
 ;       The input B-field data and position data are expected to be in 
 ;       GSE coordinates
@@ -19,37 +24,66 @@
 ;         Paschmann and P. W. Daly (Eds.) ISSI Scientific Report SR-001. 
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-20 16:01:07 -0700 (Mon, 20 Mar 2017) $
-; $LastChangedRevision: 23000 $
+; $LastChangedDate: 2017-04-24 12:09:49 -0700 (Mon, 24 Apr 2017) $
+; $LastChangedRevision: 23221 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/curlometer/mms_curl.pro $
 ;-
 
-pro mms_curl, trange=trange, fields=fields, positions=positions, suffix=suffix
+pro mms_curl, trange=trange, fields=fields, positions=positions, suffix=suffix, ignore_dlimits=ignore_dlimits
   if undefined(suffix) then suffix = ''
   if undefined(fields) || undefined(positions) then begin
     dprint, dlevel = 0, 'B-field and spacecraft position keywords required.'
     return
   endif
   
+  if n_elements(fields) ne 4 or n_elements(positions) ne 4 then begin
+    dprint, dlevel = 0, 'Error, fields and positions keywords should be specified as 4-element arrays containing the tplot variable name for the field and position variables'
+    return
+  endif
+  
   if ~undefined(trange) && n_elements(trange) eq 2 $
     then t_curl = timerange(trange) $
   else t_curl = timerange()
-
+  
+  if ~keyword_set(ignore_dlimits) then begin
+    ; check coordinate systems (supposed to be GSE)
+    if cotrans_get_coord(fields[0]) ne 'gse' or cotrans_get_coord(fields[1]) ne 'gse' or $
+      cotrans_get_coord(fields[2]) ne 'gse' or cotrans_get_coord(fields[3]) ne 'gse' then begin
+      dprint, dlevel = 0, 'Error, B-field coordinate system should be GSE'
+      return
+    endif
+    if cotrans_get_coord(positions[0]) ne 'gse' or cotrans_get_coord(positions[1]) ne 'gse' or $
+      cotrans_get_coord(positions[2]) ne 'gse' or cotrans_get_coord(positions[3]) ne 'gse' then begin
+      dprint, dlevel = 0, 'Error, S/C position coordinate system should be GSE'
+      return
+    endif
+  endif 
+  
   ;*********************************************************
   ; Magnetic Field
   ;*********************************************************
   ;interpolate the magnetic field data all onto the same timeline (MMS1):
   ; should be in GSE coordinates
-  tinterpol, fields[1], fields[0], newname=fields[1]+'_i'
-  tinterpol, fields[2], fields[0], newname=fields[2]+'_i'
-  tinterpol, fields[3], fields[0], newname=fields[3]+'_i'
+  tinterpol, fields[1], fields[0], newname=fields[1]+'_i', error=b_error_1
+  tinterpol, fields[2], fields[0], newname=fields[2]+'_i', error=b_error_2
+  tinterpol, fields[3], fields[0], newname=fields[3]+'_i', error=b_error_3
+  
+  if b_error_1 ne 1 or b_error_2 ne 1 or b_error_3 ne 1 then begin
+    dprint, dlevel =0, 'Error interpolating magnetic field data all onto the same timeline (MMS1)'
+    return
+  endif
 
   ;interpolate the definitive ephemeris onto the magnetic field timeseries
   ; should be in GSE coordinates
-  tinterpol, positions[0], fields[0], newname=positions[0]+'_i'
-  tinterpol, positions[1], fields[0], newname=positions[1]+'_i'
-  tinterpol, positions[2], fields[0], newname=positions[2]+'_i'
-  tinterpol, positions[3], fields[0], newname=positions[3]+'_i'
+  tinterpol, positions[0], fields[0], newname=positions[0]+'_i', error=p_error_1
+  tinterpol, positions[1], fields[0], newname=positions[1]+'_i', error=p_error_2
+  tinterpol, positions[2], fields[0], newname=positions[2]+'_i', error=p_error_3
+  tinterpol, positions[3], fields[0], newname=positions[3]+'_i', error=p_error_4
+  
+  if p_error_1 ne 1 or p_error_2 ne 1 or p_error_3 ne 1 or p_error_4 ne 1 then begin
+    dprint, dlevel =0, 'Error interpolating S/C position data onto the magnetic field timeseries'
+    return
+  endif
   
   ;some constants
   m0 = 4.*!dpi*1.e-7;
