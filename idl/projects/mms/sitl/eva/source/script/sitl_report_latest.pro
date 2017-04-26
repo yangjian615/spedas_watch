@@ -1,10 +1,10 @@
 PRO sitl_report_latest, dir=dir, force=force
   compile_opt idl2
-  tic
+  clock= tic('sitl_report_latest')
   
   ;//////////////////////////////////////////////
   json = 1L
-  paramset = 'SITL_Basic';'SITL_Basic_Tail'; SITL_Basic_Dayside
+  paramset = 'SITL_Basic_NoFPI';'SITL_Basic_Tail'; SITL_Basic_Dayside
   if undefined(dir) then dir = '/Volumes/moka/public_html/eva/' $
     else dir = spd_addslash(dir)
   if undefined(force) then force = 1
@@ -57,12 +57,23 @@ PRO sitl_report_latest, dir=dir, force=force
   ;--------------------------------------
   ; CHECK Submission of SITL_selections
   ;--------------------------------------
-  if (s.METADATAEVALTIME ne unix_FOMstr.METADATAEVALTIME) then begin
-    print,'SITL_selections not submitted yet...returning'
-    ;return
-    SUBMITTED = 0L
-  endif else SUBMITTED = 1L
+;  if (s.METADATAEVALTIME ne unix_FOMstr.METADATAEVALTIME) then begin
+;    print,'SITL_selections not submitted yet...returning'
+;    ;return
+;    SUBMITTED = 0L
+;  endif else SUBMITTED = 1L
   
+  rtr  = [s.TIMESTAMPS[0], s.TIMESTAMPS[s.NUMCYCLES-1]]
+  rtr0 = [unix_FOMstr.TIMESTAMPS[0], unix_FOMstr.TIMESTAMPS[unix_FOMstr.NUMCYCLES-1]]
+  sol = segment_overlap(rtr, rtr0)
+  if (sol eq 2) or (sol eq -2) then begin
+    SUBMITTED = 0
+    force = 1 
+  endif else begin
+    SUBMITTED = 1
+    force = 0
+  endelse
+
   ;-------------------
   ; GET INFORMATION
   ;-------------------
@@ -140,7 +151,8 @@ PRO sitl_report_latest, dir=dir, force=force
   ;---------------
   pmax = 4
   probes = ['1','2','3','4']
-  pngsize = fltarr(pmax)  
+  pngsize = fltarr(pmax) 
+  
   for p=0,pmax-1 do begin
     eva_cmd_load,trange=trange,probes=probes[p],paramset=paramset,paramlist=paramlist, force=force
     dir_png = spd_addslash(dir)+'img/'+yyyy+'/'
@@ -167,6 +179,7 @@ PRO sitl_report_latest, dir=dir, force=force
     tn=tnames('mms'+probes[p]+'_position_x',mmax)
     if (strlen(tn[0]) gt 0) and (mmax gt 0) then var_lab = [var_lab,tn[0]]
     var_lab = (n_elements(var_lab) gt 1) ? var_lab[1:*] : ''
+    tplot_options, 'title','MMS '+probes[p]+'   (updated at '+time_string(systime(/seconds,/utc))+')' 
     tplot,thislist, var_lab=var_lab
     write_png, dir_png+pname+'_mms'+probes[p]+'.png', tvrd(/true)
     info=file_info(dir_png+pname+'_mms'+probes[p]+'.png')
@@ -175,6 +188,10 @@ PRO sitl_report_latest, dir=dir, force=force
     tlimit,-tp+tr[0]        ,tp+tr[0]+     dt & write_png, dir_png+pname+'_mms'+probes[p]+'_a.png',tvrd(/true)
     tlimit,-tp+tr[0]+     dt,tp+tr[0]+2.d0*dt & write_png, dir_png+pname+'_mms'+probes[p]+'_b.png',tvrd(/true)
     tlimit,-tp+tr[0]+2.d0*dt,tp+tr[0]+3.d0*dt & write_png, dir_png+pname+'_mms'+probes[p]+'_c.png',tvrd(/true)
+    
+    openu,mf,dir+'sitl_report_log.txt',/get_lun,/append
+    printf,mf, time_string(systime(/seconds,/utc)), ', eva_cmd_load for p=',probes[p],' with SUBMITED=',SUBMITTED
+    free_lun, mf
   endfor
   result = max(pngsize,p,/nan)
   select = strtrim(string(probes[p]),2)
@@ -238,5 +255,5 @@ PRO sitl_report_latest, dir=dir, force=force
     
   endif; if json
   print, 'SUBMITTED=',SUBMITTED
-  toc
+  toc, clock
 END
