@@ -21,16 +21,16 @@
 ;2015-09-14, jmm, jimm@ssl.berkeley.edu, hacked from fa_load_esa_l1
 ;and mvn_sta_l2_tplot.
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-20 16:03:41 -0700 (Mon, 20 Mar 2017) $
-; $LastChangedRevision: 23003 $
+; $LastChangedDate: 2017-04-26 13:57:15 -0700 (Wed, 26 Apr 2017) $
+; $LastChangedRevision: 23227 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2_tplot.pro $
 ;-
 Pro fa_esa_l2_tplot, all = all, type = type, counts = counts, _extra = _extra
 
 ;Unless all is set, delete old data
   IF(~keyword_set(all)) Then Begin
-     If(keyword_set(counts)) Then store_data, delete = 'fa_*_l1_*' $
-     Else store_data, delete = 'fa_*_l2_*'
+     If(keyword_set(counts)) Then store_data, delete = 'fa_*_l2_ct_quick' $
+     Else store_data, delete = 'fa_*_l2_en_quick'
   Endif
 
 ;next define the common blocks
@@ -123,8 +123,13 @@ Pro fa_esa_l2_tplot, all = all, type = type, counts = counts, _extra = _extra
 
 ;  data_tplot = data_tplot > 1.e-10
 ;Counts should have l1 in the name:
-  If(keyword_set(counts)) Then name_o_tplot = 'fa_'+typex+'_l1_en_quick' $
-  Else name_o_tplot = 'fa_'+typex+'_l2_en_quick'
+  If(keyword_set(counts)) Then Begin
+     name_o_tplot = 'fa_'+typex+'_l2_ct_quick'
+     ztitle = 'Rate'
+  Endif Else Begin
+     name_o_tplot = 'fa_'+typex+'_l2_en_quick'
+     ztitle = 'Eflux'
+  Endelse
   store_data, name_o_tplot, data = {x:(all_dat.time+all_dat.end_time)/2,y:data_tplot,v:energy_tplot}
 ;  zlim,name_o_tplot, 1.e1, 1.e6, 1
   ylim,name_o_tplot, 5., 40000., 1

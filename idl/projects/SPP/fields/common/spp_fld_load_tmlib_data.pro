@@ -1,7 +1,7 @@
 ;
 ;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-04-21 11:43:26 -0700 (Fri, 21 Apr 2017) $
-;  $LastChangedRevision: 23207 $
+;  $LastChangedDate: 2017-04-26 16:52:09 -0700 (Wed, 26 Apr 2017) $
+;  $LastChangedRevision: 23230 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -238,7 +238,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
         ; Get the number of elements in the data item
 
-        nelem = spp_fld_tmlib_item_nelem(data_hash[data_name])
+        nelem = spp_fld_tmlib_item_nelem(data_hash[data_name], sid)
 
     ; TODO: Make sure this is doing the right thing
     
