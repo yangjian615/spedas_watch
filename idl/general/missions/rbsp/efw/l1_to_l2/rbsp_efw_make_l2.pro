@@ -52,8 +52,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2017-04-05 12:36:34 -0700 (Wed, 05 Apr 2017) $
-; $LastChangedRevision: 23117 $
+; $LastChangedDate: 2017-04-27 15:23:13 -0700 (Thu, 27 Apr 2017) $
+; $LastChangedRevision: 23233 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -565,8 +565,8 @@ pro rbsp_efw_make_l2,sc,date,$
 ;Set a 3D flag variable for the survey plots
 ;--------------------------------------------------
 
-     ;;charging, extreme charging, autobias and eclipse flags all in one variable for convenience
-     flags = [[flag_arr[*,15]],[flag_arr[*,16]],[flag_arr[*,14]],[flag_arr[*,1]]]
+     ;;charging, autobias, eclipse, and extreme charging flags all in one variable for convenience
+     flags = [[flag_arr[*,15]],[flag_arr[*,14]],[flag_arr[*,1]],[flag_arr[*,16]]]
 
 
 
@@ -1014,6 +1014,8 @@ pro rbsp_efw_make_l2,sc,date,$
 
 
 ;variables to delete
+     cdf_vardelete,cdfid,'e_spinfit_mgse_efw_qual'
+     cdf_vardelete,cdfid,'esvy_vxb_mgse2'
 	   cdf_vardelete,cdfid,'angle_Ey_Ez_Bo'
      cdf_vardelete,cdfid,'Lstar'
      cdf_vardelete,cdfid,'e_spinfit_mgse_BEB_config'
