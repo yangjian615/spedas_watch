@@ -3,7 +3,7 @@
 ;input: nden is pickup ion source neutral density (cm-3)
 ;output: dphi is pickup ion differential number flux (cm-2 s-1)
 
-pro mvn_pui_flux_calculator,nden,dphi
+function mvn_pui_flux_calculator,nden
 
   @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -24,5 +24,7 @@ pro mvn_pui_flux_calculator,nden,dphi
   pui.model[pui0.msub].params.toteph=total(deph,1) ;total pickup energy flux (eV cm-2 s-1)
   pui.model[pui0.msub].params.totmph=total(dmph,1) ;total pickup momentum flux (g cm-1 s-2)
   pui.model[pui0.msub].params.totnnn=total(dnnn,1,/nan) ;total pickup number density (cm-3)
+  
+  return,dphi
   
 end

@@ -38,11 +38,11 @@ if ~keyword_set(nosep) then begin
   mvn_sep_var_restore,units_name='Rate',/basic_tags ;load SEP data
   ;cdf2tplot,mvn_pfp_file_retrieve('maven/data/sci/sep/anc/cdf/YYYY/MM/mvn_sep_l2_anc_YYYYMMDD_v??_r??.cdf',/daily),prefix='SepAnc_' ;sep ancillary data
 
-  ylim,'mvn_sep?_?-?_Rate_Energy',10,1e3
-  zlim,'mvn_sep?_?-?_Rate_Energy',.1,1e4
-  options,'mvn_sep?_?-?_Rate_Energy','panel_size',1
-  options,'mvn_sep?_?-?_Rate_Energy','ytickunits','scientific'
-  options,'mvn_sep?_?-?_Rate_Energy','ztickunits','scientific'
+;  ylim,'mvn_sep?_?-?_Rate_Energy',10,1e3
+;  zlim,'mvn_sep?_?-?_Rate_Energy',.1,1e4
+;  options,'mvn_sep?_?-?_Rate_Energy','panel_size',1
+  options,'mvn_sep?_?-*_Rate_Energy','ytickunits','scientific'
+  options,'mvn_sep?_?-*_Rate_Energy','ztickunits','scientific'
   options,'mvn_sep?_svy_DURATION','panel_size',.5
 endif
 
@@ -50,7 +50,7 @@ if ~keyword_set(noeuv) then begin
   mvn_euv_l3_load ;load FISM data
   mvn_euv_load ;load EUVM data
 
-  ylim,'mvn_euv_data',.0001,.01,1
+  ylim,'mvn_euv_data',1e-5,1e-2,1
   options,'mvn_euv_data','colors','bgr'
 endif
 

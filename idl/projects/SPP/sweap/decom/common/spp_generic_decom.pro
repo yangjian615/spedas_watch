@@ -7,7 +7,7 @@ function spp_generic_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ;dprint,format="('Generic routine for',Z04)",ccsds.apid                                                                                              
   if debug(4,msg='Generic') then begin
      dprint,dlevel=2,'generic:',ccsds.apid,ccsds.pkt_size
-     hexprint,ccsds.data
+ ;    hexprint,ccsds.data
   endif
   return,str
 

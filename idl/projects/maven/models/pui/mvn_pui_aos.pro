@@ -4,10 +4,12 @@
 
 pro mvn_pui_aos,nt=nt,np=np,ns=ns,binsize=binsize,trange=trange,do3d=do3d
 
-if n_elements(nt) eq 0 then nt=1
-if n_elements(np) eq 0 then np=1
+if n_elements(nt) eq 0 then nt=2
+if n_elements(np) eq 0 then np=2
+if n_elements(ns) eq 0 then ns=2
 if n_elements(binsize) eq 0 then binsize=0.
 if n_elements(trange) eq 0 then trange=0.
+if n_elements(do3d) eq 0 then do3d=0
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -29,12 +31,13 @@ pui0={              $ ;instrument and model constants structure
   totdee:.1,        $ ;total flux binning dE/E
   np:np,            $ ;number of simulated particles
   nt:nt,            $ ;number of time steps
-  ns:ns,            $ ;number of species [0:hydrogen, 1:oxygen, 2:other stuff]
+  ns:ns,            $ ;number of species [0:hydrogen, 1:oxygen, >1:other stuff]
   ngps:[1.,1.],     $ ;number of gyro-periods solved
   mamu:[1.,16.],    $ ;mass of [H=1 C=12 N=14 O=16] (amu)
   msub:0,           $ ;species subscript (0=H, 1=O)
   tbin:binsize,     $ ;time bin size (s)
-  trange:trange     $ ;trange
+  trange:trange,    $ ;trange
+  do3d:do3d         $ ;do3d
 }
 
 fnan=!values.f_nan
@@ -49,7 +52,6 @@ pui1={ $ ;energy bins structure
 
 pui2={vtot:fnan,rtot:fnan,dr:fnan,ke:fnan,de:fnan,mv:fnan}
 pui2=replicate(pui2,np,nt) ;temporary structure
-  
 
 ;**********DATA**********
 xyz=replicate(fnan,3)
@@ -66,7 +68,7 @@ sta={fov:{x:xyz,z:xyz},c0:c0,d1:d1}
 mag={payload:xyz,mso:xyz}
 euv={l2:xyz,l3:replicate(fnan,pui0.euvwb)}
 
-data={sep:sep,swi:swi,swe:swe,sta:sta,mag:mag,euv:euv,scp:xyz,mars_au:fnan,mars_ls:fnan}
+data={sep:sep,swi:swi,swe:swe,sta:sta,mag:mag,euv:euv,scp:xyz,mars_au:fnan,mars_ls:fnan,swalt:fnan}
 
 ;*********MODEL**********
 pi={nm:replicate(fnan,pui0.euvwb),tot:fnan}
@@ -87,9 +89,12 @@ fluxes={sep:sep,swi1d:swi1d,swi3d:swi3d,sta1d:sta1d,sta3d:sta3d,toteflux:toteflu
 params={fg:fnan,tg:fnan,rg:fnan,kemax:fnan,totphi:fnan,toteph:fnan,totmph:fnan,totnnn:fnan}
 
 model={ifreq:ifreq,rv:replicate(fnan,6,np),fluxes:fluxes,params:params}
-model=replicate(model,pui0.ns)
+model=replicate(model,ns)
 
-pui={data:data,model:model,centertime:0d}
+;*********Data to Model Ratio**********
+d2m=replicate({sep:replicate(fnan,2),swi:fnan,sta:fnan},ns)
+
+pui={data:data,model:model,d2m:d2m,centertime:0d}
 pui=replicate(pui,nt) ;model-data array of structures
 
 end

@@ -84,7 +84,8 @@ function spp_gen_apdat::decom,ccsds,header
 
 strct = ccsds
 strct.pdata = ptr_new()
-if self.routine then  strct = call_function(self.routine,ccsds, ptp_header=header ,apdat = self.struct())
+ap = self.struct()
+if self.routine then  strct = call_function(self.routine,ccsds, ptp_header=header ,apdat = ap)
 return,strct
 end
 

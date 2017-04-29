@@ -38,7 +38,7 @@ pro spp_swp_apdat_init,reset=reset, save_flag = save_flag, $
   spp_apdat_info,'352'x,routine='spp_swp_spc_decom',    tname='spp_spc_352_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
   spp_apdat_info,'353'x,routine='spp_swp_spc_decom',    tname='spp_spc_353_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
   spp_apdat_info,'35E'x,routine='spp_swp_spc_decom',    tname='spp_spc_35E_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
-  spp_apdat_info,'35F'x,routine='spp_swp_spc_decom',    tname='spp_spc_hkp_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
+  spp_apdat_info,'35F'x,name='spc_hkp',routine='spp_swp_spc_decom',    tname='spp_spc_hkp_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
 
 
   ;;############################################
@@ -230,6 +230,7 @@ endif
   spp_apdat_info,'753'x,name='aps3' ,routine='spp_power_supply_decom',tname='APS3_',   save_flag=save_flag,ttags='*P6? *N25V',   rt_flag=rt_flag 
   spp_apdat_info,'754'x,name='aps4' ,routine='spp_power_supply_decom',tname='APS4_',   save_flag=save_flag,ttags='P25?',   rt_flag=rt_flag 
   spp_apdat_info,'755'x,name='aps5' ,routine='spp_power_supply_decom',tname='APS5_',   save_flag=save_flag,ttags='P25?',   rt_flag=rt_flag
+  spp_apdat_info,'756'x,name='aps6' ,routine='spp_power_supply_decom',tname='APS6_',   save_flag=save_flag,ttags='P25?',   rt_flag=rt_flag
   spp_apdat_info,'761'x,name='bertan1' ,routine='spp_power_supply_decom',tname='Igun_',save_flag=save_flag,ttags='*VOLTS *CURRENT',   rt_flag=rt_flag 
   spp_apdat_info,'762'x,name='bertan2',routine='spp_power_supply_decom',tname='Egun_', save_flag=save_flag,ttags='*VOLTS *CURRENT',   rt_flag=rt_flag 
   spp_apdat_info,'7c0'x,name='log_msg',routine='spp_log_msg_decom'     ,tname='log_',  save_flag=save_flag,ttags='MSG',   rt_flag=rt_flag 

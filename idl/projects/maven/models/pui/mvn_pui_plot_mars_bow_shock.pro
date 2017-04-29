@@ -4,21 +4,23 @@
 ;rm: plots in units of Rm instead of km
 ;p3d: plots in 3d
 ;lbst: bow shock extension (in Rm)
+;half: plots only the upper half
 
-pro mvn_pui_plot_mars_bow_shock,rm=rm,p3d=p3d,lbst=lbst
+pro mvn_pui_plot_mars_bow_shock,rm=rm,p3d=p3d,lbst=lbst,half=half,xtitle=xtitle,ytitle=ytitle,ztitle=ztitle
 
-  theta=!dtor*findgen(361) ;theta in radians
+  if ~keyword_set(half) then degrees=361 else degrees=181
+  theta=!dtor*findgen(degrees) ;theta in radians
   xmars=cos(theta)
   ymars=sin(theta)
 
   if ~keyword_set(lbst) then lbst=3.
-  ybow=(-1.+findgen(201)/100.)*lbst
+    if ~keyword_set(half) then ybow=(-1.+findgen(201)/100.)*lbst else ybow=(findgen(101)/100.)*lbst 
   xbow=1.7-.24*ybow^2 ;fit to nominal mars bow shock
 
-  xtitle='$X (R_M)$'
+  if ~keyword_set(xtitle) then xtitle='$X (R_M)$'
 ;  ytitle='$(Y^2+Z^2)^{1/2} (R_M)$'
-  ytitle='$Y (R_M)$'
-  ztitle='$Z (R_M)$'
+  if ~keyword_set(ytitle) then ytitle='$Y (R_M)$'
+  if ~keyword_set(ztitle) then ztitle='$Z (R_M)$'
   
   if ~keyword_set(rm) then begin
     rmars=3400. ;radius of mars (km)
@@ -26,9 +28,9 @@ pro mvn_pui_plot_mars_bow_shock,rm=rm,p3d=p3d,lbst=lbst
     ymars*=rmars
     xbow*=rmars
     ybow*=rmars
-    xtitle='X (km)'
-    ytitle='Y (km)'
-    ztitle='Z (km)'
+    if ~keyword_set(xtitle) then xtitle='X (km)'
+    if ~keyword_set(ytitle) then ytitle='Y (km)'
+    if ~keyword_set(ztitle) then ztitle='Z (km)'
   end
 
 

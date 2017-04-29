@@ -1,6 +1,6 @@
 
 
-pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,remainder=remainder   ;,recurse_level=recurse_level,ccsds=ccsds
+pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,remainder=remainder   ,recurse_level=recurse_level;,ccsds=ccsds
 
   if not keyword_set(buffer_length) then buffer_length = n_elements(dbuffer)
   if not keyword_set(offset) then offset = 0L
@@ -16,9 +16,12 @@ pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,rem
       break
     endif
     npackets +=1
-    if debug(4) then begin
+    if  debug(4) then begin
       ccsds_data = spp_swp_ccsds_data(ccsds)  
-      dprint,dlevel=4,format='(i3,i6," APID: ", Z03,"  SeqGrp:",i1, " Seqn: ",i5,"  Size: ",i5,"   ",8(" ",Z02))',npackets,offset,ccsds.apid,ccsds.seq_group,ccsds.seqn,ccsds.pkt_size,ccsds_data[12:17]
+      n = ccsds.pkt_size
+      if n gt 12 then ind = indgen(n-12)+12 else ind = !null      
+;      dprint,dlevel=4,format='(i3,i6," APID: ", Z03,"  SeqGrp:",i1, " Seqn: ",i5,"  Size: ",i5,"   ",8(" ",Z02))',npackets,offset,ccsds.apid,ccsds.seq_group,ccsds.seqn,ccsds.pkt_size,ccsds_data[ind]
+      dprint,dlevel=4,format='(i3,i6," APID: ", Z03,"  SeqGrp:",i1, " Seqn: ",i5,"  Size: ",i5,"   ")',npackets,offset,ccsds.apid,ccsds.seq_group,ccsds.seqn,ccsds.pkt_size   ;,ccsds_data[ind]
     endif
     offset += ccsds.pkt_size
         

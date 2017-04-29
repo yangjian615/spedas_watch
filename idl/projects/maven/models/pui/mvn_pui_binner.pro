@@ -2,7 +2,7 @@
 ;binning of fluxes according to energy and angular response of SEP, SWIA, STATIC
 ;to be called by mvn_pui_model
 
-pro mvn_pui_binner,dphi,do3d=do3d
+pro mvn_pui_binner,dphi
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -97,7 +97,7 @@ pui.model[msub].fluxes.toteflux=keflux/pui0.totdee; total pickup angle-integrate
 pui.model[msub].fluxes.swi1d.eflux=kefswi/pui0.swidee/pui0.swiatsa; differential energy flux (eV/[cm2 s sr eV])
 pui.model[msub].fluxes.sta1d.eflux=kefsta/pui0.stadee/pui0.swiatsa; differential energy flux (eV/[cm2 s sr eV])
 
-if keyword_set(do3d) then begin
+if pui0.do3d then begin
   swi3d=replicate({ef:0.,nn:0.,rv:replicate(0.,6)},pui0.swieb,pui0.swina,pui0.swine,nt) ;swia 3d eflux binning
   sta3d=replicate({ef:0.,nn:0.,rv:replicate(0.,6)},pui0.sd1eb,pui0.swina,pui0.swine,nt) ;swia 3d eflux binning
 

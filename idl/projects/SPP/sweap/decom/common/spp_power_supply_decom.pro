@@ -10,15 +10,15 @@ function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
   ;dprint,format="('Generic routine for',Z04)",ccsds.apid
   size = ccsds.pkt_size
   if size lt 22 then begin
-    dprint,'error'
+    dprint,'power supply decom error'
     return,0
   endif
   ccsds_data = spp_swp_ccsds_data(ccsds)
 ;  printdat,ccsds
   b = ccsds_data
-  if debug(5) then begin
-     dprint,dlevel=5,'Power Supply',ccsds.pkt_size, n_elements(ccsds_data),'  ',time_string(ccsds.time,/local)
-     hexprint,ccsds_data
+  if debug(4) then begin
+     dprint,dlevel=3,'Power Supply',ccsds.pkt_size, n_elements(ccsds_data),'  ',time_string(ccsds.time,/local)
+ ;    hexprint,ccsds_data
   endif
   case size of
      60: begin   ;  HVPS
@@ -40,7 +40,7 @@ function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
                VLIM: spp_swp_float_decom(b,52), $
                clim: spp_swp_float_decom(b,56) *1e3, $
                gap: ccsds.gap}
-        if debug(5) then begin
+        if debug(3) then begin
           dprint,dlevel=4,str,phelp=2
           dprint,dlevel=3,time_string(str.time),' ',str.current
         endif
@@ -69,7 +69,7 @@ function spp_power_supply_decom,ccsds,ptp_header=ptp_header,apdat=apdat
          p6i     : spp_swp_float_decom(b,76), $
          gap: ccsds.gap}
        if debug(5) then begin
-         dprint,dlevel=5,'APS:',time_string(ccsds.time)
+         dprint,dlevel=3,'APS:',time_string(ccsds.time)
      ;    hexprint,b[12:*]  
          printdat,str     
        endif

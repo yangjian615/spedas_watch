@@ -42,7 +42,7 @@ for ix=0,nx-1 do begin
     chap=cos(sza/1.5) ;chapman function
     chap[where(chap lt 1e-10,/null)]=1e-10
     nden*=nfac*chap
-    mvn_pui_flux_calculator,nden,dphi
+    dphi=mvn_pui_flux_calculator(nden)
     denmap[ix,iy]=pui.model[pui0.msub].params.totnnn
 ;    sza=mvn_pui_sza(pui.data.scp[0],pui.data.scp[1],pui.data.scp[2])
 ;    chap=cos(sza/1.5) ;chapman function
@@ -53,8 +53,7 @@ endfor
 g=image(alog10(denmap),scx-nxrm/nx,scy-nyrm/ny,rgb_table=colortable(33),axis_style=2,margin=.2,max=-1.,min=-4.,title='$Log_{10} [Pickup O^+ Density (cm^{-3})]$')
 ;g=image(alog10(dnnmap),scx-nxrm/nx,scy-nyrm/ny,rgb_table=colortable(33),axis_style=2,margin=.1,max=4.,min=0.)
 c=colorbar(target=g,/orientation)
-mvn_pui_plot_mars_bow_shock,/rm,lbst=17
-g.ytitle='$Z_{MSE} (R_M)$'
+mvn_pui_plot_mars_bow_shock,/rm,lbst=17,ytitle='$Z_{MSE} (R_M)$'
 dprint,dlevel=2,'Simulation time: '+strtrim(systime(1)-simtime,2)+' seconds'
 stop
 

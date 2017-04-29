@@ -39,7 +39,7 @@ nno=mvn_pui_exoden(pui2.rtot,species='o')
 
 ;nden=nncss
 nden=nno
-mvn_pui_flux_calculator,nden,dphi
+dphi=mvn_pui_flux_calculator(nden)
 mvn_pui_binner,dphi,do3d=do3d ;bin the results
 if pui0.msub eq 1 then mvn_pui_sep_energy_response
 if nt gt 1 then mvn_pui_tplot,/store,/tplot

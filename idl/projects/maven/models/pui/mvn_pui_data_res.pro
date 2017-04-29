@@ -3,7 +3,7 @@
 ;and puts them in an array of structures in common block "mvn_pui_com"
 ;to be called by mvn_pui_model
 
-pro mvn_pui_data_res,do3d=do3d
+pro mvn_pui_data_res
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 binsize=pui0.tbin
@@ -112,7 +112,7 @@ if keyword_set(mvn_c0_dat) then begin
   store_data,'mvn_redures_L_sta_c0',centertime,c0eflux[*,*,0],c0energy
 endif
 
-if keyword_set(mvn_d1_dat) and keyword_set(do3d) then begin
+if keyword_set(mvn_d1_dat) and pui0.do3d then begin
   time = (mvn_d1_dat.time + mvn_d1_dat.end_time)/2.
   d1eflux=average_hist2(mvn_d1_dat.eflux,time,binsize=binsize,trange=trange,centertime=centertime); static d1 energy flux
   d1energy=average_hist2(mvn_d1_dat.energy[mvn_d1_dat.swp_ind,*,0,0],time,binsize=binsize,trange=trange,centertime=centertime); static d1 energy table
@@ -165,8 +165,9 @@ if keyword_set(fismdata) then pui.data.euv.l3=transpose(interp(fismdata.y,fismda
 
 ;----------Boundaries----------
 ;get_data,'wind',data=wind ;s/c altitude when in the solar wind (km)
-;pui.model.swalt=average_hist2(wind.y,wind.x,binsize=binsize,trange=trange,centertime=centertime);  s/c altitude when in the solar wind (km)
-
+;pui.model.swalt=average_hist2(wind.y,wind.x,binsize=binsize,trange=trange,centertime=centertime)
+mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw
+pui.data.swalt=alt_sw ;s/c altitude when in the solar wind (km)
 ;----------Positions----------
 pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects='MARS') ;MAVEN position MSO (m)
 

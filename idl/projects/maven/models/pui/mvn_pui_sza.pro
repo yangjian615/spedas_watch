@@ -6,6 +6,6 @@ function mvn_pui_sza,x,y,z
 r=sqrt(y^2+z^2)
 sza=atan(r,x)
 
-return,sza
+return,reform(sza)
 
 end

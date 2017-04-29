@@ -15,6 +15,7 @@
 ;   np: number of simulated particles in each time bin. if not set, default is used (1000 particles)
 ;   ns: number of simulated species. default is 2 (H and O)
 ;   do3d: models pickup oxygen and hydrogen 3D spectra for SWIA and STATIC, a bit slower than 1D spectra and requires more memory
+;   savetplot: saves the tplots as png files
 ;   exoden: sets exospheric neutral densities to n(r)=1 cm-3 for exospheric density retrieval by a reverse method
 ;   nodataload: skips loading any data. use if you want to re-run the simulation with all the required data already loaded
 ;   nomag: skips loading mag data. if not already loaded, uses default IMF
@@ -25,7 +26,7 @@
 ;   noeuv: skips loading euv data. if not already loaded, uses default photoionization frequencies
 ;   nospice: skips loading spice kernels (use in case spice is already loaded, otherwise the code will fail)
 
-pro mvn_pui_model,binsize=binsize,trange=trange,np=np,ns=ns,do3d=do3d,exoden=exoden,nodataload=nodataload, $
+pro mvn_pui_model,binsize=binsize,trange=trange,np=np,ns=ns,do3d=do3d,exoden=exoden,savetplot=savetplot,nodataload=nodataload, $
                   nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
@@ -36,14 +37,14 @@ if ~keyword_set(np) then np=1000; number of simulated particles (1000 is enough 
 if ~keyword_set(ns) then ns=2;  number of simulated species. default is 2 (H and O)
 if ~keyword_set(nodataload) then mvn_pui_data_load,do3d=do3d,nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice
 if np lt 2 then begin
-  dprint,'number of simulated particles in each time bin must be greater than 1.'
+  dprint,'number of simulated particles in each time bin must be greater than 1'
   return
 endif
 
 trange=time_double(trange)
 nt=1+floor((trange[1]-binsize/2.-trange[0])/binsize) ;number of time steps
 mvn_pui_aos,nt=nt,np=np,ns=ns,binsize=binsize,trange=trange,do3d=do3d ;initializes the array of structures for time series (pui) and defines intrument constants
-mvn_pui_data_res,do3d=do3d ;change data resolution and load instrument pointings and put them in arrays of structures
+mvn_pui_data_res ;change data resolution and load instrument pointings and put them in arrays of structures
 mvn_pui_data_analyze ;analyze data: calculate ionization frequencies
 
 ttdtsf=1. ;time to do the simulation factor
@@ -66,8 +67,8 @@ rtot[where(rtot lt 3600e3,/null)]=3600e3 ;to ensure the radius doesn't go below 
 nden=mvn_pui_exoden(rtot,species='h') ;hydrogen density (cm-3)
 nden*=nfac
 if keyword_set(exoden) then nden=1. ;assuming n(r)=1 cm-3
-mvn_pui_flux_calculator,nden,dphi
-mvn_pui_binner,dphi,do3d=do3d ;bin the results
+dphi=mvn_pui_flux_calculator(nden)
+mvn_pui_binner,dphi ;bin the results
 dprint,dlevel=2,'Pickup H+ binning done.'
 ;-----------------------------------------
 ;modeling pickup oxygen
@@ -85,12 +86,12 @@ rtot[where(rtot lt 3600e3,/null)]=3600e3 ;to ensure the radius doesn't go below 
 nden=mvn_pui_exoden(rtot,species='o') ;oxygen density (cm-3)
 nden*=nfac
 if keyword_set(exoden) then nden=1. ;assuming n(r)=1 cm-3
-mvn_pui_flux_calculator,nden,dphi
-mvn_pui_binner,dphi,do3d=do3d ;bin the results
+dphi=mvn_pui_flux_calculator(nden)
+mvn_pui_binner,dphi ;bin the results
 dprint,dlevel=2,'Pickup O+ binning done.'
 mvn_pui_sep_energy_response
 ;------------------------------------------
-if ~keyword_set(exoden) then mvn_pui_tplot,/store,/tplot ;store the results in tplot variables and plot them
+if ~keyword_set(exoden) then mvn_pui_tplot,/store,/tplot,savetplot=savetplot ;store the results in tplot variables and plot them
 dprint,dlevel=2,'Simulation time: '+strtrim(systime(1)-simtime,2)+' seconds'
 
 end
