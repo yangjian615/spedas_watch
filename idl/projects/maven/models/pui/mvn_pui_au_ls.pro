@@ -16,7 +16,7 @@ endif
 
 inn=n_elements(times)
 
-marspos=transpose(spice_body_pos('MARS','SUN',utc=times))/au ;Mars position (AU)
+marspos=transpose(spice_body_pos('MARS','SUN',utc=times,check_objects='MARS'))/au ;Mars position (AU)
 mars_au=sqrt(total(marspos^2,2)) ;Mars heliocentric distance (AU)
 
 et=time_ephemeris(times,/ut2et) ;J2000 time

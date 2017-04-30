@@ -9,9 +9,9 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
   if keyword_set(swia3d) || keyword_set(stah3d) || keyword_set(stao3d) then switch3d=1 else switch3d=0
   if keyword_set (datimage) or keyword_set (modimage) or keyword_set (d2mimage) then img=1 else img=0
 
-  if switch3d and (keyword_set(store) or img) then begin
+  if keyword_set(store) or img then begin
 
-    if keyword_set(swica) then begin
+    if keyword_set(swics) then begin
       ;swap swia dimentions to match the model (time-energy-az-el)
       ;also, reverse the order of elevation (deflection) angles to start from positive theta (like static)
       swiaef3d=reverse(transpose(pui.data.swi.swica.data,[3,0,2,1]),4)
@@ -28,11 +28,14 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
       d1energy=transpose(pui.data.sta.d1.energy)
     endif
 
-    store_data,'mvn_s*_model*_A*D*',/delete
-    store_data,'mvn_s*_data*_A*D*',/delete
-    dprint,dlevel=2,'Creating 3D tplots. This will take a few seconds to complete...'
+    if keyword_set(store) and switch3d then begin
+      store_data,'mvn_s*_model*_A*D*',/delete
+      store_data,'mvn_s*_data*_A*D*',/delete
+      dprint,dlevel=2,'Creating 3D tplots. This will take a few seconds to complete...'
+      verbose=0
+    endif
+
     if img and ~keyword_set(nowin) then p=window(background_color='k',dim=[400,200])
-    verbose=0
 
     for j=0,pui0.swina-1 do begin ;loop over azimuth bins (phi)
       for k=0,pui0.swine-1 do begin ;loop over elevation bins (theta): + to - theta goes left to right on the screen
@@ -45,7 +48,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
           if keyword_set(d2mimage) then p=image(alog10(swiaef3d[*,*,jj,k]/kefswi3d),layout=[4,16,1+k+j*4],/current,margin=.01,rgb_table=33,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
           if keyword_set(store) then begin
             store_data,'mvn_swia_model_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,kefswi3d,pui1.swiet,verbose=verbose
-            if keyword_set(swica) then store_data,'mvn_swia_data_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,swiaef3d[*,*,jj,k],swicaen,verbose=verbose
+            if keyword_set(swics) then store_data,'mvn_swia_data_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,swiaef3d[*,*,jj,k],swicaen,verbose=verbose
             options,'mvn_swia*_A*D*','spec',1
             options,'mvn_swia*_A*D*','ytickunits','scientific'
             ylim,'mvn_swia*_A*D*',25,25e3,1
@@ -78,10 +81,13 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
       endfor
     endfor
 
-    options,'mvn_stat*_A*D*','spec',1
-    options,'mvn_stat*_A*D*','ytickunits','scientific'
-    ylim,'mvn_stat*_A*D*',10,35e3,1
-    zlim,'mvn_stat*_A*D*',1e4,1e8,1
+    if keyword_set(store) and switch3d then begin
+      options,'mvn_stat*_A*D*','spec',1
+      options,'mvn_stat*_A*D*','ytickunits','scientific'
+      ylim,'mvn_stat*_A*D*',10,35e3,1
+      zlim,'mvn_stat*_A*D*',1e4,1e8,1
+    endif
+
   endif
 
   if keyword_set(store) then begin
@@ -116,7 +122,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
     store_data,'mvn_d2m_ratio_stat_O',data='mvn_d2m_ratio_all_stat_O mvn_d2m_ratio_avg_stat_O',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
     store_data,'mvn_d2m_ratio_stat_H',data='mvn_d2m_ratio_all_stat_H mvn_d2m_ratio_avg_stat_H',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
 
-    if keyword_set(swica) then begin
+    if keyword_set(swics) then begin
       knnswio3d=swiaef3d/kefswio3d/(~kefswih3d) ;exospheric neutral density (cm-3) data/model ratio
       knnswih3d=swiaef3d/kefswih3d/(~kefswio3d)
       knnswio3dtot=exp(mean(alog(reform(knnswio3d[*,0:ebinlimo,*,*],[pui0.nt,dimo3d])),dim=2,/nan))

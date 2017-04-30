@@ -11,6 +11,17 @@ store_data,'foo2',data={x:d.x,y:dc}
 end
 
 
+function spp_swp_data_select,bytearray,startbit,nbits
+case nbits of 
+8:    v =  bytearray[startbit/8]
+16:   v = (swap_endian( uint(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
+32:   v = (swap_endian(ulong(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
+else:  dprint,'error'  
+endcase
+return,v
+end
+
+
 
 function spp_swp_swem_timing_decom,ccsds,ptp_header=ptp_header,apdat=apdat
 
@@ -35,21 +46,54 @@ if ccsds.pkt_size lt 72 then begin
   return,0
 endif
 
-values = swap_endian(ulong(ccsds_data,10,11) )
-values2 = swap_endian(ulong(ccsds_data,448/8,4) )
-sc_time_subsecs =  (swap_endian(uint(ccsds_data,432/8,1) ,/swap_if_little_endian ))[0]
+if 0 then begin
+  values = swap_endian(ulong(ccsds_data,10,11) )
+  values2 = swap_endian(ulong(ccsds_data,448/8,4) )
+  sc_time_subsecs =  (swap_endian(uint(ccsds_data,432/8,1) ,/swap_if_little_endian ))[0]
 
-sample_clk_per = double(values[0])
-scpps_met_time = double(values[1])
-sample_MET = values[3] + values[2]/ 2d^16
-fields_f123 = values[5] + values[6] / 2d^16
-fields_met = values[7] + values[8] / 2d^16
-sc_time = values[10] + sc_time_subsecs / 2d^16
-fields_f0 = values2[0]
-scsubsecsatpps = values2[1]
-fields_smpl_timerr = values2[2]
-clks_per_pps = values2[3]
+  sample_MET_subsec=   values[2]
+  fields_clk_transition=  values[4] and 1
+  fields_subsec=          values[6]
+  fields_MET_subsec=  values[8]
+  sc_time_subsec  = 0u    ;  not sure what it was
+  MET_jitter=       values[9]
+  
+  sample_clk_per = double(values[0])
+  scpps_met_time = double(values[1])
+  sample_MET = values[3] + values[2]/ 2d^16
+  fields_f123 = values[5] + values[6] / 2d^16
+  fields_met = values[7] + values[8] / 2d^16
+  sc_time = values[10] + sc_time_subsecs / 2d^16
+  fields_f0 = values2[0]
+  scsubsecsatpps = values2[1]
+  fields_smpl_timerr = values2[2]
+  clks_per_pps = values2[3]
+  fields_clk_cycles =  ishft(ulong(values[4]),-1)
+  
+endif else begin
+  sample_clk_per = spp_swp_data_select(ccsds_data,80,16)
+  scpps_met_time = spp_swp_data_select(ccsds_data,96,32)
 
+  sample_MET_subsec=  spp_swp_data_select(ccsds_data,128,32) 
+  fields_subsec=      spp_swp_data_select(ccsds_data,256,16)
+  fields_MET_subsec=  spp_swp_data_select(ccsds_data,304,16)
+  sc_time_subsec  =  spp_swp_data_select(ccsds_data,384,16) 
+  MET_jitter=       spp_swp_data_select(ccsds_data,320,32)
+  
+  
+  sample_MET = spp_swp_data_select(ccsds_data,160,32) + sample_MET_subsec/ 2d^16
+  fields_f123 = spp_swp_data_select(ccsds_data,224,32) +fields_subsec / 2d^16
+  fields_met  = spp_swp_data_select(ccsds_data,272,32) +fields_MET_subsec / 2d^16
+  sc_time     = spp_swp_data_select(ccsds_data,352,32) +sc_time_subsec / 2d^16
+  fields_f0 = spp_swp_data_select(ccsds_data,400,32)
+  scsubsecsatpps =  spp_swp_data_select(ccsds_data,432,32)
+  fields_smpl_timerr = spp_swp_data_select(ccsds_data,464,32)
+  clks_per_pps = spp_swp_data_select(ccsds_data,496,32)
+  fields_clk_cycles = spp_swp_data_select(ccsds_data,192,32) 
+  fields_clk_transition=  fields_clk_cycles and 1
+  fields_clk_cycles = ishft( fields_clk_cycles,-1)
+
+endelse
 ;
 ;printdat,ptp_header
 
@@ -67,22 +111,14 @@ fields_f123 += fields_dt
 
 ttt = sample_met
 ;ttt = fields_met
- 
- 
-;printdat,ccsds
-;dprint,ccsds.met - values[1],ccsds.dtime
- 
- 
+  
 sample_clk_per_delta =    double( uint( ( sample_clk_per - last_str.sample_clk_per) ) )
  
 time_drift = (sample_MET - sample_clk_per * (2d^24 / 19.2d6) ) mod 1
 
 
-
 df0 = uint( sample_clk_per - last_str.sample_clk_per)
 
- 
-fields_clk_cycles =  ishft(ulong(values[4]),-1)
 fields_clk_cycles_delta = long( fix( fields_clk_cycles - last_str.fields_clk_cycles ) ) 
 
 ;fields_clk_cycles_delta =  fields_clk_cycles_delta / df0
@@ -102,11 +138,11 @@ clks_per_pps_delta =     ( clks_per_pps - last_str.clks_per_pps  ) and (k-1)
 clks_per_pps_delta = ( clks_per_pps_delta + k *floor(dseq * 19.2d6/k) ) / dseq
 
 
-if debug(4) then begin
+if debug(5) then begin
   hexprint,[clks_per_pps,clks_per_pps_delta]
 ;  dprint,clks_per_pps,clks_per_pps_delta
 endif
-
+;dprint,ptp_header.ptp_time - floor(ptp_header.ptp_time)
  
 str = {time:   ccsds.time  ,$
        time_delta:  ccsds.time_delta / ccsds.seqn_delta   ,$
@@ -117,18 +153,14 @@ str = {time:   ccsds.time  ,$
      scpps_met_time:    scpps_met_time ,$
      scpps_met_time_delta:  scpps_met_time - last_str.scpps_met_time, $
      MET_TIME_DIFF:   scpps_met_time - ccsds.met, $
-     sample_MET_subsec:   values[2] ,$
-;     sample_MET_secs:   values[3] ,$
+     sample_MET_subsec:  sample_MET_subsec ,$
      fields_clk_cycles:  fields_clk_cycles,$
        fields_clk_cycles_delta:  fields_clk_cycles_delta,$
-     fields_clk_transition:  values[4] and 1 ,$
-;     fields_F1F2:       values[5] ,$
-     fields_subsec:          values[6] ,$
-;     fields_MET_secs:    values[7] ,$
-     fields_MET_subsec:  values[8] ,$
-     MET_jitter:       values[9] ,$
-;     sc_time_SECS:  values[10] ,$
-     sc_time_subSEC: sc_time_subsecs , $
+     fields_clk_transition:  fields_clk_transition ,$
+     fields_subsec:         fields_subsec ,$
+     fields_MET_subsec:  fields_MET_subsec ,$
+     MET_jitter:      MET_jitter ,$
+     sc_time_subSEC: sc_time_subSEC, $
      sample_MET:        sample_MET ,$
      fields_F123:      fields_f123 ,$
      fields_MET:       fields_met ,$
@@ -153,7 +185,7 @@ str = {time:   ccsds.time  ,$
 ;tploprintdat,str
 
   if debug(4,msg='SWEM Timing') then begin
-     dprint,dlevel=2,'generic:',ccsds.apid,ccsds.size+7, n_elements(ccsds_data)
+     dprint,dlevel=2,'generic:',ccsds.apid,ccsds.pkt_size+7, n_elements(ccsds_data)
      hexprint,ccsds_data
   endif
 

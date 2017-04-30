@@ -42,7 +42,7 @@ pro spp_ptp_lun_read,in_lun,out_lun,info=info
       if (sz lt 17) || (ptp_buf[2] ne 3) || (ptp_buf[3] ne 0) || (ptp_buf[4] ne 'bb'x) then  begin     ;; Lost sync - read one byte at a time
           remainder = ptp_buf[1:*]
           buf = bytarr(1)
-          if debug(3) then begin
+          if debug(2) then begin
             dprint,dlevel=2,'Lost sync:',dwait=10
           endif
           continue  

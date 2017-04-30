@@ -52,19 +52,22 @@ endif else begin
   swisen=transpose(info_str[pui.data.swi.swis.info_index].energy_coarse)
   store_data,'mvn_redures_swia',data={x:centertime,y:transpose(pui.data.swi.swis.data),v:swisen},limits={ylog:1,zlog:1,spec:1,yrange:[25,25e3],ystyle:1,zrange:[1e3,1e8],ztitle:'Eflux',ytickunits:'scientific'}
 
-  if keyword_set(swics) then begin
+  if keyword_set(swics) then begin ;swia survey data
     swiactime = swics.time_unix +4.0*swics.num_accum/2  ;center time of sample/sum
     pui.data.swi.swics=average_hist(swics,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse survey
     swicsdt=swics[1:*].time_unix-swics[0:-1].time_unix
     store_data,'mvn_swics_dt_(s)',swics[1:*].time_unix,swicsdt
   endif
 
-  if keyword_set(swica) then begin
+  if keyword_set(swica) then begin ;swia archive (burst) data
     swiactime = swica.time_unix +4.0*swica.num_accum/2  ;center time of sample/sum
     pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse archive
     swicadt=swica[1:*].time_unix-swica[0:-1].time_unix
     store_data,'mvn_swica_dt_(s)',swica[1:*].time_unix,swicadt
-  endif
+  endif else pui.data.swi.swica=pui.data.swi.swics ;if no archive availabe at all, use survey instead
+  badindex=where(~finite(pui.data.swi.swica.time_unix),/null) ;no archive availabe
+  pui[badindex].data.swi.swica=pui[badindex].data.swi.swics ;use survey instead
+
   options,'mvn_swic?_dt_(s)','panel_size',.5
 endelse
 
@@ -169,7 +172,7 @@ if keyword_set(fismdata) then pui.data.euv.l3=transpose(interp(fismdata.y,fismda
 mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw
 pui.data.swalt=alt_sw ;s/c altitude when in the solar wind (km)
 ;----------Positions----------
-pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects='MARS') ;MAVEN position MSO (m)
+pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects=['MARS','MAVEN_SPACECRAFT']) ;MAVEN position MSO (m)
 
 mvn_pui_au_ls,times=centertime,mars_au=mars_au,mars_ls=mars_ls
 pui.data.mars_au=mars_au ;Mars heliocentric distance (AU)

@@ -10,7 +10,7 @@ if ~keyword_set(res) then res=60.*10. ;default time resolution (10 mins)
 if ~keyword_set(times) then times=dgen(range=timerange(trange),res=res)
 
 rmars=3400. ;mars radius (km)
-pos=spice_body_pos('MAVEN','MARS',frame='MSO',utc=times) ;orbit position (km)
+pos=spice_body_pos('MAVEN','MARS',frame='MSO',utc=times,check_objects=['MARS','MAVEN_SPACECRAFT']) ;orbit position (km)
 posx=reform(pos[0,*])
 posy=reform(pos[1,*])
 posz=reform(pos[2,*])

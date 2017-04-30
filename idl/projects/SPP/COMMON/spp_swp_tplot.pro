@@ -21,6 +21,8 @@ if keyword_set(setlim) then begin
   tplot,var_label=tnames('manip*_POS *DAC_DEFL Igun_VOLTS Igun_CURRENT')
   !y.style=3
   dprint,setd=3
+  store_data,'APID',data='APIDS_*'
+  ylim,'APID',800,1000
   
   
 endif
@@ -47,6 +49,8 @@ if keyword_set(name) then begin
     'SC':  tplot,'spp_*spc*',ADD=ADD
     'SA_COVER': tplot, '*spa_*ACT*CVR* spa_*ACTSTAT*FLAG* spa*CMD*UKN* spa*CLK*NYS', add = add
     'SB_COVER': tplot, '*spb_*ACT*CVR* spb_*ACTSTAT*FLAG* spb*CMD*UKN* spb*CLK*NYS', add = add
+    'SWEM': tplot,'APID PTP_DATA_RATE',add=add
+    'TIMING': tplot,'spp_swem_timing_'+['DRIFT_DELTA','CLKS_PER_PPS_DELTA','SCSUBSECSATPPS']
     else:
   endcase
 endif
