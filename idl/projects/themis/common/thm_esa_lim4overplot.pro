@@ -11,9 +11,9 @@ Pro thm_esa_lim4overplot, var, trange, zmin = zmin, zmax = zmax, zlog = zlog, $
                           ymin = ymin, ymax = ymax, ylog = ylog, $
                           overwrite = overwrite, _extra = _extra
 ;Version:
-; $LastChangedBy: jimmpc1 $
-; $LastChangedDate: 2017-03-15 13:46:09 -0700 (Wed, 15 Mar 2017) $
-; $LastChangedRevision: 22972 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-05-01 15:47:29 -0700 (Mon, 01 May 2017) $
+; $LastChangedRevision: 23257 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_esa_lim4overplot.pro $
 ;-
   If(keyword_set(zmin)) Then zmin0 = zmin Else zmin0 = 0
@@ -47,7 +47,7 @@ Pro thm_esa_lim4overplot, var, trange, zmin = zmin, zmax = zmax, zlog = zlog, $
         Endif
 ;Y min and max
         If(yminv Eq 0) Then Begin
-           yminv = min(dvss)
+           yminv = min(dvss, /nan) ;need /nan for IDL pre 8.5
 ;test for not many times at these
 ;values, only do this once, but have
 ;some margin
@@ -57,33 +57,33 @@ Pro thm_esa_lim4overplot, var, trange, zmin = zmin, zmax = zmax, zlog = zlog, $
            ss_yminv = where(ymin_all Le 2*yminv, nss_yminv)
            frac_ymin = float(nss_yminv)/nss
            If(frac_ymin Lt 1.0/24.0) Then Begin
-              ss_not_yminv = where(ymin_all Gt 2.0*yminv)
-              yminv = min(ymin_all[ss_not_yminv])
+              ss_not_yminv = where(ymin_all Gt 2.0*yminv, nss_not_yminv)
+              If(nss_not_yminv Gt 0) Then yminv = min(ymin_all[ss_not_yminv])
            Endif
         Endif
         If(ymaxv Eq 0) Then Begin
-           ymaxv = max(dvss)
+           ymaxv = max(dvss, /nan)
            ymax_all = fltarr(nss)
 ;           For j = 0, nss-1 Do ymax_all[j] = max(dvss[j, *])
            ymax_all = max(dvss, dimension = 2, /nan)
            ss_ymaxv = where(ymax_all Ge ymaxv/2.0, nss_ymaxv)
            frac_ymax = float(nss_ymaxv)/nss
            If(frac_ymax Lt 1.0/24.0) Then Begin
-              ss_not_ymaxv = where(ymax_all Lt ymaxv/2.0)
-              ymaxv = max(ymax_all[ss_not_ymaxv])
+              ss_not_ymaxv = where(ymax_all Lt ymaxv/2.0, nss_not_ymaxv)
+              If(nss_not_ymaxv Gt 0) Then ymaxv = max(ymax_all[ss_not_ymaxv])
            Endif
         Endif
      Endif
 ;Z min and max
      vlv = where(finite(d.y) And (d.y Ne 0), nvlv)
      If(nvlv Gt 0) Then Begin
-        If(zminv Eq 0) Then zminv = min(d.y[vlv])
-        If(zmaxv Eq 0) Then zmaxv = max(d.y[vlv])
+        If(zminv Eq 0) Then zminv = min(d.y[vlv], /nan)
+        If(zmaxv Eq 0) Then zmaxv = max(d.y[vlv], /nan)
         y0 = where(d.y Eq 0, ny0)
         If(ny0 Gt 0) Then d.y[y0] = zminv
      Endif
   Endif
-  
+
   If(keyword_set(overwrite)) Then varnew = var $
   Else varnew = var+'_limited'
   store_data, varnew, data = d, dlim = dl, lim = al

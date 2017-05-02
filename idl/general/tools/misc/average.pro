@@ -10,9 +10,9 @@
 ;
 ;Notes:
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2012-01-24 09:45:58 -0800 (Tue, 24 Jan 2012) $
-; $LastChangedRevision: 9598 $
+; $LastChangedBy: ali $
+; $LastChangedDate: 2017-05-01 12:37:30 -0700 (Mon, 01 May 2017) $
+; $LastChangedRevision: 23254 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/misc/average.pro $
 ;-
 function average,x,d,nan=nan,stdev=s,do_stdev=do_stdev $
@@ -32,7 +32,10 @@ endif
 type = size(/type,x)
 
 case type of
-7:  a=x[0]               ; strings
+7:  begin
+   a=x[0]               ; strings
+   s='' ;stdev
+    end
 8:  begin                  ; structures
    if d ne 0 then dprint,'warning! Dimension must be 0 for input structures'
    a=x[0]

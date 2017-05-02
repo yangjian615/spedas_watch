@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-21 12:30:21 -0800 (Tue, 21 Feb 2017) $
-;$LastChangedRevision: 22833 $
+;$LastChangedDate: 2017-05-01 13:00:22 -0700 (Mon, 01 May 2017) $
+;$LastChangedRevision: 23255 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_mec_fix_metadata.pro $
 ;-
 
@@ -29,7 +29,20 @@ pro mms_mec_fix_metadata, probe, suffix = suffix
     ; the coordinate system for the ECI variables in the MEC files
     ; is set to 'gei'; this represents J2000 GEI, not MOD GEI (which
     ; is what SPEDAS assumes 'gei' is)
-    eci_vars = 'mms'+probe+['_mec_r_eci', '_mec_v_eci']+suffix
+    eci_vars = 'mms'+probe+['_mec_r_eci', '_mec_v_eci', $ 
+                            '_defatt_spinras', '_defatt_spindec', $; all on this line and below were added 5/1/2017
+                            '_mec_L_vec', '_mec_Z_vec', '_mec_P_vec', $
+                            '_mec_L_phase', '_mec_Z_phase', '_mec_P_phase', $
+                            '_mec_r_moon_de421_eci', $
+                            '_mec_r_sun_de421_eci', '_mec_quat_eci_to_bcs', $
+                            '_mec_quat_eci_to_dbcs', '_mec_quat_eci_to_dmpa', $
+                            '_mec_quat_eci_to_smpa', '_mec_quat_eci_to_dsl', $
+                            '_mec_quat_eci_to_ssl', '_mec_quat_eci_to_gsm', $
+                            '_mec_quat_eci_to_geo', '_mec_quat_eci_to_sm', $
+                            '_mec_quat_eci_to_gse', '_mec_quat_eci_to_gse2000']+suffix
+    
+    ; split_vars adds the suffix before _0 and _1
+    append_array, eci_vars, 'mms'+probe+'_mec_L_vec'+suffix+['_0', '_1']
     for eci_var=0, n_elements(eci_vars)-1 do begin
         get_data, eci_vars[eci_var], data=d, dlimits=dl, limits=l
         if is_struct(d) then begin

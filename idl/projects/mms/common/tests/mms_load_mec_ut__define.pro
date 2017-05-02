@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-04-03 09:24:09 -0700 (Mon, 03 Apr 2017) $
-; $LastChangedRevision: 23084 $
+; $LastChangedDate: 2017-05-01 13:01:19 -0700 (Mon, 01 May 2017) $
+; $LastChangedRevision: 23256 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_mec_ut__define.pro $
 ;-
 
@@ -72,6 +72,29 @@ end
 
 function mms_load_mec_ut::test_load_eci_coord_sys
   mms_load_mec, probes=[2, 3], suffix='_coordstest'
+  assert, cotrans_get_coord('mms3_defatt_spinras_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms2_defatt_spindec_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_L_vec_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_Z_vec_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data' 
+  assert, cotrans_get_coord('mms3_mec_P_vec_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms2_mec_L_phase_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_Z_phase_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_P_phase_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_L_vec_coordstest_0') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms2_mec_L_vec_coordstest_1') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_r_moon_de421_eci_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_r_sun_de421_eci_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_quat_eci_to_bcs_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms2_mec_quat_eci_to_dbcs_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_quat_eci_to_dmpa_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_quat_eci_to_smpa_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms2_mec_quat_eci_to_dsl_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_quat_eci_to_ssl_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_quat_eci_to_gsm_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_quat_eci_to_geo_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms2_mec_quat_eci_to_sm_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_quat_eci_to_gse_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
+  assert, cotrans_get_coord('mms3_mec_quat_eci_to_gse2000_coordstest') eq 'j2000', 'Problem with coordinate system in MEC data'
   assert, cotrans_get_coord('mms3_mec_r_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI position data'
   assert, cotrans_get_coord('mms3_mec_v_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI velocity data'
   assert, cotrans_get_coord('mms2_mec_r_eci_coordstest') eq 'j2000', 'Problem with coordinate system in ECI position data'
