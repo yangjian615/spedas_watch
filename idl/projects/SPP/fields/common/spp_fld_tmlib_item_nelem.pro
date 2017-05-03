@@ -20,11 +20,11 @@ function spp_fld_tmlib_item_nelem, item_hash, sid
 
   endif
 
-  ;if nelem NE 1 then begin
-
-    ;print, nelem
-
-  ;endif
+;  if nelem NE 1 then begin
+;
+;    print, nelem
+;
+;  endif
   
 ;  if (item_hash)['name'] EQ 'wf_pkt_data' then stop
 

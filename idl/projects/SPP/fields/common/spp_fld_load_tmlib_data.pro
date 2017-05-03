@@ -1,7 +1,7 @@
 ;
 ;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-04-26 16:52:09 -0700 (Wed, 26 Apr 2017) $
-;  $LastChangedRevision: 23230 $
+;  $LastChangedDate: 2017-05-02 16:50:50 -0700 (Tue, 02 May 2017) $
+;  $LastChangedRevision: 23258 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -77,33 +77,63 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   ; From the list, make a hash object (data_hash).  We make the hash so that
   ; we can index by the item name.  Also make a list of the hash keys (item
-  ; names (data_names).
+  ; names (var_names).
+  ;
+  ; Note that the 'xml_cdf_vars' returns a different variable type if only one
+  ; cdf_var is specified in the XML file (the typename conditional below captures
+  ; this special case.
 
   data_hash = ORDEREDHASH()
 
-  foreach cdf_var, xml_cdf_vars do begin
+  if typename(xml_cdf_vars) EQ 'LIST' then begin
 
-    data_hash[cdf_var['name']] = cdf_var
+    foreach cdf_var, xml_cdf_vars do begin
 
-  endforeach
+      data_hash[cdf_var['name']] = cdf_var
 
-  data_names = data_hash.Keys()
+    endforeach
+
+  endif else begin
+
+    data_hash[xml_cdf_vars['name']] = xml_cdf_vars
+
+  endelse
+
+  var_names = data_hash.Keys()
 
   ; Find indices of the data_hash for which the name matches the input
   ; string (varformat).  Varformat is a scalar or vector of regular expressions
   ; (not globbing expressions).  Each element of varformat is compared to
   ; the list of names and the union of all matching names is returned in
   ; the match_ind array.
+  ;
+  ; Note that the 'xml_cdf_vars' returns a different variable type if only one
+  ; cdf_var is specified in the XML file (the typename conditional below captures
+  ; this special case.
 
-  name_match = data_names.Map(Lambda(x:0))
+  name_match = var_names.Map(Lambda(x:0))
 
-  for i = 0, n_elements(varformat) - 1 do begin
+  if typename(xml_cdf_vars) EQ 'LIST' then begin
 
-    name_match_i = data_names.Map(Lambda(x, y: x.Matches(y)), varformat[i])
+    for i = 0, n_elements(varformat) - 1 do begin
 
-    name_match = name_match.Map(Lambda(x, y: max([x,y])), name_match_i)
+      name_match_i = var_names.Map(Lambda(x, y: x.Matches(y)), varformat[i])
 
-  endfor
+      name_match = name_match.Map(Lambda(x, y: max([x,y])), name_match_i)
+
+    endfor
+
+  endif else begin
+
+    for i = 0, n_elements(varformat) - 1 do begin
+
+      if name_match[0] EQ 0 then begin
+        name_match = var_names.Map(Lambda(x, y: x.Matches(y)), varformat[i])
+      endif
+
+    endfor
+
+  endelse
 
   match_ind = where(name_match.ToArray(), match_count)
 
@@ -114,14 +144,14 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   if match_count GT 0 then begin
 
-    dprint, data_names[match_ind], dlevel = 2
+    dprint, var_names[match_ind], dlevel = 2
 
-    data_names = data_names[match_ind]
-    data_hash = data_hash[data_names]
+    var_names = var_names[match_ind]
+    data_hash = data_hash[var_names]
 
     for i = 0, n_elements(match_ind) - 1 do begin
 
-      (data_hash[data_names[i]])['data'] = LIST()
+      (data_hash[var_names[i]])['data'] = LIST()
 
     endfor
 
@@ -227,25 +257,29 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
     end
 
-    for i = 0, n_elements(data_names) - 1 do begin
+    for i = 0, n_elements(var_names) - 1 do begin
 
-      data_name = data_names[i]
+      var_name = var_names[i]
 
       ; Check whether the request should be suppressed
 
-      !NULL = null_items.Where(data_name, count = data_null_count)
+      !NULL = null_items.Where(var_name, count = data_null_count)
+
       if data_null_count EQ 0 then begin
 
         ; Get the number of elements in the data item
 
-        nelem = spp_fld_tmlib_item_nelem(data_hash[data_name], sid)
+        nelem = spp_fld_tmlib_item_nelem(data_hash[var_name], sid)
 
-    ; TODO: Make sure this is doing the right thing
-    
         returned_item = !NULL
-        ;delvarx, returned_item
 
-        err = tm_get_item_i4(sid, data_name, returned_item, nelem, n_returned)
+        var_type = strlowcase((data_hash[var_name])['type'])
+
+        case var_type of
+          'double': err = tm_get_item_r8(sid, var_name, returned_item, nelem, n_returned)
+          'integer': err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
+          ELSE: err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
+        endcase
 
       endif else begin
 
@@ -253,12 +287,17 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
       endelse
 
-      (data_hash[data_name])['data'].Add, returned_item
+      (data_hash[var_name])['data'].Add, returned_item
 
-      item_str = n_elements(returned_item) GT 1 ? string(returned_item[0]) + $
-        ', ...' : string(returned_item)
+      ;dprint, getdebug = dprint_debug
 
-      dprint, '    ', data_name, item_str, dlevel = 4
+      ;      if dprint_debug GE 4 then begin
+      ;        ;dprint, '    ', var_name, item_str, dlevel = 4
+      ;
+      ;        item_str = n_elements(returned_item) GT 1 ? string(returned_item[0]) + $
+      ;          ', ...' : string(returned_item)
+      ;
+      ;      endif
 
     endfor
 
@@ -268,7 +307,6 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   ; IDL attributes are used in processing of data (e.g. manipulation of
   ; the MAG survey APIDs to change from ~512 vectors per a single packet time to
   ; 1 vector per time tag.
-
 
   if idl_att.HasKey('convert_routine') then begin
 

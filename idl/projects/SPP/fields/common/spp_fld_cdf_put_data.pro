@@ -34,8 +34,8 @@
 ;   pulupa
 ;
 ; $LastChangedBy: spfuser $
-; $LastChangedDate: 2017-04-26 16:52:09 -0700 (Wed, 26 Apr 2017) $
-; $LastChangedRevision: 23230 $
+; $LastChangedDate: 2017-05-02 16:50:50 -0700 (Tue, 02 May 2017) $
+; $LastChangedRevision: 23258 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_put_data.pro $
 ;-
 pro spp_fld_cdf_put_data, fileid, data, close = close
@@ -66,9 +66,9 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
           ; TODO: Check for presence of convert routine, print error if not found
 
           raw_data_array = (square_list(data_item['data'])).ToArray()
-          ;data_array = call_function(data_item['convert_routine'], raw_data_array)
+          data_array = call_function(data_item['convert_routine'], raw_data_array)
 
-          data_array = raw_data_array
+          ;data_array = raw_data_array
 
         endif else begin
 

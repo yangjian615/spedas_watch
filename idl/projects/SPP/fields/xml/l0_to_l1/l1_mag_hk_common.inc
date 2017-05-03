@@ -219,14 +219,35 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_htrcurr_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_htrcurr_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_htrcurr_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG Heater Bus Current Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_htrcurr"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_htrcurr_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_htrcurr"
         FORMAT = "F15.3"
         LABLAXIS = "mag_htrcurr"
         VAR_TYPE = "data"
+        DATA_TYPE = "CDF_DOUBLE"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
         VALIDMIN = "0"
@@ -240,43 +261,64 @@
   </cdf_var>
 
   <cdf_var
-      name   = "mag_snsrtemp"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_snsrtmp_convert">
+      name   = "mag_snsrtemp_raw"
+      type   = "integer">
     <cdf_att
         FIELDNAM = "mag_snsrtemp"
-        FORMAT = "F15.3"
+        FORMAT = "I8"
         LABLAXIS = "mag_snsrtemp"
+		DATA_TYPE = "CDF_INT2"
         VAR_TYPE = "data"
-        FILLVAL = "-1.0E31"
+        FILLVAL = "-32767"
         DISPLAY_TYPE = "time_series"
-        VALIDMIN = "-100"
-        VALIDMAX = "100"
-        SCALEMIN = "-100"
-        SCALEMAX = "100"
-        UNITS = "C"
-        CATDESC = "MAG Sensor Temperature, in C"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG Sensor Temperature, in raw ADC counts"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
-      name   = "mag_pcbtemp"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_pcbtmp_convert">
+      name   = "mag_snsrtemp"
+      type   = "double">
     <cdf_att
-        FIELDNAM = "mag_pcbtemp"
+        FIELDNAM = "mag_snsrtemp"
         FORMAT = "F15.3"
-        LABLAXIS = "mag_pcbtemp"
+        LABLAXIS = "mag_snsrtemp"
+		DATA_TYPE = "CDF_FLOAT"
         VAR_TYPE = "data"
-        FILLVAL = "-1.0E31"
+        FILLVAL = "-1.0E30"
         DISPLAY_TYPE = "time_series"
         VALIDMIN = "-100"
         VALIDMAX = "100"
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "MAG PCB Temperature, in C"
+        CATDESC = "MAG Sensor Temperature, in degrees C"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name   = "mag_pcbtemp_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_pcbtemp"
+        FORMAT = "I8"
+        LABLAXIS = "mag_pcbtemp"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG PCB Temperature, in raw ADC counts"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
