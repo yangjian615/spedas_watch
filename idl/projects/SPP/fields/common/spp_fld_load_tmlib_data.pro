@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-05-02 16:50:50 -0700 (Tue, 02 May 2017) $
-;  $LastChangedRevision: 23258 $
+;  $LastChangedBy: pulupalap $
+;  $LastChangedDate: 2017-05-03 00:02:32 -0700 (Wed, 03 May 2017) $
+;  $LastChangedRevision: 23262 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -227,7 +227,6 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     ;err = tm_get_item_i4(sid, "ccsds_met_sec", met_ccsds, 1, size)
 
     time = ur8_to_sunseconds(ur8_ccsds)
-    times.Add, time
 
     dprint, n_elements(times), ' / ', ur8_ccsds, ' / ', $
       time_string(time), dlevel = 4
@@ -245,61 +244,69 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
     serr = tm_find_event(sid)
 
-    ; For certain APIDs, some data items only exist in some packets
-    ; but not others.  Requesting the items when they do not exist can cause
-    ; errors.  null_items returns a list of items NOT to ask for in the
-    ; following loop.
+    dprint, 'serr', serr, dlevel = 4
 
-    null_items = LIST()
-    if idl_att.HasKey('null_routine') then begin
+    if serr EQ 0 then begin
 
-      null_items = CALL_FUNCTION(idl_att['null_routine'], sid)
+      times.Add, time
 
-    end
+      ; For certain APIDs, some data items only exist in some packets
+      ; but not others.  Requesting the items when they do not exist can cause
+      ; errors.  null_items returns a list of items NOT to ask for in the
+      ; following loop.
 
-    for i = 0, n_elements(var_names) - 1 do begin
+      null_items = LIST()
+      if idl_att.HasKey('null_routine') then begin
 
-      var_name = var_names[i]
+        null_items = CALL_FUNCTION(idl_att['null_routine'], sid)
 
-      ; Check whether the request should be suppressed
+      end
 
-      !NULL = null_items.Where(var_name, count = data_null_count)
+      for i = 0, n_elements(var_names) - 1 do begin
 
-      if data_null_count EQ 0 then begin
+        var_name = var_names[i]
 
-        ; Get the number of elements in the data item
+        ; Check whether the request should be suppressed
 
-        nelem = spp_fld_tmlib_item_nelem(data_hash[var_name], sid)
+        !NULL = null_items.Where(var_name, count = data_null_count)
 
-        returned_item = !NULL
+        if data_null_count EQ 0 then begin
 
-        var_type = strlowcase((data_hash[var_name])['type'])
+          ; Get the number of elements in the data item
 
-        case var_type of
-          'double': err = tm_get_item_r8(sid, var_name, returned_item, nelem, n_returned)
-          'integer': err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
-          ELSE: err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
-        endcase
+          nelem = spp_fld_tmlib_item_nelem(data_hash[var_name], sid)
 
-      endif else begin
+          returned_item = !NULL
 
-        returned_item = !NULL
+          var_type = strlowcase((data_hash[var_name])['type'])
 
-      endelse
+          case var_type of
+            'double': err = tm_get_item_r8(sid, var_name, returned_item, nelem, n_returned)
+            'integer': err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
+            ELSE: err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
+          endcase
 
-      (data_hash[var_name])['data'].Add, returned_item
+        endif else begin
 
-      ;dprint, getdebug = dprint_debug
+          returned_item = !NULL
 
-      ;      if dprint_debug GE 4 then begin
-      ;        ;dprint, '    ', var_name, item_str, dlevel = 4
-      ;
-      ;        item_str = n_elements(returned_item) GT 1 ? string(returned_item[0]) + $
-      ;          ', ...' : string(returned_item)
-      ;
-      ;      endif
+        endelse
 
-    endfor
+        (data_hash[var_name])['data'].Add, returned_item
+
+        ;dprint, getdebug = dprint_debug
+
+        ;      if dprint_debug GE 4 then begin
+        ;        ;dprint, '    ', var_name, item_str, dlevel = 4
+        ;
+        ;        item_str = n_elements(returned_item) GT 1 ? string(returned_item[0]) + $
+        ;          ', ...' : string(returned_item)
+        ;
+        ;      endif
+
+      endfor
+
+    endif
 
   endwhile
 

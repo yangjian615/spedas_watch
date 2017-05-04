@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-28 12:02:39 -0800 (Mon, 28 Nov 2016) $
-;$LastChangedRevision: 22407 $
+;$LastChangedDate: 2017-05-03 15:44:38 -0700 (Wed, 03 May 2017) $
+;$LastChangedRevision: 23265 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -104,7 +104,7 @@ endif else begin
       tr = minmax(time_double(trange))
       index = where( *p.x ge tr[0] and *p.x lt tr[1], n_times)
       if n_times eq 0 then begin
-        dprint, 'No data in time range: '+strjoin(time_string(tr),' ')
+        dprint, 'No data in time range: '+strjoin(time_string(tr, tformat='YYYY-MM-DD/hh:mm:ss.fff'),' ')
         return, 0
       endif
     endif else begin

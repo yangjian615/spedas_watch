@@ -1,6 +1,6 @@
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2017-04-18 22:47:44 -0700 (Tue, 18 Apr 2017) $
-; $LastChangedRevision: 23192 $
+; $LastChangedDate: 2017-05-02 22:51:02 -0700 (Tue, 02 May 2017) $
+; $LastChangedRevision: 23260 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/cw_data/eva_data.pro $
 
 ;PRO eva_data_update_date, state, update=update
@@ -57,7 +57,7 @@ FUNCTION eva_data_validate_time, str_stime, str_etime
   thm_start = str2time('2007-02-17'); THEMIS launch date
   if stime lt thm_start then msg = 'Start time must be later than 2007-02-17.'  
   
-  if etime gt timec then msg = 'Time range must not be a future.'
+  ;if etime gt timec then msg = 'Time range must not be a future.'
   
   ttimeS = str2time('2015-04-09/23:00'); This is the time period used for testing
   ttimeE = str2time('2015-04-11/01:00'); rick's fetch routine
