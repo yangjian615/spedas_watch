@@ -68,7 +68,7 @@ sta={fov:{x:xyz,z:xyz},c0:c0,d1:d1}
 mag={payload:xyz,mso:xyz}
 euv={l2:xyz,l3:replicate(fnan,pui0.euvwb)}
 
-data={sep:sep,swi:swi,swe:swe,sta:sta,mag:mag,euv:euv,scp:xyz,mars_au:fnan,mars_ls:fnan,swalt:fnan}
+data={sep:sep,swi:swi,swe:swe,sta:sta,mag:mag,euv:euv,scp:xyz}
 
 ;*********MODEL**********
 pi={nm:replicate(fnan,pui0.euvwb),tot:fnan}
@@ -92,7 +92,7 @@ model={ifreq:ifreq,rv:replicate(fnan,6,np),fluxes:fluxes,params:params}
 model=replicate(model,ns)
 
 ;*********Data to Model Ratio**********
-d2m=replicate({sep:replicate(fnan,2),swi:fnan,sta:fnan},ns)
+d2m=replicate({sep:replicate(fnan,2),swi:xyz,sta:xyz},ns) ;xyz is [mean,stdev,nsample]
 
 pui={data:data,model:model,d2m:d2m,centertime:0d}
 pui=replicate(pui,nt) ;model-data array of structures

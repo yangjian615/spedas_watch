@@ -6,6 +6,10 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
   @mvn_pui_commonblock.pro ;common mvn_pui_common
   centertime=pui.centertime
 
+  if ~pui0.do3d then begin
+    dprint,'For 3D analysis, please run mvn_pui_model/do3d first. returning...'
+    return
+  endif
   if keyword_set(swia3d) || keyword_set(stah3d) || keyword_set(stao3d) then switch3d=1 else switch3d=0
   if keyword_set (datimage) or keyword_set (modimage) or keyword_set (d2mimage) then img=1 else img=0
 
@@ -16,17 +20,17 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
       ;also, reverse the order of elevation (deflection) angles to start from positive theta (like static)
       swiaef3d=reverse(transpose(pui.data.swi.swica.data,[3,0,2,1]),4)
       swicaen=transpose(info_str[pui.data.swi.swica.info_index].energy_coarse)
+      swind=where(finite(swiaef3d[*,0,0,0]),/null,swcount) ;no archive available index
     endif
 
-    if pui0.do3d then begin
-      kefswih3d=transpose(pui.model[0].fluxes.swi3d.eflux,[3,0,1,2])
-      kefswio3d=transpose(pui.model[1].fluxes.swi3d.eflux,[3,0,1,2])
-      kefstah3d=transpose(pui.model[0].fluxes.sta3d.eflux,[3,0,1,2])
-      kefstao3d=transpose(pui.model[1].fluxes.sta3d.eflux,[3,0,1,2])
+    kefswih3d=transpose(pui.model[0].fluxes.swi3d.eflux,[3,0,1,2])
+    kefswio3d=transpose(pui.model[1].fluxes.swi3d.eflux,[3,0,1,2])
+    kefstah3d=transpose(pui.model[0].fluxes.sta3d.eflux,[3,0,1,2])
+    kefstao3d=transpose(pui.model[1].fluxes.sta3d.eflux,[3,0,1,2])
 
-      d1eflux=transpose(pui.data.sta.d1.eflux,[4,0,1,2,3])
-      d1energy=transpose(pui.data.sta.d1.energy)
-    endif
+    d1eflux=transpose(pui.data.sta.d1.eflux,[4,0,1,2,3])
+    d1energy=transpose(pui.data.sta.d1.energy)
+    d1ind=where(finite(d1energy[*,0]),/null,d1count) ;no archive available index
 
     if keyword_set(store) and switch3d then begin
       store_data,'mvn_s*_model*_A*D*',/delete
@@ -62,8 +66,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
           if keyword_set(d2mimage) then p=image(alog10(d1eflux[*,*,jj,k,4]/kefstao3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=.01,rgb_table=33,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
           if keyword_set(store) then begin
             store_data,'mvn_stat_model_puo_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,kefstao3d[*,*,jj,k],d1energy,verbose=verbose
-            ;        if keyword_set(mvn_d1_dat) then store_data,'mvn_stat_data_HImass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,total(d1eflux[*,*,jj,k,3:5],5),d1energy,verbose=verbose
-            if keyword_set(mvn_d1_dat) then store_data,'mvn_stat_data_HImass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,d1eflux[*,*,jj,k,4],d1energy,verbose=verbose
+            store_data,'mvn_stat_data_HImass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,d1eflux[*,*,jj,k,4],d1energy,verbose=verbose
           endif
         endif
 
@@ -73,11 +76,9 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
           if keyword_set(d2mimage) then p=image(alog10(d1eflux[*,*,jj,k,0]/kefstah3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=.01,rgb_table=33,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
           if keyword_set(store) then begin
             store_data,'mvn_stat_model_puh_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,kefstah3d[*,*,jj,k],d1energy,verbose=verbose
-            ;        if keyword_set(mvn_d1_dat) then store_data,'mvn_stat_data_LOmass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,total(d1eflux[*,*,jj,k,0:2],5),d1energy,verbose=verbose
-            if keyword_set(mvn_d1_dat) then store_data,'mvn_stat_data_LOmass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,d1eflux[*,*,jj,k,0],d1energy,verbose=verbose
+            store_data,'mvn_stat_data_LOmass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,d1eflux[*,*,jj,k,0],d1energy,verbose=verbose
           endif
         endif
-        ;      store_data,'mvn_stat_data_3d_A'+strtrim(jj,2)+'_D'+strtrim(k,2),mvn_ca_dat.time,mvn_ca_dat.eflux[*,*,k+4*jj],mvn_ca_dat.energy[mvn_ca_dat.swp_ind,*,0]
       endfor
     endfor
 
@@ -95,12 +96,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
     ebinlimo=12 ;energy bin limit for oxygen
     ebinlimh=24 ;energy bin limit for hydrogen
     maxthresh=1e8 ;above this, and we're probably looking at solar wind protons
-    minthresh=1e5 ;below this, can't detect
-    minswiatt=minthresh*onesnt
-    minswiatt[where(pui.data.swi.swim.atten_state eq 2.,/null)]=1e6 ;higher threshold when swia attenuator is closed
-    minswiatt=rebin(minswiatt,[pui0.nt,pui0.swieb,pui0.swina,pui0.swine])
-    kefswih3d[where((kefswih3d lt minswiatt) or (swiaef3d gt maxthresh),/null)]=0. ;get rid of too low model flux (below detection threshold) or too high data flux (solar wind)
-    kefswio3d[where((kefswio3d lt minswiatt) or (swiaef3d gt maxthresh),/null)]=0.
+    minthresh=4e4 ;below this, can't detect
     kefstah3d[where((kefstah3d lt minthresh) or (d1eflux[*,*,*,*,0] gt maxthresh),/null)]=0.
     kefstao3d[where((kefstao3d lt minthresh) or (d1eflux[*,*,*,*,4] gt maxthresh),/null)]=0.
 
@@ -111,30 +107,50 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
 
     knnstao3d=d1eflux[*,*,*,*,4]/kefstao3d
     knnstah3d=d1eflux[*,*,*,*,0]/kefstah3d
-    knnstao3dtot=exp(mean(alog(reform(knnstao3d[*,0:ebinlimo,*,*],[pui0.nt,dimo3d])),dim=2,/nan))
-    knnstah3dtot=exp(mean(alog(reform(knnstah3d[*,0:ebinlimh,*,*],[pui0.nt,dimh3d])),dim=2,/nan))
-    pui.d2m[0].sta=knnstah3dtot
-    pui.d2m[1].sta=knnstao3dtot
-    store_data,'mvn_d2m_ratio_avg_stat_O',data={x:centertime,y:[[knnstao3dtot],[onesnt]]},limits={ylog:1,colors:'rg'}
-    store_data,'mvn_d2m_ratio_avg_stat_H',data={x:centertime,y:[[knnstah3dtot],[onesnt]]},limits={ylog:1,colors:'rg'}
+    logstao=alog(reform(knnstao3d[*,0:ebinlimo,*,*],[pui0.nt,dimo3d]))
+    logstah=alog(reform(knnstah3d[*,0:ebinlimh,*,*],[pui0.nt,dimh3d]))
+    mstao=exp(average(logstao,2,stdev=sstao,nsamples=nstao,/nan))
+    mstah=exp(average(logstah,2,stdev=sstah,nsamples=nstah,/nan))
+    pui.d2m[0].sta[0]=mstah
+    pui.d2m[1].sta[0]=mstao
+    pui.d2m[0].sta[1]=exp(sstah)
+    pui.d2m[1].sta[1]=exp(sstao)
+    pui.d2m[0].sta[2]=nstah
+    pui.d2m[1].sta[2]=nstao
+    
+    if d1count gt 0 then store_data,'mvn_d2m_ratio_avg_stat_O',data={x:centertime[d1ind],y:mstao[d1ind]},limits={ylog:1,colors:'r'}
+    if d1count gt 0 then store_data,'mvn_d2m_ratio_avg_stat_H',data={x:centertime[d1ind],y:mstah[d1ind]},limits={ylog:1,colors:'r'}
     store_data,'mvn_d2m_ratio_all_stat_O',data={x:timeo3d,y:reform(transpose(knnstao3d[*,0:ebinlimo,*,*]),pui0.nt*dimo3d)},limits={ylog:1,psym:3}
     store_data,'mvn_d2m_ratio_all_stat_H',data={x:timeh3d,y:reform(transpose(knnstah3d[*,0:ebinlimh,*,*]),pui0.nt*dimh3d)},limits={ylog:1,psym:3}
-    store_data,'mvn_d2m_ratio_stat_O',data='mvn_d2m_ratio_all_stat_O mvn_d2m_ratio_avg_stat_O',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
-    store_data,'mvn_d2m_ratio_stat_H',data='mvn_d2m_ratio_all_stat_H mvn_d2m_ratio_avg_stat_H',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
+    store_data,'mvn_d2m_ratio_stat_O',data='mvn_d2m_ratio_all_stat_O mvn_d2m_ratio_avg_stat_O mvn_pui_line_1',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
+    store_data,'mvn_d2m_ratio_stat_H',data='mvn_d2m_ratio_all_stat_H mvn_d2m_ratio_avg_stat_H mvn_pui_line_1',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
 
     if keyword_set(swics) then begin
+      minswiatt=minthresh*onesnt
+      minswiatt[where(pui.data.swi.swim.atten_state eq 2.,/null)]=5e5 ;higher threshold when swia attenuator is closed
+      minswiatt=rebin(minswiatt,[pui0.nt,pui0.swieb,pui0.swina,pui0.swine])
+      kefswih3d[where((kefswih3d lt minswiatt) or (swiaef3d gt maxthresh),/null)]=0. ;get rid of too low model flux (below detection threshold) or too high data flux (solar wind)
+      kefswio3d[where((kefswio3d lt minswiatt) or (swiaef3d gt maxthresh),/null)]=0.
+
       knnswio3d=swiaef3d/kefswio3d/(~kefswih3d) ;exospheric neutral density (cm-3) data/model ratio
       knnswih3d=swiaef3d/kefswih3d/(~kefswio3d)
-      knnswio3dtot=exp(mean(alog(reform(knnswio3d[*,0:ebinlimo,*,*],[pui0.nt,dimo3d])),dim=2,/nan))
-      knnswih3dtot=exp(mean(alog(reform(knnswih3d[*,0:ebinlimh,*,*],[pui0.nt,dimh3d])),dim=2,/nan))
-      pui.d2m[0].swi=knnswih3dtot
-      pui.d2m[1].swi=knnswio3dtot
-      store_data,'mvn_d2m_ratio_avg_swia_O',data={x:centertime,y:[[knnswio3dtot],[onesnt]]},limits={ylog:1,colors:'rg'}
-      store_data,'mvn_d2m_ratio_avg_swia_H',data={x:centertime,y:[[knnswih3dtot],[onesnt]]},limits={ylog:1,colors:'rg'}
+      logswio=alog(reform(knnswio3d[*,0:ebinlimo,*,*],[pui0.nt,dimo3d]))
+      logswih=alog(reform(knnswih3d[*,0:ebinlimh,*,*],[pui0.nt,dimh3d]))
+      mswio=exp(average(logswio,2,stdev=sswio,nsamples=nswio,/nan))
+      mswih=exp(average(logswih,2,stdev=sswih,nsamples=nswih,/nan))
+      pui.d2m[0].swi[0]=mswih
+      pui.d2m[1].swi[0]=mswio
+      pui.d2m[0].swi[1]=exp(sswih)
+      pui.d2m[1].swi[1]=exp(sswio)
+      pui.d2m[0].swi[2]=nswih
+      pui.d2m[1].swi[2]=nswio
+
+      if swcount gt 0 then store_data,'mvn_d2m_ratio_avg_swia_O',data={x:centertime[swind],y:mswio[swind]},limits={ylog:1,colors:'r'}
+      if swcount gt 0 then store_data,'mvn_d2m_ratio_avg_swia_H',data={x:centertime[swind],y:mswih[swind]},limits={ylog:1,colors:'r'}
       store_data,'mvn_d2m_ratio_all_swia_O',data={x:timeo3d,y:reform(transpose(knnswio3d[*,0:ebinlimo,*,*]),pui0.nt*dimo3d)},limits={ylog:1,psym:3}
       store_data,'mvn_d2m_ratio_all_swia_H',data={x:timeh3d,y:reform(transpose(knnswih3d[*,0:ebinlimh,*,*]),pui0.nt*dimh3d)},limits={ylog:1,psym:3}
-      store_data,'mvn_d2m_ratio_swia_O',data='mvn_d2m_ratio_all_swia_O mvn_d2m_ratio_avg_swia_O',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
-      store_data,'mvn_d2m_ratio_swia_H',data='mvn_d2m_ratio_all_swia_H mvn_d2m_ratio_avg_swia_H',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
+      store_data,'mvn_d2m_ratio_swia_O',data='mvn_d2m_ratio_all_swia_O mvn_d2m_ratio_avg_swia_O mvn_pui_line_1',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
+      store_data,'mvn_d2m_ratio_swia_H',data='mvn_d2m_ratio_all_swia_H mvn_d2m_ratio_avg_swia_H mvn_pui_line_1',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
     endif
   endif
 

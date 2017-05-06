@@ -24,9 +24,9 @@ endif
 
 if ~keyword_set(nostatic) then begin
   mvn_sta_l2_load,sta_apid='c0' ;load STATIC 1D spectra
-  mvn_sta_l2_tplot ;store STATIC data in tplot variables
-  ylim,'mvn_swim_swi_mode',0,1 ;because mvn_sta_l2_tplot messes with 'mvn_swim_swi_mode' !!!
-  if keyword_set(do3d) then mvn_sta_l2_load,sta_apid='d1' ;load STATIC 3D spectra
+;  mvn_sta_l2_tplot ;store STATIC data in tplot variables
+;  ylim,'mvn_swim_swi_mode',0,1 ;because mvn_sta_l2_tplot messes with 'mvn_swim_swi_mode' !!!
+  if keyword_set(do3d) then mvn_sta_l2_load,sta_apid=['d0','d1'] ;load STATIC 3D spectra
 
   ylim,'mvn_sta_c0_?_E',1,32e3,1
   zlim,'mvn_sta_c0_?_E',1e3,1e8,1
@@ -43,7 +43,9 @@ if ~keyword_set(nosep) then begin
 ;  options,'mvn_sep?_?-?_Rate_Energy','panel_size',1
   options,'mvn_sep?_?-*_Rate_Energy','ytickunits','scientific'
   options,'mvn_sep?_?-*_Rate_Energy','ztickunits','scientific'
+  options,'mvn_sep?_svy_DURATION','ylog',1
   options,'mvn_sep?_svy_DURATION','panel_size',.5
+  options,'mvn_sep?_svy_DURATION','colors','r'
 endif
 
 if ~keyword_set(noeuv) then begin

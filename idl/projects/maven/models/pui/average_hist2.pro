@@ -14,7 +14,7 @@ function average_hist2,a,x,binsize=binsize,trange=trange,centertime=centertime
   sizeh=size(h,/dim)
   sizea=size(a,/dim)
   fnan=!values.f_nan
-  avg=replicate(fnan,[sizeh,sizea[1:*]])
+  if size(sizea,/dim) eq 1 then avg=replicate(fnan,sizeh) else avg=replicate(fnan,[sizeh,sizea[1:*]])
   whn0=where(h,count)
   for j=0l,count-1 do begin
     i=whn0[j]

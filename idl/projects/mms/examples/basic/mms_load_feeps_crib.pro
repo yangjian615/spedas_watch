@@ -5,8 +5,8 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;   
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-18 16:47:59 -0800 (Fri, 18 Nov 2016) $
-; $LastChangedRevision: 22380 $
+; $LastChangedDate: 2017-05-05 11:17:26 -0700 (Fri, 05 May 2017) $
+; $LastChangedRevision: 23270 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_feeps_crib.pro $
 ;-
 
@@ -22,7 +22,6 @@ window, 0, xsize=xsize, ysize=ysize
 tplot, [['mms1_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_3', $
   'mms1_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_4', $
   'mms1_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_5', $
-  'mms1_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_11', $
   'mms1_epd_feeps_srvy_l2_electron_bottom_intensity_sensorid_12']+'_clean_sun_removed', $
   'mms1_epd_feeps_srvy_l2_electron_intensity_70-1000keV_pad'], window=0
 stop

@@ -10,7 +10,7 @@
 ;
 ; INPUTS:
 ;   FILEID: The file ID of the destination CDF file.
-;   DATA: A single IDL hash which contains items to be put into the 
+;   DATA: A single IDL hash which contains items to be put into the
 ;     CDF file.  The items themselves are hashes.  Each data item is itself
 ;     an IDL hash which contains:
 ;       - the parsed information from the corresponding XML file definition
@@ -34,18 +34,24 @@
 ;   pulupa
 ;
 ; $LastChangedBy: spfuser $
-; $LastChangedDate: 2017-05-02 16:50:50 -0700 (Tue, 02 May 2017) $
-; $LastChangedRevision: 23258 $
+; $LastChangedDate: 2017-05-05 17:53:47 -0700 (Fri, 05 May 2017) $
+; $LastChangedRevision: 23274 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_put_data.pro $
 ;-
 pro spp_fld_cdf_put_data, fileid, data, close = close
 
   foreach data_item, data, item_name do begin
 
-    null_ind = data_item['data'].Where(!NULL, count = null_count, $
-      complement = non_null_ind, ncomplement = non_null_count)
+    if data_item.HasKey('cdf_att') EQ 0 then begin
 
-    if data_item.HasKey('cdf_att') then begin
+      print, 'CDF attributes not defined for ', item_name
+
+    endif else begin
+
+      cdf_var_name = (data_item['cdf_att'])['FIELDNAM']
+
+      null_ind = data_item['data'].Where(!NULL, count = null_count, $
+        complement = non_null_ind, ncomplement = non_null_count)
 
       cdf_atts = data_item['cdf_att']
 
@@ -66,9 +72,10 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
           ; TODO: Check for presence of convert routine, print error if not found
 
           raw_data_array = (square_list(data_item['data'])).ToArray()
-          data_array = call_function(data_item['convert_routine'], raw_data_array)
 
-          ;data_array = raw_data_array
+          ;data_array = call_function(data_item['convert_routine'], raw_data_array)
+
+          data_array = raw_data_array
 
         endif else begin
 
@@ -100,7 +107,7 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
           cdf_data_dims = data_dim[1:*]
           cdf_data_vary = intarr(data_ndim) + 1
-          varid = cdf_varcreate(fileid, item_name, cdf_data_vary, $
+          varid = cdf_varcreate(fileid, cdf_var_name, cdf_data_vary, $
             dim = cdf_data_dims, /REC_VARY, /ZVARIABLE, $
             _EXTRA = CREATE_STRUCT(cdf_data_type,1))
 
@@ -110,7 +117,7 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
         endif else begin
 
-          varid = cdf_varcreate(fileid, item_name, /REC_VARY, /ZVARIABLE, $
+          varid = cdf_varcreate(fileid, cdf_var_name, /REC_VARY, /ZVARIABLE, $
             _EXTRA = CREATE_STRUCT(cdf_data_type,1))
 
         endelse
@@ -128,14 +135,14 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
         n_records = n_elements(data_item['data'])
 
-        varid = cdf_varcreate(fileid, item_name, cdf_data_vary, $
+        varid = cdf_varcreate(fileid, cdf_var_name, cdf_data_vary, $
           dim = cdf_data_dims, /REC_VARY, /ZVARIABLE, $
           _EXTRA = CREATE_STRUCT(cdf_data_type,1))
 
       endelse
 
       dprint, '', dlevel = 3
-      dprint, 'Variable ', varid, item_name, $
+      dprint, 'Variable ', varid, cdf_var_name, $
         format = '(A, I6, A20)', dlevel = 3
       dprint, 'CDF Attributes: ', dlevel = 3
 
@@ -151,7 +158,7 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
         if cdf_attname EQ 'VAR_SPARSERECORDS' then begin
 
           if cdf_att EQ 'PAD_MISSING' then begin
-            cdf_control, fileid, var = item_name, SET_SPARSERECORDS = 'PAD_SPARSERECORDS'
+            cdf_control, fileid, var = cdf_var_name, SET_SPARSERECORDS = 'PAD_SPARSERECORDS'
           endif
 
         endif
@@ -162,30 +169,27 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
       if non_null_count GT 0 then begin
 
-        cdf_varput, fileid, item_name, data_array
+        cdf_varput, fileid, cdf_var_name, data_array
 
       endif else begin
 
-        print, 'No non-null records for ', item_name
+        print, 'No non-null records for ', cdf_var_name
 
         ; Get the number of elements in the data item
 
         ; TODO: fix this kludge
 
-        ;cdf_varput, fileid, item_name, fill_arr, rec_start = n_records - 1
+        ;cdf_varput, fileid, cdf_var_name, fill_arr, rec_start = n_records - 1
 
         ;stop
 
       endelse
 
-    endif else begin
-
-      if data_item.HasKey('cdf_att') EQ 0 then $
-        print, 'CDF attributes not defined for ', item_name
 
     endelse
 
   endforeach
+
 
   if keyword_set(close) then cdf_close, fileid
 

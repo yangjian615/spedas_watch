@@ -25,14 +25,15 @@
 ;						  text.                   21-may-2008, cg
 ;                       Removed additional output text - Use dprint,debug=3  to restore text.   Nov 2008
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2016-02-03 17:03:41 -0800 (Wed, 03 Feb 2016) $
-; $LastChangedRevision: 19898 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-05-05 11:41:23 -0700 (Fri, 05 May 2017) $
+; $LastChangedRevision: 23271 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_restore.pro $
 ;-
 pro tplot_restore,filenames=filenames,all=all,append=append,sort=sort,$
 	get_tvars=get_tvars,verbose=verbose, restored_varnames=restored_varnames
 
+COMPILE_OPT IDL2
 @tplot_com.pro
 
 tplot_quant__define

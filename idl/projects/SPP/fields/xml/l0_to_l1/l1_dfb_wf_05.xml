@@ -8,7 +8,7 @@
 <items>
 
   <tmlib
-  	tmlib_event = 'dfb_wf1'
+  	tmlib_event = 'dfb_wf5'
   	>
   </tmlib>
 
@@ -19,7 +19,7 @@
     Data_version = "0"
     TEXT = "SPP FIELDS DFB Waveform Data"
     Mods = "Revision 0"
-    Logical_source = "SPP_FLD_DFB_WF01"
+    Logical_source = "SPP_FLD_DFB_WF05"
     Logical_source_description = "SPP FIELDS DFB Waveform"
     Dependencies = "None"
     >

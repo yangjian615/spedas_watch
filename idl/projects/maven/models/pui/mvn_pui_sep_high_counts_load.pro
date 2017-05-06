@@ -168,7 +168,7 @@ if count8 ne 0 then data[index8,j].sephc+=8
 ;p=plot(ill1r[ind1att],s1ao_sig[ind1att],'o')
 ;p=scatterplot(ill1r[ind1att],s1ao_sig[ind1att],magnitude=ind1att)
 
-end
+endfor
 save,data
 
 stop

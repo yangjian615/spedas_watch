@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupalap $
-;  $LastChangedDate: 2017-05-03 00:02:32 -0700 (Wed, 03 May 2017) $
-;  $LastChangedRevision: 23262 $
+;  $LastChangedBy: spfuser $
+;  $LastChangedDate: 2017-05-05 17:53:47 -0700 (Fri, 05 May 2017) $
+;  $LastChangedRevision: 23274 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -323,6 +323,14 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
     call_procedure, convert_routine, data_hash, times, cdf_att
 
+  endif
+
+  if n_elements(times) EQ 0 then begin
+    
+    success = -1
+    
+    return, data_hash
+    
   endif
 
   success = 1

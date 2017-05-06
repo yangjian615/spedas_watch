@@ -15,7 +15,13 @@ pro spp_fld_make_cdf_l1, apid_name, $
     varformat = varformat, success = dat_success, $
     cdf_att = cdf_att, times = times, idl_att = idl_att)
 
-  if dat_success NE 1 then return ; TODO: error reporting here
+  if dat_success NE 1 then begin
+    
+    if dat_success EQ -1 then dprint, 'No data found for ' + apid_name, dlevel = 2
+
+    return ; TODO: error reporting here
+
+  endif
 
   ;
   ; Create the CDF file

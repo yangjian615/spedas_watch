@@ -1,7 +1,7 @@
 ;20170321 Ali
-;orbit coverage statistics
+;MAVEN solar wind orbit coverage statistics
 
-pro mvn_pui_sw_orbit_coverage,trange=trange,plot=plt,res=res,times=times,spice=spice,alt_sw=alt_sw
+pro mvn_pui_sw_orbit_coverage,trange=trange,plot=plt,res=res,times=times,spice=spice,alt_sw=alt_sw,conservative=conservative
 
 if ~keyword_set(trange) then trange=[time_double('14-10-1'),systime(1)]
 if keyword_set(spice) then kernels=mvn_spice_kernels(['lsk','spk','std','sck','frm'],/clear,/load,trange=trange)
@@ -9,8 +9,9 @@ if keyword_set(spice) then kernels=mvn_spice_kernels(['lsk','spk','std','sck','f
 if ~keyword_set(res) then res=60.*10. ;default time resolution (10 mins)
 if ~keyword_set(times) then times=dgen(range=timerange(trange),res=res)
 
+times=time_double(times)
 rmars=3400. ;mars radius (km)
-pos=spice_body_pos('MAVEN','MARS',frame='MSO',utc=times,check_objects=['MARS','MAVEN_SPACECRAFT']) ;orbit position (km)
+pos=spice_body_pos('MAVEN','MARS',frame='MSO',utc=times,check_objects=['MARS','MAVEN']) ;orbit position (km)
 posx=reform(pos[0,*])
 posy=reform(pos[1,*])
 posz=reform(pos[2,*])
@@ -18,9 +19,15 @@ rad=sqrt(total(pos^2,1)) ;orbit radius (km)
 alt=rad-rmars ;orbit altitude (km)
 posr=sqrt(posy^2+posz^2) ;cylindrical radial distance (km)
 
-ind=where(posx/rmars gt 1.1 and posx/rmars+.24*(posr/rmars)^2 gt 2.1) ;staying outside the bow shock (pretty conservative)
+xmin=-2.8 ;max maven radial distance (Rm)
+nose=1.7 ;nose of the mars bow shock (Rm)
+if keyword_set(conservative) then begin; pretty conservative bow shock
+  xmin=1.1 ;stay only upstream of the disc of Mars to exclude plume pickup ions
+  nose=2.1 ;nose of mars bow shock will almost always stay below this point
+endif
+ind=where((posx/rmars gt xmin) and (posx/rmars+.24*(posr/rmars)^2 gt nose),/null,count) ;staying outside the bow shock
 
-if keyword_set(plt) then begin
+if keyword_set(plt) and (count gt 2) then begin
   poshist2d=hist_2d(posx[ind]/rmars,posr[ind]/rmars,bin1=.1,bin2=.1,min1=0,max1=3.,min2=0,max2=3.)
   imx=.1*findgen(31)
   imy=.1*findgen(31)
