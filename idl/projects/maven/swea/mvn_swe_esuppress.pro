@@ -57,8 +57,8 @@
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 12:06:39 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22278 $
+; $LastChangedDate: 2017-05-08 17:29:12 -0700 (Mon, 08 May 2017) $
+; $LastChangedRevision: 23282 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_esuppress.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2016-09-13
@@ -68,16 +68,15 @@ function mvn_swe_esuppress, time, on=on, off=off, set=set, silent=silent
 
   @mvn_swe_com
 
-  common swe_esuppress, setflg, setval, domsg, doext, a
+  common swe_esuppress, setflg, setval, domsg, a
 
 ; Initialize the common block on first call
 
   if (size(setflg,/type) eq 0) then begin
-    setflg = 0
-    setval = 0.
+    setflg = 1
+    setval = 2.79  ; default is a constant value
     domsg = 1
-    doext = 1
-    a = [2.9037D, -2.3956d-4]
+    a = [2.8388D, -1.5700d-4]
   endif
 
 ; Process keywords to determine configuration
@@ -103,9 +102,9 @@ function mvn_swe_esuppress, time, on=on, off=off, set=set, silent=silent
       setval = float(set)
       print,"Using fixed suppression constant: ",setval
     endif else begin
-      setflg = 0
-      setval = 0.
-      print,"Using nominal suppression constant"
+      setflg = 1
+      setval = 2.79
+      print,"Using nominal suppression constant: ",setval
     endelse
     domsg = 1
   endif
@@ -137,7 +136,7 @@ function mvn_swe_esuppress, time, on=on, off=off, set=set, silent=silent
             time_string(t_sup[0],prec=-3)
     if (max(t) gt t_sup[1]) then $
       print,"Warning: SWEA electron suppression constant extrapolated after ", $
-            time_string(t_sup[0],prec=-3)
+            time_string(t_sup[1],prec=-3)
     domsg = 0
   endif
 

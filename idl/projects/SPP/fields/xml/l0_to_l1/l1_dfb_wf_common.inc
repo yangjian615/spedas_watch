@@ -25,7 +25,7 @@
         LABLAXIS = "compression"
         VAR_TYPE = "data"
         DATA_TYPE = "CDF_INT2"
-        FILLVAL = "-1.0E31"
+        FILLVAL = "-32767"
         DISPLAY_TYPE = "time_series"
         VALIDMIN = "0"
         VALIDMAX = "1"

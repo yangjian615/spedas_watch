@@ -58,8 +58,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-22 13:30:39 -0700 (Sat, 22 Apr 2017) $
-; $LastChangedRevision: 23214 $
+; $LastChangedDate: 2017-05-08 17:30:37 -0700 (Mon, 08 May 2017) $
+; $LastChangedRevision: 23285 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -262,9 +262,9 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
   if (size(badpkt,/type) ne 8) then badpkt = replicate(bad_str,1)
 
 ; PFP Analog Housekeeping (APID 23)
-;   PFP analog housekeeping temperature, voltage and current monitors
+;   PFP analog housekeeping temperature, voltage and current monitors.
 ;   This includes a SWEA current monitor, and the primary regulated 28V
-;   supply voltage that powers SWEA.
+;   supply that powers SWEA.
 
   order = n_elements(pfp_t) - 1
 

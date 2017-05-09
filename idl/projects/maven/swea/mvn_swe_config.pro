@@ -35,8 +35,8 @@
 ;                   changes in a tplot window (assumed to exist).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-02-05 17:11:13 -0800 (Sun, 05 Feb 2017) $
-; $LastChangedRevision: 22734 $
+; $LastChangedDate: 2017-05-08 17:30:07 -0700 (Mon, 08 May 2017) $
+; $LastChangedRevision: 23284 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -106,7 +106,7 @@ pro mvn_swe_config, list=list, timebar=timebar
   t_mcp = [t_mcp, time_double('2015-12-18/23:39:09')]  ; bias adjustment (2600 -> 2700 V)
   t_mcp = [t_mcp, time_double('2015-12-22/20:01:45')]  ; revert to 2600 V after HV reset
   t_mcp = [t_mcp, time_double('2015-12-30/02:28:57')]  ; back to correct bias (2700 V)
-  t_sup = [t_sup, time_double('2016-11-02/00:00:00')]  ; last suppression calibration
+  t_sup = [t_sup, time_double('2017-04-02/00:00:00')]  ; last suppression calibration
 
 ; SWEA data dropouts resulting from PFDPU processing error
 ;
@@ -115,7 +115,7 @@ pro mvn_swe_config, list=list, timebar=timebar
 
 ; 2016-10-01/00:00                                     ; beginning of EM-2
   t_mcp = [t_mcp, time_double('2016-10-25/21:52:45')]  ; bias adjustment (2700 -> 2750 V)
-  t_mcp = [t_mcp, time_double('2017-01-20/00:00:00')]  ; last SWE-SWI cross calibration
+  t_mcp = [t_mcp, time_double('2017-03-15/00:00:00')]  ; last SWE-SWI cross calibration
 
 ; Gather all the configuration change times into one variable (for timebar).
 

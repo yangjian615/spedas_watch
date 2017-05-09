@@ -100,8 +100,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-28 11:00:37 -0700 (Tue, 28 Mar 2017) $
-; $LastChangedRevision: 23057 $
+; $LastChangedDate: 2017-05-08 17:26:51 -0700 (Mon, 08 May 2017) $
+; $LastChangedRevision: 23278 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -347,7 +347,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
       if (ncross gt 0) then begin
         k = max(indx)               ; lowest energy feature above threshold
         dfsmax = dfs[k,i]
-        dfsmin = dfsmax/3.
+        dfsmin = dfsmax/2.          ; FWHM of slope
 
         while ((dfs[k,i] gt dfsmin) and (k lt n_e-1)) do k++
         kmax = k
