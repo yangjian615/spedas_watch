@@ -39,23 +39,14 @@ pro swe_plot_fhsk
             string([tabnum,chksum],format='(4x,"Table Number: ",i1,4x,"Checksum: ",Z2.2)')
 
     t = a6[i].time + (1.95D/224D)*dindgen(224)
-  
-    store_data,'a6_analv',data={x:t, y:a6[i].analv}
-    store_data,'a6_def1v',data={x:t, y:a6[i].def1v}
-    store_data,'a6_def2v',data={x:t, y:a6[i].def2v}
-    store_data,'a6_v0v',data={x:t, y:a6[i].v0v}
-  
-    options,'a6_analv','ytitle','ANALV'
-    options,'a6_def1v','ytitle','DEF1V'
-    options,'a6_def2v','ytitle','DEF2V'
-    options,'a6_v0v','ytitle','V0V'
-  
-    options,'a6_analv','psym',10
-    options,'a6_def1v','psym',10
-    options,'a6_def2v','psym',10
-    options,'a6_v0v','psym',10
-  
-    pans = ['a6_analv','a6_def1v','a6_def2v','a6_v0v']
+
+    pans = 'a6_' + a6[i].name
+    for j=0,3 do begin
+      store_data,pans[j],data={x:t, y:a6[i].value[*,j]}
+      options,pans[j],'ytitle',a6[i].name[j]
+      options,pans[j],'psym',10
+    endfor
+
     tplot_options,'title',title
     tplot,pans,trange=[min(t),max(t)]
   endfor

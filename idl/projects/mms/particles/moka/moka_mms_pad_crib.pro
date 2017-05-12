@@ -9,8 +9,8 @@
 ;  Created by Mitsuo Oka on 2017-01-05
 ;
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-02-15 10:19:17 -0800 (Wed, 15 Feb 2017) $
-;$LastChangedRevision: 22789 $
+;$LastChangedDate: 2017-05-11 16:52:31 -0700 (Thu, 11 May 2017) $
+;$LastChangedRevision: 23302 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad_crib.pro $
 ;-
 PRO moka_mms_pad_crib
@@ -21,8 +21,9 @@ PRO moka_mms_pad_crib
   RESTORE  = 0  ; (0) load from CDF (1) restore from .tplot (2) already loaded in IDL 
   trange   = '2015-10-22/06:03:57'+['.114','.264']; Fig.1l of Phan et al. GRL 2016
   prb      = '1'
+  species  = 'i' ; 'i' for ions and 'e' for electrons
   filename = 'data_for_pad_crib'
-  SUBTRACT_BULK = 1
+  subtract_bulk = 0
   ;//////////////////////////////
   
   ;------------------------
@@ -47,18 +48,15 @@ PRO moka_mms_pad_crib
       end
     else:   ;do nothing (data must be already loaded into the IDL session)
   endcase
-  tname = sc+'_dis_dist_brst'
+  tname = sc+'_d'+species+'s_dist_brst'
   bname = sc+'_fgm_b_dmpa_brst_l2_bvec'
-  ename = sc+'_dis_disterr_brst'
-  tpVi  = sc+'_dis_bulkv_dbcs_brst'
-  tpVe  = sc+'_des_bulkv_dbcs_brst'
-  
-  if SUBTRACT_BULK then vname = tpVi ; should be undefined when SUBTRACT_BULK = 0
+  ename = sc+'_d'+species+'s_disterr_brst'
+  vname = sc+'_d'+species+'s_bulkv_dbcs_brst'
   
   ;------------  
   ; GET PAD
   ;------------
-  pad = moka_mms_pad(bname, tname, trange, ename=ename, vname=vname);,nbin=36);, units='df')
+  pad = moka_mms_pad(bname, tname, trange, ename=ename, vname=vname, subtract_bulk=subtract_bulk)
   title = time_string(pad.trange[0],prec=4)+' --- '+time_string(pad.trange[1],prec=4)
 
 
@@ -69,7 +67,7 @@ PRO moka_mms_pad_crib
   yrange = [1e+1, 1e+10]
       
   plot, pad.EGY, pad.SPEC_OMN,color=0,title=title, $
-    /xlog,xstyle=1,xrange=[10,30000],$
+    /xlog,xstyle=1,$;xrange=[10,30000],$
     /ylog,ystyle=1,yrange=yrange
   oplot, pad.EGY, pad.SPEC___0,color=2
   oplot, pad.EGY, pad.SPEC__90,color=4
@@ -90,17 +88,19 @@ PRO moka_mms_pad_crib
   ;---------------------------------------
   ; Pitch-Angle vs Energy Plot (2D PAD)
   ;---------------------------------------
-
+  erange = [8,27000]
+  zrange = [1e+5, 2e+8]
+  
   PAD_ROTATE = 0
   
   if PAD_ROTATE then begin
     plotxyz,pad.PA, pad.EGY, pad.DATA,/noisotropic,ylog=0,zlog=1,$
-      xrange=[180,0],xtitle='pitch angle',ytitle='velocity',$;yrange=[0,1000],$;yrange=[10,27000],
-      xtickinterval=30,ztitle=pad.UNITS,title=title
+      xrange=[180,0],xtitle='pitch angle',ytitle='energy',yrange=erange,$
+      xtickinterval=30,ztitle=pad.UNITS,title=title,zrange=zrange
   endif else begin
     plotxyz,pad.EGY, pad.PA, transpose(pad.DATA),/noisotropic,/xlog,ylog=0,zlog=1,$
-      yrange=[0,180],xrange=[10,27000],ytitle='pitch angle',xtitle='energy',$
-      ytickinterval=30,ztitle=pad.UNITS,title=title;,zrange=zrange
+      yrange=[0,180],ytitle='pitch angle',xtitle='energy',xrange=erange,$
+      ytickinterval=30,ztitle=pad.UNITS,title=title,zrange=zrange
   endelse
     
   
