@@ -512,9 +512,9 @@
       type = "Integer"
       convert_routine = "spp_fld_lnps1_p12v_convert">
     <cdf_att
-        FIELDNAM = "LNPS1_N12V"
+        FIELDNAM = "LNPS1_P12V"
         FORMAT = "F15.3"
-        LABLAXIS = "LNPS1_N12V"
+        LABLAXIS = "LNPS1_P12V"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"

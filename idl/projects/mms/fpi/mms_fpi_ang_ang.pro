@@ -23,13 +23,13 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-14 14:05:12 -0800 (Tue, 14 Feb 2017) $
-;$LastChangedRevision: 22782 $
+;$LastChangedDate: 2017-05-12 10:57:17 -0700 (Fri, 12 May 2017) $
+;$LastChangedRevision: 23309 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_ang_ang.pro $
 ;-
 
 pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=data_rate, $
-  species=species, all_energies=all_energies, $
+  species=species, all_energies=all_energies, subtract_bulk=subtract_bulk, pa_en_units = pa_en_units, $
   postscript=postscript, png=png, center_measurement=center_measurement, xsize=xsize, ysize=ysize
 
   if undefined(time) then begin
@@ -43,6 +43,7 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
   if undefined(ysize) then ysize = 450
   if undefined(energy_range) then energy_range = [10., 30000]
   if undefined(data_rate) then data_rate = 'fast'
+  if undefined(pa_en_units) then pa_en_units = 'df'
 
   mms_load_fpi, datatype=['d'+species+'s-dist', 'd'+species+'s-moms'], data_rate=data_rate, trange=trange, probe=probe, center_measurement=center_measurement, /time_clip
   mms_load_fgm, trange=trange, data_rate=data_rate, probe=probe
@@ -112,7 +113,10 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
     if ~undefined(png) then makepng, 'azimuth_vs_energy'
     if ~undefined(postscript) then pclose
 
-    pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_'+data_rate+'_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, vname='mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate, units='df')
+    if ~undefined(subtract_bulk) then $
+        pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_'+data_rate+'_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, vname='mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate, subtract_bulk=subtract_bulk, units=pa_en_units) $
+    else $
+      pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_'+data_rate+'_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, subtract_bulk=0, units=pa_en_units)
 
     window, 4
     plotxyz, pad.PA, pad.EGY, pad.DATA, /noisotropic, /ylog, /zlog, title=time_string(trange[0])+'-'+time_string(trange[1]), $

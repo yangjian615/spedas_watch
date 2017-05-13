@@ -44,8 +44,8 @@
 ;  Fixed eflux calculation 2017-05-12
 ;  
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-05-11 16:55:11 -0700 (Thu, 11 May 2017) $
-;$LastChangedRevision: 23303 $
+;$LastChangedDate: 2017-05-12 16:02:44 -0700 (Fri, 12 May 2017) $
+;$LastChangedRevision: 23316 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
 ;-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
@@ -145,7 +145,7 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   ; Energy Bins
   ;-----------------------------
   wegy  = dist[0].ENERGY[*,0,0]
-  if subtract_bulk then begin
+  if keyword_set(subtract_bulk) then begin
     wegy = [2*wegy[0]- wegy[1], wegy]
   endif
   jmax  = n_elements(wegy)

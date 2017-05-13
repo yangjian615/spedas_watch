@@ -34,8 +34,8 @@
 ;   pulupa
 ;
 ; $LastChangedBy: spfuser $
-; $LastChangedDate: 2017-05-05 17:53:47 -0700 (Fri, 05 May 2017) $
-; $LastChangedRevision: 23274 $
+; $LastChangedDate: 2017-05-11 19:42:43 -0700 (Thu, 11 May 2017) $
+; $LastChangedRevision: 23304 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_put_data.pro $
 ;-
 pro spp_fld_cdf_put_data, fileid, data, close = close
@@ -73,9 +73,9 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
           raw_data_array = (square_list(data_item['data'])).ToArray()
 
-          ;data_array = call_function(data_item['convert_routine'], raw_data_array)
+          data_array = call_function(data_item['convert_routine'], raw_data_array)
 
-          data_array = raw_data_array
+          ;data_array = raw_data_array
 
         endif else begin
 

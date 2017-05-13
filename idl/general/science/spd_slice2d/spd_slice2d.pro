@@ -146,11 +146,16 @@
 ;  AVERAGE_ANGLE: (geometric interpolation only)
 ;                 Two element array specifying an angle range over which 
 ;                 averaging will be applied. The angle is measured 
-;                 from the slice plane and about the slice's x-axis; 
+;                 from the slice plane and about the slice's horizontal axis; 
 ;                 positive in the right handed direction. This will
-;                 average over all data within that range.
-;                    e.g. [-25,25] will average data within 25 degrees
-;                         of the slice plane about it's x-axis
+;                 average over all data within that range. Note: for the 
+;                 default rotation='xy', the angle is measured from the XY 
+;                 slice plane and about the x-axis
+;                    e.g. rotation='xy', average_angle=[-25,25] will average data within 25 degrees
+;                         of the XY slice plane about it's x-axis
+;                    or     
+;                         rotation='yz', average_angle=[-25,25] will average data within 25 degrees
+;                         of the YZ slice plane about it's y-axis
 ;
 ;  MSG_OBJ: Reference to dprint display object.
 ;  
@@ -208,8 +213,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-29 09:42:14 -0700 (Wed, 29 Mar 2017) $
-;$LastChangedRevision: 23063 $
+;$LastChangedDate: 2017-05-12 15:18:31 -0700 (Fri, 12 May 2017) $
+;$LastChangedRevision: 23315 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_slice2d/spd_slice2d.pro $
 ;-
 
