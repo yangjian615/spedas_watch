@@ -42,7 +42,7 @@ for j=0,ndays-1 do begin ;loop over days
   mvn_pui_sw_orbit_coverage,trange=tr,res=binsize,alt_sw=alt_sw
   if where(finite(alt_sw),/null) eq !null then continue ;if no solar wind coverage, go to next day
 
-  mvn_pui_model,binsize=binsize,np=2017,/do3d,savetplot=~noimg,/nospice,trange=tr,nodataload=nodataload
+  mvn_pui_model,binsize=binsize,np=2017,/do3d,savetplot=~keyword_set(noimg),/nospice,trange=tr,nodataload=nodataload
 
   stat[*,j].centertime=pui.centertime
   stat[*,j].mag=pui.data.mag.mso

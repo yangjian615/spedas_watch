@@ -52,13 +52,13 @@ endif else begin
   swisen=transpose(info_str[pui.data.swi.swis.info_index].energy_coarse)
   store_data,'mvn_redures_swia',data={x:centertime,y:transpose(pui.data.swi.swis.data),v:swisen},limits={ylog:1,zlog:1,spec:1,yrange:[25,25e3],ystyle:1,zrange:[1e3,1e8],ztitle:'Eflux',ytickunits:'scientific'}
 
-  if keyword_set(swics) then begin ;swia survey data
+  if n_elements(swics) gt 1 then begin ;swia survey data
     swiactime = swics.time_unix +4.0*swics.num_accum/2  ;center time of sample/sum
     pui.data.swi.swics=average_hist(swics,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse survey
     swicsdt=swics[1:*].time_unix-swics[0:-1].time_unix
     store_data,'mvn_swics_dt_(s)',data={x:swics[1:*].time_unix,y:swicsdt},limits={ylog:1,panel_size:.5,colors:'r'}
 
-    if keyword_set(swica) then begin ;swia archive (burst) data
+    if n_elements(swics) gt 1 then begin ;swia archive (burst) data
       swiactime = swica.time_unix +4.0*swica.num_accum/2  ;center time of sample/sum
       pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse archive
       swicadt=swica[1:*].time_unix-swica[0:-1].time_unix
@@ -179,7 +179,7 @@ endif
 ;----------Boundaries----------
 ;get_data,'wind',data=wind ;s/c altitude when in the solar wind (km)
 ;pui.model.swalt=average_hist2(wind.y,wind.x,binsize=binsize,trange=trange,centertime=centertime)
-;mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw,/conservative
+mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw,/conservative
 ;pui.data.swalt=alt_sw ;s/c altitude when in the solar wind (km)
 ;----------Positions----------
 pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects=['MARS','MAVEN']) ;MAVEN position MSO (m)

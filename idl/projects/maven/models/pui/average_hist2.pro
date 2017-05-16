@@ -8,6 +8,7 @@
 ;to be called by mvn_pui_model > mvn_pui_data_res
 
 function average_hist2,a,x,binsize=binsize,trange=trange,centertime=centertime
+  if ~keyword_set(trange) then trange=minmax(x)
   tdrange=time_double(trange)
   h=histogram(x,binsize=binsize,min=tdrange[0],max=tdrange[1]-binsize/2.,locations=centertime,reverse=ri,/nan)
   centertime+=binsize/2.

@@ -6,8 +6,8 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-11-08 10:58:00 -0800 (Tue, 08 Nov 2016) $
-; $LastChangedRevision: 22340 $
+; $LastChangedDate: 2017-05-15 12:18:17 -0700 (Mon, 15 May 2017) $
+; $LastChangedRevision: 23319 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_eis_ut__define.pro $
 ;-
 
@@ -256,7 +256,7 @@ end
 function mms_load_eis_ut::test_pad_binsize
   mms_eis_pad, bin_size=3
   get_data, 'mms1_epd_eis_extof_0-1000keV_proton_flux_omni_pad_spin', data=d
-  assert, n_elements(d.V) eq 61, 'Problem with bin_size keyword in mms_eis_pad'
+  assert, n_elements(d.V) eq 60, 'Problem with bin_size keyword in mms_eis_pad'
   return, 1
 end
 

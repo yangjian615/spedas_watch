@@ -48,8 +48,8 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
         if keyword_set(swia3d) then begin
           kefswi3d=kefswih3d[*,*,jj,k]+kefswio3d[*,*,jj,k]
           if keyword_set(modimage) then p=image(alog10(kefswi3d),layout=[4,16,1+k+j*4],/current,margin=0.01,rgb_table=33,aspect=0,min=4,max=8,axis_style=0,background_color='b',/order)
-          if keyword_set(datimage) then p=image(alog10(swiaef3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=.01,rgb_table=33,aspect=0,min=4,max=8,axis_style=0,background_color='b',/order)
-          if keyword_set(d2mimage) then p=image(alog10(swiaef3d[*,*,jj,k]/kefswi3d),layout=[4,16,1+k+j*4],/current,margin=.01,rgb_table=33,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
+          if keyword_set(datimage) and keyword_set(swics) then p=image(alog10(swiaef3d[*,*,jj,k]),layout=[4,16,1+k+j*4],/current,margin=.01,rgb_table=33,aspect=0,min=4,max=8,axis_style=0,background_color='b',/order)
+          if keyword_set(d2mimage) and keyword_set(swics) then p=image(alog10(swiaef3d[*,*,jj,k]/kefswi3d),layout=[4,16,1+k+j*4],/current,margin=.01,rgb_table=33,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
           if keyword_set(store) then begin
             store_data,'mvn_swia_model_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,kefswi3d,pui1.swiet,verbose=verbose
             if keyword_set(swics) then store_data,'mvn_swia_data_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,swiaef3d[*,*,jj,k],swicaen,verbose=verbose

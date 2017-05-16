@@ -22,13 +22,16 @@
 ; OUTPUT:
 ; 
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-06-29 13:52:44 -0700 (Wed, 29 Jun 2016) $
-;$LastChangedRevision: 21395 $
+;$LastChangedDate: 2017-05-15 13:08:19 -0700 (Mon, 15 May 2017) $
+;$LastChangedRevision: 23320 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad_spinavg.pro $
 ;
 ; REVISION HISTORY:
 ;       + 2016-01-26, I. Cohen      : added scopes keyword and scope_suffix definition to allow for distinction between single telescope PADs (reflects change in mms_eis_pad.pro)
-;       + 2016-04-29 egrimes        : fixed issues with the suffix keyword                 
+;       + 2016-04-29 egrimes        : fixed issues with the suffix keyword     
+;       + 2017-05-15 egrimes        : removed call to congrid, added the "extend_y_edges" option to the output;
+;                                     this change makes the results produced by this routine consistent with the
+;                                     non-spin averaged PAD   
 ;-
 
 pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units, $
@@ -85,17 +88,18 @@ pro mms_eis_pad_spinavg, probe=probe, species = species, data_units = data_units
 
   ; rebin the data before storing it
   ; the idea here is, for bin_size = 15 deg, rebin the data from center points to:
-  ;    new_bins = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135 , 150, 165, 180]
+  ;    new_bins = [0, 15, 30, 45, 60, 75, 90, 105, 120, 135 , 150, 165]
 
   n_pabins = 180./bin_size
   new_bins = 180.*indgen(n_pabins+1)/n_pabins
-
-  rebinned_data = congrid(spin_sum_flux, n_elements(spin_starts), n_elements(new_bins), /center, /interp)
-
-  store_data, newname, data={x: spin_times, y: rebinned_data, v: new_bins}, dlimits=flux_dl
+  new_pa_label = 180.*indgen(n_pabins)/n_pabins+bin_size/2.
+  
+  store_data, newname, data={x: spin_times, y: spin_sum_flux, v: new_pa_label}, dlimits=flux_dl
+  
   options, newname, spec=1, ystyle=1, ztitle=units_label, ytitle='MMS'+probe+' EIS '+species, ysubtitle=en_range_string+'!CPAD (deg)', minzlog=.01
   zlim, newname, 0, 0, 1
   ylim, newname, 1., 180.
+  options, newname, 'extend_y_edges', 1
 
   ; zlim, newname, 0, 0, 1
   ;options, newname, no_interp=0

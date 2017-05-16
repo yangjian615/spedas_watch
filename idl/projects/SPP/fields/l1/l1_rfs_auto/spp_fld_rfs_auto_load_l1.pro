@@ -76,7 +76,7 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
   options, prefix + 'spec0_ch?', 'no_interp', 1
   options, prefix + 'spec0_ch?', 'yrange', [0,64]
   options, prefix + 'spec0_ch?', 'ystyle', 1
-  options, prefix + 'spec0_ch?', 'datagap', -1
+  options, prefix + 'spec0_ch?', 'datagap', 60
 
   options, prefix + 'spec0_ch0', 'ytitle', receiver_str + ' Auto!CSpec0 Ch0 Raw'
   options, prefix + 'spec0_ch1', 'ytitle', receiver_str + ' Auto!CSpec0 Ch1 Raw'
@@ -99,7 +99,7 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
   options, prefix + 'spec0_ch?_converted', 'zlog', 1
   options, prefix + 'spec0_ch?_converted', 'yrange', [min(rfs_freqs.reduced_freq), max(rfs_freqs.reduced_freq)]
   options, prefix + 'spec0_ch?_converted', 'ystyle', 1
-  options, prefix + 'spec0_ch?_converted', 'datagap', -1
+  options, prefix + 'spec0_ch?_converted', 'datagap', 60
   options, prefix + 'spec0_ch?_converted', 'panel_size', 2.
 
   options, prefix + 'spec0_ch0_converted', 'ytitle', receiver_str + ' Auto!CSpec0 Ch0'

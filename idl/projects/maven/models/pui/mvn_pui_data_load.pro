@@ -28,10 +28,10 @@ if ~keyword_set(nostatic) then begin
 ;  ylim,'mvn_swim_swi_mode',0,1 ;because mvn_sta_l2_tplot messes with 'mvn_swim_swi_mode' !!!
   if keyword_set(do3d) then mvn_sta_l2_load,sta_apid=['d0','d1'] ;load STATIC 3D spectra
 
-  ylim,'mvn_sta_c0_?_E',1,32e3,1
-  zlim,'mvn_sta_c0_?_E',1e3,1e8,1
-  options,'mvn_sta_c0_att','panel_size',.5
-  options,'mvn_sta_c0_mode','panel_size',.5
+;  ylim,'mvn_sta_c0_?_E',1,32e3,1
+;  zlim,'mvn_sta_c0_?_E',1e3,1e8,1
+;  options,'mvn_sta_c0_att','panel_size',.5
+;  options,'mvn_sta_c0_mode','panel_size',.5
 endif
 
 if ~keyword_set(nosep) then begin
