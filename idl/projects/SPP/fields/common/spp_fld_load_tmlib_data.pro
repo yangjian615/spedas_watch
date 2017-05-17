@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-05-05 17:53:47 -0700 (Fri, 05 May 2017) $
-;  $LastChangedRevision: 23274 $
+;  $LastChangedBy: pulupa $
+;  $LastChangedDate: 2017-05-16 15:19:27 -0700 (Tue, 16 May 2017) $
+;  $LastChangedRevision: 23324 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -169,8 +169,13 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   get_timespan, trange
 
-  t0 = sunseconds_to_ur8(time_double(trange[0]))
-  t1 = sunseconds_to_ur8(time_double(trange[1]))
+  ; Convert from TPLOT timerange (Unix time) to TMlib timerange
+  ; (UR8 time starting on 1982-01-01).
+
+  t0_ur8 = time_double('1982-01-01')
+
+  t0 = (time_double(trange[0]) - t0_ur8) / 86400.d
+  t1 = (time_double(trange[1]) - t0_ur8) / 86400.d
 
   ; Select TMlib server
 
@@ -226,7 +231,9 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
     ;err = tm_get_item_i4(sid, "ccsds_met_sec", met_ccsds, 1, size)
 
-    time = ur8_to_sunseconds(ur8_ccsds)
+    ; Convert time back to TPLOT time
+
+    time = ur8_ccsds * 86400.d + t0_ur8
 
     dprint, n_elements(times), ' / ', ur8_ccsds, ' / ', $
       time_string(time), dlevel = 4
@@ -326,11 +333,11 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   endif
 
   if n_elements(times) EQ 0 then begin
-    
+
     success = -1
-    
+
     return, data_hash
-    
+
   endif
 
   success = 1

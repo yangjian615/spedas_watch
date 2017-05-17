@@ -15,8 +15,8 @@
 ;     http://omniweb.gsfc.nasa.gov/html/HROdocum.html
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-13 15:32:14 -0800 (Mon, 13 Feb 2017) $
-; $LastChangedRevision: 22769 $
+; $LastChangedDate: 2017-05-16 11:32:51 -0700 (Tue, 16 May 2017) $
+; $LastChangedRevision: 23322 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/omni/omni_load_data.pro $
 ;-
 pro omni_load_data,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
@@ -26,6 +26,10 @@ pro omni_load_data,type,files=files,trange=trange,verbose=verbose,downloadonly=d
       tplotnames=tn,source_options=source
 
     ;if not keyword_set(datatype) then datatype = 'h0'
+    
+    if ~undefined(trange) && n_elements(trange) eq 2 $
+      then tr = timerange(trange) $
+    else tr = timerange()
     
     omni_init
     if not keyword_set(source) then source = !omni
@@ -47,7 +51,7 @@ pro omni_load_data,type,files=files,trange=trange,verbose=verbose,downloadonly=d
     ;   if datatype eq  'h0' then    varformat = 'B3GSE'
     ;endif
     
-    relpathnames = file_dailynames(file_format=pathformat,trange=trange,/unique)
+    relpathnames = file_dailynames(file_format=pathformat,trange=tr,/unique)
     
     ;files = file_retrieve(relpathnames, _extra=source)
     files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path = source.local_data_dir, ssl_verify_peer=0, ssl_verify_host=0)
@@ -58,9 +62,9 @@ pro omni_load_data,type,files=files,trange=trange,verbose=verbose,downloadonly=d
     cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix ,tplotnames=tn    ; load data into tplot variables
     
     ;time clip 
-    if keyword_set(trange)then begin
-      if (N_ELEMENTS(trange) eq 2) and (tn[0] gt '') then begin    
-        time_clip, tn, trange[0], trange[1], replace=1, error=error 
+    if keyword_set(tr)then begin
+      if (N_ELEMENTS(tr) eq 2) and (tn[0] gt '') then begin    
+        time_clip, tn, tr[0], tr[1], replace=1, error=error 
       endif
     endif
     
