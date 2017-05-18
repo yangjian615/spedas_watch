@@ -23,8 +23,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-05-12 10:57:17 -0700 (Fri, 12 May 2017) $
-;$LastChangedRevision: 23309 $
+;$LastChangedDate: 2017-05-16 21:36:59 -0700 (Tue, 16 May 2017) $
+;$LastChangedRevision: 23328 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_ang_ang.pro $
 ;-
 
@@ -113,14 +113,20 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
     if ~undefined(png) then makepng, 'azimuth_vs_energy'
     if ~undefined(postscript) then pclose
 
+    if ~undefined(postscript) then popen, 'pad_vs_energy', /landscape else window, 4, xsize=xsize, ysize=ysize
+
     if ~undefined(subtract_bulk) then $
         pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_'+data_rate+'_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, vname='mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate, subtract_bulk=subtract_bulk, units=pa_en_units) $
     else $
       pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_'+data_rate+'_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, subtract_bulk=0, units=pa_en_units)
 
-    window, 4
+    
     plotxyz, pad.PA, pad.EGY, pad.DATA, /noisotropic, /ylog, /zlog, title=time_string(trange[0])+'-'+time_string(trange[1]), $
       xrange=[0,180], xtitle='Pitch angle (deg)', ytitle='Energy (eV)', ztitle=pad.units, window=4
+  
+    if ~undefined(png) then makepng, 'pad_vs_energy'
+    if ~undefined(postscript) then pclose
+    
   endif else if keyword_set(all_energies) then begin
     for en_idx=0, n_elements(idx_of_ens)-1 do begin
       window, en_idx, xsize=xsize, ysize=ysize
