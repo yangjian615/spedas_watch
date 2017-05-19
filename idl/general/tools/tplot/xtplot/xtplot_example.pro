@@ -28,17 +28,24 @@ PRO xtplot_example
     case ndim of
       1:begin; scalar
         sum = total(D.y[pA:pB])
-        tag = 'data'
+        avg = sum/float(pB-pA+1.)
+        tag = xtplot_vnameA
         end
       2:begin; vector or spectrogram
-        tag = (sz[2] eq 3) ? 'x-component': 'first element'
+        tag = 'the '
+        tag += (sz[2] eq 3) ? 'x-component': 'first element'
+        tag += ' of '+xtplot_vnameA
         sum = total(D.y[pA:pB, 0])
+        avg = sum/float(pB-pA+1.)
         end
-      else:sum = !VALUES.F_NAN
+      else:begin
+        sum = !VALUES.F_NAN
+        avg = !VALUEA.F_NAN
+        end
     endcase
         
     print, '***************************************'
-    print, 'sum of the '+tag+' between the two cursors are: ', sum
+    print, 'average of '+tag+' between the two cursors are: ', avg
     print, '***************************************'
   endif
 END

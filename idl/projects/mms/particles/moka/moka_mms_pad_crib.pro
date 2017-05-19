@@ -9,8 +9,8 @@
 ;  Created by Mitsuo Oka on 2017-01-05
 ;
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-05-11 16:52:31 -0700 (Thu, 11 May 2017) $
-;$LastChangedRevision: 23302 $
+;$LastChangedDate: 2017-05-18 15:27:16 -0700 (Thu, 18 May 2017) $
+;$LastChangedRevision: 23332 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad_crib.pro $
 ;-
 PRO moka_mms_pad_crib
@@ -39,7 +39,7 @@ PRO moka_mms_pad_crib
   case RESTORE of
     0:begin
       timespan, trange[0], trange[1]-trange[0], /seconds
-      mms_load_fgm,probes=prb, data_rate='brst',/get_fgm_ephemeris
+      mms_load_fgm,probe=prb, data_rate='brst',/get_fgm_ephemeris
       mms_load_fpi,probe=prb,data_rate='brst',level='l2', datatype=['des-dist','dis-dist','dis-moms','des-moms']
       tplot_save,'*',filename=filename
       end
