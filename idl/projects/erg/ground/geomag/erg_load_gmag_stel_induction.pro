@@ -30,9 +30,9 @@
 ;             ERG-Science Center, ISEE, Nagoya Univ.
 ;             erg-sc-core at isee.nagoya-u.ac.jp
 ;
-;   $LastChangedBy: egrimes $
-;   $LastChangedDate: 2016-12-13 10:48:28 -0800 (Tue, 13 Dec 2016) $
-;   $LastChangedRevision: 22455 $
+;   $LastChangedBy: nikos $
+;   $LastChangedDate: 2017-05-19 10:27:24 -0700 (Fri, 19 May 2017) $
+;   $LastChangedRevision: 23335 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/geomag/erg_load_gmag_stel_induction.pro $
 ;-
 
@@ -109,7 +109,7 @@ for i=0,n_elements(site_code)-1 do begin
 
   ;--- Download the designated data files from the remote data server
   ;    if the local data files are older or do not exist. 
-  files = file_retrieve(relpathnames, _extra=source, /last_version)
+  files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir, _extra=source, /last_version)
   filestest=file_test(files)
 
   if(total(filestest) ge 1) then begin

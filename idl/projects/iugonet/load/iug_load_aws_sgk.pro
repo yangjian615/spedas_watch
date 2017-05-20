@@ -30,8 +30,8 @@
 ;   
 ;ACKNOWLEDGEMENT:
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-05-16 13:44:33 -0700 (Tue, 16 May 2017) $
-; $LastChangedRevision: 23323 $
+; $LastChangedDate: 2017-05-19 11:44:55 -0700 (Fri, 19 May 2017) $
+; $LastChangedRevision: 23337 $
 ; $URL $
 ;-
 
@@ -91,7 +91,6 @@ if ~size(fns,/type) then begin
   ;=======================================================  
   ;Get files and local paths, and concatenate local paths:
   ;=======================================================
-   ;local_paths=file_retrieve(file_names,_extra=source)   
    local_paths = spd_download(remote_file=file_names, remote_path=source.remote_data_dir, local_path=source.local_data_dir, _extra=source, /last_version)
    local_paths_all = ~(~size(local_paths_all,/type)) ? $
                       [local_paths_all, local_paths] : local_paths

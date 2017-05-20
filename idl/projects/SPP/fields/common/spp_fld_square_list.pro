@@ -7,7 +7,7 @@ function spp_fld_square_list, list_input
   min_len = -1
   fill_val = !VALUES.F_NAN
 
-  foreach item, list do begin
+  foreach item, list_input do begin
 
     if n_elements(item) GT max_len then begin
       max_len = n_elements(item)

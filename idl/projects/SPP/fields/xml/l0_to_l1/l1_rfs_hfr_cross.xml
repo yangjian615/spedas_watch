@@ -3,26 +3,26 @@
 <items>
 
   <tmlib
-  	tmlib_event = 'rfs_lfr_auto'
+  	tmlib_event = 'rfs_hfr_cross'
   	>
   </tmlib>
 
   <cdf_global
-      Title = "SPP FIELDS RFS LFR Auto"
+      Title = "SPP FIELDS RFS HFR Cross"
       Descriptor = "RFS>FIELDS Radio Frequency Spectrometer"
       Data_type = "L1>Level 1 Data"
       Data_version = "0"
-      TEXT = "SPP FIELDS RFS LFR Data"
+      TEXT = "SPP FIELDS RFS HFR Data"
       Mods = "Revision 0"
-      Logical_source = "SPP_FLD_RFS_LFR_Auto"
-      Logical_source_description = "SPP FIELDS RFS LFR Auto"
+      Logical_source = "SPP_FLD_RFS_HFR_Cross"
+      Logical_source_description = "SPP FIELDS RFS HFR Cross"
       Dependencies = "None"
       >
   </cdf_global>
   
 	<idl_att
-      convert_routine = 'spp_fld_rfs_lfr_auto_convert'>
-  	</idl_att>
+      convert_routine = 'spp_fld_rfs_hfr_cross_convert'>
+  </idl_att>
 
   <cdf_var
       name   = "compression"
@@ -40,11 +40,13 @@
         SCALEMIN = "0"
         SCALEMAX = "1"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto Compression"
+        CATDESC = "RFS HFR Cross Compression"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
+<!--
+comment out peaks/averages for cross
   <cdf_var
       name   = "peaks"
       type   = "integer">
@@ -61,7 +63,7 @@
         SCALEMIN = "0"
         SCALEMAX = "1"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto Peaks Enabled"
+        CATDESC = "RFS HFR Cross Peaks Enabled"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -72,7 +74,7 @@
   <cdf_att
         FIELDNAM = "averages"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+		DATA_TYPE = "CDF_INT2"
         LABLAXIS = "averages"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -82,10 +84,11 @@
         SCALEMIN = "0"
         SCALEMAX = "1"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto Averages Enabled"
+        CATDESC = "RFS HFR Cross Averages Enabled"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
+-->
 
   <cdf_var
       name   = "hl"
@@ -103,7 +106,7 @@
         SCALEMIN = "0"
         SCALEMAX = "3"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto HL Over"
+        CATDESC = "RFS HFR Cross HL Over"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -124,7 +127,7 @@
         SCALEMIN = "0"
         SCALEMAX = "7"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto CH0 Source"
+        CATDESC = "RFS HFR Cross CH0 Source"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -135,7 +138,7 @@
   <cdf_att
         FIELDNAM = "ch1"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+		DATA_TYPE = "CDF_INT2"
         LABLAXIS = "ch1"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -145,7 +148,7 @@
         SCALEMIN = "0"
         SCALEMAX = "7"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto CH1 Source"
+        CATDESC = "RFS HFR Cross CH1 Source"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -166,11 +169,10 @@
         SCALEMIN = "0"
         SCALEMAX = "1"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto Gain"
+        CATDESC = "RFS HFR Cross Gain"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
-
 
   <cdf_var
       name   = "nsum"
@@ -188,17 +190,17 @@
         SCALEMIN = "0"
         SCALEMAX = "127"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto Number of Spectra"
+        CATDESC = "RFS HFR Cross Number of Spectra"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
   
   <cdf_var
-  		name = "spec0_ch0"
+  		name = "xspec_re"
   		type = "integer"
   		nelem = "64">
   <cdf_att
-        FIELDNAM = "spec0_ch0"
+        FIELDNAM = "xspec_re"
         FORMAT = "I8"
 				DATA_TYPE = "CDF_UINT2"
         LABLAXIS = "spec0_ch0"
@@ -210,17 +212,17 @@
         SCALEMIN = "0"
         SCALEMAX = "65535"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto SPEC0 Ch0"
+        CATDESC = "RFS HFR Cross Re"
         DEPEND_0 = "epoch">  
   </cdf_att>
   </cdf_var>
 
   <cdf_var
-  		name = "spec0_ch1"
+  		name = "xspec_im"
   		type = "integer"
   		nelem = "64">
   <cdf_att
-        FIELDNAM = "spec0_ch1"
+        FIELDNAM = "xspec_im"
         FORMAT = "I8"
 				DATA_TYPE = "CDF_UINT2"
         LABLAXIS = "spec0_ch1"
@@ -232,7 +234,7 @@
         SCALEMIN = "0"
         SCALEMAX = "65535"
         UNITS = "None"
-        CATDESC = "RFS LFR Auto SPEC0 Ch1"
+        CATDESC = "RFS HFR Cross Im"
         DEPEND_0 = "epoch">  
   </cdf_att>
   </cdf_var>

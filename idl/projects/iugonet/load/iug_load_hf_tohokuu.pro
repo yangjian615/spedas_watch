@@ -23,7 +23,7 @@
 ;             PPARC, Tohoku Univ.
 ;
 ;   $LastChangedBy: nikos $
-;   $LastChangedDate: 2016-05-23 10:40:20 -0700 (Mon, 23 May 2016) $
+;   $LastChangedDate: 2017-05-19 11:44:55 -0700 (Fri, 19 May 2017) $
 ;   $URL:
 ;-
 
@@ -65,7 +65,7 @@ for i=0,n_elements(site_code)-1 do begin
 
   ;--- Download file
   relfnames = filedate+'/'+'it_h1_hf_'+filehour+'_v02.cdf'
-  datfiles  = file_retrieve(relfnames, _extra=source)
+  datfiles = spd_download(remote_file=relfnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir, _extra=source, /last_version)
 
   ;--- Skip load where no data
   filenum=n_elements(datfiles)
