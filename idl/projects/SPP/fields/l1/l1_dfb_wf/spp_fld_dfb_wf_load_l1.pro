@@ -1,5 +1,9 @@
 pro spp_fld_dfb_wf_load_l1, file, prefix = prefix
 
+  ; TODO: Check compression bit, wav_tap, etc
+  
+  ; TODO fix gap at packet boundaries (see wf_10 in mops_test_3 crib)
+
   if typename(file) EQ 'UNDEFINED' then begin
     
     dprint, 'No file provided to spp_fld_dfb_wf_load_l1', dlevel = 2

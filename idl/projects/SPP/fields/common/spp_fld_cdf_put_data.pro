@@ -33,9 +33,9 @@
 ; CREATED BY:
 ;   pulupa
 ;
-; $LastChangedBy: pulupa $
-; $LastChangedDate: 2017-05-16 16:43:03 -0700 (Tue, 16 May 2017) $
-; $LastChangedRevision: 23326 $
+; $LastChangedBy: pulupalap $
+; $LastChangedDate: 2017-05-20 11:46:22 -0700 (Sat, 20 May 2017) $
+; $LastChangedRevision: 23342 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_put_data.pro $
 ;-
 pro spp_fld_cdf_put_data, fileid, data, close = close
@@ -73,9 +73,15 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
           raw_data_array = (spp_fld_square_list(data_item['data'])).ToArray()
 
-          data_array = call_function(data_item['convert_routine'], raw_data_array)
+          if data_item['convert_routine'] NE 'none' then begin
 
-          ;data_array = raw_data_array
+            data_array = call_function(data_item['convert_routine'], raw_data_array)
+
+          endif else begin
+            
+            data_array = raw_data_array
+                        
+          endelse
 
         endif else begin
 
