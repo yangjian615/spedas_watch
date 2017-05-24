@@ -104,7 +104,7 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
   if n_lo_gain GT 0 then converted_data_spec0_ch1[lo_gain, *] *= 2500.d
 
   store_data, prefix + 'spec0_ch1_converted', $
-    data = {x:rfs_dat_spec0_ch0.x, y:converted_data_spec0_ch0, $
+    data = {x:rfs_dat_spec0_ch1.x, y:converted_data_spec0_ch1, $
     v:rfs_freqs.reduced_freq}
 
   options, prefix + 'spec0_ch?_converted', 'spec', 1

@@ -94,7 +94,6 @@ pro spp_fld_rfs_cross_load_l1, file, prefix = prefix, color = color
     data = {x:rfs_dat_xspec_im.x, y:converted_data_xspec_im, $
     v:rfs_freqs.reduced_freq}
 
-
   options, prefix + 'xspec_??_converted', 'spec', 1
   options, prefix + 'xspec_??_converted', 'no_interp', 1
   options, prefix + 'xspec_??_converted', 'ylog', 1
@@ -116,5 +115,5 @@ pro spp_fld_rfs_cross_load_l1, file, prefix = prefix, color = color
     'SRC:' + $
     strcompress(string(ch0_src_dat.y[0]), /rem) + '-' + $
     strcompress(string(ch1_src_dat.y[0]), /rem)
-
+    
 end
