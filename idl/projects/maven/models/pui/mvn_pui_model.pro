@@ -15,7 +15,7 @@
 ;   np: number of simulated particles in each time bin. if not set, default is used (1000 particles)
 ;   ns: number of simulated species. default is 2 (H and O)
 ;   do3d: models pickup oxygen and hydrogen 3D spectra for SWIA and STATIC, a bit slower than 1D spectra and requires more memory
-;   savetplot: saves the tplots as png files
+;   savetplot: saves the model-data comparison tplots as png files
 ;   exoden: sets exospheric neutral densities to n(r)=1 cm-3 for exospheric density retrieval by a reverse method
 ;   nodataload: skips loading any data. use if you want to re-run the simulation with all the required data already loaded
 ;   nomag: skips loading mag data. if not already loaded, uses default IMF
@@ -33,7 +33,7 @@ pro mvn_pui_model,binsize=binsize,trange=trange,np=np,ns=ns,do3d=do3d,exoden=exo
 
 if ~keyword_set(binsize) then binsize=32. ;simulation resolution or cadense (seconds)
 if ~keyword_set(trange) then get_timespan,trange else timespan,trange
-if ~keyword_set(np) then np=1000; number of simulated particles (1000 is enough for one gyro-period)
+if ~keyword_set(np) then np=1111; number of simulated particles (1000 is enough for one gyro-period)
 if ~keyword_set(ns) then ns=2;  number of simulated species. default is 2 (H and O)
 if ~keyword_set(nodataload) then mvn_pui_data_load,do3d=do3d,nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice
 if np lt 2 then begin
@@ -57,7 +57,7 @@ simtime=systime(1) ;simulation start time, let's do this!
 ;modeling pickup hydrogen
 pui0.msub=0 ;species subscript (0=H, 1=O)
 pui0.mamu[pui0.msub]=1. ; mass of [H=1 C=12 N=14 O=16] (amu)
-pui0.ngps[pui0.msub]=2.999 ;a few gyro-periods required for pickup hydrogen
+pui0.ngps[pui0.msub]=5. ;a few gyro-periods required for pickup hydrogen
 if keyword_set(exoden) then pui0.ngps[pui0.msub]=0.999 ;for exoden
 mvn_pui_solver ;solve pickup ion trajectories
 rtot=pui2.rtot
@@ -74,7 +74,7 @@ dprint,dlevel=2,'Pickup H+ binning done.'
 ;modeling pickup oxygen
 pui0.msub=1 ;species subscript (0=H, 1=O)
 pui0.mamu[pui0.msub]=16.; mass of [H=1 C=12 N=14 O=16] (amu)
-pui0.ngps[pui0.msub]=0.999 ;for SEP one full gyro-period is necessary
+pui0.ngps[pui0.msub]=1. ;for SEP one full gyro-period is necessary
 if keyword_set(exoden) then pui0.ngps[pui0.msub]=0.499 ;half a gyro-period is enough for SWIA/STATIC reverse model
 mvn_pui_solver ;solve pickup ion trajectories
 rtot=pui2.rtot

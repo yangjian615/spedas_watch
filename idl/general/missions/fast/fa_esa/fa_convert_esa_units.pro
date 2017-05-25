@@ -94,7 +94,8 @@ tmp = scale * tmp
 
 ; take out dead time correction
 if strupcase(data.units_name) ne 'COUNTS' and strupcase(data.units_name) ne 'RATE' and strupcase(data.units_name) ne 'COMPRESSED' then $
-	tmp = round(dt*tmp/(1.+tmp*dead/dt_arr))
+;	tmp = round(dt*tmp/(1.+tmp*dead/dt_arr))
+	tmp = (dt*tmp/(1.+tmp*dead/dt_arr)) ;allow fractional counts
 
 scale = 0
 case strupcase(units) of

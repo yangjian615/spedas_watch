@@ -6,9 +6,7 @@ function spp_fld_tmlib_item_nelem, item_hash, sid
 
   if item_hash.HasKey('nelem') and nelem EQ 1l then begin
 
-    ;stop
-
-    if size(/type, (item_hash)['nelem']) EQ 7 then begin
+    if valid_num(item_hash['nelem']) then begin
       
       nelem = long((item_hash)['nelem'])
 
@@ -20,11 +18,11 @@ function spp_fld_tmlib_item_nelem, item_hash, sid
 
   endif
 
-  ;if nelem NE 1 then begin
-
-    ;print, nelem
-
-  ;endif
+;  if nelem NE 1 then begin
+;
+;    print, nelem
+;
+;  endif
   
 ;  if (item_hash)['name'] EQ 'wf_pkt_data' then stop
 

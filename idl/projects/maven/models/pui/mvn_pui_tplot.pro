@@ -24,8 +24,9 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
   tplot_options,'no_interp',1
   centertime=pui.centertime
 
-  if keyword_set(store) and (keyword_set(tplot) or keyword_set(tohban)) then begin
-    store_data,'MAVEN_pos_(km)',data={x:centertime,y:transpose(pui.data.scp)/1e3},limits={colors:'bgr',labels:['x','y','z'],labflag:1}
+  if keyword_set(store) then begin
+    store_data,'mvn_pui_line_1',data={x:centertime,y:replicate(1.,pui0.nt)},limits={colors:'g'} ;straight line equal to 1
+    store_data,'mvn_pos_(km)',data={x:centertime,y:transpose(pui.data.scp)/1e3},limits={colors:'bgr',labels:['x','y','z'],labflag:1}
     store_data,'mvn_sep1_fov',centertime,transpose(pui.data.sep[0].fov)
     store_data,'mvn_sep2_fov',centertime,transpose(pui.data.sep[1].fov)
     store_data,'mvn_stax_fov',centertime,transpose(pui.data.sta.fov.x)
@@ -97,8 +98,8 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
 
     kefstah=transpose(pui.model[0].fluxes.sta1d.eflux)
     kefstao=transpose(pui.model[1].fluxes.sta1d.eflux)
-    store_data,'mvn_model_H_sta_c0',centertime,kefstao,pui1.staet
-    store_data,'mvn_model_L_sta_c0',centertime,kefstah,pui1.staet
+    store_data,'mvn_model_O_sta_c0',centertime,kefstao,pui1.staet
+    store_data,'mvn_model_H_sta_c0',centertime,kefstah,pui1.staet
 
     options,'mvn_*_sta_c0','spec',1
     options,'mvn_*_sta_c0','ztitle','Eflux'
@@ -108,12 +109,12 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
 
   endif
 
-  mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,datimage=datimage,modimage=modimage,d2mimage=d2mimage
+  if pui0.do3d then mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,datimage=datimage,modimage=modimage,d2mimage=d2mimage
 
   if keyword_set(tplot) then begin
     datestr=strmid(time_string(pui0.trange[0]),0,10)
     wi,10 ;tplot raw data
-    tplot,window=10,'MAVEN_pos_(km) swea_a4_pot mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_swics_dt_(s) mvn_swica_dt_(s) mvn_B_1sec mvn_sep?_svy_DURATION mvn_sep?_fov mvn_sep?_B-O_Rate_Energy mvn_euv_l3 mvn_euv_data mvn_staz_fov mvn_sta_c0_att mvn_sta_c0_mode mvn_sta_d1_sweep_index mvn_sta_d1_mass_(amu) mvn_sta_d1_dt_(s)'
+    tplot,window=10,'mvn_pos_(km) swea_a4_pot mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_swics_dt_(s) mvn_swica_dt_(s) mvn_B_1sec mvn_sep?_svy_DURATION mvn_sep?_fov mvn_sep?_B-O_Rate_Energy mvn_euv_l3 mvn_euv_data mvn_staz_fov mvn_sta_att mvn_sta_mode mvn_sta_sweep_index mvn_sta_d0_mass_(amu) mvn_sta_d01_dt_(s)'
     if keyword_set(savetplot) then makepng,datestr+'_raw_data'
     wi,20 ;tplot useful pickup ion parameters. for diagnostic purposes, best shown on a vertical screen
     tplot,window=20,'mvn_mag_Btot_(nT) Sin(thetaUB) E_Motional_(V/km) Pickup_* Ionization_Frequencies_(s-1)'
@@ -122,13 +123,13 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
     tplot,window=30,'mvn_model_pu*_incident_sep1 mvn_model_puo_sep1_source_MSO_(Rm) mvn_model_puo_sep1_MSO_(km/s) mvn_model_pu*_incident_sep2 mvn_model_puo_sep2_source_MSO_(Rm) mvn_model_puo_sep2_MSO_(km/s) O+_Max_Energy_(keV) mvn_data_redures_sep1 mvn_model_puo_sep1 mvn_d2m_puo_sep1 mvn_SEPS_svy_ATT mvn_data_redures_sep2 mvn_model_puo_sep2 mvn_d2m_puo_sep2'
     if keyword_set(savetplot) then makepng,datestr+'_sep'
     wi,31 ;tplot swia/static related stuff
-    tplot,window=31,'mvn_model_pu?_tot mvn_alt_sw_(km) mvn_redures_swia mvn_model_swia_O mvn_d2m_ratio_swia_O mvn_model_swia_H mvn_d2m_ratio_swia_H mvn_redures_H_sta_c0 mvn_model_H_sta_c0 mvn_d2m_ratio_stat_O mvn_redures_L_sta_c0 mvn_model_L_sta_c0 mvn_d2m_ratio_stat_H'
+    tplot,window=31,'mvn_model_pu?_tot mvn_alt_sw_(km) mvn_redures_swia mvn_model_swia_O mvn_d2m_ratio_swia_O mvn_model_swia_H mvn_d2m_ratio_swia_H mvn_redures_HImass_sta_c0 mvn_model_O_sta_c0 mvn_d2m_ratio_stat_O mvn_redures_LOmass_sta_c0 mvn_model_H_sta_c0 mvn_d2m_ratio_stat_H'
     if keyword_set(savetplot) then makepng,datestr+'_swia_static'
     wi,0 ;tplot main results (model-data comparison)
-    tplot,window=0,'alt2 mvn_redures_swea_pot mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_redures_swia mvn_model_swia mvn_mag_MSO_(nT) mvn_data_redures_sep1 mvn_model_puo_sep1 mvn_SEPS_svy_ATT mvn_data_redures_sep2 mvn_model_puo_sep2 O+_Max_Energy_(keV) mvn_redures_H_sta_c0 mvn_model_H_sta_c0 mvn_redures_L_sta_c0 mvn_model_L_sta_c0'
+    tplot,window=0,'alt2 mvn_redures_swea_pot mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_redures_swia mvn_model_swia mvn_mag_MSO_(nT) mvn_data_redures_sep1 mvn_model_puo_sep1 mvn_SEPS_svy_ATT mvn_data_redures_sep2 mvn_model_puo_sep2 O+_Max_Energy_(keV) mvn_redures_HImass_sta_c0 mvn_model_O_sta_c0 mvn_redures_LOmass_sta_c0 mvn_model_H_sta_c0'
     if keyword_set(savetplot) then makepng,datestr+'_main'
   endif
 
-  if keyword_set(tohban) then tplot,'alt2 swea_a4_pot mvn_swis_en_eflux mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_sep1_A-F_Rate_Energy mvn_sep1_B-O_Rate_Energy mvn_mag_MSO_(nT) mvn_mag_Btot_(nT) mvn_redures_L_sta_c0 mvn_redures_H_sta_c0'
+  if keyword_set(tohban) then tplot,'alt2 swea_a4_pot mvn_swis_en_eflux mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_sep1_A-F_Rate_Energy mvn_sep1_B-O_Rate_Energy mvn_mag_MSO_(nT) mvn_mag_Btot_(nT) mvn_redures_LOmass_sta_c0 mvn_redures_HImass_sta_c0'
 
 end

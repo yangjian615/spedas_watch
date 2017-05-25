@@ -46,13 +46,18 @@ function int_simple, x, f, df = df, dx = dx, error= error
 end
 
 
-function mvn_euv_ionization,fismdata
-  wavelength = reform(fismdata.v[0,*])
-  path = FILE_DIRNAME(ROUTINE_FILEPATH('mvn_euv_l3_load'), /mark)
-  Cross_section_file = path + 'photon_cross_sections.sav'
+function mvn_euv_ionization,fismdata, photo = photo
   
+  ndw = size (fismdata.v,/n_dimensions)
+  if ndw eq 1 then wavelength = reform(fismdata.v) else if $
+     ndw eq 2 then wavelength = reform(fismdata.v[0,*])
+  if not keyword_set (photo) then begin
+     path = FILE_DIRNAME(ROUTINE_FILEPATH('mvn_euv_l3_load'), /mark)
+     Cross_section_file = path + 'photon_cross_sections.sav'
+     
                                 ;print, 'Loading cross-section file...'
-  restore, cross_section_file
+     restore, cross_section_file
+  endif
                                 ;print, 'Done.'
   
   CO2_CO2plus_index = where(photo.CO2.process eq 'CO2 CO2+')
@@ -68,7 +73,7 @@ function mvn_euv_ionization,fismdata
                       wavelength))
   CO2_CO2plus_xsection = $
      reform (interpol(photo.CO2.xsection[CO2_CO2plus_index,*], $
-                      photo.Angstroms*0.1, $
+                       photo.Angstroms*0.1, $
                       wavelength))
   CO2_O_COplus_xsection = $
      reform (interpol(photo.CO2.xsection[CO2_O_COplus_index,*], $
@@ -95,8 +100,8 @@ function mvn_euv_ionization,fismdata
                       photo.Angstroms*0.1, $
                       wavelength))
 
-  O2_O2plus_index = where(photo.O3P.process eq 'O2 O2+')
-  O2_O_Oplus_index = where(photo.O3P.process eq 'O2 O+O')
+  O2_O2plus_index = where(photo.O2.process eq 'O2 O2+')
+  O2_O_Oplus_index = where(photo.O2.process eq 'O2 O+O')
   O2_ionization_xsection = $
      reform (interpol(photo.O2.xsection[O2_O2plus_index,*]+$
                       photo.O2.xsection[O2_O_Oplus_index,*],$
@@ -110,7 +115,6 @@ function mvn_euv_ionization,fismdata
      reform (interpol(photo.O2.xsection[O2_O_Oplus_index,*], $
                       photo.Angstroms*0.1, $
                       wavelength))
-
 
   N2_N2plus_index = where(photo.N2.process eq 'N2 N2+')
   N2_N_Nplus_index = where(photo.N2.process eq 'N2 N+N')

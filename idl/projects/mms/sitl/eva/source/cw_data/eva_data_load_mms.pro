@@ -432,20 +432,26 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=81
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_exb_fpi_*') and (cp eq 0)) then begin
-          eva_data_load_mms_exb,sc=sc,vthres=500.
+          eva_data_load_mms_exb,sc=sc,vthres=1500.,/fpi
           answer = 'Yes'
         endif
         pcode=82
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_exb_hpca_*') and (cp eq 0)) then begin
-          eva_data_load_mms_exb,sc=sc,vthres=500.,/hpca
+          eva_data_load_mms_exb,sc=sc,vthres=1500.,/hpca
+          answer = 'Yes'
+        endif
+        pcode=83
+        ip=where(perror eq pcode,cp)
+        if (strmatch(paramlist[i],'*_exb_dsl') and (cp eq 0)) then begin
+          eva_data_load_mms_exb,sc=sc,vthres=1500.
           answer = 'Yes'
         endif
         
         ;------------
         ; SW
         ;------------
-        pcode=83
+        pcode=84
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_sw_*') and (cp eq 0)) then begin
           eva_data_load_mms_sw,sc=sc
@@ -455,19 +461,19 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         ;-----------
         ; Current 
         ;-----------
-        pcode=84
+        pcode=85
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_jtot_curl_b') and (cp eq 0)) then begin
           LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/curlB)
           answer = 'Yes'
         endif
-        pcode=85
+        pcode=86
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_diffb') and (cp eq 0)) then begin
           LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/diffB)
           answer = 'Yes'
         endif
-        pcode=86
+        pcode=87
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_jtot_combb') and (cp eq 0)) then begin
           LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/combB)

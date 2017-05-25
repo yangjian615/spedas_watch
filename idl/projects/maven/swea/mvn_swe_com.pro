@@ -13,8 +13,8 @@
 ;     a6:       fast housekeeping
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-22 13:26:49 -0700 (Sat, 22 Apr 2017) $
-; $LastChangedRevision: 23209 $
+; $LastChangedDate: 2017-05-10 19:21:02 -0700 (Wed, 10 May 2017) $
+; $LastChangedRevision: 23299 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_com.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-03-18
@@ -22,7 +22,7 @@
 ;-
 common swe_raw, a0, a1, a2, a3, a4, a5, a6, swe_hsk, swe_3d, swe_3d_arc, $
                 swe_a0_str, swe_a2_str, swe_a4_str, swe_a6_str, swe_hsk_str, $
-                swe_chksum, swe_active_chksum, pfp_hsk, pfp_hsk_str
+                swe_hsk_names, swe_chksum, swe_active_chksum, pfp_hsk, pfp_hsk_str
 
 common swe_dat, swe_3d_struct, swe_pad_struct, swe_engy_struct, swe_mag_struct, $
                 swe_engy_l2_str, swe_pad_l2_str, swe_3d_l2_str, $

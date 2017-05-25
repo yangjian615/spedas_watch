@@ -1,4 +1,4 @@
-PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql, hpca=hpca
+PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql, hpca=hpca, fpi=fpi
   compile_opt idl2
   if undefined(vthres) then vthres = 500.
   
@@ -63,6 +63,8 @@ PRO eva_data_load_mms_exb, sc=sc, vthres=vthres, ql=ql, hpca=hpca
   
   ; Compare with FPI/HPCA
   ;-------------------------
+  
+  if (not keyword_set(fpi)) and (not keyword_set(hpca) ) then return
   
 ;  tpv = keyword_set(ql) ? '_dis_bulk' : '_fpi_iBulkV_DSC' 
 ;  tpv2 = keyword_set(ql) ? '_dis_bulkVperp_' : '_fpi_iBulkVperp_'

@@ -76,8 +76,8 @@
 ;CREATED BY:	David L. Mitchell  2016-08-03
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-21 09:11:27 -0800 (Mon, 21 Nov 2016) $
-; $LastChangedRevision: 22385 $
+; $LastChangedDate: 2017-05-08 17:28:10 -0700 (Mon, 08 May 2017) $
+; $LastChangedRevision: 23280 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_fovcal.pro $
 ;-
 pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
@@ -85,6 +85,10 @@ pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
                     lon=lon, lat=lat, calnum=calnum, scp=scp
 
   @mvn_swe_com
+
+  a = 0.8
+  phi = findgen(49)*(2.*!pi/49)
+  usersym,a*cos(phi),a*sin(phi),/fill
 
   dat = 0
   twin = !d.window
@@ -151,6 +155,10 @@ pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
   ivel = v_3d(idat) ; SWIA coordinate frame
   vel = spice_vector_rotate(ivel, time, 'MAVEN_SWIA', 'MAVEN_SWEA', $
                             check_objects='MAVEN_SPACECRAFT',verbose=1)
+  vmag = sqrt(total(vel*vel))
+  vphi = atan(vel[1],vel[0])*!radeg
+  vthe = asin(vel[2]/vmag)*!radeg
+
   data = convert_vframe(edat, vel, sc_pot=edat.sc_pot, /interpolate)
   mvn_swe_convert_units, data, units
   dat = data
@@ -262,6 +270,8 @@ pro mvn_swe_fovcal, units=units, mincnts=mincnts, order=order, energy=energy, $
 
     plot3d_new, fovcal, lat, lon, ebins=[i_e,i_e+1,i_e+2,i_e+3], $
                 stack=[2,2], subtitle=['BEFORE','AFTER','NOMINAL','RGF']
+
+    oplot, [vphi], [vthe], psym=8, color=5, symsize=2  ; solar wind velocity direction
   wset,Twin
 
   result = {time:time, rgf:rgf, trange:trange}

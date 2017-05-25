@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-22 13:28:45 -0700 (Sat, 22 Apr 2017) $
-; $LastChangedRevision: 23212 $
+; $LastChangedDate: 2017-05-10 19:20:36 -0700 (Wed, 10 May 2017) $
+; $LastChangedRevision: 23298 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-01-15
@@ -52,6 +52,33 @@ pro mvn_swe_init
     
   decom = d_mid  ; decompressed counts
   devar = d_var  ; variance w/ digitization noise
+
+; Housekeeping names
+
+  swe_hsk_names = ['LVPST'  , $   ;  0: LVPS Temperature
+                   'MCPHV'  , $   ;  1: MCP HV Voltage
+                   'NRV'    , $   ;  2: NRHV +5V Supply Voltage
+                   'ANALV'  , $   ;  3: Analyzer Voltage
+                   'DEF1V'  , $   ;  4: Deflector 1 Voltage
+                   'DEF2V'  , $   ;  5: Deflector 2 Voltage
+                   ''       , $   ;  6: ground/spare
+                   ''       , $   ;  7: ground/spare
+                   'V0V'    , $   ;  8: V0 Voltage
+                   'ANALT'  , $   ;  9: Analyzer Temperature
+                   'P12V'   , $   ; 10: +12V Voltage
+                   'N12V'   , $   ; 11: -12V Voltage
+                   'MCP28V' , $   ; 12: +28V Voltage (after MCPHV enable plug)
+                   'NR28V'  , $   ; 13: +28V Voltage (after NRHV enable plug)
+                   ''       , $   ; 14: ground/spare
+                   ''       , $   ; 15: ground/spare
+                   'DIGT'   , $   ; 16: Digital Temperature
+                   'P2P5DV' , $   ; 17: +2.5V Digital Voltage
+                   'P5DV'   , $   ; 18: +5V Digital Voltage
+                   'P3P3DV' , $   ; 19: +3.3V Digital Voltage
+                   'P5AV'   , $   ; 20: +5V Analog Voltage
+                   'N5AV'   , $   ; 21: -5V Analog Voltage
+                   'P28V'   , $   ; 22: +28V Voltage
+                   ''          ]  ; 23: ground/spare
 
 ; Housekeeping conversions
 

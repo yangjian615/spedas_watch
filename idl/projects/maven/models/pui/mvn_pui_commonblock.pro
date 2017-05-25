@@ -22,4 +22,5 @@ common mvn_swia_data,info_str,swihsk,swics,swica,swifs,swifa,swim,swis
                 
 ;STATIC common block
 common mvn_c0,mvn_c0_ind,mvn_c0_dat
+common mvn_d0,mvn_d0_ind,mvn_d0_dat
 common mvn_d1,mvn_d1_ind,mvn_d1_dat

@@ -41,15 +41,17 @@
 ;  Created by Mitsuo Oka on 2016-05-15
 ;  Fixed energy bin mistake 2017-01-28 
 ;  Fixed para and anti-para mistake (thanks to R. Mistry) 2017-03-14
+;  Fixed eflux calculation 2017-05-12
 ;  
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-04-01 12:05:33 -0700 (Sat, 01 Apr 2017) $
-;$LastChangedRevision: 23077 $
+;$LastChangedDate: 2017-05-12 16:02:44 -0700 (Fri, 12 May 2017) $
+;$LastChangedRevision: 23316 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
 ;-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
   norm=norm, ename=ename, pr___0 = pr___0, pr__90 = pr__90, pr_180=pr_180,$
   daPara=da,daPerp=da2,oclreal=oclreal, single_time=single_time, $
+  subtract_bulk = subtract_bulk, $
   vlm=vlm; An additional frametransformation
   compile_opt idl2
 
@@ -66,7 +68,15 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   if undefined(pr__90) then pr__90 = [90.-da2, 90.+da2]; perp pitch-angle range
   if undefined(pr_180) then pr_180 = [180.-da, 180.]; anti-para pitch-angle range
 
-
+  if ~undefined(vname) then begin
+    if undefined(subtract_bulk) then begin
+      msg  = "moka_mms_pad now requires the keyword 'subtract_bulk' = 1 (in addition to specifying "
+      msg += "vname) when subtracting bulk velocity"
+      result = dialog_message(msg,/center)
+      return, -1
+    endif
+  endif
+  
   if size(tname,/type) eq 7 then begin; if 'tname' is string...
     distime = mms_get_dist(tname,/time)
     if (time_double(trange[1]) lt distime[0]) or (max(distime) lt time_double(trange[0])) then begin
@@ -92,6 +102,35 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   dr = !dpi/180.d0
   rd = 1.d0/dr
 
+  if keyword_set(subtract_bulk) then begin
+    if undefined(vname) then begin
+      msg = "Please specify vname"
+      result = dialog_message(msg,/center)
+      return, -1
+    endif
+    species_lc = strlowcase(dist[0].species)
+    ;get mass of species
+    case species_lc of
+      'i': A=1;H+
+      'hplus': A=1;H+
+      'heplus': A=4;He+
+      'heplusplus': A=4;He++
+      'oplus': A=16;O+
+      'oplusplus': A=16;O++
+      'e': A=1d/1836;e-
+      else: message, 'Unknown species: '+species_lc
+    endcase
+    ;scaling factor between df and flux units
+    flux_to_df = A^2 * 0.5447d * 1d6    
+    ;convert between km^6 and cm^6 for df
+    cm_to_km = 1d30
+    
+    ; See 'mms_convert_flux_units'
+    in = [2,-1,0]; units_in = 'df'
+    out = [0,0,0]; units_out = 'eflux'
+    exp = in + out
+  endif
+  
   ;-----------------------------
   ; Pitch-angle Bins
   ;-----------------------------
@@ -106,6 +145,9 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   ; Energy Bins
   ;-----------------------------
   wegy  = dist[0].ENERGY[*,0,0]
+  if keyword_set(subtract_bulk) then begin
+    wegy = [2*wegy[0]- wegy[1], wegy]
+  endif
   jmax  = n_elements(wegy)
   egy_bin = 0.5*(wegy + shift(wegy,-1))
   egy_bin[jmax-1] = 2.*wegy[jmax-1]-egy_bin[jmax-2]
@@ -128,16 +170,15 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   ; Magnetic field & Bulk Velocity
   ;------------------------------------
   bnrm = double(moka_tplot_average(bname, tr,norm=1)); .... Normalized!
-  if undefined(vname) then begin
-    Vbulk = [0.d0,0.d0,0.d0]
-  endif else begin
-    get_data,vname,data=DV
-  endelse
+  Vbulk = [0.d0,0.d0,0.d0]
   Vbulk_para = 0.d0
   Vbulk_perp = 0.d0
   Vbulk_vxb  = 0.d0
   Vbulk_exb  = 0.d0
-
+  if ~undefined(vname) then begin
+    get_data,vname,data=DV
+  endif
+  
   ;----------------
   ; Main Loop
   ;----------------
@@ -152,7 +193,7 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
     endif else begin
       moka_mms_clean_data,dist[n],output=data,units=units_lc
     endelse
-
+    
     ;------------------------
     ; Bulk Velocity
     ;------------------------
@@ -185,7 +226,7 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
     
     ; Frame transformation
 ;    if undefined(vlmpot) then begin
-      if ~undefined(vname) then begin; Plasma rest-frame
+      if keyword_set(subtract_bulk) then begin; Plasma rest-frame
         vx -= Vbulk[0]
         vy -= Vbulk[1]
         vz -= Vbulk[2]
@@ -207,13 +248,16 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
     data.phi    = phi
     data.theta  = theta
     data.pa     = pa
+    
 
+    
     ;------------------------
     ; DISTRIBUTE
     ;------------------------
     imax = n_elements(data.data_dat)
     
     for i=0,imax-1 do begin; for each particle
+
       
       ; Find energy bin
       result = min(egy_bin-data.energy[i],j,/abs)
@@ -225,8 +269,24 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
       if pa_bin[k] gt data.pa[i] then k -= 1
       if k eq kmax then k -= 1
       
+      if j ge 0 then begin
+      
+      ;-----------------------
+      ; Find new eflux
+      ;-----------------------
+      ; If shifted to plasma rest-frame, 'eflux' should be re-evaluated
+      ; from 'psd' because 'eflux' depends on the particle energy. We don't need to 
+      ; worry about this if we want the output in 'psd'.   
+      if keyword_set(subtract_bulk) and strmatch(units_lc,'eflux') then begin; If plasma rest-frame AND efluxs
+        ; See 'mms_convert_flux_units'
+        newenergy = wegy[j]
+        newdata = double(data.data_psd[i]) * double(newenergy)^exp[0] * (flux_to_df^exp[1] * cm_to_km^exp[2])
+      endif else begin
+        newdata = data.data_dat[i]
+      endelse
+      
       ; pitch-angle distribution
-      pad[j,k] += data.data_dat[i] 
+      pad[j,k] += newdata 
       count_pad[j,k] += 1L
 
       ; energy spectrum (para, perp, anti-para)
@@ -238,7 +298,7 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
         if (pr_180[0] le data.pa[i]) and (data.pa[i] le pr_180[1]) then m=2
       endelse
       if (m ge 0) and (m le 2) then begin
-        f_dat[j,m] += data.data_dat[i]
+        f_dat[j,m] += newdata
         f_psd[j,m] += data.data_psd[i]
         f_err[j,m] += data.data_err[i]
         f_cnt[j,m] += data.data_cnt[i]
@@ -247,13 +307,15 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
 
       ; energy spectrum (omni-direction)
       m = 3
-      f_dat[j,m] += data.data_dat[i]
+      f_dat[j,m] += newdata
       f_psd[j,m] += data.data_psd[i]
       f_err[j,m] += data.data_err[i]
       f_cnt[j,m] += data.data_cnt[i]
       count_dat[j,m] += 1L
       
-
+      endif else begin; if j ge 0
+        print, "data point at energy=",data.energy[i]," eV is skipped"
+      endelse
     endfor; for each particle
   endfor; for n=0,nmax-1
 
@@ -269,6 +331,9 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   vbulk_vxb  /= float(nmax)
   vbulk_exb  /= float(nmax)
 
+  idx = where(~finite(pad),ct)
+  if ct gt 0 then pad[idx] = 0.
+  
   ;---------------
   ; ANGLE PADDING
   ;---------------

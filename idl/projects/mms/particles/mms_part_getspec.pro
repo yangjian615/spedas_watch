@@ -13,8 +13,8 @@
 ;         
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-04-20 13:04:32 -0700 (Thu, 20 Apr 2017) $
-;$LastChangedRevision: 23202 $
+;$LastChangedDate: 2017-05-16 21:10:54 -0700 (Tue, 16 May 2017) $
+;$LastChangedRevision: 23327 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -99,13 +99,13 @@ pro mms_part_getspec, probes=probes, $
 
     if instrument eq 'fpi' then begin
         mms_load_fpi, probes=probes, trange=trange, data_rate=data_rate, level=level, $
-            datatype='d'+species+'s-dist'
+            datatype='d'+species+'s-dist', /time_clip
         ; load the bulk velocity if the user requested to subtract it
         if keyword_set(subtract_bulk) then mms_load_fpi, probes=probes, trange=trange, data_rate=data_rate, level=level, $
             datatype='d'+species+'s-moms'
     endif else if instrument eq 'hpca' then begin
         mms_load_hpca, probes=probes, trange=trange, data_rate=data_rate, level=level, $
-            datatype='ion'
+            datatype='ion', /time_clip
         ; load the bulk velocity if the user requested to subtract it
         if keyword_set(subtract_bulk) then mms_load_hpca, probes=probes, trange=trange, $
           data_rate=data_rate, level=level, datatype='moments'

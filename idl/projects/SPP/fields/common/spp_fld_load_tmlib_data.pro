@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-04-26 16:52:09 -0700 (Wed, 26 Apr 2017) $
-;  $LastChangedRevision: 23230 $
+;  $LastChangedBy: pulupa $
+;  $LastChangedDate: 2017-05-16 15:19:27 -0700 (Tue, 16 May 2017) $
+;  $LastChangedRevision: 23324 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -77,33 +77,63 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   ; From the list, make a hash object (data_hash).  We make the hash so that
   ; we can index by the item name.  Also make a list of the hash keys (item
-  ; names (data_names).
+  ; names (var_names).
+  ;
+  ; Note that the 'xml_cdf_vars' returns a different variable type if only one
+  ; cdf_var is specified in the XML file (the typename conditional below captures
+  ; this special case.
 
   data_hash = ORDEREDHASH()
 
-  foreach cdf_var, xml_cdf_vars do begin
+  if typename(xml_cdf_vars) EQ 'LIST' then begin
 
-    data_hash[cdf_var['name']] = cdf_var
+    foreach cdf_var, xml_cdf_vars do begin
 
-  endforeach
+      data_hash[cdf_var['name']] = cdf_var
 
-  data_names = data_hash.Keys()
+    endforeach
+
+  endif else begin
+
+    data_hash[xml_cdf_vars['name']] = xml_cdf_vars
+
+  endelse
+
+  var_names = data_hash.Keys()
 
   ; Find indices of the data_hash for which the name matches the input
   ; string (varformat).  Varformat is a scalar or vector of regular expressions
   ; (not globbing expressions).  Each element of varformat is compared to
   ; the list of names and the union of all matching names is returned in
   ; the match_ind array.
+  ;
+  ; Note that the 'xml_cdf_vars' returns a different variable type if only one
+  ; cdf_var is specified in the XML file (the typename conditional below captures
+  ; this special case.
 
-  name_match = data_names.Map(Lambda(x:0))
+  name_match = var_names.Map(Lambda(x:0))
 
-  for i = 0, n_elements(varformat) - 1 do begin
+  if typename(xml_cdf_vars) EQ 'LIST' then begin
 
-    name_match_i = data_names.Map(Lambda(x, y: x.Matches(y)), varformat[i])
+    for i = 0, n_elements(varformat) - 1 do begin
 
-    name_match = name_match.Map(Lambda(x, y: max([x,y])), name_match_i)
+      name_match_i = var_names.Map(Lambda(x, y: x.Matches(y)), varformat[i])
 
-  endfor
+      name_match = name_match.Map(Lambda(x, y: max([x,y])), name_match_i)
+
+    endfor
+
+  endif else begin
+
+    for i = 0, n_elements(varformat) - 1 do begin
+
+      if name_match[0] EQ 0 then begin
+        name_match = var_names.Map(Lambda(x, y: x.Matches(y)), varformat[i])
+      endif
+
+    endfor
+
+  endelse
 
   match_ind = where(name_match.ToArray(), match_count)
 
@@ -114,14 +144,14 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   if match_count GT 0 then begin
 
-    dprint, data_names[match_ind], dlevel = 2
+    dprint, var_names[match_ind], dlevel = 2
 
-    data_names = data_names[match_ind]
-    data_hash = data_hash[data_names]
+    var_names = var_names[match_ind]
+    data_hash = data_hash[var_names]
 
     for i = 0, n_elements(match_ind) - 1 do begin
 
-      (data_hash[data_names[i]])['data'] = LIST()
+      (data_hash[var_names[i]])['data'] = LIST()
 
     endfor
 
@@ -139,8 +169,13 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   get_timespan, trange
 
-  t0 = sunseconds_to_ur8(time_double(trange[0]))
-  t1 = sunseconds_to_ur8(time_double(trange[1]))
+  ; Convert from TPLOT timerange (Unix time) to TMlib timerange
+  ; (UR8 time starting on 1982-01-01).
+
+  t0_ur8 = time_double('1982-01-01')
+
+  t0 = (time_double(trange[0]) - t0_ur8) / 86400.d
+  t1 = (time_double(trange[1]) - t0_ur8) / 86400.d
 
   ; Select TMlib server
 
@@ -196,8 +231,9 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
     ;err = tm_get_item_i4(sid, "ccsds_met_sec", met_ccsds, 1, size)
 
-    time = ur8_to_sunseconds(ur8_ccsds)
-    times.Add, time
+    ; Convert time back to TPLOT time
+
+    time = ur8_ccsds * 86400.d + t0_ur8
 
     dprint, n_elements(times), ' / ', ur8_ccsds, ' / ', $
       time_string(time), dlevel = 4
@@ -215,52 +251,69 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
     serr = tm_find_event(sid)
 
-    ; For certain APIDs, some data items only exist in some packets
-    ; but not others.  Requesting the items when they do not exist can cause
-    ; errors.  null_items returns a list of items NOT to ask for in the
-    ; following loop.
+    dprint, 'serr', serr, dlevel = 4
 
-    null_items = LIST()
-    if idl_att.HasKey('null_routine') then begin
+    if serr EQ 0 then begin
 
-      null_items = CALL_FUNCTION(idl_att['null_routine'], sid)
+      times.Add, time
 
-    end
+      ; For certain APIDs, some data items only exist in some packets
+      ; but not others.  Requesting the items when they do not exist can cause
+      ; errors.  null_items returns a list of items NOT to ask for in the
+      ; following loop.
 
-    for i = 0, n_elements(data_names) - 1 do begin
+      null_items = LIST()
+      if idl_att.HasKey('null_routine') then begin
 
-      data_name = data_names[i]
+        null_items = CALL_FUNCTION(idl_att['null_routine'], sid)
 
-      ; Check whether the request should be suppressed
+      end
 
-      !NULL = null_items.Where(data_name, count = data_null_count)
-      if data_null_count EQ 0 then begin
+      for i = 0, n_elements(var_names) - 1 do begin
 
-        ; Get the number of elements in the data item
+        var_name = var_names[i]
 
-        nelem = spp_fld_tmlib_item_nelem(data_hash[data_name], sid)
+        ; Check whether the request should be suppressed
 
-    ; TODO: Make sure this is doing the right thing
-    
-        returned_item = !NULL
-        ;delvarx, returned_item
+        !NULL = null_items.Where(var_name, count = data_null_count)
 
-        err = tm_get_item_i4(sid, data_name, returned_item, nelem, n_returned)
+        if data_null_count EQ 0 then begin
 
-      endif else begin
+          ; Get the number of elements in the data item
 
-        returned_item = !NULL
+          nelem = spp_fld_tmlib_item_nelem(data_hash[var_name], sid)
 
-      endelse
+          returned_item = !NULL
 
-      (data_hash[data_name])['data'].Add, returned_item
+          var_type = strlowcase((data_hash[var_name])['type'])
 
-      item_str = n_elements(returned_item) GT 1 ? string(returned_item[0]) + $
-        ', ...' : string(returned_item)
+          case var_type of
+            'double': err = tm_get_item_r8(sid, var_name, returned_item, nelem, n_returned)
+            'integer': err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
+            ELSE: err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
+          endcase
 
-      dprint, '    ', data_name, item_str, dlevel = 4
+        endif else begin
 
-    endfor
+          returned_item = !NULL
+
+        endelse
+
+        (data_hash[var_name])['data'].Add, returned_item
+
+        ;dprint, getdebug = dprint_debug
+
+        ;      if dprint_debug GE 4 then begin
+        ;        ;dprint, '    ', var_name, item_str, dlevel = 4
+        ;
+        ;        item_str = n_elements(returned_item) GT 1 ? string(returned_item[0]) + $
+        ;          ', ...' : string(returned_item)
+        ;
+        ;      endif
+
+      endfor
+
+    endif
 
   endwhile
 
@@ -269,7 +322,6 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   ; the MAG survey APIDs to change from ~512 vectors per a single packet time to
   ; 1 vector per time tag.
 
-
   if idl_att.HasKey('convert_routine') then begin
 
     old_data_hash = data_hash
@@ -277,6 +329,14 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     convert_routine = idl_att['convert_routine']
 
     call_procedure, convert_routine, data_hash, times, cdf_att
+
+  endif
+
+  if n_elements(times) EQ 0 then begin
+
+    success = -1
+
+    return, data_hash
 
   endif
 

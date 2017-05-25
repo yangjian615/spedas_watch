@@ -105,9 +105,9 @@
 ;  uniformity is assumed as the data is replaced with interpolated versions.
 ;     
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-08-25 13:12:01 -0700 (Thu, 25 Aug 2016) $
-;$LastChangedRevision: 21726 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2017-05-08 10:50:12 -0700 (Mon, 08 May 2017) $
+;$LastChangedRevision: 23276 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -256,7 +256,6 @@ function thm_part_combine, probe=probe, $
   thm_cmb_clean_sst, sst, units='flux', sst_sun_bins=sst_sun_bins,sst_min_energy=sst_min_energy,sst_data_mask=sst_data_mask, remove_counts=remove_counts
   thm_cmb_clean_esa, esa, units='flux', esa_max_energy=esa_max_energy, esa_bgnd_advanced=esa_bgnd_advanced, remove_counts=remove_counts
   
-  
   ;-------------------------------------------------------------------------------------------
   ;Time interpolation
   ;-------------------------------------------------------------------------------------------
@@ -305,7 +304,6 @@ function thm_part_combine, probe=probe, $
   
   if keyword_set(energy_interp_error) then message, 'energy interp error'
 
-
   ;-------------------------------------------------------------------------------------------
   ;Form final distribution
   ;-------------------------------------------------------------------------------------------
@@ -316,7 +314,16 @@ function thm_part_combine, probe=probe, $
 
   ;convert into requested units
   thm_part_conv_units, out_dist, units=units_lc
-  
+
+;remove negative values, which can show up even without interpolation
+;there should never be negative values in the 3d data arrays, which
+;are counts-based, jmm, 2017-05-05
+  ndist = n_elements(out_dist)
+  For j = 0, ndist-1 Do Begin
+     If(ptr_valid(out_dist[j]) && is_struct(*out_dist[j])) Then $
+        (*out_dist[j]).data = (*out_dist[j]).data > 0
+  Endfor
+
   ;if original data is being passed out ensure the units are identical to primary output
   if arg_present(orig_sst) then thm_part_conv_units, orig_sst, units=units_lc
   if arg_present(orig_esa) then thm_part_conv_units, orig_esa, units=units_lc

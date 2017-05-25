@@ -37,7 +37,6 @@ endif else begin
 endelse
 
 ;----------SWIA----------
-;nsw=average_hist2(swian.y,swian.x,binsize=binsize,trange=trange,centertime=centertime); solar wind density (cm-3)
 if ~keyword_set(swim) then begin
   dprint,'No SWIA data available, using default values: Usw = 500 km/s, Nsw = 2 cm-3'
   pui.data.swi.swim.velocity_mso=[-500,0,0] ;solar wind velocity (km/s)
@@ -45,6 +44,7 @@ if ~keyword_set(swim) then begin
 endif else begin
   pui.data.swi.swim=average_hist(swim,swim.time_unix+2.,binsize=binsize,range=trange,xbins=centertime); swia moments
   pui.data.swi.swis=average_hist(swis,swis.time_unix+2.,binsize=binsize,range=trange,xbins=centertime); swia spectra
+  ;nsw=average_hist2(swian.y,swian.x,binsize=binsize,trange=trange,centertime=centertime); solar wind density (cm-3)
   ;vsw=1e3*average_hist2(swiav.y,swiav.x,binsize=binsize,trange=trange,centertime=centertime); solar wind velocity (m/s)
   ;swiaef=average_hist2(swiaefdata.y,swiaefdata.x,binsize=binsize,trange=trange,centertime=centertime); swia energy flux
   ;swiaet=average_hist2(swiaefdata.v,swiaefdata.x,binsize=binsize,trange=trange,centertime=centertime); swia energy table
@@ -52,23 +52,21 @@ endif else begin
   swisen=transpose(info_str[pui.data.swi.swis.info_index].energy_coarse)
   store_data,'mvn_redures_swia',data={x:centertime,y:transpose(pui.data.swi.swis.data),v:swisen},limits={ylog:1,zlog:1,spec:1,yrange:[25,25e3],ystyle:1,zrange:[1e3,1e8],ztitle:'Eflux',ytickunits:'scientific'}
 
-  if keyword_set(swics) then begin ;swia survey data
+  if n_elements(swics) gt 1 then begin ;swia survey data
     swiactime = swics.time_unix +4.0*swics.num_accum/2  ;center time of sample/sum
     pui.data.swi.swics=average_hist(swics,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse survey
     swicsdt=swics[1:*].time_unix-swics[0:-1].time_unix
-    store_data,'mvn_swics_dt_(s)',swics[1:*].time_unix,swicsdt
+    store_data,'mvn_swics_dt_(s)',data={x:swics[1:*].time_unix,y:swicsdt},limits={ylog:1,panel_size:.5,colors:'r'}
+
+    if n_elements(swics) gt 1 then begin ;swia archive (burst) data
+      swiactime = swica.time_unix +4.0*swica.num_accum/2  ;center time of sample/sum
+      pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse archive
+      swicadt=swica[1:*].time_unix-swica[0:-1].time_unix
+      store_data,'mvn_swica_dt_(s)',data={x:swica[1:*].time_unix,y:swicadt},limits={ylog:1,panel_size:.5,colors:'r'}
+      badindex=where(~finite(pui.data.swi.swica.time_unix),/null,count) ;no archive available index
+      if count gt 0 then pui[badindex].data.swi.swica=pui[badindex].data.swi.swics ;use survey instead
+    endif else pui.data.swi.swica=pui.data.swi.swics ;if no archive available at all, use survey instead
   endif
-
-  if keyword_set(swica) then begin ;swia archive (burst) data
-    swiactime = swica.time_unix +4.0*swica.num_accum/2  ;center time of sample/sum
-    pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse archive
-    swicadt=swica[1:*].time_unix-swica[0:-1].time_unix
-    store_data,'mvn_swica_dt_(s)',swica[1:*].time_unix,swicadt
-  endif else pui.data.swi.swica=pui.data.swi.swics ;if no archive availabe at all, use survey instead
-  badindex=where(~finite(pui.data.swi.swica.time_unix),/null) ;no archive availabe
-  pui[badindex].data.swi.swica=pui[badindex].data.swi.swics ;use survey instead
-
-  options,'mvn_swic?_dt_(s)','panel_size',.5
 endelse
 
 ;----------SWEA----------
@@ -97,36 +95,46 @@ if keyword_set(sweaefdata) then begin
 endif
 
 ;----------STATIC----------
-;if keyword_set(sta_c0_L_E_data) then begin
-;  sta_c0H=average_hist2(sta_c0_H_E_data.y,sta_c0_H_E_data.x,binsize=binsize,trange=trange,centertime=centertime); static c0
-;  sta_c0L=average_hist2(sta_c0_L_E_data.y,sta_c0_L_E_data.x,binsize=binsize,trange=trange,centertime=centertime); static c0
-;  staetc0=average_hist2(sta_c0_L_E_data.v,sta_c0_L_E_data.x,binsize=binsize,trange=trange,centertime=centertime); static energy table
-;  store_data,'redures_H_sta_c0',centertime,sta_c0H,staetc0
-;  store_data,'redures_L_sta_c0',centertime,sta_c0L,staetc0
-;end
-
-if keyword_set(mvn_c0_dat) then begin
-  time = (mvn_c0_dat.time + mvn_c0_dat.end_time)/2.
-  c0eflux=average_hist2(mvn_c0_dat.eflux,time,binsize=binsize,trange=trange,centertime=centertime); static c0 energy flux
-  c0energy=average_hist2(mvn_c0_dat.energy[mvn_c0_dat.swp_ind,*,0],time,binsize=binsize,trange=trange,centertime=centertime); static c0 energy table
+if keyword_set(mvn_c0_dat) then begin ;static 1d data (64e2m)
+  c0time = (mvn_c0_dat.time + mvn_c0_dat.end_time)/2.
+  c0eflux=average_hist2(mvn_c0_dat.eflux,c0time,binsize=binsize,trange=trange,centertime=centertime); static c0 energy flux
+  c0energy=average_hist2(mvn_c0_dat.energy[mvn_c0_dat.swp_ind,*,0],c0time,binsize=binsize,trange=trange,centertime=centertime); static c0 energy table
   pui.data.sta.c0.eflux=transpose(c0eflux,[1,2,0])
   pui.data.sta.c0.energy=transpose(c0energy)
-  store_data,'mvn_redures_H_sta_c0',centertime,c0eflux[*,*,1],c0energy
-  store_data,'mvn_redures_L_sta_c0',centertime,c0eflux[*,*,0],c0energy
+  store_data,'mvn_redures_HImass_sta_c0',centertime,c0eflux[*,*,1],c0energy
+  store_data,'mvn_redures_LOmass_sta_c0',centertime,c0eflux[*,*,0],c0energy
+  store_data,'mvn_sta_att',data={x:c0time,y:mvn_c0_dat.att_ind},limits={yrange:[-1,4],panel_size:.5,colors:'r'}
+  store_data,'mvn_sta_mode',data={x:c0time,y:mvn_c0_dat.mode},limits={yrange:[-1,7],panel_size:.5,colors:'r'}
+  store_data,'mvn_sta_sweep_index',data={x:c0time,y:mvn_c0_dat.swp_ind},limits={ylog:1,panel_size:.5,colors:'r'}
 endif
 
-if keyword_set(mvn_d1_dat) and pui0.do3d then begin
-  time = (mvn_d1_dat.time + mvn_d1_dat.end_time)/2.
-  d1eflux=average_hist2(mvn_d1_dat.eflux,time,binsize=binsize,trange=trange,centertime=centertime); static d1 energy flux
-  d1energy=average_hist2(mvn_d1_dat.energy[mvn_d1_dat.swp_ind,*,0,0],time,binsize=binsize,trange=trange,centertime=centertime); static d1 energy table
-  pui.data.sta.d1.eflux=transpose(reform(d1eflux,[pui0.nt,pui0.sd1eb,pui0.swine,pui0.swina,8]),[1,3,2,4,0])
-  pui.data.sta.d1.energy=transpose(d1energy)
-  store_data,'mvn_sta_d1_dt_(s)',mvn_d1_dat.time,mvn_d1_dat.delta_t
-  store_data,'mvn_sta_d1_sweep_index',mvn_d1_dat.time,mvn_d1_dat.swp_ind
-  store_data,'mvn_sta_d1_mass_(amu)',mvn_d1_dat.time,reform(mvn_d1_dat.mass_arr[mvn_d1_dat.swp_ind,0,0,*])
-  ylim,'mvn_sta_d1_mass_(amu)',1,1,1
-  options,'mvn_sta_d1_dt_(s)','panel_size',.5
-  options,'mvn_sta_d1_sweep_index','panel_size',.5
+if keyword_set(mvn_d0_dat) and pui0.do3d then begin ;static 3d survey data (d0: 32e4a16d8m 128s)
+  d0time = (mvn_d0_dat.time + mvn_d0_dat.end_time)/2.
+  d0ef=average_hist2(mvn_d0_dat.eflux,d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 energy flux
+  d0en=average_hist2(mvn_d0_dat.energy[mvn_d0_dat.swp_ind,*,0,0],d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 energy table
+  d0dt=average_hist2(mvn_d0_dat.delta_t,d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 dt
+  store_data,'mvn_sta_d0_mass_(amu)',data={x:d0time,y:reform(mvn_d0_dat.mass_arr[mvn_d0_dat.swp_ind,0,0,*])},limits={ylog:1}
+
+  if keyword_set(mvn_d1_dat) then begin ;static 3d archive (burst) data (d1: 32e4a16d8m 16s)
+    d1time = (mvn_d1_dat.time + mvn_d1_dat.end_time)/2.
+    d1ef=average_hist2(mvn_d1_dat.eflux,d1time,binsize=binsize,trange=trange,centertime=centertime); static d1 energy flux
+    d1en=average_hist2(mvn_d1_dat.energy[mvn_d1_dat.swp_ind,*,0,0],d1time,binsize=binsize,trange=trange,centertime=centertime); static d1 energy table
+    d1dt=average_hist2(mvn_d1_dat.delta_t,d1time,binsize=binsize,trange=trange,centertime=centertime); static d0 dt
+    nod1ind=where(~finite(d1dt),/null,count) ;no archive available index
+    if count gt 0 then begin ;use survey instead
+      d1ef[nod1ind,*,*,*]=d0ef[nod1ind,*,*,*]
+      d1en[nod1ind,*]=d0en[nod1ind,*]
+      d1dt[nod1ind]=d0dt[nod1ind]
+    endif
+  endif else begin ;if no archive available at all, use survey instead
+    d1ef=d0ef
+    d1en=d0en
+    d1dt=d0dt
+  endelse
+  pui.data.sta.d1.eflux=transpose(reform(d1ef,[pui0.nt,pui0.sd1eb,pui0.swine,pui0.swina,8]),[1,3,2,4,0])
+  pui.data.sta.d1.energy=transpose(d1en)
+  d1dtind=where(finite(d1dt),/null,count) ;where data available index (due to average_hist time bin being smaller than dt)
+  if count gt 0 then store_data,'mvn_sta_d01_dt_(s)',data={x:centertime[d1dtind],y:d1dt[d1dtind]},limits={ylog:1,panel_size:.5,colors:'r'}
 endif
 
 ;----------SEP----------
@@ -164,19 +172,21 @@ get_data,'mvn_euv_data',data=euvdata ;EUV level 2 data (1 second cadence)
 if keyword_set(euvdata) then pui.data.euv.l2=transpose(average_hist2(euvdata.y,euvdata.x,binsize=binsize,trange=trange,centertime=centertime))
 ;FISM irradiances (W/cm2/nm)
 get_data,'mvn_euv_l3',data=fismdata ;FISM minute data
-if keyword_set(fismdata) then pui.data.euv.l3=transpose(interp(fismdata.y,fismdata.x,centertime))
-
+if keyword_set(fismdata) then begin
+  fismtime=fismdata.x
+  if (centertime[0] gt fismtime[0]) and (centertime[-1] lt fismtime[-1]+60.) then pui.data.euv.l3=transpose(interp(fismdata.y,fismdata.x,centertime))
+endif
 ;----------Boundaries----------
 ;get_data,'wind',data=wind ;s/c altitude when in the solar wind (km)
 ;pui.model.swalt=average_hist2(wind.y,wind.x,binsize=binsize,trange=trange,centertime=centertime)
-mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw
-pui.data.swalt=alt_sw ;s/c altitude when in the solar wind (km)
+mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw,/conservative
+;pui.data.swalt=alt_sw ;s/c altitude when in the solar wind (km)
 ;----------Positions----------
-pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects=['MARS','MAVEN_SPACECRAFT']) ;MAVEN position MSO (m)
+pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects=['MARS','MAVEN']) ;MAVEN position MSO (m)
 
-mvn_pui_au_ls,times=centertime,mars_au=mars_au,mars_ls=mars_ls
-pui.data.mars_au=mars_au ;Mars heliocentric distance (AU)
-pui.data.mars_ls=mars_ls ;Mars Solar Longitude (Ls)
+;mvn_pui_au_ls,times=centertime,mars_au=mars_au,mars_ls=mars_ls
+;pui.data.mars_au=mars_au ;Mars heliocentric distance (AU)
+;pui.data.mars_ls=mars_ls ;Mars Solar Longitude (Ls)
 
 ;----------FOV----------
 xdir=[1.,0,0]#replicate(1.,pui0.nt) ;X-direction (SEP front FOV)

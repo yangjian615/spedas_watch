@@ -22,6 +22,8 @@ pro spp_fld_example_crib
   ;timespan, '2016-12-00/19:00:00', 30.
   timespan, '2016-12-09/17:24:00', 1./24.;/12
 
+  timespan, '2016-12-09/17:59:10', 1./24./60./4;/12
+
 ;
   spp_fld_make_cdf_l1, 'mago_survey', varformat = ["mag_by", $
     "mag_bz", "avg_period_raw", "mag_bx", "range_bits"], filename = mago_fi

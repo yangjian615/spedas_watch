@@ -30,14 +30,14 @@
 ;    sst_datatype: the datatype string for sst flags (e.g. 'psif')
 ;    time_array: the time array(or tplot variable) for interpolation(if not provided, interpolates onto ESA)
 ;  
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2017-02-21 14:20:10 -0800 (Tue, 21 Feb 2017) $
-; $LastChangedRevision: 22839 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-05-03 16:44:48 -0700 (Wed, 03 May 2017) $
+; $LastChangedRevision: 23267 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_gmom_quality_flags.pro $
 ;-
 
 
-pro thm_gmom_quality_flags,probe=probe,esa_flow_threshold=esa_flow_threshold,esa_datatype=esa_datatype,sst_datatype=sst_datatype,time_array=time_time_array
+pro thm_gmom_quality_flags,probe=probe,esa_flow_threshold=esa_flow_threshold,esa_datatype=esa_datatype,sst_datatype=sst_datatype,time_array=time_array
 
   compile_opt idl2
  
@@ -66,7 +66,7 @@ pro thm_gmom_quality_flags,probe=probe,esa_flow_threshold=esa_flow_threshold,esa
   get_data,'th'+probe+'_'+sst_datatype+'_data_quality',data=sst_data
   
   cmb_data = ('ff'x and esa_data.y) or ishft('ff'x and sst_data.y,8)
-  
+
   store_data,'th'+probe+'_'+cmb_datatype+'_data_quality',data={x:esa_data.x,y:cmb_data},dlimits={tplot_routine:'bitplot'}
  
 end

@@ -20,13 +20,13 @@ pro spp_swp_apdat_init,reset=reset, save_flag = save_flag, $
   
   ttags = 'SEQN'
     
-  spp_apdat_info,'340'x,routine='spp_generic_decom',tname='spp_swem_hkp_',    save_flag=save_flag,ttags=ttags,rt_flag=rt_flag 
+  spp_apdat_info,'340'x,routine='spp_generic_decom',tname='spp_swem_dhkp_',    save_flag=save_flag,ttags=ttags,rt_flag=rt_flag 
   spp_apdat_info,'341'x,routine='spp_generic_decom',tname='spp_swem_crit_',    save_flag=save_flag,ttags=ttags,rt_flag=rt_flag 
-  spp_apdat_info,'343'x,routine='spp_swp_swem_hkp_decom',tname='spp_swem_ahkp_',    save_flag=save_flag,ttags='*',rt_flag=rt_flag 
+  spp_apdat_info,'343'x,name='swem_hkp',routine='spp_swp_swem_hkp_decom',tname='spp_swem_ahkp_',    save_flag=save_flag,ttags='*',rt_flag=rt_flag 
   spp_apdat_info,'344'x,routine='spp_generic_decom',tname='spp_swem_events_',    save_flag=save_flag,ttags=ttags,rt_flag=rt_flag 
   spp_apdat_info,'346'x,name='swem_timing',routine='spp_swp_swem_timing_decom',tname='spp_swem_timing_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
 
-  spp_apdat_info,'347'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_347_',   ttags='*',save_flag=save_flag,rt_flag=rt_flag 
+  spp_apdat_info,'347'x,routine='',tname='spp_swp_347_',   ttags='*',save_flag=save_flag,rt_flag=rt_flag 
   spp_apdat_info,'34e'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_34E_',   ttags='*',save_flag=save_flag,rt_flag=rt_flag 
   spp_apdat_info,'34f'x,routine='spp_swp_swem_unwrapper',tname='spp_swp_34F_',   ttags='*',save_flag=save_flag,rt_flag=rt_flag 
 
@@ -38,7 +38,7 @@ pro spp_swp_apdat_init,reset=reset, save_flag = save_flag, $
   spp_apdat_info,'352'x,routine='spp_swp_spc_decom',    tname='spp_spc_352_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
   spp_apdat_info,'353'x,routine='spp_swp_spc_decom',    tname='spp_spc_353_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
   spp_apdat_info,'35E'x,routine='spp_swp_spc_decom',    tname='spp_spc_35E_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
-  spp_apdat_info,'35F'x,name='spc_hkp',routine='spp_swp_spc_decom',    tname='spp_spc_hkp_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
+  spp_apdat_info,'35F'x,name='spc_hkp',routine='spp_swp_spc_hkp_decom',    tname='spp_spc_hkp_',ttags='*',save_flag=save_flag,rt_flag=rt_flag 
 
 
   ;;############################################

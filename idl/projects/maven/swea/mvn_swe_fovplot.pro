@@ -34,17 +34,19 @@
 ;       RESULT:    Structure containing the azimuth and elevation responses
 ;                  with uncertainties.
 ;
+;       CAT:       Print the results.
+;
 ;       PSNAME:    File name for postscript output.
 ;
 ;CREATED BY:	David L. Mitchell  2016-08-03
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 12:00:30 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22275 $
+; $LastChangedDate: 2017-05-08 17:27:35 -0700 (Mon, 08 May 2017) $
+; $LastChangedRevision: 23279 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_fovplot.pro $
 ;-
 pro mvn_swe_fovplot, dat, bad=ondx, date=date, crange=crange, map=map, result=result, $
-                     lon=lon, lat=lat, psname=psname
+                     lon=lon, lat=lat, psname=psname, cat=cat
 
   @mvn_swe_com
 
@@ -166,11 +168,21 @@ pro mvn_swe_fovplot, dat, bad=ondx, date=date, crange=crange, map=map, result=re
 
   result = {rgf:rgf, rms:rms_all, rgf_az:rgf_az, rms_az:rms_az, rgf_el:rgf_el, rms_el:rms_el}
 
-  print,rgf_az,format='(16(f6.2))'
-  print,rms_az,format='(16(f6.2))'
-  print,''
-  print,rgf_el,format='(6(f6.2))'
-  print,rms_el,format='(6(f6.2))'
+; Print results
+
+  if keyword_set(cat) then begin
+    rgf2 = rgf
+    indx = where(~finite(rgf2), count)
+    if (count gt 0) then rgf2[indx] = 1.
+    for i=0,90,6 do print,rgf2[i:(i+5)],format='(6(f8.6," , "))'
+    print,''
+    print,rgf_az,format='(16(f6.2))'
+    print,rms_az,format='(16(f6.2))'
+    print,''
+    print,rgf_el,format='(6(f6.2))'
+    print,rms_el,format='(6(f6.2))'
+    print,''
+  endif
 
   return
   

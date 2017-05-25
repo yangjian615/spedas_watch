@@ -38,17 +38,11 @@ ccsds_data = spp_swp_ccsds_data(ccsds)
 ;if typename(ccsds) eq 'CCSDS_FORMAT' then data = *ccsds.pdata  else data=ccsds.data
 ;data = ccsds.data
 
-if ccsds.pkt_size lt 72 then begin
-  if debug(3) then begin
-    dprint,'error',ccsds.pkt_size,dlevel=2
-    hexprint,ccsds_data
-  endif
-  return,0
-endif
 
-if 0 then begin
+if ccsds.pkt_size eq 56 then begin
+  dprint,'boot mode',dlevel=3
   values = swap_endian(ulong(ccsds_data,10,11) )
-  values2 = swap_endian(ulong(ccsds_data,448/8,4) )
+  values2 = uintarr(4) ;  swap_endian(ulong(ccsds_data,448/8,4) )
   sc_time_subsecs =  (swap_endian(uint(ccsds_data,432/8,1) ,/swap_if_little_endian ))[0]
 
   sample_MET_subsec=   values[2]
@@ -58,19 +52,21 @@ if 0 then begin
   sc_time_subsec  = 0u    ;  not sure what it was
   MET_jitter=       values[9]
   
-  sample_clk_per = double(values[0])
-  scpps_met_time = double(values[1])
+  sample_clk_per = values[0]
+  scpps_met_time = values[1]
   sample_MET = values[3] + values[2]/ 2d^16
   fields_f123 = values[5] + values[6] / 2d^16
   fields_met = values[7] + values[8] / 2d^16
   sc_time = values[10] + sc_time_subsecs / 2d^16
-  fields_f0 = values2[0]
-  scsubsecsatpps = values2[1]
+  fields_f0 =   values2[0]
+  scsubsecsatpps =   values2[1]
   fields_smpl_timerr = values2[2]
   clks_per_pps = values2[3]
-  fields_clk_cycles =  ishft(ulong(values[4]),-1)
+  fields_clk_cycles =  ishft(values[4],-1)
+;  return,0
   
-endif else begin
+endif else if ccsds.pkt_size eq 72 then begin
+  dprint,'Op mode',dlevel=4
   sample_clk_per = spp_swp_data_select(ccsds_data,80,16)
   scpps_met_time = spp_swp_data_select(ccsds_data,96,32)
 
@@ -92,8 +88,15 @@ endif else begin
   fields_clk_cycles = spp_swp_data_select(ccsds_data,192,32) 
   fields_clk_transition=  fields_clk_cycles and 1
   fields_clk_cycles = ishft( fields_clk_cycles,-1)
-
+endif else begin
+  if debug(3) then begin
+    dprint,'Timing packet error',ccsds.pkt_size,dlevel=2
+    hexprint,ccsds_data
+  endif
+  return,0
 endelse
+
+
 ;
 ;printdat,ptp_header
 

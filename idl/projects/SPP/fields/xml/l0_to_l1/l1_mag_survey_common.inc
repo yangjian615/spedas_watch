@@ -46,7 +46,7 @@
       name   = "range_bits"
       type   = "integer">
     <cdf_att
-        FIELDNAM = "range"
+        FIELDNAM = "range_bits"
         FORMAT = "F15.3"
         LABLAXIS = "range"
         VAR_TYPE = "data"

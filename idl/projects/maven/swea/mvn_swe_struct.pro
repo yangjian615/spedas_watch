@@ -7,8 +7,8 @@
 ;  All times are for the center of the sample.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-22 13:32:25 -0700 (Sat, 22 Apr 2017) $
-; $LastChangedRevision: 23216 $
+; $LastChangedDate: 2017-05-10 19:19:21 -0700 (Wed, 10 May 2017) $
+; $LastChangedRevision: 23296 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -176,14 +176,9 @@ pro mvn_swe_struct
                 addr    : -1L           , $    ; packet address
                 npkt    : 0B            , $    ; packet counter
                 cflg    : 0B            , $    ; compression flag
-                mux0    : 0B            , $    ; Mux 0
-                mux1    : 0B            , $    ; Mux 1
-                mux2    : 0B            , $    ; Mux 2
-                mux3    : 0B            , $    ; Mux 3
-                analv   : fltarr(224)   , $    ; Analyzer voltage
-                def1v   : fltarr(224)   , $    ; Deflector 1 voltage
-                def2v   : fltarr(224)   , $    ; Deflector 2 voltage
-                v0v     : fltarr(224)      }   ; V0 voltage
+                mux     : bytarr(4)     , $    ; housekeeping channel numbers
+                name    : strarr(4)     , $    ; housekeeping channel names
+                value   : fltarr(224,4)    }   ; housekeeping channel values
 
 ; Define 3D data structure
 

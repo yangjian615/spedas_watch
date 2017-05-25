@@ -135,13 +135,34 @@
       />
 
   <cdf_var
+      name   = "mag_xtest_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_xtest_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_xtest_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG X Test Output, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_xtest"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_test_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_xtest"
         FORMAT = "F15.3"
         LABLAXIS = "mag_xtest"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -156,13 +177,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_ytest_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_ytest_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_ytest_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG Y Test Output, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_ytest"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_test_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_ytest"
         FORMAT = "F15.3"
         LABLAXIS = "mag_ytest"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -177,13 +219,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_ztest_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_ztest_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_ztest_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG Z Test Output, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_ztest"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_test_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_ztest"
         FORMAT = "F15.3"
         LABLAXIS = "mag_ztest"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -198,13 +261,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_htrvmon_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_htrvmon_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_htrvmon_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG Heater Bus Voltage Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_htrvmon"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_htrvmon_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_htrvmon"
         FORMAT = "F15.3"
         LABLAXIS = "mag_htrvmon"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -219,14 +303,35 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_htrcurr_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_htrcurr_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_htrcurr_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG Heater Bus Current Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_htrcurr"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_htrcurr_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_htrcurr"
         FORMAT = "F15.3"
         LABLAXIS = "mag_htrcurr"
         VAR_TYPE = "data"
+        DATA_TYPE = "CDF_DOUBLE"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
         VALIDMIN = "0"
@@ -240,55 +345,118 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_snsrtemp_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_snsrtemp_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_snsrtemp_raw"
+				DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG Sensor Temperature, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_snsrtemp"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_snsrtmp_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_snsrtemp"
         FORMAT = "F15.3"
         LABLAXIS = "mag_snsrtemp"
+				DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
-        FILLVAL = "-1.0E31"
+        FILLVAL = "-1.0E30"
         DISPLAY_TYPE = "time_series"
         VALIDMIN = "-100"
         VALIDMAX = "100"
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "MAG Sensor Temperature, in C"
+        CATDESC = "MAG Sensor Temperature, in degrees C"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name   = "mag_pcbtemp_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_pcbtemp_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_pcbtemp_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG PCB Temperature, in raw ADC counts"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
       name   = "mag_pcbtemp"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_pcbtmp_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_pcbtemp"
         FORMAT = "F15.3"
         LABLAXIS = "mag_pcbtemp"
+				DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
-        FILLVAL = "-1.0E31"
+        FILLVAL = "-1.0E30"
         DISPLAY_TYPE = "time_series"
         VALIDMIN = "-100"
         VALIDMAX = "100"
         SCALEMIN = "-100"
         SCALEMAX = "100"
         UNITS = "C"
-        CATDESC = "MAG PCB Temperature, in C"
+        CATDESC = "MAG PCB Temperature, in degrees C"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name   = "mag_p12curr_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_p12curr_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_p12curr_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG +12V Current Monitor, in raw ADC counts"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
       name   = "mag_p12curr"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_p12curr_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_p12curr"
         FORMAT = "F15.3"
         LABLAXIS = "mag_p12curr"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -303,13 +471,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_m12curr_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_m12curr_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_m12curr_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG -12V Current Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_m12curr"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_m12curr_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_m12curr"
         FORMAT = "F15.3"
         LABLAXIS = "mag_m12curr"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -324,13 +513,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_p12vmon_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_p12vmon_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_p12vmon_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG +12V Voltage Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_p12vmon"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_p12vmon_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_p12vmon"
         FORMAT = "F15.3"
         LABLAXIS = "mag_p12vmon"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -345,20 +555,41 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_m12vmon_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_m12vmon_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_m12vmon_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG -12V Voltage Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_m12vmon"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_m12vmon_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_m12vmon"
         FORMAT = "F15.3"
         LABLAXIS = "mag_m12vmon"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
-        VALIDMIN = "-20"
-        VALIDMAX = "0"
-        SCALEMIN = "-20"
-        SCALEMAX = "0"
+        VALIDMIN = "0"
+        VALIDMAX = "20"
+        SCALEMIN = "0"
+        SCALEMAX = "20"
         UNITS = "V"
         CATDESC = "MAG -12V Voltage Monitor, in V"
         DEPEND_0 = "epoch">
@@ -366,13 +597,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_p10vref_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_p10vref_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_p10vref_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG +10V VREF Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_p10vref"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_p10vref_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_p10vref"
         FORMAT = "F15.3"
         LABLAXIS = "mag_p10vref"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -387,13 +639,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_p25dmon_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_p25dmon_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_p25dmon_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG 2.5V FPGA Core Voltage Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_p25dmon"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_p25dmon_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_p25dmon"
         FORMAT = "F15.3"
         LABLAXIS = "mag_p25dmon"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -408,13 +681,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_p33dmon_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_p33dmon_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_p33dmon_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG 3.3V Digital IO Voltage Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_p33dmon"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_p33dmon_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_p33dmon"
         FORMAT = "F15.3"
         LABLAXIS = "mag_p33dmon"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -429,13 +723,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_p5vmon_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_p5vmon_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_p5vmon_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG ADC +5 Voltage Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_p5vmon"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_p5vmon_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_p5vmon"
         FORMAT = "F15.3"
         LABLAXIS = "mag_p5vmon"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -450,13 +765,34 @@
   </cdf_var>
 
   <cdf_var
+      name   = "mag_m5vmon_raw"
+      type   = "integer">
+    <cdf_att
+        FIELDNAM = "mag_m5vmon_raw"
+        FORMAT = "I8"
+        LABLAXIS = "mag_m5vmon_raw"
+        DATA_TYPE = "CDF_INT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-32767"
+        VALIDMAX = "32767"
+        SCALEMIN = "-32767"
+        SCALEMAX = "32767"
+        UNITS = "Counts"
+        CATDESC = "MAG ADC -5 Voltage Monitor, in raw ADC counts"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name   = "mag_m5vmon"
-      type   = "integer"
-      convert_routine = "spp_fld_mag_hk_p5vmon_convert">
+      type   = "double">
     <cdf_att
         FIELDNAM = "mag_m5vmon"
         FORMAT = "F15.3"
         LABLAXIS = "mag_m5vmon"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"

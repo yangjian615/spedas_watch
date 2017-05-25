@@ -43,8 +43,8 @@
 ;
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-05-12 16:57:48 -0700 (Thu, 12 May 2016) $
-; $LastChangedRevision: 21070 $
+; $LastChangedDate: 2017-05-19 10:27:24 -0700 (Fri, 19 May 2017) $
+; $LastChangedRevision: 23335 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/ground/radar/superdarn/erg_load_sdfit.pro $
 ;-
 ;---------------------------------------------------
@@ -128,9 +128,8 @@ PRO erg_load_sdfit, sites=sites, cdffn=cdffn, $
     ;to be implemented in future for loading data of multiple stations
     datfileformat = 'YYYY/sd_fitacf_l2_'+stn+'_YYYYMMDD*cdf'
     relfnames = file_dailynames(file_format=datfileformat, trange=trange, times=times)
-
-    datfiles = file_retrieve(relfnames, $
-      local_data_dir=source.local_data_dir,remote_data_dir=source.remote_data_dir, _extra=source)
+      
+    datfiles = spd_download(remote_file=relfnames, remote_path=source.remote_data_dir, local_path=source.local_data_dir, _extra=source, /last_version)
     IF total(file_test(datfiles)) eq 0 THEN BEGIN
       print, 'Cannot download/find data file: '+datfiles
       PRINT, 'No data was loaded!'

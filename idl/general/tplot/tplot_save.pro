@@ -19,13 +19,14 @@
 ;CREATED BY:    Peter Schroeder
 ;LAST MODIFICATION:     tplot_save.pro   97/05/14
 ;
-; $LastChangedBy: jwl $
-; $LastChangedDate: 2016-02-03 17:03:41 -0800 (Wed, 03 Feb 2016) $
-; $LastChangedRevision: 19898 $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-05-05 11:41:23 -0700 (Fri, 05 May 2017) $
+; $LastChangedRevision: 23271 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/tplot_save.pro $
 ;-
 pro tplot_save,handlenames,filename=filename,limits=limits,compress=compress,no_add_extension=no_add_extension
 
+COMPILE_OPT IDL2
 @tplot_com.pro
 
 

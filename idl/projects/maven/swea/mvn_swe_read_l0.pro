@@ -58,8 +58,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-22 13:30:39 -0700 (Sat, 22 Apr 2017) $
-; $LastChangedRevision: 23214 $
+; $LastChangedDate: 2017-05-10 19:19:56 -0700 (Wed, 10 May 2017) $
+; $LastChangedRevision: 23297 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -262,9 +262,9 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
   if (size(badpkt,/type) ne 8) then badpkt = replicate(bad_str,1)
 
 ; PFP Analog Housekeeping (APID 23)
-;   PFP analog housekeeping temperature, voltage and current monitors
+;   PFP analog housekeeping temperature, voltage and current monitors.
 ;   This includes a SWEA current monitor, and the primary regulated 28V
-;   supply voltage that powers SWEA.
+;   supply that powers SWEA.
 
   order = n_elements(pfp_t) - 1
 
@@ -1016,24 +1016,25 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 	  clock = double(tb[3] + 256L*(tb[2] + 256L*(tb[1] + 256L*tb[0])))
 	  subsecs = double(tb[5] + 256L*tb[4])/65536D
 
-      a6[k].met    = clock + subsecs
+      a6[k].met  = clock + subsecs
 	  a6[k].time = mvn_spc_met_to_unixtime(a6[k].met,correct=dflg)
-
-	  a6[k].cflg = mvn_swe_getbits(pkt[12],7)        ; first bit
-
-	  a6[k].mux0 = mvn_swe_getbits(pkt[12],[4,0])    ; last 5 bits
-	  a6[k].mux1 = mvn_swe_getbits(pkt[13],[4,0])    ; last 5 bits
-	  a6[k].mux2 = mvn_swe_getbits(pkt[14],[4,0])    ; last 5 bits
-	  a6[k].mux3 = mvn_swe_getbits(pkt[15],[4,0])    ; last 5 bits
+	  a6[k].cflg = mvn_swe_getbits(pkt[12],7)
 
 	  msb = 2L*lindgen(224*4) + 16L
 	  lsb = msb + 1L
 	  ahsk = float(fix(pkt[msb])*256 + fix(pkt[lsb]))
 
-	  a6[k].analv = ahsk[0:223]*swe_v[3]
-	  a6[k].def1v = ahsk[224:447]*swe_v[4]
-	  a6[k].def2v = ahsk[448:671]*swe_v[5]
-	  a6[k].v0v   = ahsk[672:895]*swe_v[8]
+      for ch=0,3 do begin
+        mux = mvn_swe_getbits(pkt[ch+12],[4,0])
+        value = ahsk[(ch*224):(ch*224)+223]*swe_v[mux]
+        if ((mux eq 0) or (mux eq 9) or (mux eq 16)) then begin
+          T = swe_t[order] & for i=(order-1),0,-1 do T = swe_t[i] + T*value
+          value = T
+        endif
+        a6[k].mux[ch] = mux
+        a6[k].name[ch] = swe_hsk_names[mux]
+        a6[k].value[*,ch] = value
+      endfor
 
 	endelse
 

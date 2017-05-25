@@ -125,8 +125,8 @@
 ;                      interactive time range selection.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-02-05 16:53:10 -0800 (Sun, 05 Feb 2017) $
-; $LastChangedRevision: 22729 $
+; $LastChangedDate: 2017-05-08 17:30:59 -0700 (Mon, 08 May 2017) $
+; $LastChangedRevision: 23286 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -817,21 +817,20 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
         pymax = py[k]
 ;        pymax = max(py,k0)  ; largest slope feature above threshold
 ;        k = k0
-        pymin = pymax/3.
+        pymin = pymax/2.
         
-
         while ((py[k] gt pymin) and (k lt n_e-1)) do k++
         kmax = k
-;        k = max(indx)
-        k = k0
+        k = max(indx)
         while ((py[k] gt pymin) and (k gt 0)) do k--
         kmin = k
       
         dE = px[kmin] - px[kmax]
+        oplot,[px[kmin],px[kmax]],[pymin,pymin],color=6
         if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
       
-;        if (dE lt dEmax) then k = max(indx) else k = -1  ; only accept narrow features
-        if (dE lt dEmax) then k = k0 else k = -1  ; only accept narrow features
+        if (dE lt dEmax) then k = max(indx) else k = -1  ; only accept narrow features
+;        if (dE lt dEmax) then k = k0 else k = -1  ; only accept narrow features
 
         for j=0,(ncross-1) do oplot,[px[indx[j]],px[indx[j]]],ylim,color=2
 
