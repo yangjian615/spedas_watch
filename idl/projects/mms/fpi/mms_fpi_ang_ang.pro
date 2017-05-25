@@ -19,12 +19,29 @@
 ;
 ;          probe: probe to plot
 ;          energy_range: energy range to include in the
-;              azimuth vs zenith plot (default: 10-30000)
+;              azimuth vs zenith plot (default: 10-30000 eV)
+;          data_rate: FPI data rate ('fast' or 'brst')
+;          species: FPI species - 'e' for electrons or 'i' for ions (defaults to 'e')
+;          subtract_bulk: subtract the bulk velocity prior to 
+;              creating the PA-energy figure
+;          pa_en_units: units for the PA-energy figure (defaults to 'df')
+;          postscript: save the plots as postscript files
+;          png: save the plots as PNG files
+;          center_measurement: shift the data to the center of the 
+;              measurement interval
+;          xsize: x-size of the figures (default: 550px)
+;          ysize: y-size of the figures (default: 450px)
+;          filename_suffix: suffix to append to the end of PNG/postscript file names
+;
+; NOTES:
+;          Bulk velocity subtraction (via the /subtract_bulk keyword) only 
+;          works for PA-energy figures (i.e., angle-angle and angle-energy plots
+;          are created as the data exists in the data files)
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-05-18 09:31:17 -0700 (Thu, 18 May 2017) $
-;$LastChangedRevision: 23331 $
+;$LastChangedDate: 2017-05-24 14:30:50 -0700 (Wed, 24 May 2017) $
+;$LastChangedRevision: 23350 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_ang_ang.pro $
 ;-
 
@@ -41,7 +58,7 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
   if undefined(species) then species = 'e'
   if undefined(xsize) then xsize = 550
   if undefined(ysize) then ysize = 450
-  if undefined(energy_range) then energy_range = [10., 30000]
+  if undefined(energy_range) then energy_range = [10., 30000] ; eV
   if undefined(data_rate) then data_rate = 'fast'
   if undefined(pa_en_units) then pa_en_units = 'df'
   if undefined(filename_suffix) then filename_suffix = ''
@@ -54,7 +71,7 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
   endif
   mms_load_fgm, trange=trange, data_rate='srvy', probe=probe
 
-  get_data, 'mms'+probe+'_d'+species+'s_dist_'+data_rate, data=d
+  get_data, 'mms'+probe+'_d'+species+'s_dist_'+data_rate, data=d, dlimits=dl
 
   if ~is_struct(d) then begin
     dprint, dlevel = 0, 'Error, no data found.'
@@ -80,6 +97,11 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
 
   dist = mms_get_dist('mms'+probe+'_d'+species+'s_dist_'+data_rate, single_time=time)
 
+  if ~ptr_valid(dist) then begin
+    dprint, dlevel = 4, 'Error, no data found for this time: '+time_string(time)
+    return
+  endif
+  
   d = *dist
   ; theta is stored as co-latitude
   theta_colat = reform(d.theta[0, 0, *])
@@ -128,10 +150,10 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
     if ~undefined(subtract_bulk) then $
         pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, vname='mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate, subtract_bulk=subtract_bulk, units=pa_en_units) $
     else $
-      pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, subtract_bulk=0, units=pa_en_units)
+        pad = moka_mms_pad('mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec', 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, subtract_bulk=0, units=pa_en_units)
 
     
-    plotxyz, pad.PA, pad.EGY, pad.DATA, /noisotropic, /ylog, /zlog, title=time_string(trange[0])+'-'+time_string(trange[1]), $
+    plotxyz, pad.PA, pad.EGY, pad.DATA, /noisotropic, /ylog, /zlog, title=time_string(closest_time, tformat='YYYY-MM-DD/hh:mm:ss.fff'), $
       xrange=[0,180], xtitle='Pitch angle (deg)', ytitle='Energy (eV)', ztitle=pad.units, window=4, xsize=xsize, ysize=ysize
 
     if ~undefined(png) then makepng, 'pad_vs_energy'+filename_suffix

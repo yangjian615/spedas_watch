@@ -432,19 +432,19 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=81
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_exb_fpi_*') and (cp eq 0)) then begin
-          eva_data_load_mms_exb,sc=sc,vthres=500.,/fpi
+          eva_data_load_mms_exb,sc=sc,vthres=1500.,/fpi
           answer = 'Yes'
         endif
         pcode=82
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_exb_hpca_*') and (cp eq 0)) then begin
-          eva_data_load_mms_exb,sc=sc,vthres=500.,/hpca
+          eva_data_load_mms_exb,sc=sc,vthres=1500.,/hpca
           answer = 'Yes'
         endif
         pcode=83
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'*_exb_dsl') and (cp eq 0)) then begin
-          eva_data_load_mms_exb,sc=sc,vthres=500.
+          eva_data_load_mms_exb,sc=sc,vthres=1500.
           answer = 'Yes'
         endif
         
