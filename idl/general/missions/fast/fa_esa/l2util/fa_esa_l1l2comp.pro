@@ -230,21 +230,29 @@ Pro fa_esa_l1l2comp, orbit, burst = burst
   get_data, 'Je_s_l2', data = jl2
   print, 'Min and max differences for electron flux'
   print, minmax(jl2.y-jl1.y)
+  print, 'Fractional Min and max differences for electron flux'
+  print, minmax(abs(jl2.y-jl1.y)/abs(jl1.y))
 
   get_data, 'Ji_s', data = jl1
   get_data, 'Ji_s_l2', data = jl2
   print, 'Min and max differences for ion flux'
   print, minmax(jl2.y-jl1.y)
+  print, 'Fractional Min and max differences for ion flux'
+  print, minmax(abs(jl2.y-jl1.y)/abs(jl1.y))
 
   get_data, 'JEe_s', data = jl1
   get_data, 'JEe_s_l2', data = jl2
   print, 'Min and max differences for electron energy flux'
   print, minmax(jl2.y-jl1.y)
+  print, 'Fractional Min and max differences for electron energy flux'
+  print, minmax(abs(jl2.y-jl1.y)/abs(jl1.y))
 
   get_data, 'JEi_s', data = jl1
   get_data, 'JEi_s_l2', data = jl2
   print, 'Min and max differences for ion energy flux'
   print, minmax(jl2.y-jl1.y)
+  print, 'Fractional Min and max differences for ion energy flux'
+  print, minmax(abs(jl2.y-jl1.y)/abs(jl1.y))
 
 End
 

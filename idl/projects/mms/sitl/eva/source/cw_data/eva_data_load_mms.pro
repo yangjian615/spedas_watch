@@ -86,7 +86,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
       
       if ct eq 0 then begin; if not loaded
         ;-----------
-        ; ASPOC
+        ; ASPOCis
         ;-----------
         pcode=10
         ip=where(perror eq pcode,cp)
@@ -142,9 +142,9 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
               tarr = strsplit(tn[k],'_',/extract)
               options, tn[k],ytitle=sc+'!CEIS!C'+tarr[4],ysubtitle='[keV]'
               case tarr[4] of
-                'proton': yrange = [50, 1000]
-                'alpha': yrange = [70, 700]
-                'oxygen': yrange = [130,1000]
+                'proton': yrange = [50, 530];1000]
+                'alpha': yrange = [70, 530];700]
+                'oxygen': yrange = [130,530];1000]
               endcase
               ylim, tn[k], yrange
             endfor

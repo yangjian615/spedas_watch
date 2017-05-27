@@ -4,7 +4,8 @@
 ;***********************************************************************************************************
 ; select an orbit number or orbit range or time range
 
-fa_orbitrange,1801
+fa_orbitrange,2371
+;fa_orbitrange,1801
 ;fa_orbitrange,2301
 ;fa_orbitrange,2001
 ;fa_orbitrange,[1801,1802]
