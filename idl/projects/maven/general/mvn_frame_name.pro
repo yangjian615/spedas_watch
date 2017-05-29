@@ -15,8 +15,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-20 09:53:22 -0700 (Mon, 20 Mar 2017) $
-; $LastChangedRevision: 22994 $
+; $LastChangedDate: 2017-05-28 12:37:00 -0700 (Sun, 28 May 2017) $
+; $LastChangedRevision: 23359 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_frame_name.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -36,8 +36,8 @@ function mvn_frame_name, frame
       'MAG1'       : frame[i] = 'MAVEN_MAG_PY'
       'MAG2'       : frame[i] = 'MAVEN_MAG_MY'
       'EUV'        : frame[i] = 'MAVEN_EUV'
-      'SEP1'       : frame[i] = 'MAVEN_SEP_PY'
-      'SEP2'       : frame[i] = 'MAVEN_SEP_MY'
+      'SEP1'       : frame[i] = 'MAVEN_SEP1'
+      'SEP2'       : frame[i] = 'MAVEN_SEP2'
       'IUVS_LIMB'  : frame[i] = 'MAVEN_IUVS_LIMB'
       'IUVS_NADIR' : frame[i] = 'MAVEN_IUVS_NADIR'
       'NGIMS'      : frame[i] = 'MAVEN_NGIMS'

@@ -116,18 +116,33 @@
 ;       TPLOT:     The number of an IDL window for a time series plot
 ;                  of altitude and orbital velocity.  Default = none.
 ;
+;       NODOT:     Do not plot a symbol for periapsis.
+;
 ;       PS:        Postscript plots are produced for OPLOT and TPLOT.
 ;
+;       SILENT:    If set, then suppress output.
+;
+;       SEGMENTS:  Divide the orbit up into segments for color coding.  
+;                  This keyword should contain the time in minutes 
+;                  relative to apoapsis of each segment boundary.
+;                  The first segment extends from APO to SEGMENTS[0].
+;                  The last segment extends from SEGMENTS[N-1] to APO,
+;                  where N is the number of segments.
+;
+;       SCOLORS:   Color for each segment.  Must have the same number of
+;                  elements as SEGMENTS.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-13 10:23:45 -0700 (Mon, 13 Mar 2017) $
-; $LastChangedRevision: 22946 $
+; $LastChangedDate: 2017-05-28 12:35:58 -0700 (Sun, 28 May 2017) $
+; $LastChangedRevision: 23358 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/morbit.pro $
 ;
 ;CREATED BY:	David L. Mitchell
 ;-
 pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
                    norbit=norbit, oplot=oplot, tplot=tplot, orient=orient, $
-                   flythru=flythru, shock=shock, ps=ps, xyrange=xyrange
+                   flythru=flythru, shock=shock, ps=ps, xyrange=xyrange, $
+                   silent=silent, segments=segments, scolors=scolors, nodot=nodot
 
   if (size(param,/type) ne 8) then begin
     print, 'You must specify an orbit parameter structure.'
@@ -135,6 +150,18 @@ pro morbit, param, dt=dt, planet=planet, nmax=nmax, oerr=oerr, result=result, $
   endif
 
   dtor = !dpi/180D
+  dodot = ~keyword_set(nodot)
+  
+  nseg = n_elements(segments)
+  if (n_elements(scolors) ne nseg) then begin
+    print,"Each segment must have a color."
+    return
+  endif
+  if (nseg gt 0) then begin
+    doseg = 1
+    tseg = segments*60D
+    cseg = scolors
+  endif else doseg = 0
 
   if (size(orient,/type) eq 8) then begin
     str_element, orient, 'lon', lon, success=ok
@@ -581,14 +608,30 @@ OSHAPE:
              /xsty,/ysty, xtitle='X (Rp)',ytitle='Y (Rp)',charsize=1.0, $
              ymargin=[8,9],title=planet
         oplot,xm,ym,color=6,thick=2
-        oplot,x,y
-        oplot,[x[imin]],[y[imin]],psym=4,color=4,thick=2
+        if (doseg) then begin
+          tstart = tseg
+          tstop = shift(tseg,-1)
+          tstop[nseg-1] = max(t)
+          for i=0,(nseg-1) do begin
+            sndx = where((t ge tstart[i]) and (t lt tstop[i]), count)
+            if (count gt 0) then oplot,x[sndx],y[sndx],color=cseg[i]
+          endfor
+        endif else oplot,x,y
+        if (dodot) then oplot,[x[imin]],[y[imin]],psym=4,color=4,thick=2
       endif else begin
         plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty, $
              xtitle='X (Rp)',ytitle='Y (Rp)',charsize=2.0,title=planet
         oplot,xm,ym,color=6
-        oplot,x,y
-        oplot,[x[imin]],[y[imin]],psym=4,color=4,thick=2
+        if (doseg) then begin
+          tstart = tseg
+          tstop = shift(tseg,-1)
+          tstop[nseg-1] = max(t)
+          for i=0,(nseg-1) do begin
+            sndx = where((t ge tstart[i]) and (t lt tstop[i]), count)
+            if (count gt 0) then oplot,x[sndx],y[sndx],color=cseg[i]
+          endfor
+        endif else oplot,x,y
+        if (dodot) then oplot,[x[imin]],[y[imin]],psym=4,color=4,thick=2
       endelse
 
 ; Shock conic
@@ -666,14 +709,30 @@ OSHAPE:
              /xsty,/ysty,xtitle='X (Rp)',ytitle='Z (Rp)',charsize=1.0,$
              ymargin=[16,1]
         oplot,xm,ym,color=6, thick=2
-        oplot,x,z
-        oplot,[x[imin]],[z[imin]],psym=4,color=4,thick=2
+        if (doseg) then begin
+          tstart = tseg
+          tstop = shift(tseg,-1)
+          tstop[nseg-1] = max(t)
+          for i=0,(nseg-1) do begin
+            sndx = where((t ge tstart[i]) and (t lt tstop[i]), count)
+            if (count gt 0) then oplot,x[sndx],z[sndx],color=cseg[i]
+          endfor
+        endif else oplot,x,z
+        if (dodot) then oplot,[x[imin]],[z[imin]],psym=4,color=4,thick=2
       endif else begin
         plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty, $
              xtitle='X (Rp)',ytitle='Z (Rp)',charsize=2.0
         oplot,xm,ym,color=6
-        oplot,x,z
-        oplot,[x[imin]],[z[imin]],psym=4,color=4,thick=2
+        if (doseg) then begin
+          tstart = tseg
+          tstop = shift(tseg,-1)
+          tstop[nseg-1] = max(t)
+          for i=0,(nseg-1) do begin
+            sndx = where((t ge tstart[i]) and (t lt tstop[i]), count)
+            if (count gt 0) then oplot,x[sndx],z[sndx],color=cseg[i]
+          endfor
+        endif else oplot,x,z
+        if (dodot) then oplot,[x[imin]],[z[imin]],psym=4,color=4,thick=2
       endelse
 
 ; Shock conic
@@ -749,14 +808,30 @@ OSHAPE:
              /xsty,/ysty,xtitle='Y (Rp)',ytitle='Z (Rp)',charsize=1.0, $
              ymargin=[16,1]
         oplot,xm,ym,color=6,thick=2
-        oplot,y,z
-        oplot,[y[imin]],[z[imin]],psym=4,color=4,thick=2
+        if (doseg) then begin
+          tstart = tseg
+          tstop = shift(tseg,-1)
+          tstop[nseg-1] = max(t)
+          for i=0,(nseg-1) do begin
+            sndx = where((t ge tstart[i]) and (t lt tstop[i]), count)
+            if (count gt 0) then oplot,y[sndx],z[sndx],color=cseg[i]
+          endfor
+        endif else oplot,y,z
+        if (dodot) then oplot,[y[imin]],[z[imin]],psym=4,color=4,thick=2
       endif else begin
         plot,xm,ym,xrange=xrange,yrange=yrange,/xsty,/ysty, $
              xtitle='Y (Rp)',ytitle='Z (Rp)',charsize=2.0
         oplot,xm,ym,color=6
-        oplot,y,z
-        oplot,[y[imin]],[z[imin]],psym=4,color=4,thick=2
+        if (doseg) then begin
+          tstart = tseg
+          tstop = shift(tseg,-1)
+          tstop[nseg-1] = max(t)
+          for i=0,(nseg-1) do begin
+            sndx = where((t ge tstart[i]) and (t lt tstop[i]), count)
+            if (count gt 0) then oplot,y[sndx],z[sndx],color=cseg[i]
+          endfor
+        endif else oplot,y,z
+        if (dodot) then oplot,[y[imin]],[z[imin]],psym=4,color=4,thick=2
       endelse
 
 ; Shock conic
@@ -853,14 +928,16 @@ OSHAPE:
 
 ; Output the orbit parameters
 
-  print,''
-  print,'Planet : ',result.planet
-  print,'  orbital period (hr)     : ',result.period,format='(a,f9.4)'
-  print,'  semi-major axis (km)    : ',result.sma,format='(a,f9.1)'
-  print,'  periapsis altitude (km) : ',result.palt,format='(a,f9.1)'
-  print,'  apoapsis altitude (km)  : ',result.aalt,format='(a,f9.1)'
-  print,'  eccentricity            : ',result.ecc,format='(a,f9.4)'
-  print,''
+  if not keyword_set(silent) then begin
+    print,''
+    print,'Planet : ',result.planet
+    print,'  orbital period (hr)     : ',result.period,format='(a,f9.4)'
+    print,'  semi-major axis (km)    : ',result.sma,format='(a,f9.1)'
+    print,'  periapsis altitude (km) : ',result.palt,format='(a,f9.1)'
+    print,'  apoapsis altitude (km)  : ',result.aalt,format='(a,f9.1)'
+    print,'  eccentricity            : ',result.ecc,format='(a,f9.4)'
+    print,''
+  endif
 
   return
 
