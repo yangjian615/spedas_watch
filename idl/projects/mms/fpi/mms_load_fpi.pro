@@ -70,8 +70,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
-;$LastChangedRevision: 22583 $
+;$LastChangedDate: 2017-05-30 09:49:38 -0700 (Tue, 30 May 2017) $
+;$LastChangedRevision: 23369 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -101,7 +101,11 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
         ; turn on get_support_data if the user doesn't specify a varformat
         if undefined(get_support_data) then get_support_data = 1
     endif
-    if ~undefined(center_measurement) && level ne 'l2' then begin
+;    if ~undefined(center_measurement) && ~array_contains(['l2', 'acr'], strlowcase(level)) then begin
+;        dprint, dlevel = 0, 'Error, can only center measurements for L2/ACR FPI data.'
+;        return
+;    endif
+    if ~undefined(center_measurement) && ~array_contains(['l2'], strlowcase(level)) then begin
         dprint, dlevel = 0, 'Error, can only center measurements for L2 FPI data.'
         return
     endif
