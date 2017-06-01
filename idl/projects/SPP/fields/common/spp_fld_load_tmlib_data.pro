@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-05-16 15:19:27 -0700 (Tue, 16 May 2017) $
-;  $LastChangedRevision: 23324 $
+;  $LastChangedBy: pulupalap $
+;  $LastChangedDate: 2017-05-31 05:22:45 -0700 (Wed, 31 May 2017) $
+;  $LastChangedRevision: 23372 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -208,6 +208,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   if err NE 0 then spp_fld_print_error_stack, err, sid
 
   ; Find an event
+  first_event = 1
   serr = tm_find_event(sid)
   dprint, 'First event status', dlevel = 3
   if serr NE 0 then begin
@@ -223,11 +224,24 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   while (serr GE 0) do begin
 
+    if first_event EQ 1 then begin
+
+      first_event = 0
+
+    endif else begin
+
+      serr = tm_find_event(sid)
+      dprint, 'serr', serr, dlevel = 4
+
+    endelse
+
     err = tm_get_position(sid, ur8)
     err = tm_get_item_r8(sid, "ccsds_scet_ur8", ur8_ccsds, 1, size)
 
     err = tm_get_item_i4(sid, "ccsds_total_packet_length", $
       ccsds_pkt_len, 1, size)
+
+    ;print, 'CCSDS Packet length: ', ccsds_pkt_len
 
     ;err = tm_get_item_i4(sid, "ccsds_met_sec", met_ccsds, 1, size)
 
@@ -248,10 +262,6 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
       tprint = t0
 
     end
-
-    serr = tm_find_event(sid)
-
-    dprint, 'serr', serr, dlevel = 4
 
     if serr EQ 0 then begin
 

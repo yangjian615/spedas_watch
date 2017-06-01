@@ -3,7 +3,7 @@
 pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm320=rm320,rm333=rm333,tent=tent, $
     spani= spani, spanea=spanea, spaneb=spaneb,  spc=spc,SWEMGSE=SWEM, $
     router=router, instr=instr, recent=recent, $
-    exec=exec0,ion=ion,tv=tv,cal=cal,snout2=snout2,snout1=snout1,crypt=crypt,apl=apl
+    exec=exec0,ion=ion,tv=tv,cal=cal,snout2=snout2,snout1=snout1,crypt=crypt,apl=apl,moc=moc
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
   
@@ -106,13 +106,13 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
 
   if  keyword_set(apl) then begin
     directory = rootdir + router+'/'+instr+'/'
-    host = '128.244.182.77'
+    host = '128.244.182.105'
     exec_proc = 'spp_ptp_stream_read'
-;    if keyword_set(spani) then spp_ptp_recorder,title='Crypt SPANI PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spani/',set_file_timeres=fileres
+    if keyword_set(spani) then spp_ptp_recorder,title='Crypt SPANI PTP',  port=2028, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spani/',set_file_timeres=fileres
 ;    if keyword_set(spanea) then spp_ptp_recorder,title='Crypt SPANEA PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spanea/',set_file_timeres=fileres
 ;    if keyword_set(spaneb) then spp_ptp_recorder,title='Crypt SPANEB PTP',port=2228, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spaneb/',set_file_timeres=fileres
 ;    if keyword_set(spc)    then spp_ptp_recorder,title='Crypt SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/spc/',set_file_timeres=fileres
-    if keyword_set(swem)   then spp_ptp_recorder,title='APL SWEM PTP',port=2528, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/swem/',set_file_timeres=fileres
+    if keyword_set(swem)   then spp_ptp_recorder,title='APL SWEM PTP',port=2128, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'crypt/swem/',set_file_timeres=fileres
   endif
 
   if keyword_set(exec0) then begin

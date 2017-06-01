@@ -3,7 +3,7 @@ pro spp_swp_tplot,name,ADD=ADD,setlim=setlim
 if keyword_set(setlim) then begin
   options,'spp_*AF*_SPEC' , spec=1
   options,'*MASK',tplot_routine='bitplot'
-  options,'*_FLAG',tplot_routine='bitplot'
+  options,'*_FLAGS',tplot_routine='bitplot'
   tplot_options,'no_interp',1
 ;  options,'*SPEC23',panel_size=3
   options,'*rates*CNTS',spec=1,zrange=[1,1],/zlog,yrange=[0,0],ylog=0
@@ -20,7 +20,7 @@ if keyword_set(setlim) then begin
 
   tplot,var_label=tnames('manip*_POS *DAC_DEFL Igun_VOLTS Igun_CURRENT')
   !y.style=3
-  dprint,setd=3
+  dprint,setd=2
   store_data,'APID',data='APIDS_*'
   ylim,'APID',800,1000
   
@@ -47,8 +47,9 @@ if keyword_set(name) then begin
     'SI': tplot,add=add,'Igun_* manip_*POS *rates_VAL*CNTS *rates_*NO*CNTS '
     'SI_SCAN':tplot,add=add,'*MCP_V *MRAM* *spi_AF0?_NRG_SPEC'
     'SC':  tplot,'spp_*spc*',ADD=ADD
-    'SA_COVER': tplot, '*spa_*ACT*CVR* spa_*ACTSTAT*FLAG* spa*CMD*UKN* spa*CLK*NYS', add = add
-    'SB_COVER': tplot, '*spb_*ACT*CVR* spb_*ACTSTAT*FLAG* spb*CMD*UKN* spb*CLK*NYS', add = add
+    'SI_COVER': tplot, '*spi_*ACT*CVR* *spi_*ACTSTAT*FLAGS *spi*CMD*UKN* *spi*CLK*NYS', add = add
+    'SB_COVER': tplot, '*spb_*ACT*CVR* *spb_*ACTSTAT*FLAG* *spb*CMD*UKN* *spb*CLK*NYS', add = add
+    'SA_COVER': tplot, '*spa_*ACT*CVR* *spa_*ACTSTAT*FLAG* *spa*CMD*UKN* *spa*CLK*NYS', add = add
     'SWEM': tplot,'APID PTP_DATA_RATE',add=add
     'TIMING': tplot,'spp_swem_timing_'+['DRIFT_DELTA','CLKS_PER_PPS_DELTA','SCSUBSECSATPPS']
     else:

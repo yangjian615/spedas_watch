@@ -24,7 +24,13 @@ function spp_fld_tmlib_item_nelem, item_hash, sid
 ;
 ;  endif
   
-;  if (item_hash)['name'] EQ 'wf_pkt_data' then stop
+  if (item_hash)['name'] EQ 'dbm_data' then begin ;
+    
+    err = tm_get_item_i4(sid, 'dbm_nsamples', dbm_nsamples, 1, n_returned)    
+    
+    print, nelem, dbm_nsamples
+    
+  endif
 
   return, nelem
 

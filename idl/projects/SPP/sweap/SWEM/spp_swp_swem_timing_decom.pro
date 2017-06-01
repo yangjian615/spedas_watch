@@ -65,7 +65,7 @@ if ccsds.pkt_size eq 56 then begin
   fields_clk_cycles =  ishft(values[4],-1)
 ;  return,0
   
-endif else if ccsds.pkt_size eq 72 then begin
+endif else if ccsds.pkt_size ge 66 then begin
   dprint,'Op mode',dlevel=4
   sample_clk_per = spp_swp_data_select(ccsds_data,80,16)
   scpps_met_time = spp_swp_data_select(ccsds_data,96,32)

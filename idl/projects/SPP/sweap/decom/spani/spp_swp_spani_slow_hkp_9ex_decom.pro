@@ -36,8 +36,7 @@ function spp_swp_spani_slow_hkp_9ex_decom,   ccsds ,   ptp_header=ptp_header,   
   ;;------------------
   ;; Size Check
   if n_elements(b) ne psize then begin
-     dprint,dlevel=1, 'Size error ',$
-            psize,ccsds.size,n_elements(b),ccsds.apid
+     dprint,dlevel=1, 'Size error ',  psize,ccsds.pkt_size,n_elements(b),ccsds.apid
      return,0
   endif
   

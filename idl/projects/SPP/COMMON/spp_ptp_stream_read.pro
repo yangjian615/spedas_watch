@@ -37,7 +37,7 @@ pro spp_ptp_stream_read,buffer,info=info,no_sum=no_sum,verbose=verbose,dlevel=dl
   
   p=0L
   nbad = 0
-  badbuffer = bytarr(10000)
+  badbuffer = bytarr(100000)
   while p lt bsize do begin
     
       if p gt bsize-17 then begin

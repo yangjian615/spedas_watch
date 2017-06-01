@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-04-19 14:58:30 -0700 (Wed, 19 Apr 2017) $
-;  $LastChangedRevision: 23197 $
+;  $LastChangedBy: pulupalap $
+;  $LastChangedDate: 2017-05-31 05:23:31 -0700 (Wed, 31 May 2017) $
+;  $LastChangedRevision: 23373 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/l1/l1_mag_survey/spp_fld_mag_survey_load_l1.pro $
 ;
 
@@ -24,12 +24,19 @@ pro spp_fld_mag_survey_load_l1, file, prefix = prefix
     short_prefix = ''
   endelse
 
-  store_data, prefix + 'mag_bx', newname = prefix + 'mag_bx_2d'
-  store_data, prefix + 'mag_by', newname = prefix + 'mag_by_2d'
-  store_data, prefix + 'mag_bz', newname = prefix + 'mag_bz_2d'
+  ;store_data, prefix + 'mag_bx', newname = prefix + 'mag_bx_2d'
+  ;store_data, prefix + 'mag_by', newname = prefix + 'mag_by_2d'
+  ;store_data, prefix + 'mag_bz', newname = prefix + 'mag_bz_2d'
 
   get_data, prefix + 'avg_period_raw', data = d_ppp
   get_data, prefix + 'range_bits', data = d_range_bits
+
+  options, prefix + 'compressed', 'ytitle', short_prefix + ' compressed'
+  options, prefix + 'compressed', 'ysubtitle'
+  options, prefix + 'compressed', 'yrange', [-0.1,1.1]
+  options, prefix + 'compressed', 'ystyle', 1
+  options, prefix + 'compressed', 'psym', 4
+  options, prefix + 'compressed', 'panel_size', 0.5
 
   options, prefix + 'avg_period_raw', 'ytitle', short_prefix + ' PPP'
   options, prefix + 'avg_period_raw', 'ysubtitle'
@@ -136,17 +143,13 @@ pro spp_fld_mag_survey_load_l1, file, prefix = prefix
 
   options, prefix + 'packet_index', 'psym', 3
 
-
   store_data, prefix + 'range', $
     data = {x:times_1d.ToArray(), y:range_bits_1d.ToArray()}
 
   options, prefix + 'range', 'yrange', [-0.5,3.5]
-
   options, prefix + 'range', 'ytitle', $
     short_prefix + ' range'
-
   options, prefix + 'range', 'yminor', 1
-
   options, prefix + 'range', 'psym', 3
 
 

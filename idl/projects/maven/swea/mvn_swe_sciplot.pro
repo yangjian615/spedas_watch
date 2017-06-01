@@ -33,6 +33,9 @@
 ;
 ;   NADIR:     Create a panel for the Nadir direction in spacecraft coordinates.
 ;
+;   DATUM:     Reference surface for calculating altitude.  Passed to 
+;              maven_orbit_tplot.  See mvn_altitude.pro for details.
+;
 ;   SEP:       Include two panels for SEP data: one for ions, one for electrons.
 ;
 ;   SWIA:      Include panels for SWIA ion density and bulk velocity (coarse
@@ -72,8 +75,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-18 16:16:25 -0700 (Sat, 18 Mar 2017) $
-; $LastChangedRevision: 22987 $
+; $LastChangedDate: 2017-05-31 11:11:02 -0700 (Wed, 31 May 2017) $
+; $LastChangedRevision: 23377 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -81,7 +84,7 @@
 pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
                      sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2, min_pad_eflux=min_pad_eflux, $
                      loadonly=loadonly, pans=pans, padsmo=padsmo, apid=apid, shape=shape, $
-                     nadir=nadir
+                     nadir=nadir, datum=datum
 
   compile_opt idl2
 
@@ -93,6 +96,30 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   if not keyword_set(APID) then apid = 0
   
   if (size(min_pad_eflux,/type) eq 0) then min_pad_eflux = 6.e4
+
+; Make sure the datum is valid
+
+  if (size(datum,/type) ne 7) then datum = 'sphere'
+  case strupcase(datum) of
+    'SPHERE'    : ; valid, do nothing
+    'ELLIPSOID' : ; valid, do nothing
+    'AREOID'    : ; valid, do nothing
+    'SURFACE'   : ; valid, do nothing
+    else        : begin
+                    print,'Unrecognized datum: ',datum
+                    result = 0
+                    return
+                  end
+  endcase
+
+  mvn_swe_stat, /silent, npkt=npkt
+  if (npkt[4] eq 0) then begin
+    print,"No SWEA data loaded."
+    return
+  endif
+
+  get_data,'alt2',data=alt2,index=i
+  if (i eq 0) then maven_orbit_tplot, /loadonly, datum=datum
 
   mvn_swe_sumplot,/loadonly
   mvn_swe_sc_pot,/over

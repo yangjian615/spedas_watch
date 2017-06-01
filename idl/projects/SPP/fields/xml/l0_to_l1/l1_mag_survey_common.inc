@@ -1,8 +1,22 @@
   <cdf_var
       name   = "compressed"
       type   = "integer">
-    <xlate value="0" string="No"/>
-    <xlate value="1" string="Yes"/>
+  <cdf_att
+        FIELDNAM = "compressed"
+        FORMAT = "I08"
+        LABLAXIS = "compressed"
+        VAR_TYPE = "data"
+        DATA_TYPE = "CDF_INT2"
+        FILLVAL = "-32767"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "compressed"
+        DEPEND_0 = "epoch">
+    </cdf_att>
   </cdf_var>
 
   <cdf_var
@@ -75,9 +89,9 @@
       type   = "integer"
       nelem  = "512">
     <cdf_att
-        FIELDNAM = "mag_bx"
+        FIELDNAM = "mag_bx_2d"
         FORMAT = "F15.3"
-        LABLAXIS = "mag_bx"
+        LABLAXIS = "mag_bx_2d"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -96,9 +110,9 @@
       type   = "integer"
       nelem  = "512">
     <cdf_att
-        FIELDNAM = "mag_by"
+        FIELDNAM = "mag_by_2d"
         FORMAT = "F15.3"
-        LABLAXIS = "mag_by"
+        LABLAXIS = "mag_by_2d"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -117,9 +131,9 @@
       type   = "integer"
       nelem  = "512">
     <cdf_att
-        FIELDNAM = "mag_bz"
+        FIELDNAM = "mag_bz_2d"
         FORMAT = "F15.3"
-        LABLAXIS = "mag_bz"
+        LABLAXIS = "mag_bz_2d"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
