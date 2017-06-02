@@ -50,7 +50,7 @@ endif else begin
   ;swiaet=average_hist2(swiaefdata.v,swiaefdata.x,binsize=binsize,trange=trange,centertime=centertime); swia energy table
 
   swisen=transpose(info_str[pui.data.swi.swis.info_index].energy_coarse)
-  store_data,'mvn_redures_swia',data={x:centertime,y:transpose(pui.data.swi.swis.data),v:swisen},limits={ylog:1,zlog:1,spec:1,yrange:[25,25e3],ystyle:1,zrange:[1e3,1e8],ztitle:'Eflux',ytickunits:'scientific'}
+  store_data,'mvn_redures_swia',data={x:centertime,y:transpose(pui.data.swi.swis.data),v:swisen},limits={ylog:1,zlog:1,spec:1,yrange:[25.,25e3],ystyle:1,zrange:[1e3,1e8],ztitle:'Eflux',ytickunits:'scientific'}
 
   if n_elements(swics) gt 1 then begin ;swia survey data
     swiactime = swics.time_unix +4.0*swics.num_accum/2  ;center time of sample/sum
@@ -58,7 +58,7 @@ endif else begin
     swicsdt=swics[1:*].time_unix-swics[0:-1].time_unix
     store_data,'mvn_swics_dt_(s)',data={x:swics[1:*].time_unix,y:swicsdt},limits={ylog:1,panel_size:.5,colors:'r'}
 
-    if n_elements(swics) gt 1 then begin ;swia archive (burst) data
+    if n_elements(swica) gt 1 then begin ;swia archive (burst) data
       swiactime = swica.time_unix +4.0*swica.num_accum/2  ;center time of sample/sum
       pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse archive
       swicadt=swica[1:*].time_unix-swica[0:-1].time_unix
@@ -104,7 +104,7 @@ if keyword_set(mvn_c0_dat) then begin ;static 1d data (64e2m)
   store_data,'mvn_redures_HImass_sta_c0',centertime,c0eflux[*,*,1],c0energy
   store_data,'mvn_redures_LOmass_sta_c0',centertime,c0eflux[*,*,0],c0energy
   store_data,'mvn_sta_att',data={x:c0time,y:mvn_c0_dat.att_ind},limits={yrange:[-1,4],panel_size:.5,colors:'r'}
-  store_data,'mvn_sta_mode',data={x:c0time,y:mvn_c0_dat.mode},limits={yrange:[-1,7],panel_size:.5,colors:'r'}
+  store_data,'mvn_sta_mode',data={x:c0time,y:mvn_c0_dat.mode},limits={yrange:[-1,7],ystyle:1,panel_size:.5,colors:'r'}
   store_data,'mvn_sta_sweep_index',data={x:c0time,y:mvn_c0_dat.swp_ind},limits={ylog:1,panel_size:.5,colors:'r'}
 endif
 
@@ -113,7 +113,7 @@ if keyword_set(mvn_d0_dat) and pui0.do3d then begin ;static 3d survey data (d0: 
   d0ef=average_hist2(mvn_d0_dat.eflux,d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 energy flux
   d0en=average_hist2(mvn_d0_dat.energy[mvn_d0_dat.swp_ind,*,0,0],d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 energy table
   d0dt=average_hist2(mvn_d0_dat.delta_t,d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 dt
-  store_data,'mvn_sta_d0_mass_(amu)',data={x:d0time,y:reform(mvn_d0_dat.mass_arr[mvn_d0_dat.swp_ind,0,0,*])},limits={ylog:1}
+  store_data,'mvn_sta_d0_mass_(amu)',data={x:d0time,y:reform(mvn_d0_dat.mass_arr[mvn_d0_dat.swp_ind,0,0,*])},limits={ylog:1,labels:['0','1','2','3','4','5','6','7'],psym:3}
 
   if keyword_set(mvn_d1_dat) then begin ;static 3d archive (burst) data (d1: 32e4a16d8m 16s)
     d1time = (mvn_d1_dat.time + mvn_d1_dat.end_time)/2.
@@ -133,8 +133,7 @@ if keyword_set(mvn_d0_dat) and pui0.do3d then begin ;static 3d survey data (d0: 
   endelse
   pui.data.sta.d1.eflux=transpose(reform(d1ef,[pui0.nt,pui0.sd1eb,pui0.swine,pui0.swina,8]),[1,3,2,4,0])
   pui.data.sta.d1.energy=transpose(d1en)
-  d1dtind=where(finite(d1dt),/null,count) ;where data available index (due to average_hist time bin being smaller than dt)
-  if count gt 0 then store_data,'mvn_sta_d01_dt_(s)',data={x:centertime[d1dtind],y:d1dt[d1dtind]},limits={ylog:1,panel_size:.5,colors:'r'}
+  store_data,'mvn_sta_d01_dt_(s)',data={x:centertime,y:d1dt},limits={ylog:1,panel_size:.5,colors:'r',psym:3}
 endif
 
 ;----------SEP----------

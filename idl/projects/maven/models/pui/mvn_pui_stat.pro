@@ -17,7 +17,7 @@ pro mvn_pui_stat,nospice=nospice,noimg=noimg,trange=trange,nodataload=nodataload
   endif
 
 secinday=86400L ;number of seconds in a day
-if ~keyword_set(trange) then trange=[time_double('14-12-1'),systime(1)]
+if ~keyword_set(trange) then trange=[time_double('14-11-27'),systime(1)]
 ;trange=['14-12-1','14-12-3']
 trange=time_double(trange)
 ndays=round((trange[1]-trange[0])/secinday) ;number of days
@@ -28,7 +28,7 @@ if ~keyword_set(nospice) then begin
   timespan,trange
   kernels=mvn_spice_kernels(/all,/clear)
   spice_kernel_load,kernels,verbose=3
-  maven_orbit_tplot,colors=[4,6,2],/loadonly ;loads the color-coded orbit info
+;  maven_orbit_tplot,colors=[4,6,2],/loadonly ;loads the color-coded orbit info
 endif
 
 fnan=!values.f_nan
@@ -41,8 +41,8 @@ for j=0,ndays-1 do begin ;loop over days
   tr=trange[0]+[j,j+1]*secinday
   mvn_pui_sw_orbit_coverage,trange=tr,res=binsize,alt_sw=alt_sw
   if where(finite(alt_sw),/null) eq !null then continue ;if no solar wind coverage, go to next day
-
-  mvn_pui_model,binsize=binsize,np=2017,/do3d,savetplot=~keyword_set(noimg),/nospice,trange=tr,nodataload=nodataload
+  np=2017
+  mvn_pui_model,binsize=binsize,np=np,/do3d,savetplot=~keyword_set(noimg),/nospice,trange=tr,nodataload=nodataload
 
   stat[*,j].centertime=pui.centertime
   stat[*,j].mag=pui.data.mag.mso
@@ -59,7 +59,7 @@ for j=0,ndays-1 do begin ;loop over days
   if ~keyword_set(noimg) then mvn_pui_tplot_3d_save,graphics=g,datestr=datestr
 
 endfor
-save,stat
+save,stat,binsize,np
 
 stop
 end

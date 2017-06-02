@@ -25,6 +25,7 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
   centertime=pui.centertime
 
   if keyword_set(store) then begin
+    store_data,'mvn_sta_D01_dE/E',data={x:centertime,y:pui1.d1dee},limits={ylog:1,panel_size:.5,colors:'r',psym:3}
     store_data,'mvn_pui_line_1',data={x:centertime,y:replicate(1.,pui0.nt)},limits={colors:'g'} ;straight line equal to 1
     store_data,'mvn_pos_(km)',data={x:centertime,y:transpose(pui.data.scp)/1e3},limits={colors:'bgr',labels:['x','y','z'],labflag:1}
     store_data,'mvn_sep1_fov',centertime,transpose(pui.data.sep[0].fov)
@@ -114,7 +115,7 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
   if keyword_set(tplot) then begin
     datestr=strmid(time_string(pui0.trange[0]),0,10)
     wi,10 ;tplot raw data
-    tplot,window=10,'mvn_pos_(km) swea_a4_pot mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_swics_dt_(s) mvn_swica_dt_(s) mvn_B_1sec mvn_sep?_svy_DURATION mvn_sep?_fov mvn_sep?_B-O_Rate_Energy mvn_euv_l3 mvn_euv_data mvn_staz_fov mvn_sta_att mvn_sta_mode mvn_sta_sweep_index mvn_sta_d0_mass_(amu) mvn_sta_d01_dt_(s)'
+    tplot,window=10,'mvn_pos_(km) swea_a4_pot mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_swics_dt_(s) mvn_swica_dt_(s) mvn_B_1sec mvn_sep?_svy_DURATION mvn_sep?_fov mvn_sep?_B-O_Rate_Energy mvn_euv_l3 mvn_euv_data mvn_staz_fov mvn_sta_att mvn_sta_mode mvn_sta_sweep_index mvn_sta_d0_mass_(amu) mvn_sta_d01_dt_(s) mvn_sta_D01_dE/E'
     if keyword_set(savetplot) then makepng,datestr+'_raw_data'
     wi,20 ;tplot useful pickup ion parameters. for diagnostic purposes, best shown on a vertical screen
     tplot,window=20,'mvn_mag_Btot_(nT) Sin(thetaUB) E_Motional_(V/km) Pickup_* Ionization_Frequencies_(s-1)'

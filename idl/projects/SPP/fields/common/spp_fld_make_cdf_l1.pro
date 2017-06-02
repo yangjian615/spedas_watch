@@ -19,6 +19,8 @@ pro spp_fld_make_cdf_l1, apid_name, $
     
     if dat_success EQ -1 then dprint, 'No data found for ' + apid_name, dlevel = 2
 
+    filename = ''
+
     return ; TODO: error reporting here
 
   endif

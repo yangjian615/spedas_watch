@@ -26,7 +26,7 @@ pui0={              $ ;instrument and model constants structure
   swine:4L,         $ ;swia and static # of elevation bins
   swiatsa:!pi*2.8,  $ ;SWIA and STATIC total solid angle <5keV (2.8pi sr)
   swidee:.14464,    $ ;SWIA dE/E
-  stadee:.1633,     $ ;STATIC dE/E
+  stadee:.1633,     $ ;STATIC dE/E for C0 data product (64 energy bins, rough estimate)
   swedee:.1165,     $ ;SWEA dE/E
   totdee:.1,        $ ;total flux binning dE/E
   np:np,            $ ;number of simulated particles
@@ -47,11 +47,12 @@ pui1={ $ ;energy bins structure
   swiet:exp(pui0.swidee*findgen(pui0.swieb,start=69.5,increment=-1)),  $ ;SWIA (post Nov 2014) energy bin midpoints (23 keV to 26 eV)
   staet:exp(pui0.stadee*findgen(pui0.staeb,start=63.4,increment=-1)),  $ ;STATIC (mode 4) energy bin midpoints (31 keV to 1.0 eV)
   sweet:exp(pui0.swedee*findgen(pui0.sweeb,start=72.5,increment=-1)),  $ ;SWEA energy bin midpoints (4627 eV to 3.0 eV)
-  sepet:replicate({sepbo:replicate(fnan,pui0.sopeb)},2)                $ ;SEP 1&2 energy table
+  sepet:replicate({sepbo:replicate(fnan,pui0.sopeb)},2),               $ ;SEP 1&2 energy table
+  d1dee:replicate(fnan,nt)                                             $ ;STATIC D1 and D0 dE/E
 }
 
 pui2={vtot:fnan,rtot:fnan,dr:fnan,ke:fnan,de:fnan,mv:fnan}
-pui2=replicate(pui2,np,nt) ;temporary structure
+pui2=replicate(pui2,[np,nt]) ;temporary structure
 
 ;**********DATA**********
 xyz=replicate(fnan,3)
@@ -63,10 +64,10 @@ swe={eflux:replicate(fnan,pui0.sweeb),efpot:replicate(fnan,pui0.sweeb),enpot:rep
 ;if keyword_set(mvn_swe_engy) then swe=mvn_swe_engy[0]
 c0={eflux:replicate(fnan,pui0.staeb,2),energy:replicate(fnan,pui0.staeb)}
 d1=byte(0)
-if keyword_set(do3d) then d1={eflux:replicate(fnan,pui0.sd1eb,pui0.swina,pui0.swine,8),energy:replicate(fnan,pui0.sd1eb)}
+if keyword_set(do3d) then d1={eflux:replicate(fnan,[pui0.sd1eb,pui0.swina,pui0.swine,8]),energy:replicate(fnan,pui0.sd1eb)}
 sta={fov:{x:xyz,z:xyz},c0:c0,d1:d1}
 mag={payload:xyz,mso:xyz}
-euv={l2:xyz,l3:replicate(fnan,pui0.euvwb)}
+euv={l2:xyz,l3:replicate(fnan,pui0.euvwb)} ;here xyz is the 3 EUVM wavelength bands
 
 data={sep:sep,swi:swi,swe:swe,sta:sta,mag:mag,euv:euv,scp:xyz}
 
@@ -80,19 +81,19 @@ sta1d=replicate({eflux:0.},pui0.staeb)
 swi3d=byte(0)
 sta3d=byte(0)
 rv=replicate(fnan,6) ;trajectory coordinates (rx,ry,rz,vx,vy,vz)
-if keyword_set(do3d) then swi3d=replicate({eflux:0.,rv:rv},pui0.swieb,pui0.swina,pui0.swine)
-if keyword_set(do3d) then sta3d=replicate({eflux:0.,rv:rv},pui0.sd1eb,pui0.swina,pui0.swine)
+if keyword_set(do3d) then swi3d=replicate({eflux:0.,rv:rv},[pui0.swieb,pui0.swina,pui0.swine])
+if keyword_set(do3d) then sta3d=replicate({eflux:0.,rv:rv},[pui0.sd1eb,pui0.swina,pui0.swine])
 sep={incident_rate:replicate(fnan,pui0.sormd),model_rate:replicate(fnan,pui0.sopeb),rv:rv}
 sep=replicate(sep,2) ;2 SEP's
 toteflux=replicate(fnan,pui0.toteb)
 fluxes={sep:sep,swi1d:swi1d,swi3d:swi3d,sta1d:sta1d,sta3d:sta3d,toteflux:toteflux}
 params={fg:fnan,tg:fnan,rg:fnan,kemax:fnan,totphi:fnan,toteph:fnan,totmph:fnan,totnnn:fnan}
 
-model={ifreq:ifreq,rv:replicate(fnan,6,np),fluxes:fluxes,params:params}
+model={ifreq:ifreq,rv:replicate(fnan,[6,np]),fluxes:fluxes,params:params}
 model=replicate(model,ns)
 
 ;*********Data to Model Ratio**********
-d2m=replicate({sep:replicate(fnan,2),swi:xyz,sta:xyz},ns) ;xyz is [mean,stdev,nsample]
+d2m=replicate({sep:replicate(fnan,2),swi:xyz,sta:xyz},ns) ;here xyz is [mean,stdev,nsample] of different energy/anode/elevations
 
 pui={data:data,model:model,d2m:d2m,centertime:0d}
 pui=replicate(pui,nt) ;model-data array of structures

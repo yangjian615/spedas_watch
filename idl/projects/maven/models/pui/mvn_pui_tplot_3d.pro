@@ -96,7 +96,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
     ebinlimo=12 ;energy bin limit for oxygen
     ebinlimh=24 ;energy bin limit for hydrogen
     maxthresh=1e8 ;above this, and we're probably looking at solar wind protons
-    minthresh=4e4 ;below this, can't detect
+    minthresh=1e4 ;below this, can't detect
     kefstah3d[where((kefstah3d lt minthresh) or (d1eflux[*,*,*,*,0] gt maxthresh),/null)]=0.
     kefstao3d[where((kefstao3d lt minthresh) or (d1eflux[*,*,*,*,4] gt maxthresh),/null)]=0.
 
@@ -127,7 +127,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
 
     if keyword_set(swics) then begin
       minswiatt=minthresh*onesnt
-      minswiatt[where(pui.data.swi.swim.atten_state eq 2.,/null)]=5e5 ;higher threshold when swia attenuator is closed
+      minswiatt[where(pui.data.swi.swim.atten_state eq 2.,/null)]=1e5 ;higher threshold when swia attenuator is closed
       minswiatt=rebin(minswiatt,[pui0.nt,pui0.swieb,pui0.swina,pui0.swine])
       kefswih3d[where((kefswih3d lt minswiatt) or (swiaef3d gt maxthresh),/null)]=0. ;get rid of too low model flux (below detection threshold) or too high data flux (solar wind)
       kefswio3d[where((kefswio3d lt minswiatt) or (swiaef3d gt maxthresh),/null)]=0.

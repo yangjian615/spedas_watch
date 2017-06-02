@@ -102,11 +102,12 @@ if pui0.do3d then begin
   sta3d=replicate({ef:0.,nn:0.,rv:replicate(0.,6)},pui0.sd1eb,pui0.swina,pui0.swine,nt) ;swia 3d eflux binning
 
   d1energy=pui.data.sta.d1.energy ;static d1 energy table
+  pui1.d1dee=mean(-1.+(d1energy[0:-2,*]/d1energy[1:-1,*]),dim=1,/nan) ;static d1 dE/E
   d1enedge=sqrt(d1energy[0:-2,*]*d1energy[1:-1,*]) ;static d1 energy bin edges (missing the ending points)
   ebinedge=replicate(0.,pui0.sd1eb+1,nt) ;add the ending points
   ebinedge[1:-2,*]=d1enedge
-  ebinedge[0,*]=d1energy[0,*]*(1+pui0.stadee)
-  ebinedge[-1,*]=d1energy[-1,*]/(1+pui0.stadee)
+  ebinedge[0,*]=ebinedge[1,*]*(1+pui1.d1dee) ;highest energy edge
+  ebinedge[-1,*]=ebinedge[-2,*]/(1+pui1.d1dee) ;lowest energy edge
 
   binstake=replicate(pui0.sd1eb-1,np,nt) ;initialize static bins at lowest energy
   for ie=0,pui0.sd1eb-1 do begin ;bin according to energy
@@ -130,7 +131,7 @@ if pui0.do3d then begin
     sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;stat 3d particle position and velocity binning
   endfor
   pui.model[msub].fluxes.swi3d.eflux=swi3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/pui0.swidee; differential energy flux (eV/[cm2 s sr eV])
-  pui.model[msub].fluxes.sta3d.eflux=sta3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/pui0.stadee/2.
+  pui.model[msub].fluxes.sta3d.eflux=sta3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/transpose(rebin(pui1.d1dee,[nt,pui0.sd1eb,pui0.swina,pui0.swine]),[1,2,3,0])
   pui.model[msub].fluxes.swi3d.rv=swi3d.rv/transpose(rebin(swi3d.nn,[pui0.swieb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
   pui.model[msub].fluxes.sta3d.rv=sta3d.rv/transpose(rebin(sta3d.nn,[pui0.sd1eb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
 endif

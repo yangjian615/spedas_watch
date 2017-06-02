@@ -111,8 +111,8 @@
 ; 04-Apr-2012, clrussell, Added units to the data_att structure
 ; 
 ; $LastChangedBy: crussell $
-; $LastChangedDate: 2017-03-21 09:45:15 -0700 (Tue, 21 Mar 2017) $
-; $LastChangedRevision: 23010 $
+; $LastChangedDate: 2017-06-01 12:23:07 -0700 (Thu, 01 Jun 2017) $
+; $LastChangedRevision: 23384 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/ground/thm_load_gmag.pro $
 ;-
 
@@ -282,8 +282,7 @@ Pro thm_load_gmag, site = site, datatype = datatype, trange = trange, $
     endif 
 
     if keyword_set(atha_sites) then begin
-      site_in = array_concat(['roth', 'leth', 'redr', 'larg', 'vldr', 'salu', 'akul',+ $
-        'puvr', 'inuk', 'kjpk', 'radi', 'stfl', 'sept', 'schf'],site_in)
+      site_in = array_concat(['roth', 'leth', 'redr', 'larg', 'vldr', 'salu', 'akul', 'puvr', 'inuk', 'kjpk', 'radi', 'stfl', 'sept', 'schf'],site_in)
     endif 
 
     if keyword_set(epo_sites) then begin

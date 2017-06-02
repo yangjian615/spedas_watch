@@ -80,7 +80,7 @@ mvn_pui_solver ;solve pickup ion trajectories
 rtot=pui2.rtot
 dprint,dlevel=2,'Pickup O+ trajectories solved, now binning...'
 nfac=replicate(1.,np,nt) ;neutral density scale factor (scales according to radius)
-nfac[where(rtot lt 6000e3,/null)]=10. ;increase in electron impact ionization rate inside the bow shock due to increased electron flux
+nfac[where(rtot lt 6000e3,/null)]=1. ;increase in electron impact ionization rate inside the bow shock due to increased electron flux
 nfac[where(rtot lt 3600e3,/null)]=0. ;no pickup source below the exobase (zero neutral density)
 rtot[where(rtot lt 3600e3,/null)]=3600e3 ;to ensure the radius doesn't go below the exobase
 nden=mvn_pui_exoden(rtot,species='o') ;oxygen density (cm-3)

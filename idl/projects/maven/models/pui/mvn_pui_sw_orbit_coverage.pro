@@ -4,7 +4,7 @@
 pro mvn_pui_sw_orbit_coverage,trange=trange,plot=plt,res=res,times=times,spice=spice,alt_sw=alt_sw,conservative=conservative
 
 if ~keyword_set(trange) then trange=[time_double('14-10-1'),systime(1)]
-if keyword_set(spice) then kernels=mvn_spice_kernels(['lsk','spk','std','sck','frm'],/clear,/load,trange=trange)
+if keyword_set(spice) then kernels=mvn_spice_kernels(['lsk','spk','std','sck','frm'],/load,trange=trange)
 
 if ~keyword_set(res) then res=60.*10. ;default time resolution (10 mins)
 if ~keyword_set(times) then times=dgen(range=timerange(trange),res=res)

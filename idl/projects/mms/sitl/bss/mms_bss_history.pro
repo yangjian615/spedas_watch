@@ -1,29 +1,3 @@
-;+
-; NAME: mms_bss_history
-;
-; PURPOSE: 
-;   To create a time-profile of the number of PENDING segments.
-;   'bss' stands for 'burst segment status' which is the official 
-;   name of the back-structure.
-;
-; USAGE:
-;   With no keyword, this program diplays the plot in an IDL window.
-;   Use the keywords for outputs.
-;   
-; KEYWORDS:
-;   BSS: back-structure created by mms_bss_query
-;   TRANGE: narrow the time range. It can be in either string or double.
-;   TPLOT: 0 = no plot; 1 = tplot (default)
-;   ASCII: 'tplot_ascii' commands will be used to export the results
-;   CSV: output into csv files
-;   
-; CREATED BY: Mitsuo Oka  Aug 2015
-;
-; $LastChangedBy: moka $
-; $LastChangedDate: 2016-10-06 15:43:35 -0700 (Thu, 06 Oct 2016) $
-; $LastChangedRevision: 22058 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/bss/mms_bss_history.pro $
-;-
 FUNCTION mms_bss_history_cat, bsh, category, wt
   compile_opt idl2
   wcat = lonarr(n_elements(wt)); output
@@ -35,33 +9,6 @@ FUNCTION mms_bss_history_cat, bsh, category, wt
     wcat[ndx] += s.SEGLENGTHS[i]; count segment size
   endfor
   return, wcat
-END
-
-FUNCTION mms_bss_history_overwritten, bsh, category, wDt
-  compile_opt idl2
-  wcat = lonarr(n_elements(wDt)); output
-  s = mms_bss_query(bss=bsh, category=category)
-  if n_tags(s) eq 0 then return, wcat
-  imax = n_elements(s.FOM); number of filtered-out segments
-  for i=0,imax-1 do begin; For each segment
-    day = time_double(time_string(s.UNIX_FINISHTIME[i],prec=-3))
-    result = min(wDt-day, ndx,/abs)
-    wcat[ndx] += s.SEGLENGTHS[i]; count segment size
-  endfor
-  return, wcat
-END
-
-FUNCTION mms_bss_history_overwritten2, bsh, category, wt
-  compile_opt idl2
-  wcat = lonarr(n_elements(wt)); output
-  s = mms_bss_query(bss=bsh, category=category)
-  if n_tags(s) eq 0 then return, wcat
-  imax = n_elements(s.FOM); number of filtered-out segments
-  for i=0,imax-1 do begin; For each segment
-    result=min(wt-s.UNIX_FINISHTIME[i],ndx, /absolute)
-    wcat[ndx] += s.SEGLENGTHS[i]; count segment size
-  endfor
-  return, (-1L)*wcat
 END
 
 FUNCTION mms_bss_history_threshold, wt
@@ -88,10 +35,25 @@ FUNCTION mms_bss_history_threshold, wt
   m=8 & change_date[m] = '2016-03-28/15:16' & change_val[m] = 13000L
   m=9 & change_date[m] = '2016-04-04/16:40' & change_val[m] = 14000L
   m=10 & change_date[m] = '2016-04-11/17:30' & change_val[m] = 15000L
+  m=11 & change_date[m] = '2016-12-05/00:00' & change_val[m] = 14000L
+  m=12 & change_date[m] = '2016-12-12/00:00' & change_val[m] = 13000L
+  m=13 & change_date[m] = '2016-12-19/00:00' & change_val[m] = 12000L
+  m=14 & change_date[m] = '2016-12-26/00:00' & change_val[m] = 11000L
+  m=15 & change_date[m] = '2017-01-02/00:00' & change_val[m] = 10000L
+  m=16 & change_date[m] = '2017-03-01/00:00' & change_val[m] = 11000L
+  m=17 & change_date[m] = '2017-03-09/00:00' & change_val[m] = 12000L
+  m=18 & change_date[m] = '2017-03-13/00:00' & change_val[m] = 13000L
+  m=19 & change_date[m] = '2017-03-20/00:00' & change_val[m] = 14000L
+  m=20 & change_date[m] = '2017-03-27/00:00' & change_val[m] = 15000L
+  m=21 & change_date[m] = '2017-04-03/00:00' & change_val[m] = 16000L
+  m=22 & change_date[m] = '2017-04-10/00:00' & change_val[m] = 18000L
+  m=23 & change_date[m] = '2017-04-19/00:00' & change_val[m] = 19150L
   
+
+
   idx=where(change_val gt 0,ct)
   mmax = ct
-  
+
   ; MAIN LOOP
   for m=0,mmax-1 do begin
     stime = time_double(change_date[m])
@@ -101,17 +63,20 @@ FUNCTION mms_bss_history_threshold, wt
       wthres[idx] = hard_limit - change_val[m]
     endif
   endfor
-  
+
   return, wthres
 END
 
-PRO mms_bss_history, bss=bss, trange=trange, tplot=tplot, csv=csv, dir=dir
+PRO mms_bss_history, tplot=tplot, csv=csv, dir=dir
   compile_opt idl2
   mms_init
-  tic
-  if undefined(tplot) then tplot=1
+  clock=tic('mms_bss_history')
   if undefined(dir) then dir = '' else dir = spd_addslash(dir)
 
+  print,'--------'
+  print,'mms_bss_history3'
+  print,'--------'
+  
   ;----------------
   ; CATCH
   ;----------------
@@ -122,248 +87,229 @@ PRO mms_bss_history, bss=bss, trange=trange, tplot=tplot, csv=csv, dir=dir
     message, /reset
     return
   endif
-  
+
   ;----------------
   ; TIME
   ;----------------
   tnow = systime(/utc,/seconds)
   tlaunch = time_double('2015-03-13/00:00');time_double('2015-03-12/22:44')
   t3m = tnow - 180.d0*86400.d0; 180 days
-  if n_elements(trange) eq 2 then begin
-    tr = timerange(trange)
-  endif else begin
-    tr = [t3m,tnow]
-    ;tr = [tlaunch,tnow]
-    trange = time_string(tr)
-  endelse
-  wDs = time_double(time_string(tr[0],prec=-3))
-  wDe = time_double(time_string(tr[1],prec=-3))+86400.d0
-  tr = [wDs,wDe]
-   
+  tr = [t3m,tnow]
+  trange = time_string(tr)
+
   ; time grid to be used for Pending buffer history
   ;mmax = 4320L ; extra data point for displaying grey-shaded region
-  dt = 60.d0;10min
-  nmax = floor((tr[1]-tr[0])/dt); + mmax
+  dt = 60.d0
+  nmax = floor((tr[1]-tr[0])/dt)
   wt = tr[0]+ dindgen(nmax)*dt
 
-  ; time grid to be used for daily values of Increase and Decrease
-  qmax = floor((wDe-wDs)/86400.d0); number of days
-  wDt = wDs + 86400.d0*dindgen(qmax)
+  ; time grid to be used for daily values
+  day_start = time_double(strmid(trange[0],0,10))
+  dt = 86400.d0
+  rmax = floor((tr[1]-day_start)/dt)
+  wtday = day_start+dindgen(rmax+1)*dt
 
-  wDi = lonarr(qmax) & wDi0= lonarr(qmax) & wDi1= lonarr(qmax) & wDi2= lonarr(qmax)
-  wDi3= lonarr(qmax) & wDi4= lonarr(qmax) & wDd = lonarr(qmax) & wDd0= lonarr(qmax)
-  wDd1= lonarr(qmax) & wDd2= lonarr(qmax) & wDd3= lonarr(qmax) & wDd4= lonarr(qmax)
+  fomrng = mms_bss_fomrng(wt)
 
-  wSD= lonarr(qmax) & wSD0= lonarr(qmax) & wSD1= lonarr(qmax) & wSD2= lonarr(qmax)
-  wSD3= lonarr(qmax) & wSD4= lonarr(qmax)
-  
   ;----------------
   ; LOAD DATA
   ;----------------
-  if n_elements(bss) eq 0 then bss = mms_bss_query(trange=trange)
-
-  ;------------------
-  ; ANALYSIS (TOTAL)
-  ;------------------
-  wthres= mms_bss_history_threshold(wt); Threshold
-  wcatT = lonarr(nmax); All segmentes
-  wcatT2= lonarr(nmax); Segments being HELD for more than 3 days
+  RESTORE=0
+  case RESTORE of
+    0:begin
+      if n_elements(bss) eq 0 then begin
+        print, '.... loading bss data ....'
+        bss = mms_bss_query(trange=trange)
+      endif
+      save,bss,filename='bss.sav'
+      end
+    1:restore,filename='bss.sav'
+    else:
+  endcase
+  
+  ;---------------------------
+  ; MAIN LOOP
+  ;---------------------------
+  ; For each segment (except bad segments and DELETED segments)
+  ; find its category and status
+  ;    0: Overwritten
+  ;    1: Complete+Finished (Transmitted)
+  ;    2: Held
+  ;    3: New
+  iHeld = 0
+  iOver = 1
+  iNew  = 2
+  iTrns = 3
+  iDiff = 4
+  
+  pmax = 5; category
+  qmax = 5; output type
+  wcat = lonarr(nmax,pmax,qmax); The main output
   imax = n_elements(bss.FOM); number of filtered-out segments
+  wNewA = lonarr(nmax); The secondary output
+  wNewP = lonarr(nmax)
+  wNewO = lonarr(nmax)
+  wNewT = lonarr(nmax)
+  
   for i=0,imax-1 do begin; For each segment
+    
+    ; timestamps
     ndx = where( (bss.UNIX_CREATETIME[i] le wt) and (wt lt bss.UNIX_FINISHTIME[i]), ct); extract pending period
-    wcatT[ndx] += bss.SEGLENGTHS[i]; count segment size
-    sts = strlowcase(bss.STATUS[i])
-    ndx = where( (bss.START[i]+3.d0*86400.d0 le wt) and (wt lt bss.UNIX_FINISHTIME[i]) and $
-      ~strmatch(sts,'*realloc*') and ~strmatch(sts,'*deferred*'), ct)
-      ; Removing REALLOC and DEFERRED segments, because the status were either
-      ; REALLOC or DEFERRED even after 3 days, then those segments are unlikely to be
-      ; transmitted.
-      ; 
-    wcatT2[ndx] += bss.SEGLENGTHS[i]
-  endfor
-  ;wcatT2[nmax-mmax:nmax-1] = !VALUES.F_NAN
-  wcatT2[nmax-1] = wcatT2[nmax-2]
+    if ct gt 0 then begin
 
-  ; All segments (except bad segments and DELETED segments)
-  wcat0  = mms_bss_history_cat(bss, 0, wt)
-  wcat1  = mms_bss_history_cat(bss, 1, wt)
-  wcat2  = mms_bss_history_cat(bss, 2, wt)
-  wcat3  = mms_bss_history_cat(bss, 3, wt)
-  wcat4  = mms_bss_history_cat(bss, 4, wt)
+      ; location in wt of the created time
+      result = min(wt-bss.UNIX_CREATETIME[i],Ncre, /nan,/abs)
+      ; location in wt of the finished day
+      str_day_start = strmid(time_string(bss.UNIX_FINISHTIME[i]),0,10)
+      ts = time_double(str_day_start) & te = ts + 86400.d0
+      mdx = where( (ts le wt) and (wt lt te), ct)
+      ; location in wt of the created day
+      str_day_start = strmid(time_string(bss.UNIX_CREATETIME[i]),0,10)
+      ts = time_double(str_day_start) & te = ts + 86400.d0
+      odx = where( (ts le wt) and (wt lt te), ct)
   
-  ;///////// Do we really need this? ////////////////// 
-  ; This is a temporary fix 2015-09-25
-  wcatT  = mms_bss_history_cat(bss, 5, wt)
-  ;////////////////////////////////////////////////////
-  
-  ; Segments added by SITL
-  wSDraw = lonarr(nmax)
-  fomrng = mms_bss_fomrng(bss.UNIX_CREATETIME)
-  for i=0,imax-1 do begin; For each segment
-    ndx = floor((bss.UNIX_CREATETIME[i]-tr[0])/dt) + 1L
-    if ndx ne nmax then begin
-      wSDraw[ndx] += bss.SEGLENGTHS[i]
-    endif
-    qdx = floor((bss.UNIX_CREATETIME[i]-tr[0])/86400.d0)
-    wSD[qdx] += bss.SEGLENGTHS[i]
-    if (fomrng[0,0,i] le bss.FOM[i]) and (bss.FOM[i] lt fomrng[0,1,i]) then wSD0[qdx] += bss.SEGLENGTHS[i]
-    if (fomrng[1,0,i] le bss.FOM[i]) and (bss.FOM[i] lt fomrng[1,1,i]) then wSD1[qdx] += bss.SEGLENGTHS[i]
-    if (fomrng[2,0,i] le bss.FOM[i]) and (bss.FOM[i] lt fomrng[2,1,i]) then wSD2[qdx] += bss.SEGLENGTHS[i]
-    if (fomrng[3,0,i] le bss.FOM[i]) and (bss.FOM[i] lt fomrng[3,1,i]) then wSD3[qdx] += bss.SEGLENGTHS[i]
-    if (fomrng[4,0,i] le bss.FOM[i]) and (bss.FOM[i] lt fomrng[4,1,i]) then wSD4[qdx] += bss.SEGLENGTHS[i]
-  endfor
-  
-  wREAL = lonarr(nmax)
-  wDEFE = lonarr(nmax)
-  for i=0,imax-1 do begin; for each segment
-    sts = strupcase(bss.STATUS[i])
-    if strmatch(sts,'*REALLOC*') then begin
-      ndx = where( (bss.UNIX_CREATETIME[i] le wt) and (wt lt bss.UNIX_FINISHTIME[i]), ct); extract pending period
-      if ct gt 0 then begin
-        wREAL[ndx] += bss.SEGLENGTHS[i]; count segment size
-      endif
-    endif
-    if strmatch(sts,'*DEFERRED*') then begin
-      ndx = where( (bss.UNIX_CREATETIME[i] le wt) and (wt lt bss.UNIX_FINISHTIME[i]), ct); extract pending period
-      if ct gt 0 then begin
-        wDEFE[ndx] += bss.SEGLENGTHS[i]; count segment size
-      endif
-    endif
-  endfor
-  store_data,'wREAL',data={x:wt,y:wREAL}
-  store_data,'wDEFE',data={x:wt,y:wDEFE}
-  
-  ; Newly held buffers and newly transmitted buffers
-  wInc = lonarr(nmax); increase --> mostly selected buffers by SITL
-  wDec = lonarr(nmax); decrease --> mostly transmitted buffers by SDC
-  ath = 10000.
-  for n=1,nmax-1 do begin; for each time step of the time-grid
-    ;this_wDt = time_double(time_string(wt[n],prec=-3))
-    
-    q = floor((wt[n]-wDs)/86400.d0); determine the date (q)
-    ;result = min(wDt-this_wDt,q,/abs); determine the date (q)
-    a = wcatT[n]-wcatT[n-1]
-    if abs(a) lt ath then begin
-      if a ge 0 then begin; if increased
-        wInc[n] = a
-        wDi[q] += wInc[n]
-      endif else begin
-        wDec[n] = (-a)
-        wDd[q] += wDec[n]
-      endelse
-      a = wcat0[n]-wcat0[n-1] & if (0 le a) then wDi0[q] += a else wDd0[q] -= a
-      a = wcat1[n]-wcat1[n-1] & if (0 le a) then wDi1[q] += a else wDd1[q] -= a
-      a = wcat2[n]-wcat2[n-1] & if (0 le a) then wDi2[q] += a else wDd2[q] -= a
-      a = wcat3[n]-wcat3[n-1] & if (0 le a) then wDi3[q] += a else wDd3[q] -= a
-      a = wcat4[n]-wcat4[n-1] & if (0 le a) then wDi4[q] += a else wDd4[q] -= a
-    endif
-  endfor
-  
-  
-
-  
-  ; Overwritten segments
-  bsA = mms_bss_query(bss=bss,exclude='INCOMPLETE'); exclude INCOMPLETE segments
-  bsB = mms_bss_query(bss=bsA,status='DERELICT DEMOTED'); include DERELICT or DEMOTED segments
-  wcat0o = mms_bss_history_overwritten(bsB, 0, wDt)
-  wcat1o = mms_bss_history_overwritten(bsB, 1, wDt)
-  wcat2o = mms_bss_history_overwritten(bsB, 2, wDt)
-  wcat3o = mms_bss_history_overwritten(bsB, 3, wDt)
-  wcat4o = mms_bss_history_overwritten(bsB, 4, wDt)
-  
-  wDi = wDi0+wDi1+wDi2+wDi3+wDi4
-  wDd = wDd0+wDd1+wDd2+wDd3+wDd4
-  wRL = wSD - (wDi -wDd); Released = SITLselect - (Difference=Inc-Dec)
-  wRL0= wSD0- (wDi0-wDd0)
-  wRL1= wSD1- (wDi1-wDd1)
-  wRL2= wSD2- (wDi2-wDd2)
-  wRL3= wSD3- (wDi3-wDd3)
-  wRL4= wSD4- (wDi4-wDd4)
-  wRL[qmax-1] = 0
-
-  store_data,'wSD',data={x:wDt,y:wSD}
-  store_data,'wDi',data={x:wDt,y:wDi-wDd}
-  store_data,'wRL',data={x:wDt,y:wRL}
-  
-  ;------------------
-  ; CSV
-  ;------------------
-  if keyword_set(csv) then begin
-    
-    ; PENDING SEGMENTS
-    write_csv, dir+'mms_bss_history.txt', time_string(wt),wthres,wcatT2,wcat0,wcat1,wcat2,$
-      wcat3,wcat4, HEADER=['time','Threshold','HELD >3days','Category 0','Category 1',$
-      'Category 2','Category 3','Category 4']
-    
-    ; OVERWRITTEN SEGMENTS
-    write_csv, dir+'mms_bss_overwritten.txt', time_string(wDt),wcat0o,wcat1o,wcat2o,wcat3o,wcat4o,$
-      HEADER=['time','Category 0','Category 1','Category 2','Category 3','Category 4']
-    
-    ; INCREASE/DECREASE
-    write_csv, dir+'mms_bss_diff.txt', time_string(wt),wInc,wDec,$
-      HEADER=['time','Increase','Decrease']
-    write_csv, dir+'mms_bss_diff_per_day.txt', time_string(wDt),wSD,wRL,$
-      HEADER=['time','Increase/day','Decrease/day']  
-    
-    ; BREAKDOWN
-    write_csv, dir+'mms_bss_inc_per_day.txt', time_string(wDt),wDi,wDi0,wDi1,wDi2,wDi3,wDi4,$
-      HEADER=['time','Total','Category 0','Category 1','Category 2','Category 3','Category 4']
-    write_csv, dir+'mms_bss_dec_per_day.txt', time_string(wDt),wDd,wDd0,wDd1,wDd2,wDd3,wDd4,$
-      HEADER=['time','Total','Category 0','Category 1','Category 2','Category 3','Category 4']
+      ;Find the category
+      cat = 4
+      for p=0,pmax-1 do begin
+        if (fomrng[p,0,Ncre] le bss.FOM[i]) and (bss.FOM[i] lt fomrng[p,1,Ncre]) then begin
+          cat = p
+        endif
+      endfor
+      wcat[ndx,cat,iHeld] += bss.SEGLENGTHS[i]
+      wcat[odx,cat,iNew]  += bss.SEGLENGTHS[i]
+      wNewA[odx] += bss.SEGLENGTHS[i]
       
-    ; BREAKDOWN
-    write_csv, dir+'mms_bss_inc_per_day.txt', time_string(wDt),wSD,wSD0,wSD1,wSD2,wSD3,wSD4,$
-      HEADER=['time','Total','Category 0','Category 1','Category 2','Category 3','Category 4']
-    write_csv, dir+'mms_bss_dec_per_day.txt', time_string(wDt),wRL,wRL0,wRL1,wRL2,wRL3,wRL4,$
-      HEADER=['time','Total','Category 0','Category 1','Category 2','Category 3','Category 4']
-  endif
+      if not strmatch(bss.STATUS[i],'*INCOMPLETE*') then begin
+        
+        ; Overwritten?
+        if strmatch(bss.STATUS[i],'*DERELICT*') or strmatch(bss.STATUS[i],'*DEMOTED*') then begin
+          wcat[mdx,cat,iOver] += bss.SEGLENGTHS[i]
+          wNewO[odx] += bss.SEGLENGTHS[i]
+        endif
+      
+        ; Transmission completed segments
+        if (strmatch(bss.STATUS[i],'*COMPLETE*') and strmatch(bss.STATUS[i],'*FINISHED*')) then begin
+          wNewT[odx] += bss.SEGLENGTHS[i]
+        endif
+      endif
+  
+      wNewP[odx] = wNewA[odx]-(wNewT[odx]+wNewO[odx])
+    endif
+  endfor
+  
+  
+  ; Find the start and stop points of the day (in wt)
+  hts = time_double(strmid(time_string(wt),0,10))
+  hte = hts+86400.d0
+  nts = lonarr(nmax)
+  nte = lonarr(nmax)
+  for n=0,nmax-1 do begin
+    result = min(wt-hts[n],nns, /nan,/abs)
+    nts[n] = nns
+    result = min(wt-hte[n],nne, /nan,/abs)
+    nte[n] = nne
+  endfor
+  
+  for p=0,pmax-1 do begin; for each category
+  for n=0,nmax-1 do begin; for each time stamp
+    ;if(n mod 1000 eq 0) then print, 100.*float(n)/float(nmax)," %"
+    wcat[n,p,iDiff] = wcat[nte[n],p,iHeld]-wcat[nts[n],p,iHeld]; Difference of the day
+    wcat[n,p,iTrns] = wcat[n,p,iNew] - wcat[n,p,iOver] - wcat[n,p,iDiff]
+  endfor     
+  endfor
+  
+  wthres = mms_bss_history_threshold(wt)
   
   ;------------------
   ; TPLOT
   ;------------------
   if keyword_set(tplot) then begin
-    
-    ; PENDING SEGMENTS
-    wcat  = lonarr(nmax,7)
-    wcat[*,6] = wcatT2; HELD > 3 days
-    wcat[*,5] = wcat4; Category 4
-    wcat[*,4] = wcat[*,5] + wcat3; Category 4 + 3
-    wcat[*,3] = wcat[*,4] + wcat2; Category 4 + 3 + 2
-    wcat[*,2] = wcat[*,3] + wcat1; Category 4 + 3 + 2 + 1
-    wcat[*,1] = wcat[*,2] + wcat0; Category 4 + 3 + 2 + 1 + 0
-    wcat[*,0] = wthres
-    store_data,'mms_bss_history',data={x:wt, y:wcat, v:[0,1,2,3,4,5,6]}
-    options,'mms_bss_history',colors=[3,1,6,5,4,2,0],ytitle='PENDING Buffers',$
-      title='MMS Burst Memory Management',labels=['Threshold','Category 0','Category 1',$
-      'Category 2','Category 3','Category 4','HELD >3days'],labflag=-1
   
-    ; OVERWRITTEN SEGMENTS
-    wDt += 43200.d0; Psym=10 makes a bar centered around wDt. Here, we shift by 12 hours to correct this.
-    wovr = lonarr(qmax,5)
-    wovr[*,4] = wcat4o
-    wovr[*,3] = wovr[*,4] + wcat3o
-    wovr[*,2] = wovr[*,3] + wcat2o
-    wovr[*,1] = wovr[*,2] + wcat1o
-    wovr[*,0] = wovr[*,1] + wcat0o
-    store_data,'mms_bss_overwritten',data={x:wDt, y:wovr, v:[0,1,2,3,4]}
-    options,'mms_bss_overwritten',colors=[0,6,5,4,2],ytitle='Overwritten Buffers',$
-      labels=['Category 0','Category 1','Category 2','Category 3','Category 4'],labflag=-1,$
-      psym=10
-    
-    ; INCREASE/DECREASE
-    store_data,'mms_bss_inc',data={x:wt,y:wInc}
-    store_data,'mms_bss_dec',data={x:wt,y:wDec}
-    store_data,'mms_bss_inc_per_day',data={x:wDt,y:wSD}
-    store_data,'mms_bss_dec_per_day',data={x:wDt,y:wRL}
-    options,'mms_bss_inc_per_day',psym=10,colors=0,labels=['increase']
-    options,'mms_bss_dec_per_day',psym=10,colors=1,labels=['decrease']
-    store_data,'mms_bss_diff_per_day',data=['mms_bss_inc_per_day','mms_bss_dec_per_day']
-    options,'mms_bss_diff_per_day',ytitle='PENDING Buffers',labflag=-1
-  
-    ; PLOT  
+    ; HELD segments
+    wout  = lonarr(nmax,6)
+    wout[*,5] = mms_bss_history_threshold(wt); Threshold
+    wout[*,0] = wcat[*,0,iHeld]            ; Category 0
+    wout[*,1] = wcat[*,1,iHeld]; + wout[*,0]; Category 0 + 1
+    wout[*,2] = wcat[*,2,iHeld]; + wout[*,1]; Category 0 + 1 + 2
+    wout[*,3] = wcat[*,3,iHeld]; + wout[*,2]; Category 0 + 1 + 2 + 3
+    wout[*,4] = wcat[*,4,iHeld]; + wout[*,3]; Category 0 + 1 + 2 + 3 + 4
+    store_data,'mms_bss_history',data={x:wt, y:wout, v:[0,1,2,3,4,5]}
+    options,'mms_bss_history',colors=[1,6,5,4,2,3],ytitle='HELD Buffers',$
+      title='MMS Burst Memory Management',labels=['Cat 0','Cat 1',$
+      'Cat 2','Cat 3','Cat 4','Thres'],labflag=-1
+
+    ; Overwritten segments of the day
+    wovr  = lonarr(nmax,5)
+    wovr[*,0] = wcat[*,0,iOver]            ; Category 0
+    wovr[*,1] = wcat[*,1,iOver]; + wovr[*,0]; Category 0 + 1
+    wovr[*,2] = wcat[*,2,iOver]; + wovr[*,1]; Category 0 + 1 + 2
+    wovr[*,3] = wcat[*,3,iOver]; + wovr[*,2]; Category 0 + 1 + 2 + 3
+    wovr[*,4] = wcat[*,4,iOver]; + wovr[*,3]; Category 0 + 1 + 2 + 3 + 4
+    store_data,'mms_bss_overwritten',data={x:wt, y:wovr, v:[0,1,2,3,4]}
+    options,'mms_bss_overwritten',colors=[1,6,5,4,2],ytitle='Overwritten',$
+      labels=['Cat 0','Cat 1','Cat 2','Cat 3','Cat 4'],labflag=-1
+
+    ; New segments of the day
+    wout  = lonarr(nmax,5)
+    wout[*,0] = wcat[*,0,iNew]            ; Category 0
+    wout[*,1] = wcat[*,1,iNew]; + wout[*,0]; Category 0 + 1
+    wout[*,2] = wcat[*,2,iNew]; + wout[*,1]; Category 0 + 1 + 2
+    wout[*,3] = wcat[*,3,iNew]; + wout[*,2]; Category 0 + 1 + 2 + 3
+    wout[*,4] = wcat[*,4,iNew]; + wout[*,3]; Category 0 + 1 + 2 + 3 + 4
+    store_data,'mms_bss_new',data={x:wt, y:wout, v:[0,1,2,3,4]}
+    options,'mms_bss_new',colors=[1,6,5,4,2],ytitle='NEW Buffers',$
+      labels=['Cat 0','Cat 1','Cat 2','Cat 3','Cat 4'],labflag=-1
+
+    ; Transmitted segments of the day
+    wout  = lonarr(nmax,5)
+    wout[*,0] = wcat[*,0,iTrns]            ; Category 0
+    wout[*,1] = wcat[*,1,iTrns] + wout[*,0]; Category 0 + 1
+    wout[*,2] = wcat[*,2,iTrns] + wout[*,1]; Category 0 + 1 + 2
+    wout[*,3] = wcat[*,3,iTrns] + wout[*,2]; Category 0 + 1 + 2 + 3
+    wout[*,4] = wcat[*,4,iTrns] + wout[*,3]; Category 0 + 1 + 2 + 3 + 4
+    store_data,'mms_bss_trns',data={x:wt, y:wout, v:[0,1,2,3,4]}
+    options,'mms_bss_trns',colors=[1,6,5,4,2],ytitle='Transmitted Buffers',$
+      labels=['Cat 0','Cat 1','Cat 2','Cat 3','Cat 4'],labflag=-1
+
+    ; NEW SEGMENTS and their status
+    wnew = lonarr(nmax,3)
+    wnew[*,2] = wNewT ;   Finished
+    wnew[*,1] = wnew[*,2] + wNewO ; Finished + Overwritten
+    wnew[*,0] = wnew[*,1] + wNewP ; Finished + Overwritten + Pending
+    store_data,'mms_new_segs',data={x:wt, y:wnew, v:[0,1,2]}
+    options,'mms_new_segs',colors=[2,6,4],ytitle='New Segs',labels=['Pending','Overwritten','Finished'],$
+      labflag=-1
+      
+    ; PLOT
     timespan,time_string(tr[0]),tr[1]-tr[0]+3.d0*86400.d0,/seconds
-    tplot,['mms_bss_history','mms_bss_diff_per_day','mms_bss_overwritten',$
-      'mms_bss_inc','mms_bss_dec']
+    tplot,['mms_bss_'+['history','overwritten','new','trns'],'mms_new_segs']
   endif
-  toc
+
+  ;------------------
+  ; CSV
+  ;------------------
+  if keyword_set(csv) then begin
+
+    print,'n_elements(wt)=', n_elements(wt)
+    ; HELD
+    write_csv, dir+'mms_bss_history_held.txt', time_string(wt),$
+      wcat[*,0,iHeld],wcat[*,1,iHeld],wcat[*,2,iHeld],wcat[*,3,iHeld],wcat[*,4,iHeld],wthres,$
+      HEADER=['time','Category 0','Category 1','Category 2','Category 3','Category 4','Thres']
+      
+    ; Overwritten, New, Trns
+    wname = ['over','new','trns']
+    for s=1,3 do begin
+      write_csv, dir+'mms_bss_history_'+wname[s-1]+'.txt', time_string(wt),$
+      wcat[*,0,s],wcat[*,1,s],wcat[*,2,s],wcat[*,3,s],wcat[*,4,s],$
+      HEADER=['time','Category 0','Category 1','Category 2','Category 3','Category 4']
+    endfor
+    
+    ; New and their status
+    write_csv, dir+'mms_bss_history_status.txt',time_string(wt),wNewA, wNewO, wNewP, wNewT,$
+      HEADER=['time','wNewA','wNewO','wNewP','wNewT']
+
+  endif
+
+  toc, clock
+
 END
