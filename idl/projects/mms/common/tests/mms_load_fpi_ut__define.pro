@@ -5,10 +5,13 @@
 ; Requires both the SPEDAS QA folder (not distributed with SPEDAS) and mgunit
 ; in the local path
 ;
-;
+; warning: ACR tests in test_integration_time_get_dist require special, non-public CDFs
+; to work / expect this test to fail if you don't have those files
+; 
+; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-05-30 09:02:46 -0700 (Tue, 30 May 2017) $
-; $LastChangedRevision: 23366 $
+; $LastChangedDate: 2017-06-02 13:41:25 -0700 (Fri, 02 Jun 2017) $
+; $LastChangedRevision: 23393 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
@@ -16,7 +19,20 @@
 ; same as below, except using mms_get_dist
 function mms_load_fpi_ut::test_integration_time_get_dist
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='brst'
+  mms_load_fpi, trange=['2016-12-09', '2016-12-10'], datatype=['dis-dist', 'des-dist'], data_rate='brst', level='acr', suffix='acr', probe=1
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='fast'
+  fpi_dist = mms_get_dist('mms1_dis_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'i')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0375) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst, ACR)'
+  fpi_dist = mms_get_dist('mms1_des_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'e')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0075) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst, ACR)'
+  
+  ; with the level keyword
+  fpi_dist = mms_get_dist('mms1_dis_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'i', level='acr', data_rate='brst')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0375) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst, level=ACR)'
+  fpi_dist = mms_get_dist('mms1_des_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'e', level='acr', data_rate='brst')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0075) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst, level=ACR)'
+
+  
   fpi_dist = mms_get_dist('mms3_dis_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
   assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst)'
   fpi_dist = mms_get_dist('mms3_des_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')

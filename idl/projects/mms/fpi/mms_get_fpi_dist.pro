@@ -31,17 +31,18 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-05-03 15:44:38 -0700 (Wed, 03 May 2017) $
-;$LastChangedRevision: 23265 $
+;$LastChangedDate: 2017-06-02 13:07:34 -0700 (Fri, 02 Jun 2017) $
+;$LastChangedRevision: 23390 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
 function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure, $
                            species = species, probe = probe, single_time = single_time, $
-                           data_rate = data_rate
+                           data_rate = data_rate, level = level
 
     compile_opt idl2, hidden
 
+if ~undefined(level) then level = strlowcase(level)
 
 name = (tnames(tname))[0]
 if name eq '' then begin
@@ -134,19 +135,21 @@ case strlowcase(species) of
          mass = 1.04535e-2
          charge = 1.
          data_name = 'FPI Ion'
-         if keyword_set(data_rate) then begin
-             if data_rate eq 'brst' then integ_time = .150
-             if data_rate eq 'fast' then integ_time = 4.5
+         if keyword_set(data_rate) and keyword_set(level) then begin
+             if data_rate eq 'brst' and level eq 'l2' then integ_time = .150
+             if data_rate eq 'brst' and level eq 'acr' then integ_time = 0.0375
          endif
+         if keyword_set(data_rate) && data_rate eq 'fast' then  integ_time = 4.5
        end
   'e': begin
          mass = 5.68566e-06
          charge = -1.
          data_name = 'FPI Electron'
-         if keyword_set(data_rate) then begin
-           if data_rate eq 'brst' then integ_time = .03
-           if data_rate eq 'fast' then integ_time = 4.5
+         if keyword_set(data_rate) and keyword_set(level)  then begin
+           if data_rate eq 'brst' and level eq 'l2' then integ_time = .03
+           if data_rate eq 'brst' and level eq 'acr' then integ_time = 0.0075
          endif
+         if keyword_set(data_rate) && data_rate eq 'fast' then  integ_time = 4.5
        end
   else: begin
     dprint, 'Cannot determine species'
@@ -194,30 +197,41 @@ template = {  $
 
 dist = replicate(template, n_times)
 
-
 ; Populate
 ;-----------------------------------------------------------------
 if undefined(integ_time) then begin
     ; if the user didn't specify data_rate, we'll have to guess the integration time from 
     ; the metadata
-    if is_struct(dl) then begin
-      str_element, dl, 'cdf.gatt.time_resolution', time_resolution, success=s
-      if s eq 1 then begin
-        tres = strsplit(time_resolution, ' ', /extract)
-        if tres[1] eq 'milliseconds' then factor_to_seconds = 1000.0 else factor_to_seconds = 1.
-        integ_time = float((tres)[0])/factor_to_seconds
-      endif
-    endif
+;    if is_struct(dl) then begin
+;      str_element, dl, 'cdf.gatt.time_resolution', time_resolution, success=s
+;      if s eq 1 then begin
+;        tres = strsplit(time_resolution, ' ', /extract)
+;        if tres[1] eq 'milliseconds' then factor_to_seconds = 1000.0 else factor_to_seconds = 1.
+;        integ_time = float((tres)[0])/factor_to_seconds
+;      endif
+;    endif
     ; time resolution not in the metadata, try to guess it from the data
-    if s eq 0 then begin
+  ;  if s eq 0 then begin
+   if n_elements(index) eq 1 then begin
       if index ne 0 then begin
           integ_time = (*p.x)[index]-(*p.x)[index-1] 
       endif else begin
           integ_time = (*p.x)[index+1]-(*p.x)[index]
       endelse
+   endif else begin
+      integ_time = (*p.x)[index[0]+1]-(*p.x)[index[0]]
+   endelse
       if is_array(integ_time) then integ_time = integ_time[0]
-      dprint, dlevel = 0, 'No integration time specified in mms_get_fpi_dist; guessed ' + strcompress(string(integ_time), /rem) + ' seconds from the data'
-    endif
+      
+;    endif
+   ; now that we're taking the integration time from the data, we need to make sure it's a known integration time
+   ; for the FPI dataset; this is so that we can stop/error if the integration time is outside of any known values
+   ; note: 10000 to convert to integers
+   known_integration_times = round(10000*[.150, 4.5, 0.03, 0.0375, 0.0075])
+   if ~array_contains(known_integration_times, round(10000*integ_time)) then begin
+      dprint, dlevel = 0, 'Error, problem finding integration time from the data; this shouldn''t happen; contact: egrimes@igpp.ucla.edu'
+      stop
+   endif else dprint, dlevel = 0, 'No integration time specified in mms_get_fpi_dist; guessed ' + strcompress(string(integ_time), /rem) + ' seconds from the data'
 endif
 dist.time = (*p.x)[index]
 dist.end_time = (*p.x)[index] + integ_time

@@ -40,8 +40,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-05-25 12:53:42 -0700 (Thu, 25 May 2017) $
-;$LastChangedRevision: 23354 $
+;$LastChangedDate: 2017-06-02 13:52:06 -0700 (Fri, 02 Jun 2017) $
+;$LastChangedRevision: 23394 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_ang_ang.pro $
 ;-
 
@@ -77,7 +77,7 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
   endif
   
   if ~array_contains(['i', 'e'], species) then begin
-    dprint, dlevel = 0, "Error, invalid species specificied; valid options are: 'i' (for ions) or 'e' (for electrons)"
+    dprint, dlevel = 0, "Error, invalid species specified; valid options are: 'i' (for ions) or 'e' (for electrons)"
     return
   endif
   

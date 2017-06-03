@@ -23,9 +23,9 @@
 ;
 ;Written by: Patrick Cruce(pcruce@igpp.ucla.edu)
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-10-14 11:01:12 -0700 (Fri, 14 Oct 2016) $
-; $LastChangedRevision: 22098 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-06-02 10:32:30 -0700 (Fri, 02 Jun 2017) $
+; $LastChangedRevision: 23388 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/quaternion/qcompose.pro $
 ;-
 
@@ -47,7 +47,7 @@ if(size(vi,/n_dim) eq 1) then begin
    endif
 
    if(n_elements(thi) ne 1) then begin
-      message,'angle must have only a signle element'
+      message,'angle must have only a single element'
       return,-1
    endif
 
