@@ -92,13 +92,14 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
   endif
 
   if keyword_set(store) then begin
-    onesnt=replicate(1.,pui0.nt)
-    ebinlimo=12 ;energy bin limit for oxygen
-    ebinlimh=24 ;energy bin limit for hydrogen
-    maxthresh=1e8 ;above this, and we're probably looking at solar wind protons
-    minthresh=1e4 ;below this, can't detect
-    kefstah3d[where((kefstah3d lt minthresh) or (d1eflux[*,*,*,*,0] gt maxthresh),/null)]=0.
-    kefstao3d[where((kefstao3d lt minthresh) or (d1eflux[*,*,*,*,4] gt maxthresh),/null)]=0.
+    ebinlimo=20 ;energy bin limit for oxygen
+    ebinlimh=30 ;energy bin limit for hydrogen
+    minswia=4e4 ;swia open att min eflux thresh: below this, can't detect (approximate noise level)
+    minstao=8e4 ;swia closed att (4 non-sun-ward azimuths) and static O min eflux threshold
+    minstah=5e5 ;swia closed att (4 sun-ward azimuths) and static H min eflux threshold
+    maxthre=7e7 ;above this, and we're probably looking at solar wind protons
+    kefstah3d[where((kefstah3d lt minstah) or (d1eflux[*,*,*,*,0] gt maxthre),/null)]=0.
+    kefstao3d[where((kefstao3d lt minstao) or (d1eflux[*,*,*,*,4] gt maxthre),/null)]=0.
 
     dimo3d=pui0.swina*pui0.swine*(ebinlimo+1.)
     dimh3d=pui0.swina*pui0.swine*(ebinlimh+1.)
@@ -126,11 +127,11 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
     store_data,'mvn_d2m_ratio_stat_H',data='mvn_d2m_ratio_all_stat_H mvn_d2m_ratio_avg_stat_H mvn_pui_line_1',limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
 
     if keyword_set(swics) then begin
-      minswiatt=minthresh*onesnt
-      minswiatt[where(pui.data.swi.swim.atten_state eq 2.,/null)]=1e5 ;higher threshold when swia attenuator is closed
-      minswiatt=rebin(minswiatt,[pui0.nt,pui0.swieb,pui0.swina,pui0.swine])
-      kefswih3d[where((kefswih3d lt minswiatt) or (swiaef3d gt maxthresh),/null)]=0. ;get rid of too low model flux (below detection threshold) or too high data flux (solar wind)
-      kefswio3d[where((kefswio3d lt minswiatt) or (swiaef3d gt maxthresh),/null)]=0.
+      minswiatt=rebin([minswia],[pui0.nt,pui0.swieb,pui0.swina,pui0.swine])
+      minswiatt[where(pui.data.swi.swim.atten_state eq 2.,/null),*,[0,13,14,15],*]=minstah ;higher threshold when swia attenuator is closed, only applied to the 4 sun-ward azimuth (anode) bins
+      minswiatt[where(pui.data.swi.swim.atten_state eq 2.,/null),*,[1,2 ,11,12],*]=minstao ;only applied to the 4 non-sun-ward azimuth (anode) bins
+      kefswih3d[where((kefswih3d lt minswiatt) or (swiaef3d gt maxthre),/null)]=0. ;get rid of too low model flux (below detection threshold) or too high data flux (solar wind)
+      kefswio3d[where((kefswio3d lt minswiatt) or (swiaef3d gt maxthre),/null)]=0.
 
       knnswio3d=swiaef3d/kefswio3d/(~kefswih3d) ;exospheric neutral density (cm-3) data/model ratio
       knnswih3d=swiaef3d/kefswih3d/(~kefswio3d)

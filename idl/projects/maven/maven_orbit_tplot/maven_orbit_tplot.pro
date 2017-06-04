@@ -38,9 +38,10 @@
 ;       SWIA:     Calculate viewing geometry for SWIA, based on nominal s/c
 ;                 pointing.
 ;
-;       DATUM:    String for specifying the datum, or reference surface for
+;       DATUM:    String for specifying the datum, or reference surface, for
 ;                 calculating altitude.  Can be one of "sphere", "ellipsoid",
-;                 "areoid", or "surface".  Default = 'sphere'.
+;                 "areoid", or "surface".  Default = 'ellipsoid'.
+;                 Minimum matching is used for this keyword.
 ;                 See mvn_altitude.pro for more information.
 ;
 ;       IALT:     Ionopause altitude.  Highly variable, but nominally ~400 km.
@@ -111,8 +112,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-31 11:12:24 -0700 (Wed, 31 May 2017) $
-; $LastChangedRevision: 23378 $
+; $LastChangedDate: 2017-06-02 18:43:07 -0700 (Fri, 02 Jun 2017) $
+; $LastChangedRevision: 23400 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -139,17 +140,19 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
 ; Determine the reference surface for calculating altitude
 
-  if (size(datum,/type) ne 7) then datum = 'sphere'
-  case strupcase(datum) of
-    'SPHERE'    : ; valid, do nothing
-    'ELLIPSOID' : ; valid, do nothing
-    'AREOID'    : ; valid, do nothing
-    'SURFACE'   : ; valid, do nothing
-    else        : begin
-                    print,'Unrecognized datum: ',datum
-                    result = 0
-                    return
-                  end
+  dlist = ['sphere','ellipsoid','areoid','surface']
+  if (size(datum,/type) ne 7) then datum = dlist[1]
+  i = strmatch(dlist, datum+'*', /fold)
+  case (total(i)) of
+     0   : begin
+             print, "Datum not recognized: ", datum
+             return
+           end
+     1   : datum = (dlist[where(i eq 1)])[0]
+    else : begin
+             print, "Datum is ambiguous: ", dlist[where(i eq 1)]
+             return
+           end
   endcase
 
   rootdir = 'maven/anc/spice/sav/'
@@ -739,7 +742,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   options,'period','ynozero',1
   
   store_data, 'palt', data = {x:torb, y:palt}
-  options,'palt','ytitle','Periapsis'
+  options,'palt','ytitle','Periapsis (km)!c' + strlowcase(datum)
   
   store_data, 'lon', data = {x:time, y:lon}
   ylim,'lon',-180,180,0

@@ -7,17 +7,26 @@
 ;  "datum".  This routine recognizes four definitions of altitude:
 ;
 ;    aerocentric:  The datum is a sphere with Mars' volumetric mean radius
-;                  of 3389.51 km.
+;                  of 3389.50 km.
 ;
-;    aerodetic:    The datum is the IAU 2000 Mars ellipsoid:
+;    aerodetic:    The datum is the IAU Mars ellipsoid:
 ;                  R_equator = 3396.19 km ; R_pole = 3376.20 km
 ;
 ;    aeroid:       The datum is the Mars aeroid, which is a gravitational
 ;                  equipotential ("sea level").  This surface is irregular
-;                  but within ~2 km of the IAU 2000 Mars ellipsoid.
+;                  but within ~2 km of the IAU Mars ellipsoid.
 ;
 ;    topographic:  The datum is the solid surface, based on laser altimeter
-;                  data (MGS-MOLA).                  
+;                  data (MGS-MOLA).
+;
+;  Areocentric and areodetic longitudes are identical, while the latitudes
+;  differ by less than 0.3 deg.  The altitudes can differ by more than 10 km,
+;  (about an atmospheric scale height), so this is the main reason for 
+;  choosing the ellipsoid (or the areoid) for the region around periapsis.
+;
+;  The areoid and solid surface are irregular, so areocentric longitude and 
+;  latitude are used for those reference surfaces.  This is consistent with
+;  usage in the literature.
 ;
 ;  The results are stored in TPLOT variables.
 ;
@@ -42,6 +51,7 @@
 ;
 ;       DATUM:    String for specifying the datum.  Can be one of "sphere", 
 ;                 "ellipsoid", "areoid", or "surface".  Default = 'sphere'.
+;                 Minimum matching is used for this keyword.
 ;
 ;       LATLON:   Create tplot variables for latitude and longitude.  If
 ;                 DATUM = 'ellipsoid', then you get areodetic latitude and
@@ -58,8 +68,8 @@
 ;                 for the datum (sph, ell, are, sur).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-29 16:11:06 -0700 (Mon, 29 May 2017) $
-; $LastChangedRevision: 23363 $
+; $LastChangedDate: 2017-06-02 18:41:15 -0700 (Fri, 02 Jun 2017) $
+; $LastChangedRevision: 23399 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_altitude.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -88,17 +98,21 @@ pro mvn_altitude, trange, dt=dt, cart=cart, datum=datum, latlon=latlon, pans=pan
 
 ; Make sure the datum is valid
 
-  if (size(datum,/type) ne 7) then datum = 'sphere'
-  case strupcase(datum) of
-    'SPHERE'    : ; valid, do nothing
-    'ELLIPSOID' : ; valid, do nothing
-    'AREOID'    : ; valid, do nothing
-    'SURFACE'   : ; valid, do nothing
-    else        : begin
-                    print,'Unrecognized datum: ',datum
-                    result = 0
-                    return
-                  end
+  dlist = ['sphere','ellipsoid','areoid','surface']
+  if (size(datum,/type) ne 7) then datum = dlist[0]
+  i = strmatch(dlist, datum+'*', /fold)
+  case (total(i)) of
+     0   : begin
+             print, "Datum not recognized: ", datum
+             result = 0
+             return
+           end
+     1   : datum = (dlist[where(i eq 1)])[0]
+    else : begin
+             print, "Datum is ambiguous: ", dlist[where(i eq 1)]
+             result = 0
+             return
+           end
   endcase
 
 ; If CART is provided, then calculate ALT, LON and LAT from that
@@ -111,35 +125,35 @@ pro mvn_altitude, trange, dt=dt, cart=cart, datum=datum, latlon=latlon, pans=pan
       return
     endif
 
-    case strupcase(datum) of
-      'SPHERE'    : begin
-                      cspice_recgeo, cart, R_vol, 0D, phi, the, dr
-                      phi *= !radeg
-                      indx = where(phi lt 0., count)
-                      if (count gt 0) then phi[indx] += 360.
-                      the *= !radeg
-                    end
-      'ELLIPSOID' : begin
-                      cspice_recgeo, cart, R_equ, flat, phi, the, dr
-                      phi *= !radeg
-                      indx = where(phi lt 0., count)
-                      if (count gt 0) then phi[indx] += 360.
-                      the *= !radeg
-                    end
-      'AREOID'    : begin
-                      x = reform(cart[0,*])
-                      y = reform(cart[1,*])
-                      z = reform(cart[2,*])
-                      cart_to_sphere, x, y, z, r, the, phi, /ph_0_360
-                      dr = mvn_get_altitude(x,y,z)
-                    end
-      'SURFACE'   : begin
-                      x = reform(cart[0,*])
-                      y = reform(cart[1,*])
-                      z = reform(cart[2,*])
-                      cart_to_sphere, x, y, z, r, the, phi, /ph_0_360
-                      dr = mvn_get_altitude(x,y,z,/topographic)
-                    end
+    case strmid(strupcase(datum),0,3) of
+      'SPH' : begin
+                cspice_recgeo, cart, R_vol, 0D, phi, the, dr
+                phi *= !radeg
+                indx = where(phi lt 0., count)
+                if (count gt 0) then phi[indx] += 360.
+                the *= !radeg
+              end
+      'ELL' : begin
+                cspice_recgeo, cart, R_equ, flat, phi, the, dr
+                phi *= !radeg
+                indx = where(phi lt 0., count)
+                if (count gt 0) then phi[indx] += 360.
+                the *= !radeg
+              end
+      'ARE' : begin
+                x = reform(cart[0,*])
+                y = reform(cart[1,*])
+                z = reform(cart[2,*])
+                cart_to_sphere, x, y, z, r, the, phi, /ph_0_360
+                dr = mvn_get_altitude(x,y,z)
+              end
+      'SUR' : begin
+                x = reform(cart[0,*])
+                y = reform(cart[1,*])
+                z = reform(cart[2,*])
+                cart_to_sphere, x, y, z, r, the, phi, /ph_0_360
+                dr = mvn_get_altitude(x,y,z,/topographic)
+              end
     endcase
     result = {alt:dr, lon:phi, lat:the, datum:datum}
     return
@@ -186,35 +200,35 @@ pro mvn_altitude, trange, dt=dt, cart=cart, datum=datum, latlon=latlon, pans=pan
 ; Calculate ALT, LON, LAT with respect to the datum.  Store the result
 ; in a structure that is compatible with tplot.  Make tplot variables.
 
-  case strupcase(datum) of
-    'SPHERE'    : begin
-                    cspice_recgeo, cart, R_vol, 0D, phi, the, dr
-                    phi *= !radeg
-                    indx = where(phi lt 0., count)
-                    if (count gt 0) then phi[indx] += 360.
-                    the *= !radeg
-                  end
-    'ELLIPSOID' : begin
-                    cspice_recgeo, cart, R_equ, flat, phi, the, dr
-                    phi *= !radeg
-                    indx = where(phi lt 0., count)
-                    if (count gt 0) then phi[indx] += 360.
-                    the *= !radeg
-                  end
-    'AREOID'    : begin
-                    x = reform(cart[0,*])
-                    y = reform(cart[1,*])
-                    z = reform(cart[2,*])
-                    cart_to_sphere, x, y, z, r, the, phi, /ph_0_360
-                    dr = mvn_get_altitude(x,y,z)
-                  end
-    'SURFACE'   : begin
-                    x = reform(cart[0,*])
-                    y = reform(cart[1,*])
-                    z = reform(cart[2,*])
-                    cart_to_sphere, x, y, z, r, the, phi, /ph_0_360
-                    dr = mvn_get_altitude(x,y,z,/topographic)
-                  end
+  case strmid(strupcase(datum),0,3) of
+    'SPH' : begin
+              cspice_recgeo, cart, R_vol, 0D, phi, the, dr
+              phi *= !radeg
+              indx = where(phi lt 0., count)
+              if (count gt 0) then phi[indx] += 360.
+              the *= !radeg
+            end
+    'ELL' : begin
+              cspice_recgeo, cart, R_equ, flat, phi, the, dr
+              phi *= !radeg
+              indx = where(phi lt 0., count)
+              if (count gt 0) then phi[indx] += 360.
+              the *= !radeg
+            end
+    'ARE' : begin
+              x = reform(cart[0,*])
+              y = reform(cart[1,*])
+              z = reform(cart[2,*])
+              cart_to_sphere, x, y, z, r, the, phi, /ph_0_360
+              dr = mvn_get_altitude(x,y,z)
+            end
+    'SUR' : begin
+              x = reform(cart[0,*])
+              y = reform(cart[1,*])
+              z = reform(cart[2,*])
+              cart_to_sphere, x, y, z, r, the, phi, /ph_0_360
+              dr = mvn_get_altitude(x,y,z,/topographic)
+            end
   endcase
 
   result = {x     : t     , $   ; time

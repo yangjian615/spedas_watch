@@ -173,7 +173,8 @@ if keyword_set(euvdata) then pui.data.euv.l2=transpose(average_hist2(euvdata.y,e
 get_data,'mvn_euv_l3',data=fismdata ;FISM minute data
 if keyword_set(fismdata) then begin
   fismtime=fismdata.x
-  if (centertime[0] gt fismtime[0]) and (centertime[-1] lt fismtime[-1]+60.) then pui.data.euv.l3=transpose(interp(fismdata.y,fismdata.x,centertime))
+  if (centertime[0] gt fismtime[0]-6000.) and (centertime[-1] lt fismtime[-1]+6000.) then $ ;only if centertime edges within 100 minutes of fismdata edges,
+    pui.data.euv.l3=transpose(interp(fismdata.y,fismdata.x,centertime)) ;otherwise, interpolation will give unreasonable results
 endif
 ;----------Boundaries----------
 ;get_data,'wind',data=wind ;s/c altitude when in the solar wind (km)

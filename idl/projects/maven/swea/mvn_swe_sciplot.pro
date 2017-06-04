@@ -33,8 +33,10 @@
 ;
 ;   NADIR:     Create a panel for the Nadir direction in spacecraft coordinates.
 ;
-;   DATUM:     Reference surface for calculating altitude.  Passed to 
-;              maven_orbit_tplot.  See mvn_altitude.pro for details.
+;   DATUM:     Reference surface for calculating altitude.  Can be one of
+;              "sphere", "ellipsoid", "areoid", or "surface".  Passed to 
+;              maven_orbit_tplot.  Default = 'ellipsoid.
+;              See mvn_altitude.pro for details.
 ;
 ;   SEP:       Include two panels for SEP data: one for ions, one for electrons.
 ;
@@ -75,8 +77,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-31 11:11:02 -0700 (Wed, 31 May 2017) $
-; $LastChangedRevision: 23377 $
+; $LastChangedDate: 2017-06-02 18:47:49 -0700 (Fri, 02 Jun 2017) $
+; $LastChangedRevision: 23402 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -99,17 +101,21 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
 ; Make sure the datum is valid
 
-  if (size(datum,/type) ne 7) then datum = 'sphere'
-  case strupcase(datum) of
-    'SPHERE'    : ; valid, do nothing
-    'ELLIPSOID' : ; valid, do nothing
-    'AREOID'    : ; valid, do nothing
-    'SURFACE'   : ; valid, do nothing
-    else        : begin
-                    print,'Unrecognized datum: ',datum
-                    result = 0
-                    return
-                  end
+  dlist = ['sphere','ellipsoid','areoid','surface']
+  if (size(datum,/type) ne 7) then datum = dlist[1]
+  i = strmatch(dlist, datum+'*', /fold)
+  case (total(i)) of
+     0   : begin
+             print, "Datum not recognized: ", datum
+             result = 0
+             return
+           end
+     1   : datum = (dlist[where(i eq 1)])[0]
+    else : begin
+             print, "Datum is ambiguous: ", dlist[where(i eq 1)]
+             result = 0
+             return
+           end
   endcase
 
   mvn_swe_stat, /silent, npkt=npkt
