@@ -84,7 +84,7 @@ str2 = {time:   ccsds.time  ,$
    SW_SPANBATNCTL: spp_swp_data_select(ccsds_data,   560 ,  8), $ 
    SW_SPANAIATNCTL: spp_swp_data_select(ccsds_data,  568 ,  8), $ 
    SW_DCBOVERCUR: spp_swp_data_select(ccsds_data,  576 ,  8), $ 
-   SEQUENCE_CNTR: sequence_cnt , $
+   SEQUENCE_CNTR: sequence_cntr , $
    SEQUENCE_EXEC: sequence_EXEC,  $
    SEQUENCE_ENA:  sequence_ENA,  $
    SW_FSWVERSION: spp_swp_data_select(ccsds_data, 1096  ,  16),$

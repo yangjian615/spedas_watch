@@ -10,16 +10,16 @@ store_data,'foo2',data={x:d.x,y:dc}
 
 end
 
-
-function spp_swp_data_select,bytearray,startbit,nbits
-case nbits of 
-8:    v =  bytearray[startbit/8]
-16:   v = (swap_endian( uint(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
-32:   v = (swap_endian(ulong(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
-else:  dprint,'error'  
-endcase
-return,v
-end
+;
+;function spp_swp_data_select,bytearray,startbit,nbits
+;case nbits of 
+;8:    v =  bytearray[startbit/8]
+;16:   v = (swap_endian( uint(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
+;32:   v = (swap_endian(ulong(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
+;else:  dprint,'error'  
+;endcase
+;return,v
+;end
 
 
 
