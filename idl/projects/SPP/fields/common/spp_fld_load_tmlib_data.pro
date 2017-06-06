@@ -1,7 +1,7 @@
 ;
 ;  $LastChangedBy: pulupalap $
-;  $LastChangedDate: 2017-05-31 05:22:45 -0700 (Wed, 31 May 2017) $
-;  $LastChangedRevision: 23372 $
+;  $LastChangedDate: 2017-06-05 10:53:41 -0700 (Mon, 05 Jun 2017) $
+;  $LastChangedRevision: 23405 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -326,7 +326,11 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     endif
 
   endwhile
-
+  
+  err = tm_close(sid)
+  
+  ; TODO: find or add tm_close
+  ; 
   ; Return (optional) IDL attributes from XML file.
   ; IDL attributes are used in processing of data (e.g. manipulation of
   ; the MAG survey APIDs to change from ~512 vectors per a single packet time to

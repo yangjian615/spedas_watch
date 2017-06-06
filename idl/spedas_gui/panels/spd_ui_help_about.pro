@@ -7,9 +7,9 @@
 ; A widget to display About information (SPEDAS Version)
 ;
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-07-21 11:27:01 -0700 (Thu, 21 Jul 2016) $
-;$LastChangedRevision: 21504 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2017-06-05 13:49:06 -0700 (Mon, 05 Jun 2017) $
+;$LastChangedRevision: 23409 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_help_about.pro $
 ;-
 
@@ -77,9 +77,9 @@ end
 
 Pro spd_ui_help_about, gui_id, historywin
   ;aboutlabel should show the SPEDAS version and some other info (perhaps build date, web site URL, etc)
-  aboutString= ' SPEDAS 2.00 beta 1 '  +  string(10B) + string(10B) $
+  aboutString= ' SPEDAS 2_00 '  +  string(10B) + string(10B) $
     + ' Space Physics Environment Data Analysis Software ' $
-    + string(10B) + string(10B) + ' May 2016 ' + string(10B) + string(10B)  $
+    + string(10B) + string(10B) + ' June 2017 ' + string(10B) + string(10B)  $
     + ' For support or bug reports, contact: THEMIS_Science_Support@ssl.berkeley.edu '
 
   cdf_about = spd_ui_help_about_dlm('cdf')

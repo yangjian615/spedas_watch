@@ -1,5 +1,7 @@
 pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
 
+  if n_elements(file) NE 1 or file EQ '' then return
+
   receiver_str = strupcase(strmid(prefix, 12, 3))
 
   if receiver_str EQ 'LFR' then lfr_flag = 1 else lfr_flag = 0

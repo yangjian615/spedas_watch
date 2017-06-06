@@ -76,7 +76,7 @@ pro spp_fld_dfb_wf_load_l1, file, prefix = prefix, compressed = compressed
 
       all_wf_decompressed = [all_wf_decompressed, wf_i]
 
-      wf_time = d_tap.x[i] + dindgen(n_elements(wf_i)) / (18750. / (2.^d_tap.y[i]))
+      wf_time = d_tap.x[i] + dindgen(n_elements(wf_i)) / (18750d / (2d^d_tap.y[i]))
 
       all_wf_time = [all_wf_time, wf_time]
 
