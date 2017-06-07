@@ -19,6 +19,8 @@
 ;               for ExTOF data, valid options are 'proton', 'oxygen', and/or 'alpha'
 ;         scopes: string array of telescopes to be included in PAD ('0'-'5')
 ;         suffix: suffix used when loading the data
+;         num_smooth: should contain number of seconds to use when smoothing
+;             only creates a smoothed product (_pad_smth) if this keyword is specified
 ;
 ; EXAMPLES:
 ;
@@ -30,8 +32,8 @@
 ;     This was written by Brian Walsh; minor modifications by egrimes@igpp and Ian Cohen (APL)
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-24 08:01:35 -0700 (Fri, 24 Mar 2017) $
-;$LastChangedRevision: 23023 $
+;$LastChangedDate: 2017-06-06 10:59:40 -0700 (Tue, 06 Jun 2017) $
+;$LastChangedRevision: 23419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad.pro $
 ;-
 ; REVISION HISTORY:
@@ -44,12 +46,13 @@
 ;       + 2016-02-26, I. Cohen      : changed 'cps' units_label from 'Counts/s' to '1/s' for compliance with mission standards
 ;       + 2016-04-29, egrimes       : implemented suffix keyword, now allowing probe to be passed as an integer
 ;       + 2016-09-19, E. Grimes     : updated to support v3 L1b files
+;       + 2017-06-06, I. Cohen     : added num_smooth keyword 
 ;-
 
 pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = data_rate, $
                 energy = energy, bin_size = bin_size, data_units = data_units, $
                 datatype = datatype, ion_type = ion_type, scopes = scopes, level = level, $
-                suffix = suffix
+                suffix = suffix, num_smooth = num_smooth
                 
     compile_opt idl2
     ;if not KEYWORD_SET(trange) then trange = ['2015-06-28', '2015-06-29']
@@ -194,6 +197,8 @@ pro mms_eis_pad,probe = probe, trange = trange, species = species, data_rate = d
           ; now do the spin average
           mms_eis_pad_spinavg, probe=probe, species=ion_type[ion_type_idx], datatype=datatype, energy=energy, data_units=data_units, $
             bin_size=bin_size, data_rate = data_rate, scopes=scopes, suffix = suffix
+      
+          if ~undefined(num_smooth) then spd_smooth_time, new_name, newname=new_name+'_smth', num_smooth, /nan
       endfor
     endif
 end
