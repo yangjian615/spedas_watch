@@ -1,7 +1,7 @@
 ;20170424 Ali
 ;pickup ion statistical analysis of several days of data
 
-pro mvn_pui_stat,nospice=nospice,noimg=noimg,trange=trange,nodataload=nodataload
+pro mvn_pui_stat,nospice=nospice,noimg=noimg,trange=trange,nodataload=nodataload,binsize=binsize,np=np
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -21,7 +21,8 @@ if ~keyword_set(trange) then trange=[time_double('14-11-27'),systime(1)]
 ;trange=['14-12-1','14-12-3']
 trange=time_double(trange)
 ndays=round((trange[1]-trange[0])/secinday) ;number of days
-binsize=32.
+
+if ~keyword_set(binsize) then binsize=32.
 nt=1+floor((secinday-binsize/2.)/binsize) ;number of time steps
 
 if ~keyword_set(nospice) then begin
@@ -41,7 +42,7 @@ for j=0,ndays-1 do begin ;loop over days
   tr=trange[0]+[j,j+1]*secinday
   mvn_pui_sw_orbit_coverage,trange=tr,res=binsize,alt_sw=alt_sw
   if where(finite(alt_sw),/null) eq !null then continue ;if no solar wind coverage, go to next day
-  np=2017
+  if ~keyword_set(np) then np=2017
   mvn_pui_model,binsize=binsize,np=np,/do3d,savetplot=~keyword_set(noimg),/nospice,trange=tr,nodataload=nodataload
 
   stat[*,j].centertime=pui.centertime

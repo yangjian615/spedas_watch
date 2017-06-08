@@ -67,7 +67,7 @@ FUNCTION mms_bss_history_threshold, wt
   return, wthres
 END
 
-PRO mms_bss_history, tplot=tplot, csv=csv, dir=dir
+PRO mms_bss_history, tplot=tplot, csv=csv, dir=dir, trange=trange
   compile_opt idl2
   mms_init
   clock=tic('mms_bss_history')
@@ -95,7 +95,12 @@ PRO mms_bss_history, tplot=tplot, csv=csv, dir=dir
   tlaunch = time_double('2015-03-13/00:00');time_double('2015-03-12/22:44')
   t3m = tnow - 180.d0*86400.d0; 180 days
   tr = [t3m,tnow]
+  if not undefined(trange) then begin
+    if trange[0] lt tlaunch then trange[0] = tlaunch
+    tr = trange
+  endif
   trange = time_string(tr)
+  
 
   ; time grid to be used for Pending buffer history
   ;mmax = 4320L ; extra data point for displaying grey-shaded region

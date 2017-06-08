@@ -62,7 +62,7 @@ endif else begin
       swiactime = swica.time_unix +4.0*swica.num_accum/2  ;center time of sample/sum
       pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse archive
       swicadt=swica[1:*].time_unix-swica[0:-1].time_unix
-      store_data,'mvn_swica_dt_(s)',data={x:swica[1:*].time_unix,y:swicadt},limits={ylog:1,panel_size:.5,colors:'r'}
+      store_data,'mvn_swica_dt_(s)',data={x:swica[1:*].time_unix,y:swicadt},limits={ylog:1,panel_size:.5,colors:'r',psym:3}
       badindex=where(~finite(pui.data.swi.swica.time_unix),/null,count) ;no archive available index
       if count gt 0 then pui[badindex].data.swi.swica=pui[badindex].data.swi.swics ;use survey instead
     endif else pui.data.swi.swica=pui.data.swi.swics ;if no archive available at all, use survey instead

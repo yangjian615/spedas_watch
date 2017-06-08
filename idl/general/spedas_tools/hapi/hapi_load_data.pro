@@ -9,28 +9,59 @@
 ;         trange:       time range of interest [starttime, endtime] with the format
 ;                       ['YYYY-MM-DD','YYYY-MM-DD'] or to specify more or less than a day
 ;                       ['YYYY-MM-DD/hh:mm:ss','YYYY-MM-DD/hh:mm:ss']
-;         capabilities: describes relevant capabilities for the HAPI server
-;         catalog:      provides a list of datasets available from the HAPI server
-;         info:         provides information on a given dataset
+;         capabilities: describes relevant capabilities for the HAPI server (optional)
+;         catalog:      provides a list of datasets available from the HAPI server (optional)
+;         info:         provides information on a given dataset (optional)
+;         dataset:      dataset to load (optional)
+;         
+;         server:       HAPI server to connect to (optional, defaults to: datashop.elasticbeanstalk.com)
+;         path:         HAPI path (URI to /hapi, optional, defaults to: /hapi)
 ;
-; EXAMPLE:
-;
-;
+; EXAMPLES:
+;  List server capabilities:
+;    IDL> hapi_load_data, /capabilities
+;    HAPI v1.1
+;    Output formats: csv, binary, json
+;  
+;  List the datasets available on this server:
+;    IDL> hapi_load_data, /catalog
+;    HAPI v1.1
+;    1: CASSINI_LEMMS_PHA_CHANNEL_1_SEC
+;    2: CASSINI_LEMMS_REG_CHANNEL_PITCH_ANGLE_10_MIN_AVG
+;    ....
+;  
+;  Get info on a dataset:
+;    IDL> hapi_load_data, /info, dataset='spase://VEPO/NumericalData/Voyager1/LECP/Flux.Proton.PT1H'
+;    HAPI v1.1
+;    Dataset: spase://VEPO/NumericalData/Voyager1/LECP/Flux.Proton.PT1H
+;    Start: 1977-09-07T00:00:00.000
+;    End: 2017-05-02T21:38:00.000
+;    Parameters: Epoch, year, doy, hr, dec_year, dec_doy, flux, flux_uncert
+;  
+;  Load and plot the Voyager flux data:
+;    IDL> hapi_load_data, trange=['77-09-27', '78-01-20'], dataset='spase://VEPO/NumericalData/Voyager1/LECP/Flux.Proton.PT1H'
+;    IDL> tplot, 'flux'
+;  
 ; NOTES:
-;         - trange is required to load the data into tplot vars; the other keywords are informational
+;         - capabilities, catalog, info keywords are informational
 ;         - Requires IDL 8.2 or later due to json_parse usage
 ;         
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-06 18:03:50 -0700 (Tue, 06 Jun 2017) $
-;$LastChangedRevision: 23426 $
+;$LastChangedDate: 2017-06-07 13:20:27 -0700 (Wed, 07 Jun 2017) $
+;$LastChangedRevision: 23443 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/hapi/hapi_load_data.pro $
 ;-
 
-pro hapi_load_data, trange=trange, capabilities=capabilities, catalog=catalog, info=info, server=server
-  if undefined(server) then server = 'datashop.elasticbeanstalk.com'
+pro hapi_load_data, trange=trange, capabilities=capabilities, catalog=catalog, info=info, server=server, path=path, dataset=dataset
+  if undefined(capabilities) and undefined(catalog) and undefined(info) and undefined(trange) then begin
+    trange = timerange()
+  endif
+  
+  if undefined(server) then server = 'datashop.elasticbeanstalk.com' 
+  if undefined(path) then path = '/hapi'
   dataset_table = hash()
-  info_dataset = ''
+  if keyword_set(dataset) then info_dataset = dataset else info_dataset = ''
   neturl = obj_new('IDLnetURL')
   param_names = []
   spd_graphics_config
@@ -40,14 +71,14 @@ pro hapi_load_data, trange=trange, capabilities=capabilities, catalog=catalog, i
   neturl->SetProperty, URL_SCHEME = 'http'
   
   if keyword_set(capabilities) then begin
-    neturl->SetProperty, URL_PATH='/hapi/capabilities'
+    neturl->SetProperty, URL_PATH=path+'/capabilities'
     capabilities = json_parse(string(neturl->get(/buffer)))
     print, 'HAPI v' + capabilities['HAPI']
     print, 'Output formats: ' + strjoin(capabilities['outputFormats'].toArray(), ', ')
   endif
   
-  if keyword_set(catalog) or keyword_set(info) or keyword_set(trange) then begin
-    neturl->SetProperty, URL_PATH='/hapi/catalog'
+  if keyword_set(catalog) or keyword_set(info) or keyword_set(trange) and info_dataset eq '' then begin
+    neturl->SetProperty, URL_PATH=path+'/catalog'
     catalog = json_parse(string(neturl->get(/buffer)))
     available_datasets = catalog['catalog']
     print, 'HAPI v' + catalog['HAPI']
@@ -62,7 +93,7 @@ pro hapi_load_data, trange=trange, capabilities=capabilities, catalog=catalog, i
       read, info_dataset, prompt='Select a dataset: '
       if dataset_table.hasKey(info_dataset) then info_dataset = dataset_table[info_dataset]
     endif
-    neturl->SetProperty, URL_PATH='/hapi/info?id='+info_dataset
+    neturl->SetProperty, URL_PATH=path+'/info?id='+info_dataset
     info = json_parse(string(neturl->get(/buffer)))
     
     for param_idx = 0, n_elements(info['parameters'])-1 do begin
@@ -80,13 +111,13 @@ pro hapi_load_data, trange=trange, capabilities=capabilities, catalog=catalog, i
     time_max = time_string(trange[1], tformat='YYYY-MM-DDThh:mm:ss.fff')
     
     if time_double(time_min) ge time_double(info['startDate']) and time_double(time_max) le time_double(info['stopDate']) then begin
-      neturl->SetProperty, URL_PATH='/hapi/data?id='+info_dataset+'&time.min='+time_min+'&time.max='+time_max 
+      neturl->SetProperty, URL_PATH=path+'/data?id='+info_dataset+'&time.min='+time_min+'&time.max='+time_max 
     endif else begin
       dprint, dlevel=0, 'No data available for this trange; data availability for '+info_dataset+' is limited to: ' + info['startDate'] + ' - ' + info['stopDate']
       return
     endelse
 
-    csv_data = neturl->get(filename='testdata')
+    csv_data = neturl->get(filename='hapidata')
     
     csv = read_csv(csv_data)
     

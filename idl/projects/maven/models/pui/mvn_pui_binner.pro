@@ -125,8 +125,8 @@ if pui0.do3d then begin
   for ip=1,np-1 do begin ;loop over particles
     swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].ef+=dphi[ip,*]*rfov[ip,*] ;energy flux
     sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].ef+=dphi[ip,*]*rfov[ip,*]
-    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].nn+=1 ;number of particles in this bin
-    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].nn+=1
+    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].nn+=1. ;number of particles in this bin
+    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].nn+=1.
     swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;swia 3d particle position and velocity binning
     sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;stat 3d particle position and velocity binning
   endfor
