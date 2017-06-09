@@ -44,22 +44,31 @@
 ;  
 ; NOTES:
 ;         - capabilities, catalog, info keywords are informational
-;         - Requires IDL 8.2 or later due to json_parse usage
+;         - Requires IDL 8.3 or later due to json_parse + orderedhash usage
 ;         
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-07 13:20:27 -0700 (Wed, 07 Jun 2017) $
-;$LastChangedRevision: 23443 $
+;$LastChangedDate: 2017-06-08 15:57:13 -0700 (Thu, 08 Jun 2017) $
+;$LastChangedRevision: 23447 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/hapi/hapi_load_data.pro $
 ;-
 
-pro hapi_load_data, trange=trange, capabilities=capabilities, catalog=catalog, info=info, server=server, path=path, dataset=dataset
+pro hapi_load_data, trange=trange, capabilities=capabilities, catalog=catalog, info=info, server=server, $
+                    port=port, scheme=scheme, path=path, dataset=dataset
   if undefined(capabilities) and undefined(catalog) and undefined(info) and undefined(trange) then begin
     trange = timerange()
   endif
   
+  if !version.release lt '8.3' then begin
+    dprint, dlevel = 0, 'Error, this routine only supports IDL 8.3 and later due to  json_parse + orderedhash usage'
+    return
+  endif
+  
   if undefined(server) then server = 'datashop.elasticbeanstalk.com' 
   if undefined(path) then path = '/hapi'
+  if undefined(port) then port = 80
+  if undefined(scheme) then scheme = 'http'
+  
   dataset_table = hash()
   if keyword_set(dataset) then info_dataset = dataset else info_dataset = ''
   neturl = obj_new('IDLnetURL')
@@ -67,8 +76,8 @@ pro hapi_load_data, trange=trange, capabilities=capabilities, catalog=catalog, i
   spd_graphics_config
 
   neturl->SetProperty, URL_HOST = server
-  neturl->SetProperty, URL_PORT = 80
-  neturl->SetProperty, URL_SCHEME = 'http'
+  neturl->SetProperty, URL_PORT = port
+  neturl->SetProperty, URL_SCHEME = scheme
   
   if keyword_set(capabilities) then begin
     neturl->SetProperty, URL_PATH=path+'/capabilities'
