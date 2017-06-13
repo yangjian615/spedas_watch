@@ -9,9 +9,9 @@
 ;
 ;inputs
 ;
-;	name_mms_xxx_in 	... data in the input coordinate system (t-plot variable name)
-;   name_mms_spinras     ... right ascension (t-plot variable name)
-;   name_mms_spindec     ... declination (t-plot variable name)
+;     name_mms_xxx_in   ... data to transform (dmpa coordinates)
+;   name_mms_spinras     ... right ascension of the L-vector (J2000 coordinates)
+;   name_mms_spindec     ... declination of the L-vector (J2000 coordinates)
 ;   name_mms_xxx_out     ... name for output (t-plot variable name)
 ;
 ;keywords:
@@ -28,10 +28,31 @@
 ;Notes: 
 ;    Based on dsl2gse from THEMIS, forked 6/22/2015
 ;    
+;    dmpa2gse is functionally equivalent to dsl2gse, and with proper
+;    input it can be used to perform a DSL to GSE transformation,
+;    as described below.
+;    
+;    MEC L_vec assumes rigid-body rotation even when the wire booms
+;    are oscillating, and thus, at any point in time it does not
+;    give L, but rather the average orientation of the nutating
+;    MPA (which is also assumed fixed relative to the rigid body)
+;    as it wobbles in inertial space with a period of ~7 minutes.
+;
+;    
+;    When the user wants a DSL to GSE transformation, this can be done 
+;    if the spinra/spindec give the actual orientation of the angular 
+;    momentum vector.  This can come from:
+;           predatt (e.g. via AFG/DFG QL RADec_gse), or
+;           defatt, (e.g. via MEC L_vec data), sufficiently smoothed to remove any ‘wobble’
+;             - The wobble is large: it can be as large as 0.2 degrees in amplitude 
+;               right after a maneuver, and still as large as 0.1 degrees 12 hours 
+;               after a maneuver.
+;             - A gaussian filter with a low-pass cutoff low enough to clobber the 
+;               7-minute wobble works well.
 ;    
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21208 $
+; $LastChangedDate: 2017-06-12 15:08:37 -0700 (Mon, 12 Jun 2017) $
+; $LastChangedRevision: 23455 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/dmpa2gse.pro $
 ;-
 
@@ -68,7 +89,7 @@ pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,
     
     ;get direction
     if keyword_set(GSE2DMPA) then begin
-    	DPRINT, 'GSE-->DMPA'
+        DPRINT, 'GSE-->DMPA'
             ; krb
     
       if keyword_set(ignore_dlimits) then begin
@@ -140,55 +161,55 @@ pro dmpa2gse,name_mms_xxx_in,name_mms_spinras,name_mms_spindec,name_mms_xxx_out,
     zscs=[[(sin(spla)*cos(splo))],[(sin(spla)*sin(splo))],[(cos(spla))]] ;spherical to cartesian
     if isGSE2DMPA eq 0 then begin
       subJ20002GEI,timeS,zscs,zscsGEI
-    	subGEI2GSE,timeS,zscsGEI,zscsGSE;unit vector that points along the spin axis in GSE
-    	sun=[1.d0,0.d0,0.d0]
-    	;yscs= crossp(zscsGSE,sun) ;NORMALIZE
-    	yscs=[[zscsGSE[*,1]*sun[2]-zscsGSE[*,2]*sun[1]],[zscsGSE[*,2]*sun[0]-zscsGSE[*,0]*sun[2]],[zscsGSE[*,0]*sun[1]-zscsGSE[*,1]*sun[0]]]
-    	yscsNorm=sqrt(yscs[*,0]^2.0+yscs[*,1]^2.0+yscs[*,2]^2.0)
-    	yscs[*,0]=yscs[*,0]/yscsNorm
-    	yscs[*,1]=yscs[*,1]/yscsNorm
-    	yscs[*,2]=yscs[*,2]/yscsNorm
-    	;xscs=crossp(yscs,zscsGSE)
-    	xscs=[[yscs[*,1]*zscsGSE[*,2]-yscs[*,2]*zscsGSE[*,1]],[yscs[*,2]*zscsGSE[*,0]-yscs[*,0]*zscsGSE[*,2]],[yscs[*,0]*zscsGSE[*,1]-yscs[*,1]*zscsGSE[*,0]]]
+        subGEI2GSE,timeS,zscsGEI,zscsGSE;unit vector that points along the spin axis in GSE
+        sun=[1.d0,0.d0,0.d0]
+        ;yscs= crossp(zscsGSE,sun) ;NORMALIZE
+        yscs=[[zscsGSE[*,1]*sun[2]-zscsGSE[*,2]*sun[1]],[zscsGSE[*,2]*sun[0]-zscsGSE[*,0]*sun[2]],[zscsGSE[*,0]*sun[1]-zscsGSE[*,1]*sun[0]]]
+        yscsNorm=sqrt(yscs[*,0]^2.0+yscs[*,1]^2.0+yscs[*,2]^2.0)
+        yscs[*,0]=yscs[*,0]/yscsNorm
+        yscs[*,1]=yscs[*,1]/yscsNorm
+        yscs[*,2]=yscs[*,2]/yscsNorm
+        ;xscs=crossp(yscs,zscsGSE)
+        xscs=[[yscs[*,1]*zscsGSE[*,2]-yscs[*,2]*zscsGSE[*,1]],[yscs[*,2]*zscsGSE[*,0]-yscs[*,0]*zscsGSE[*,2]],[yscs[*,0]*zscsGSE[*,1]-yscs[*,1]*zscsGSE[*,0]]]
     
-    	;gse2scs=[transpose(xscs),transpose(yscs),transpose(zscs)]
-    	;scs2gse=invert(gse2scs,/double)
-    	;DATA_out=scs2gse#binp
+        ;gse2scs=[transpose(xscs),transpose(yscs),transpose(zscs)]
+        ;scs2gse=invert(gse2scs,/double)
+        ;DATA_out=scs2gse#binp
     
     
     
-    	;do dot products (inverse from **** below) (the inverse is just the transpose for rotation matrices)
-    	mms_xxx_out.Y[*,0]=mms_xxx_in.Y[*,0]*xscs[*,0]+mms_xxx_in.Y[*,1]*yscs[*,0]+mms_xxx_in.Y[*,2]*zscsGSE[*,0]
+        ;do dot products (inverse from **** below) (the inverse is just the transpose for rotation matrices)
+        mms_xxx_out.Y[*,0]=mms_xxx_in.Y[*,0]*xscs[*,0]+mms_xxx_in.Y[*,1]*yscs[*,0]+mms_xxx_in.Y[*,2]*zscsGSE[*,0]
     
-    	mms_xxx_out.Y[*,1]=mms_xxx_in.Y[*,0]*xscs[*,1]+mms_xxx_in.Y[*,1]*yscs[*,1]+mms_xxx_in.Y[*,2]*zscsGSE[*,1]
+        mms_xxx_out.Y[*,1]=mms_xxx_in.Y[*,0]*xscs[*,1]+mms_xxx_in.Y[*,1]*yscs[*,1]+mms_xxx_in.Y[*,2]*zscsGSE[*,1]
     
-    	mms_xxx_out.Y[*,2]=mms_xxx_in.Y[*,0]*xscs[*,2]+mms_xxx_in.Y[*,1]*yscs[*,2]+mms_xxx_in.Y[*,2]*zscsGSE[*,2]
+        mms_xxx_out.Y[*,2]=mms_xxx_in.Y[*,0]*xscs[*,2]+mms_xxx_in.Y[*,1]*yscs[*,2]+mms_xxx_in.Y[*,2]*zscsGSE[*,2]
     
     
     endif else begin
       subJ20002GEI,timeS,zscs,zscsGEI
       subGEI2GSE,timeS,zscsGEI,zscsGSE;unit vector that points along the spin axis in GSE
-    	;zscsGSE=zscs;unit vector that points along the spin axis in GSE
-    	sun=[1.d0,0.d0,0.d0]
-    	;yscs= crossp(zscsGSE,sun) ;NORMALIZE
-    	yscs=[[zscsGSE[*,1]*sun[2]-zscsGSE[*,2]*sun[1]],[zscsGSE[*,2]*sun[0]-zscsGSE[*,0]*sun[2]],[zscsGSE[*,0]*sun[1]-zscsGSE[*,1]*sun[0]]]
-    	yscsNorm=sqrt(yscs[*,0]^2.0+yscs[*,1]^2.0+yscs[*,2]^2.0)
-    	yscs[*,0]=yscs[*,0]/yscsNorm
-    	yscs[*,1]=yscs[*,1]/yscsNorm
-    	yscs[*,2]=yscs[*,2]/yscsNorm
-    	;xscs=crossp(yscs,zscsGSE)
-    	xscs=[[yscs[*,1]*zscsGSE[*,2]-yscs[*,2]*zscsGSE[*,1]],[yscs[*,2]*zscsGSE[*,0]-yscs[*,0]*zscsGSE[*,2]],[yscs[*,0]*zscsGSE[*,1]-yscs[*,1]*zscsGSE[*,0]]]
-    	;gse2scs=[transpose(xscs),transpose(yscs),transpose(zscsGSE)]
+        ;zscsGSE=zscs;unit vector that points along the spin axis in GSE
+        sun=[1.d0,0.d0,0.d0]
+        ;yscs= crossp(zscsGSE,sun) ;NORMALIZE
+        yscs=[[zscsGSE[*,1]*sun[2]-zscsGSE[*,2]*sun[1]],[zscsGSE[*,2]*sun[0]-zscsGSE[*,0]*sun[2]],[zscsGSE[*,0]*sun[1]-zscsGSE[*,1]*sun[0]]]
+        yscsNorm=sqrt(yscs[*,0]^2.0+yscs[*,1]^2.0+yscs[*,2]^2.0)
+        yscs[*,0]=yscs[*,0]/yscsNorm
+        yscs[*,1]=yscs[*,1]/yscsNorm
+        yscs[*,2]=yscs[*,2]/yscsNorm
+        ;xscs=crossp(yscs,zscsGSE)
+        xscs=[[yscs[*,1]*zscsGSE[*,2]-yscs[*,2]*zscsGSE[*,1]],[yscs[*,2]*zscsGSE[*,0]-yscs[*,0]*zscsGSE[*,2]],[yscs[*,0]*zscsGSE[*,1]-yscs[*,1]*zscsGSE[*,0]]]
+        ;gse2scs=[transpose(xscs),transpose(yscs),transpose(zscsGSE)]
     
-    	;DATA_out=gse2scs#binp
+        ;DATA_out=gse2scs#binp
     
     
-    	;do dot products (****)
-    	mms_xxx_out.Y[*,0]=mms_xxx_in.Y[*,0]*xscs[*,0]+mms_xxx_in.Y[*,1]*xscs[*,1]+mms_xxx_in.Y[*,2]*xscs[*,2]
+        ;do dot products (****)
+        mms_xxx_out.Y[*,0]=mms_xxx_in.Y[*,0]*xscs[*,0]+mms_xxx_in.Y[*,1]*xscs[*,1]+mms_xxx_in.Y[*,2]*xscs[*,2]
     
-    	mms_xxx_out.Y[*,1]=mms_xxx_in.Y[*,0]*yscs[*,0]+mms_xxx_in.Y[*,1]*yscs[*,1]+mms_xxx_in.Y[*,2]*yscs[*,2]
+        mms_xxx_out.Y[*,1]=mms_xxx_in.Y[*,0]*yscs[*,0]+mms_xxx_in.Y[*,1]*yscs[*,1]+mms_xxx_in.Y[*,2]*yscs[*,2]
     
-    	mms_xxx_out.Y[*,2]=mms_xxx_in.Y[*,0]*zscsGSE[*,0]+mms_xxx_in.Y[*,1]*zscsGSE[*,1]+mms_xxx_in.Y[*,2]*zscsGSE[*,2]
+        mms_xxx_out.Y[*,2]=mms_xxx_in.Y[*,0]*zscsGSE[*,0]+mms_xxx_in.Y[*,1]*zscsGSE[*,1]+mms_xxx_in.Y[*,2]*zscsGSE[*,2]
     
     
     endelse

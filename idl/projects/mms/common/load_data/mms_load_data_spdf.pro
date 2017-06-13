@@ -27,8 +27,8 @@
 ;       is due to the different directory structures mentioned above.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-17 14:41:15 -0800 (Tue, 17 Jan 2017) $
-;$LastChangedRevision: 22613 $
+;$LastChangedDate: 2017-06-12 14:21:37 -0700 (Mon, 12 Jun 2017) $
+;$LastChangedRevision: 23454 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_data_spdf.pro $
 ;-
 
@@ -47,6 +47,11 @@ pro mms_load_data_spdf, probes = probes, datatype = datatype, instrument = instr
     if not keyword_set(level) then level = 'l2'
     if not keyword_set(probes) then probes = ['1']
     if not keyword_set(data_rate) then data_rate = 'srvy'
+    
+    if undefined(instrument) then begin
+      dprint, dlevel = 0, 'Error, no instrument keyword provided; this routine is not meant to be called directly; use mms_load_xxx with the /SPDF keyword set'
+      return
+    endif
     
     ; make sure important strings are lower case
     instrument = strlowcase(instrument)

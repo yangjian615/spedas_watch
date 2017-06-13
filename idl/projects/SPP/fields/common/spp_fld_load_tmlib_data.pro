@@ -1,7 +1,7 @@
 ;
 ;  $LastChangedBy: pulupalap $
-;  $LastChangedDate: 2017-06-05 10:53:41 -0700 (Mon, 05 Jun 2017) $
-;  $LastChangedRevision: 23405 $
+;  $LastChangedDate: 2017-06-12 10:50:22 -0700 (Mon, 12 Jun 2017) $
+;  $LastChangedRevision: 23450 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -17,11 +17,15 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   if n_elements(varformat) EQ 0 then varformat = '.*'
 
-  cdf_xml_dir = getenv('SPP_FLD_CDF_XML_DIR')
+  cdf_xml = spp_fld_l1_cdf_xml_file(l1_data_type)
 
-  cdf_xml_l0_to_l1_dir = cdf_xml_dir + 'l0_to_l1/'
-
-  cdf_xml = cdf_xml_l0_to_l1_dir + 'l1_' + l1_data_type + '.xml'
+  if cdf_xml EQ '' then begin
+    
+    dprint, 'No XML file found for data type ' + l1_data_type, dlevel = 1
+    
+    return, 0
+    
+  endif
 
   ;
   ; Prepare data structure for storing the data

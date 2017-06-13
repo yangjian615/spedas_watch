@@ -10,7 +10,7 @@ pro spp_fld_tmlib_select_server, server
       '128.32.147.120 - EM server (rflab.ssl.berkeley.edu)|' + $
       '128.32.147.149 - FM server (spffmdb.ssl.berkeley.edu)|' + $
       '192.168.0.202  - EM server (accessed from inside 214)|' + $
-      '192.168.0.207  - FM server (accessed from inside 214)|' + $
+      '192.168.0.203  - FM server (accessed from inside 214)|' + $
       '128.244.182.117  - FM server (I&T),' + $
       'EXCLUSIVE,SET_VALUE=0, TAG=server_select', $
       '2, BUTTON, OK, QUIT, TAG=ok']
@@ -21,7 +21,7 @@ pro spp_fld_tmlib_select_server, server
       0:server = 'rflab.ssl.berkeley.edu'
       1:server = 'spffmdb.ssl.berkeley.edu'
       2:server = '192.168.0.202'
-      3:server = '192.168.0.207'
+      3:server = '192.168.0.203'
       4:server = '128.244.182.117'
     endcase
 

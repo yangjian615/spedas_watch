@@ -31,8 +31,8 @@
 ;   pulupa
 ;
 ; $LastChangedBy: pulupalap $
-; $LastChangedDate: 2017-01-11 16:14:34 -0800 (Wed, 11 Jan 2017) $
-; $LastChangedRevision: 22579 $
+; $LastChangedDate: 2017-06-12 10:50:22 -0700 (Mon, 12 Jun 2017) $
+; $LastChangedRevision: 23450 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_create.pro $
 ;-
 pro spp_fld_cdf_create, level, vers_num, cdf_att, filename_timestring, $
@@ -57,6 +57,15 @@ pro spp_fld_cdf_create, level, vers_num, cdf_att, filename_timestring, $
     (cdf_att['Logical_source'].ToLower()).Insert('_' + level_str,7) + '_'
 
   cdf_dir = getenv('SPP_FLD_CDF_DIR')
+
+  if cdf_dir EQ '' then begin
+    
+    cdf_dir = '~/data'
+    
+    dprint, 'Using ~/data to store CDFs', dlevel = 1
+    dprint, 'Set environment variable SPP_FLD_CDF_DIR to use a different directory', dlevel = 1
+    
+  endif
 
   if not keyword_set(file) then $
     filename = cdf_dir + $

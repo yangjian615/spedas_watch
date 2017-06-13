@@ -16,4 +16,7 @@ pro spp_fld_tmlib_init, server = server
 
   printdat, !tmlib, /values, varname = '!tmlib'
 
+  !p.background = !d.table_size - 1L
+  !p.color = 0
+
 end

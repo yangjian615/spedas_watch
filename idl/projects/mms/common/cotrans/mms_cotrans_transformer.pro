@@ -34,12 +34,16 @@
 ;  No explicit output, calls transformation routines and itself
 ;
 ;Notes:
-;  Modeled after thm_cotrans_transform_helper
+;  - Modeled after thm_cotrans_transform_helper
+;  
+;  - the dmpa2dsl transformation is an identity 
+;    transformation (dmpa is approximately the same as dsl; 
+;    see the notes in the header of dmpa2gse for more info)
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-05-25 15:38:52 -0700 (Wed, 25 May 2016) $
-;$LastChangedRevision: 21208 $
+;$LastChangedDate: 2017-06-12 15:08:37 -0700 (Mon, 12 Jun 2017) $
+;$LastChangedRevision: 23455 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans_transformer.pro $
 ;-
 

@@ -6,13 +6,13 @@
 ;  to the reference surface.  The reference surface is sometimes called the
 ;  "datum".  This routine recognizes four definitions of altitude:
 ;
-;    aerocentric:  The datum is a sphere with Mars' volumetric mean radius
+;    areocentric:  The datum is a sphere with Mars' volumetric mean radius
 ;                  of 3389.50 km.
 ;
-;    aerodetic:    The datum is the IAU Mars ellipsoid:
+;    areodetic:    The datum is the IAU Mars ellipsoid:
 ;                  R_equator = 3396.19 km ; R_pole = 3376.20 km
 ;
-;    aeroid:       The datum is the Mars aeroid, which is a gravitational
+;    areoid:       The datum is the Mars areoid, which is a gravitational
 ;                  equipotential ("sea level").  This surface is irregular
 ;                  but within ~2 km of the IAU Mars ellipsoid.
 ;
@@ -68,8 +68,8 @@
 ;                 for the datum (sph, ell, are, sur).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-06-02 18:41:15 -0700 (Fri, 02 Jun 2017) $
-; $LastChangedRevision: 23399 $
+; $LastChangedDate: 2017-06-12 16:58:07 -0700 (Mon, 12 Jun 2017) $
+; $LastChangedRevision: 23458 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_altitude.pro $
 ;
 ;CREATED BY:    David L. Mitchell

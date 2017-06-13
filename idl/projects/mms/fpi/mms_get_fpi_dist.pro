@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-02 13:07:34 -0700 (Fri, 02 Jun 2017) $
-;$LastChangedRevision: 23390 $
+;$LastChangedDate: 2017-06-12 11:51:10 -0700 (Mon, 12 Jun 2017) $
+;$LastChangedRevision: 23451 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -231,7 +231,7 @@ if undefined(integ_time) then begin
    if ~array_contains(known_integration_times, round(10000*integ_time)) then begin
       dprint, dlevel = 0, 'Error, problem finding integration time from the data; this shouldn''t happen; contact: egrimes@igpp.ucla.edu'
       stop
-   endif else dprint, dlevel = 0, 'No integration time specified in mms_get_fpi_dist; guessed ' + strcompress(string(integ_time), /rem) + ' seconds from the data'
+   endif else dprint, dlevel = 4, 'No integration time specified in mms_get_fpi_dist; guessed ' + strcompress(string(integ_time), /rem) + ' seconds from the data'
 endif
 dist.time = (*p.x)[index]
 dist.end_time = (*p.x)[index] + integ_time

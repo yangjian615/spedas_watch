@@ -83,6 +83,9 @@
 ;
 ;       LOADONLY: Create the TPLOT variables, but do not plot.
 ;
+;       NOLOAD:   Don't load or refresh the ephemeris information.  Just fill in any
+;                 keywords and exit.
+;
 ;       RESET_TRANGE: If set, then reset the time span to cover the entire ephemeris
 ;                     time range, overwriting any existing time range.  This will
 ;                     affect any routines that use timespan for determining what
@@ -112,8 +115,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-06-02 18:43:07 -0700 (Fri, 02 Jun 2017) $
-; $LastChangedRevision: 23400 $
+; $LastChangedDate: 2017-06-12 16:58:52 -0700 (Mon, 12 Jun 2017) $
+; $LastChangedRevision: 23459 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -122,9 +125,16 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
                        colors=colors, reset_trange=reset_trange, nocrop=nocrop, spk=spk, $
-                       segments=segments, shadow=shadow, datum=datum
+                       segments=segments, shadow=shadow, datum=datum, noload=noload
 
   @maven_orbit_common
+
+; Quick access to the state vector
+
+  if keyword_set(noload) then begin
+    eph = state
+    return
+  endif
 
 ; Geodetic parameters for Mars (from the 2009 IAU Report)
 ;   Archinal et al., Celest Mech Dyn Astr 109, Issue 2, 101-135, 2011

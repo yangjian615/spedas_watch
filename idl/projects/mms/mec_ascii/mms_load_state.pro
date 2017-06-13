@@ -57,7 +57,7 @@
 ;   MMS> mms_load_state, probe='*', level='def', trange=tr
 ;   MMS> mms_load_state, probe=['1','3'], datatypes='pos', trange=tr
 ;   MMS> mms_load_state, probe=['1','3'], datatypes=['pos', 'spinras'], trange=tr
-;   MMS> mms_load_state, probe=['1','2,','3'], datatypes='*', level='pred', trange=tr
+;   MMS> mms_load_state, probe=['1','2','3'], datatypes='*', level='pred', trange=tr
 ;   MMS> mms_load_state, probe='1', /attitude_only, trange=tr
 ;   MMS> mms_load_state, probe='*', /ephemeris_only, level='pred', trange=tr
 ;   
@@ -65,8 +65,7 @@
 ;     1) See the following regarding rules for the use of MMS data:
 ;         https://lasp.colorado.edu/galaxy/display/mms/MMS+Data+Rights+and+Rules+for+Data+Use
 ;
-;     2) CDF version 3.6 is required to correctly handle the 2015 leap second.  CDF versions before 3.6
-;         will give incorrect time tags for data loaded after June 30, 2015 due to this issue.
+;     2) CDF version 3.6.3+ is required to correctly handle leap seconds.  
 ;
 ;     3) If no level ('pred' or 'def') is specified the routine defaults to 'def'. When 'def' data is 
 ;        retrieved and the start time requested is the same as the time of the last available definitive 
@@ -85,8 +84,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-07-06 10:37:56 -0700 (Wed, 06 Jul 2016) $
-;$LastChangedRevision: 21427 $
+;$LastChangedDate: 2017-06-12 14:10:42 -0700 (Mon, 12 Jun 2017) $
+;$LastChangedRevision: 23453 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
