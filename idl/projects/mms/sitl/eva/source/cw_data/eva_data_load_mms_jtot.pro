@@ -34,6 +34,7 @@ FUNCTION eva_data_load_mms_jtot, sc=sc,curlB=curlB,diffB=diffB,combB=combB, LOAD
       tn = tnames('mms_sitl_diffB',cnt)
       if cnt eq 1 then begin
         options,tn,labflag=-1,labels='diff-B!U2'
+        tclip, tn, 0, 10.,/overwrite
       endif
     endelse
   endif

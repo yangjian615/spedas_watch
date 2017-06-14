@@ -26,9 +26,9 @@
 ;  CREATED: Jan 2013, based on rbsp_efw_config
 ;  AUTHOR: Kris Kersten, kris.kersten@gmail.com
 ;
-; $LastChangedBy: kersten $
-; $LastChangedDate: 2013-02-28 07:21:08 -0800 (Thu, 28 Feb 2013) $
-; $LastChangedRevision: 11656 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2017-06-13 14:34:19 -0700 (Tue, 13 Jun 2017) $
+; $LastChangedRevision: 23462 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/ect/rbsp_ect_config.pro $
 ;
 ;-
@@ -45,8 +45,9 @@ pro rbsp_ect_config,caching=caching,colortable=colortable,$
 ;!rbsp_ect.use_wget=1   ; uncomment to use experimental wget routine instead of file_http_copy (not recommended)
 
 ; ECT data server:
-!rbsp_ect.remote_data_dir = 'http://www.rbsp-ect.lanl.gov/data_pub/'
-
+;!rbsp_ect.remote_data_dir = 'http://www.rbsp-ect.lanl.gov/data_pub/'
+;!rbsp_ect.remote_data_dir = 'https://rbsp-ect.lanl.gov/data_pub/'
+!rbsp_ect.remote_data_dir = 'https://rbsp-ect.newmexicoconsortium.org/data_pub/'
 
 ;;;;;;;;;;;
 ; SECTION 1

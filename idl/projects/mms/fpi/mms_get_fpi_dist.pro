@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-12 11:51:10 -0700 (Mon, 12 Jun 2017) $
-;$LastChangedRevision: 23451 $
+;$LastChangedDate: 2017-06-13 11:48:51 -0700 (Tue, 13 Jun 2017) $
+;$LastChangedRevision: 23461 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -226,9 +226,9 @@ if undefined(integ_time) then begin
 ;    endif
    ; now that we're taking the integration time from the data, we need to make sure it's a known integration time
    ; for the FPI dataset; this is so that we can stop/error if the integration time is outside of any known values
-   ; note: 10000 to convert to integers
-   known_integration_times = round(10000*[.150, 4.5, 0.03, 0.0375, 0.0075])
-   if ~array_contains(known_integration_times, round(10000*integ_time)) then begin
+   known_integration_times = [0.0075, 0.03, 0.0375, .150, 4.5] 
+   find_int_time = where(abs(known_integration_times-integ_time) lt 0.0001, itime_count)
+   if itime_count eq 0 then begin
       dprint, dlevel = 0, 'Error, problem finding integration time from the data; this shouldn''t happen; contact: egrimes@igpp.ucla.edu'
       stop
    endif else dprint, dlevel = 4, 'No integration time specified in mms_get_fpi_dist; guessed ' + strcompress(string(integ_time), /rem) + ' seconds from the data'
