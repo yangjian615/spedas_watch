@@ -62,8 +62,8 @@
 ; 1. Written by Peter Schroeder, May 2012
 ;
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2017-06-13 15:31:20 -0700 (Tue, 13 Jun 2017) $
-; $LastChangedRevision: 23466 $
+; $LastChangedDate: 2017-06-14 16:14:36 -0700 (Wed, 14 Jun 2017) $
+; $LastChangedRevision: 23474 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/emfisis/rbsp_load_emfisis.pro $
 ;-
 
@@ -81,10 +81,9 @@ pro rbsp_load_emfisis,probe=probe, datatype=datatype, trange=trange, $
 
 
   rbsp_emfisis_init
-  dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_emfisis.pro 23466 2017-06-13 22:31:20Z aaronbreneman $'
+  dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_emfisis.pro 23474 2017-06-14 23:14:36Z aaronbreneman $'
 
-
-  ;Set the probe
+  if keyword_set(quicklook) then level = 'Quick-Look'
   if(keyword_set(probe)) then p_var = strlowcase(probe)
 
 
@@ -118,11 +117,9 @@ pro rbsp_load_emfisis,probe=probe, datatype=datatype, trange=trange, $
     level='l3'
   endif
 
-  ; Set level='l1' if /quicklook keyword set for backward compatibility
-  if keyword_set(quicklook) then level='l1'
 
   case level of
-    'l1':begin
+    'Quick-Look':begin
     prod='Quick-Look'
     if ~keyword_set(coord) then begin
       message,'Using default L1 Quick-Look coordinates: uvw.',/continue
@@ -188,43 +185,47 @@ dd = strmid(date,6,2)
 
 for s=0,n_elements(p_var)-1 do begin
 
-  ;Set the filename
-  if level eq 'l3' then filename =  'rbsp-'+p_var[s]+'_magnetometer_'+cadence+'-'+coord+'_emfisis-'+prod+'_YYYYMMDD_v*.cdf' $
-  else filename =  'rbsp-'+p_var[s]+'_magnetometer_'+coord+'_emfisis-'+prod+'_YYYYMMDD_v*.cdf'
-
-
   rbspprex = 'RBSP-'+ strupcase(p_var[s])
   rbspx = 'rbsp'+p_var[s]
   if keyword_set(MSIM3) then rbsppref = 'Pre-flight' $
   else rbsppref = 'Flight'
 
-  path = rbsppref + '/' + rbspprex+ '/'+prod+'/YYYY/MM/DD/'
 
-  format = path + filename
+  if ~KEYWORD_SET(quicklook) then begin
+    rp = !rbsp_emfisis.remote_data_dir + 'Flight/RBSP-'+strupcase(probe)+'/'+strupcase(level)+'/'+yyyy+'/'+mm+'/'+dd+'/'
+    rf = 'rbsp-'+probe+'_magnetometer_'+cadence+'-'+coord+'_emfisis-L3_'+date+'_*.cdf'
+  endif else begin
+    rp = !rbsp_emfisis.remote_data_dir + 'Flight/RBSP-'+strupcase(probe)+'/Quick-Look/'+yyyy+'/'+mm+'/'+dd+'/'
+    rf = 'rbsp-'+probe+'_magnetometer_'+coord+'_emfisis-Quick-Look_'+date+'_*.cdf'
+  endelse
 
-  rp = !rbsp_emfisis.remote_data_dir + '/Flight/RBSP-'+strupcase(probe)+'/L3/'+yyyy+'/'+mm+'/'+dd+'/'
-  rf = 'rbsp-'+probe+'_magnetometer_'+cadence+'-'+coord+'_emfisis-L3_'+date+'_*.cdf'
 
-  files = spd_download(remote_path=rp,remote_file=rf, /last_version)
+  if KEYWORD_SET(quicklook) then file = spd_download(remote_path=rp,remote_file=rf,$
+  local_path=!rbsp_emfisis.local_data_dir,'Flight/RBSP-'+strupcase(probe)+'/Quick-Look/'+yyyy+'/'+mm+'/'+dd+'/',$
+  /last_version)
+  if ~KEYWORD_SET(quicklook) then file = spd_download(remote_path=rp,remote_file=rf,$
+  local_path=!rbsp_emfisis.local_data_dir+'Flight/RBSP-'+strupcase(probe)+'/L3/'+yyyy+'/'+mm+'/'+dd+'/',$
+  /last_version)
+
 
 
 
   if keyword_set(!rbsp_emfisis.downloadonly) or keyword_set(downloadonly) then continue
 
-  ;     suf='_raw'
   suf=''
-  ;     midfix='_hsk_beb_analog_'
 
   case level of
+    'Quick-Look':ptag='quicklook'
     'l1':ptag='quicklook'
     'l2':ptag=level+'_'+coord
     'l3':ptag=level+'_'+cadence+'_'+coord
   endcase
   prefix = rbspx + '_emfisis_'+ptag+'_'
 
-  ;     if keyword_set(get_support_data) then $
-  cdf2tplot,file=files,varformat=varformat,all=0,prefix=prefix,suffix=suf,verbose=vb, $
+
+  cdf2tplot,file=file,varformat=varformat,all=0,prefix=prefix,suffix=suf,verbose=vb, $
   tplotnames=tns,/convert_int1_to_int2,get_support_data=get_support_data ; load data into tplot variables
+
 
   if is_string(tns) then begin
 
@@ -253,7 +254,7 @@ for s=0,n_elements(p_var)-1 do begin
     pn = byte(p_var[s]) - byte('a')
     options, /def, tns, colors = probe_colors[pn]
 
-    options, /def, tns, code_id = '$Id: rbsp_load_emfisis.pro 23466 2017-06-13 22:31:20Z aaronbreneman $'
+    options, /def, tns, code_id = '$Id: rbsp_load_emfisis.pro 23474 2017-06-14 23:14:36Z aaronbreneman $'
 
     c_var = [1, 2, 3, 4, 5, 6]
 

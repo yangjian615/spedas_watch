@@ -31,8 +31,8 @@
 ;
 ; VERSION:
 ;   $LastChangedBy: aaronbreneman $
-;   $LastChangedDate: 2017-06-13 14:35:20 -0700 (Tue, 13 Jun 2017) $
-;   $LastChangedRevision: 23465 $
+;   $LastChangedDate: 2017-06-14 16:14:06 -0700 (Wed, 14 Jun 2017) $
+;   $LastChangedRevision: 23473 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/ect/rbsp_load_mageis_l2.pro $
 ;
 ;-
@@ -60,7 +60,7 @@ pro rbsp_load_mageis_l2,probe=probe,get_mag_ephem=get_mag_ephem, $
     date = time_string(tr[0],/date_only,tformat='YYYYMMDD')
     yyyy = strmid(date,0,4)
 
-    !rbsp_ect.remote_data_dir = 'https://rbsp-ect.newmexicoconsortium.org/data_pub/'
+    ;!rbsp_ect.remote_data_dir = 'https://rbsp-ect.newmexicoconsortium.org/data_pub/'
     prefix=rbspx+'_ect_mageis_L'+slevel+'_'
 
 
@@ -69,7 +69,12 @@ pro rbsp_load_mageis_l2,probe=probe,get_mag_ephem=get_mag_ephem, $
 
     rp = !rbsp_ect.remote_data_dir + rbspx+'/mageis/level2/sectors/'+yyyy+'/'
     rf = rbspx+'_rel0?_ect-mageis-L2_'+date+'_v*.cdf'
-    files = spd_download(remote_path=rp,remote_file=rf, /last_version, _extra=!rbsp_ect)
+    files = spd_download(remote_path=rp,remote_file=rf,$
+    local_path=!rbsp_ect.local_data_dir+'mageis/L2/',$
+    /last_version)
+
+
+
 
     cdf2tplot,file=files,varformat=varformat,all=0,prefix=prefix,suffix=suf,verbose=vb, $
     tplotnames=tns,/convert_int1_to_int2,get_support_data=1 ; load data into tplot variables

@@ -63,7 +63,6 @@ id14 = cdf_attcreate(fileid,'Instrument_type',/global_scope)
 id15 = cdf_attcreate(fileid,'Mission_group',/global_scope)
 id16 = cdf_attcreate(fileid,'Parents',/global_scope)
 id16 = cdf_attcreate(fileid,'Planet',/global_scope)
-
 id17 = cdf_attcreate(fileid,'PDS_collection_id',/global_scope)
 id17 = cdf_attcreate(fileid,'PDS_start_time',/global_scope)
 id17 = cdf_attcreate(fileid,'PDS_stop_time',/global_scope)
@@ -104,7 +103,7 @@ for i=0,n_elements(exnames)-1 do     cdf_attput,fileid,exnames[i],0,extra.(i)
 
 ; Variable attributes
 
-default_atts = {fieldnam:'',monoton:'',format:'F10.2',lablaxis:'',VAR_TYPE:'support_data',fillval:!values.f_nan,DISPLAY_TYPE:'time_series',scaletyp:'linear', $
+default_atts = {fieldnam:'',monoton:'',format:'F10.2',lablaxis:'',VAR_TYPE:'support_data',DISPLAY_TYPE:'time_series',fillval:!values.f_nan,scaletyp:'linear', $
       VALIDMIN:-1e31,VALIDMAX:1e31,SCALEMIN:0.,SCALEMAX:100.,UNITS:'',CATDESC:'', $
       FORM_PTR:'',DEPEND_TIME:time_name,DEPEND_0:epoch_name,DEPEND_1:'',DEPEND_2:'' }
 
@@ -152,8 +151,8 @@ cdf_attput,fileid,'UNITS',varid,'ns',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in TT2000 time base',/ZVARIABLE
 
-cdf_varput,fileid,varname,timett2000
 
+cdf_varput,fileid,varname,timett2000
 
 ;MET
 varname = 'time_met'

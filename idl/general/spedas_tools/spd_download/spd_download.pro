@@ -55,7 +55,7 @@
 ;      -If local_file is not set then remote_file is used
 ;      -If remote_file is a full URL then only the file name is used
 ;
-;      -Remote and local file names may contain wildcards:  *  ?  [  ]
+;      -Remote file names may contain wildcards:  *  ?  [  ]
 ;
 ;  Download Options
 ;  ---------------------
@@ -112,9 +112,9 @@
 ;     ignore_filedate, archive_ext, archive_dir, min_age_limit
 ;
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-02-23 20:09:00 -0800 (Thu, 23 Feb 2017) $
-;$LastChangedRevision: 22866 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-06-14 13:48:17 -0700 (Wed, 14 Jun 2017) $
+;$LastChangedRevision: 23471 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download.pro $
 ;
 ;-
