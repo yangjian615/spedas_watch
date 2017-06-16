@@ -113,7 +113,7 @@ pro rbsp_efw_spinfit_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=
 
 
 ;Find the co-rotation Efield
-  rbsp_corotation_efield,probe,date,/no_spice_load;,/data_preloaded
+  rbsp_corotation_efield,probe,date,/no_spice_load,/data_preloaded,level=level
 
 
   message,"Rotating emfisis data...",/continue

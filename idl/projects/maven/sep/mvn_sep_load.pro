@@ -144,6 +144,16 @@ if keyword_set(L2) then   format = 'L2_CDF'
 if ~keyword_set(format) then format='L1_SAV'
 
 if format eq 'L1_SAV' then begin
+  
+  files = mvn_pfp_file_retrieve(/L0,/daily,trange=trange,source=source,verbose=verbose,RT=RT,files=files,pathnames)
+
+  if keyword_set(use_cache) and keyword_set(source_filenames) then begin
+    if array_equal(files,source_filenames) then begin
+      dprint,dlevel=2,'Using cached common block'
+      return
+    endif
+  endif
+  
   mvn_sep_var_restore,trange=trange,download_only=download_only,verbose=verbose,lowres=lowres,units_name=units_name
   if ~keyword_set(download_only) then begin
     mvn_sep_cal_to_tplot,sepn=1,lowres=lowres

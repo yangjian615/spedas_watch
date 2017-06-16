@@ -62,8 +62,8 @@
 ; 1. Written by Peter Schroeder, May 2012
 ;
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2017-06-14 16:14:36 -0700 (Wed, 14 Jun 2017) $
-; $LastChangedRevision: 23474 $
+; $LastChangedDate: 2017-06-15 13:48:23 -0700 (Thu, 15 Jun 2017) $
+; $LastChangedRevision: 23482 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/emfisis/rbsp_load_emfisis.pro $
 ;-
 
@@ -81,7 +81,7 @@ pro rbsp_load_emfisis,probe=probe, datatype=datatype, trange=trange, $
 
 
   rbsp_emfisis_init
-  dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_emfisis.pro 23474 2017-06-14 23:14:36Z aaronbreneman $'
+  dprint,verbose=verbose,dlevel=4,'$Id: rbsp_load_emfisis.pro 23482 2017-06-15 20:48:23Z aaronbreneman $'
 
   if keyword_set(quicklook) then level = 'Quick-Look'
   if(keyword_set(probe)) then p_var = strlowcase(probe)
@@ -191,20 +191,29 @@ for s=0,n_elements(p_var)-1 do begin
   else rbsppref = 'Flight'
 
 
-  if ~KEYWORD_SET(quicklook) then begin
+  if level eq 'l3' then begin
     rp = !rbsp_emfisis.remote_data_dir + 'Flight/RBSP-'+strupcase(probe)+'/'+strupcase(level)+'/'+yyyy+'/'+mm+'/'+dd+'/'
     rf = 'rbsp-'+probe+'_magnetometer_'+cadence+'-'+coord+'_emfisis-L3_'+date+'_*.cdf'
-  endif else begin
+  endif
+  if level eq 'Quick-Look' then begin
     rp = !rbsp_emfisis.remote_data_dir + 'Flight/RBSP-'+strupcase(probe)+'/Quick-Look/'+yyyy+'/'+mm+'/'+dd+'/'
     rf = 'rbsp-'+probe+'_magnetometer_'+coord+'_emfisis-Quick-Look_'+date+'_*.cdf'
-  endelse
+  endif
+  if level eq 'l2' then begin
+    rp = !rbsp_emfisis.remote_data_dir + 'Flight/RBSP-'+strupcase(probe)+'/'+strupcase(level)+'/'+yyyy+'/'+mm+'/'+dd+'/'
+    rf = 'rbsp-'+probe+'_magnetometer_'+coord+'_emfisis-L2_'+date+'_*.cdf'
+  endif
 
 
-  if KEYWORD_SET(quicklook) then file = spd_download(remote_path=rp,remote_file=rf,$
-  local_path=!rbsp_emfisis.local_data_dir,'Flight/RBSP-'+strupcase(probe)+'/Quick-Look/'+yyyy+'/'+mm+'/'+dd+'/',$
+
+  if level eq 'Quick-Look' then file = spd_download(remote_path=rp,remote_file=rf,$
+  local_path=!rbsp_emfisis.local_data_dir+'Flight/RBSP-'+strupcase(probe)+'/Quick-Look/'+yyyy+'/'+mm+'/'+dd+'/',$
   /last_version)
-  if ~KEYWORD_SET(quicklook) then file = spd_download(remote_path=rp,remote_file=rf,$
+  if level eq 'l3' then file = spd_download(remote_path=rp,remote_file=rf,$
   local_path=!rbsp_emfisis.local_data_dir+'Flight/RBSP-'+strupcase(probe)+'/L3/'+yyyy+'/'+mm+'/'+dd+'/',$
+  /last_version)
+  if level eq 'l2' then file = spd_download(remote_path=rp,remote_file=rf,$
+  local_path=!rbsp_emfisis.local_data_dir+'Flight/RBSP-'+strupcase(probe)+'/L2/'+yyyy+'/'+mm+'/'+dd+'/',$
   /last_version)
 
 
@@ -254,7 +263,7 @@ for s=0,n_elements(p_var)-1 do begin
     pn = byte(p_var[s]) - byte('a')
     options, /def, tns, colors = probe_colors[pn]
 
-    options, /def, tns, code_id = '$Id: rbsp_load_emfisis.pro 23474 2017-06-14 23:14:36Z aaronbreneman $'
+    options, /def, tns, code_id = '$Id: rbsp_load_emfisis.pro 23482 2017-06-15 20:48:23Z aaronbreneman $'
 
     c_var = [1, 2, 3, 4, 5, 6]
 
