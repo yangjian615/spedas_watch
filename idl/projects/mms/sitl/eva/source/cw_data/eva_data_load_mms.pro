@@ -119,7 +119,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           tn=tnames(tnf,jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
             options, tnf, ytitle=sc+'!CFEEPS!Cintnsty',ysubtitle='[keV]'
-            ylim, tnf, 30, 530
+            ylim, tnf, 50, 530
           endif
           answer = 'Yes'
         endif
@@ -464,19 +464,19 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=85
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_jtot_curl_b') and (cp eq 0)) then begin
-          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/curlB)
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/curlB,no_gui=no_gui)
           answer = 'Yes'
         endif
         pcode=86
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_diffb') and (cp eq 0)) then begin
-          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/diffB)
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/diffB,no_gui=no_gui)
           answer = 'Yes'
         endif
         pcode=87
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_jtot_combb') and (cp eq 0)) then begin
-          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/combB)
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/combB,no_gui=no_gui)
           answer = 'Yes'
         endif
         

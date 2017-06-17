@@ -1,4 +1,4 @@
-FUNCTION eva_data_load_mms_jtot, sc=sc,curlB=curlB,diffB=diffB,combB=combB, LOADED_4FGM=LOADED_4FGM
+FUNCTION eva_data_load_mms_jtot, sc=sc,curlB=curlB,diffB=diffB,combB=combB, LOADED_4FGM=LOADED_4FGM, no_gui=no_gui
   
   if LOADED_4FGM eq 0 then begin
     eva_data_load_mms_fgm, sc='mms1'
@@ -17,7 +17,12 @@ FUNCTION eva_data_load_mms_jtot, sc=sc,curlB=curlB,diffB=diffB,combB=combB, LOAD
     mms_sitl_curl_b, flag, /no_load
     if flag eq 1 then begin
       msg = 'Skipping curl-B (Missing Bfield data from one or more spacecraft)'
-      result = dialog_message(msg,/center)
+      if keyword_set(no_gui) then begin
+        print, msg
+      endif else begin
+        result = dialog_message(msg,/center)
+      endelse
+      LOADED_4FGM = 0L
     endif
     tn = tnames('mms_sitl_jtot_curl_b',cnt)
     if cnt eq 1 then begin
@@ -29,7 +34,12 @@ FUNCTION eva_data_load_mms_jtot, sc=sc,curlB=curlB,diffB=diffB,combB=combB, LOAD
     mms_sitl_diffb, flag, /no_load
     if flag eq 1 then begin
       msg = 'Skipping diffb (Need at least two spacecraft).'
-      result = dialog_message(msg,/center)
+      if keyword_set(no_gui) then begin
+        print, msg
+      endif else begin
+        result = dialog_message(msg,/center)
+      endelse
+      LOADED_4FGM = 0L
     endif else begin
       tn = tnames('mms_sitl_diffB',cnt)
       if cnt eq 1 then begin
