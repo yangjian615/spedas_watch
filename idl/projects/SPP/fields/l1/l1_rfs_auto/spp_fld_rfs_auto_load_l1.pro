@@ -74,62 +74,127 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
   options, prefix + 'ch0', 'ytitle', receiver_str + ' Auto!CCH0 Source'
   options, prefix + 'ch1', 'ytitle', receiver_str + ' Auto!CCH1 Source'
 
-  options, prefix + 'spec0_ch?', 'spec', 1
-  options, prefix + 'spec0_ch?', 'no_interp', 1
-  options, prefix + 'spec0_ch?', 'yrange', [0,64]
-  options, prefix + 'spec0_ch?', 'ystyle', 1
-  options, prefix + 'spec0_ch?', 'datagap', 60
+  options, prefix + 'spec?_ch?', 'spec', 1
+  options, prefix + 'spec?_ch?', 'no_interp', 1
+  options, prefix + 'spec?_ch?', 'yrange', [0,64]
+  options, prefix + 'spec?_ch?', 'ystyle', 1
+  options, prefix + 'spec?_ch?', 'datagap', 60
+
+  options, prefix + 'peaks_ch?', 'spec', 1
+  options, prefix + 'peaks_ch?', 'no_interp', 1
+  options, prefix + 'peaks_ch?', 'yrange', [0,64]
+  options, prefix + 'peaks_ch?', 'ystyle', 1
+  options, prefix + 'peaks_ch?', 'datagap', 60
+
+  options, prefix + 'averages_ch?', 'spec', 1
+  options, prefix + 'averages_ch?', 'no_interp', 1
+  options, prefix + 'averages_ch?', 'yrange', [0,64]
+  options, prefix + 'averages_ch?', 'ystyle', 1
+  options, prefix + 'averages_ch?', 'datagap', 60
 
   options, prefix + 'spec0_ch0', 'ytitle', receiver_str + ' Auto!CSpec0 Ch0 Raw'
   options, prefix + 'spec0_ch1', 'ytitle', receiver_str + ' Auto!CSpec0 Ch1 Raw'
+
+  options, prefix + 'spec1_ch0', 'ytitle', receiver_str + ' Auto!CSpec1 Ch0 Raw'
+  options, prefix + 'spec1_ch1', 'ytitle', receiver_str + ' Auto!CSpec1 Ch1 Raw'
+
+  options, prefix + 'peaks_ch0', 'ytitle', receiver_str + ' Auto!CPeaks Ch0 Raw'
+  options, prefix + 'peaks_ch1', 'ytitle', receiver_str + ' Auto!CPeaks Ch1 Raw'
+
+  options, prefix + 'averages_ch0', 'ytitle', receiver_str + ' Auto!CAverages Ch0 Raw'
+  options, prefix + 'averages_ch1', 'ytitle', receiver_str + ' Auto!CAverages Ch1 Raw'
+
 
   get_data, prefix + 'gain', data = rfs_gain_dat
 
   lo_gain = where(rfs_gain_dat.y EQ 0, n_lo_gain)
 
-  get_data, prefix + 'spec0_ch0', data = rfs_dat_spec0_ch0
+  raw_spectra = ['peaks_ch0', 'peaks_ch1', $
+    'averages_ch0', 'averages_ch1', $
+    'spec0_ch0', 'spec0_ch1', $
+    'spec1_ch0', 'spec1_ch1']
 
-  converted_data_spec0_ch0 = rfs_float(rfs_dat_spec0_ch0.y)
+  for i = 0, n_elements(raw_spectra) - 1 do begin
 
-  ; TODO replace hard coded gain value w/calibrated
+    raw_spec_i = raw_spectra[i]
 
-  if n_lo_gain GT 0 then converted_data_spec0_ch0[lo_gain, *] *= 2500.d
+    get_data, prefix + raw_spec_i, data = raw_spec_data
 
-  store_data, prefix + 'spec0_ch0_converted', $
-    data = {x:rfs_dat_spec0_ch0.x, y:converted_data_spec0_ch0, $
-    v:rfs_freqs.reduced_freq}
+    converted_spec_data = rfs_float(raw_spec_data.y)
 
-  get_data, prefix + 'spec0_ch1', data = rfs_dat_spec0_ch1
+    if n_lo_gain GT 0 then converted_spec_data[lo_gain, *] *= 2500.d
 
-  converted_data_spec0_ch1 = rfs_float(rfs_dat_spec0_ch1.y)
+    store_data, prefix + raw_spec_i + '_converted', $
+      data = {x:raw_spec_data.x, y:converted_spec_data, $
+      v:rfs_freqs.reduced_freq}
 
-  if n_lo_gain GT 0 then converted_data_spec0_ch1[lo_gain, *] *= 2500.d
+    options, prefix + raw_spec_i + '_converted', 'spec', 1
+    options, prefix + raw_spec_i + '_converted', 'no_interp', 1
+    options, prefix + raw_spec_i + '_converted', 'ylog', 1
+    options, prefix + raw_spec_i + '_converted', 'zlog', 1
+    options, prefix + raw_spec_i + '_converted', 'yrange', $
+      [min(rfs_freqs.reduced_freq), max(rfs_freqs.reduced_freq)]
+    options, prefix + raw_spec_i + '_converted', 'ystyle', 1
+    options, prefix + raw_spec_i + '_converted', 'datagap', 60
+    options, prefix + raw_spec_i + '_converted', 'panel_size', 2.
 
-  store_data, prefix + 'spec0_ch1_converted', $
-    data = {x:rfs_dat_spec0_ch1.x, y:converted_data_spec0_ch1, $
-    v:rfs_freqs.reduced_freq}
+    options, prefix + raw_spec_i + '_converted', 'ytitle', $
+      receiver_str + ' AUTO!C' + strupcase(raw_spec_i)
 
-  options, prefix + 'spec0_ch?_converted', 'spec', 1
-  options, prefix + 'spec0_ch?_converted', 'no_interp', 1
-  options, prefix + 'spec0_ch?_converted', 'ylog', 1
-  options, prefix + 'spec0_ch?_converted', 'zlog', 1
-  options, prefix + 'spec0_ch?_converted', 'yrange', [min(rfs_freqs.reduced_freq), max(rfs_freqs.reduced_freq)]
-  options, prefix + 'spec0_ch?_converted', 'ystyle', 1
-  options, prefix + 'spec0_ch?_converted', 'datagap', 60
-  options, prefix + 'spec0_ch?_converted', 'panel_size', 2.
+    ch_str = strmid(raw_spec_i,strlen(raw_spec_i) - 3, 3)
 
-  options, prefix + 'spec0_ch0_converted', 'ytitle', receiver_str + ' Auto!CSpec0 Ch0'
-  options, prefix + 'spec0_ch1_converted', 'ytitle', receiver_str + ' Auto!CSpec0 Ch1'
+    get_data, prefix + ch_str, dat = ch_src_dat
 
-  get_data, prefix + 'ch0', dat = ch0_src_dat
-  if n_elements(uniq(ch0_src_dat.y) EQ 1) then $
-    options, prefix + 'spec0_ch0_converted', 'ysubtitle', $
-    'SRC:' + strcompress(string(ch0_src_dat.y[0]))
+    if size(ch_src_dat, /type) EQ 8 then $
+      if n_elements(uniq(ch_src_dat.y) EQ 1) then $
+      options, prefix + raw_spec_i + '_converted', 'ysubtitle', $
+      'SRC:' + strcompress(string(ch_src_dat.y[0]))
 
-  get_data, prefix + 'ch1', dat = ch1_src_dat
-  if n_elements(uniq(ch1_src_dat.y) EQ 1) then $
-    options, prefix + 'spec0_ch1_converted', 'ysubtitle', $
-    'SRC:' + strcompress(string(ch1_src_dat.y[0]))
+  endfor
+
+  ;  get_data, prefix + 'spec0_ch0', data = rfs_dat_spec0_ch0
+  ;
+  ;  converted_data_spec0_ch0 = rfs_float(rfs_dat_spec0_ch0.y)
+  ;
+  ;  ; TODO replace hard coded gain value w/calibrated
+  ;
+  ;  if n_lo_gain GT 0 then converted_data_spec0_ch0[lo_gain, *] *= 2500.d
+  ;
+  ;  store_data, prefix + 'spec0_ch0_converted', $
+  ;    data = {x:rfs_dat_spec0_ch0.x, y:converted_data_spec0_ch0, $
+  ;    v:rfs_freqs.reduced_freq}
+  ;
+  ;  get_data, prefix + 'spec0_ch1', data = rfs_dat_spec0_ch1
+  ;
+  ;  converted_data_spec0_ch1 = rfs_float(rfs_dat_spec0_ch1.y)
+  ;
+  ;  if n_lo_gain GT 0 then converted_data_spec0_ch1[lo_gain, *] *= 2500.d
+  ;
+  ;  store_data, prefix + 'spec0_ch1_converted', $
+  ;    data = {x:rfs_dat_spec0_ch1.x, y:converted_data_spec0_ch1, $
+  ;    v:rfs_freqs.reduced_freq}
+  ;
+  ;  options, prefix + 'spec0_ch?_converted', 'spec', 1
+  ;  options, prefix + 'spec0_ch?_converted', 'no_interp', 1
+  ;  options, prefix + 'spec0_ch?_converted', 'ylog', 1
+  ;  options, prefix + 'spec0_ch?_converted', 'zlog', 1
+  ;  options, prefix + 'spec0_ch?_converted', 'yrange', [min(rfs_freqs.reduced_freq), max(rfs_freqs.reduced_freq)]
+  ;  options, prefix + 'spec0_ch?_converted', 'ystyle', 1
+  ;  options, prefix + 'spec0_ch?_converted', 'datagap', 60
+  ;  options, prefix + 'spec0_ch?_converted', 'panel_size', 2.
+  ;
+  ;  options, prefix + 'spec0_ch0_converted', 'ytitle', receiver_str + ' Auto!CSpec0 Ch0'
+  ;  options, prefix + 'spec0_ch1_converted', 'ytitle', receiver_str + ' Auto!CSpec0 Ch1'
+  ;
+  ;  get_data, prefix + 'ch0', dat = ch0_src_dat
+  ;  if n_elements(uniq(ch0_src_dat.y) EQ 1) then $
+  ;    options, prefix + 'spec0_ch0_converted', 'ysubtitle', $
+  ;    'SRC:' + strcompress(string(ch0_src_dat.y[0]))
+  ;
+  ;  get_data, prefix + 'ch1', dat = ch1_src_dat
+  ;  if n_elements(uniq(ch1_src_dat.y) EQ 1) then $
+  ;    options, prefix + 'spec0_ch1_converted', 'ysubtitle', $
+  ;    'SRC:' + strcompress(string(ch1_src_dat.y[0]))
 
 
 end
