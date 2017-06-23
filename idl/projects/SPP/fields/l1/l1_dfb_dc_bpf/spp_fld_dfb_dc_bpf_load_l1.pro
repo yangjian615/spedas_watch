@@ -1,5 +1,7 @@
 pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
 
+  bpf_ind = strmid(prefix, strlen(prefix)-2, 1)
+
   if typename(file) EQ 'UNDEFINED' then begin
 
     dprint, 'No file provided to spp_fld_dfb_dc_bpf_load_l1', dlevel = 2
@@ -14,7 +16,6 @@ pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
   options, prefix + ['enable','rslt_sel','src_sel','cad_sel'], 'psym', 4
   options, prefix + ['enable','rslt_sel','src_sel','cad_sel'], 'panel_size', 0.75
   
-
   options, prefix + 'peak', 'spec', 1
   options, prefix + 'peak', 'no_interp', 1
 
@@ -47,6 +48,20 @@ pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
 
   endif
 
+  dc_bpf_names = tnames(prefix + '*')
+
+  if dc_bpf_names[0] NE '' then begin
+    
+    for i = 0, n_elements(dc_bpf_names) - 1 do begin
+      
+      dc_bpf_name_i = strmid(dc_bpf_names[i], strlen(prefix))
+      
+      options, prefix + dc_bpf_name_i, 'ytitle', 'SPP DFB!CDC BPF' + $
+        string(bpf_ind) + '!C' + strupcase(dc_bpf_name_i)
+      
+    endfor
+    
+  endif
 
   if varnames[0] EQ '' then begin
 

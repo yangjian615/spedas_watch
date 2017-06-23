@@ -1,5 +1,5 @@
 ;20170605 Ali
-;calculates the minimum level of eflux (noise level) in swia and static over the energy and elevation dimentions
+;calculates the minimum level of eflux (noise level) in swia and static over the energy and elevation dimensions
 ;leaves the time and azimuth (anode) dimensions intact to account for varying geometric factor over time and anodes (attenuators, etc.)
 
 function mvn_pui_min_eflux,eflux

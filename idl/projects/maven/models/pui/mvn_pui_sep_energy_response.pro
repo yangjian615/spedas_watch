@@ -10,7 +10,7 @@ if keyword_set(plot_response) then sormd=100 else sormd=pui0.sormd
 seprm=replicate(0.,sormd,sormd) ;sep oxygen energy response matrix
 for inc=0,sormd-1 do for dep=0,sormd-1 do seprm[dep,inc]=.040*exp(-((dep-.9*inc+40.)/14.)^2) ;Gaussian response, fit to GEANT4 simulations
 
-seprm[0:10,*]=0 ;sep electronic noise threshold = 11 keV
+seprm[0:9,*]=0 ;sep electronic noise threshold = 11 keV
 sepde=total(seprm,1) ;sep pickup oxygen detection efficiency
 seprm*=replicate(1.,sormd)#sepde ;this makes the response matrix look more realistic!
 seprm[where(seprm lt 1e-10,/null)]=1e-10
@@ -25,7 +25,6 @@ endif
 
 ;  sepet=[[6,10,11,13,14,17,20,24,30,37,47,60,77,100,130,169,220,288,378,495], $ ;SEP1BO flight 3 table
 ;         [6,10,11,12,14,16,20,24,29,36,46,58,75,97 ,126,164,214,280,367,481]]   ;SEP2BO
-
 
 for sepn=0,1 do begin
   if ~finite(pui1.sepet[sepn].sepbo[0]) then begin

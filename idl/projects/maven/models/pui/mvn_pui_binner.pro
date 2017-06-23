@@ -28,8 +28,8 @@ swizld=(sep1ld-sep2ld)/sqrt(2.)
 vxyz=pui.model[msub].rv[3:5,*]
 vtot=pui2.vtot
 ke=pui2.ke/1e3 ;energy (keV)
-ke[where(~finite(ke),/null)]=0. ;in case energy is NaN due to bad inputs (eV)
-ke[where(ke ge 1000,/null)]=1000. ;in case energy is too high due to bad inputs (eV)
+ke[where(~finite(ke),/null)]=0. ;in case energy is NaN due to bad inputs
+ke[where(ke ge 1000,/null)]=1000. ;in case energy is too high due to bad inputs (keV)
 rfov=mvn_pui_reduced_fov(ke) ;correction factor for SWIA and STATIC reduced FOV at E>5keV
 
 cosvsep1=-total(vxyz*sep1ld,1)/vtot ;cosine of angle between detector FOV and pickup ion -velocity vector
@@ -65,7 +65,8 @@ rfovstat=rfov
 rfovswia[where(abs(cosvswiz) gt sinfovswi,/null)]=0.
 rfovstat[where(abs(cosvstaz) gt sinfovswi,/null)]=0.
 
-mvn_pui_sep_angular_response,cosvsep1,cosvsep2,cosvswiy,sdea1,sdea2
+sdea1=mvn_pui_sep_angular_response(cosvsep1,cosvsep2,cosvswiy)
+sdea2=mvn_pui_sep_angular_response(cosvsep2,cosvsep1,cosvswiy)
 
 secof=(ke-40.)/60. ;sep energy response for oxygen, 0 below 40 keV, linearly reaching 1 at 100 keV
 secof[where(ke lt 40.,/null)]=0.
@@ -82,15 +83,19 @@ kfsep2=kfsep1 ;sep2 flux binning
 keflux=replicate(0.,pui0.toteb,nt) ;total flux binning
 kefswi=replicate(0.,pui0.swieb,nt) ;swia flux binning
 kefsta=replicate(0.,pui0.staeb,nt) ;static flux binning
+knflux=keflux
 indgent=indgen(nt)
+
 for ip=1,np-1 do begin ;loop over particles
   kfsep1[binsepke[ip,*],indgent]+=dphi[ip,*]*sdea1[ip,*] ;bin pickup ion fluxes that are within the FOV
   kfsep2[binsepke[ip,*],indgent]+=dphi[ip,*]*sdea2[ip,*]
   keflux[bintotke[ip,*],indgent]+=dphi[ip,*]; total energy flux
   kefswi[binswike[ip,*],indgent]+=dphi[ip,*]*rfovswia[ip,*]; energy flux
   kefsta[binstake[ip,*],indgent]+=dphi[ip,*]*rfovstat[ip,*]; energy flux
+  knflux[bintotke[ip,*],indgent]+=1. ;number of particles in this bin
 endfor
 
+keflux[where(knflux gt 0. and knflux lt 3.*pui0.ngps[msub],/null)]=!values.f_nan ;less than 3 counts in each gyro-period means bad statistics!
 pui.model[msub].fluxes.sep[0].incident_rate=kfsep1
 pui.model[msub].fluxes.sep[1].incident_rate=kfsep2
 pui.model[msub].fluxes.toteflux=keflux/pui0.totdee; total pickup angle-integrated differential energy flux (eV/[cm2 s eV])
@@ -130,6 +135,9 @@ if pui0.do3d then begin
     swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;swia 3d particle position and velocity binning
     sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;stat 3d particle position and velocity binning
   endfor
+
+  swi3d[where(swi3d.nn gt 0. and swi3d.nn lt 3.*pui0.ngps[msub],/null)].ef=!values.f_nan ;less than 3 counts in each gyro-period means bad statistics!
+  sta3d[where(sta3d.nn gt 0. and sta3d.nn lt 3.*pui0.ngps[msub],/null)].ef=!values.f_nan
   pui.model[msub].fluxes.swi3d.eflux=swi3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/pui0.swidee; differential energy flux (eV/[cm2 s sr eV])
   pui.model[msub].fluxes.sta3d.eflux=sta3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/transpose(rebin(pui1.d1dee,[nt,pui0.sd1eb,pui0.swina,pui0.swine]),[1,2,3,0])
   pui.model[msub].fluxes.swi3d.rv=swi3d.rv/transpose(rebin(swi3d.nn,[pui0.swieb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])

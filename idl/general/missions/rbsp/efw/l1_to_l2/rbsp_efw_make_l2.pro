@@ -52,8 +52,8 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2017-04-27 15:23:13 -0700 (Thu, 27 Apr 2017) $
-; $LastChangedRevision: 23233 $
+; $LastChangedDate: 2017-06-22 15:00:51 -0700 (Thu, 22 Jun 2017) $
+; $LastChangedRevision: 23494 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/l1_to_l2/rbsp_efw_make_l2.pro $
 ;
 ;-
@@ -206,15 +206,18 @@ pro rbsp_efw_make_l2,sc,date,$
 
         ;Efield FULL CADENCE that uses E*B=0
         rbsp_efw_edotb_to_zero_crib,date,sc,/no_spice_load,$
-          /noplot,/nospinfit,boom_pair=bp,/noremove,bad_probe=bad_probe
+          /noplot,/nospinfit,boom_pair=bp,/noremove,bad_probe=bad_probe,ql=ql
 
         get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed',data=esvy_vxb_mgse
 
+;        if is_struct(esvy_vxb_mgse) then begin
         epoch_e = tplot_time_to_epoch(esvy_vxb_mgse.x,/epoch16)
         times_e = esvy_vxb_mgse.x
-
-        get_data,'rbsp'+sc+'_efw_esvy_mgse',data=esvy_mgse
-
+;        endif else begin
+;          get_data,'rbsp'+sc+'_efw_esvy_mgse',data=esvy_mgse
+;          epoch_e = tplot_time_to_epoch(esvy_mgse.x,/epoch16)
+;          times_e = esvy_mgse.x
+;        endelse
      endif
 
 
@@ -301,19 +304,22 @@ pro rbsp_efw_make_l2,sc,date,$
 
      ;Get By/Bx and Bz/Bx from E*B=0 calculation
      get_data,'B2Bx_ratio',data=b2bx_ratio
-     badyx = where(b2bx_ratio.y[*,0] gt 3.732)
-     badzx = where(b2bx_ratio.y[*,1] gt 3.732)
+     if is_struct(b2bx_ratio) then begin
+       badyx = where(b2bx_ratio.y[*,0] gt 3.732)
+       badzx = where(b2bx_ratio.y[*,1] gt 3.732)
 
      ;Get spinaxis component
-     get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb',data=diagEx
-     diagEx = diagEx.y[*,0]
+      get_data,'rbsp'+sc+'_efw_esvy_mgse_vxb_removed_spinfit_edotb',data=diagEx
+      if is_struct(diagEx) then begin
+        diagEx = diagEx.y[*,0]
 
-     ;Have two versions. First has all E*B=0 data, second has E*B=0 bad data removed
-     diagEx1 = diagEx
-     diagEx2 = diagEx
-     if badyx[0] ne -1 then diagEx2[badyx,0] = !values.f_nan
-     if badzx[0] ne -1 then diagEx2[badzx,0] = !values.f_nan
-
+        ;Have two versions. First has all E*B=0 data, second has E*B=0 bad data removed
+        diagEx1 = diagEx
+        diagEx2 = diagEx
+        if badyx[0] ne -1 then diagEx2[badyx,0] = !values.f_nan
+        if badzx[0] ne -1 then diagEx2[badzx,0] = !values.f_nan
+      endif
+    endif
 
 
 
@@ -772,7 +778,7 @@ pro rbsp_efw_make_l2,sc,date,$
        cdf_varput,cdfid,'spinaxis_gse',transpose(sa.y)
        cdf_varput,cdfid,'orbit_num',orbit_num
        cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
-       cdf_varput,cdfid,'diagBratio',transpose(b2bx_ratio.y)
+       if is_struct(b2bx_ratio) then cdf_varput,cdfid,'diagBratio',transpose(b2bx_ratio.y)
 
 
        if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
@@ -782,8 +788,8 @@ pro rbsp_efw_make_l2,sc,date,$
   ;full cadence (only for hires version)
        cdf_varrename,cdfid,'esvy_vxb_mgse','efield_mgse_edotb_zero'
        cdf_varput,cdfid,'efield_mgse_edotb_zero',transpose(esvy_vxb_mgse.y)
-       cdf_varput,cdfid,'diagEx1',diagEx1
-       cdf_varput,cdfid,'diagEx2',diagEx2
+       if is_struct(b2bx_ratio) then cdf_varput,cdfid,'diagEx1',diagEx1
+       if is_struct(b2bx_ratio) then cdf_varput,cdfid,'diagEx2',diagEx2
        ;VSVY hires
        cdf_varrename,cdfid,'vsvy','vsvy_antenna_potentials_hires'
        cdf_varput,cdfid,'vsvy_antenna_potentials_hires',transpose(vsvy_hires.y)
@@ -1008,9 +1014,9 @@ pro rbsp_efw_make_l2,sc,date,$
 ;     cdf_varput,cdfid,'angle_Ey_Ez_Bo',transpose(angles.y)
      if ibias[0] ne 0 then cdf_varput,cdfid,'bias_current',transpose(ibias)
 
-     cdf_varput,cdfid,'diagEx1',diagEx1
-     cdf_varput,cdfid,'diagEx2',diagEx2
-     cdf_varput,cdfid,'diagBratio',transpose(b2bx_ratio.y)
+     if is_struct(b2bx_ratio) then cdf_varput,cdfid,'diagEx1',diagEx1
+     if is_struct(b2bx_ratio) then cdf_varput,cdfid,'diagEx2',diagEx2
+     if is_struct(b2bx_ratio) then cdf_varput,cdfid,'diagBratio',transpose(b2bx_ratio.y)
 
 
 ;variables to delete

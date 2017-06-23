@@ -1,7 +1,7 @@
 ;RBSP vxB subtraction routine
 
 ;Input: tplot variable names. These variables should contain
-;	velocity, mag and E-field data in MGSE coord. 
+;	velocity, mag and E-field data in MGSE coord.
 ;	To get these quantities in MGSE first use cotrans to go from
 ;	whatever coord system to GSE. Then use rbsp_gse2mgse.pro to go
 ;	to MGSE

@@ -17,11 +17,6 @@ pro mvn_pui_plot_mars_bow_shock,rm=rm,p3d=p3d,lbst=lbst,half=half,xtitle=xtitle,
     if ~keyword_set(half) then ybow=(-1.+findgen(201)/100.)*lbst else ybow=(findgen(101)/100.)*lbst 
   xbow=1.7-.24*ybow^2 ;fit to nominal mars bow shock
 
-  if ~keyword_set(xtitle) then xtitle='$X (R_M)$'
-;  ytitle='$(Y^2+Z^2)^{1/2} (R_M)$'
-  if ~keyword_set(ytitle) then ytitle='$Y (R_M)$'
-  if ~keyword_set(ztitle) then ztitle='$Z (R_M)$'
-  
   if ~keyword_set(rm) then begin
     rmars=3400. ;radius of mars (km)
     xmars*=rmars
@@ -31,7 +26,12 @@ pro mvn_pui_plot_mars_bow_shock,rm=rm,p3d=p3d,lbst=lbst,half=half,xtitle=xtitle,
     if ~keyword_set(xtitle) then xtitle='X (km)'
     if ~keyword_set(ytitle) then ytitle='Y (km)'
     if ~keyword_set(ztitle) then ztitle='Z (km)'
-  end
+  endif else begin
+    if ~keyword_set(xtitle) then xtitle='$X (R_M)$'
+    ;  ytitle='$(Y^2+Z^2)^{1/2} (R_M)$'
+    if ~keyword_set(ytitle) then ytitle='$Y (R_M)$'
+    if ~keyword_set(ztitle) then ztitle='$Z (R_M)$'
+  endelse
 
 
   p=plot(/o,[0],/nodata,xtitle=xtitle,ytitle=ytitle,ztitle=ztitle,/aspect_ratio,/aspect_z) ;bow shock

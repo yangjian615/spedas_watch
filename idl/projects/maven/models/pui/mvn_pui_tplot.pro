@@ -25,8 +25,9 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
   centertime=pui.centertime
 
   if keyword_set(store) then begin
+    onesnt=replicate(1.,pui0.nt)
     store_data,'mvn_sta_D01_dE/E',data={x:centertime,y:pui1.d1dee},limits={ylog:1,panel_size:.5,colors:'r',psym:3}
-    store_data,'mvn_pui_line_1',data={x:centertime,y:replicate(1.,pui0.nt)},limits={colors:'g'} ;straight line equal to 1
+    store_data,'mvn_pui_line_1',data={x:centertime,y:onesnt},limits={colors:'g'} ;straight line equal to 1
     store_data,'mvn_pos_(km)',data={x:centertime,y:transpose(pui.data.scp)/1e3},limits={colors:'bgr',labels:['x','y','z'],labflag:1}
     store_data,'mvn_sep1_fov',centertime,transpose(pui.data.sep[0].fov)
     store_data,'mvn_sep2_fov',centertime,transpose(pui.data.sep[1].fov)
@@ -43,14 +44,14 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
     esw=1e-3*pui.data.swi.swim2.esw ;solar wind proton energy (keV)
     mfsw=pui.data.swi.swim2.mfsw ;solar wind proton momentum flux (g cm-1 s-2)
     efsw=pui.data.swi.swim2.efsw ;solar wind proton energy flux (eV cm-2 s-1)
-    sintub=sqrt(pui.model.params.kemax/(4*1e3*[1,16]#esw))
+    sintub=sqrt(pui.model[0:1].params.kemax/(4*1e3*[1,16]#esw))
     eden=pui.data.swe.eden ;swea electron density (cm-3)
     edenpot=pui.data.swe.edenpot ;swea electron density (cm-3)
 
-    store_data,'mvn_mag_MSO_(nT)',data={x:centertime,y:1e9*[[mag],[sqrt(total(mag^2,2))]]},limits={yrange:[-10,10],labels:['Bx','By','Bz','Btot'],colors:'bgrk',labflag:1}
+    store_data,'mvn_mag_MSO_(nT)',data={x:centertime,y:1e9*[[onesnt-1.],[mag],[sqrt(total(mag^2,2))]]},limits={yrange:[-10,10],labels:['0','Bx','By','Bz','Btot'],colors:'cbgrk',labflag:1}
     store_data,'mvn_mag_Btot_(nT)',data={x:centertime,y:1e9*sqrt(total(mag^2,2))},limits={yrange:[.1,1000],ylog:1,ytickunits:'scientific'}
     store_data,'mvn_Nsw_(cm-3)',data={x:centertime,y:pui.data.swi.swim.density},limits={yrange:[.01,100],ylog:1,ytickunits:'scientific'}
-    store_data,'mvn_Vsw_MSO_(km/s)',data={x:centertime,y:[[transpose(pui.data.swi.swim.velocity_mso)],[-pui.data.swi.swim2.usw]]},limits={labels:['Vx','Vy','Vz','-Vtot'],colors:'bgrk',labflag:1}
+    store_data,'mvn_Vsw_MSO_(km/s)',data={x:centertime,y:[[onesnt-1.],[transpose(pui.data.swi.swim.velocity_mso)],[-pui.data.swi.swim2.usw]]},limits={labels:['0','Vx','Vy','Vz','-Vtot'],colors:'cbgrk',labflag:1}
     store_data,'Sin(thetaUB)',data={x:centertime,y:transpose(sintub)},limits={yrange:[0,1]}
     store_data,'E_Motional_(V/km)',data={x:centertime,y:1e3*transpose(emot)},limits={yrange:[.01,10],ylog:1,ytickunits:'scientific'}
     store_data,'Pickup_Gyro_Period_(sec)',data={x:centertime,y:transpose(pui.model[0:1].params.tg)},limits={yrange:[1,1e3],ylog:1,labels:['H+','O+'],colors:'br',labflag:1,ytickunits:'scientific'}
@@ -78,7 +79,7 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
       sepr=pui.model[1].fluxes.sep[i].rv[0:2]
       sepv=pui.model[1].fluxes.sep[i].rv[3:5]
       store_data,'mvn_model_puo_sep'+strtrim(i+1,2),data={x:centertime,y:transpose(pui.model[1].fluxes.sep[i].model_rate),v:pui1.sepet[i].sepbo},limits={spec:1,ylog:1,zlog:1,yrange:[10,1e3],zrange:[.1,1e4],ztitle:'counts/s',ztickunits:'scientific',ytickunits:'scientific'}
-      store_data,'mvn_d2m_puo_sep'+strtrim(i+1,2),data={x:centertime,y:[[sepd2m],[replicate(1.,pui0.nt)]]},limits={yrange:[1e-2,1e2],ylog:1,colors:'rg',ytickunits:'scientific'}
+      store_data,'mvn_d2m_puo_sep'+strtrim(i+1,2),data={x:centertime,y:[[sepd2m],[onesnt]]},limits={yrange:[1e-2,1e2],ylog:1,colors:'rg',ytickunits:'scientific'}
       store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_source_MSO_(Rm)',data={x:centertime,y:[[transpose(sepr)],[sqrt(total(sepr^2,1))]]/rmars},limits={labels:['x','y','z','r'],colors:'bgrk',labflag:1}
       store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_MSO_(km/s)',data={x:centertime,y:[[transpose(sepv)],[sqrt(total(sepv^2,1))]]/1e3},limits={labels:['x','y','z','v'],colors:'bgrk',labflag:1}
       store_data,'mvn_model_puh_incident_sep'+strtrim(i+1,2),data={x:centertime,y:transpose(pui.model[0].fluxes.sep[i].incident_rate)},limits={spec:1,zlog:1,yrange:[0,20],zrange:[1,1e4]}

@@ -1,7 +1,8 @@
 ;20160708 Ali
 ;routine to calculated and plot dependence of SWIA and STATIC elevation coverage on energy
 ;to show reduced FOV at high energies
-;calculates the correction factor for SWIA and STATIC reduced FOV at E>5keV
+;input: energy in keV
+;output: correction factor for SWIA and STATIC reduced FOV at E>5keV
 ;
 function mvn_pui_reduced_fov,ke,plot_fov=plot_fov
 

@@ -13,8 +13,15 @@ if n_elements(do3d) eq 0 then do3d=0
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
+fnan=!values.f_nan
+fnanns=replicate(fnan,ns)
+xyz=replicate(fnan,3)
+rv=replicate(fnan,6) ;trajectory coordinates (rx,ry,rz,vx,vy,vz)
+
 pui0={              $ ;instrument and model constants structure
   sormd:500L,       $ ;sep open response matrix dimentions
+  srefa:15.5,       $ ;sep-xz (ref) angle
+  scrsa:21.0,       $ ;sep-xy (cross) angle
   sopeb:30L,        $ ;sep open # of energy bins
   swieb:48L,        $ ;swia # of energy bins
   staeb:64L,        $ ;static C0 # of energy bins
@@ -32,15 +39,13 @@ pui0={              $ ;instrument and model constants structure
   np:np,            $ ;number of simulated particles
   nt:nt,            $ ;number of time steps
   ns:ns,            $ ;number of species [0:hydrogen, 1:oxygen, >1:other stuff]
-  ngps:[1.,1.],     $ ;number of gyro-periods solved
-  mamu:[1.,16.],    $ ;mass of [H=1 C=12 N=14 O=16] (amu)
+  ngps:fnanns,      $ ;number of gyro-periods solved
+  mamu:fnanns,      $ ;mass of [H=1 C=12 N=14 O=16] (amu)
   msub:0,           $ ;species subscript (0=H, 1=O)
   tbin:binsize,     $ ;time bin size (s)
   trange:trange,    $ ;trange
   do3d:do3d         $ ;do3d
 }
-
-fnan=!values.f_nan
 
 pui1={ $ ;energy bins structure
   totet:exp(pui0.totdee*findgen(pui0.toteb,start=126.5,increment=-1)), $ ;total flux energy bin midpoints (312 keV to 15.6 keV)
@@ -55,7 +60,6 @@ pui2={vtot:fnan,rtot:fnan,dr:fnan,ke:fnan,de:fnan,mv:fnan}
 pui2=replicate(pui2,[np,nt]) ;temporary structure
 
 ;**********DATA**********
-xyz=replicate(fnan,3)
 sep={rate_bo:replicate(fnan,pui0.sopeb),att:byte(1),fov:xyz}
 sep=replicate(sep,2) ;2 SEP's
 swim2={usw:fnan,fsw:fnan,esw:fnan,efsw:fnan,mfsw:fnan}
@@ -80,7 +84,6 @@ swi1d=replicate({eflux:0.},pui0.swieb)
 sta1d=replicate({eflux:0.},pui0.staeb)
 swi3d=byte(0)
 sta3d=byte(0)
-rv=replicate(fnan,6) ;trajectory coordinates (rx,ry,rz,vx,vy,vz)
 if keyword_set(do3d) then swi3d=replicate({eflux:0.,rv:rv},[pui0.swieb,pui0.swina,pui0.swine])
 if keyword_set(do3d) then sta3d=replicate({eflux:0.,rv:rv},[pui0.sd1eb,pui0.swina,pui0.swine])
 sep={incident_rate:replicate(fnan,pui0.sormd),model_rate:replicate(fnan,pui0.sopeb),rv:rv}

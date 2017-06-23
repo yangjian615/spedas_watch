@@ -119,6 +119,7 @@ ifreq_h=i_pi_h+i_cx_h+i_ei_h_pot; %H total ionization frequency (s-1)
 ifreq_o=i_pi_o+i_cx_o+i_ei_o_pot; %O total ionization frequency (s-1)
 pui.model[0].ifreq.tot=ifreq_h
 pui.model[1].ifreq.tot=ifreq_o
+if pui0.ns ge 3 then pui.model[2:-1].ifreq.tot=3e-7 ;other species
 
 store_data,'Ionization_Frequencies_(s-1)',pui.centertime,[[ifreq_o],[ifreq_h],[i_pi_o],[i_pi_h],[i_cx_o],[i_cx_h],[i_ei_o],[i_ei_h],[i_ei_o_pot],[i_ei_h_pot]]
 ylim,'Ionization_Frequencies_(s-1)',1e-9,1e-5,1

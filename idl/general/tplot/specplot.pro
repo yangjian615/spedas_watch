@@ -50,9 +50,9 @@
 ;
 ;See Also:  "XLIM", "YLIM", "ZLIM",  "OPTIONS",  "TPLOT", "DRAW_COLOR_SCALE"
 ;Author:  Davin Larson,  Space Sciences Lab
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-11-18 11:13:27 -0800 (Fri, 18 Nov 2016) $
-; $LastChangedRevision: 22376 $
+; $LastChangedBy: spfuser $
+; $LastChangedDate: 2017-06-22 17:08:45 -0700 (Thu, 22 Jun 2017) $
+; $LastChangedRevision: 23498 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/specplot.pro $
 ;-
 pro specplot,x,y,z,limits=lim,data=data,overplot=overplot,overlay=overlay,$
@@ -508,7 +508,21 @@ for j=0L,gapcnt do begin
       ;printdat,image,xposition,yposition
       if xposition ge 0 and yposition ge 0 and xposition lt !d.x_size and yposition lt !d.y_size then begin
         if fill_color lt 0 then begin
-          tv,image,xposition,yposition,xsize=npx,ysize=npy
+          ; On Macs using XQuartz, plotting to a pixmap and using DEVICE to
+          ; write to the plot window is faster than using tv directly on the
+          ; plot window.
+          if !D.NAME EQ 'X' and !VERSION.OS_NAME EQ 'Mac OS X' then begin
+            plot_win = !D.WINDOW
+            window, /free, xsize = npx, ysize = npy, /pixmap
+            pix_win = !D.WINDOW
+            wset, pix_win
+            tv,image
+            wset, plot_win
+            device, copy = [0,0,npx,npy,xposition,yposition,pix_win]
+            wdelete, pix_win
+          endif else begin
+            tv,image,xposition,yposition,xsize=npx,ysize=npy
+          endelse
         endif else begin
           idx = where( image eq fill_color )
           if idx[0] ne -1 then begin

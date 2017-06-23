@@ -4,24 +4,35 @@
 pro mvn_pui_stat2
 
 if 0 then begin ;load all data
-  restore,'C:\Users\rahmati\idl\idlsave_all0.dat' ;restores stat,binsize,np
+  restore,'C:\Users\rahmati\idl\idlsave_all5.dat' ;restores stat,binsize,np
   stat2=reform(stat,size(stat,/n_elements)) ;making stat 1d
   stat3=stat2[where(stat2.centertime gt 0.,/null)] ;where data is available
-  if 0 then begin ;choose solar wind
-    mvn_pui_sw_orbit_coverage,times=stat3.centertime,alt_sw=alt_sw,conservative=1,spice=0
+  if 1 then begin ;choose solar wind
+    mvn_pui_sw_orbit_coverage,times=stat3.centertime,alt_sw=alt_sw,conservative=1,spice=1
     stat4=stat3[where(finite(alt_sw),/null,count1)] ;only solar wind, pretty conservative to keep bad stuff out
-    save,stat4,binsize,np,filename='C:\Users\rahmati\idl\idlsave_sw0.dat'
+    save,stat4,binsize,np,filename='C:\Users\rahmati\idl\idlsave_sw5.dat'
   endif else stat4=stat3
-endif else restore,'C:\Users\rahmati\idl\idlsave_sw0.dat' ;restores stat4,binsize,np
+endif else restore,'C:\Users\rahmati\idl\idlsave_sw5.dat' ;restores stat4,binsize,np
 ;stop
-;stat4[where(sqrt(total(stat4.vsw^2,1)) lt 500.,/null)].d2m.sep=!values.f_nan ;only high solar wind speed for SEP
-;stat4[where(1e9*sqrt(total(stat4.mag^2,1)) lt .1,/null)].mag=!values.f_nan ;when IMF is less than .1 nT
-;stat4[where(stat4.nsw lt .1,/null)].nsw=!values.f_nan ;when solar wind density is less than .1 cm-3
+
+if 1 then begin ;getting rid of unfavorable upstream parameters
+  usw=sqrt(total(stat4.vsw^2,1)) ;solar wind speed (km/s)
+  mag=sqrt(total(stat4.mag^2,1)) ;magnetic field (T)
+  costub=total(stat4.vsw*stat4.mag,1)/(usw*mag) ;cos(thetaUB)
+  lowusw=usw lt 500. ;low usw
+  lowmag=mag lt 1e-9 ;low mag (high error in B)
+  lowtub=abs(costub) gt .75 ;sin2(thetaUB)<.25 or thetaUB<30deg
+  stat4[where(lowusw or lowmag or lowtub,/null)].d2m.sep=!values.f_nan ;more reliable SEP
+  stat4[where(lowmag or lowtub,/null)].d2m.swi[0]=!values.f_nan
+  stat4[where(lowmag or lowtub,/null)].d2m.sta[0]=!values.f_nan
+endif
+;stop
 
 if 1 then begin ;orbit averaging
   count2=n_elements(stat4) ;should be equal to count1 above
-  dt=stat4[1:-1].centertime-stat4[0:-2].centertime ;must be equal to binsize (typically 32 sec), otherwise orbit jump
-  index3=where(dt gt binsize,/null,norbits) ;orbit jumps (number of orbits minus 1)
+  dt=stat4[1:-1].centertime-stat4[0:-2].centertime ;must be equal to binsize, otherwise orbit jump
+  index2=where(dt gt 60.*60.*24*10,/null,swjumps) ;solar wind jumps (swjumps: number of time periods entirely inside the bowshock)
+  index3=where(dt gt binsize,/null,norbits) ;orbit jumps (norbits: number of orbits minus 1)
 ;  index3=where((stat4.centertime mod 1001) eq 0,/null,norbits)
   index4=lonarr(norbits+2) ;orbit edges
   index4[1:-2]=index3 ;last element of each orbit (except the last orbit)
@@ -53,8 +64,8 @@ if 1 then begin ;orbit averaging
   endfor
 end
 
-if 1 then begin ;arbitrary averaging of orbit averages
-  nbins=200
+if 0 then begin ;arbitrary averaging of orbit averages
+  nbins=100
   range=minmax(stat4.centertime)
   stat6=stat5
   stat5=replicate(stat4[0],nbins)
@@ -77,7 +88,7 @@ if 1 then begin ;arbitrary averaging of orbit averages
   stat5.centertime=xbins
 endif
 
-if 0 then begin ;everything
+if 1 then begin ;everything
   stat5=stat4
   stat5.mag[0]=sqrt(total(stat4.mag^2,1))
   stat5.vsw[0]=sqrt(total(stat4.vsw^2,1))
@@ -85,10 +96,11 @@ endif
 
 ct=stat5.centertime
 
-if 0 then begin ;tplot stuff
+if 1 then begin ;tplot stuff
   store_data,'pui_stat_mag',ct,1e9*stat5.mag[0]
   ylim,'pui_stat_mag',.1,100,1
   store_data,'pui_stat_usw',ct,stat5.vsw[0]
+  ylim,'pui_stat_usw',100,1000,1
   store_data,'pui_stat_nsw',ct,stat5.nsw
   ylim,'pui_stat_nsw',.1,100,1
 
@@ -112,7 +124,7 @@ if 0 then begin ;tplot stuff
   ylim,'pui_stat_d2m*',.1,10,1
 
   options,'pui_stat_*','psym',0
-  tplot
+  tplot,'pui_stat_*
 endif
 
 ;p=plot(stat5.mag[0],stat5.vsw[0],'.',/xlog) ;imf vs vsw (no correlation)
@@ -133,12 +145,12 @@ endif
 ;p=plot(/o,6e32*stat5.ifreq[0].cx,'g')
 ;p=plot(/o,mars_ls,6e25*(stat5.d2m[0].sta[0]+stat5.d2m[0].swi[0])/2.,'g.')
 
-;p=plot(stat5.d2m[0].sta[0]/stat5.d2m[0].swi[0],'b.',/ylog)
-;p=plot(stat5.d2m[1].sta[0]/stat5.d2m[1].swi[0],'r.',/o)
+;p=plot(ct,stat5.d2m[0].sta[0]/stat5.d2m[0].swi[0],'b',/ylog,yrange=[.1,10],/stairs)
+;p=plot(ct,stat5.d2m[1].sta[0]/stat5.d2m[1].swi[0],'r',/o,/stairs)
 
 alswi=exp(average(alog(stat5.d2m.swi[0]),2,/nan))
 alsta=exp(average(alog(stat5.d2m.sta[0]),2,/nan))
 avswi=average(stat5.d2m.swi[0],2,/nan)
 avsta=average(stat5.d2m.sta[0],2,/nan)
-stop
+;stop
 end
