@@ -85,8 +85,7 @@
 ;    
 ;  datagap:  Setting for tplot variables, controls how long a gap must be before it is drawn. 
 ;            (can also manually degap)
-;  subtract_bulk:  Flag to subtract velocity vector from distribution before
-;                  calculation of field aligned angular spectra.
+;  subtract_bulk:  Flag to subtract bulk velocity (experimental)
 ;
 ;  display_object:  Object allowing dprint to export output messages
 ;
@@ -104,11 +103,11 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-23 09:42:54 -0700 (Fri, 23 Jun 2017) $
-;$LastChangedRevision: 23505 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
+;$LastChangedDate: 2017-06-23 08:27:11 -0700 (Fri, 23 Jun 2017) $
+;$LastChangedRevision: 23504 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products_new.pro $
 ;-
-pro mms_part_products, $
+pro mms_part_products_new, $
                      in_tvarname, $ ;the tplot variable name for the MMS being processed
                                     ;specify this or use probe, instr, rate, level, species
 
@@ -168,10 +167,7 @@ pro mms_part_products, $
   twin = systime(/sec)
   error = 1
   
-  if keyword_set(subtract_bulk) then begin
-    dprint, dlevel = 0, 'Error with keyword: subtract_bulk; not yet implemented - no bulk velocity subtraction will be applied.'
-    undefine, subtract_bulk
-  endif
+  if keyword_set(subtract_bulk) then no_regrid = 1
   
   if ~is_string(in_tvarname) then begin
     dprint, dlevel=0, 'No input data, please specify tplot variable'
@@ -384,15 +380,70 @@ pro mms_part_products, $
 
     dist = mms_get_dist(in_tvarname, time_idx[i], /structure, probe=probe, $
                         species=species, instrument=instrument, units=input_units)
-
+    
     str_element, dist, 'orig_energy', dist.energy[*, 0, 0], /add
-                      
+
     ;Sanitize Data.
     ;#1 removes unneeded fields from struct to increase efficiency
     ;#2 Reforms into angle by energy data 
-  
     mms_pgs_clean_data,dist,output=clean_data,units=units_lc
     
+    ; subtract the bulk velocity
+    if keyword_set(subtract_bulk) then begin
+      spd_pgs_v_shift, clean_data, vel_data[i,*], error=error
+    endif
+    
+    if units_lc eq 'eflux' then begin ; from mms_convert_flux_units
+      ;get mass of species
+      case dist.species of
+        'i': A=1;H+
+        'hplus': A=1;H+
+        'heplus': A=4;He+
+        'heplusplus': A=4;He++
+        'oplus': A=16;O+
+        'oplusplus': A=16;O++
+        'e': A=1d/1836;e-
+        else: message, 'Unknown species: '+species_lc
+      endcase
+
+      ;scaling factor between df and flux units
+      flux_to_df = A^2 * 0.5447d * 1d6
+
+      ;convert between km^6 and cm^6 for df
+      cm_to_km = 1d30
+
+      ;calculation will be kept simple and stable as possible by
+      ;pre-determining the final exponent of each scaling factor
+      ;rather than multiplying by all applicable in/out factors
+      ;these exponents should always be integers!
+      ;    [energy, flux_to_df, cm_to_km]
+      in = [0,0,0]
+      out = [0,0,0]
+
+      ;get input/output scaling exponents
+      case dist.units_name of
+        'flux': in = [1,0,0]
+        'eflux':
+        'df': in = [2,-1,0]
+        'df_cm': in = [2,-1,1]
+        else: message, 'Unknown input units: '+units_in
+      endcase
+
+      case units_lc of
+        'flux':out = -[1,0,0]
+        'eflux':
+        'df': out = -[2,-1,0]
+        'df_cm': out = -[2,-1,1]
+        else: message, 'Unknown output units: '+units_out
+      endcase
+
+      exp = in + out
+
+      ;ensure everything is double prec first for numerical stability
+      ;  -target field won't be mutated since it's part of a structure
+      clean_data.data = double(clean_data.psd) * double(clean_data.orig_energy)^exp[0] * (flux_to_df^exp[1] * cm_to_km^exp[2])
+    endif
+ 
     ;Copy bin status prior to application of angle/energy limits.
     ;Phi limits will need to be re-applied later after phi bins
     ;have been aligned across energy (in case of irregular grid). 
@@ -411,17 +462,17 @@ pro mms_part_products, $
 
     ;Build theta spectrogram
     if in_set(outputs_lc, 'theta') then begin
-      spd_pgs_make_theta_spec, clean_data, spec=theta_spec, yaxis=theta_y
+      mms_pgs_make_theta_spec, clean_data, spec=theta_spec, yaxis=theta_y
     endif
     
     ;Build phi spectrogram
     if in_set(outputs_lc, 'phi') then begin
-      spd_pgs_make_phi_spec, clean_data, spec=phi_spec, yaxis=phi_y
+      mms_pgs_make_phi_spec, clean_data, spec=phi_spec, yaxis=phi_y
     endif
     
     ;Build energy spectrogram
     if in_set(outputs_lc, 'energy') then begin
-      spd_pgs_make_e_spec, clean_data, spec=en_spec, yaxis=en_y
+      mms_pgs_make_e_spec, clean_data, spec=en_spec, yaxis=en_y
     endif
     
     ;Perform transformation to FAC, regrid data, and apply limits in new coords
@@ -446,10 +497,6 @@ pro mms_part_products, $
         spd_pgs_regrid,clean_data,regrid,output=clean_data
       endif
 
-      ;shift by bulk velocity vector if requested
-      if keyword_set(subtract_bulk) && ~undefined(vel_data) then begin
-        spd_pgs_v_shift, clean_data, vel_data[i,*], matrix=reform(fac_matrix[i,*,*],3,3), error=error
-      endif
       
       clean_data.theta = 90-clean_data.theta ;pitch angle is specified in co-latitude
       
@@ -465,17 +512,17 @@ pro mms_part_products, $
     
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
-      spd_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y, /colatitude, resolution=regrid[1]
+      mms_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y, /colatitude, resolution=regrid[1]
     endif
     
     ;Build gyrophase spectrogram
     if in_set(outputs_lc, 'gyro') then begin
-      spd_pgs_make_phi_spec, clean_data, spec=gyro_spec, yaxis=gyro_y, resolution=regrid[0]
+      mms_pgs_make_phi_spec, clean_data, spec=gyro_spec, yaxis=gyro_y, resolution=regrid[0]
     endif
     
     ;Build energy spectrogram from field aligned distribution
     if in_set(outputs_lc, 'fac_energy') then begin
-      spd_pgs_make_e_spec, clean_data, spec=fac_en_spec,  yaxis=fac_en_y
+      mms_pgs_make_e_spec, clean_data, spec=fac_en_spec,  yaxis=fac_en_y
     endif
     
     ;Calculate FAC moments
@@ -542,9 +589,9 @@ pro mms_part_products, $
   
   ;Field-Aligned Energy Spectrograms
   if ~undefined(fac_en_spec) then begin
-    spd_pgs_make_tplot, tplot_prefix+'energy'+suffix, x=times, y=fac_en_y, z=fac_en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames
+    spd_pgs_make_tplot, tplot_prefix+'facenergy'+suffix, x=times, y=fac_en_y, z=fac_en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames
   endif
-  
+
   ;Moments Variables
   if ~undefined(moments) then begin
     moments.time = times

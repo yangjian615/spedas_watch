@@ -27,7 +27,8 @@ pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
   if size(peak_data, /type) EQ 8 then begin
     
     store_data, prefix + 'peak_converted', $
-      data = {x:peak_data.x, y:spp_fld_dfb_psuedo_log_decompress(peak_data.y)}
+      data = {x:peak_data.x, $
+      y:spp_fld_dfb_psuedo_log_decompress(peak_data.y, type = 'bandpass')}
     
     options, prefix + 'peak_converted', 'panel_size', 2
     options, prefix + 'peak_converted', 'spec', 1
@@ -40,7 +41,8 @@ pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
   if size(avg_data, /type) EQ 8 then begin
 
     store_data, prefix + 'avg_converted', $
-      data = {x:avg_data.x, y:spp_fld_dfb_psuedo_log_decompress(avg_data.y)}
+      data = {x:avg_data.x, $
+      y:spp_fld_dfb_psuedo_log_decompress(avg_data.y, type = 'bandpass')}
 
     options, prefix + 'avg_converted', 'panel_size', 2
     options, prefix + 'avg_converted', 'spec', 1
