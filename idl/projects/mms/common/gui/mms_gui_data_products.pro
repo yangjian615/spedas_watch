@@ -12,8 +12,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-08 13:46:13 -0800 (Wed, 08 Feb 2017) $
-; $LastChangedRevision: 22752 $
+; $LastChangedDate: 2017-06-26 12:14:23 -0700 (Mon, 26 Jun 2017) $
+; $LastChangedRevision: 23513 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_data_products.pro $
 ;-
 
@@ -103,6 +103,7 @@ function mms_gui_data_products, probes, instrument, rate, level
     valid_products['fpi-fast-l2'] = ['_des_pitchangdist_lowen_fast', $
                                     '_des_pitchangdist_miden_fast', $
                                     '_des_pitchangdist_highen_fast', $
+                                    '_des_numberdensity_fast', $
                                     '_des_numberdensity_dbcs_fast', $
                                     '_des_numberdensity_gse_fast', $
                                     '_des_numberdensity_err_fast', $
@@ -147,6 +148,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_pitchangdist_lowen_fast', $
                                     '_dis_pitchangdist_miden_fast', $
                                     '_dis_pitchangdist_highen_fast', $
+                                    '_dis_numberdensity_fast', $
                                     '_dis_numberdensity_dbcs_fast', $
                                     '_dis_numberdensity_gse_fast', $
                                     '_dis_numberdensity_err_fast', $
@@ -193,6 +195,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_pitchangdist_miden_brst', $
                                     '_des_pitchangdist_highen_brst', $
                                     '_des_numberdensity_dbcs_brst', $
+                                    '_des_numberdensity_brst', $
                                     '_des_numberdensity_gse_brst', $
                                     '_des_numberdensity_err_brst', $
                                     '_des_bulkspeed_dbcs_brst', $
@@ -237,6 +240,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_pitchangdist_miden_brst', $
                                     '_dis_pitchangdist_highen_brst', $
                                     '_dis_numberdensity_dbcs_brst', $
+                                    '_dis_numberdensity_brst', $
                                     '_dis_numberdensity_gse_brst', $
                                     '_dis_numberdensity_err_brst', $
                                     '_dis_bulkspeed_dbcs_brst', $
