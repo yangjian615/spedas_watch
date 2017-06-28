@@ -8,25 +8,25 @@
 <items>
 
   <tmlib
-  	tmlib_event = 'dfb_dc_spec1'
+  	tmlib_event = 'dfb_ac_spec3'
   	>
   </tmlib>
 
   <cdf_global
-    Title = "SPP FIELDS DFB DC Spectrum"
+    Title = "SPP FIELDS DFB AC Spectrum"
     Descriptor = "DFB>Digital Fields Board"
     Data_type = "Magnetic field / electric field data"
     Data_version = "0"
-    TEXT = "SPP FIELDS DFB DC Spectrum Data"
+    TEXT = "SPP FIELDS DFB AC Spectrum Data"
     Mods = "Revision 0"
-    Logical_source = "SPP_FLD_DFB_DC_SPEC1"
-    Logical_source_description = "SPP FIELDS DFB DC Spectrum"
+    Logical_source = "SPP_FLD_DFB_AC_SPEC3"
+    Logical_source_description = "SPP FIELDS DFB AC Spectrum"
     Dependencies = "None"
     >
   </cdf_global>
 
   <idl_att
-    convert_routine = 'spp_fld_dfb_dc_spec_convert'>
+    convert_routine = 'spp_fld_dfb_ac_spec_convert'>
   </idl_att>
 
   &l1_dfb_spec_common;

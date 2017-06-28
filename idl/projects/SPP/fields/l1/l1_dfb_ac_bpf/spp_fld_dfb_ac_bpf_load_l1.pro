@@ -1,4 +1,4 @@
-pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
+pro spp_fld_dfb_ac_bpf_load_l1, file, prefix = prefix
 
   if not keyword_set(prefix) then return
 
@@ -6,7 +6,7 @@ pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
 
   if typename(file) EQ 'UNDEFINED' then begin
 
-    dprint, 'No file provided to spp_fld_dfb_dc_bpf_load_l1', dlevel = 2
+    dprint, 'No file provided to spp_fld_dfb_ac_bpf_load_l1', dlevel = 2
 
     return
 
@@ -17,7 +17,7 @@ pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
   options, prefix + ['enable','rslt_sel','src_sel','cad_sel'], 'colors', 6
   options, prefix + ['enable','rslt_sel','src_sel','cad_sel'], 'psym', 4
   options, prefix + ['enable','rslt_sel','src_sel','cad_sel'], 'panel_size', 0.75
-  
+
   options, prefix + 'peak', 'spec', 1
   options, prefix + 'peak', 'no_interp', 1
 
@@ -25,21 +25,21 @@ pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
   options, prefix + 'avg', 'no_interp', 1
 
   get_data, prefix + 'peak', data = peak_data
-  
+
   if size(peak_data, /type) EQ 8 then begin
-    
+
     store_data, prefix + 'peak_converted', $
       data = {x:peak_data.x, $
       y:spp_fld_dfb_psuedo_log_decompress(peak_data.y, type = 'bandpass')}
-    
+
     options, prefix + 'peak_converted', 'panel_size', 2
     options, prefix + 'peak_converted', 'spec', 1
     options, prefix + 'peak_converted', 'no_interp', 1
-    
+
   endif
-  
+
   get_data, prefix + 'avg', data = avg_data
-  
+
   if size(avg_data, /type) EQ 8 then begin
 
     store_data, prefix + 'avg_converted', $
@@ -55,16 +55,16 @@ pro spp_fld_dfb_dc_bpf_load_l1, file, prefix = prefix
   dc_bpf_names = tnames(prefix + '*')
 
   if dc_bpf_names[0] NE '' then begin
-    
+
     for i = 0, n_elements(dc_bpf_names) - 1 do begin
-      
+
       dc_bpf_name_i = strmid(dc_bpf_names[i], strlen(prefix))
-      
-      options, prefix + dc_bpf_name_i, 'ytitle', 'SPP DFB!CDC BPF' + $
+
+      options, prefix + dc_bpf_name_i, 'ytitle', 'SPP DFB!CAC BPF' + $
         string(bpf_ind) + '!C' + strupcase(dc_bpf_name_i)
-      
+
     endfor
-    
+
   endif
 
   if varnames[0] EQ '' then begin
