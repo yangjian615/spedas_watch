@@ -33,8 +33,8 @@
 ;                       
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-24 14:56:35 -0700 (Fri, 24 Mar 2017) $
-;$LastChangedRevision: 23032 $
+;$LastChangedDate: 2017-06-27 20:54:36 -0700 (Tue, 27 Jun 2017) $
+;$LastChangedRevision: 23523 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
@@ -42,7 +42,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
   suffix = suffix_in, datatype = datatype, data_units = data_units, data_rate = data_rate, $
   num_smooth = num_smooth
 
-  if undefined(datatype) then datatype='electron'
+  if undefined(datatype) then datatype='electron' else datatype=strlowcase(datatype)
   if undefined(data_rate) then data_rate = 'srvy' else data_rate=strlowcase(data_rate)
   if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
   if undefined(suffix_in) then suffix_in = ''
@@ -54,6 +54,13 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
   if data_units eq 'intensity' then out_units = '(cm!E2!N s sr KeV)!E-1!N'
   if data_units eq 'cps' || data_units eq 'count_rate' then out_units = 'Counts/s'
   if data_units eq 'counts' then out_units = 'Counts'
+  
+  ; Added by DLT on 26 Jun 2017:
+  ; Account for angular response (finite field of view) of instruments
+  ; elec can use +/-21.4 deg on each pitch angle as average response angle; ions can start with +/-10 deg, but both need to be further refined
+  if datatype eq 'electron' then dAngResp = 21.4 ; [deg] 
+  if datatype eq 'ion' then dAngResp = 10.0 ; [deg]
+
 
   if energy[0] lt 32.0 then begin
     dprint, dlevel = 0, 'Please select a starting energy of 32 keV or above'
@@ -146,7 +153,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
   ; Now loop through PA bins and time, find the telescopes where there is data in those bins and average it up!
   for it = 0l, n_elements(dpa[*,0])-1 do begin
     for ipa = 0, n_pabins-1 do begin
-      ind = where((dpa[it,*] ge pa_label[ipa]-delta_pa) and (dpa[it,*] lt pa_label[ipa]+delta_pa))
+      ind = where((dpa[it,*] + dAngResp ge pa_label[ipa]-delta_pa) and (dpa[it,*] - dAngResp lt pa_label[ipa]+delta_pa))  ; edited by DLT on 26 Jun 2017
       if ind[0] ne -1 then pa_flux[it, ipa] = reform(average(dflux[it, ind], 2, /NAN))
     endfor
   endfor
