@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-22 18:25:24 -0700 (Thu, 22 Jun 2017) $
-;$LastChangedRevision: 23501 $
+;$LastChangedDate: 2017-06-29 15:40:13 -0700 (Thu, 29 Jun 2017) $
+;$LastChangedRevision: 23530 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_make_theta_spec.pro $
 ;-
 
@@ -47,20 +47,19 @@ pro mms_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, colatitu
     d[idx] = 0.
   endif
   
-  ave = dblarr(16)
-  
-  outbins = 180.*indgen(16+1)/16
+  n_theta = dimen1(data.theta)
+
+  ave = dblarr(n_theta) 
+  outbins = interpol([0, 180],n_theta+1)
   
   ; shift to colatitude
   if undefined(colatitude) then data.theta = 90-data.theta
   
-  for tidx = 0, n_elements(data.theta[*, 0])-1 do begin
-    for bin_idx = 0, n_elements(outbins)-2 do begin
-      this_bin = where(data.theta[tidx, *] ge outbins[bin_idx] and data.theta[tidx, *] lt outbins[bin_idx+1], bcount)
-      if bcount ne 0 then begin
-        ave[bin_idx] += total(d[tidx, this_bin])/total(data.bins[tidx, this_bin])
-      endif
-    endfor
+  for bin_idx = 0, n_elements(outbins)-2 do begin
+    this_bin = where(data.theta ge outbins[bin_idx] and data.theta lt outbins[bin_idx+1], bcount)
+    if bcount ne 0 then begin
+      ave[bin_idx] += total(d[this_bin])/total(data.bins[this_bin])
+    endif
   endfor
 
   if undefined(colatitude) then data.theta = 90-data.theta

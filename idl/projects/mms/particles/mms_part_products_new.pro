@@ -103,8 +103,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-23 08:27:11 -0700 (Fri, 23 Jun 2017) $
-;$LastChangedRevision: 23504 $
+;$LastChangedDate: 2017-06-29 15:41:40 -0700 (Thu, 29 Jun 2017) $
+;$LastChangedRevision: 23531 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products_new.pro $
 ;-
 pro mms_part_products_new, $
@@ -387,7 +387,13 @@ pro mms_part_products_new, $
     ;#1 removes unneeded fields from struct to increase efficiency
     ;#2 Reforms into angle by energy data 
     mms_pgs_clean_data,dist,output=clean_data,units=units_lc
-    
+
+    ;split hpca angle bins to be equal width in phi/theta
+    ;this is needed when skipping the regrid step
+    if instrument eq 'hpca' then begin
+      mms_pgs_split_hpca, clean_data, output=clean_data
+    endif
+
     ; subtract the bulk velocity
     if keyword_set(subtract_bulk) then begin
       spd_pgs_v_shift, clean_data, vel_data[i,*], error=error
@@ -481,12 +487,6 @@ pro mms_part_products_new, $
       ;limits will be applied to energy-aligned bins
       clean_data.bins = temporary(pre_limit_bins)
       
-      ;split hpca angle bins to be equal width in phi/theta
-      ;this is needed when skipping the regrid step
-      if keyword_set(no_regrid) && instrument eq 'hpca' then begin
-        mms_pgs_split_hpca, clean_data, output=clean_data
-      endif
-
       spd_pgs_limit_range,clean_data,phi=phi,theta=theta,energy=energy 
       
       ;perform FAC transformation and interpolate onto a new, regular grid 
@@ -589,7 +589,7 @@ pro mms_part_products_new, $
   
   ;Field-Aligned Energy Spectrograms
   if ~undefined(fac_en_spec) then begin
-    spd_pgs_make_tplot, tplot_prefix+'facenergy'+suffix, x=times, y=fac_en_y, z=fac_en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames
+    spd_pgs_make_tplot, tplot_prefix+'energy'+suffix, x=times, y=fac_en_y, z=fac_en_spec, ylog=1, units=units_lc,datagap=datagap,tplotnames=tplotnames
   endif
 
   ;Moments Variables

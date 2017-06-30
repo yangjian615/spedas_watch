@@ -50,9 +50,9 @@
 ;
 ;See Also:  "XLIM", "YLIM", "ZLIM",  "OPTIONS",  "TPLOT", "DRAW_COLOR_SCALE"
 ;Author:  Davin Larson,  Space Sciences Lab
-; $LastChangedBy: spfuser $
-; $LastChangedDate: 2017-06-22 17:08:45 -0700 (Thu, 22 Jun 2017) $
-; $LastChangedRevision: 23498 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-06-29 15:26:21 -0700 (Thu, 29 Jun 2017) $
+; $LastChangedRevision: 23528 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/specplot.pro $
 ;-
 pro specplot,x,y,z,limits=lim,data=data,overplot=overplot,overlay=overlay,$
@@ -322,7 +322,7 @@ for j=0L,gapcnt do begin
        y_diff_high = (y1[extend_y_dim-1] - y1[extend_y_dim-2])/2.
        
        ;if difference is ever zero we can't extrapolate
-       if y_diff_low gt 0 and y_diff_high gt 0 then begin
+       if y_diff_low ne 0 or y_diff_high ne 0 then begin
          ;replicate z data
          z1=[[z1[*,0]],[z1],[z1[*,extend_y_dim-1]]]
          ;use differences +- edges to generate new edges

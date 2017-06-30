@@ -40,15 +40,15 @@ Endif else begin; use defaults
       print,'No eic config found...creating default configuration'
     endelse
 
-    !eic.local_data_dir = 'C:/data/eic'
-    !eic.remote_data_dir = 'vmo.igpp.ucla.edu/data1/SECS/'
+    !eic.local_data_dir = 'C:/data/eic/'
+    !eic.remote_data_dir = 'http://vmo.igpp.ucla.edu/data1/SECS/'
 endelse
 ;if file_test(!eic.local_data_dir+'eic/.master') then begin  ; Local directory IS the master directory
 ;   !eic.no_server=1    ;   
 ;   !eic.no_download=1  ; This line is superfluous
 ;endif
 
-!eic.remote_data_dir = 'vmo.igpp.ucla.edu/data1/SECS/'
+!eic.remote_data_dir = 'http://vmo.igpp.ucla.edu/data1/SECS/'
 
 !eic.init = 1
 
