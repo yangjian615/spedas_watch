@@ -1,9 +1,9 @@
 ;+
 ;NAME:
-; eic_fileconfig
+; secs_fileconfig
 ;
 ;PURPOSE:
-; A widget that allows the user to set some of the !eic variable. The user
+; A widget that allows the user to set some of the !secs variable. The user
 ; can resettodefault, modify, and save the system variable.
 ; 
 ;HISTORY:
@@ -11,10 +11,10 @@
 ;$LastChangedBy: aaflores $
 ;$LastChangedDate: 2015-06-19 18:59:28 -0700 (Fri, 19 Jun 2015) $
 ;$LastChangedRevision: 17927 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/eic/spedas_plugin/eic_fileconfig.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/spedas_plugin/secs_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
-pro eic_init_struct,state,struct
+pro secs_init_struct,state,struct
 
   compile_opt idl2,hidden
 
@@ -43,7 +43,7 @@ pro eic_init_struct,state,struct
 
 end
 
-PRO eic_fileconfig_event, event
+PRO secs_fileconfig_event, event
 
   ; Get State structure from top level base
   Widget_Control, event.handler, Get_UValue=state, /No_Copy
@@ -73,7 +73,7 @@ PRO eic_fileconfig_event, event
       dirName = Dialog_Pickfile(Title='Choose a Local Data Directory:', $
       Dialog_Parent=state.master,path=currentDir, /directory, /must_exist); /fix_filter doesn't seem to make a difference on Windows. Does on unix.  
       IF is_string(dirName) THEN BEGIN
-          !eic.local_data_dir = dirName
+          !secs.local_data_dir = dirName
           widget_control, state.localDir, set_value=dirName             
       ENDIF ELSE BEGIN
         ;  ok = dialog_message('Selection is not a directory',/center)
@@ -84,56 +84,56 @@ PRO eic_fileconfig_event, event
     'LOCALDIR': BEGIN
     
         widget_control, state.localDir, get_value=currentDir
-        !eic.local_data_dir = currentDir
+        !secs.local_data_dir = currentDir
 
     END
     
     'REMOTEDIR': BEGIN
     
         widget_control, state.remoteDir, get_value=currentDir
-        !eic.remote_data_dir = currentDir
+        !secs.remote_data_dir = currentDir
 
     END
 
     'NDON': BEGIN
 
-        IF event.select EQ 1 then !eic.no_download=0 else !eic.no_download=1
+        IF event.select EQ 1 then !secs.no_download=0 else !secs.no_download=1
 
     END
     
     'NDOFF': BEGIN
 
-        IF event.select EQ 1 then !eic.no_download=1 else !eic.no_download=0
+        IF event.select EQ 1 then !secs.no_download=1 else !secs.no_download=0
 
     END
     
     'NUON': BEGIN
 
-        IF event.select EQ 1 then !eic.no_update=0 else !eic.no_update=1
+        IF event.select EQ 1 then !secs.no_update=0 else !secs.no_update=1
 
     END
     
     'NUOFF': BEGIN
 
-        IF event.select EQ 1 then !eic.no_update=1 else !eic.no_update=0
+        IF event.select EQ 1 then !secs.no_update=1 else !secs.no_update=0
 
     END
     
     'DOON': BEGIN
 
-      IF event.select EQ 1 then !eic.downloadonly=1 else !eic.downloadonly=0
+      IF event.select EQ 1 then !secs.downloadonly=1 else !secs.downloadonly=0
 
     END
 
     'DOOFF': BEGIN
 
-      IF event.select EQ 1 then !eic.downloadonly=0 else !eic.downloadonly=1
+      IF event.select EQ 1 then !secs.downloadonly=0 else !secs.downloadonly=1
 
     END
     
     'VERBOSE': BEGIN
 
-       !eic.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
+       !secs.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
 
     END
     
@@ -142,25 +142,25 @@ PRO eic_fileconfig_event, event
        ; this is basically a cancel and will reset all values to
        ; the original values at the time this window was first 
        ; displayed
-       !eic=state.eic_cfg_save
-       widget_control,state.localdir,set_value=!eic.local_data_dir
-       widget_control,state.remotedir,set_value=!eic.remote_data_dir
-       if !eic.no_download eq 1 then begin
+       !secs=state.secs_cfg_save
+       widget_control,state.localdir,set_value=!secs.local_data_dir
+       widget_control,state.remotedir,set_value=!secs.remote_data_dir
+       if !secs.no_download eq 1 then begin
           widget_control,state.nd_off_button,set_button=1
        endif else begin
           widget_control,state.nd_on_button,set_button=1
        endelse  
-       if !eic.no_update eq 1 then begin
+       if !secs.no_update eq 1 then begin
          widget_control,state.nu_off_button,set_button=1
        endif else begin
          widget_control,state.nu_on_button,set_button=1
        endelse
-       if !eic.downloadonly eq 1 then begin
+       if !secs.downloadonly eq 1 then begin
          widget_control, state.do_on_button, set_button=1
        endif else begin
          widget_Control, state.do_off_button, set_button=1
        endelse
-       widget_control,state.v_droplist,set_combobox_select=!eic.verbose
+       widget_control,state.v_droplist,set_combobox_select=!secs.verbose
        state.historywin->update,'Resetting controls to saved values.'
        state.statusbar->update,'Resetting controls to saved values.'       
 
@@ -168,8 +168,8 @@ PRO eic_fileconfig_event, event
     
    'RESETTODEFAULT': Begin
 
-      eic_init,  /reset
-      eic_init_struct,state,!eic
+      secs_init,  /reset
+      secs_init_struct,state,!secs
       state.historywin->update,'Resetting configuration to default values.'
       state.statusbar->update,'Resetting configuration to default values.'  
 
@@ -177,10 +177,10 @@ PRO eic_fileconfig_event, event
     
     'SAVE': BEGIN
 
-      ; save the current values of the !eic system variable
-      eic_write_config 
-      state.statusBar->update,'Saved eic_config.txt'
-      state.historyWin->update,'Saved eic_config.txt'
+      ; save the current values of the !secs system variable
+      secs_write_config 
+      state.statusBar->update,'Saved secs_config.txt'
+      state.historyWin->update,'Saved secs_config.txt'
 
     END
     
@@ -193,12 +193,12 @@ Return
 END ;--------------------------------------------------------------------------------
 
 
-PRO eic_fileconfig, tab_id, historyWin, statusBar
+PRO secs_fileconfig, tab_id, historyWin, statusBar
 
-;check whether the !eic system variable has been initialized
-  defsysv, 'eic', exists=exists
-  if not keyword_set(exists) then eic_init
-  eic_cfg_save = !eic
+;check whether the !secs system variable has been initialized
+  defsysv, 'secs', exists=exists
+  if not keyword_set(exists) then secs_init
+  secs_cfg_save = !secs
 
 ;Build the widget bases
   master = Widget_Base(tab_id, /col, tab_mode=1,/align_left, /align_top) 
@@ -209,7 +209,7 @@ PRO eic_fileconfig, tab_id, historyWin, statusBar
 
 ;Widget base for save, reset and exit buttons
   bmaster = widget_base(master, /row, /align_center, ypad=7)
-  ll = max(strlen([!eic.local_data_dir, !eic.remote_data_dir]))+12
+  ll = max(strlen([!secs.local_data_dir, !secs.remote_data_dir]))+12
 
 ;Now create directory text widgets
   configbase = widget_base(vmaster,/col)
@@ -217,13 +217,13 @@ PRO eic_fileconfig, tab_id, historyWin, statusBar
   lbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(lbase, value = 'Local data directory:    ')
   localdir = widget_text(lbase, /edit, /all_events, xsiz = ll, $
-                         uval = 'LOCALDIR', val = !eic.local_data_dir)
+                         uval = 'LOCALDIR', val = !secs.local_data_dir)
   loc_browsebtn = widget_button(lbase,value='Browse', uval='LOCALBROWSE',/align_center)
 
   rbase = widget_base(configbase, /row, /align_left, ypad=5)
   flabel = widget_label(rbase, value = 'Remote data directory: ')
   remotedir = widget_text(rbase, /edit, /all_events, xsiz = ll, $
-                          uval = 'REMOTEDIR', val = !eic.remote_data_dir)
+                          uval = 'REMOTEDIR', val = !secs.remote_data_dir)
 
 ;Next radio buttions
   nd_base = widget_base(configbase, /row, /align_left)
@@ -262,18 +262,18 @@ PRO eic_fileconfig, tab_id, historyWin, statusBar
   ;defaults for reset:
   def_values=[0,0,0,2]
   
-  state = {localdir:localdir, remotedir:remotedir, eic_cfg_save:eic_cfg_save, $
+  state = {localdir:localdir, remotedir:remotedir, secs_cfg_save:secs_cfg_save, $
            nd_on_button:nd_on_button, nd_off_button:nd_off_button, $
            nu_on_button:nu_on_button, nu_off_button:nu_off_button, $
            do_on_button:do_on_button, do_off_button:do_off_button, $
            v_values:v_values, v_droplist:v_droplist, statusBar:statusBar, $
            def_values:def_values, historyWin:historyWin, tab_id:tab_id, master:master}
 
-  eic_init_struct,state,!eic
+  secs_init_struct,state,!secs
 
   widget_control, master, set_uval = state, /no_copy
   widget_control, master, /realize
-  ;msg = 'Editing eic configuration.'
+  ;msg = 'Editing secs configuration.'
   ;statusBar->update,msg
   ;historywin->update, msg
 
@@ -283,7 +283,7 @@ PRO eic_fileconfig, tab_id, historyWin, statusBar
     widget_control, master, xoffset=0, yoffset=0
   endif
 
-  xmanager, 'eic_fileconfig', master, /no_block
+  xmanager, 'secs_fileconfig', master, /no_block
   
 END ;--------------------------------------------------------------------------------
 

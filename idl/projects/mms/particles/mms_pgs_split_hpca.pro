@@ -18,8 +18,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-29 15:37:24 -0700 (Thu, 29 Jun 2017) $
-;$LastChangedRevision: 23529 $
+;$LastChangedDate: 2017-06-30 07:36:07 -0700 (Fri, 30 Jun 2017) $
+;$LastChangedRevision: 23532 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_split_hpca.pro $
 ;-
 pro mms_pgs_split_hpca, data, output=output
@@ -28,6 +28,7 @@ pro mms_pgs_split_hpca, data, output=output
   
   if tag_exist(data, 'orig_energy') then begin
     output = {  $
+      dims: data.dims, $
       time: data.time, $
       end_time: data.end_time, $
       charge: data.charge, $
@@ -50,6 +51,7 @@ pro mms_pgs_split_hpca, data, output=output
     }
   endif else begin
     output = {  $
+      dims: data.dims, $
       time: data.time, $
       end_time: data.end_time, $
       charge: data.charge, $

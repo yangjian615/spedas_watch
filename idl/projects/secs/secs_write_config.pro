@@ -1,15 +1,15 @@
 ;+
 ;NAME:
-; eic_write_config
+; secs_write_config
 ;PURPOSE:
-; Writes the eic_config file
+; Writes the secs_config file
 ;CALLING SEQUENCE:
-; eic_write_config, copy=copy
+; secs_write_config, copy=copy
 ;INPUT:
-; none, the filename is hardcoded, 'eic_config.txt',and is  put in a
-; folder given by the routine eic_config_filedir, that uses the IDL
+; none, the filename is hardcoded, 'secs_config.txt',and is  put in a
+; folder given by the routine secs_config_filedir, that uses the IDL
 ; routine app_user_dir to create/obtain it: my linux example:
-; /disks/ice/home/jimm/.idl/themis/eic_config-4-linux
+; /disks/ice/home/jimm/.idl/themis/secs_config-4-linux
 ;OUTPUT:
 ; the file is written, and a copy of any old file is generated
 ;KEYWORD:
@@ -19,16 +19,16 @@
 ;$LastChangedBy: egrimes $
 ;$LastChangedDate: 2014-09-18 13:30:13 -0700 (Thu, 18 Sep 2014) $
 ;$LastChangedRevision: 15821 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/eic/eic_write_config.pro $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/secs_write_config.pro $
 ;-
 
-Pro eic_write_config, copy = copy, _extra = _extra
+Pro secs_write_config, copy = copy, _extra = _extra
   otp = -1
 ;First step is to get the filename
-  dir = eic_config_filedir()
+  dir = secs_config_filedir()
   ll = strmid(dir, strlen(dir)-1, 1)
-  If(ll Eq '/' Or ll Eq '\') Then filex = dir+'eic_config.txt' $
-  Else filex = dir+'/'+'eic_config.txt'
+  If(ll Eq '/' Or ll Eq '\') Then filex = dir+'secs_config.txt' $
+  Else filex = dir+'/'+'secs_config.txt'
 
 ;If we are copying the file, get a filename, header and old configuration
   If(keyword_set(copy)) Then Begin
@@ -36,19 +36,19 @@ Pro eic_write_config, copy = copy, _extra = _extra
     ttt = strmid(xt, 0, 4)+strmid(xt, 5, 2)+strmid(xt, 8, 2)+$
       '_'+strmid(xt, 11, 2)+strmid(xt, 14, 2)+strmid(xt, 17, 2)
     filex_out = filex+'_'+ttt
-    cfg = eic_read_config(header = hhh)
+    cfg = secs_read_config(header = hhh)
   Endif Else Begin
 ;Does the file exist? If is does then copy it
-    If(file_search(filex) Ne '') Then eic_write_config, /copy
+    If(file_search(filex) Ne '') Then secs_write_config, /copy
     filex_out = filex
-    cfg = {local_data_dir:!eic.local_data_dir, $
-           remote_data_dir:!eic.remote_data_dir, $
-           no_download:!eic.no_download, $
-           no_update:!eic.no_update, $
-           downloadonly:!eic.downloadonly, $
-           verbose:!eic.verbose}
+    cfg = {local_data_dir:!secs.local_data_dir, $
+           remote_data_dir:!secs.remote_data_dir, $
+           no_download:!secs.no_download, $
+           no_update:!secs.no_update, $
+           downloadonly:!secs.downloadonly, $
+           verbose:!secs.verbose}
                
-    hhh = [';eic_config.txt', ';eic configuration file', $
+    hhh = [';secs_config.txt', ';secs configuration file', $
            ';Created:'+time_string(systime(/sec))]
   Endelse
 ;You need to be sure that the directory exists

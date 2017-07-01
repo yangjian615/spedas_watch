@@ -1,9 +1,9 @@
 ;+
-; Procedure: eic_load_data
+; Procedure: secs_load_data
 ; 
 ; Keywords: 
 ;             trange:        time range of interest
-;             datatype:      type of EIC data to be loaded. Valid data types are: EIC or SEC
+;             datatype:      type of secs data to be loaded. Valid data types are: secs or SEC
 ;             suffix:        String to append to the end of the loaded tplot variables
 ;             prefix:        String to append to the beginning of the loaded tplot variables
 ;             /downloadonly: Download the file but don't read it  
@@ -16,14 +16,15 @@
 ; - Need to implement No Update and No clobber
 ; - Need to correctly handle time clip
 ; - Add all standard tplot options
+; - If no files downloaded notify user
 ; 
 ; $LastChangedBy: egrimes $
 ; $LastChangedDate: 2017-02-13 15:32:14 -0800 (Mon, 13 Feb 2017) $
 ; $LastChangedRevision: 22769 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/eic/eic_load_data.pro $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/secs_load_data.pro $
 ;-
  
-pro eic_load_data, trange = trange, datatype = datatype, suffix = suffix, prefix = prefix, $
+pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefix = prefix, $
                     downloadonly = downloadonly, verbose = verbose, get_stations = get_stations
     compile_opt idl2
     
@@ -36,12 +37,13 @@ pro eic_load_data, trange = trange, datatype = datatype, suffix = suffix, prefix
     endif
 
     ; initialize variables and parameters
-    eic_init
+    secs_init
     if undefined(suffix) then suffix = ''
     if undefined(prefix) then prefix = ''
     if not keyword_set(datatype) then datatype = '*'   
-    if datatype EQ '*' then datatype = ['EIC', 'SEC']
-    if not keyword_set(source) then source = !eic
+    if datatype EQ '*' then datatype = ['eics', 'seca']
+    dirtype = strupcase(strmid(datatype,0,3))
+    if not keyword_set(source) then source = !secs
     if (keyword_set(trange) && n_elements(trange) eq 2) $
       then tr = timerange(trange) $
       else tr = timerange()
@@ -62,9 +64,9 @@ pro eic_load_data, trange = trange, datatype = datatype, suffix = suffix, prefix
     
     for j = 0, n_elements(datatype)-1 do begin
     
-        remote_path = source.remote_data_dir+datatype[j]+'S/'+yr_start+'/'+mo_start+'/'+day_start+'/'   
-        local_path = source.local_data_dir+datatype[j]+'S/'+yr_start+'/'+mo_start+'/'+day_start+'/'
-        remote_files = datatype[j]+'S'+yr_start+mo_start+day_start+'_'+dates_str+'.dat'
+        remote_path = source.remote_data_dir+dirtype[j]+'S/'+yr_start+'/'+mo_start+'/'+day_start+'/'   
+        local_path = source.local_data_dir+dirtype[j]+'S/'+yr_start+'/'+mo_start+'/'+day_start+'/'
+        remote_files = dirtype[j]+'S'+yr_start+mo_start+day_start+'_'+dates_str+'.dat'
         files = spd_download(remote_file=remote_files, remote_path=remote_path, $
             local_path = local_path)
          
@@ -72,9 +74,9 @@ pro eic_load_data, trange = trange, datatype = datatype, suffix = suffix, prefix
 
         case datatype[j] of
           ; Equivalent Ionospheric Currents
-          'EIC': eic_ascii2tplot, files, prefix=prefix, suffix=suffix, verbose=verbose, tplotnames=tplotnames
+          'eics': eic_ascii2tplot, files, prefix=prefix, suffix=suffix, verbose=verbose, tplotnames=tplotnames
           ; Current Magnitudes
-          'SEC': sec_ascii2tplot, files, prefix=prefix, suffix=suffix, verbose=verbose, tplotnames=tplotnames
+          'seca': sec_ascii2tplot, files, prefix=prefix, suffix=suffix, verbose=verbose, tplotnames=tplotnames
           else: dprint, dlevel = 0, 'Unknown data type!'
         endcase
 

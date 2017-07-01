@@ -24,8 +24,8 @@
 ;Notes:
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-22 18:24:56 -0700 (Thu, 22 Jun 2017) $
-;$LastChangedRevision: 23500 $
+;$LastChangedDate: 2017-06-30 07:36:07 -0700 (Fri, 30 Jun 2017) $
+;$LastChangedRevision: 23532 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_make_phi_spec.pro $
 ;-
 
@@ -44,17 +44,16 @@ pro mms_pgs_make_phi_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, _extra=ex
     d[idx] = 0.
   endif
   
-  ave = dblarr(32)
+  n_phi = data.dims[1]
 
-  outbins = 360.*indgen(32+1)/32
+  ave = dblarr(n_phi)
+  outbins = interpol([0, 360],n_phi+1)
 
-  for tidx = 0, n_elements(data.phi[*, 0])-1 do begin
-    for bin_idx = 0, n_elements(outbins)-2 do begin
-      this_bin = where(data.phi[tidx, *] ge outbins[bin_idx] and data.phi[tidx, *] lt outbins[bin_idx+1], bcount)
-      if bcount ne 0 then begin
-        ave[bin_idx] += total(d[tidx, this_bin])/total(data.bins[tidx, this_bin])
-      endif
-    endfor
+  for bin_idx = 0, n_elements(outbins)-2 do begin
+    this_bin = where(data.phi ge outbins[bin_idx] and data.phi lt outbins[bin_idx+1], bcount)
+    if bcount ne 0 then begin
+      ave[bin_idx] += total(d[this_bin])/total(data.bins[this_bin])
+    endif
   endfor
   
   ;get y axis

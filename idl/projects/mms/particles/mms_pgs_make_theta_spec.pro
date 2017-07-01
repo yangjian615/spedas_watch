@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-29 15:40:13 -0700 (Thu, 29 Jun 2017) $
-;$LastChangedRevision: 23530 $
+;$LastChangedDate: 2017-06-30 07:36:07 -0700 (Fri, 30 Jun 2017) $
+;$LastChangedRevision: 23532 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_make_theta_spec.pro $
 ;-
 
@@ -47,7 +47,7 @@ pro mms_pgs_make_theta_spec, data, spec=spec, sigma=sigma, yaxis=yaxis, colatitu
     d[idx] = 0.
   endif
   
-  n_theta = dimen1(data.theta)
+  n_theta = data.dims[2]
 
   ave = dblarr(n_theta) 
   outbins = interpol([0, 180],n_theta+1)

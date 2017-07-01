@@ -27,8 +27,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-23 11:16:28 -0700 (Fri, 23 Jun 2017) $
-;$LastChangedRevision: 23507 $
+;$LastChangedDate: 2017-06-30 07:36:07 -0700 (Fri, 30 Jun 2017) $
+;$LastChangedRevision: 23532 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_clean_data.pro $
 ;
 ;-
@@ -41,6 +41,7 @@ pro mms_pgs_clean_data, data_in, output=output,units=units
   dims = dimen(data.data)
   
   output= {  $
+    dims: dims, $
     time: data.time, $
     end_time:data.end_time, $
     charge:data.charge, $

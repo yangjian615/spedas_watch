@@ -14,9 +14,9 @@
 ;  error=error: 1 indicates error occured, 0 indicates no error occured
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-09-30 17:20:25 -0700 (Fri, 30 Sep 2016) $
-;$LastChangedRevision: 21989 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-06-30 11:10:18 -0700 (Fri, 30 Jun 2017) $
+;$LastChangedRevision: 23539 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/science/spd_part_products/spd_pgs_regrid.pro $
 ;-
 
@@ -72,6 +72,9 @@ pro spd_pgs_regrid,data,regrid_dimen,output=output,error=error
             bins:bins_grid $ ; 0-1 array, indicating which bins are enabled for subsequent calculations. (2-d array matching data array.)  (Integer type.)
           }
 
+  ; add dimensions if it exists in the input structure; some MMS PGS routines use
+  ; this to determine angular bin sizes
+  if tag_exist(data, 'dims') then str_element, output_t, 'dims', data.dims, /add
 
  
   ;some magic with griddata goes here
