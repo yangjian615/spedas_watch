@@ -37,7 +37,7 @@ pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefi
     endif
 
     ; initialize variables and parameters
-    secs_init
+    ;secs_init
     if undefined(suffix) then suffix = ''
     if undefined(prefix) then prefix = ''
     if not keyword_set(datatype) then datatype = '*'   
@@ -57,7 +57,7 @@ pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefi
     day_start = strmid(time_string(tr[0]),8,2)
  
     dur = (time_struct(tr[1])).sod - (time_struct(tr[0])).sod
-    nfiles = long(dur/10)
+    if dur EQ 0 then nfiles = 1 else nfiles = long(dur/10)
     dates = time_string(tr[0]+long(findgen(nfiles)*10)) 
     idx = strpos(dates[0], '/')     
     dates_str = strmid(dates,idx+1,2)+strmid(dates,idx+4,2)+strmid(dates,idx+7,2)
@@ -90,9 +90,9 @@ pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefi
     new_tnames = ssl_set_complement([tn_list_before], [tn_list_after])
     
     ; check that some data was loaded
-    if n_elements(new_tnames) eq 1 && is_num(new_tnames) then begin
-        dprint, dlevel = 1, 'No new tplot variables were created.'
-        return
-    endif
+;    if n_elements(new_tnames) eq 1 && is_num(new_tnames) then begin
+;        dprint, dlevel = 1, 'No new tplot variables were created.'
+;        return
+;    endif
         
 end

@@ -65,9 +65,15 @@ for i=0,ncuts-1  do begin
   if n_elements(t) eq 1 then dummy = min(abs(d.x - t[0]),w)
   y = d.y(w,*)
   x = d.x(w)
-  if ndimen(d.v) eq 2 then v = d.v(w,*) else v =d.v
-
   if ndimen(y) eq 2 then y = average(y,1,/nan)
+
+  str_element, d, 'v', success = dv_exists
+  if dv_exists then begin
+    if ndimen(d.v) eq 2 then v = d.v(w,*) else v =d.v
+  endif else begin
+    v = lindgen(n_elements(y))
+  endelse
+
   if ndimen(v) eq 2 then v = average(v,1,/nan)
 
   if new_window then wset,new_w
