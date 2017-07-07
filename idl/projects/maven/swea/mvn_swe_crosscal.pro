@@ -49,8 +49,8 @@
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-08 17:29:47 -0700 (Mon, 08 May 2017) $
-; $LastChangedRevision: 23283 $
+; $LastChangedDate: 2017-07-06 14:41:29 -0700 (Thu, 06 Jul 2017) $
+; $LastChangedRevision: 23556 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crosscal.pro $
 ;
 ;CREATED BY:    David L. Mitchell  05-04-16
@@ -67,7 +67,7 @@ function mvn_swe_crosscal, time, on=on, off=off, refresh=refresh, extrap=extrap,
     ac[*,0] = [2.6D   ,  0.0D     ,  0.0D     ]  ; MCPHV = 2500 V
     ac[*,1] = [2.3368D, -9.9426d-4,  2.6014d-5]  ; MCPHV = 2600 V
     ac[*,2] = [2.2143D,  7.9280d-4,  1.4300d-5]  ; MCPHV = 2700 V
-    ac[*,3] = [2.2938D, -9.8563d-4,  4.1572d-5]  ; MCPHV = 2750 V
+    ac[*,3] = [1.9231D,  8.7191d-3, -1.5274d-5]  ; MCPHV = 2750 V
     eflg = 1
   endif
 
@@ -135,7 +135,7 @@ function mvn_swe_crosscal, time, on=on, off=off, refresh=refresh, extrap=extrap,
   if (count gt 0L) then begin
     i = 3
     day = (t[indx] - tc[i])/86400D
-    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
+    cc[indx] = (ac[0,i] + day*(ac[1,i] + day*ac[2,i])) > 2.25D
   endif
 
   indx = where(t ge t_mcp[7], count)  ; last SWE-SWI cross calibration
@@ -150,7 +150,7 @@ function mvn_swe_crosscal, time, on=on, off=off, refresh=refresh, extrap=extrap,
       if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
                              time_string(t_mcp[7],prec=-3)
     endelse
-    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
+    cc[indx] = (ac[0,i] + day*(ac[1,i] + day*ac[2,i])) > 2.25D
   endif
 
   return, cc

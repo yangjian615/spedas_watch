@@ -100,8 +100,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-08 17:26:51 -0700 (Mon, 08 May 2017) $
-; $LastChangedRevision: 23278 $
+; $LastChangedDate: 2017-07-06 17:58:47 -0700 (Thu, 06 Jul 2017) $
+; $LastChangedRevision: 23562 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -178,6 +178,8 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
       npts = n_elements(t)
       phi = replicate(badval, npts)
       phi = interpol(lpwpot.y, lpwpot.x, t)
+      indx = where(phi le 1., count)
+      if (count gt 0L) then phi[indx] = badval
       mvn_swe_engy.sc_pot = phi
       ok = 1
     endif
@@ -422,12 +424,12 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
   
     store_data,'df',data={x:t, y:transpose(dfs), v:transpose(ee)}
     options,'df','spec',1
-    ylim,'df',0,30,0
+    ylim,'df',min(Espan),max(Espan),0
     zlim,'df',0,0,0
   
     store_data,'d2f',data={x:t, y:transpose(d2fs), v:transpose(ee)}
     options,'d2f','spec',1
-    ylim,'d2f',0,30,0
+    ylim,'d2f',min(Espan),max(Espan),0
     zlim,'d2f',0,0,0
 
     store_data,'Potential',data=['d2f','mvn_swe_sc_pot']
@@ -460,18 +462,22 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
     options,'swe_pot_lab','labels',['swe-','swe+']
     options,'swe_pot_lab','colors',[6,!p.color]
     options,'swe_pot_lab','labflag',1
-    
-    store_data,pot_pan,data=['swe_pot_lab','mvn_swe_sc_pot','neg_pot','pot_inshdw']
+
     options,'neg_pot','constant',!values.f_nan
     options,'neg_pot','color',6
-    options,'pot_inshdw','constant',!values.f_nan
-    options,'pot_inshdw','color',1
-    options,pot_pan,'ytitle','S/C Potential!cVolts'
-    options,pot_pan,'constant',[-1,3]
-  endif
 
-        
+    potpans = ['swe_pot_lab','mvn_swe_sc_pot','neg_pot']
+    if keyword_set(pot_in_shdw) then begin
+      potpans = [potpans,'pot_inshdw']
+      options,'pot_inshdw','constant',!values.f_nan
+      options,'pot_inshdw','color',1
+    endif
     
+    store_data,pot_pan,data=potpans
+    options,pot_pan,'ytitle','S/C Potential!cVolts'
+    options,pot_pan,'constant',[-1,Espan]
+  endif        
+
 ; Incorporate STATIC-derived potential.  Only used to fill in times when
 ; SWEA/LPW potential is unavailable.
 

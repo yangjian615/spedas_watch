@@ -29,15 +29,22 @@
 ;                      year and month.  This is the main point, so 
 ;                      the default is 1 (yes).
 ;
+;       TOUCH:         Change the access and modification times of 
+;                      all files collected in RESULT to the current
+;                      time.  This can be used to "encourage" file
+;                      transfers to the SDC.  Works only in unix-like
+;                      environments.  Use with caution!
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-02-06 10:08:33 -0800 (Mon, 06 Feb 2017) $
-; $LastChangedRevision: 22736 $
+; $LastChangedDate: 2017-07-06 14:43:41 -0700 (Thu, 06 Jul 2017) $
+; $LastChangedRevision: 23559 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_catalog.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
 ;FILE: mvn_swe_catalog.pro
 ;-
-pro mvn_swe_catalog, version=version, revision=revision, ctime=ctime, result=dat, verbose=verbose
+pro mvn_swe_catalog, version=version, revision=revision, ctime=ctime, result=dat, $
+                     verbose=verbose, touch=touch
 
 ; Process keywords
 
@@ -45,6 +52,17 @@ pro mvn_swe_catalog, version=version, revision=revision, ctime=ctime, result=dat
   if (size(revision,/type) eq 0) then rev = '??' else rev = string(revision, format='(i2.2)')
   if (size(verbose,/type) eq 0) then blab = 1 else blab = keyword_set(verbose)
   if (size(ctime,/type) eq 0) then ctime = 0D else ctime = time_double(ctime)
+  tflg = keyword_set(touch)
+  
+  if (tflg) then begin
+    if (ctime eq 0D) then begin
+      print,'TOUCH is set, but CTIME is not set!'
+      print,'This could trigger a massive file transfer to the SDC!'
+    endif
+    yn = 'N'
+    read, yn, prompt='Are you sure (y|n)? ', format='(a1)'
+    if (strupcase(yn) ne 'Y') then tflg = 0
+  endif
 
   if (rev eq '??') then last = 1 else last = 0
 
@@ -114,6 +132,7 @@ pro mvn_swe_catalog, version=version, revision=revision, ctime=ctime, result=dat
           dat[k].cat[i,j].files[0:(nvalid-1)] = files[valid]
           dat[k].cat[i,j].nfiles = nvalid
           nfound += nvalid
+          if (tflg) then for m=0,(nvalid-1) do spawn, 'touch ' + files[valid[m]]
         endif
       endfor
     endfor

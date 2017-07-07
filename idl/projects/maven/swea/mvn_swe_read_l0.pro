@@ -58,8 +58,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-10 19:19:56 -0700 (Wed, 10 May 2017) $
-; $LastChangedRevision: 23297 $
+; $LastChangedDate: 2017-07-06 14:40:20 -0700 (Thu, 06 Jul 2017) $
+; $LastChangedRevision: 23555 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -351,12 +351,12 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 	  T = pfp_t[order] & for i=(order-1),0,-1 do T = pfp_t[i] + T*ahsk[17]
 	  pfp_hsk[k].FPGAT   = T
 
-	  pfp_hsk[k].FLASH0V = ahsk[18]*swe_v[18]
-	  pfp_hsk[k].FLASH1V = ahsk[19]*swe_v[19]
-	  pfp_hsk[k].PF3P3DV = ahsk[20]*swe_v[20]
-	  pfp_hsk[k].PF1P5DV = ahsk[21]*swe_v[21]
-	  pfp_hsk[k].PFPVREF = ahsk[22]*swe_v[22]
-	  pfp_hsk[k].PFPAGND = ahsk[23]*swe_v[23]
+	  pfp_hsk[k].FLASH0V = ahsk[18]*pfp_v[18]
+	  pfp_hsk[k].FLASH1V = ahsk[19]*pfp_v[19]
+	  pfp_hsk[k].PF3P3DV = ahsk[20]*pfp_v[20]
+	  pfp_hsk[k].PF1P5DV = ahsk[21]*pfp_v[21]
+	  pfp_hsk[k].PFPVREF = ahsk[22]*pfp_v[22]
+	  pfp_hsk[k].PFPAGND = ahsk[23]*pfp_v[23]
 
 ; 2 spare bytes (58-59)
 
