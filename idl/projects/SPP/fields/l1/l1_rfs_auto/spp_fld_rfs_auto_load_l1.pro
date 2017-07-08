@@ -106,6 +106,7 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
 
 
   get_data, prefix + 'gain', data = rfs_gain_dat
+  get_data, prefix + 'nsum', data = rfs_nsum
 
   lo_gain = where(rfs_gain_dat.y EQ 0, n_lo_gain)
 
@@ -120,10 +121,32 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
 
     get_data, prefix + raw_spec_i, data = raw_spec_data
 
-    converted_spec_data = rfs_float(raw_spec_data.y)
+    converted_spec_data = spp_fld_rfs_float(raw_spec_data.y)
+    
+    ; Using definition of power spectral density
+    ;  S = 2 * Nfft / fs |x|^2 / Wss where
+    ; where |x|^2 is an auto spec value of the PFB/DFT
+    ;  
+    ; 2             : from definition of S_PFB
+    ; 4096          : number of FFT points
+    ; 38.4e6        : fs in Hz (divide fs by 8 for LFR)
+    ; 250           : RFS high gain (multiply by 50^2 later on if in low gain)
+    ; 2048          : 2048 counts in the ADC = 1 volt
+    ; 0.782         : WSS for our implementation of the PFB (see pfb_norm.pdf)
+    ; 65536         : factor from integer PFB, equal to (2048./8.)^2
+    
+    V2_factor = 2d * 4096d / 38.4d6 / ((250d*2048d)^2d * 0.782d * 65536d)
+    
+    if lfr_flag then V2_factor *= 8
+    
+    converted_spec_data *= V2_factor
 
     if n_lo_gain GT 0 then converted_spec_data[lo_gain, *] *= 2500.d
-
+    
+    converted_spec_data /= rebin(rfs_nsum.y,$
+      n_elements(rfs_nsum.x),$
+      n_elements(rfs_freqs.reduced_freq))
+    
     store_data, prefix + raw_spec_i + '_converted', $
       data = {x:raw_spec_data.x, y:converted_spec_data, $
       v:rfs_freqs.reduced_freq}
@@ -132,6 +155,7 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
     options, prefix + raw_spec_i + '_converted', 'no_interp', 1
     options, prefix + raw_spec_i + '_converted', 'ylog', 1
     options, prefix + raw_spec_i + '_converted', 'zlog', 1
+    options, prefix + raw_spec_i + '_converted', 'ztitle', '[V2/Hz]'
     options, prefix + raw_spec_i + '_converted', 'yrange', $
       [min(rfs_freqs.reduced_freq), max(rfs_freqs.reduced_freq)]
     options, prefix + raw_spec_i + '_converted', 'ystyle', 1

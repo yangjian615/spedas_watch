@@ -126,7 +126,7 @@ pro spp_fld_rfs_hires_load_l1, file, prefix = prefix, color = color
   ; TODO: Replace x3 (now it's in there to compare with LFR which is summed
   ; across 3 bins / smoothed
 
-  converted_data_spec0_ch1 = rfs_float(rfs_dat_spec0_ch1.y) * 3
+  converted_data_spec0_ch1 = spp_fld_rfs_float(rfs_dat_spec0_ch1.y) * 3
 
   if n_lo_gain GT 0 then converted_data_spec0_ch1[lo_gain, *] *= 2500.d
 

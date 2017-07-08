@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupalap $
-;  $LastChangedDate: 2017-06-12 10:50:22 -0700 (Mon, 12 Jun 2017) $
-;  $LastChangedRevision: 23450 $
+;  $LastChangedBy: pulupa $
+;  $LastChangedDate: 2017-07-07 09:45:11 -0700 (Fri, 07 Jul 2017) $
+;  $LastChangedRevision: 23563 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -183,11 +183,11 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   ; Select TMlib server
 
-  defsysv, '!TMLIB', exists = exists
+  defsysv, '!SPP_FLD_TMLIB', exists = exists
 
   if exists then begin
 
-    server = !tmlib.server
+    server = !spp_fld_tmlib.server
 
   endif else begin
 

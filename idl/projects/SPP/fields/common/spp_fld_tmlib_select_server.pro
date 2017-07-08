@@ -27,7 +27,7 @@ pro spp_fld_tmlib_select_server, server
 
   endif
 
-  defsysv, '!TMLIB', exists = exists
+  defsysv, '!SPP_FLD_TMLIB', exists = exists
 
   if not keyword_set(exists) then begin
 
@@ -35,8 +35,8 @@ pro spp_fld_tmlib_select_server, server
 
   endif else begin
 
-    !TMLIB.server = server
-    printdat, !tmlib, /values, varname = '!tmlib'
+    !SPP_FLD_TMLIB.server = server
+    printdat, !SPP_FLD_TMLIB, /values, varname = '!spp_fld_tmlib'
 
   endelse
 

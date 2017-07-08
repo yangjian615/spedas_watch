@@ -30,9 +30,9 @@
 ; CREATED BY:
 ;   pulupa
 ;
-; $LastChangedBy: pulupalap $
-; $LastChangedDate: 2017-06-12 10:50:22 -0700 (Mon, 12 Jun 2017) $
-; $LastChangedRevision: 23450 $
+; $LastChangedBy: pulupa $
+; $LastChangedDate: 2017-07-07 09:45:11 -0700 (Fri, 07 Jul 2017) $
+; $LastChangedRevision: 23563 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_create.pro $
 ;-
 pro spp_fld_cdf_create, level, vers_num, cdf_att, filename_timestring, $
@@ -40,7 +40,7 @@ pro spp_fld_cdf_create, level, vers_num, cdf_att, filename_timestring, $
 
   level_str = 'l' + string(level, format = '(I1)')
 
-; TODO: Decide if we need to keep version number
+  ; TODO: Decide if we need to keep version number
 
   vers_num_str = '_v' + string(vers_num, format = '(I02)')
 
@@ -56,16 +56,7 @@ pro spp_fld_cdf_create, level, vers_num, cdf_att, filename_timestring, $
   filename_hdr = $
     (cdf_att['Logical_source'].ToLower()).Insert('_' + level_str,7) + '_'
 
-  cdf_dir = getenv('SPP_FLD_CDF_DIR')
-
-  if cdf_dir EQ '' then begin
-    
-    cdf_dir = '~/data'
-    
-    dprint, 'Using ~/data to store CDFs', dlevel = 1
-    dprint, 'Set environment variable SPP_FLD_CDF_DIR to use a different directory', dlevel = 1
-    
-  endif
+  cdf_dir = !spp_fld_tmlib.cdf_dir
 
   if not keyword_set(file) then $
     filename = cdf_dir + $
