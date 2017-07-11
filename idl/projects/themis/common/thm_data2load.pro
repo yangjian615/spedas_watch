@@ -29,9 +29,9 @@
 ; started on 31-Jan-2008, jmm, jimm@ssl.berkeley.edu, this is under
 ; development for the next 6 months or so.
 ; 9-apr-2008, jmm, added all instruments, for Version 4_00
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-07-02 18:47:11 -0700 (Thu, 02 Jul 2015) $
-;$LastChangedRevision: 18016 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2017-07-10 08:16:27 -0700 (Mon, 10 Jul 2017) $
+;$LastChangedRevision: 23566 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_data2load.pro $
 ;-
 function thm_valid_variables, instrument, level
@@ -178,12 +178,13 @@ function thm_valid_variables, instrument, level
     end
     'sst' : begin ; Solid state telescope
         if(level eq 'l1' or level eq 'l10') then begin ;handle this in the same way as ESA L0
-            instr_data = ['psif', 'psef', 'psir', 'pser']
+            instr_data = ['psif', 'psef', 'psir', 'pser', 'psib', 'pseb']
         endif else begin
             sst_l2_datatype_root_list = ['delta_time','en_eflux','density','avgtemp','vthermal','sc_pot','t3','magt3','ptens','mftens','flux','symm',$
             'symm_ang','magf','velocity_dsl','velocity_gse','velocity_gsm']
         
-            instr_data = ['psif' +'_'+sst_l2_datatype_root_list,'psef'+'_'+sst_l2_datatype_root_list]
+            instr_data = ['psif' +'_'+sst_l2_datatype_root_list,'psef'+'_'+sst_l2_datatype_root_list, $
+              'psib' +'_'+sst_l2_datatype_root_list,'pseb'+'_'+sst_l2_datatype_root_list]
         endelse
     end
     'state' : begin ; Spacecraft state data

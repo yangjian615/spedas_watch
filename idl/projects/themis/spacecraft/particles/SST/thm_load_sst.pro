@@ -37,9 +37,9 @@
 ; Updated to use thm_load_xxx by KRB, 2007-2-5
 ; Update removed to not use thm_load_xxx by DEL
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2016-10-21 13:42:54 -0700 (Fri, 21 Oct 2016) $
-; $LastChangedRevision: 22187 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2017-07-10 08:16:27 -0700 (Mon, 10 Jul 2017) $
+; $LastChangedRevision: 23566 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_load_sst.pro $
 ;-
 
@@ -77,7 +77,7 @@ pro thm_load_sst_l1,datatype=datatype,vdatatypes=vdatatypes,probe=probe,$
   if not keyword_set(suffix) then suffix=''
   
   datatype = strfilter(vdatatypes, datatype ,delimiter=' ',/string)
-  
+ 
   addmaster=0
   
   for s=0,n_elements(probe)-1 do begin
@@ -326,12 +326,12 @@ pro thm_load_sst_l2,relpathnames_all=relpathnames_all,suffix=suffix,level=level,
   lvl = thm_valid_input(level,'Level',vinputs=vlevels_str,definput=deflevel,$
     format="('l', I1)", verbose=0)
   if lvl eq '' then return
-  
+ 
   l2_datatype_root_list = ['delta_time','en_eflux','density','avgtemp','vthermal','sc_pot','t3','magt3','ptens','mftens','flux','symm',$
     'symm_ang','magf','velocity_dsl','velocity_gse','velocity_gsm','data_quality']
-  vL2datatypes=  strjoin(['psif_'+l2_datatype_root_list,'psef_'+ l2_datatype_root_list],' ')
-
-  
+  vL2datatypes=  strjoin(['psif_'+l2_datatype_root_list,'psef_'+ l2_datatype_root_list, $
+     'psib_'+l2_datatype_root_list,'pseb_'+ l2_datatype_root_list],' ')
+ 
   thm_load_xxx,sname=probe, datatype=datatype, trange=trange, $
     level=level, verbose=verbose, downloadonly=downloadonly, $
     relpathnames_all=relpathnames_all, no_download=no_download, $
@@ -436,7 +436,7 @@ if size(/type,datatype0) gt 0 then datatype = datatype0 ;keep input vars from be
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 22187 2016-10-21 20:42:54Z pcruce $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst.pro 23566 2017-07-10 15:16:27Z crussell $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']
