@@ -3,8 +3,8 @@
 <items>
 
   <tmlib
-  	tmlib_event = 'rfs_lfr_hires'
-  	>
+    tmlib_event = 'rfs_lfr_hires'
+    >
   </tmlib>
 
   <cdf_global
@@ -20,7 +20,7 @@
       >
   </cdf_global>
   
-	<idl_att
+  <idl_att
       convert_routine = 'spp_fld_rfs_lfr_HiRes_convert'>
   </idl_att>
 
@@ -30,7 +30,7 @@
   <cdf_att
         FIELDNAM = "compression"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "compression"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -51,7 +51,7 @@
   <cdf_att
         FIELDNAM = "peaks"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "peaks"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -72,7 +72,7 @@
   <cdf_att
         FIELDNAM = "averages"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "averages"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -93,7 +93,7 @@
   <cdf_att
         FIELDNAM = "hl"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "hl"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -114,7 +114,7 @@
   <cdf_att
         FIELDNAM = "ch0"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "ch0"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -135,7 +135,7 @@
   <cdf_att
         FIELDNAM = "ch1"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "ch1"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -156,7 +156,7 @@
   <cdf_att
         FIELDNAM = "gain"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "gain"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -177,7 +177,7 @@
   <cdf_att
         FIELDNAM = "nsum"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "nsum"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -198,7 +198,7 @@
   <cdf_att
         FIELDNAM = "peakmode"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "nsum"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -219,7 +219,7 @@
   <cdf_att
         FIELDNAM = "peak_location"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "nsum"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -235,13 +235,13 @@
   </cdf_var>
   
   <cdf_var
-  		name = "spec0_ch0"
-  		type = "integer"
-  		nelem = "32">
+      name = "spec0_ch0"
+      type = "integer"
+      nelem = "32">
   <cdf_att
         FIELDNAM = "spec0_ch0"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_UINT2"
+        DATA_TYPE = "CDF_UINT2"
         LABLAXIS = "spec0_ch0"
         VAR_TYPE = "data"
         FILLVAL = "65534"
@@ -257,13 +257,13 @@
   </cdf_var>
 
   <cdf_var
-  		name = "spec0_ch1"
-  		type = "integer"
-  		nelem = "32">
+      name = "spec0_ch1"
+      type = "integer"
+      nelem = "32">
   <cdf_att
         FIELDNAM = "spec0_ch1"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_UINT2"
+        DATA_TYPE = "CDF_UINT2"
         LABLAXIS = "spec0_ch1"
         VAR_TYPE = "data"
         FILLVAL = "65534"

@@ -78,16 +78,9 @@
   </cdf_var>
 
   <cdf_var
-      name   = "mag_data_raw"
-      type   = "integer"
-      nelem  = "1536"
-      signed = "1"
-      />
-
-  <cdf_var
       name   = "mag_bx"
       type   = "integer"
-      nelem  = "512">
+      nelem  = "mag_survey_data_elements">
     <cdf_att
         FIELDNAM = "mag_bx_2d"
         FORMAT = "F15.3"
@@ -108,7 +101,7 @@
   <cdf_var
       name   = "mag_by"
       type   = "integer"
-      nelem  = "512">
+      nelem  = "mag_survey_data_elements">
     <cdf_att
         FIELDNAM = "mag_by_2d"
         FORMAT = "F15.3"
@@ -129,7 +122,7 @@
   <cdf_var
       name   = "mag_bz"
       type   = "integer"
-      nelem  = "512">
+      nelem  = "mag_survey_data_elements">
     <cdf_att
         FIELDNAM = "mag_bz_2d"
         FORMAT = "F15.3"

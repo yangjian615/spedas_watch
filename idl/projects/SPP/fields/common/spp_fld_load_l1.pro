@@ -4,10 +4,28 @@ pro spp_fld_load_l1, filename
 
   cdf_vars = cdf_load_vars(filename, verbose = -1)
 
-  print, cdf_vars.g_attributes.LOGICAL_SOURCE
+  logical_source = cdf_vars.g_attributes.LOGICAL_SOURCE
 
-  load_procedure = cdf_vars.g_attributes.LOGICAL_SOURCE + '_load_l1'
-  
-  call_procedure, load_procedure, filename
+  ; Cut off numbers at the end
+
+  pos = stregex(logical_source,'[0-9]+$')
+
+  if pos GE 0 then begin
+
+    load_routine_prefix = strmid(logical_source, 0, pos)
+
+    prefix = strlowcase(load_routine_prefix) + '_' + strmid(logical_source,pos) + '_'
+
+  endif else begin
+
+    load_routine_prefix = logical_source
+
+    prefix = strlowcase(load_routine_prefix) + '_'
+
+  endelse
+
+  load_procedure = strlowcase(load_routine_prefix) + '_load_l1'
+
+  call_procedure, load_procedure, filename, prefix = prefix
 
 end

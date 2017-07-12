@@ -30,8 +30,8 @@
 ; development for the next 6 months or so.
 ; 9-apr-2008, jmm, added all instruments, for Version 4_00
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2017-07-10 08:16:27 -0700 (Mon, 10 Jul 2017) $
-;$LastChangedRevision: 23566 $
+;$LastChangedDate: 2017-07-11 09:48:38 -0700 (Tue, 11 Jul 2017) $
+;$LastChangedRevision: 23573 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_data2load.pro $
 ;-
 function thm_valid_variables, instrument, level
@@ -158,6 +158,20 @@ function thm_valid_variables, instrument, level
             for k = 0, n_elements(instr_type)-1 do instr_data = [instr_data, instr_type[k]+'_'+valid_variables]
             instr_data = [instr_data[1:*], 'pxxm_pot', 'iesa_solarwind_flag', 'eesa_solarwind_flag']
         endelse
+     end
+     'gmom' : begin ; On-board moments
+          instr_data = ''
+          if(level eq 'l1' or level eq 'l10') then begin
+            instr_data = ['None']
+          endif else begin
+            instr_type = ['ptiff', 'pteff', 'ptirf', 'pterf', 'ptebb']
+            valid_variables = ['density', 'flux', 'mftens', 'en_eflux', $
+              'en_eflux_yaxis', 't3', 'magt3', 'ptens', 'sc_pot', 'magf', $
+              'symm', 'symm_ang', 'avgtemp', 'vthermal', $
+              'velocity_dsl', 'velocity_gse', 'velocity_gsm', 'data_quality']
+            for k = 0, n_elements(instr_type)-1 do instr_data = [instr_data, instr_type[k]+'_'+valid_variables]
+            instr_data = [instr_data[1:*], 'iesa_solarwind_flag', 'eesa_solarwind_flag']
+          endelse
     end
     'scm' : begin ; Search-coil magnetometer
         if(level eq 'l10') then begin
@@ -220,7 +234,7 @@ function thm_data2load, instrument, level
     lvl = strcompress(strlowcase(level),/remove_all)
     
     instru_list = ['asi', 'ask', 'esa', 'efi', 'fbk', 'fft', 'fgm', 'fit', 'gmag', $
-                   'mom', 'scm', 'spin', 'sst', 'state', 'bau', 'hsk', 'trg']
+                   'mom', 'gmom', 'scm', 'spin', 'sst', 'state', 'bau', 'hsk', 'trg']
                    
     ; 'l1': any data that can be gotten from the l1 file -- including calibrated, etc... 
     ; 'l10': data that is only loaded from L1 files. 

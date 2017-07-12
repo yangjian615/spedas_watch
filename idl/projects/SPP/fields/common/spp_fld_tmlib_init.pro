@@ -44,4 +44,10 @@ pro spp_fld_tmlib_init, server = server, test_cdf_dir = test_cdf_dir
   !p.background = !d.table_size - 1L
   !p.color = 0
 
+  spp_fld_config
+  
+  ; Set up routines to load the DFB frequencies
+  
+  dummy = spp_fld_dfb_frequencies()
+
 end

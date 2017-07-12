@@ -95,7 +95,9 @@ PRO eva_sitl_submit_FOMStr, tlb, TESTING, vcase, user_flag=user_flag
       
     case problem_status of
       0: begin
-        msg='The FOM structure was sent successfully to SDC.'
+        msg=['The FOM structure was sent successfully to SDC. ']
+        msg=[msg, 'A validation email will be sent to you (within 60 min)']
+        msg=[msg, 'if successfully received at SDC.']
         rst = dialog_message(msg,/information,/center,title=title)
         end
       2: begin

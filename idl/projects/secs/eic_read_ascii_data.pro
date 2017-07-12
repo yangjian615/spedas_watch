@@ -43,7 +43,8 @@ function eic_read_ascii_data, filenames
  
       for i=0,n_elements(filenames)-1 do begin
 
-        print, 'Reading filename: ' + filenames
+        print, 'Reading filename: ' + filenames[i]
+
         ; extract time from filename
         idx=strpos(filenames[i], '_')
         year=strmid(filenames[i],idx-8,4)

@@ -31,9 +31,9 @@
 ;   thm_load_gmom,probe=['a', 'b']
 ;Notes:
 ;  Temporary version, to avoid conflicts, but can read Level 2 data, jmm
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2016-10-07 12:12:46 -0700 (Fri, 07 Oct 2016) $
-; $LastChangedRevision: 22069 $
+; $LastChangedBy: crussell $
+; $LastChangedDate: 2017-07-11 09:57:33 -0700 (Tue, 11 Jul 2017) $
+; $LastChangedRevision: 23574 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_load_gmom.pro $
 ;-
 pro thm_load_gmom, probe = probe, datatype = datatype, trange = trange, $
@@ -57,23 +57,25 @@ lvl = thm_valid_input(level,'Level',vinputs=strjoin(vlevels, ' '), $
 ;  vdatatypes = thm_data2load('mom', 'l2')
 ;endif
 
-vdatatypes = $ 
-  ['density',$
-  'avgtemp',$
-  'vthermal',$
-  'sc_pot',$
-  'en_eflux',$
-  't3',$
-  'magt3',$
-  'ptens',$
-  'mftens',$
-  'flux',$
-  'symm',$
-  'symm_ang',$
-  'magf',$
-  'velocity_dsl',$
-  'velocity_gse',$
-  'velocity_gsm']
+;vdatatypes = $ 
+;  ['density',$
+;  'avgtemp',$
+;  'vthermal',$
+;  'sc_pot',$
+;  'en_eflux',$
+;  't3',$
+;  'magt3',$
+;  'ptens',$
+;  'mftens',$
+;  'flux',$
+;  'symm',$
+;  'symm_ang',$
+;  'magf',$
+;  'velocity_dsl',$
+;  'velocity_gse',$
+;  'velocity_gsm']
+
+vdatatypes = thm_data2load('gmom', 'l2')
 
 if keyword_set(valid_names) then begin
   probe = vprobes
@@ -102,7 +104,7 @@ datatype = ssl_check_valid_name(strlowcase(datatype), vdatatypes, /include_all, 
 
 if not keyword_set(source) then source = !themis
 
-lvl = 'l2'                      ;now Level is set to 2
+;lvl = 'l2'                      ;now Level is set to 2
 
 addmaster=0
 

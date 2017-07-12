@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2015-07-16 11:34:01 -0700 (Thu, 16 Jul 2015) $
-; $LastChangedRevision: 18152 $
+; $LastChangedDate: 2017-07-11 11:57:09 -0700 (Tue, 11 Jul 2017) $
+; $LastChangedRevision: 23577 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/eva.pro $
 PRO eva_event, event
   @tplot_com
@@ -103,7 +103,7 @@ PRO eva
   ;////////// WIDGET LAYOUT /////////////////////////////////
 
   scr_dim    = get_screen_size()
-  xoffset = scr_dim[0]*0.3 > 0.;-650.-286-50. > 0.
+  xoffset = scr_dim[0]*0.3-20 > 0.;-650.-286-50. > 0.
 
   ; Top Level Base
   base = widget_base(TITLE = 'EVA',MBAR=mbar,_extra=_extra,/column,$
@@ -121,16 +121,27 @@ PRO eva
   mnHelp = widget_button(mbar, VALUE='Help',/menu)
   str_element,/add,wid,'mnHelp_about',widget_button(mnHelp,VALUE='About EVA')
 
+  ;----------------------
+  ; Control Panel Width
+  ;----------------------
+  ;###############################################
+  str_element,/add,wid,'CPWIDTH_DEFAULT',350
+  ;###############################################
+  cfg = mms_config_read()
+  idx=where(strmatch(tag_names(cfg),'EVA_CPWIDTH'),ct)
+  if ct gt 0 then cpwidth = cfg.EVA_CPWIDTH else cpwidth = wid.CPWIDTH_DEFAULT
+
+
   ;---------------------------------
   ;  DATA
   ;---------------------------------
-  str_element,/add,wid,'data',eva_data(base,xsize=330); DATA MODULE
+  str_element,/add,wid,'data',eva_data(base,xsize=cpwdith); DATA MODULE
   baseTab = widget_tab(base)
   
   ;---------------------------------
   ;  SITL
   ;---------------------------------
-  str_element,/add,wid,'sitl', eva_sitl(baseTab,xsize=330); SITL MODULE
+  str_element,/add,wid,'sitl', eva_sitl(baseTab,xsize=cpwidth);330); SITL MODULE
 
   ;---------------------------------
   ;  ORBIT

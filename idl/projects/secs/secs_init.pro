@@ -40,7 +40,7 @@ Endif else begin; use defaults
       print,'No secs config found...creating default configuration'
     endelse
 
-    !secs.local_data_dir = 'C:/data/secs/'
+    !secs.local_data_dir = 'C:\data\secs\'
     !secs.remote_data_dir = 'http://vmo.igpp.ucla.edu/data1/SECS/'
 endelse
 ;if file_test(!secs.local_data_dir+'secs/.master') then begin  ; Local directory IS the master directory

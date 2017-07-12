@@ -24,17 +24,23 @@ pro spp_fld_dfb_ac_bpf_load_l1, file, prefix = prefix
   options, prefix + 'avg', 'spec', 1
   options, prefix + 'avg', 'no_interp', 1
 
+  freq_bins = spp_get_bp_bins_04_ac()
+
   get_data, prefix + 'peak', data = peak_data
 
   if size(peak_data, /type) EQ 8 then begin
 
     store_data, prefix + 'peak_converted', $
       data = {x:peak_data.x, $
-      y:spp_fld_dfb_psuedo_log_decompress(peak_data.y, type = 'bandpass')}
+      y:spp_fld_dfb_psuedo_log_decompress(peak_data.y, type = 'bandpass'), $
+      v:freq_bins.freq_avg}
 
     options, prefix + 'peak_converted', 'panel_size', 2
     options, prefix + 'peak_converted', 'spec', 1
     options, prefix + 'peak_converted', 'no_interp', 1
+    options, prefix + 'peak_converted', 'ylog', 1
+    options, prefix + 'peak_converted', 'ystyle', 1
+    options, prefix + 'peak_converted', 'yrange', minmax(freq_bins.freq_avg)
 
   endif
 
@@ -44,24 +50,29 @@ pro spp_fld_dfb_ac_bpf_load_l1, file, prefix = prefix
 
     store_data, prefix + 'avg_converted', $
       data = {x:avg_data.x, $
-      y:spp_fld_dfb_psuedo_log_decompress(avg_data.y, type = 'bandpass')}
+      y:spp_fld_dfb_psuedo_log_decompress(avg_data.y, type = 'bandpass'), $
+      v:freq_bins.freq_avg}
 
     options, prefix + 'avg_converted', 'panel_size', 2
     options, prefix + 'avg_converted', 'spec', 1
     options, prefix + 'avg_converted', 'no_interp', 1
+    options, prefix + 'avg_converted', 'ylog', 1
+    options, prefix + 'avg_converted', 'ystyle', 1
+    options, prefix + 'avg_converted', 'yrange', minmax(freq_bins.freq_avg)
 
   endif
 
-  dc_bpf_names = tnames(prefix + '*')
+  ac_bpf_names = tnames(prefix + '*')
 
-  if dc_bpf_names[0] NE '' then begin
+  if ac_bpf_names[0] NE '' then begin
 
-    for i = 0, n_elements(dc_bpf_names) - 1 do begin
+    for i = 0, n_elements(ac_bpf_names) - 1 do begin
 
-      dc_bpf_name_i = strmid(dc_bpf_names[i], strlen(prefix))
+      ac_bpf_name_i = strmid(ac_bpf_names[i], strlen(prefix))
 
-      options, prefix + dc_bpf_name_i, 'ytitle', 'SPP DFB!CAC BPF' + $
-        string(bpf_ind) + '!C' + strupcase(dc_bpf_name_i)
+      options, prefix + ac_bpf_name_i, 'ytitle', 'SPP DFB!CAC BPF' + $
+        string(bpf_ind) + '!C' + strupcase(ac_bpf_name_i)
+      options, prefix + ac_bpf_name_i, 'ysubtitle', '[Hz]'
 
     endfor
 

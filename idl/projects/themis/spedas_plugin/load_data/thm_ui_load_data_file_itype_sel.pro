@@ -15,9 +15,9 @@
 ;OUTPUT:
 ; None
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-11-05 10:38:06 -0800 (Thu, 05 Nov 2015) $
-;$LastChangedRevision: 19267 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2017-07-11 11:26:35 -0700 (Tue, 11 Jul 2017) $
+;$LastChangedRevision: 23576 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_itype_sel.pro $
 ;-
 pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
@@ -158,6 +158,9 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
               If(state.instr Eq 'fbk') Then Begin
                   dlist1_all = ['*', 'fb1', 'fb2', 'fbh']
               Endif
+              If(state.instr Eq 'gmom') Then Begin
+                dlist1_all = ['None']
+              Endif
           Endif Else dlist1_all = 'None'
           
           ; check for level 2 data
@@ -189,7 +192,7 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
       
           if (state.instr eq 'fbk') || (state.instr eq 'fft') || $
              (state.instr eq 'mom') || (state.instr eq 'spin') || $
-             (state.instr eq 'sst') then begin
+             (state.instr eq 'sst') || (state.instr eq 'gmom') then begin
               widget_control, state.coordDroplist, Sensitive=0 ; Desensitize 'Output Coordinates' dropdown list
               state.outCoord = 'N/A'
           endif else begin
