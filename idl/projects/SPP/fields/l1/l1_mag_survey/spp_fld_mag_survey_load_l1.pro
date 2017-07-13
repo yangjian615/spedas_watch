@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupalap $
-;  $LastChangedDate: 2017-05-31 05:23:31 -0700 (Wed, 31 May 2017) $
-;  $LastChangedRevision: 23373 $
+;  $LastChangedBy: pulupa $
+;  $LastChangedDate: 2017-07-12 15:38:14 -0700 (Wed, 12 Jul 2017) $
+;  $LastChangedRevision: 23594 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/l1/l1_mag_survey/spp_fld_mag_survey_load_l1.pro $
 ;
 
@@ -31,14 +31,14 @@ pro spp_fld_mag_survey_load_l1, file, prefix = prefix
   get_data, prefix + 'avg_period_raw', data = d_ppp
   get_data, prefix + 'range_bits', data = d_range_bits
 
-  options, prefix + 'compressed', 'ytitle', short_prefix + ' compressed'
+  options, prefix + 'compressed', 'ytitle', short_prefix + ' comp'
   options, prefix + 'compressed', 'ysubtitle'
   options, prefix + 'compressed', 'yrange', [-0.1,1.1]
   options, prefix + 'compressed', 'ystyle', 1
   options, prefix + 'compressed', 'psym', 4
   options, prefix + 'compressed', 'panel_size', 0.5
 
-  options, prefix + 'avg_period_raw', 'ytitle', short_prefix + ' PPP'
+  options, prefix + 'avg_period_raw', 'ytitle', short_prefix + ' AvPR'
   options, prefix + 'avg_period_raw', 'ysubtitle'
   options, prefix + 'avg_period_raw', 'yrange', [-0.5,7.5]
   options, prefix + 'avg_period_raw', 'ystyle', 1
@@ -127,11 +127,21 @@ pro spp_fld_mag_survey_load_l1, file, prefix = prefix
 
     b_1d = reform(transpose(d_b_2d.y), n_elements(d_b_2d.y))
 
-    store_data, prefix + mag_comp, data = {x:times_1d.ToArray(), y:b_1d}
+    b_1d_finite = where(finite(b_1d), finite_count)
 
-    options, prefix + mag_comp, 'ytitle', $
-      short_prefix + ' b' + mag_comp.Substring(-1,-1)
-    ;options, prefix + mag_comp, 'ysubtitle', '[Counts]'
+    if finite_count GT 0 then begin
+
+      b_1d = b_1d[b_1d_finite]
+
+      store_data, prefix + mag_comp, data = {x:times_1d.ToArray(), y:b_1d}
+
+      options, prefix + mag_comp, 'ytitle', $
+        short_prefix + ' b' + mag_comp.Substring(-1,-1)
+      options, prefix + mag_comp, 'ysubtitle', '[Counts]'
+
+      options, prefix + mag_comp, 'ynozero', 1
+
+    end
 
   endforeach
 

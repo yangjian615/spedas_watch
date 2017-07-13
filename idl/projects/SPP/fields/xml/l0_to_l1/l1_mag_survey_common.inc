@@ -80,6 +80,7 @@
   <cdf_var
       name   = "mag_bx"
       type   = "integer"
+      convert_routine = "none"
       nelem  = "mag_survey_data_elements">
     <cdf_att
         FIELDNAM = "mag_bx_2d"
@@ -101,6 +102,7 @@
   <cdf_var
       name   = "mag_by"
       type   = "integer"
+      convert_routine = "none"
       nelem  = "mag_survey_data_elements">
     <cdf_att
         FIELDNAM = "mag_by_2d"
@@ -122,6 +124,7 @@
   <cdf_var
       name   = "mag_bz"
       type   = "integer"
+      convert_routine = "none"
       nelem  = "mag_survey_data_elements">
     <cdf_att
         FIELDNAM = "mag_bz_2d"

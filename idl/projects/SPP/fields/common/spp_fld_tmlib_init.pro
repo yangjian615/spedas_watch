@@ -22,7 +22,6 @@ pro spp_fld_tmlib_init, server = server, test_cdf_dir = test_cdf_dir
 
   if ~keyword_set(test_cdf_dir) then test_cdf_dir = ''
 
-
   ; Set up system variable
 
   defsysv, '!SPP_FLD_TMLIB', exists = exists
@@ -36,6 +35,8 @@ pro spp_fld_tmlib_init, server = server, test_cdf_dir = test_cdf_dir
   endif else begin
 
     !SPP_FLD_TMLIB.server = server
+    !SPP_FLD_TMLIB.cdf_dir = cdf_dir
+    !SPP_FLD_TMLIB.test_cdf_dir = test_cdf_dir
 
   end
 

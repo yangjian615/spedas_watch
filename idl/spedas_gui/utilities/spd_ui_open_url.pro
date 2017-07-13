@@ -50,7 +50,8 @@ pro spd_ui_open_url, url
   ; Open a URL using the browser
 
   ; use the browser executable specified by the user, if it exists
-  if ~keyword_set(!spedas) then spedas_init
+  defsysv,'!spedas',exists=exists
+  if ~exists then spedas_init
   browser_exe = !spedas.browser_exe
   if browser_exe ne '' then begin
     if FILE_SEARCH(browser_exe) then begin

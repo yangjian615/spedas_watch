@@ -1,3 +1,22 @@
+;+
+;PROCEDURE: avg_data, name, res
+;PURPOSE:
+;   Creates a new tplot variable that is the time average of original.
+;INPUT: name  tplot variable names (strings)
+;KEYWORDS:
+; display_object = Object reference to be passed to dprint for output.
+;-
+;
+;Modified by O. Le Contel, LPP, Feb. 19, 2016
+; in order to deal with L64 integer
+;
+;
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-07-12 08:04:38 -0700 (Wed, 12 Jul 2017) $
+; $LastChangedRevision: 23585 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/avg_data.pro $
+;-
+
 function average_bins,data,ind,d
 if d ne 1 then message ,'not working yet!'
 dim  = dimen(data)
@@ -39,18 +58,10 @@ endcase
 return,rdat
 end
 
-
-
-;+
-;PROCEDURE: avg_data, name, res
-;PURPOSE:
-;   Creates a new tplot variable that is the time average of original.
-;INPUT: name  tplot variable names (strings)
-;KEYWORDS:
-; display_object = Object reference to be passed to dprint for output.
-;-
 PRO avg_data,name,res,newname=newname,append=append,trange=trange,day=day, display_object=display_object
+
 get_data,name,ptr=p1,dlim=dlim,lim=lim
+
 if not keyword_set(p1) then begin
    dprint, 'data not defined!', display_object=display_object
    return
@@ -65,18 +76,20 @@ time = *p1.x
 
 if keyword_set(day) then trange=(round(average(time,/nan)/86400d -day/2.)+[0,day])*86400d
 
-if not keyword_set(trange) then trange= (floor(minmax(time)/res)+[0,1]) * res
+if not keyword_set(trange) then trange= (floor(minmax(time)/res,/L64)+[0,1]) * res $
+  else trange = [time_double(trange(0)),time_double(trange(1))]
 
 ;check for data in this time range
-time_test = where(time Ge trange[0] And time Lt trange[1], ntimes_ok)
+time_test = where(time Ge trange[0] And time Lt trange[1], ntimes_ok,/L64)
+
 If(ntimes_ok Eq 0) Then Begin
   dprint, 'No data in input time range', display_object=display_object
   return
 Endif
 
-ind = floor( (time-trange[0])/res )
-max = round((trange[1]-trange[0])/res)
-w = where( ind lt 0 or ind ge max, c)
+ind = floor( (time-trange[0])/res,/L64 )
+max = round((trange[1]-trange[0])/res,/L64)
+w = where( ind lt 0 or ind ge max, c,/L64)
 if c ne 0 then ind[w]=-1
 newtime = (dindgen(max)+.5)*res+trange[0]
 

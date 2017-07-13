@@ -1,12 +1,12 @@
 ;
-;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-04-21 11:43:26 -0700 (Fri, 21 Apr 2017) $
-;  $LastChangedRevision: 23207 $
+;  $LastChangedBy: pulupa $
+;  $LastChangedDate: 2017-07-12 15:38:14 -0700 (Wed, 12 Jul 2017) $
+;  $LastChangedRevision: 23594 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/l1/l1_dcb_analog_hk/spp_fld_dcb_analog_hk_load_l1.pro $
 
-pro spp_fld_dcb_analog_hk_load_l1, file
+pro spp_fld_dcb_analog_hk_load_l1, file, prefix = prefix
 
-  prefix = 'spp_fld_dcb_analog_hk_'
+  if not keyword_set(prefix) then prefix = 'spp_fld_dcb_analog_hk_'
 
   cdf2tplot, file, prefix = prefix
 

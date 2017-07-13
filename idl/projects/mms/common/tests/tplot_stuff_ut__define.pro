@@ -6,12 +6,21 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-03 09:10:21 -0800 (Tue, 03 Jan 2017) $
-; $LastChangedRevision: 22474 $
+; $LastChangedDate: 2017-07-12 08:02:22 -0700 (Wed, 12 Jul 2017) $
+; $LastChangedRevision: 23583 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/tplot_stuff_ut__define.pro $
 ;-
 
 ; ------- the following are some regression tests -------
+; the following test is for a bug in avg_data when the resoulution is less than 1s
+function tplot_stuff_ut::test_avg_data_less_than_1
+  mms_load_fgm, trange=['2015-12-15', '2015-12-16']
+  avg_data, 'mms1_fgm_b_gse_srvy_l2_bvec', 0.5
+  get_data, 'mms1_fgm_b_gse_srvy_l2_bvec_avg', data=d
+  assert, d.X[1]-d.X[0] eq 0.5, 'Problem with avg_data res < 1 test'
+  return, 1
+end
+
 function tplot_stuff_ut::test_time_clip_multi_dimen_v3
   store_data, 'test_data', data={x: [1, 2, 3, 4, 5], y: findgen(5, 16, 32, 32), v1: findgen(5, 16), v2: findgen(5, 32), v3: findgen(32)}
   time_clip, 'test_data', 2, 4, /replace
