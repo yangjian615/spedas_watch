@@ -30,13 +30,25 @@
 ;         cdf_tmp_dir='c:\temp\', cdf_compress_error=cdf_compress_error
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-04-10 15:19:10 -0700 (Mon, 10 Apr 2017) $
-;$LastChangedRevision: 23132 $
+;$LastChangedDate: 2017-07-13 10:45:04 -0700 (Thu, 13 Jul 2017) $
+;$LastChangedRevision: 23605 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_cdf_compress.pro $
 ;
 ;-
 
 pro spd_cdf_compress, file_in, file_out=file_out, replace=replace, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_tmp_dir=cdf_tmp_dir, cdf_compress_error=cdf_compress_error
+
+  ; catch errors
+  catch, error_status
+
+  if error_status ne 0 then begin
+    dprint, '%spd_cdf_compress: Compression Error. Details:'
+    dprint, 'Error index: ', Error_status
+    dprint, 'Error message: ', !ERROR_STATE.MSG  
+    cdf_compress_error =  Error_status 
+    catch, /cancel
+    return    
+  endif
 
   ; check input
   cdf_compress_error = ""  

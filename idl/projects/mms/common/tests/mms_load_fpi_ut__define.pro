@@ -10,8 +10,8 @@
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-06-02 13:41:25 -0700 (Fri, 02 Jun 2017) $
-; $LastChangedRevision: 23393 $
+; $LastChangedDate: 2017-07-13 10:39:46 -0700 (Thu, 13 Jul 2017) $
+; $LastChangedRevision: 23603 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
@@ -22,53 +22,67 @@ function mms_load_fpi_ut::test_integration_time_get_dist
   mms_load_fpi, trange=['2016-12-09', '2016-12-10'], datatype=['dis-dist', 'des-dist'], data_rate='brst', level='acr', suffix='acr', probe=1
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='fast'
   fpi_dist = mms_get_dist('mms1_dis_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0375) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst, ACR)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0375)/0.0375d lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst, ACR)'
   fpi_dist = mms_get_dist('mms1_des_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0075) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst, ACR)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0075)/0.0075d lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst, ACR)'
   
   ; with the level keyword
   fpi_dist = mms_get_dist('mms1_dis_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'i', level='acr', data_rate='brst')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0375) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst, level=ACR)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0375)/0.0375d lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst, level=ACR)'
   fpi_dist = mms_get_dist('mms1_des_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'e', level='acr', data_rate='brst')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0075) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst, level=ACR)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0075)/0.0075d lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst, level=ACR)'
 
   
   fpi_dist = mms_get_dist('mms3_dis_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15)/0.15d lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst)'
   fpi_dist = mms_get_dist('mms3_des_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03)/0.03d lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst)'
   fpi_dist = mms_get_dist('mms3_dis_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, fast)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5)/4.5d lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, fast)'
   fpi_dist = mms_get_dist('mms3_des_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, fast)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5)/4.5d lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, fast)'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_integration_time_get_i_dist_slow
+  mms_load_fpi, trange=['2015-10-16', '2015-10-17'], datatype='dis-dist', data_rate='slow', level='l1b', probe=4
+  fpi_dist = mms_get_fpi_dist('mms4_dis_dist_slow',trange=time_double(['2015-10-16', '2015-10-17']), probe = 4, species = 'i')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-59)/59d lt 0.02, 'Problem with integration time returned by mms_get_fpi_dist'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_integration_time_get_e_dist_slow
+  mms_load_fpi, trange=['2015-10-16', '2015-10-17'], datatype='des-dist', data_rate='slow', level='l1b', probe=4
+  fpi_dist = mms_get_fpi_dist('mms4_des_dist_slow',trange=time_double(['2015-10-16', '2015-10-17']), probe = 4, species = 'e')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-59)/59d lt 0.02, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
 function mms_load_fpi_ut::test_integration_time_get_i_dist_brst
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='dis-dist', data_rate='brst'
   fpi_dist = mms_get_fpi_dist('mms3_dis_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15) lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15)/0.15d lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
 function mms_load_fpi_ut::test_integration_time_get_e_dist_brst
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='des-dist', data_rate='brst'
   fpi_dist = mms_get_fpi_dist('mms3_des_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03) lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03)/0.03d lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
 function mms_load_fpi_ut::test_integration_time_get_i_dist_fast
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='dis-dist', data_rate='fast'
   fpi_dist = mms_get_fpi_dist('mms3_dis_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5)/4.5d lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
 function mms_load_fpi_ut::test_integration_time_get_e_dist_fast
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='des-dist', data_rate='fast'
   fpi_dist = mms_get_fpi_dist('mms3_des_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5)/4.5d lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 

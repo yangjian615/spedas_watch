@@ -103,8 +103,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-29 15:41:40 -0700 (Thu, 29 Jun 2017) $
-;$LastChangedRevision: 23531 $
+;$LastChangedDate: 2017-07-13 15:17:29 -0700 (Thu, 13 Jul 2017) $
+;$LastChangedRevision: 23609 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products_new.pro $
 ;-
 pro mms_part_products_new, $
@@ -167,6 +167,9 @@ pro mms_part_products_new, $
   twin = systime(/sec)
   error = 1
   
+  ; no regridding allowed when you subtract the bulk velocity because 
+  ; regridding assumes energies are constant across angles (which is
+  ; not the case after the bulk velocity is subtracted)
   if keyword_set(subtract_bulk) then no_regrid = 1
   
   if ~is_string(in_tvarname) then begin
@@ -480,7 +483,7 @@ pro mms_part_products_new, $
     if in_set(outputs_lc, 'energy') then begin
       mms_pgs_make_e_spec, clean_data, spec=en_spec, yaxis=en_y
     endif
-    
+
     ;Perform transformation to FAC, regrid data, and apply limits in new coords
     if fac_requested then begin
       
@@ -509,7 +512,7 @@ pro mms_part_products_new, $
       endif
 
     endif
-    
+
     ;Build pitch angle spectrogram
     if in_set(outputs_lc,'pa') then begin
       mms_pgs_make_theta_spec, clean_data, spec=pa_spec, yaxis=pa_y, /colatitude, resolution=regrid[1]

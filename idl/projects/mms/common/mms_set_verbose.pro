@@ -16,14 +16,14 @@
 ; 18-oct-2012, jmm, Another SVN test
 ; 10-apr-2015, moka, adapted for MMS from 'thm_set_verbose'
 ; 
-; $LastChangedBy: moka $
-; $LastChangedDate: 2015-04-10 16:29:01 -0700 (Fri, 10 Apr 2015) $
-; $LastChangedRevision: 17296 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-07-13 07:39:47 -0700 (Thu, 13 Jul 2017) $
+; $LastChangedRevision: 23597 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_set_verbose.pro $
 ;-
 Pro mms_set_verbose, vlevel
 
-  ;Need to check for !themis
+  ;Need to check for !mms
   defsysv,'!mms',exists=exists
   if not keyword_set(exists) then begin
     mms_init

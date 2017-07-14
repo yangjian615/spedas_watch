@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-13 11:48:51 -0700 (Tue, 13 Jun 2017) $
-;$LastChangedRevision: 23461 $
+;$LastChangedDate: 2017-07-13 10:44:32 -0700 (Thu, 13 Jul 2017) $
+;$LastChangedRevision: 23604 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -42,7 +42,7 @@ function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=s
 
     compile_opt idl2, hidden
 
-if ~undefined(level) then level = strlowcase(level)
+if ~undefined(level) then level = strlowcase(level) else level = 'l2'
 
 name = (tnames(tname))[0]
 if name eq '' then begin
@@ -226,12 +226,14 @@ if undefined(integ_time) then begin
 ;    endif
    ; now that we're taking the integration time from the data, we need to make sure it's a known integration time
    ; for the FPI dataset; this is so that we can stop/error if the integration time is outside of any known values
-   known_integration_times = [0.0075, 0.03, 0.0375, .150, 4.5] 
-   find_int_time = where(abs(known_integration_times-integ_time) lt 0.0001, itime_count)
+   ; update on 7/13/17 by egrimes; changed to percent error check for known integration times; halt if % error is >= 2%
+   known_integration_times = [0.0075, 0.03, 0.0375, .150, 4.5, 59] 
+   find_int_time = where(abs(known_integration_times-integ_time)/integ_time lt 0.02, itime_count)
    if itime_count eq 0 then begin
       dprint, dlevel = 0, 'Error, problem finding integration time from the data; this shouldn''t happen; contact: egrimes@igpp.ucla.edu'
       stop
    endif else dprint, dlevel = 4, 'No integration time specified in mms_get_fpi_dist; guessed ' + strcompress(string(integ_time), /rem) + ' seconds from the data'
+
 endif
 dist.time = (*p.x)[index]
 dist.end_time = (*p.x)[index] + integ_time

@@ -7,7 +7,8 @@
 ;             suffix:        String to append to the end of the loaded tplot variables
 ;             prefix:        String to append to the beginning of the loaded tplot variables
 ;             /downloadonly: Download the file but don't read it  
-;             /noupdate:     Don't download if file exists (not implemented yet)
+;             /noupdate:     Don't download if file exists (partially implemented, need to test when 
+;                            two tvars are requested)
 ;             /nodownload:   Don't download - use only local files
 ;             verbose:       controls amount of error/information messages displayed 
 ;             /get_stations: get list of stations used to generate this data
@@ -59,13 +60,14 @@ pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefi
     yr_start = strmid(time_string(tr[0]),0,4)
     mo_start = strmid(time_string(tr[0]),5,2)
     day_start = strmid(time_string(tr[0]),8,2)
- 
+    
     dur = (time_struct(tr[1])).sod - (time_struct(tr[0])).sod
     if dur EQ 0 then nfiles = 1 else nfiles = long(dur/10)
     dates = time_string(tr[0]+long(findgen(nfiles)*10)) 
     idx = strpos(dates[0], '/')     
     dates_str = strmid(dates,idx+1,2)+strmid(dates,idx+4,2)+strmid(dates,idx+7,2)
    
+    ; loop for each type of data eics and seca
     for j = 0, n_elements(datatype)-1 do begin
     
         remote_path = source.remote_data_dir+dirtype[j]+'S/'+yr_start+'/'+mo_start+'/'+day_start+'/'   
@@ -82,27 +84,33 @@ pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefi
               return
             endif
             if n_elements(found_files) LT n_elements(local_files) then begin
-              ; update files var
+              ; let user know that not all files were found locally
               dprint, dlevel = 0, 'Not all local files were found in: '+local_path
               dprint, dlevel = 0, 'Loading files there were found.'
-            endif
+            endif           
         endif else begin
+
             if keyword_set(noupdate) then begin
               if ncnt GT 0 then begin 
+                 ; some files were found so don't download those files
                  for k=0,n_elements(filenames)-1 do begin
                     idx = where(found_files eq local_files[k],fcnt)
-                    stop
                     if fcnt LT 1 then append_array, update_files, filenames[k]
                  endfor
-                 stop
                  if ~undefined(update_files) && update_files[0] NE '' then $
                     files = spd_download(remote_file=update_files, remote_path=remote_path, $
                                          local_path = local_path)                 
-              endif 
+              endif else begin
+                ; no existing files were found so download them all
+                files = spd_download(remote_file=filenames, remote_path=remote_path, $
+                  local_path = local_path)                
+              endelse
             endif else begin
+              ; download all files
               files = spd_download(remote_file=filenames, remote_path=remote_path, $
                                    local_path = local_path)
             endelse
+            
         endelse
          
         if keyword_set(downloadonly) then continue
@@ -118,20 +126,44 @@ pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefi
           'seca': sec_ascii2tplot, files, prefix=prefix, suffix=suffix, verbose=verbose, tplotnames=tplotnames
           else: dprint, dlevel = 0, 'Unknown data type!'
         endcase
-
-        ; load magnetometer stations
-        ;if keyword_set(get_stations) then get_station_names
        
     endfor
+
+    ; load magnetometer stations
+    if keyword_set(get_stations) then begin
+       ; construct file name for download
+       remote_path = source.remote_data_dir+'Stations/'+yr_start+'/'+mo_start+'/'+day_start+'/'
+       local_path = source.local_data_dir+'Stations\'+yr_start+'\'+mo_start+'\'+day_start+'\'
+       filename = 'Stat'+yr_start+mo_start+day_start+'.dat'
+       local_file = local_path + filename
+       found_file = file_search(local_file, count=ncnt)
+;      Can be uncommented when data becomes available at remote URL
+;       if keyword_set(nodownload) then begin
+;         ; let user know if there are no local files
+;         if ncnt LT 1 then begin
+;           dprint, dlevel = 0, ' No local files were found in: ' + local_path
+;           return
+;         endif
+;       endif else begin
+;         if (keyword_set(noupdate) && ncnt EQ 0) OR (~keyword_set(noupdate)) then $
+;           file = spd_download(remote_file=filename, remote_path=remote_path, $
+;                               local_path = local_path)
+;       endelse
+       if ~keyword_set(downloadonly) then begin
+          ; double check that files were downloaded and exist
+          file = file_search(local_file, count=ncnt)
+          if ncnt NE 0 then secs_stations2tplot, file, tr[0], prefix=prefix, suffix=suffix, verbose=verbose, tplotnames=tplotnames
+       endif
+    endif
 
     ; make sure some tplot variables were loaded
     tn_list_after = tnames('*')
     new_tnames = ssl_set_complement([tn_list_before], [tn_list_after])
     
     ; check that some data was loaded
-;    if n_elements(new_tnames) eq 1 && is_num(new_tnames) then begin
-;        dprint, dlevel = 1, 'No new tplot variables were created.'
-;        return
-;    endif
+    if n_elements(new_tnames) eq 1 && is_num(new_tnames) then begin
+        dprint, dlevel = 1, 'No new tplot variables were created.'
+        return
+    endif
         
 end
