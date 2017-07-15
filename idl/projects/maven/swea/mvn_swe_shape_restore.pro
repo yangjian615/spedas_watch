@@ -19,7 +19,7 @@
 ;                      stored as tplot variable "Shape_PAD"
 ;
 ;       PARNG:         Shape parameter calculated based on 30, 45, and 60 deg, 
-;                      corresponding to PARNG=0,1,2. Default is PA=45
+;                      corresponding to PARNG=1,2,3. Default is PA=45
 ;       
 ; $LastChangedBy: $
 ; $LastChangedDate: $
@@ -33,8 +33,10 @@
 Pro mvn_swe_shape_restore,trange,results=results,tplot=tplot,orbit=orbit,parng=parng
 
     ;   Process keywords
-    rootdir='maven/data/sci/swe/l3/swe_shape_par_pad/YYYY/MM/'
-    fname = 'mvn_swe_shape_par_pad_YYYYMMDD.sav'
+    ;rootdir='maven/data/sci/swe/l3/swe_shape_par_pad/YYYY/MM/'
+    ;fname = 'mvn_swe_shape_par_pad_YYYYMMDD.sav'
+    rootdir='maven/data/sci/swe/l3/shape/YYYY/MM/'
+    fname = 'mvn_swe_l3_shape_YYYYMMDD_v??_r??.sav'
 
     if keyword_set(orbit) then begin
         imin = min(orbit, max=imax)
@@ -68,18 +70,18 @@ Pro mvn_swe_shape_restore,trange,results=results,tplot=tplot,orbit=orbit,parng=p
     results=shp
     
     if(keyword_set(tplot)) then begin
-        if (size(parng,/type) eq 0) then parng=1 else parng=fix(parng[0])
-        if (parng lt 0 or parng ge 3) then begin
-            print,'PARNG is only allowed to be 0, 1, or 2.'+$
-                'reset to 1 (PA=45 deg)'
-            parng=1
+        if (size(parng,/type) eq 0) then parng=2 else parng=fix(parng[0])
+        if (parng lt 1 or parng gt 3) then begin
+            print,'PARNG is only allowed to be 1, 2, or 3.'+$
+                'reset to 2 (PA=45 deg)'
+            parng=2
         endif
         npa=''
-        if (parng eq 0) then npa='PA 0-30'
-        if (parng eq 1) then npa='PA 0-45'
-        if (parng eq 2) then npa='PA 0-60'
-        
-        store_data,'Shape_PAD',data={x:shp.t, y:transpose(shp.shape[0:1,parng])}
+        if (parng eq 1) then npa='PA 0-30'
+        if (parng eq 2) then npa='PA 0-45'
+        if (parng eq 3) then npa='PA 0-60'
+        indx = parng-1
+        store_data,'Shape_PAD',data={x:shp.t, y:transpose(shp.shape[0:1,indx])}
         options,'Shape_PAD','ytitle',('Shape Par!c'+npa)
         options,'Shape_PAD','labels',['Away','Towards']
         options,'Shape_PAD','labflag',1
