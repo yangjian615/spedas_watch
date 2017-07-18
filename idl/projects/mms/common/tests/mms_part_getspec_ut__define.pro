@@ -9,10 +9,39 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-13 16:10:34 -0700 (Thu, 13 Jul 2017) $
-; $LastChangedRevision: 23611 $
+; $LastChangedDate: 2017-07-17 09:57:52 -0700 (Mon, 17 Jul 2017) $
+; $LastChangedRevision: 23617 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_getspec_ut__define.pro $
 ;-
+
+function mms_part_getspec_ut::test_pa_limits_fpi
+  mms_part_getspec, probe=4, trange=['2015-12-15/10:50', '2015-12-15/11:00'], pitch=[0, 90]
+  get_data, 'mms4_des_dist_fast_pa', data=d
+  assert, total(finite(d.Y[0, 8:*])) eq 0, 'Problem with PA limits for FPI'
+  return, 1
+end
+
+function mms_part_getspec_ut::test_pa_limits_fpi_brst
+  mms_part_getspec, probe=4, trange=['2015-10-16/13:06', '2015-10-16/13:07'], pitch=[0, 90], data_rate='brst'
+  get_data, 'mms4_des_dist_brst_pa', data=d
+  assert, total(finite(d.Y[0, 8:*])) eq 0, 'Problem with PA limits for FPI (brst)'
+  return, 1
+end
+
+function mms_part_getspec::test_pa_limits_hpca
+  mms_part_getspec, probe=4, trange=['2015-12-15/10:50', '2015-12-15/11:00'], pitch=90
+end
+
+; the following needs to be fixed
+function mms_part_getspec_ut::test_tplotnames
+  mms_part_getspec, probe=4, trange=['2015-12-15/10:50', '2015-12-15/11:00'], tplotnames=tn
+end
+
+function mms_part_getspec_ut::test_suffix
+  mms_part_getspec, probe=4, trange=['2015-12-15/10:50', '2015-12-15/11:00'], suffix='_testsuffix'
+  assert, spd_data_exists('mms4_des_dist_fast_energy_testsuffix mms4_des_dist_fast_theta_testsuffix mms4_des_dist_fast_pa_testsuffix', '2015-12-15/10:50', '2015-12-15/11:00'), 'Problem with suffix!'
+  return, 1
+end
 
 function mms_part_getspec_ut::test_theta_limits_fpi
   mms_part_getspec, probe=4, trange=['2015-12-15/10:50', '2015-12-15/11:00'], theta=[0, 90]

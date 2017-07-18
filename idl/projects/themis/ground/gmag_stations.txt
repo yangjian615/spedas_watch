@@ -144,6 +144,7 @@ aeold|Themis AE (pre 2015)|kapu|Kapuskasing, ON
 gbo|Themis GBO|kapu|Kapuskasing, ON
 asi|ASI|kapu|Kapuskasing, ON
 tgo|TGO|kar|Karmœóõ½y, Norway
+gima|GIMA|kena|Kenai College, AK
 fmi|FMI|kev|Kevo, Finland
 ae|Themis AE|kian|Kiana, AK
 aeold|Themis AE (pre 2015)|kian|Kiana, AK
