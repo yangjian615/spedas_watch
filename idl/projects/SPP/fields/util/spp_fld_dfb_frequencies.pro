@@ -417,7 +417,7 @@ function SPP_Get_FFT_bins_04_AC, bins
   ;;THE
 END
 
-function spp_fld_dfb_frequencies
+pro spp_fld_dfb_frequencies
 
   ; Dummy variables set so that we can compile all of the above functions
   ; with a call to spp_fld_dfb_frequencies
@@ -426,7 +426,5 @@ function spp_fld_dfb_frequencies
   dummy = spp_get_bp_bins_04_ac()
   dummy = spp_get_fft_bins_04_dc(56)
   dummy = spp_get_fft_bins_04_ac(56)
-
-  return, 0
 
 end

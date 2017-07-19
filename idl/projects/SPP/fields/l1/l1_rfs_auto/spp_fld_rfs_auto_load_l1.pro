@@ -128,6 +128,7 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
     ; where |x|^2 is an auto spec value of the PFB/DFT
     ;  
     ; 2             : from definition of S_PFB
+    ; 3             : number of spectral bins summed together
     ; 4096          : number of FFT points
     ; 38.4e6        : fs in Hz (divide fs by 8 for LFR)
     ; 250           : RFS high gain (multiply by 50^2 later on if in low gain)
@@ -135,7 +136,9 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
     ; 0.782         : WSS for our implementation of the PFB (see pfb_norm.pdf)
     ; 65536         : factor from integer PFB, equal to (2048./8.)^2
     
-    V2_factor = 2d * 4096d / 38.4d6 / ((250d*2048d)^2d * 0.782d * 65536d)
+    ; TODO: Correct this for SCM data
+    
+    V2_factor = (2d/3d) * 4096d / 38.4d6 / ((250d*2048d)^2d * 0.782d * 65536d)
     
     if lfr_flag then V2_factor *= 8
     

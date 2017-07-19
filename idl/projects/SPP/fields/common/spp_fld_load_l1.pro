@@ -1,5 +1,9 @@
 pro spp_fld_load_l1, filename
 
+  defsysv, '!SPP_FLD_TMLIB', exists = exists
+
+  if not keyword_set(exists) then spp_fld_tmlib_init
+
   ; Load only the global attributes
 
   cdf_vars = cdf_load_vars(filename, verbose = -1)

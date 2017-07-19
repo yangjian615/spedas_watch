@@ -36,7 +36,8 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
     eva_error_message, error_status
     msg = [!Error_State.MSG,' ','...EVA will igonore this error.']
     if ~keyword_set(no_gui) then begin 
-      ok = dialog_message(msg,/center,/error)
+      ;ok = dialog_message(msg,/center,/error)
+      print, 'EVA: '+msg
       progressbar -> Destroy
     endif
     message, /reset; Clear !ERROR_STATE

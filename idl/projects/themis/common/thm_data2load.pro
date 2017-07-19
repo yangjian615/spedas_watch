@@ -29,9 +29,9 @@
 ; started on 31-Jan-2008, jmm, jimm@ssl.berkeley.edu, this is under
 ; development for the next 6 months or so.
 ; 9-apr-2008, jmm, added all instruments, for Version 4_00
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2017-07-11 09:48:38 -0700 (Tue, 11 Jul 2017) $
-;$LastChangedRevision: 23573 $
+;$LastChangedBy: jimmpc1 $
+;$LastChangedDate: 2017-07-18 11:40:16 -0700 (Tue, 18 Jul 2017) $
+;$LastChangedRevision: 23628 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/common/thm_data2load.pro $
 ;-
 function thm_valid_variables, instrument, level
@@ -166,7 +166,7 @@ function thm_valid_variables, instrument, level
           endif else begin
             instr_type = ['ptiff', 'pteff', 'ptirf', 'pterf', 'ptebb']
             valid_variables = ['density', 'flux', 'mftens', 'en_eflux', $
-              'en_eflux_yaxis', 't3', 'magt3', 'ptens', 'sc_pot', 'magf', $
+              't3', 'magt3', 'ptens', 'sc_pot', 'magf', $
               'symm', 'symm_ang', 'avgtemp', 'vthermal', $
               'velocity_dsl', 'velocity_gse', 'velocity_gsm', 'data_quality']
             for k = 0, n_elements(instr_type)-1 do instr_data = [instr_data, instr_type[k]+'_'+valid_variables]

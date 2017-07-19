@@ -13,8 +13,8 @@
 ;         
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-05-16 21:10:54 -0700 (Tue, 16 May 2017) $
-;$LastChangedRevision: 23327 $
+;$LastChangedDate: 2017-07-18 14:55:05 -0700 (Tue, 18 Jul 2017) $
+;$LastChangedRevision: 23640 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -47,7 +47,8 @@ pro mms_part_getspec, probes=probes, $
                       mag_suffix=mag_suffix,$
                         
                       subtract_bulk=subtract_bulk, $
-                      
+                        
+                      tplotnames=tplotnames, $
                       _extra=ex ;TBD: consider implementing as _strict_extra
 
     compile_opt idl2
@@ -125,6 +126,6 @@ pro mms_part_getspec, probes=probes, $
             mag_name=bname, pos_name=pos_name, vel_name=vel_name, energy=energy, $
             pitch=pitch, gyro=gyro_in, phi=phi_in, theta=theta, regrid=regrid, $
             outputs=outputs, suffix=suffix, datagap=datagap, subtract_bulk=subtract_bulk, $
-            _extra=ex
+            tplotnames=tplotnames, _extra=ex
     endfor
 end

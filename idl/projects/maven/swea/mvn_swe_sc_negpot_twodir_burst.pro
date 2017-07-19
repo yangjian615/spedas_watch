@@ -152,7 +152,8 @@ Pro mvn_swe_sc_negpot_twodir_burst,shadow=shadow,swidth=swidth,fill=fill
           endif
           wake = interpol(wk0.y,wk0.x,t)
           alt = interpol(alt0.y,alt0.x,t)
-          inw = where((wake ne wake) and (alt ge 800), cts)
+          ;inw = where((wake ne wake) and (alt ge 800), cts)
+          inw = where(wake ne wake, cts)
           if cts gt 0 then pot[inw,*] = !values.f_nan
        endif
 
@@ -162,14 +163,22 @@ Pro mvn_swe_sc_negpot_twodir_burst,shadow=shadow,swidth=swidth,fill=fill
           if (cts gt 0) then begin
              pot1 = pot1[inx]
              t1 = t[inx]
-             indx = nn(mvn_swe_engy.time,t1)
-             mvn_swe_engy[indx].sc_pot  = pot1
-             indx = nn(swe_sc_pot.time,t1)
-             swe_sc_pot[indx].potential = pot1
              store_data,'pot_inshdw',data={x:t1,y:pot1}
              options,'pot_inshdw','psym',3
+             indx = nn(mvn_swe_engy.time,t1)
+             tmp = mvn_swe_engy[indx].sc_pot
+             mvn_swe_engy[indx].sc_pot  = pot1
+             ;replace back if original pot>=2 or pot<0
+             inrep = where((tmp eq tmp) and $
+                           (tmp gt 2 or tmp lt 0),cts1)
+             print,cts,cts1
+             if cts1 gt 0 then $
+                mvn_swe_engy[indx[inrep]].sc_pot=tmp[inrep]            
+             
+             swe_sc_pot.potential = mvn_swe_engy.sc_pot
+             
           endif
-        
+          ;stop
        endif
 
     ;create tplot variable

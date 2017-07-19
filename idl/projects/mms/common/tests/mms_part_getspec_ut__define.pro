@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-17 09:57:52 -0700 (Mon, 17 Jul 2017) $
-; $LastChangedRevision: 23617 $
+; $LastChangedDate: 2017-07-18 15:01:44 -0700 (Tue, 18 Jul 2017) $
+; $LastChangedRevision: 23641 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_getspec_ut__define.pro $
 ;-
 
@@ -32,9 +32,10 @@ function mms_part_getspec::test_pa_limits_hpca
   mms_part_getspec, probe=4, trange=['2015-12-15/10:50', '2015-12-15/11:00'], pitch=90
 end
 
-; the following needs to be fixed
 function mms_part_getspec_ut::test_tplotnames
   mms_part_getspec, probe=4, trange=['2015-12-15/10:50', '2015-12-15/11:00'], tplotnames=tn
+  assert, n_elements(tn) eq 5 && array_equal(tn, 'mms4_des_dist_fast_'+['energy', 'theta', 'phi', 'pa', 'gyro']), 'Problem with tplotnames keyword'
+  return, 1
 end
 
 function mms_part_getspec_ut::test_suffix
@@ -65,6 +66,7 @@ function mms_part_getspec_ut::test_theta_limits_hpca
 end
 
 function mms_part_getspec_ut::test_theta_limits_hpca_brst
+  del_data, '*'
   mms_part_getspec, probe=4, trange=['2015-10-16/13:06', '2015-10-16/13:07'], instrument='hpca', theta=[0, 90], data_rate='brst'
   get_data, 'mms4_hpca_hplus_phase_space_density_theta', data=d
   assert, total(finite(d.Y[0, 8:*])) eq 0, 'Problem with theta limits for HPCA! (brst)'

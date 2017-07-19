@@ -32,9 +32,9 @@
 ;OUTPUTS:
 ;   None - Result is stored as a TPLOT variable 'neg_pot'.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:04:47 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21872 $
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2017-07-18 14:01:38 -0700 (Tue, 18 Jul 2017) $
+; $LastChangedRevision: 23636 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_negpot.pro $
 ;
 ;-
@@ -103,7 +103,7 @@ pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
     R_m=3396.
     term=90+acos((R_m+base)/(R_m+alt1))*!radeg
     indx=where((f40 gt 1.e6 and sza1 le term) and $
-        (alt1 le altcut or (alt1 gt altcut and alt1 le 1000 and shape le 0.8)),cts)
+        (alt1 le altcut or (alt1 gt altcut and alt1 le 1000 and shape le 0.9)),cts)
 
     lim=-0.05
     ebase=23-0.705
@@ -172,10 +172,18 @@ pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
     endif
     
     if keyword_set(fill) then begin
-        indx = where((finite(pot1) and (alt1 le altcut)), cts)
+        indx = where(finite(pot1) and (swe_sc_pot.potential ne $
+                     swe_sc_pot.potential), cts)
         if (cts gt 0) then begin
-          mvn_swe_engy[indx].sc_pot  = pot1[indx]
-          swe_sc_pot[indx].potential = pot1[indx]
+           mvn_swe_engy[indx].sc_pot  = pot1[indx]
+           swe_sc_pot[indx].potential = pot1[indx]
+        endif
+        ;below 1000 km, using the smaller SWE pot
+        indx = where(alt1 le 1000 and finite(pot1) and $
+                     swe_sc_pot.potential gt 0,cts)
+        if (cts gt 0) then begin
+           mvn_swe_engy[indx].sc_pot  = pot1[indx]
+           swe_sc_pot[indx].potential = pot1[indx]
         endif
     endif
     ;stop

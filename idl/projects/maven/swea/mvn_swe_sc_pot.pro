@@ -9,6 +9,10 @@
 ;   spacecraft is in darkness (expect negative potential) or below 250 km
 ;   altitude (expect small or negative potential).
 ;
+;       In this program, different potential estimations are put into
+;   the structures, swe_sc_pot and mvn_swe_engy.potential, in a
+;   particular order. A tplot variable is created that contains this
+;   composed s/c potential: 'pot_comp'.  
 ;AUTHOR: 
 ;	David L. Mitchell
 ;
@@ -99,17 +103,21 @@
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-06 17:58:47 -0700 (Thu, 06 Jul 2017) $
-; $LastChangedRevision: 23562 $
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2017-07-18 14:11:59 -0700 (Tue, 18 Jul 2017) $
+; $LastChangedRevision: 23638 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
 
-pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thresh2, dEmax=dEmax2, $
-                    pans=pans, overlay=overlay, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
-                    mask_sc=mask_sc, setval=setval, badval=badval, angcorr=angcorr, minflux=minflux2, $
-                    negpot=negpot, sta_pot=sta_pot, lpw_pot=lpw_pot, pot_in_shdw=pot_in_shdw
+pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, $
+                    thresh=thresh2, dEmax=dEmax2, $
+                    pans=pans, overlay=overlay, ddd=ddd, abins=abins, $
+                    dbins=dbins, obins=obins, $
+                    mask_sc=mask_sc, setval=setval, badval=badval, $
+                    angcorr=angcorr, minflux=minflux2, $
+                    negpot=negpot, sta_pot=sta_pot, lpw_pot=lpw_pot, $
+                    pot_in_shdw=pot_in_shdw
 
   compile_opt idl2
   
@@ -155,182 +163,192 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
     return
   endif
   
-  if (size(badval,/type) eq 0) then badval = !values.f_nan else badval = float(badval)
+  if (size(badval,/type) eq 0) then badval = !values.f_nan $
+  else badval = float(badval)
   if (size(negpot,/type) eq 0) then negpot = 1
   ;if (size(pot_in_shdw,/type) eq 0) then pot_in_shdw = 1
   
 ; Clear any previous potential calculations
 
   mvn_swe_engy.sc_pot = badval
-
+  potindx=replicate(badval,n_elements(mvn_swe_engy))
 ; Get pre-calculated potentials from combined SWEA-LPW analysis ...
 
   ok = 0
-
+  maxdt = 64 ;s, define a data gap if dt>maxdt
+ 
   if keyword_set(lpw_pot) then begin
-
-    if (size(lpw_pot,/type) eq 7) then tplot_restore, file=lpw_pot $
-                                  else mvn_swe_lpw_scpot_restore
-
-    get_data,'mvn_swe_lpw_scpot_pow',data=lpwpot,index=i
-    if (i gt 0) then begin
-      t = mvn_swe_engy.time
-      npts = n_elements(t)
-      phi = replicate(badval, npts)
-      phi = interpol(lpwpot.y, lpwpot.x, t)
-      indx = where(phi le 1., count)
-      if (count gt 0L) then phi[indx] = badval
-      mvn_swe_engy.sc_pot = phi
-      ok = 1
-    endif
-
+     store_data,'mvn_swe_lpw_scpot_pow',/delete
+     if (size(lpw_pot,/type) eq 7) then tplot_restore, file=lpw_pot $
+     else mvn_swe_lpw_scpot_restore
+     
+     get_data,'mvn_swe_lpw_scpot_pow',data=lpwpot,index=i
+     if (i gt 0) then begin
+        options,'mvn_swe_lpw_scpot_pow','psym',3
+        options,'mvn_swe_lpw_scpot_pow','color',!p.color
+        t = mvn_swe_engy.time
+        npts = n_elements(t)
+        phi = replicate(badval, npts)
+        inp = nn(lpwpot.x,t)
+                                ;phi = lpwpot.y[inp]
+        phi = interpol(lpwpot.y, lpwpot.x, t)
+        gap = where(abs(lpwpot.x[inp]-t) gt maxdt,cts)
+        if (cts gt 0L) then phi[gap]=badval
+        indx = where(phi le 1., count) ;change to <1. V, not reliable
+        if (count gt 0L) then phi[indx] = badval
+        mvn_swe_engy.sc_pot = phi
+        indx = where(mvn_swe_engy.sc_pot eq mvn_swe_engy.sc_pot,cts)
+        if (cts gt 0L) then potindx[indx]=1 ;indx=1, swe-lpw
+        ok = 1
+        ok = 0
+     endif
   endif
 
 ; ... otherwise calculate potential from SWEA alone
   
   if (not ok) then begin
 
-    Espan = minmax(float(Espan))
-    if not keyword_set(fudge) then fudge = 1.
-    if keyword_set(ddd) then dflg = 1 else dflg = 0
+     Espan = minmax(float(Espan))
+     if not keyword_set(fudge) then fudge = 1.
+     if keyword_set(ddd) then dflg = 1 else dflg = 0
 
-    if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
-    if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
-    if (n_elements(obins) ne 96) then begin
-      obins = replicate(1B, 96, 2)
-      obins[*,0] = reform(abins # dbins, 96)
-      obins[*,1] = obins[*,0]
-    endif else obins = byte(obins # [1B,1B])
-    if (size(mask_sc,/type) eq 0) then mask_sc = 1
-   if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+     if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+     if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+     if (n_elements(obins) ne 96) then begin
+        obins = replicate(1B, 96, 2)
+        obins[*,0] = reform(abins # dbins, 96)
+        obins[*,1] = obins[*,0]
+     endif else obins = byte(obins # [1B,1B])
+     if (size(mask_sc,/type) eq 0) then mask_sc = 1
+     if keyword_set(mask_sc) then obins = swe_sc_mask * obins
   
-    if (dflg) then begin
-      ok = 0
-      if (size(mvn_swe_3d,/type) eq 8) then begin
-        t = mvn_swe_3d.time
+     if (dflg) then begin
+        ok = 0
+        if (size(mvn_swe_3d,/type) eq 8) then begin
+           t = mvn_swe_3d.time
+           npts = n_elements(t)
+           e = fltarr(64,npts)
+           f = e
+           ok = 1
+        endif
+
+        if ((not ok) and size(swe_3d,/type) eq 8) then begin
+           t = swe_3d.time
+           npts = n_elements(t)
+           e = fltarr(64,npts)
+           f = e
+           ok = 1
+        endif
+    
+        if (not ok) then begin
+           print, "No valid 3D data."
+           return
+        endif
+    
+        for i=0L,(npts-1L) do begin
+           ddd = mvn_swe_get3d(t[i], units='eflux')
+           
+           if (ddd.time gt t_mtx[2]) then boom = 1 else boom = 0
+           ondx = where(obins[*,boom] eq 1B, ocnt)
+           onorm = float(ocnt)
+           obins_b = replicate(1B, 64) # obins[*,boom]
+
+           e[*,i] = ddd.energy[*,0]
+           f[*,i] = total(ddd.data * obins_b, 2, /nan)/onorm
+        endfor
+        
+     endif else begin
+    
+        old_units = mvn_swe_engy[0].units_name
+        mvn_swe_convert_units, mvn_swe_engy, 'eflux'
+        
+        t = mvn_swe_engy.time
         npts = n_elements(t)
-        e = fltarr(64,npts)
-        f = e
-        ok = 1
-      endif
+        e = mvn_swe_engy.energy
+        f = mvn_swe_engy.data
 
-      if ((not ok) and size(swe_3d,/type) eq 8) then begin
-        t = swe_3d.time
-        npts = n_elements(t)
-        e = fltarr(64,npts)
-        f = e
-        ok = 1
-      endif
-    
-      if (not ok) then begin
-        print, "No valid 3D data."
-        return
-      endif
-    
-      for i=0L,(npts-1L) do begin
-        ddd = mvn_swe_get3d(t[i], units='eflux')
-
-        if (ddd.time gt t_mtx[2]) then boom = 1 else boom = 0
-        ondx = where(obins[*,boom] eq 1B, ocnt)
-        onorm = float(ocnt)
-        obins_b = replicate(1B, 64) # obins[*,boom]
-
-        e[*,i] = ddd.energy[*,0]
-        f[*,i] = total(ddd.data * obins_b, 2, /nan)/onorm
-      endfor
-
-    endif else begin
-    
-     old_units = mvn_swe_engy[0].units_name
-      mvn_swe_convert_units, mvn_swe_engy, 'eflux'
-
-      t = mvn_swe_engy.time
-      npts = n_elements(t)
-      e = mvn_swe_engy.energy
-      f = mvn_swe_engy.data
-
-    endelse
+     endelse
   
 ;  Angular distribution correction based on interpolated 3d data
 ;  to emphasize the returning photoelectrons.
 ;  This section was added by Yuki Harada.
 
-    if keyword_set(angcorr) and (size(mvn_swe_3d,/type) eq 8) then begin
-       ww = finite(mvn_swe_3d.data) * 1.
-       wsky = where( mvn_swe_3d.phi gt 112.5 and mvn_swe_3d.phi lt 292.5 $
-                     and mvn_swe_3d.theta gt -45 and mvn_swe_3d.theta lt 45 , comp=cwsky )
-       ww[cwsky] = 0.
-       skyflux = total(mvn_swe_3d.data*mvn_swe_3d.domega*ww,2,/nan) $
-                 /total(mvn_swe_3d.domega*ww,2,/nan)
+     if keyword_set(angcorr) and (size(mvn_swe_3d,/type) eq 8) then begin
+        ww = finite(mvn_swe_3d.data) * 1.
+        wsky = where( mvn_swe_3d.phi gt 112.5 and mvn_swe_3d.phi lt 292.5 $
+                      and mvn_swe_3d.theta gt -45 and mvn_swe_3d.theta lt 45 , comp=cwsky )
+        ww[cwsky] = 0.
+        skyflux = total(mvn_swe_3d.data*mvn_swe_3d.domega*ww,2,/nan) $
+                  /total(mvn_swe_3d.domega*ww,2,/nan)
 
-       ww = finite(mvn_swe_3d.data) * 1.
-       aveflux = total(mvn_swe_3d.data*mvn_swe_3d.domega*ww,2,/nan) $
-                 /total(mvn_swe_3d.domega*ww,2,/nan)
-
-       fr = f * !values.f_nan
-       for j=0,63 do fr[j,*] = interp(reform(skyflux[j,*]/aveflux[j,*]),mvn_swe_3d.time,t) < 1.2
+        ww = finite(mvn_swe_3d.data) * 1.
+        aveflux = total(mvn_swe_3d.data*mvn_swe_3d.domega*ww,2,/nan) $
+                  /total(mvn_swe_3d.domega*ww,2,/nan)
+        
+        fr = f * !values.f_nan
+        for j=0,63 do fr[j,*] = interp(reform(skyflux[j,*]/aveflux[j,*]),mvn_swe_3d.time,t) < 1.2
 
 ;  A maximum factor of 1.2 is set to avoid too much emphasis on lowest
 ;  energy photoelectrons
 
-       f = f * fr
-    endif
+        f = f * fr
+     endif
 
-    indx = where(e[*,0] lt 60., n_e)
-    e = e[indx,*]
-    f = alog10(f[indx,*])
+     indx = where(e[*,0] lt 60., n_e)
+     e = e[indx,*]
+     f = alog10(f[indx,*])
   
-    potstr = {time : 0D            , $
-              pot  : !values.f_nan , $
-              dE   : !values.f_nan , $
-              amp  : !values.f_nan , $
-              flg  : 0                }
-    potential = replicate(potstr, npts)
-    potential.time = t
-
+     potstr = {time : 0D            , $
+               pot  : !values.f_nan , $
+               dE   : !values.f_nan , $
+               amp  : !values.f_nan , $
+               flg  : 0                }
+     potential = replicate(potstr, npts)
+     potential.time = t
+     
 ; Filter out bad spectra
 
-    potential.flg = 1
-    n_f = round(total(finite(f),1))
-    gndx = where(n_f eq n_e, ngud, complement=bad, ncomplement=nbad)
+     potential.flg = 1
+     n_f = round(total(finite(f),1))
+     gndx = where(n_f eq n_e, ngud, complement=bad, ncomplement=nbad)
 
-    if (ngud eq 0L) then begin
-      print,"No good spectra!"
-      return
-    endif
+     if (ngud eq 0L) then begin
+        print,"No good spectra!"
+        return
+     endif
 
-    if (nbad gt 0L) then begin
-      f[*,bad] = !values.f_nan
-      potential[bad].flg = 0
-    endif
+     if (nbad gt 0L) then begin
+        f[*,bad] = !values.f_nan
+        potential[bad].flg = 0
+     endif
 
 ; Take first and second derivatives of log(eflux) w.r.t. log(E)
 
-    df = f
-    d2f = f
-
-    for i=0L,(npts-1L) do df[*,i] = deriv(f[*,i])
-    for i=0L,(npts-1L) do d2f[*,i] = deriv(df[*,i])
+     df = f
+     d2f = f
+     
+     for i=0L,(npts-1L) do df[*,i] = deriv(f[*,i])
+     for i=0L,(npts-1L) do d2f[*,i] = deriv(df[*,i])
 
 ; Oversample and smooth
 
-    n_es = 4*n_e
-    emax = max(e, dim=1, min=emin)
-    dloge = (alog10(emax) - alog10(emin))/float(n_es - 1)
-    ee = 10.^((replicate(1.,n_es) # alog10(emax)) - (findgen(n_es) # dloge))
+     n_es = 4*n_e
+     emax = max(e, dim=1, min=emin)
+     dloge = (alog10(emax) - alog10(emin))/float(n_es - 1)
+     ee = 10.^((replicate(1.,n_es) # alog10(emax)) - (findgen(n_es) # dloge))
   
-    dfs = fltarr(n_es,npts)
-    for i=0L,(npts-1L) do dfs[*,i] = interpol(df[*,i],n_es)
-
-    d2fs = fltarr(n_es,npts)
-    for i=0L,(npts-1L) do d2fs[*,i] = interpol(d2f[*,i],n_es)
+     dfs = fltarr(n_es,npts)
+     for i=0L,(npts-1L) do dfs[*,i] = interpol(df[*,i],n_es)
+     
+     d2fs = fltarr(n_es,npts)
+     for i=0L,(npts-1L) do d2fs[*,i] = interpol(d2f[*,i],n_es)
 
 ; Trim to the desired energy search range
 
-    indx = where((ee[*,0] gt Espan[0]) and (ee[*,0] lt Espan[1]), n_e)
-    ee = ee[indx,*]
-    dfs = dfs[indx,*]
-    d2fs = d2fs[indx,*]
+     indx = where((ee[*,0] gt Espan[0]) and (ee[*,0] lt Espan[1]), n_e)
+     ee = ee[indx,*]
+     dfs = dfs[indx,*]
+     d2fs = d2fs[indx,*]
 
 ; The spacecraft potential is taken to be the maximum slope (dlogF/dlogE)
 ; within the search window.  A fudge factor is included to adjust the estimate 
@@ -339,101 +357,115 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
 ; Use diagnostics keywords in swe_engy_snap to plot these functions, together
 ; with the retrieved potential.
   
-    zcross = d2fs*shift(d2fs,1,0)
-    zcross[0,*] = 1.
+     zcross = d2fs*shift(d2fs,1,0)
+     zcross[0,*] = 1.
+     
+     phi = replicate(badval, npts)
+     for i=0L,(npts-1L) do begin
+        indx = where((dfs[*,i] gt thresh) and (zcross[*,i] lt 0.), ncross) ; local maxima in slope
 
-    phi = replicate(badval, npts)
-    for i=0L,(npts-1L) do begin
-      indx = where((dfs[*,i] gt thresh) and (zcross[*,i] lt 0.), ncross) ; local maxima in slope
+        if (ncross gt 0) then begin
+           k = max(indx)        ; lowest energy feature above threshold
+           dfsmax = dfs[k,i]
+           dfsmin = dfsmax/2.   ; FWHM of slope
 
-      if (ncross gt 0) then begin
-        k = max(indx)               ; lowest energy feature above threshold
-        dfsmax = dfs[k,i]
-        dfsmin = dfsmax/2.          ; FWHM of slope
-
-        while ((dfs[k,i] gt dfsmin) and (k lt n_e-1)) do k++
-        kmax = k
-        k = max(indx)
-        while ((dfs[k,i] gt dfsmin) and (k gt 0)) do k--
-        kmin = k
+           while ((dfs[k,i] gt dfsmin) and (k lt n_e-1)) do k++
+           kmax = k
+           k = max(indx)
+           while ((dfs[k,i] gt dfsmin) and (k gt 0)) do k--
+           kmin = k
       
-        dE = ee[kmin,i] - ee[kmax,i]
-        if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
+           dE = ee[kmin,i] - ee[kmax,i]
+           if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
       
-        if (dE lt dEmax) then phi[i] = ee[max(indx),i]  ; only accept narrow features
+           if (dE lt dEmax) then phi[i] = ee[max(indx),i] ; only accept narrow features
       
-        potential[i].dE = dE
-        potential[i].amp = dfsmax
-      endif
-    endfor
+           potential[i].dE = dE
+           potential[i].amp = dfsmax
+        endif
+     endfor
 
 ; Filter for low flux
 
-    fmax = max(mvn_swe_engy.data, dim=1)
-    indx = where(fmax lt minflux, count)
-    if (count gt 0L) then begin
-      phi[indx] = badval
-      potential[indx].flg = -1
-    endif
+     fmax = max(mvn_swe_engy.data, dim=1)
+     indx = where(fmax lt minflux, count)
+     if (count gt 0L) then begin
+        phi[indx] = badval
+        potential[indx].flg = -1
+     endif
 
 ; Filter out shadow regions
 
-    get_data, 'wake', data=wake, index=i
-    if (i eq 0) then begin
-      maven_orbit_tplot, /current, /loadonly
-      get_data, 'wake', data=wake, index=i
-    endif
-    if (i gt 0) then begin
-      shadow = interpol(float(finite(wake.y)), wake.x, mvn_swe_engy.time)
-      indx = where(shadow gt 0., count)
-      if (count gt 0L) then begin
-        phi[indx] = badval
-        potential[indx].flg = -2
-      endif
-    endif
+     get_data, 'wake', data=wake, index=i
+     if (i eq 0) then begin
+        maven_orbit_tplot, /current, /loadonly
+        get_data, 'wake', data=wake, index=i
+     endif
+     if (i gt 0) then begin
+        shadow = interpol(float(finite(wake.y)), wake.x, mvn_swe_engy.time)
+        indx = where(shadow gt 0., count)
+        if (count gt 0L) then begin
+           phi[indx] = badval
+           potential[indx].flg = -2
+        endif
+     endif
 
 ; Filter out altitudes below 250 km
 
-    get_data, 'alt', data=alt, index=i
-    if (i eq 0) then begin
-      maven_orbit_tplot, /current, /loadonly
-      get_data, 'alt', data=alt, index=i
-    endif
-    if (i gt 0) then begin
-      altitude = interpol(alt.y, alt.x, mvn_swe_engy.time)
-      indx = where(altitude lt 250., count)
-      if (count gt 0L) then begin
-        phi[indx] = badval
-        potential[indx].flg = -3
-      endif
-    endif
+     get_data, 'alt', data=alt, index=i
+     if (i eq 0) then begin
+        maven_orbit_tplot, /current, /loadonly
+        get_data, 'alt', data=alt, index=i
+     endif
+     if (i gt 0) then begin
+        altitude = interpol(alt.y, alt.x, mvn_swe_engy.time)
+        indx = where(altitude lt 250., count)
+        if (count gt 0L) then begin
+           phi[indx] = badval
+           potential[indx].flg = -3
+        endif
+     endif
 
 ; Apply fudge factor
 
-    phi = phi*fudge
-    potential.pot = phi
+     phi = phi*fudge
+     potential.pot = phi
 
-    if (not dflg) then begin
-      mvn_swe_engy.sc_pot = phi
-      mvn_swe_convert_units, mvn_swe_engy, old_units
-    endif else begin
-      mvn_swe_engy.sc_pot = interpol(phi,t,mvn_swe_engy.time)
-    endelse
+     store_data,'swe_pos',data={x:t,y:phi}
+     options,'swe_pos','color',2
+     get_data,'swe_pos',data=swepos
+
+     if (not dflg) then begin
+       ; Fill in gaps when lpwpot not available
+        indx=where(mvn_swe_engy.sc_pot ne mvn_swe_engy.sc_pot,cts)
+        if cts gt 0 then mvn_swe_engy[indx].sc_pot = phi[indx]
+        mvn_swe_convert_units, mvn_swe_engy, old_units
+        inx = where(mvn_swe_engy.sc_pot eq mvn_swe_engy.sc_pot $
+                    and potindx ne 1)
+        potindx[inx] = 2        ; 2 swe only +
+     endif else begin
+        indx=where(mvn_swe_engy.sc_pot ne mvn_swe_engy.sc_pot,cts)
+        if cts gt 0 then $
+           mvn_swe_engy[indx].sc_pot = interpol(phi,t,mvn_swe_engy[indx].time)
+        inx = where(mvn_swe_engy.sc_pot eq mvn_swe_engy.sc_pot $
+                    and potindx ne 1)
+        potindx[inx] = 2        ; 2 swe only +
+     endelse
 
 ; Make tplot variables
   
-    store_data,'df',data={x:t, y:transpose(dfs), v:transpose(ee)}
-    options,'df','spec',1
-    ylim,'df',min(Espan),max(Espan),0
-    zlim,'df',0,0,0
+     store_data,'df',data={x:t, y:transpose(dfs), v:transpose(ee)}
+     options,'df','spec',1
+     ylim,'df',min(Espan),max(Espan),0
+     zlim,'df',0,0,0
   
-    store_data,'d2f',data={x:t, y:transpose(d2fs), v:transpose(ee)}
-    options,'d2f','spec',1
-    ylim,'d2f',min(Espan),max(Espan),0
-    zlim,'d2f',0,0,0
+     store_data,'d2f',data={x:t, y:transpose(d2fs), v:transpose(ee)}
+     options,'d2f','spec',1
+     ylim,'d2f',min(Espan),max(Espan),0
+     zlim,'d2f',0,0,0
 
-    store_data,'Potential',data=['d2f','mvn_swe_sc_pot']
-    ylim,'Potential',0,30,0
+     store_data,'Potential',data=['d2f','mvn_swe_sc_pot']
+     ylim,'Potential',0,30,0
 
   endif
 
@@ -441,6 +473,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
 
   swe_sc_pot = replicate(swe_pot_struct, npts)
   swe_sc_pot.time = t
+  phi = mvn_swe_engy.sc_pot
   swe_sc_pot.potential = phi
   swe_sc_pot.valid = 1
 
@@ -452,27 +485,23 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
 
   if keyword_set(negpot) then begin
     
-    if keyword_set(pot_in_shdw) then mvn_swe_sc_negpot_twodir_burst,/fill,/shadow
     mvn_swe_sc_negpot, /fill
     indx = where(swe_sc_pot.potential lt 0., count)
-    if (count gt 0L) then phi[indx] = swe_sc_pot[indx].potential
+    if (count gt 0L) then begin
+       phi[indx] = swe_sc_pot[indx].potential
+       potindx[indx] = 3 ;3 swe- 
+    endif
 
     pot_pan = 'mvn_swe_pot_all'
-    store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,2)}
-    options,'swe_pot_lab','labels',['swe-','swe+']
-    options,'swe_pot_lab','colors',[6,!p.color]
+    store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,3)}
+    options,'swe_pot_lab','labels',['swe-','swe+','swe-lpw']
+    options,'swe_pot_lab','colors',[6,2,!p.color]
     options,'swe_pot_lab','labflag',1
 
     options,'neg_pot','constant',!values.f_nan
     options,'neg_pot','color',6
 
-    potpans = ['swe_pot_lab','mvn_swe_sc_pot','neg_pot']
-    if keyword_set(pot_in_shdw) then begin
-      potpans = [potpans,'pot_inshdw']
-      options,'pot_inshdw','constant',!values.f_nan
-      options,'pot_inshdw','color',1
-    endif
-    
+    potpans = ['swe_pot_lab','mvn_swe_lpw_scpot_pow','swe_pos','neg_pot']
     store_data,pot_pan,data=potpans
     options,pot_pan,'ytitle','S/C Potential!cVolts'
     options,pot_pan,'constant',[-1,Espan]
@@ -487,13 +516,21 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
       indx = where(stapot.y ge 0., count)
       if (count gt 0L) then stapot.y[indx] = badval
       nndx = nn(stapot.x, t)
-      if (finite(badval)) then indx = where(phi eq badval, count) $
-                          else indx = where(~finite(phi), count)
+      tmppot = stapot.y[nndx]
+      if (finite(badval)) then $
+         indx = where(phi eq badval or $
+                      (altitude le 1000 and phi gt 0 and $
+                      tmppot eq tmppot), count) $
+      else indx = where(~finite(phi) or $
+                        (altitude le 1000 and phi gt 0 and $
+                        tmppot eq tmppot), count)
       if (count gt 0L) then begin
         phi[indx] = stapot.y[nndx[indx]]
         swe_sc_pot.potential = phi
         mvn_swe_engy.sc_pot = phi
-
+        potindx[indx] = 4 ; 4 sta_pot
+        inp=where(phi ne phi,cts)
+        if (cts gt 0L) then potindx[inp]=!values.f_nan
         sphi = replicate(!values.f_nan, n_elements(phi))
         sphi[indx] = phi[indx]
         store_data,'sta_pot',data={x:t, y:sphi}
@@ -502,9 +539,9 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
         get_data,'mvn_swe_pot_all',data=tpot,index=i
         if (i gt 0) then begin
           tpot = [tpot,'sta_pot']
-          store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,3)}
-          options,'swe_pot_lab','labels',['sta','swe-','swe+']
-          options,'swe_pot_lab','colors',[4,6,!p.color]
+          store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,4)}
+          options,'swe_pot_lab','labels',['sta','swe-','swe+','swe-lpw']
+          options,'swe_pot_lab','colors',[4,6,2,!p.color]
           options,'swe_pot_lab','labflag',1
         endif else begin
           tpot = ['mvn_swe_sc_pot','sta_pot']
@@ -538,6 +575,52 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, thresh=thr
     endif
   endif
   
+  if keyword_set(pot_in_shdw) then begin
+     mvn_swe_sc_negpot_twodir_burst,/fill,/shadow
+     options,'pot_inshdw','constant',!values.f_nan
+     options,'pot_inshdw','color',1
+     inx = where(swe_sc_pot.potential eq swe_sc_pot.potential and $
+                potindx ne potindx,cts)
+     if (cts gt 0L) then potindx[inx] = 5 ;5 swe- (shdw)
+     get_data,'mvn_swe_pot_all',data=tpot,index=i
+     if (i gt 0) then begin
+        tpot = [tpot,'pot_inshdw']
+        store_data,'swe_pot_lab',data={x:minmax(t),$
+                                       y:replicate(!values.f_nan,2,5)}
+        options,'swe_pot_lab','labels',$
+                ['swe-(shdw)','sta','swe-','swe+','swe-lpw']
+        options,'swe_pot_lab','colors',[1,4,6,2,!p.color]
+        options,'swe_pot_lab','labflag',1
+        store_data,'mvn_swe_pot_all',data=tpot
+       endif
+  endif
+
+  ;create a tplot variable that includes all potentials
+  varname=['pot_swelpw','pot_swepos','pot_sweneg','pot_sta','pot_sweshdw']
+  clr=[!p.color,2,6,4,1]
+  nv=n_elements(varname)
+  for i=0,nv-1 do begin
+     x=swe_sc_pot.time
+     y=replicate(!values.f_nan,n_elements(x))
+     inx=where(potindx eq i+1,cts)
+     if cts gt 0L then begin
+        y[inx]=swe_sc_pot[inx].potential
+        store_data,varname[i],data={x:x,y:y}
+        ename=varname[i]
+        options,ename,'color',clr[i]
+     endif
+  endfor
+  store_data,'swe_pot_lab',data={x:minmax(t),$
+                                 y:replicate(!values.f_nan,2,5)}
+  options,'swe_pot_lab','labels',$
+          ['swe-(shdw)','sta','swe-','swe+','swe-lpw']
+  options,'swe_pot_lab','colors',[1,4,6,2,!p.color]
+  options,'swe_pot_lab','labflag',1
+  store_data,'pot_comp',data=[varname,'swe_pot_lab']                           
+  vname='pot_comp'
+  options,vname,'constant',[-1,2]
+  options,vname,'ytitle','S/C Pot Comp.!cVolts'
+  ;ylim,vname,-30,20
   return
 
 end

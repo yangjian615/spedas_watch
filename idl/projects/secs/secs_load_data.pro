@@ -27,7 +27,7 @@
 ;-
  
 pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefix = prefix, $
-                    downloadonly = downloadonly, noupdate = noupdate, nodownload = nodownload, $
+                    downloadonly = downloadonly, no_update = no_update, no_download = no_download, $
                     verbose = verbose, get_stations = get_stations
                     
     compile_opt idl2
@@ -73,46 +73,12 @@ pro secs_load_data, trange = trange, datatype = datatype, suffix = suffix, prefi
         remote_path = source.remote_data_dir+dirtype[j]+'S/'+yr_start+'/'+mo_start+'/'+day_start+'/'   
         local_path = source.local_data_dir+dirtype[j]+'S\'+yr_start+'\'+mo_start+'\'+day_start+'\'
         filenames = dirtype[j]+'S'+yr_start+mo_start+day_start+'_'+dates_str+'.dat'
-
         local_files = local_path + filenames
-        found_files = file_search(local_files, count=ncnt)
         
-        if keyword_set(nodownload) then begin
-            ; check for local files
-            if ncnt LT 1 then begin
-              dprint, dlevel = 0, ' No local files were found in: ' + local_path
-              return
-            endif
-            if n_elements(found_files) LT n_elements(local_files) then begin
-              ; let user know that not all files were found locally
-              dprint, dlevel = 0, 'Not all local files were found in: '+local_path
-              dprint, dlevel = 0, 'Loading files there were found.'
-            endif           
-        endif else begin
-
-            if keyword_set(noupdate) then begin
-              if ncnt GT 0 then begin 
-                 ; some files were found so don't download those files
-                 for k=0,n_elements(filenames)-1 do begin
-                    idx = where(found_files eq local_files[k],fcnt)
-                    if fcnt LT 1 then append_array, update_files, filenames[k]
-                 endfor
-                 if ~undefined(update_files) && update_files[0] NE '' then $
-                    files = spd_download(remote_file=update_files, remote_path=remote_path, $
-                                         local_path = local_path)                 
-              endif else begin
-                ; no existing files were found so download them all
-                files = spd_download(remote_file=filenames, remote_path=remote_path, $
-                  local_path = local_path)                
-              endelse
-            endif else begin
-              ; download all files
-              files = spd_download(remote_file=filenames, remote_path=remote_path, $
-                                   local_path = local_path)
-            endelse
-            
-        endelse
-         
+        files = spd_download(remote_file=filenames, remote_path=remote_path, $
+                             local_path = local_path, no_download=no_download, $
+                             no_update=no_update)
+      
         if keyword_set(downloadonly) then continue
 
         ; can only read files that have been downloaded

@@ -29,7 +29,6 @@ pro secs_stations2tplot,file,date,prefix=prefix,suffix=suffix,verbose=verbose,tp
   ; Load data from file(s)
   dprint,dlevel=4,verbose=verbose,'Starting ASCII Station file load'  
   data = secs_read_stations(file[0]) 
-stop
   if is_string(data) then begin
      dprint, 'Error reading data. No tplot variable created.'
      return
