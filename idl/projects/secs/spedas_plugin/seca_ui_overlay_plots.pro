@@ -1,9 +1,6 @@
-pro secs_ui_overlay_plots, trange=trange, createpng=createpng
+pro seca_ui_overlay_plots, trange=trange, createpng=createpng
 
 ;  trange=['2015-03-18/0:12:00','2015-03-18/00:12:00']
-; trange=['2008-03-09/9:30:00','2008-03-09/09:30:00']
-;  trange=['2015-03-17/13:00:00','2015-03-17/13:00:00']
-;  trange=['2015-03-17/09:37:00','2015-03-17/09:37:00']
 
   ; initialize variables
   defsysv,'!secs',exists=exists
@@ -15,34 +12,29 @@ pro secs_ui_overlay_plots, trange=trange, createpng=createpng
   if (keyword_set(trange) && n_elements(trange) eq 2) $
     then tr = timerange(trange) $
   else tr = timerange()
-;  tr[1]=tr[0]
+  tr[1]=tr[0]
   inten=6001;
   
   ; extract the EICS data from the tplot vars
   ; sort the data into parameters and rotate they for plotxyvec
-  secs_load_data, trange=tr,  datatype=['eics'], /get_stations
-  get_data, 'secs_eics_latlong', data=latlon
+  secs_load_data, trange=tr,  datatype=['seca'], /get_stations
+  get_data, 'secs_seca_latlong', data=latlon
   if ~is_struct(latlon) then begin
-      dprint, 'There is no EICS data for date: '+time_string(tr[0])
+      dprint, 'There is no SECS data for date: '+time_string(tr[0])
       return
   endif
-  lon=latlon.y[*,1]+360.
+  lon=latlon.y[*,1]
   lat=latlon.y[*,0]
-  get_data, 'secs_eics_jxy', data=jxy
-  if ~is_struct(jxy) then begin
-    dprint, 'There is no EICS data for date: '+time_string(tr[0])
+  get_data, 'secs_seca_amp', data=amp
+
+  if ~is_struct(amp) then begin
+    dprint, 'There is no SECS data for date: '+time_string(tr[0])
     return
   endif
-  scale_factor=max(sqrt(jxy.y[*,0]^2+jxy.y[*,1]^2))
-  jy=jxy.y[*,1]   ;/scale_factor
-  jx=jxy.y[*,0]   ;/scale_factor
   get_data, 'secs_stations', data=stations
   if ~is_struct(stations) then begin
     dprint, 'There is no Station data for date: '+time_string(tr[0])
-    ;return
   endif
-  scale_factor=max(sqrt(jx^2+jy^2))
-  if scale_factor GT 800. then scale=0.01 else scale=0.02
 
   ; Make the mosaic
   thm_asi_create_mosaic,time_string(tr[0]),/verbose,$            ; removed /thumb
@@ -61,11 +53,7 @@ pro secs_ui_overlay_plots, trange=trange, createpng=createpng
       geographic_lats=geographic_lats, $
       geographic_color=0,$
       geographic_linestyle=1
-;stop
-  ; Convert geographic lat/long to magnetic
-;  aacgmidl
-;  cnv_aacgm, geographic_lats, geographic_lons, 100., lat_out, lon_out, r, error 
-;stop  
+
   ; set color table back and labels the grid lines
   loadct2,34
   xyouts, 328.1, 37.75, '330', charsize=1.2, charthick=1.25,color=0
@@ -80,66 +68,21 @@ pro secs_ui_overlay_plots, trange=trange, createpng=createpng
   xyouts, 204., 79, '80', charsize=1.2, charthick=1.25,color=0
 
   ; plot the gmag stations
-
   if is_struct(stations) then begin
-    oplot, stations.v[*,1], stations.v[*,0], psym=4, color=3
+    oplot, stations.v[*,1], stations.v[*,0], psym=2, color=150
   endif
-  ; set up plotting parameters for use by plotxyvec
-  ;xrange = [0,90]
-  ;yrange = [0,360]
-  yrange = [30,80]
-  xrange = [220,330]
-  rows = 1
-  cols = 1
-  revrows = 0
-  revcols = 0
-  current = 0
-  pos = !p.position
-  plotvec = ptr_new(csvector('start'))
-
-  ; create or update the system variable !tplotxy
-  defsysv,'!tplotxy',exists=exists
-  if not keyword_set(exists) then begin
-    tpxy = { rows:rows,$
-        revrows:revrows,$
-        cols:cols,$
-        revcols:revcols,$
-        current:current,$
-        pos:pos,$ 
-        xrange:xrange,$
-        yrange:yrange,$
-        panels:ptr_new(), $
-        plotvec:plotvec }
-    defsysv, '!tplotxy', tpxy
-  endif else begin
-    !tplotxy.rows=rows
-    !tplotxy.revrows=revrows
-    !tplotxy.cols=cols
-    !tplotxy.revcols=revcols
-    !tplotxy.current=current
-    !tplotxy.pos=pos
-    !tplotxy.xrange=xrange
-    !tplotxy.yrange=yrange
-    !tplotxy.plotvec=plotvec
-  endelse
-  
-  ; kluge: append unit vector to end of array for displaying legend
-  ; todo: this should be working in plotxyvec but it isn't right now. need to debug
-  lon=[lon,296.5]
-  ;lon=[lon,300.]
-  ;lat=[lat,27.75]
-  lat=[lat,26]
-  jy=[jy,0.]
-  jx=[jx,200.]
 
   ; overplot the EICs onto the mosaic map
-  plotxyvec,[[lon],[lat]],[[jy],[jx]],/overplot,color='y', thick=1.475,hsize=0.5, $
-    uArrowTextPrecision=3, uarrowside='bottom', uarrowdatasize=200, arrowscale=0.01, $
-    uArrowRotation=270.,uarrowtext='mA/m', uarrowoffset=2.2, /noisotropic
-  oplot,lon,lat,color=5,psym=2,symsize=0.25,thick=3
+  nidx=where(amp.y LT 0, ncnt)
+  pidx=where(amp.y GE 0, pcnt)
+  if ncnt GT 0 then oplot, lon[nidx], lat[nidx], psym=6, color=50
+  if pcnt GT 0 then oplot, lon[pidx], lat[pidx], psym=1, color=250
 
-  xyouts, 215.5, 20, 'SECs - EICs', color=0, charsize=1.45  
-  xyouts, 297.9, 25, '200 mA/m',charsize=1.45, charthick=1.25,color=5
+  xyouts, 215.5, 20, 'SECS - SECA', color=0, charsize=1.45  
+;  xyouts, 297.9, 25, '+/- 20000 A',charsize=1.3, charthick=1.25,color=0
+  xyouts, 296., 26, '+/- 20000 A',charsize=1.4, charthick=1.25,color=0
+  xyouts, 297., 27.5, '+',charsize=1.4, charthick=2,color=250
+  oplot, [300.95,300.95], [25.75,25.75], psym=6, color=50
 
   if keyword_set(createpng) then begin
     ; construct png file name
@@ -151,7 +94,7 @@ pro secs_ui_overlay_plots, trange=trange, createpng=createpng
     mi = strmid(time_string(tr[0]),14,2)
     sc = strmid(time_string(tr[0]),17,2)
     plotdir = !secs.local_data_dir + 'Mosaic/' + yr + '/' + mo + '/' + da + '/' 
-    plotfile = 'ThemisMosaicEIC' + yr + mo + da + '_' + hr + mi + sc
+    plotfile = 'ThemisMosaicSECA' + yr + mo + da + '_' + hr + mi + sc
     makepng, plotdir+plotfile, /mkdir
     print, 'PNG file created: ' + plotdir + plotfile 
   endif

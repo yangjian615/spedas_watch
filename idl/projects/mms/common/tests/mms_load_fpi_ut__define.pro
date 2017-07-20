@@ -10,8 +10,8 @@
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-13 10:39:46 -0700 (Thu, 13 Jul 2017) $
-; $LastChangedRevision: 23603 $
+; $LastChangedDate: 2017-07-19 11:08:11 -0700 (Wed, 19 Jul 2017) $
+; $LastChangedRevision: 23650 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
@@ -270,6 +270,27 @@ function mms_load_fpi_ut::test_load_local_file_badversion
   return, 1
 end
 
+; the following tests loading the ACR burst mode data (that doesn't exist at the SDC yet)
+; and tests /center_measurement functionality; these data files will need to be saved
+; on your local machine before running these tests
+function mms_load_fpi_ut::test_acr_brst_data
+  mms_load_fpi, level='acr', trange=['2016-12-09', '2016-12-10'], probe=1, data_rate='brst'
+  mms_load_fpi, level='acr', trange=['2016-12-09', '2016-12-10'], probe=1, data_rate='brst', suffix='centered', /center_measurement
+  get_data, 'mms1_des_bulkv_dbcs_brst', data=d
+  get_data, 'mms1_dis_bulkv_dbcs_brstcentered', data=c
+  assert, spd_data_exists('mms1_des_bulkv_dbcs_brst mms1_dis_bulkv_dbcs_brstcentered', '2016-12-09', '2016-12-10'), 'Problem checking /center_measurement with ACR brst files'
+  assert, time_string(c.X[0], tformat='YYYY-MM-DD/hh:mm:ss.fff') eq '2016-12-09/08:58:54.110', 'Problem checking /center_measurement with ACR brst files'
+  assert, time_string(d.X[0], tformat='YYYY-MM-DD/hh:mm:ss.fff') eq '2016-12-09/08:58:54.005', 'Problem checking /center_measurement with ACR brst files'
+  return, 1
+end
+
+; the following tests for a regression when the user runs
+; mms_get_fpi_dist on a burst interval with gaps
+function mms_load_fpi_ut::test_dist_burst_with_gaps
+  mms_load_fpi, trange=['2015-12-15/11:18', '2015-12-15/11:36'], data_rate='brst', /time_clip, datatype='des-dist'
+  return, 1
+end
+
 ; end of regression tests <------
 
 ; check multiple data rates
@@ -279,20 +300,6 @@ end
 ;    'Problem loading FPI data with multiple data rates specified'
 ;  return, 1
 ;end
-
-; the following tests loading the ACR burst mode data (that doesn't exist at the SDC yet)
-; and tests /center_measurement functionality; these data files will need to be saved
-; on your local machine before running these tests
-function mms_load_fpi_ut::test_acr_brst_data
-  mms_load_fpi, level='acr', trange=['2016-12-09', '2016-12-10'], probe=1, data_rate='brst' 
-  mms_load_fpi, level='acr', trange=['2016-12-09', '2016-12-10'], probe=1, data_rate='brst', suffix='centered', /center_measurement
-  get_data, 'mms1_des_bulkv_dbcs_brst', data=d
-  get_data, 'mms1_dis_bulkv_dbcs_brstcentered', data=c
-  assert, spd_data_exists('mms1_des_bulkv_dbcs_brst mms1_dis_bulkv_dbcs_brstcentered', '2016-12-09', '2016-12-10'), 'Problem checking /center_measurement with ACR brst files'
-  assert, time_string(c.X[0], tformat='YYYY-MM-DD/hh:mm:ss.fff') eq '2016-12-09/08:58:54.110', 'Problem checking /center_measurement with ACR brst files'
-  assert, time_string(d.X[0], tformat='YYYY-MM-DD/hh:mm:ss.fff') eq '2016-12-09/08:58:54.005', 'Problem checking /center_measurement with ACR brst files'
-  return, 1
-end
 
 function mms_load_fpi_ut::test_ang_ang_elec
   @error_is_pass

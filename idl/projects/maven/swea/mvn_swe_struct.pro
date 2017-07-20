@@ -6,9 +6,9 @@
 ;
 ;  All times are for the center of the sample.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-10 19:19:21 -0700 (Wed, 10 May 2017) $
-; $LastChangedRevision: 23296 $
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2017-07-19 11:21:33 -0700 (Wed, 19 Jul 2017) $
+; $LastChangedRevision: 23651 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -340,6 +340,7 @@ pro mvn_swe_struct
                     units_name      : 'V'                     , $
                     valid           : 0B                      , $
                     time            : 0D                      , $  ; unix time
+                    indx            : 0                       , $  ; 1-5, which potential used  
                     potential       : 0.                         } ; spacecraft potential (V)
 
   return

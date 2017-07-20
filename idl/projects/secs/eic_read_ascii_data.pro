@@ -64,7 +64,6 @@ function eic_read_ascii_data, filenames
         append_array, longs, results.long
         append_array, jx, results.jx
         append_array, jy, results.jy  
-
      endfor
     
      data=make_array(n_elements(times),5, /double)

@@ -42,7 +42,7 @@ function sec_read_ascii_data, filenames
 
     for i=0,n_elements(filenames)-1 do begin
 
-      dprint, 'Reading filename: ' + filenames
+      dprint, 'Reading filename: ' + filenames[i]
       ; extract time from filename
       idx=strpos(filenames[i], '_')
       year=strmid(filenames[i],idx-8,4)
@@ -62,7 +62,6 @@ function sec_read_ascii_data, filenames
       append_array, lat, results.lat
       append_array, longs, results.long
       append_array, amp, results.amp
-
     endfor
 
     data=make_array(n_elements(times),4, /double)
@@ -70,7 +69,6 @@ function sec_read_ascii_data, filenames
     data[*,1]=lat
     data[*,2]=longs
     data[*,3]=amp
-
     return, data
 
   endif else begin

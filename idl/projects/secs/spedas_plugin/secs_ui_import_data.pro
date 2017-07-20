@@ -73,8 +73,8 @@ pro secs_ui_import_data,     $
       if strmid(overwrite_selection, 0, 2) eq 'no' then continue
 
       ; this statement adds the variable to the loadedData object
-      if strpos(new_vars[i],'eic') NE -1 then observatory='EICS' else observatory='SECA'
-      result = loadedData->add(new_vars[i],mission='SECS', observatory=observatory)
+      if strpos(new_vars[i],'eic') NE -1 then instrument='eics' else instrument='seca'
+      result = loadedData->add(new_vars[i],mission='SECS', observatory='none', instrument=instrument, isYaxis=0)
       
       ; report errors to the status bar and add them to the history window
       if ~result then begin

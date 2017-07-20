@@ -31,8 +31,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-07-13 10:44:32 -0700 (Thu, 13 Jul 2017) $
-;$LastChangedRevision: 23604 $
+;$LastChangedDate: 2017-07-19 15:47:25 -0700 (Wed, 19 Jul 2017) $
+;$LastChangedRevision: 23672 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -64,12 +64,13 @@ if size(*p.y,/n_dim) ne 4 then begin
 endif
 
 ;get info from tplot variable name
-var_info = stregex(tname, 'mms([1-4])_d([ei])s_', /subexpr, /extract)
+var_info = stregex(tname, 'mms([1-4])_d([ei])s_dist_(brst|fast|slow).*', /subexpr, /extract)
 
 ;use info from the variable name if not explicitly set
 if var_info[0] ne '' then begin
   if ~is_string(probe) then probe = var_info[1]
   if ~is_string(species) then species = var_info[2]
+ ; if undefined(data_rate) then data_rate = var_info[3]
 endif
 
 ;double check that required info is defined
@@ -212,17 +213,23 @@ if undefined(integ_time) then begin
 ;    endif
     ; time resolution not in the metadata, try to guess it from the data
   ;  if s eq 0 then begin
-   if n_elements(index) eq 1 then begin
-      if index ne 0 then begin
-          integ_time = (*p.x)[index]-(*p.x)[index-1] 
-      endif else begin
-          integ_time = (*p.x)[index+1]-(*p.x)[index]
-      endelse
-   endif else begin
-      integ_time = (*p.x)[index[0]+1]-(*p.x)[index[0]]
-   endelse
-      if is_array(integ_time) then integ_time = integ_time[0]
-      
+  ; if n_elements(index) eq 1 then begin
+  ;    if index ne 0 then begin
+  ;        integ_time = (*p.x)[index]-(*p.x)[index-1] 
+  ;    endif else begin
+  ;        integ_time = (*p.x)[index+1]-(*p.x)[index]
+  ;    endelse
+  ; endif else begin
+  ;    integ_time = (*p.x)[index[0]+1]-(*p.x)[index[0]]
+  ; endelse
+  ; if is_array(integ_time) then integ_time = integ_time[0]
+ 
+   ; new way of determining integration time, 7/19/2017
+   ; use the median of the delta times
+   times = (*p.x)
+   delta_t = times[1:*]-times[*]
+   integ_time = average(delta_t, /nan, /ret_median)
+  
 ;    endif
    ; now that we're taking the integration time from the data, we need to make sure it's a known integration time
    ; for the FPI dataset; this is so that we can stop/error if the integration time is outside of any known values

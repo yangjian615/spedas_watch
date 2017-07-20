@@ -15,8 +15,8 @@
 ; selected lines into an idl window. 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-12 08:42:53 -0700 (Wed, 12 Jul 2017) $
-; $LastChangedRevision: 23588 $
+; $LastChangedDate: 2017-07-19 08:24:36 -0700 (Wed, 19 Jul 2017) $
+; $LastChangedRevision: 23646 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_poynting_flux_crib.pro $
 ;-
 
@@ -26,6 +26,12 @@ del_data,'*'
 date = '2015-10-16/00:00:00'
 
 timespan,date,1,/day
+
+;starting_time ='13:00:00.000000' ; Multiple MPause crossings in survey mode (srvy)
+;ending_time   ='13:10:00.000000'
+
+starting_time ='13:05:40.000000' ; Magnetospheric Whistler waves at 600 Hz in burst mode (brst) propagating parallel to B0
+ending_time   ='13:05:50.000000'
 
 satname = 'mms1'
     
@@ -43,7 +49,7 @@ data_level_input = 'l2'
 ;;;;;;=======================================================================================================
 ;======= select same data rate ('srvy', 'brst') for FGM, EDP and SCM
 data_rate_input = 'brst';'srvy'
- 
+
 ;======= select individual MAG data rate ('srvy', 'brst') if needed
 mag_data_rate = data_rate_input
 
@@ -79,13 +85,6 @@ scm_level = data_level_input
 scm_coord = coord_final
 
 scm_name = satname+'_scm_acb_'+scm_coord+'_'+scm_datatype+'_'+scm_data_rate+'_'+scm_level
-
-;starting_time ='13:00:00.000000' ; Multiple MPause crossings in survey mode (srvy)
-;ending_time   ='13:10:00.000000'
-
-starting_time ='13:05:40.000000' ; Magnetospheric Whistler waves at 600 Hz in burst mode (brst) propagating parallel to B0
-ending_time   ='13:05:50.000000' 
-
 
 ;============================ Frequencies for Band-path filtering applied
 ;============================ on EDP and SCM waveforms used in time domain as well as in Fourier domain

@@ -85,11 +85,12 @@ pro secs_ui_overview_plots_event, event
           if state.plot_type[1] EQ 1 then begin
             state.statusBar->update,'Creating EIC Mosaic Plot'
             state.historyWin->update,'Creating EIC Mosaic Plot'
-            secs_ui_overlay_plots, trange=trange
+            eics_ui_overlay_plots, trange=trange
           endif
           if state.plot_type[2] EQ 1 then begin
-            state.statusBar->update,'SEC Mosaic Plot not yet available'
-            state.shistoryWin->update,'SEC Mosaic Plot not yet available'
+            ;state.statusBar->update,'SEC Mosaic Plot not yet available'
+            ;state.shistoryWin->update,'SEC Mosaic Plot not yet available'
+            seca_ui_overlay_plots, trange=trange
           endif
         endelse
       endif else begin
@@ -121,9 +122,13 @@ pro secs_ui_overview_plots_event, event
          if state.plot_type[1] EQ 1 then begin
              state.statusBar->update,'Creating EIC Mosaic Plot and png file'
              state.historyWin->update,'Creating EIC Mosaic Plot and png file'
-             secs_ui_overlay_plots, trange=trange, /createpng
+             eics_ui_overlay_plots, trange=trange, /createpng
          endif
-         if state.plot_type[2] EQ 1 then state.statusBar->update,'SEC Mosaic Plots not yet available.'
+         if state.plot_type[2] EQ 1 then begin
+           ;state.statusBar->update,'SEC Mosaic Plot not yet available'
+           ;state.shistoryWin->update,'SEC Mosaic Plot not yet available'
+           seca_ui_overlay_plots, trange=trange, /createpng
+         endif
        endif else begin
          ok = dialog_message('Invalid start/end time, please use: YYYY-MM-DD/hh:mm:ss', $
            /center)
@@ -161,8 +166,6 @@ pro secs_ui_overview_plots_event, event
     end
 
     'KEY': begin
-;      ok = dialog_message('Key not yet avaiable.', $
-;        /center)
       idx=where(state.plot_type EQ 1) 
       spd_ui_overplot_key, state.gui_id, state.historyWin, /modal, secs=idx+1      
     end
@@ -219,9 +222,9 @@ pro secs_ui_overview_plots, gui_id = gui_id, $
     plotBase = Widget_Base(quickBase, /Col, xpad=8, /align_left, /exclusive)   
     quicklookButton = Widget_Button(plotBase, Value=' View Quicklook Web Plot ', UValue='QUICKLOOK', $
       uname='quicklook',/align_left)
-    eicmosaicButton = Widget_Button(plotBase, Value=' Overplot EICS/THEMIS Mosaics ', $
+    eicmosaicButton = Widget_Button(plotBase, Value=' Overplot EICS/THEMIS ASI Mosaics ', $
       UValue='EICMOSAIC', uname='eicmosaic', /align_left)
-    secmosaicButton = Widget_Button(plotBase, Value=' Overplot SECA/THEMIS Mosaics ', $
+    secmosaicButton = Widget_Button(plotBase, Value=' Overplot SECA/THEMIS ASI Mosaics ', $
       UValue='SECMOSAIC', uname='secmosaic', /align_left)
     goWebBase = Widget_Base(mainBase, /Row, xpad=8, /align_center)
     buttonBase = Widget_Base(mainBase, /row, /align_center)

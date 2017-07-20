@@ -43,8 +43,8 @@
 ; CREATED BY: Mitsuo Oka   Jan 2016
 ;
 ; $LastChangedBy: moka $
-; $LastChangedDate: 2016-09-28 14:25:51 -0700 (Wed, 28 Sep 2016) $
-; $LastChangedRevision: 21970 $
+; $LastChangedDate: 2017-07-19 12:43:41 -0700 (Wed, 19 Jul 2017) $
+; $LastChangedRevision: 23659 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/eva/source/script/eva_cmd_load.pro $
 ;-
 PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan,$
@@ -144,7 +144,12 @@ PRO eva_cmd_load,paramset=paramset,probes=probes,trange=trange,timespan=timespan
   ; Main Program
   ;---------------------------------
   result = eva_data_load_mms(state,/no_gui,force=force)  
-
+  if strmatch(result,'Yes') then begin
+    paramlist = strlowcase(state.paramlist_mms)
+    probelist = state.probelist_mms
+    result = eva_data_load_reformat(paramlist, probelist,/FOURTH)
+  endif
+  
   dt = systime(/sec)-t0
   strdt = strtrim(dt)+' sec'
   if dt gt 120.d0 then begin

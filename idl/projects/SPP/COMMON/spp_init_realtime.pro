@@ -2,7 +2,7 @@
 
 pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm320=rm320,rm333=rm333,tent=tent, $
     spani= spani, spanea=spanea, spaneb=spaneb,  spc=spc,SWEMGSE=SWEM, $
-    router=router, instr=instr, recent=recent, $
+    router=router, instr=instr, recent=recent, hires1=hires1, $
     exec=exec0,ion=ion,tv=tv,cal=cal,snout2=snout2,snout1=snout1,crypt=crypt,apl=apl,moc=moc
 
 ;  common spp_crib_com, recorder_base1,recorder_base2,exec_base
@@ -92,6 +92,12 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
     if keyword_set(spc)    then spp_ptp_recorder,title='Snout2 SPC PTP',port=2328, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'Snout2/spc/',set_file_timeres=fileres
     if keyword_set(swem)   then spp_ptp_recorder,title='Snout2 SWEM PTP',port=2528, host=host, exec_proc=exec_proc,destination=fileformat,directory=rootdir+'Snout2/swem/',set_file_timeres=fileres
   endif
+
+if keyword_set(hires1) then begin
+  spp_ptp_recorder,title='HIRES1 (MOC) PTP',port=2028, host='128.32.13.202', exec_proc=exec_proc,destination=fileformat,directory=rootdir+'hires1/swem/',set_file_timeres=fileres
+
+endif
+
 
   if  keyword_set(crypt) then begin
     directory = rootdir + router+'/'+instr+'/'

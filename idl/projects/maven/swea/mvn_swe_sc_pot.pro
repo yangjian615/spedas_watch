@@ -12,7 +12,8 @@
 ;       In this program, different potential estimations are put into
 ;   the structures, swe_sc_pot and mvn_swe_engy.potential, in a
 ;   particular order. A tplot variable is created that contains this
-;   composed s/c potential: 'pot_comp'.  
+;   composed s/c potential: 'scpot_comp'. 
+; 
 ;AUTHOR: 
 ;	David L. Mitchell
 ;
@@ -104,8 +105,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-07-18 14:11:59 -0700 (Tue, 18 Jul 2017) $
-; $LastChangedRevision: 23638 $
+; $LastChangedDate: 2017-07-19 14:16:47 -0700 (Wed, 19 Jul 2017) $
+; $LastChangedRevision: 23663 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -494,7 +495,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, $
 
     pot_pan = 'mvn_swe_pot_all'
     store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,3)}
-    options,'swe_pot_lab','labels',['swe-','swe+','swe-lpw']
+    options,'swe_pot_lab','labels',['swe-','swe+','swe/lpw']
     options,'swe_pot_lab','colors',[6,2,!p.color]
     options,'swe_pot_lab','labflag',1
 
@@ -512,6 +513,7 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, $
 
   if keyword_set(sta_pot) then begin
     get_data,'mvn_sta_c6_scpot',data=stapot,index=i
+    options,'mvn_sta_c6_scpot','color',4
     if (i gt 0) then begin
       indx = where(stapot.y ge 0., count)
       if (count gt 0L) then stapot.y[indx] = badval
@@ -538,13 +540,15 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, $
 
         get_data,'mvn_swe_pot_all',data=tpot,index=i
         if (i gt 0) then begin
-          tpot = [tpot,'sta_pot']
+          tpot = [tpot,'mvn_sta_c6_scpot']
+          ;tpot = [tpot,'sta_pot'] 
           store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,4)}
-          options,'swe_pot_lab','labels',['sta','swe-','swe+','swe-lpw']
+          options,'swe_pot_lab','labels',['sta','swe-','swe+','swe/lpw']
           options,'swe_pot_lab','colors',[4,6,2,!p.color]
           options,'swe_pot_lab','labflag',1
         endif else begin
-          tpot = ['mvn_swe_sc_pot','sta_pot']
+          ;tpot = ['mvn_swe_sc_pot','sta_pot']
+          tpot = ['mvn_swe_sc_pot','mvn_sta_c6_scpot'] 
           pot_pan = 'mvn_swe_pot_all'
           store_data,'swe_pot_lab',data={x:minmax(t), y:replicate(!values.f_nan,2,2)}
           options,'swe_pot_lab','labels',['sta','swe+']
@@ -588,12 +592,14 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, $
         store_data,'swe_pot_lab',data={x:minmax(t),$
                                        y:replicate(!values.f_nan,2,5)}
         options,'swe_pot_lab','labels',$
-                ['swe-(shdw)','sta','swe-','swe+','swe-lpw']
+                ['swe-(shdw)','sta','swe-','swe+','swe/lpw']
         options,'swe_pot_lab','colors',[1,4,6,2,!p.color]
         options,'swe_pot_lab','labflag',1
         store_data,'mvn_swe_pot_all',data=tpot
        endif
   endif
+
+  swe_sc_pot.indx = potindx
 
   ;create a tplot variable that includes all potentials
   varname=['pot_swelpw','pot_swepos','pot_sweneg','pot_sta','pot_sweshdw']
@@ -613,11 +619,11 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, $
   store_data,'swe_pot_lab',data={x:minmax(t),$
                                  y:replicate(!values.f_nan,2,5)}
   options,'swe_pot_lab','labels',$
-          ['swe-(shdw)','sta','swe-','swe+','swe-lpw']
+          ['swe-(shdw)','sta','swe-','swe+','swe/lpw']
   options,'swe_pot_lab','colors',[1,4,6,2,!p.color]
   options,'swe_pot_lab','labflag',1
-  store_data,'pot_comp',data=[varname,'swe_pot_lab']                           
-  vname='pot_comp'
+  store_data,'scpot_comp',data=[varname,'swe_pot_lab']
+  vname='scpot_comp'
   options,vname,'constant',[-1,2]
   options,vname,'ytitle','S/C Pot Comp.!cVolts'
   ;ylim,vname,-30,20

@@ -22,8 +22,8 @@
 ;  none
 ;  
 ;$LastChangedBy: crussell $
-;$LastChangedDate: 2017-07-18 15:35:14 -0700 (Tue, 18 Jul 2017) $
-;$LastChangedRevision: 23642 $
+;$LastChangedDate: 2017-07-19 14:37:28 -0700 (Wed, 19 Jul 2017) $
+;$LastChangedRevision: 23669 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_overplot_key.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -47,8 +47,11 @@ pro spd_ui_overplot_key_draw, state
     ; SECS Quicklook Plots
     key = read_png(rpath + 'secs_quicklook_key.png')
   endif else if state.secs eq 2 then begin
-    ; SECS Quicklook Plots
+    ; SECS eics mosaic Plots
     key = read_png(rpath + 'secs_mosaic_key.png')
+  endif else if state.secs eq 3 then begin
+    ; SECS seca mosaic Plots
+    key = read_png(rpath + 'seca_mosaic_key.png')
   endif
 
   keyImageObj = obj_new('IDLgrImage', key, dimen=[1,1])
@@ -156,11 +159,11 @@ pro spd_ui_overplot_key, gui_id, historyWin, modal = modal, goes = goes, poes = 
   overplot_ysize = goes ne 0 ? 1015 : 900
   overplot_ysize = poes ne 0 ? 800 : overplot_ysize
   if (secs EQ 1) then begin    
-     overplot_ysize = 600
+     overplot_ysize = 550
      overplot_xsize = 850
   endif 
-  if secs EQ 2 then begin
-    overplot_ysize = 420
+  if secs GE 2 then begin
+    overplot_ysize = 450
     overplot_xsize = 750     
   endif
  
