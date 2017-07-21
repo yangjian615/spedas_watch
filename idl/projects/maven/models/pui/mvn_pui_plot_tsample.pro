@@ -4,7 +4,8 @@
 ;avrg: for averaged values over a time period
 ;tplot: for selecting the data from the current tplot window
 
-pro mvn_pui_plot_tsample,all=all,tplot=tplot,avrg=avrg,overplot=overplot,xrange=xr,yrange=yr,zeros=zeros,sep=sep,swe=swe,traj=traj,eflux=eflux,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d
+pro mvn_pui_plot_tsample,all=all,tplot=tplot,avrg=avrg,overplot=overplot,xrange=xr,yrange=yr,zeros=zeros,$
+  sep=sep,swe=swe,traj=traj,eflux=eflux,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -27,8 +28,13 @@ if keyword_set(all) then begin
 endif
 
 ctime,t,np=np,/silent
-tstep=floor((t-pui[0].centertime)/pui0.tbin)
+tstep=floor((t-pui[0].centertime+pui0.tbin/2.)/pui0.tbin)
 if n_elements(tstep) eq 1 then tstep=[tstep,tstep]
+tstep[where(tstep lt 0,/null)]=0
+tstep[where(tstep gt pui0.nt-1,/null)]=pui0.nt-1
+if tstep[0] gt tstep[1] then tstep=reverse(tstep)
+tstring=time_string(pui[tstep].centertime)
+if ~keyword_set(avrg) then tstring=tstring[0] 
 tsteps=lindgen(1l+tstep[1]-tstep[0],start=tstep[0])
 
 rv=1e-3*transpose(average(pui[tsteps].model.rv,4,/nan),[1,2,0]) ;rv (km, km/s)
@@ -64,18 +70,36 @@ if keyword_set(sep) then begin ;SEP
   xt='Energy (keV)'
   yt='Count Rate/Energy Bin (Hz)'
   ;SEP1F
-  p=plot([0],/nodata,/xlog,/ylog,xrange=xr,yrange=yr,margin=.1,layout=[2,1,1],title='SEP1F',xtitle=xt,ytitle=yt,xtickunits='scientific',ytickunits='scientific')
-  p=plot(/o,sepet[*,0],sepd[*,0],/stairs,'r')
-  p=plot(/o,sepet[*,0],sepm[*,0],/stairs,'b')
-  p=plot(/o,sepie,sepi[*,0],'m')
-  p=plot(/o,entot,ftot,'g')
+  p=getwindows('sepflux')
+  if keyword_set(p) then p.setcurrent else p=window(name='sepflux')
+  p.erase
+  p=plot(/current,[0],/nodata,/xlog,/ylog,xrange=xr,yrange=yr,margin=.1,layout=[2,1,1],title='SEP1F',xtitle=xt,ytitle=yt,xtickunits='scientific',ytickunits='scientific')
+  p=plot(/o,sepet[*,0],sepd[*,0],/stairs,'r',name='Data (Hz)')
+  p=plot(/o,sepet[*,0],sepm[*,0],/stairs,'b',name='Model (Hz)')
+  p=plot(/o,sepie,sepi[*,0],'m',name='in FOV (s keV)$^{-1}$')
+  p=plot(/o,entot,ftot,'g',name='O+ Flux $(s cm^2 keV)^{-1}$')
+  p=legend()
+  p=text(0,0,tstring)
   ;SEP2F
-  p=plot([0],/nodata,/xlog,/ylog,xrange=xr,yrange=yr,margin=.1,layout=[2,1,2],title='SEP2F',xtitle=xt,ytitle=yt,xtickunits='scientific',ytickunits='scientific',/current)
+  p=plot(/current,[0],/nodata,/xlog,/ylog,xrange=xr,yrange=yr,margin=.1,layout=[2,1,2],title='SEP2F',xtitle=xt,ytitle=yt,xtickunits='scientific',ytickunits='scientific')
   p=plot(/o,sepet[*,1],sepd[*,1],/stairs,'r')
   p=plot(/o,sepet[*,1],sepm[*,1],/stairs,'b')
   p=plot(/o,sepie,sepi[*,1],'m')
   p=plot(/o,entot,ftot,'g')
+
   p=mvn_pui_sep_angular_response(cosvsep1,cosvsep2,cosvswiy,/trajplot,tsteps=tsteps)
+  p=text(0,0,tstring)
+
+  if keyword_set(avrg) then begin
+    p=getwindows('sepqf')
+    if keyword_set(p) then p.setcurrent else p=window(name='sepqf')
+    p.erase
+    p=plot(/current,[0],/nodata,/ylog,xtitle='Quality Flag',ytitle='d2m Ratio')
+    p=plot(/o,pui[tsteps].model[1].fluxes.sep[0].qf,pui[tsteps].d2m[0].sep[1]/pui[tsteps].d2m[0].sep[0],'bo',name='SEP1F')
+    p=plot(/o,pui[tsteps].model[1].fluxes.sep[1].qf,pui[tsteps].d2m[1].sep[1]/pui[tsteps].d2m[1].sep[0],'ro',name='SEP2F')
+    p=legend()
+    p=text(0,0,tstring)
+  endif
 endif
 
 if keyword_set(swe) then begin ;SWEA/SWIA
@@ -94,13 +118,19 @@ if keyword_set(swe) then begin ;SWEA/SWIA
   yr=[5e2,5e9]
   xt='Energy (eV)'
   yt='Eflux (eV/[cm2 s sr eV])'
-  p=plot([0],/nodata,/xlog,/ylog,xrange=xr,yrange=yr,title='SWEA/SWIA',xtitle=xt,ytitle=yt,xtickunits='scientific',ytickunits='scientific')
-  p=plot(/o,xswepot,yswepot,/stairs,'m')
-  p=plot(/o,xswe,yswe,/stairs,'b')
-  p=plot(/o,xswi,yswi,/stairs,'r')
+  p=getwindows('sweswiflux')
+  if keyword_set(p) then p.setcurrent else p=window(name='sweswiflux')
+  p.erase
+  p=plot(/current,[0],/nodata,/xlog,/ylog,xrange=xr,yrange=yr,title='SWEA/SWIA',xtitle=xt,ytitle=yt,xtickunits='scientific',ytickunits='scientific')
+  p=plot(/o,xswepot,yswepot,/stairs,'m',name='SWEA (potential corrected)')
+  p=plot(/o,xswe,yswe,/stairs,'b',name='SWEA (raw)')
+  p=plot(/o,xswi,yswi,/stairs,'r',name='SWIA')
+  p=legend()
+  p=text(0,0,tstring)
 endif
 
 if keyword_set(traj) then begin ;Trajectories and Ring Distribution
+  orbit=1e-3*transpose(pui.data.scp) ;spacecraft position: orbit (km)
   stxfov=average(pui[tsteps].data.sta.fov.x,2,/nan) ;static x-fov
   stzfov=average(pui[tsteps].data.sta.fov.z,2,/nan) ;static z-fov
   scp=1e-3*average(pui[tsteps].data.scp,2,/nan) ;spacecraft position (km)
@@ -114,40 +144,56 @@ if keyword_set(traj) then begin ;Trajectories and Ring Distribution
   vmax=[0.,-max(sqrt(total(rv[*,1,3:5]^2,3)))] ;max pickup speed (km/s)
 
   npf=floor(pui0.np/1.1) ;fraction of number of simulated particles
-  p=plot3d(rv[*,0,0],rv[*,0,1],rv[*,0,2],'b',axis_style=2) ;H birth curve
-  p=plot3d(rv[0:npf,1,0],rv[0:npf,1,1],rv[0:npf,1,2],'r',/o) ;O birth curve
-  p=plot3d(scp[0]+alfrm*sep1fov[0],scp[1]+alfrm*sep1fov[1],scp[2]+alfrm*sep1fov[2],/o,'b') ;SEP1F fov (blue)
-  p=plot3d(scp[0]+alfrm*sep2fov[0],scp[1]+alfrm*sep2fov[1],scp[2]+alfrm*sep2fov[2],/o,'r') ;SEP2F fov (red)
-  p=plot3d(scp[0]+alfrm*stxfov[0],scp[1]+alfrm*stxfov[1],scp[2]+alfrm*stxfov[2],/o,'c') ;static x fov (cyan)
-  p=plot3d(scp[0]+alfrm*stzfov[0],scp[1]+alfrm*stzfov[1],scp[2]+alfrm*stzfov[2],/o,'m') ;static z fov (magenta)
-  p=plot3d(scp[0]+alfrm*magdir[0],scp[1]+alfrm*magdir[1],scp[2]+alfrm*magdir[2],/o,'g') ;mag direction
-  p=plot3d(scp[0]+alfrm*usw[0]/uswtot,scp[1]+alfrm*usw[1]/uswtot,scp[2]+alfrm*usw[2]/uswtot,/o,'k') ;solar wind velocity direction
-  p=plot3d(scp[0]+alfrm*esw[0]/uswtot,scp[1]+alfrm*esw[1]/uswtot,scp[2]+alfrm*esw[2]/uswtot,/o,color=!color.orange) ;motional electric field direction
-  p=plot3d(scp[0]+alfrm*drf[0]/uswtot,scp[1]+alfrm*drf[1]/uswtot,scp[2]+alfrm*drf[2]/uswtot,/o,color=!color.gray) ;drift velocity direction
-  p=scatterplot3d([0,seprv[*,0]],[0,seprv[*,1]],[0,seprv[*,2]],/o,rgb=34,magnitude=[1,0,2]) ;SEP on birth curve (SEP1F: blue, SEP2F, red)
+  p=getwindows('trajxyz')
+  if keyword_set(p) then p.setcurrent else p=window(name='trajxyz')
+  p.erase
+  p=plot3d(/current,orbit[*,0],orbit[*,1],orbit[*,2],'k',axis_style=2,name='Orbit')
+  p=plot3d(rv[*,0,0],rv[*,0,1],rv[*,0,2],'b',/o,name='H Birth Curve') ;H birth curve
+  p=plot3d(rv[0:npf,1,0],rv[0:npf,1,1],rv[0:npf,1,2],'r',/o,name='O Birth Curve') ;O birth curve
+  p=plot3d(scp[0]+alfrm*sep1fov[0],scp[1]+alfrm*sep1fov[1],scp[2]+alfrm*sep1fov[2],/o,'b',name='SEP1F FOV') ;SEP1F fov (blue)
+  p=plot3d(scp[0]+alfrm*sep2fov[0],scp[1]+alfrm*sep2fov[1],scp[2]+alfrm*sep2fov[2],/o,'r',name='SEP2F FOV') ;SEP2F fov (red)
+  p=plot3d(scp[0]+alfrm*stxfov[0],scp[1]+alfrm*stxfov[1],scp[2]+alfrm*stxfov[2],/o,'c',name='STATIC-X FOV') ;static x fov (cyan)
+  p=plot3d(scp[0]+alfrm*stzfov[0],scp[1]+alfrm*stzfov[1],scp[2]+alfrm*stzfov[2],/o,'m',name='STATIC-Z FOV') ;static z fov (magenta)
+  p=plot3d(scp[0]+alfrm*magdir[0],scp[1]+alfrm*magdir[1],scp[2]+alfrm*magdir[2],/o,'g',name='MAG Direction') ;mag direction
+  p=plot3d(scp[0]+alfrm*usw[0]/uswtot,scp[1]+alfrm*usw[1]/uswtot,scp[2]+alfrm*usw[2]/uswtot,/o,'k',name='Solar Wind Velocity Direction') ;solar wind velocity direction
+  p=plot3d(scp[0]+alfrm*drf[0]/uswtot,scp[1]+alfrm*drf[1]/uswtot,scp[2]+alfrm*drf[2]/uswtot,/o,color=!color.gray,name='Drift Velocity Direction') ;drift velocity direction
+  p=plot3d(scp[0]+alfrm*esw[0]/uswtot,scp[1]+alfrm*esw[1]/uswtot,scp[2]+alfrm*esw[2]/uswtot,/o,color=!color.orange,name='E Direction') ;motional electric field direction
+  p=scatterplot3d([0,seprv[*,0]],[0,seprv[*,1]],[0,seprv[*,2]],/o,rgb=34,magnitude=[1,0,2],name='SEP Source') ;SEP on birth curve (SEP1F: blue, SEP2F, red)
+  p=legend()
+  p=text(0,0,tstring)
   mvn_pui_plot_mars_bow_shock,/p3d
 
-  p=plot3d(rv[0:npf,1,3],rv[0:npf,1,4],rv[0:npf,1,5],axis_style=2,aspect_ratio=1,aspect_z=1,xtitle='X (km/s)',ytitle='Y (km/s)',ztitle='Z (km/s)') ;ring-beam distribution
-  p=plot3d(vmax*sepfov[0,0],vmax*sepfov[1,0],vmax*sepfov[2,0],/o,'b') ;SEP1F reversed fov
-  p=plot3d(vmax*sepfov[0,1],vmax*sepfov[1,1],vmax*sepfov[2,1],/o,'r') ;SEP2F reversed fov
-  p=plot3d(vmax*stxfov[0],vmax*stxfov[1],vmax*stxfov[2],/o,'c') ;static x reversed fov
-  p=plot3d(vmax*stzfov[0],vmax*stzfov[1],vmax*stzfov[2],/o,'m') ;static z reversed fov
-  p=plot3d(-vmax*magdir[0],-vmax*magdir[1],-vmax*magdir[2],/o,'g') ;mag direction
-  p=plot3d([0,usw[0]],[0,usw[1]],[0,usw[2]],/o,'k') ;solar wind velocity (km/s)
-  p=plot3d([0,esw[0]],[0,esw[1]],[0,esw[2]],/o,color=!color.orange) ;motional electric field direction
-  p=plot3d([0,drf[0]],[0,drf[1]],[0,drf[2]],/o,color=!color.gray) ;drift velocity (km/s)
-  p=scatterplot3d([0,seprv[*,3]],[0,seprv[*,4]],[0,seprv[*,5]],/o,rgb=34,magnitude=[1,0,2]) ;SEP on ring (SEP1F: blue, SEP2F, red)
+  p=getwindows('trajring')
+  if keyword_set(p) then p.setcurrent else p=window(name='trajring')
+  p.erase
+  p=plot3d(/current,rv[0:npf,1,3],rv[0:npf,1,4],rv[0:npf,1,5],axis_style=2,aspect_ratio=1,aspect_z=1,xtitle='X (km/s)',ytitle='Y (km/s)',ztitle='Z (km/s)',name='Ring-Beam') ;ring-beam distribution
+  p=plot3d(vmax*sepfov[0,0],vmax*sepfov[1,0],vmax*sepfov[2,0],/o,'b',name='SEP1F Reversed FOV') ;SEP1F reversed fov
+  p=plot3d(vmax*sepfov[0,1],vmax*sepfov[1,1],vmax*sepfov[2,1],/o,'r',name='SEP2F Reversed FOV') ;SEP2F reversed fov
+  p=plot3d(vmax*stxfov[0],vmax*stxfov[1],vmax*stxfov[2],/o,'c',name='STATIC-X Reversed FOV') ;static x reversed fov
+  p=plot3d(vmax*stzfov[0],vmax*stzfov[1],vmax*stzfov[2],/o,'m',name='STATIC-Z Reversed FOV') ;static z reversed fov
+  p=plot3d(-vmax*magdir[0],-vmax*magdir[1],-vmax*magdir[2],/o,'g',name='MAG Direction') ;mag direction
+  p=plot3d([0,usw[0]],[0,usw[1]],[0,usw[2]],/o,'k',name='Solar Wind Velocity (km s-1)') ;solar wind velocity (km/s)
+  p=plot3d([0,drf[0]],[0,drf[1]],[0,drf[2]],/o,color=!color.gray,name='Drift Velocity (km s-1)') ;drift velocity (km/s)
+  p=plot3d([0,esw[0]],[0,esw[1]],[0,esw[2]],/o,color=!color.orange,name='E Direction') ;motional electric field direction
+  p=scatterplot3d([0,seprv[*,3]],[0,seprv[*,4]],[0,seprv[*,5]],/o,rgb=34,magnitude=[1,0,2],name='SEP Source') ;SEP on ring (SEP1F: blue, SEP2F, red)
+  p=legend()
+  p=text(0,0,tstring)
 endif
 
 if keyword_set(eflux) then begin ;Efluxes
   eftot=average(pui[tsteps].model.fluxes.toteflux,3,/nan) ;total flux /[s cm2 keV]
   eftot[where(eftot eq 0.,/null)]=zeros
-  p=plot([0],/nodata,/xlog,/ylog,yrange=[1e1,1e6],xtitle=xt,ytitle='Eflux (eV/[cm2 s eV])',xtickunits='scientific',ytickunits='scientific')
-  p=plot(pui1.totet,eftot[*,0],/o,color='b') ;pickup H+
-  p=plot(pui1.totet,eftot[*,1],/o,color='r') ;pickup O+
-  if pui0.ns ge 3 then p=plot(pui1.totet,eftot[*,2],/o,color='g') ;pickup (H2)+
+  p=getwindows('puieflux')
+  if keyword_set(p) then p.setcurrent else p=window(name='puieflux')
+  p.erase
+  p=plot(/current,[0],/nodata,/xlog,/ylog,yrange=[1e1,1e7],xtitle=xt,ytitle='Eflux (eV/[cm2 s eV])',title='Pickup Ion Efluxes',xtickunits='scientific',ytickunits='scientific')
+  p=plot(pui1.totet,eftot[*,0],/o,color='b',name='H+') ;pickup H+
+  p=plot(pui1.totet,eftot[*,1],/o,color='r',name='O+') ;pickup O+
+  if pui0.ns ge 3 then p=plot(pui1.totet,eftot[*,2],/o,color='g',name='(H2)+') ;pickup (H2)+
+  p=legend()
+  p=text(0,0,tstring)
 endif
 
-mvn_pui_tplot_3d,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,lineplot=tsteps
+if keyword_set(swia3d) or keyword_set(stah3d) or keyword_set(stao3d) then mvn_pui_tplot_3d,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,lineplot=tsteps
 ;stop
 end

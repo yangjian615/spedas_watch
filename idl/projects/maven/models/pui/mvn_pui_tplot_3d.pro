@@ -1,7 +1,8 @@
 ;20170424 Ali
 ;takes care of 3d tplots and plots
 
-pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,lineplot=lineplot,datimage=datimage,modimage=modimage,d2mimage=d2mimage,nowin=nowin,denprof=denprof
+pro mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,lineplot=lineplot,$
+  datimage=datimage,modimage=modimage,d2mimage=d2mimage,nowin=nowin,denprof=denprof,d2mqf=d2mqf
 
   @mvn_pui_commonblock.pro ;common mvn_pui_common
   centertime=pui.centertime
@@ -13,7 +14,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
   if keyword_set(swia3d) || keyword_set(stah3d) || keyword_set(stao3d) then switch3d=1 else switch3d=0
   if keyword_set (lineplot) or keyword_set (datimage) or keyword_set (modimage) or keyword_set (d2mimage) then img=1 else img=0
 
-  if keyword_set(store) or img then begin
+  if keyword_set(store) or img or keyword_set (denprof) or keyword_set (d2mqf) then begin
 
     minpara=1.1 ;discard eflux below this factor times min eflux
     maxthre=7e7 ;above this eflux, we're probably looking at solar wind protons
@@ -28,7 +29,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
       swiaef3d=replicate(!values.f_nan,[pui0.nt,pui0.swieb,pui0.swina,pui0.swine])
       swicaen=pui1.swiet
     endelse
-    
+
     d1eflux=transpose(pui.data.sta.d1.eflux[*,*,*,[0,4]],[4,0,1,2,3]) ;mass channel 0:Hydrogen, 4:Oxygen
     d1energy=transpose(pui.data.sta.d1.energy)
     swind=where(finite(swiaef3d[*,0,0,0]),/null,swcount) ;no archive available index
@@ -36,33 +37,39 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
     minswi=minpara*mvn_pui_min_eflux(swiaef3d) ;min over energy and elevation dimensions
     minsta=minpara*mvn_pui_min_eflux(d1eflux) ;min over energy and elevation dimensions
 
-    kefswi=transpose(pui.model.fluxes.swi3d.eflux,[4,0,1,2,3]) ;pickup energy flux
+    kefswi=transpose(pui.model.fluxes.swi3d.eflux,[4,0,1,2,3]) ;pickup model energy flux
     kefsta=transpose(pui.model.fluxes.sta3d.eflux,[4,0,1,2,3])
+    kqfswi=transpose(pui.model.fluxes.swi3d.qf,[4,0,1,2,3]) ;pickup model quality flag
+    kqfsta=transpose(pui.model.fluxes.sta3d.qf,[4,0,1,2,3])
     krvswi=transpose(pui.model.fluxes.swi3d.rv,[5,1,2,3,4,0]) ;pickup position,velocity
     krvsta=transpose(pui.model.fluxes.sta3d.rv,[5,1,2,3,4,0])
     krrswi=sqrt(total(krvswi[*,*,*,*,*,0:3]^2,6))/1e3 ;pickup radial distance (km)
     krrsta=sqrt(total(krvsta[*,*,*,*,*,0:3]^2,6))/1e3
 
     mstr=['H','O'] ;mass string
-    frmtstr=[['b.','r.'],['c.','m.']] ;plot format string
+    frmtstr=[['b.','r.'],['c.','m.']] ;plot format string [[H swi,O swi],[H sta,O sta]]
+    ebinlim=[[37,17],[17,8]] ;energy bin lower limit for [[H swi,O swi],[H sta,O sta]], lower limit energy: [H,O]=[110,2000]keV
+    dim3d=pui0.swina*pui0.swine*(ebinlim+1) ;used to create tplots of all energy/anode/elevation d2m's
+
     get_data,'mvn_alt_sw_(km)',data=alt_sw
     if keyword_set(alt_sw) then swindex=where(finite(alt_sw.y),/null) else swindex=!null ;only solar wind
-    ebinlim=[30,24] ;energy bin limit for [H,O]
-    dim3d=pui0.swina*pui0.swine*(ebinlim+1) ;used to create tplots of all energy/anode/elevation d2m's
 
     ;get rid of too low model and data flux (below detection threshold) and too high data flux (solar wind)
     kefsta2=kefsta
     kefsta[where((kefsta lt minsta) or (d1eflux lt minsta) or (d1eflux gt maxthre),/null)]=0.
     knnsta=d1eflux/kefsta
 
+    if keyword_set(denprof) then p=plot([0],/nodat,/xlog,/ylog,xtitle='d2m Ratio',ytitle='Altitude (km)')
+    if keyword_set(d2mqf) then p=plot([0],/nodat,/ylog,xtitle='Quality Flag',ytitle='d2m Ratio')
+
     for im=0,1 do begin ;loop over mass 0:H, 1:O
       kefswim=kefswi[*,*,*,*,im]
       kefswim[where((kefswim lt minswi) or (swiaef3d lt minswi) or (swiaef3d gt maxthre),/null)]=0.
       knnswi=swiaef3d/kefswim/(~kefswi[*,*,*,*,~im]) ;exospheric neutral density (cm-3) data/model ratio
-      knnswi2=knnswi[*,0:ebinlim[im],*,*]
-      knnsta2=knnsta[*,0:ebinlim[im],*,*,im]
-      logswi=alog(reform(knnswi2,[pui0.nt,dim3d[im]]))
-      logsta=alog(reform(knnsta2,[pui0.nt,dim3d[im]]))
+      knnswi2=knnswi[*,0:ebinlim[im,0],*,*]
+      knnsta2=knnsta[*,0:ebinlim[im,1],*,*,im]
+      logswi=alog(reform(knnswi2,[pui0.nt,dim3d[im,0]]))
+      logsta=alog(reform(knnsta2,[pui0.nt,dim3d[im,1]]))
       avgswi=exp(average(logswi,2,stdev=sswi,nsamples=nswi,/nan))
       avgsta=exp(average(logsta,2,stdev=ssta,nsamples=nsta,/nan))
       pui.d2m[im].swi[0]=avgswi
@@ -72,19 +79,30 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
       pui.d2m[im].swi[2]=nswi
       pui.d2m[im].sta[2]=nsta
 
-      if swcount gt 0 then store_data,'mvn_d2m_ratio_avg_swia_'+mstr[im],data={x:centertime[swind],y:avgswi[swind]},limits={ylog:1,colors:'r'}
-      if d1count gt 0 then store_data,'mvn_d2m_ratio_avg_stat_'+mstr[im],data={x:centertime[d1ind],y:avgsta[d1ind]},limits={ylog:1,colors:'r'}
-      time3d=dgen(pui0.nt*dim3d[im],range=timerange(pui0.trange))
-      store_data,'mvn_d2m_ratio_all_swia_'+mstr[im],data={x:time3d,y:reform(transpose(knnswi2),pui0.nt*dim3d[im])},limits={ylog:1,psym:3}
-      store_data,'mvn_d2m_ratio_all_stat_'+mstr[im],data={x:time3d,y:reform(transpose(knnsta2),pui0.nt*dim3d[im])},limits={ylog:1,psym:3}
-      store_data,'mvn_d2m_ratio_swia_'+mstr[im],data=['mvn_d2m_ratio_all_swia_'+mstr[im],'mvn_d2m_ratio_avg_swia_'+mstr[im],'mvn_pui_line_1'],limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
-      store_data,'mvn_d2m_ratio_stat_'+mstr[im],data=['mvn_d2m_ratio_all_stat_'+mstr[im],'mvn_d2m_ratio_avg_stat_'+mstr[im],'mvn_pui_line_1'],limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
-
-      if keyword_set(denprof) then begin
-        p=plot(knnswi2[swindex,*,*,*],krrswi[swindex,0:ebinlim[im],*,*,im]-rmars,/o,/xlog,/ylog,frmtstr[im,0])
-        p=plot(knnsta2[swindex,*,*,*],krrsta[swindex,0:ebinlim[im],*,*,im]-rmars,/o,/xlog,/ylog,frmtstr[im,1])
+      if keyword_set(store) then begin
+        t3dswi=dgen(pui0.nt*dim3d[im,0],range=timerange(pui0.trange))
+        t3dsta=dgen(pui0.nt*dim3d[im,1],range=timerange(pui0.trange))
+        if swcount gt 0 then store_data,'mvn_d2m_ratio_avg_swia_'+mstr[im],data={x:centertime[swind],y:avgswi[swind]},limits={ylog:1,colors:'r'}
+        if d1count gt 0 then store_data,'mvn_d2m_ratio_avg_stat_'+mstr[im],data={x:centertime[d1ind],y:avgsta[d1ind]},limits={ylog:1,colors:'r'}
+        store_data,'mvn_d2m_ratio_all_swia_'+mstr[im],data={x:t3dswi,y:reform(transpose(knnswi2),pui0.nt*dim3d[im,0])},limits={ylog:1,psym:3}
+        store_data,'mvn_d2m_ratio_all_stat_'+mstr[im],data={x:t3dsta,y:reform(transpose(knnsta2),pui0.nt*dim3d[im,1])},limits={ylog:1,psym:3}
+        store_data,'mvn_d2m_ratio_swia_'+mstr[im],data=['mvn_d2m_ratio_all_swia_'+mstr[im],'mvn_d2m_ratio_avg_swia_'+mstr[im],'mvn_pui_line_1'],limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
+        store_data,'mvn_d2m_ratio_stat_'+mstr[im],data=['mvn_d2m_ratio_all_stat_'+mstr[im],'mvn_d2m_ratio_avg_stat_'+mstr[im],'mvn_pui_line_1'],limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
+      endif
+      if keyword_set(denprof) and keyword_set(alt_sw) then begin
+        p=plot(knnswi2[swindex,*,*,*],krrswi[swindex,0:ebinlim[im,0],*,*,im]-rmars,/o,frmtstr[im,0],name=mstr[im]+'+ SWIA')
+        p=plot(knnsta2[swindex,*,*,*],krrsta[swindex,0:ebinlim[im,1],*,*,im]-rmars,/o,frmtstr[im,1],name=mstr[im]+'+ STATIC')
+      endif
+      if keyword_set(d2mqf) and keyword_set(alt_sw) then begin
+        p=plot(kqfswi[swindex,0:ebinlim[im,0],*,*,im],knnswi2[swindex,*,*,*],/o,frmtstr[im,0],name=mstr[im]+'+ SWIA')
+        p=plot(kqfsta[swindex,0:ebinlim[im,1],*,*,im],knnsta2[swindex,*,*,*],/o,frmtstr[im,1],name=mstr[im]+'+ STATIC')
       endif
     endfor
+
+    if keyword_set(denprof) or keyword_set(d2mqf) then begin
+      p=legend()
+      p=text(0,0,time_string(pui0.trange))
+    endif
 
     if keyword_set(store) and switch3d then begin
       store_data,'mvn_s*_model*_A*D*',/delete
@@ -109,16 +127,22 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
       kefstaa[where(~finite(alog(kefstaa)),/null)]=1e-7
       d1eflua[where(~finite(alog(d1eflua)),/null)]=1e-7
       d1en=average(d1energy[lineplot,*],1,/nan)
-   endif
+    endif
 
+    if keyword_set(trange) then begin
+      trange=time_double(trange)
+      tstep=floor((trange-pui[0].centertime+pui0.tbin/2.)/pui0.tbin)
+    endif else tstep=[0,pui0.nt-1]
+    tsteps=lindgen(1l+tstep[1]-tstep[0],start=tstep[0])
+    
     for j=0,pui0.swina-1 do begin ;loop over azimuth bins (phi)
       for k=0,pui0.swine-1 do begin ;loop over elevation bins (theta): + to - theta goes left to right on the screen
         jj=15-((j+9) mod 16) ;to sort vertical placement of tplot panels: center is usually sunward for swia (x-axis for both swia and static)
         lojk=[4,16,1+k+j*4]
 
         if keyword_set(swia3d) then begin
-          swimjk=kefswimo[*,*,jj,k]
-          swidjk=swiaef3d[*,*,jj,k]
+          swimjk=kefswimo[tsteps,*,jj,k]
+          swidjk=swiaef3d[tsteps,*,jj,k]
           if keyword_set(lineplot) then begin
             p=plot([0],/nodata,/xlog,/ylog,xrange=[20.,30e3],yrange=[1e3,1e9],layout=lojk,/current,margin=mrgn,background_color='w')
             p=plot(pui1.swiet,minswia[*,jj,k],/stairs,/o,color='c') ;data threshold
@@ -130,8 +154,8 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
           if keyword_set(datimage) then p=image(alog10(swidjk),layout=lojk,/current,margin=mrgn,rgb_table=rgbt,aspect=0,min=4,max=8,axis_style=0,background_color='b',/order)
           if keyword_set(d2mimage) then p=image(alog10(swidjk/swimjk),layout=lojk,/current,margin=mrgn,rgb_table=rgbt,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
           if keyword_set(store) then begin
-            store_data,'mvn_swia_model_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,swimjk,pui1.swiet,verbose=verbose
-            store_data,'mvn_swia_data_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,swidjk,swicaen,verbose=verbose
+            store_data,'mvn_swia_model_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime[tsteps],swimjk,pui1.swiet,verbose=verbose
+            store_data,'mvn_swia_data_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime[tsteps],swidjk,swicaen,verbose=verbose
             options,'mvn_swia*_A*D*','spec',1
             options,'mvn_swia*_A*D*','ytickunits','scientific'
             ylim,'mvn_swia*_A*D*',25.,25e3,1
@@ -140,8 +164,8 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
         endif
 
         if keyword_set(stao3d) then begin
-          statjk=kefsta2[*,*,jj,k,1]
-          d1efjk=d1eflux[*,*,jj,k,1]
+          statjk=kefsta2[tsteps,*,jj,k,1]
+          d1efjk=d1eflux[tsteps,*,jj,k,1]
           if keyword_set(lineplot) then begin
             p=plot([0],/nodata,/xlog,/ylog,xrange=[1.,40e3],yrange=[1e3,1e9],layout=lojk,/current,margin=mrgn,background_color='w')
             p=plot(d1en,minstaa[*,jj,k,1],/stairs,/o,color='m') ;data O+ threshold
@@ -152,14 +176,14 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
           if keyword_set(datimage) then p=image(alog10(d1efjk),layout=lojk,/current,margin=mrgn,rgb_table=rgbt,aspect=0,min=4,max=8,axis_style=0,background_color='b',/order)
           if keyword_set(d2mimage) then p=image(alog10(d1efjk/statjk),layout=lojk,/current,margin=mrgn,rgb_table=rgbt,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
           if keyword_set(store) then begin
-            store_data,'mvn_stat_model_puo_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,statjk,d1energy,verbose=verbose
-            store_data,'mvn_stat_data_HImass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,d1efjk,d1energy,verbose=verbose
+            store_data,'mvn_stat_model_puo_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime[tsteps],statjk,d1energy[tsteps,*],verbose=verbose
+            store_data,'mvn_stat_data_HImass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime[tsteps],d1efjk,d1energy[tsteps,*],verbose=verbose
           endif
         endif
 
         if keyword_set(stah3d) then begin
-          statjk=kefsta2[*,*,jj,k,0]
-          d1efjk=d1eflux[*,*,jj,k,0]
+          statjk=kefsta2[tsteps,*,jj,k,0]
+          d1efjk=d1eflux[tsteps,*,jj,k,0]
           if keyword_set(lineplot) then begin
             p=plot([0],/nodata,/xlog,/ylog,xrange=[1.,40e3],yrange=[1e3,1e9],layout=lojk,/current,margin=mrgn,background_color='w')
             p=plot(d1en,minstaa[*,jj,k,0],/stairs,/o,color='m') ;data H+ threshold
@@ -170,8 +194,8 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
           if keyword_set(datimage) then p=image(alog10(d1efjk),layout=lojk,/current,margin=mrgn,rgb_table=rgbt,aspect=0,min=4,max=8,axis_style=0,background_color='b',/order)
           if keyword_set(d2mimage) then p=image(alog10(d1efjk/statjk),layout=lojk,/current,margin=mrgn,rgb_table=rgbt,aspect=0,min=-1,max=1,axis_style=0,background_color='w',/order)
           if keyword_set(store) then begin
-            store_data,'mvn_stat_model_puh_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,statjk,d1energy,verbose=verbose
-            store_data,'mvn_stat_data_LOmass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime,d1efjk,d1energy,verbose=verbose
+            store_data,'mvn_stat_model_puh_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime[tsteps],statjk,d1energy[tsteps,*],verbose=verbose
+            store_data,'mvn_stat_data_LOmass_A'+strtrim(jj,2)+'D'+strtrim(k,2),centertime[tsteps],d1efjk,d1energy[tsteps,*],verbose=verbose
           endif
         endif
       endfor
@@ -218,5 +242,5 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=
     !p.background=-1
     !p.color=0
   endif
-;stop
+  ;stop
 end

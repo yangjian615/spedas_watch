@@ -8,13 +8,14 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-18 16:27:55 -0800 (Fri, 18 Nov 2016) $
-;$LastChangedRevision: 22378 $
+;$LastChangedDate: 2017-07-20 16:20:12 -0700 (Thu, 20 Jul 2017) $
+;$LastChangedRevision: 23686 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/load_data/mms_load_tetrahedron_qf.pro $
 ;-
 
-pro mms_load_tetrahedron_qf, trange = trange
-
+pro mms_load_tetrahedron_qf, trange = trange, suffix=suffix
+    if undefined(suffix) then suffix = ''
+    
     mms_init, local_data_dir = local_data_dir
     
     if ~undefined(trange) && n_elements(trange) eq 2 $
@@ -85,9 +86,9 @@ pro mms_load_tetrahedron_qf, trange = trange
     endelse
     
     if ~undefined(time_data) && ~undefined(tetrahedron_qfs) then begin
-        store_data, 'mms_tetrahedron_qf', data={x: time_values, y: tqfs}
+        store_data, 'mms_tetrahedron_qf'+suffix, data={x: time_values, y: tqfs}
         ; clip down to the requested time range
-        time_clip, 'mms_tetrahedron_qf', trange[0], trange[1], /replace
+        time_clip, 'mms_tetrahedron_qf'+suffix, tr[0], tr[1], /replace
     endif
     
 end

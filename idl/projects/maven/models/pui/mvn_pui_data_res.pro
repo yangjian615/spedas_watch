@@ -23,8 +23,10 @@ trange=pui0.trange
 ;----------MAG----------
 get_data,'mvn_B_1sec',data=magdata; magnetic field vector, payload coordinates (nT)
 if ~keyword_set(magdata) then begin
-  dprint,'No MAG data available, using default B=[0,3,0] nT'
-  pui.data.mag.mso=1e-9*[0,3,0] ;magnetic field (T)
+;  dprint,'No MAG data available, using default B=[0,3,0] nT'
+;  pui.data.mag.mso=1e-9*[0,3,0] ;magnetic field (T)
+  dprint,'No MAG data available, using !values.f_nan'
+  pui.data.mag.mso=[!values.f_nan,!values.f_nan,!values.f_nan] ;magnetic field (T)
   centertime=dgen(pui0.nt,range=timerange(trange))
   pui.centertime=centertime
 endif else begin
@@ -38,9 +40,12 @@ endelse
 
 ;----------SWIA----------
 if ~keyword_set(swim) then begin
-  dprint,'No SWIA data available, using default values: Usw = 500 km/s, Nsw = 2 cm-3'
-  pui.data.swi.swim.velocity_mso=[-500,0,0] ;solar wind velocity (km/s)
-  pui.data.swi.swim.density=2. ;solar wind density (cm-3)
+;  dprint,'No SWIA data available, using default values: Usw = 500 km/s, Nsw = 2 cm-3'
+;  pui.data.swi.swim.velocity_mso=[-500,0,0] ;solar wind velocity (km/s)
+;  pui.data.swi.swim.density=2. ;solar wind density (cm-3)
+  dprint,'No SWIA data available, using !values.f_nan'
+  pui.data.swi.swim.velocity_mso=[!values.f_nan,!values.f_nan,!values.f_nan] ;solar wind velocity (km/s)
+  pui.data.swi.swim.density=!values.f_nan ;solar wind density (cm-3)
 endif else begin
   pui.data.swi.swim=average_hist(swim,swim.time_unix+2.,binsize=binsize,range=trange,xbins=centertime); swia moments
   pui.data.swi.swis=average_hist(swis,swis.time_unix+2.,binsize=binsize,range=trange,xbins=centertime); swia spectra
@@ -176,9 +181,13 @@ if keyword_set(fismdata) then begin
   if (centertime[0] gt fismtime[0]-6000.) and (centertime[-1] lt fismtime[-1]+6000.) then $ ;only if centertime edges within 100 minutes of fismdata edges,
     pui.data.euv.l3=transpose(interp(fismdata.y,fismdata.x,centertime)) ;otherwise, interpolation will give unreasonable results
 endif
+
+;----------SPICE check----------
+kinfo = spice_kernel_info(use_cache=1)
+if keyword_set(kinfo) then begin
+
 ;----------Boundaries----------
 ;get_data,'wind',data=wind ;s/c altitude when in the solar wind (km)
-;pui.model.swalt=average_hist2(wind.y,wind.x,binsize=binsize,trange=trange,centertime=centertime)
 mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw,/conservative
 ;pui.data.swalt=alt_sw ;s/c altitude when in the solar wind (km)
 ;----------Positions----------
@@ -197,6 +206,7 @@ pui.data.sep[1].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP2','MSO',check
 ;swizld=transpose(spice_vector_rotate(zdir,centertime,'MAVEN_SWIA','MSO',check_objects='MAVEN_SPACECRAFT')); SWIA-Z look direction
 pui.data.sta.fov.x=spice_vector_rotate(xdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT']); STATIC-X look direction
 pui.data.sta.fov.z=spice_vector_rotate(zdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT']); STATIC-Z look direction
+endif
 
 tplot_options,'no_interp',1
 

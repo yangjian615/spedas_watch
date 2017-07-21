@@ -84,9 +84,9 @@ swi1d=replicate({eflux:0.},pui0.swieb)
 sta1d=replicate({eflux:0.},pui0.staeb)
 swi3d=byte(0)
 sta3d=byte(0)
-if keyword_set(do3d) then swi3d=replicate({eflux:0.,rv:rv},[pui0.swieb,pui0.swina,pui0.swine])
-if keyword_set(do3d) then sta3d=replicate({eflux:0.,rv:rv},[pui0.sd1eb,pui0.swina,pui0.swine])
-sep={incident_rate:replicate(fnan,pui0.sormd),model_rate:replicate(fnan,pui0.sopeb),rv:rv}
+if keyword_set(do3d) then swi3d=replicate({eflux:0.,qf:fnan,rv:rv},[pui0.swieb,pui0.swina,pui0.swine])
+if keyword_set(do3d) then sta3d=replicate({eflux:0.,qf:fnan,rv:rv},[pui0.sd1eb,pui0.swina,pui0.swine])
+sep={incident_rate:replicate(fnan,pui0.sormd),model_rate:replicate(fnan,pui0.sopeb),rv:rv,qf:fnan}
 sep=replicate(sep,2) ;2 SEP's
 toteflux=replicate(fnan,pui0.toteb)
 fluxes={sep:sep,swi1d:swi1d,swi3d:swi3d,sta1d:sta1d,sta3d:sta3d,toteflux:toteflux}
@@ -96,7 +96,7 @@ model={ifreq:ifreq,rv:replicate(fnan,[6,np]),fluxes:fluxes,params:params}
 model=replicate(model,ns)
 
 ;*********Data to Model Ratio**********
-d2m=replicate({sep:replicate(fnan,2),swi:xyz,sta:xyz},ns) ;here xyz is [mean,stdev,nsample] of different energy/anode/elevations
+d2m=replicate({sep:xyz,swi:xyz,sta:xyz},ns) ;here xyz is tot[model,data,cme] for sep, and [mean,stdev,nsample] of different energy/anode/elevations for swi and sta
 
 pui={data:data,model:model,d2m:d2m,centertime:0d}
 pui=replicate(pui,nt) ;model-data array of structures

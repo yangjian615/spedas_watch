@@ -42,6 +42,7 @@ if np lt 2 then begin
 endif
 
 trange=time_double(trange)
+binsize=float(binsize)
 nt=1+floor((trange[1]-binsize/2.-trange[0])/binsize) ;number of time steps
 mvn_pui_aos,nt=nt,np=np,ns=ns,binsize=binsize,trange=trange,do3d=do3d ;initializes the array of structures for time series (pui) and defines intrument constants
 mvn_pui_data_res ;change data resolution and load instrument pointings and put them in arrays of structures

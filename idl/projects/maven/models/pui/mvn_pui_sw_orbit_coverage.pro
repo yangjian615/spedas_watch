@@ -19,11 +19,11 @@ rad=sqrt(total(pos^2,1)) ;orbit radius (km)
 alt=rad-rmars ;orbit altitude (km)
 posr=sqrt(posy^2+posz^2) ;cylindrical radial distance (km)
 
-xmin=-2.8 ;max maven radial distance (Rm)
+xmin=-2.8 ;minimum x set to max maven radial distance (Rm)
 nose=1.7 ;nose of the mars bow shock (Rm)
 if keyword_set(conservative) then begin; pretty conservative bow shock
-  xmin=1.1 ;stay only upstream of the disc of Mars to exclude plume pickup ions
-  nose=2.1 ;nose of mars bow shock will almost always stay below this point
+  xmin=1.4 ;stay only upstream of the disc of Mars (exobase) to exclude plume pickup ions
+  nose=2.0 ;nose of mars bow shock will almost always stay below this point
 endif
 ind=where((posx/rmars gt xmin) and (posx/rmars+.24*(posr/rmars)^2 gt nose),/null,count) ;staying outside the bow shock
 

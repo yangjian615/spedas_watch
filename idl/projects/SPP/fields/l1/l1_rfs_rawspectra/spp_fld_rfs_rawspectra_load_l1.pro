@@ -2,8 +2,8 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
 
   if not keyword_set(prefix) then prefix = 'spp_fld_rfs_rawspectra_'
 
-  file = '/Users/pulupa/Desktop/spp_fld_make_cdf/20170713_rfs_rawspectra_test/' + $
-    'spp_fld_l1_rfs_rawspectra_20170706_210000_20170707_000000_v00.cdf'
+  ;file = '/Users/pulupa/Desktop/spp_fld_make_cdf/20170713_rfs_rawspectra_test/' + $
+  ;  'spp_fld_l1_rfs_rawspectra_20170706_210000_20170707_000000_v00.cdf'
 
   if typename(file) EQ 'UNDEFINED' then begin
 
@@ -221,6 +221,12 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
 
   endforeach
 
-  tplot, 'spp_fld_rfs_rawspectra_?fr_ch?_src?_pow'
+  options, 'spp_fld_rfs_rawspectra_ch0', 'ytitle', 'ch0'
+  options, 'spp_fld_rfs_rawspectra_ch1', 'ytitle', 'ch1'
+  options, 'spp_fld_rfs_rawspectra_ch?', 'yminor', 1
+  options, 'spp_fld_rfs_rawspectra_ch?', 'panel_size', 0.25
+  options, 'spp_fld_rfs_rawspectra_ch?', 'ynozero', 1
+
+  ;tplot, 'spp_fld_rfs_rawspectra_?fr_ch?_src?_pow'
 
 end

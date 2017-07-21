@@ -52,20 +52,23 @@ if keyword_set(trajplot) then begin
   sep2phi=sep1phi-90.
   ke=average(pui2[*,tsteps].ke,2,/nan)/1e3 ;pickup O+ energy (keV)
   kescaled=bytscl(ke,min=0.,max=100.)
+
+  p=getwindows('septraj')
+  if keyword_set(p) then p.setcurrent else p=window(name='septraj')
+  p.erase
   ;SEP1F
-  p=plot(edges,layout=[2,1,1],title='SEP1 FOV',xtitle='xz (ref) angle',ytitle='xy (cross) angle',xrange=[-shoa,shoa],yrange=[-shoa,shoa],/aspect_ratio)
+  p=plot(edges,layout=[2,1,1],title='SEP1F FOV',xtitle='xz (ref) angle',ytitle='xy (cross) angle',xrange=[-shoa,shoa],yrange=[-shoa,shoa],/aspect_ratio,/current)
   p=colorbar(target=p,rgb=33,range=[0,100],title='Pickup O+ Energy (keV)',/orient)
   p=plot(x,y,/o)
   p=scatterplot(/o,sep1phi,septhet,rgb=33,magnitude=kescaled)
   ;SEP2F
-  p=plot(edges,layout=[2,1,2],title='SEP2 FOV',xtitle='xz (ref) angle',ytitle='xy (cross) angle',xrange=[-shoa,shoa],yrange=[-shoa,shoa],/aspect_ratio,/current)
+  p=plot(edges,layout=[2,1,2],title='SEP2F FOV',xtitle='xz (ref) angle',ytitle='xy (cross) angle',xrange=[-shoa,shoa],yrange=[-shoa,shoa],/aspect_ratio,/current)
   p=plot(x,y,/o)
   p=scatterplot(/o,sep2phi,septhet,rgb=33,magnitude=kescaled)
 
 ;  stop
   return,0
 endif
-
 
 return,sdea
 

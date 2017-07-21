@@ -13,7 +13,11 @@
 ;                     and V0 sweeps, energy/angle sweeps, energy resolution (dE/E)
 ;                     and geometric factor vs. energy.
 ;
+;       TPLOT:        Create tplot variables.
+;
 ;       DOPLOT:       Plot Va, Vd, V0, E, dE/E, X, TH, and GFW for one 2-sec sweep.
+;
+;       TSTART:       Arbitrary start time for DOPLOT.
 ;
 ;       PROP:         Print the table properties: checksum, energy and angle ranges.
 ;
@@ -80,8 +84,8 @@
 ;                     PFDPU EEPROM dump.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:03:00 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21869 $
+; $LastChangedDate: 2017-07-20 10:04:35 -0700 (Thu, 20 Jul 2017) $
+; $LastChangedRevision: 23677 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sweep.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2014-01-03
@@ -89,7 +93,8 @@
 ;-
 pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xmax, $
                    V0scale=V0scale, Vrange=Vrange, Erange=Erange, old_def=old_def, $
-                   chksum=chksum, V0tweak=V0tweak, dumpfile=dumpfile
+                   chksum=chksum, V0tweak=V0tweak, dumpfile=dumpfile, tstart=tstart, $
+                   tplot=tplot
 
   @mvn_swe_com
 
@@ -98,6 +103,8 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
   if (size(chksum,/type) ne 0) then tabnum = mvn_swe_tabnum(chksum)
   if keyword_set(old_def) then old_def = 1 else old_def = 0
   if not keyword_set(V0tweak) then V0tweak = {gain:1.00, offset:0.}
+  if not keyword_set(tstart) then tstart = 0D else tstart = (time_double(tstart))[0]
+  doplot = keyword_set(doplot)
 
   Ka = swe_Ka   ; analyzer constant
 
@@ -389,9 +396,9 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
 
 ; Generate a time series
 
-  if keyword_set(doplot) then begin
+  if keyword_set(tplot) then begin
     dt = 1.95D/double(nbins*nsteps-1)
-    t = dt*dindgen(nbins*nsteps)
+    t = tstart + dt*dindgen(nbins*nsteps)
 
     store_data,'Va',data={x:t, y:(Va-V0)}
     options,'Va','psym',10
@@ -423,9 +430,11 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
     options,'GFW','psym',10
     ylim,'GFW',0,1.1,0
 
-    timefit,[0D,2D]
-    pans = ['Va','Vd1','Vd2','V0','X','theta','E','dE','GFW']
-    tplot,pans
+    if (doplot) then begin
+      timefit,tstart+[0D,2D]
+      pans = ['Va','Vd1','Vd2','V0','X','theta','E','dE','GFW']
+      tplot,pans
+    endif
   endif
 
 ; Calculate energy sampling
@@ -456,7 +465,7 @@ pro mvn_swe_sweep, result=dat, prop=prop, doplot=doplot, tabnum=tabnum, Xmax=Xma
     print,comment
   endif
 
-  if keyword_set(doplot) then begin
+  if (doplot) then begin
     twin = !d.window
     window,/free
 

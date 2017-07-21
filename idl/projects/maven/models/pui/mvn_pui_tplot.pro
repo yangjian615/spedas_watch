@@ -12,7 +12,8 @@
 ;   tohban: plots Tohban-related data
 ;   savetplot: saves the tplots as png files
 
-pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,datimage=datimage,modimage=modimage,d2mimage=d2mimage,tohban=tohban,savetplot=savetplot
+pro mvn_pui_tplot,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,$
+  datimage=datimage,modimage=modimage,d2mimage=d2mimage,tohban=tohban,savetplot=savetplot,denprof=denprof,d2mqf=d2mqf
 
   @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -71,15 +72,21 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
     for i=0,1 do begin ;loop over 2 seps
       sepm=pui.model[1].fluxes.sep[i].model_rate
       sepd=pui.data.sep[i].rate_bo
-      sepmtot=total(sepm[2:16,*],1)
-      sepdtot=total(sepd[2:16,*],1)
-      sepmtot[where(sepmtot lt 1.,/null)]=0. ;get rid of too low count rate
+      sepmtot=total(sepm[2:16,*],1) ;sep model tot 10<E<200 keV
+      sepdtot=total(sepd[2:16,*],1) ;sep data tot 10<E<200 keV
+      sepdcme=total(sepd[16:22,*],1) ;sep high energy data tot (200<E<1000 keV: background due to cme, cir, sir, etc.)
+;      sepmtot[where(sepmtot lt 100./pui.data.sep[i].att^7.,/null)]=0. ;get rid of too low model count rate
+;      sepdtot[where(sepdcme gt 100./pui.data.sep[i].att^7.,/null)]=0. ;get rid of too high data background count rate
       sepd2m=sepdtot/sepmtot
-      pui.d2m[1].sep[i]=sepd2m
+      pui.d2m[i].sep[0]=sepmtot
+      pui.d2m[i].sep[1]=sepdtot
+      pui.d2m[i].sep[2]=sepdcme
       sepr=pui.model[1].fluxes.sep[i].rv[0:2]
       sepv=pui.model[1].fluxes.sep[i].rv[3:5]
-      store_data,'mvn_model_puo_sep'+strtrim(i+1,2),data={x:centertime,y:transpose(pui.model[1].fluxes.sep[i].model_rate),v:pui1.sepet[i].sepbo},limits={spec:1,ylog:1,zlog:1,yrange:[10,1e3],zrange:[.1,1e4],ztitle:'counts/s',ztickunits:'scientific',ytickunits:'scientific'}
+      store_data,'mvn_model_puo_sep'+strtrim(i+1,2),data={x:centertime,y:transpose(sepm),v:pui1.sepet[i].sepbo},limits={spec:1,ylog:1,zlog:1,yrange:[10,1e3],zrange:[.1,1e4],ztitle:'counts/s',ztickunits:'scientific',ytickunits:'scientific'}
       store_data,'mvn_d2m_puo_sep'+strtrim(i+1,2),data={x:centertime,y:[[sepd2m],[onesnt]]},limits={yrange:[1e-2,1e2],ylog:1,colors:'rg',ytickunits:'scientific'}
+      store_data,'mvn_tot_puo_sep'+strtrim(i+1,2),data={x:centertime,y:[[sepmtot],[sepdtot],[sepdcme],[100.*onesnt]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
+      store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_Quality_Flag',data={x:centertime,y:pui.model[1].fluxes.sep[i].qf},limits={yrange:[-.1,1.2],ystyle:1}
       store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_source_MSO_(Rm)',data={x:centertime,y:[[transpose(sepr)],[sqrt(total(sepr^2,1))]]/rmars},limits={labels:['x','y','z','r'],colors:'bgrk',labflag:1}
       store_data,'mvn_model_puo_sep'+strtrim(i+1,2)+'_MSO_(km/s)',data={x:centertime,y:[[transpose(sepv)],[sqrt(total(sepv^2,1))]]/1e3},limits={labels:['x','y','z','v'],colors:'bgrk',labflag:1}
       store_data,'mvn_model_puh_incident_sep'+strtrim(i+1,2),data={x:centertime,y:transpose(pui.model[0].fluxes.sep[i].incident_rate)},limits={spec:1,zlog:1,yrange:[0,20],zrange:[1,1e4]}
@@ -111,7 +118,7 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
 
   endif
 
-  if pui0.do3d then mvn_pui_tplot_3d,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,datimage=datimage,modimage=modimage,d2mimage=d2mimage
+  if pui0.do3d then mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,datimage=datimage,modimage=modimage,d2mimage=d2mimage,denprof=denprof,d2mqf=d2mqf
 
   if keyword_set(tplot) then begin
     datestr=strmid(time_string(pui0.trange[0]),0,10)
@@ -122,7 +129,7 @@ pro mvn_pui_tplot,store=store,tplot=tplot,swia3d=swia3d,stah3d=stah3d,stao3d=sta
     tplot,window=20,'mvn_mag_Btot_(nT) Sin(thetaUB) E_Motional_(V/km) Pickup_* Ionization_Frequencies_(s-1)'
     if keyword_set(savetplot) then makepng,datestr+'_pickup_params'
     wi,30 ;tplot sep-related stuff
-    tplot,window=30,'mvn_model_pu*_incident_sep1 mvn_model_puo_sep1_source_MSO_(Rm) mvn_model_puo_sep1_MSO_(km/s) mvn_model_pu*_incident_sep2 mvn_model_puo_sep2_source_MSO_(Rm) mvn_model_puo_sep2_MSO_(km/s) O+_Max_Energy_(keV) mvn_data_redures_sep1 mvn_model_puo_sep1 mvn_d2m_puo_sep1 mvn_SEPS_svy_ATT mvn_data_redures_sep2 mvn_model_puo_sep2 mvn_d2m_puo_sep2'
+    tplot,window=30,'mvn_model_pu*_incident_sep1 mvn_model_puo_sep1_source_MSO_(Rm) mvn_model_puo_sep1_MSO_(km/s) mvn_data_redures_sep1 mvn_model_puo_sep1 mvn_d2m_puo_sep1 mvn_tot_puo_sep1 mvn_model_puo_sep1_Quality_Flag O+_Max_Energy_(keV) mvn_SEPS_svy_ATT mvn_model_pu*_incident_sep2 mvn_model_puo_sep2_source_MSO_(Rm) mvn_model_puo_sep2_MSO_(km/s) mvn_data_redures_sep2 mvn_model_puo_sep2 mvn_d2m_puo_sep2 mvn_model_puo_sep2_Quality_Flag mvn_tot_puo_sep2'
     if keyword_set(savetplot) then makepng,datestr+'_sep'
     wi,31 ;tplot swia/static related stuff
     tplot,window=31,'mvn_model_pu?_tot mvn_alt_sw_(km) mvn_redures_swia mvn_model_swia_O mvn_d2m_ratio_swia_O mvn_model_swia_H mvn_d2m_ratio_swia_H mvn_redures_HImass_sta_c0 mvn_model_O_sta_c0 mvn_d2m_ratio_stat_O mvn_redures_LOmass_sta_c0 mvn_model_H_sta_c0 mvn_d2m_ratio_stat_H'

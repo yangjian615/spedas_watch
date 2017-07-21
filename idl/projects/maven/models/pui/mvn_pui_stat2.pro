@@ -4,29 +4,39 @@
 pro mvn_pui_stat2
 
 if 0 then begin ;load all data
-  restore,'C:\Users\rahmati\idl\idlsave_all5.dat' ;restores stat,binsize,np
+  restore,'C:\Users\rahmati\idl\idlsave_all6.dat' ;restores stat,binsize,np
   stat2=reform(stat,size(stat,/n_elements)) ;making stat 1d
   stat3=stat2[where(stat2.centertime gt 0.,/null)] ;where data is available
   if 1 then begin ;choose solar wind
     mvn_pui_sw_orbit_coverage,times=stat3.centertime,alt_sw=alt_sw,conservative=1,spice=1
     stat4=stat3[where(finite(alt_sw),/null,count1)] ;only solar wind, pretty conservative to keep bad stuff out
-    save,stat4,binsize,np,filename='C:\Users\rahmati\idl\idlsave_sw5.dat'
+    save,stat4,binsize,np,filename='C:\Users\rahmati\idl\idlsave_sw6.dat'
   endif else stat4=stat3
-endif else restore,'C:\Users\rahmati\idl\idlsave_sw5.dat' ;restores stat4,binsize,np
+endif else restore,'C:\Users\rahmati\idl\idlsave_sw6.dat' ;restores stat4,binsize,np
 ;stop
 
 if 1 then begin ;getting rid of unfavorable upstream parameters
   usw=sqrt(total(stat4.vsw^2,1)) ;solar wind speed (km/s)
   mag=sqrt(total(stat4.mag^2,1)) ;magnetic field (T)
   costub=total(stat4.vsw*stat4.mag,1)/(usw*mag) ;cos(thetaUB)
+  tub=!radeg*acos(costub) ;thetaUB 0<tub<180
   lowusw=usw lt 500. ;low usw
   lowmag=mag lt 1e-9 ;low mag (high error in B)
-  lowtub=abs(costub) gt .75 ;sin2(thetaUB)<.25 or thetaUB<30deg
+  lowtub=abs(costub) gt .9 ;thetaUB < 26deg
   stat4[where(lowusw or lowmag or lowtub,/null)].d2m.sep=!values.f_nan ;more reliable SEP
   stat4[where(lowmag or lowtub,/null)].d2m.swi[0]=!values.f_nan
   stat4[where(lowmag or lowtub,/null)].d2m.sta[0]=!values.f_nan
+  if 0 then begin ;plot upstream parameter histogram distributions
+    nsw_hist=histogram(10.*stat4.nsw)
+    usw_hist=histogram(usw)
+    mag_hist=histogram(1e10*mag)
+    tub_hist=histogram(tub)
+    p=plot(nsw_hist,xtitle='10*Nsw (cm-3)',/xlog)
+    p=plot(usw_hist,xtitle='Usw (km/s)')
+    p=plot(mag_hist,xtitle='10*MAG (nT)',/xlog)
+    p=plot(tub_hist,xtitle='thetaUB (degrees)')
+  endif
 endif
-;stop
 
 if 1 then begin ;orbit averaging
   count2=n_elements(stat4) ;should be equal to count1 above
@@ -88,7 +98,7 @@ if 0 then begin ;arbitrary averaging of orbit averages
   stat5.centertime=xbins
 endif
 
-if 1 then begin ;everything
+if 0 then begin ;everything
   stat5=stat4
   stat5.mag[0]=sqrt(total(stat4.mag^2,1))
   stat5.vsw[0]=sqrt(total(stat4.vsw^2,1))
@@ -130,20 +140,26 @@ endif
 ;p=plot(stat5.mag[0],stat5.vsw[0],'.',/xlog) ;imf vs vsw (no correlation)
 ;p=plot(stat5.mag[0],stat5.nsw,'.',/xlog,/ylog) ;mag vs nsw (highly correlated)
 ;p=plot(stat5.vsw[0],stat5.nsw,'.',/ylog) ;vsw vs nsw (correlated)
-;p=plot(stat5.ifreq[0].cx,stat5.ifreq[0].pi,'.',/xlog,/ylog,xrange=[1e-9,1e-5],yrange=[1e-9,1e-6]) ;cx vs ei (correlated)
+;p=plot(stat5.ifreq[0].cx,stat5.ifreq[0].ei,'.b',/xlog,/ylog,xrange=[1e-8,1e-5],yrange=[1e-9,1e-6]) ;cx vs ei (correlated)
+;p=plot(stat5.ifreq[1].cx,stat5.ifreq[1].ei,'.r',/o)
+;p=plot(stat5.ifreq[0].cx,stat5.ifreq[0].pi,'.',/xlog,xrange=[1e-8,1e-5]) ;cx vs pi (not correlated)
+;p=plot(stat5.ifreq[0].pi,stat5.ifreq[1].pi,'.') ;pi H vs O (correlated)
 ;p=plot(stat5.d2m[0].sta[0],stat5.d2m[1].sta[0],'.',/xlog,/ylog)
-;p=plot(stat5.mag[0],stat5.d2m[1].sep[1],'.',/xlog,/ylog)
-;p=plot(stat5.ifreq[1].pi,stat5.d2m[1].swi[0],'.',xrange=[0,3e-7],yrange=[0,3],xtitle=['PI freq (s-1)'],ytitle=['SWIA O d2m ratio'])
+;p=plot(stat5.vsw[0],stat5.d2m[1].sep[1],'.',/xlog,/ylog)
+;p=plot(stat5.ifreq[1].pi,stat5.d2m[1].swi[0],'.b',xtitle=['PI freq (s-1)'],ytitle=['O d2m ratio'])
+;p=plot(stat5.ifreq[1].pi,stat5.d2m[1].sta[0],'.r',/o,title='SWIA: blue, STATIC: red')
 ;p=plot(1e9*stat5.mag[0],stat5.d2m[1].sta[0],'.',/xlog,/ylog,yrange=[.1,10],xtitle=['MAG (nT)'],ytitle=['STATIC O d2m ratio'])
 ;p=plot(stat5.vsw[0],stat5.d2m[1].sta[0],'.',/xlog,/ylog,yrange=[.1,10],xtitle=['Usw (km/s)'],ytitle=['STATIC O d2m ratio'])
 ;p=plot(stat5.nsw,stat5.d2m[1].sta[0],'.',/xlog,/ylog,yrange=[.1,10],xtitle=['Nsw (cm-3)'],ytitle=['STATIC O d2m ratio'])
 
-;mvn_pui_au_ls,times=ct,mars_au=mars_au,mars_ls=mars_ls
-;p=plot([0],/nodata,yrange=[1e25,1e27],/ylog,xtitle='$L_s$',ytitle='H escape rate ($s^{-1}$)')
 ;p=plot(/o,6e25*stat5.d2m[0].swi[0],'b')
 ;p=plot(/o,6e25*stat5.d2m[0].sta[0],'r')
 ;p=plot(/o,6e32*stat5.ifreq[0].cx,'g')
+
+;mvn_pui_au_ls,times=ct,mars_au=mars_au,mars_ls=mars_ls,spice=0
+;p=plot([0],/nodata,yrange=[1e25,1e27],/ylog,xtitle='$L_s$',ytitle='H escape rate ($s^{-1}$)')
 ;p=plot(/o,mars_ls,6e25*(stat5.d2m[0].sta[0]+stat5.d2m[0].swi[0])/2.,'g.')
+;p=scatterplot(/o,mars_ls,6e25*(stat5.d2m[0].sta[0]+stat5.d2m[0].swi[0])/2.,magnitude=ct,rgb=33)
 
 ;p=plot(ct,stat5.d2m[0].sta[0]/stat5.d2m[0].swi[0],'b',/ylog,yrange=[.1,10],/stairs)
 ;p=plot(ct,stat5.d2m[1].sta[0]/stat5.d2m[1].swi[0],'r',/o,/stairs)

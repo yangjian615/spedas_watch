@@ -6,6 +6,7 @@
 ;     species: neutral species name (string)
 ;         o: oxygen
 ;         h: hydrogen
+;         h2: H2
 ;         css: comet siding spring
 ;output: density at rtot in "cm-3"
 ;keyword plot_exoden ignores rtot and plots the radial density profile for the given species

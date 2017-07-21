@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-07-07 09:45:11 -0700 (Fri, 07 Jul 2017) $
-;  $LastChangedRevision: 23563 $
+;  $LastChangedBy: sppfields2 $
+;  $LastChangedDate: 2017-07-20 07:08:00 -0700 (Thu, 20 Jul 2017) $
+;  $LastChangedRevision: 23674 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -218,6 +218,8 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   if serr NE 0 then begin
 
     spp_fld_print_error_stack, serr, sid
+    err = tm_close(sid)
+
     return, 0
 
   end

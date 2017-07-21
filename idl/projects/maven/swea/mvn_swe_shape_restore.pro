@@ -21,9 +21,9 @@
 ;       PARNG:         Shape parameter calculated based on 30, 45, and 60 deg, 
 ;                      corresponding to PARNG=1,2,3. Default is PA=45
 ;       
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-07-20 10:20:02 -0700 (Thu, 20 Jul 2017) $
+; $LastChangedRevision: 23680 $
 ; $URL: svn+ssh:$
 ;
 ;CREATED BY:    Shaosui Xu  06-23-17

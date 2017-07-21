@@ -46,15 +46,26 @@ phistaxy=atan(cosvstay,cosvstax); stat phi angles (-pi to pi)
 thevswiz=!radeg*acos(cosvswiz) ;swia theta angles (0-180 degrees)
 thevstaz=!radeg*acos(cosvstaz) ;stat theta angles (0-180 degrees)
 
-binswixy=(floor(8. +8.*phiswixy/!pi)+7) mod 16 ;swia azimuth bin (22.5  to 360+22.5  deg -> 0 to 15)
-binstaxy=(floor(8.5+8.*phistaxy/!pi)+7) mod 16 ;stat azimuth bin (11.25 to 360+11.25 deg -> 0 to 15)
-binvswiz=2+floor(2.*rfov*(90.-thevswiz)/45.) ;swia elevation bin (+45 to -45 deg -> 0 to 3)
-binvstaz=2+floor(2.*rfov*(90.-thevstaz)/45.) ;stat elevation bin (+45 to -45 deg -> 0 to 3)
+phswixy=8. +8.*phiswixy/!pi
+phstaxy=8.5+8.*phistaxy/!pi
+thvswiz=2.*rfov*(90.-thevswiz)/45.
+thvstaz=2.*rfov*(90.-thevstaz)/45.
+binswixy=(floor(phswixy)+7) mod 16 ;swia azimuth bin (22.5  to 360+22.5  deg -> 0 to 15)
+binstaxy=(floor(phstaxy)+7) mod 16 ;stat azimuth bin (11.25 to 360+11.25 deg -> 0 to 15)
+binvswiz=2+floor(thvswiz) ;swia elevation bin (+45 to -45 deg -> 0 to 3)
+binvstaz=2+floor(thvstaz) ;stat elevation bin (+45 to -45 deg -> 0 to 3)
+
+disphixy=[phswixy,phstaxy]-floor([phswixy,phstaxy]) ;distance from edge of azimuth bin [0 to 1]
+disvthez=[thvswiz,thvstaz]-floor([thvswiz,thvstaz]) ;distance from edge of elevation bin [0 to 1]
+dsphixy=1.-abs(2.*disphixy-1.)
+dsvthez=1.-abs(2.*disvthez-1.)
+qfxyz=dsphixy*dsvthez ;angular quality flag
+
 binsepke=floor(ke); linear energy step binning (keV)
 bintotke=126-floor(alog(1e3*ke)/pui0.totdee); log energy step ln(eV) for all flux (edges: 328 keV to 14.9 eV with 10% resolution)
-binswike= 69-floor(alog(1e3*ke)/pui0.swidee); log energy step ln(eV) for SWIA (post Nov 2014)
+binswike= 69-floor(alog(1e3*ke)/pui0.swidee); log energy step ln(eV) for SWIA (since Nov 27, 2014)
 binstake= 63-floor(alog(1e3*ke)/pui0.stadee); log energy step ln(eV) for STATIC (only pickup mode)
-binsepke[where(binsepke gt pui0.sormd-1,/null)]=pui0.sormd-1 ;if bins are outside the range, put them at the last energy bin
+binsepke[where(binsepke gt pui0.sormd-1,/null)]=pui0.sormd-1 ;if bins are outside the range, put them at the last energy bin (lowest energy)
 bintotke[where((bintotke lt 0) or (bintotke gt pui0.toteb-1),/null)]=pui0.toteb-1 ;(lowest energy)
 binswike[where((binswike lt 0) or (binswike gt pui0.swieb-1) or (binswixy lt 0) or (binvswiz lt 0) or (binvswiz gt 3),/null)]=pui0.swieb-1
 binstake[where((binstake lt 0) or (binstake gt pui0.staeb-1) or (binstaxy lt 0) or (binvstaz lt 0) or (binvstaz gt 3),/null)]=pui0.staeb-1
@@ -71,7 +82,10 @@ sdea2=mvn_pui_sep_angular_response(cosvsep2,cosvsep1,cosvswiy)
 secof=(ke-40.)/60. ;sep energy response for oxygen, 0 below 40 keV, linearly reaching 1 at 100 keV
 secof[where(ke lt 40.,/null)]=0.
 secof[where(ke gt 100.,/null)]=1.
-sdeaecof=transpose(rebin([[[sdea1*secof]],[[sdea2*secof]]],[np,nt,2,6]),[3,0,1,2])
+sepqf=[[[sdea1*secof]],[[sdea2*secof]]] ;sep quality flag per particle, dim=[np,nt,2]
+sqf=max(sepqf,dimension=1,/nan) ;sep quality flag, dim=[nt,2]
+pui.model[msub].fluxes.sep.qf=transpose(sqf)
+sdeaecof=transpose(rebin(sepqf,[np,nt,2,6]),[3,0,1,2]) ;adding a 6-element dimension for rv, dim=[6,np,nt,2]
 
 ;sep detected particle sources
 for i=0,1 do begin ;loop over sep's
@@ -103,8 +117,8 @@ pui.model[msub].fluxes.swi1d.eflux=kefswi/pui0.swidee/pui0.swiatsa; differential
 pui.model[msub].fluxes.sta1d.eflux=kefsta/pui0.stadee/pui0.swiatsa; differential energy flux (eV/[cm2 s sr eV])
 
 if pui0.do3d then begin
-  swi3d=replicate({ef:0.,nn:0.,rv:replicate(0.,6)},pui0.swieb,pui0.swina,pui0.swine,nt) ;swia 3d eflux binning
-  sta3d=replicate({ef:0.,nn:0.,rv:replicate(0.,6)},pui0.sd1eb,pui0.swina,pui0.swine,nt) ;swia 3d eflux binning
+  swi3d=replicate({ef:0.,nn:0.,qf:0.,rv:replicate(0.,6)},pui0.swieb,pui0.swina,pui0.swine,nt) ;swia 3d eflux binning
+  sta3d=replicate({ef:0.,nn:0.,qf:0.,rv:replicate(0.,6)},pui0.sd1eb,pui0.swina,pui0.swine,nt) ;stat 3d eflux binning
 
   d1energy=pui.data.sta.d1.energy ;static d1 energy table
   pui1.d1dee=mean(-1.+(d1energy[0:-2,*]/d1energy[1:-1,*]),dim=1,/nan) ;static d1 dE/E
@@ -128,20 +142,29 @@ if pui0.do3d then begin
   binvstaz[where((binvstaz lt 0) or (binvstaz gt 3),/null)]=0 ;if outside stat's elevation fov
 
   for ip=1,np-1 do begin ;loop over particles
-    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].ef+=dphi[ip,*]*rfov[ip,*] ;energy flux
-    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].ef+=dphi[ip,*]*rfov[ip,*]
+    dphirfov=dphi[ip,*]*rfov[ip,*]
+    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].ef+=dphirfov ;energy flux
+    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].ef+=dphirfov
     swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].nn+=1. ;number of particles in this bin
     sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].nn+=1.
-    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;swia 3d particle position and velocity binning
-    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;stat 3d particle position and velocity binning
+    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].qf+=qfxyz[ip,*] ;quality flag
+    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].qf+=qfxyz[np+ip,*]
+;    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;swia 3d particle position and velocity binning
+;    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip] ;stat 3d particle position and velocity binning
+    swi3d[binswike[ip,*],binswixy[ip,*],binvswiz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip]*(replicate(1.,6)#dphirfov) ;binning weighed based on efluxes
+    sta3d[binstake[ip,*],binstaxy[ip,*],binvstaz[ip,*],indgent].rv+=pui.model[msub].rv[*,ip]*(replicate(1.,6)#dphirfov)
   endfor
 
   swi3d[where(swi3d.nn gt 0. and swi3d.nn lt 3.*pui0.ngps[msub],/null)].ef=!values.f_nan ;less than 3 counts in each gyro-period means bad statistics!
   sta3d[where(sta3d.nn gt 0. and sta3d.nn lt 3.*pui0.ngps[msub],/null)].ef=!values.f_nan
   pui.model[msub].fluxes.swi3d.eflux=swi3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/pui0.swidee; differential energy flux (eV/[cm2 s sr eV])
   pui.model[msub].fluxes.sta3d.eflux=sta3d.ef/pui0.swiatsa*pui0.swina*pui0.swine/transpose(rebin(pui1.d1dee,[nt,pui0.sd1eb,pui0.swina,pui0.swine]),[1,2,3,0])
-  pui.model[msub].fluxes.swi3d.rv=swi3d.rv/transpose(rebin(swi3d.nn,[pui0.swieb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
-  pui.model[msub].fluxes.sta3d.rv=sta3d.rv/transpose(rebin(sta3d.nn,[pui0.sd1eb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
+  pui.model[msub].fluxes.swi3d.qf=swi3d.qf/swi3d.nn ;average quality flag
+  pui.model[msub].fluxes.sta3d.qf=sta3d.qf/sta3d.nn
+;  pui.model[msub].fluxes.swi3d.rv=swi3d.rv/transpose(rebin(swi3d.nn,[pui0.swieb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
+;  pui.model[msub].fluxes.sta3d.rv=sta3d.rv/transpose(rebin(sta3d.nn,[pui0.sd1eb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
+  pui.model[msub].fluxes.swi3d.rv=swi3d.rv/transpose(rebin(swi3d.ef,[pui0.swieb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
+  pui.model[msub].fluxes.sta3d.rv=sta3d.rv/transpose(rebin(sta3d.ef,[pui0.sd1eb,pui0.swina,pui0.swine,nt,6]),[4,0,1,2,3])
 endif
 ;stop
 end

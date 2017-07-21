@@ -71,8 +71,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-10 11:40:32 -0700 (Mon, 10 Jul 2017) $
-; $LastChangedRevision: 23567 $
+; $LastChangedDate: 2017-07-20 10:06:48 -0700 (Thu, 20 Jul 2017) $
+; $LastChangedRevision: 23679 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -183,9 +183,16 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
   shape_pan = ''
   if keyword_set(shape) then begin
-    mvn_swe_shape_par_pad_l2, spec=45, /pot, tsmo=16
-    shape_pan = 'Shape_PAD'
-    options, shape_pan, 'ytitle', 'Elec Shape'
+    mvn_swe_shape_par_pad_restore
+    get_data,'Shape_PAD',index=i
+    if (i eq 0) then begin
+      mvn_swe_shape_par_pad_l2, spec=45, /pot, tsmo=16
+      get_data,'Shape_PAD',index=i
+    endif
+    if (i gt 0) then begin
+      shape_pan = 'Shape_PAD'
+      options, shape_pan, 'ytitle', 'Elec Shape'
+    endif
   endif
 
 ; SEP electron and ion data - sum all look directions for both units
