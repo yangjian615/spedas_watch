@@ -55,12 +55,12 @@
 ;       Yuki Harada on 2016-02-29
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-01-26 16:07:45 -0800 (Thu, 26 Jan 2017) $
-; $LastChangedRevision: 22677 $
+; $LastChangedDate: 2017-07-21 10:38:33 -0700 (Fri, 21 Jul 2017) $
+; $LastChangedRevision: 23688 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
-pro mvn_swe_lpw_scpot, trange=trange, norbwin=norbwin, minndata=minndata, maxgap=maxgap, plot=plot, nol0load=nol0load, vrinfl=vrinfl, ntsmo=ntsmo, noangcorr=noangcorr, novinfl=novinfl, icur_thld=icur_thld, swel0=swel0, figdir=figdir, atrtname=atrtname, scatdir=scatdir, thld_out=thld_out
+pro mvn_swe_lpw_scpot, trange=trange, norbwin=norbwin, minndata=minndata, maxgap=maxgap, plot=plot, nol0load=nol0load, vrinfl=vrinfl, ntsmo=ntsmo, noangcorr=noangcorr, novinfl=novinfl, icur_thld=icur_thld, swel0=swel0, figdir=figdir, atrtname=atrtname, scatdir=scatdir, thld_out=thld_out, l2iv=l2iv
 
 
 if ~keyword_set(figdir) then begin
@@ -149,6 +149,7 @@ if ~keyword_set(nol0load) then begin
          store_data,tn,/del
       endif
    endfor
+   if keyword_set(l2iv) then mvn_lpw_load_l2,'lpiv',/notplot
 
    ;;; load SWEA data
    if keyword_set(swel0) then mvn_swe_load_l0, tr $
@@ -161,6 +162,7 @@ endif                           ;- nol0load
 ;;; get SWEA potentials and LPW IV curves
 get_data,'mvn_swe_sc_pot',data=dvswe,dtype=dvswetype
 get_data,'mvn_lpw_swp1_IV',data=div,dtype=divtype
+if keyword_set(l2iv) then get_data,'mvn_lpw_lp_iv_l2',data=div,dtype=divtype
 if dvswetype*divtype eq 0 then begin
    dprint,'No valid tplot variables for mvn_swe_sc_pot and/or mvn_lpw_swp1_IV'
    return

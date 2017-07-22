@@ -21,17 +21,22 @@
 ;
 ;       FULL:          Hold the structure of composited potentials and
 ;                      all other potential structures       
+;
+;       SUCCESS:       Set to 1 if valid potentials are found.
 ;       
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: svn+ssh:$
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-07-21 10:56:15 -0700 (Fri, 21 Jul 2017) $
+; $LastChangedRevision: 23690 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_scpot.pro $
 ;
 ;CREATED BY:    Shaosui Xu  06-23-17
 ;FILE: mvn_scpot
 ;-
 
-Pro mvn_scpot,trange,results=results,tplot=tplot,orbit=orbit,full=full
+Pro mvn_scpot, trange, results=results, tplot=tplot, orbit=orbit, full=full, $
+                       success=ok
+
+    ok = 0
 
     ;   Process keywords
     rootdir='maven/data/sci/swe/l3/scpot/YYYY/MM/'
@@ -94,6 +99,7 @@ Pro mvn_scpot,trange,results=results,tplot=tplot,orbit=orbit,full=full
                        pot_sta:pot_sta,pot_sweshdw:pot_sweshdw}
     results=scpot.pot_comp
     full=scpot
+    ok = 1
     
     if(keyword_set(tplot)) then begin
        ;tplot variable "scpot_comp"
