@@ -102,20 +102,14 @@
 ;                results are filled to SWEA common block as well. 
 ;                Right now, it requires keyword "NEGPOT" to be 1,
 ;                which is default. 
-
-;   RESTORE:     If set, no calculation will be done but only restore
-;                l3_scpot save files. Composited potentials will be put into
-;                structures. Two tplot variables will be created,
-;                "scpot_comp" contains the composited potentials and
-;                "scpot_all" includes all the available potentials 
 ;
 ;OUTPUTS:
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-07-20 13:37:20 -0700 (Thu, 20 Jul 2017) $
-; $LastChangedRevision: 23684 $
+; $LastChangedDate: 2017-07-24 10:17:56 -0700 (Mon, 24 Jul 2017) $
+; $LastChangedRevision: 23694 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -127,21 +121,12 @@ pro mvn_swe_sc_pot, potential=potential, erange=erange2, fudge=fudge, $
                     mask_sc=mask_sc, setval=setval, badval=badval, $
                     angcorr=angcorr, minflux=minflux2, $
                     negpot=negpot, sta_pot=sta_pot, lpw_pot=lpw_pot, $
-                    pot_in_shdw=pot_in_shdw, restore=restore
+                    pot_in_shdw=pot_in_shdw
 
   compile_opt idl2
   
   @mvn_swe_com
   common swe_pot_com, Espan, thresh, dEmax, minflux
-  
-  if (size(restore,/type) ne 0 then begin
-     mvn_scpot,result=res,/tplot
-     swe_sc_pot.potential=res.potential
-     swe_sc_pot.time=res.time
-     swe_sc_pot.indx=res.indx
-     mvn_swe_engy.potential=res.potential
-     return
-  endif
 
   if (size(Espan,/type) eq 0) then begin
     Espan = [3.,30.]
