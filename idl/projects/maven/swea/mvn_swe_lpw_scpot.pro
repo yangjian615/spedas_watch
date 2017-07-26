@@ -17,7 +17,7 @@
 ;       mvn_swe_lpw_scpot
 ; OUTPUT TPLOT VARIABLES:
 ;       mvn_swe_lpw_scpot :     default scpot data
-;                               (identical w/ mvn_swe_lpw_scpot_lin)
+;                               (currently identical w/ mvn_swe_lpw_scpot_lin)
 ;       mvn_swe_lpw_scpot_lin : spacecraft potentials derived from
 ;                               linear fitting of Vswe v. -Vinfl
 ;       mvn_swe_lpw_scpot_pow : (obsolete)
@@ -53,8 +53,8 @@
 ;       Major update on 2017-07-24 - incl. negative pot
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-07-24 16:19:53 -0700 (Mon, 24 Jul 2017) $
-; $LastChangedRevision: 23697 $
+; $LastChangedDate: 2017-07-25 11:52:28 -0700 (Tue, 25 Jul 2017) $
+; $LastChangedRevision: 23699 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
@@ -104,7 +104,8 @@ if ~keyword_set(nol0load) then begin
 
    if keyword_set(l2iv) then begin
       mvn_lpw_load_l2,'lpiv',/notplot
-      tplot_rename,'mvn_lpw_lp_iv_l2','mvn_lpw_swp1_IV'
+      get_data,'mvn_lpw_lp_iv_l2',data=d,dtype=dtype
+      if dtype ne 0 then store_data,'mvn_lpw_swp1_IV',data={x:d.x,y:d.y,v:d.v}
    endif else begin
    ;;; load LPW L0 data
       tf = ['mvn_lpw_swp1_IV','mvn_lpw_swp1_mode',atrtname] ;- wanted tplot variables
@@ -178,7 +179,7 @@ endif
 
 ;;; if plot, set up tplot options
 if keyword_set(plot) then begin
-   options,'swe_a4',zrange=[1.e5,1.e9],minzlog=1.e-30,yticklen=-.01
+   options,'swe_a4',zrange=[1.e5,1.e9],minzlog=1.e-30,yticklen=-.01,datagap=maxgap
    options,'mvn_swe_sc_pot',psym=3,constant=[3],yrange=[0,20]
    store_data,'swe_comb',data=['swe_a4','mvn_swe_sc_pot'], $
               dlim={yrange:[3,4627.5],ystyle:1}

@@ -58,7 +58,13 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
 
       n_total = n_elements(spec_data.y)
 
-      new_data_y = transpose(reform(reform(transpose(spec_data.y), n_total), $
+      ;spec_data_y = reform(transpose([[spec_data.y[*,1:*:2]],[spec_data.y[*,0:*:2]]],size(spec_data.y,/dim)))
+
+      spec_data_y = reform(transpose([[[spec_data.y[*,1:*:2]]],[[spec_data.y[*,0:*:2]]]],[0,2,1]), size(/dim,spec_data.y))
+
+      ;print, spec_data_y[0,0:3]
+
+      new_data_y = transpose(reform(reform(transpose(spec_data_y), n_total), $
         n_bins, n_total/n_bins))
 
       ; TODO: Make this more precise using TMlib time

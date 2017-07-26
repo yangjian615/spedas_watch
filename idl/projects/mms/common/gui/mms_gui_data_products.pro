@@ -12,8 +12,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-13 07:46:07 -0700 (Thu, 13 Jul 2017) $
-; $LastChangedRevision: 23600 $
+; $LastChangedDate: 2017-07-25 10:34:54 -0700 (Tue, 25 Jul 2017) $
+; $LastChangedRevision: 23698 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_data_products.pro $
 ;-
 
@@ -137,7 +137,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_energyspectr_par_fast', $
                                     '_des_energyspectr_anti_fast', $
                                     '_des_energyspectr_perp_fast', $
-                                    '_des_energyspectr_omni_avg', $
+                                    '_des_energyspectr_omni_fast', $
                                     '_des_pitchangdist_avg', $
                                     '_des_temptensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_des_temptensor_gse_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
@@ -182,7 +182,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_energyspectr_par_fast', $
                                     '_dis_energyspectr_anti_fast', $
                                     '_dis_energyspectr_perp_fast', $
-                                    '_dis_energyspectr_omni_avg', $
+                                    '_dis_energyspectr_omni_fast', $
                                     '_dis_temptensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_temptensor_gse_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_prestensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
@@ -228,7 +228,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_energyspectr_par_slow', $
                                     '_des_energyspectr_anti_slow', $
                                     '_des_energyspectr_perp_slow', $
-                                    '_des_energyspectr_omni_avg', $
+                                    '_des_energyspectr_omni_slow', $
                                     '_des_pitchangdist_avg', $
                                     '_des_temptensor_err_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_des_temptensor_gse_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
@@ -273,7 +273,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_energyspectr_par_slow', $
                                     '_dis_energyspectr_anti_slow', $
                                     '_dis_energyspectr_perp_slow', $
-                                    '_dis_energyspectr_omni_avg', $
+                                    '_dis_energyspectr_omni_slow', $
                                     '_dis_temptensor_err_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_temptensor_gse_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_prestensor_err_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
@@ -319,7 +319,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_energyspectr_par_brst', $
                                     '_des_energyspectr_anti_brst', $
                                     '_des_energyspectr_perp_brst', $
-                                    '_des_energyspectr_omni_avg', $
+                                    '_des_energyspectr_omni_brst', $
                                     '_des_pitchangdist_avg', $
                                     '_des_temptensor_err_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_des_temptensor_gse_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
@@ -364,7 +364,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_energyspectr_par_brst', $
                                     '_dis_energyspectr_anti_brst', $
                                     '_dis_energyspectr_perp_brst', $
-                                    '_dis_energyspectr_omni_avg', $
+                                    '_dis_energyspectr_omni_brst', $
                                     '_dis_pitchangdist_avg', $
                                     '_dis_temptensor_err_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_temptensor_gse_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
