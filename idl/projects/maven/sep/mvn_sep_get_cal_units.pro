@@ -1,7 +1,7 @@
 function mvn_sep_rebin_matrix,mapid,sens
 
-   n_p = 30
-   n_e = 16
+;   n_p = 30
+;   n_e = 16
    bmap = mvn_sep_get_bmap(mapid,sens)
 
      bins = bmap[ where(bmap.name eq 'A-O') ].bin
@@ -19,6 +19,13 @@ function mvn_sep_rebin_matrix,mapid,sens
      bins = bmap[ where(bmap.name eq 'B-F') ].bin
      rev_elec = fltarr(n_elements(bins),256 )
      for i=0,n_elements(bins)-1 do rev_elec[i,bins[i]] = 1.
+
+     if mapid eq 8 then begin
+       for_ion = for_ion[3:30,*]
+       rev_ion = rev_ion[3:30,*]
+       for_elec = for_elec[3:17,*]
+       rev_elec = rev_elec[3:17,*]
+     endif
      
      if mapid eq 9 then begin
        for_ion = for_ion[2:*,*]
@@ -222,7 +229,8 @@ str_additions = {   $
 
   for i = 0,n_elements(mapids)-1 do begin
      mapid = mapids[i]
-     if mapid ne 9 then continue
+;     if mapid ne 9 then continue
+     if (mapid ne 9) and (mapid ne 8) then continue ;now handles MAPID 8 (Flight 2/Cruise)
      wt = where(rawdat.mapid eq mapid,nt)
      if nt le 0 then continue  
  

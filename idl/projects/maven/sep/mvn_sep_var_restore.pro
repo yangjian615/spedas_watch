@@ -19,7 +19,13 @@ if ~keyword_set(files) then begin
   files = mvn_pfp_file_retrieve(pn,/daily,trange=trange,source=source,verbose=verbose,/valid_only,no_update=0,last_version=0)
 endif
 
+if ~keyword_set(files) then begin
+  dprint,'No SEP L1 files were found for the selected time range, returning...'
+  return
+endif
+
 if keyword_set(download_only) then return
+
 undefine,prereq_temp
 undefine,source_filenames
 

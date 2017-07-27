@@ -6,10 +6,10 @@ defmapname = 'SEP-A-O-alpha'
 defmapname = 'SEP-B-O-alpha'
 if ~keyword_set(mapname) && keyword_set(mapnum) && size(/type,mapnum) le 3 then begin
    case mapnum of
-   4:     mapname='ATLO'
-   6:     mapname='Flight1'
-   8:     mapname='Flight2'
-   9:     mapname='Flight3'
+   4:     mapname='ATLO'    ;used since launch (2014-11-18) until 2014-03-17/22:45 UTC
+   6:     mapname='Flight1' ;never used
+   8:     mapname='Flight2' ;used since 2014-03-17/22:45 UTC until MOI: 2014-09-22/19:40 UTC (S/C in hybernation since 2014-07-17 UTC until MOI)
+   9:     mapname='Flight3' ;used since 2014-09-22/19:40 UTC until present
    25:    mapname='SEP-A-O-alpha_low'
    24:    mapname='SEP-A-O-alpha'
    52:    mapname='SEP-A-F-alpha'

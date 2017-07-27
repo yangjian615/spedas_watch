@@ -103,7 +103,8 @@ end
 pro mvn_sep_makefile,init=init,trange=trange0
 
 if keyword_set(init) then begin
-  trange0 = [time_double('2014-9-20'), systime(1) ]
+;  trange0 = [time_double('2014-9-20'), systime(1) ]
+  trange0 = [time_double('2014-3-18'), systime(1) ] ;now can handle Flight2 energy map (MAPID=8)
   if init lt 0 then trange0 = systime(1) + [init,0 ]*24L*3600
 endif else trange0 = timerange(trange0)
 
@@ -129,7 +130,7 @@ for i=0L,nd-1 do begin
   prereq_files = sw_version.sw_time_stamp_file
   sw_info = file_info(prereq_files)
 
-  L0_files = mvn_pfp_file_retrieve(/l0,trange=tr)   ; should be scaler
+  L0_files = mvn_pfp_file_retrieve(/l0,trange=tr)   ; should be scalar
   
   if total(file_test(/regular,l0_files)) eq 0 then begin
     dprint,dlevel=2,'File not found: '+l0_files

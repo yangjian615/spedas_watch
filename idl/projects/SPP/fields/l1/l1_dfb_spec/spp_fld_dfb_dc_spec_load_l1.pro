@@ -13,7 +13,7 @@ pro spp_fld_dfb_dc_spec_load_l1, file, prefix = prefix
   endif
 
   spp_fld_dfb_spec_load_l1, file, prefix = prefix
-  
+
   dc_spec_names = tnames(prefix + '*')
 
   if dc_spec_names[0] NE '' then begin
@@ -22,8 +22,19 @@ pro spp_fld_dfb_dc_spec_load_l1, file, prefix = prefix
 
       dc_spec_name_i = strmid(dc_spec_names[i], strlen(prefix))
 
-      options, prefix + dc_spec_name_i, 'ytitle', 'SPP DFB!CDC SPEC' + $
-        string(spec_ind) + '!C' + strupcase(dc_spec_name_i)
+      if dc_spec_name_i EQ 'spec_converted' then begin
+
+        options, prefix + dc_spec_name_i, 'ytitle', 'SPP DFB!CDC SPEC' + $
+          string(spec_ind)
+          
+        options, prefix + dc_spec_name_i, 'ysubtitle', 'Freq [Hz]'
+
+      endif else begin
+
+        options, prefix + dc_spec_name_i, 'ytitle', 'SPP DFB!CDC SPEC' + $
+          string(spec_ind) + '!C' + strupcase(dc_spec_name_i)
+
+      endelse
 
     endfor
 

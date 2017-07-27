@@ -14,20 +14,30 @@ pro spp_fld_dfb_ac_spec_load_l1, file, prefix = prefix
 
   spp_fld_dfb_spec_load_l1, file, prefix = prefix
   
-  dc_spec_names = tnames(prefix + '*')
+  ac_spec_names = tnames(prefix + '*')
 
-  if dc_spec_names[0] NE '' then begin
+  if ac_spec_names[0] NE '' then begin
 
-    for i = 0, n_elements(dc_spec_names) - 1 do begin
+    for i = 0, n_elements(ac_spec_names) - 1 do begin
 
-      dc_spec_name_i = strmid(dc_spec_names[i], strlen(prefix))
+      ac_spec_name_i = strmid(ac_spec_names[i], strlen(prefix))
 
-      options, prefix + dc_spec_name_i, 'ytitle', 'SPP DFB!CAC SPEC' + $
-        string(spec_ind) + '!C' + strupcase(dc_spec_name_i)
+      if ac_spec_name_i EQ 'spec_converted' then begin
+
+        options, prefix + ac_spec_name_i, 'ytitle', 'SPP DFB!CAC SPEC' + $
+          string(spec_ind)
+          
+        options, prefix + ac_spec_name_i, 'ysubtitle', 'Freq [Hz]'
+
+      endif else begin
+
+        options, prefix + ac_spec_name_i, 'ytitle', 'SPP DFB!CAC SPEC' + $
+          string(spec_ind) + '!C' + strupcase(ac_spec_name_i)
+
+      endelse
 
     endfor
 
   endif
-
 
 end

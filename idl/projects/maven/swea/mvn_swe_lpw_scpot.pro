@@ -28,8 +28,8 @@
 ;                 (Def. 1e4)
 ;       maxgap: maximum time gap allowed for interpolation (Def. 257)
 ;       plot: if set, plot the time series and fitting
-;       nol0load: if set, use pre-existing input tplot variables:
-;                 'mvn_swe_sc_pot', 'mvn_lpw_swp1_IV'
+;       noload: if set, use pre-existing input tplot variables:
+;               'mvn_swe_sc_pot', 'mvn_lpw_swp1_IV'
 ;       vrinfl: voltage range for searching the inflection point
 ;               (Def. [-15,15])
 ;       ntsmo: time smooth width (Def. 3)
@@ -53,12 +53,12 @@
 ;       Major update on 2017-07-24 - incl. negative pot
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-07-25 11:52:28 -0700 (Tue, 25 Jul 2017) $
-; $LastChangedRevision: 23699 $
+; $LastChangedDate: 2017-07-26 13:36:34 -0700 (Wed, 26 Jul 2017) $
+; $LastChangedRevision: 23706 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
-pro mvn_swe_lpw_scpot, trange=trange, norbwin=norbwin, minndata=minndata, maxgap=maxgap, plot=plot, nol0load=nol0load, vrinfl=vrinfl, ntsmo=ntsmo, noangcorr=noangcorr, novinfl=novinfl, icur_thld=icur_thld, swel0=swel0, figdir=figdir, atrtname=atrtname, scatdir=scatdir, thld_out=thld_out, l2iv=l2iv
+pro mvn_swe_lpw_scpot, trange=trange, norbwin=norbwin, minndata=minndata, maxgap=maxgap, plot=plot, noload=noload, vrinfl=vrinfl, ntsmo=ntsmo, noangcorr=noangcorr, novinfl=novinfl, icur_thld=icur_thld, swel0=swel0, figdir=figdir, atrtname=atrtname, scatdir=scatdir, thld_out=thld_out, l2iv=l2iv
 
 
 if size(figdir,/type) eq 0 then begin
@@ -93,16 +93,16 @@ if nworb lt norbwin then begin
    return
 endif
 
-;;; L2 lpiv usable after 2015-12-09/07:30
-l2buffer = 86400d * 100         ;- 100 day buffer for L2 data production
-if size(l2iv,/type) eq 0 then if tr[1] gt time_double('2015-12-09/07:30') and tr[1] lt systime(1)-l2buffer then l2iv = 1 else l2iv = 0
+;;; L2 lpiv usable after 2015-12-09/07:30, set l2iv=-1 to force to use L0
+time_l2ok = time_double('2015-12-09/07:30')
+if size(l2iv,/type) eq 0 then if tr[0] gt time_l2ok then l2iv = 1 else l2iv = 0
 
 
 ;;; load data
-if ~keyword_set(nol0load) then begin
+if ~keyword_set(noload) then begin
    maven_orbit_tplot, /current, /loadonly ;,result=scpos
 
-   if keyword_set(l2iv) then begin
+   if l2iv gt 0 then begin
       mvn_lpw_load_l2,'lpiv',/notplot
       get_data,'mvn_lpw_lp_iv_l2',data=d,dtype=dtype
       if dtype ne 0 then store_data,'mvn_lpw_swp1_IV',data={x:d.x,y:d.y,v:d.v}
@@ -152,6 +152,22 @@ if ~keyword_set(nol0load) then begin
             store_data,tn,/del
          endif
       endfor
+      if l2iv ge 0 and tr[1] gt time_l2ok then begin ;- override L0 by L2 after time_l2ok
+         mvn_lpw_load_l2,'lpiv',/notplot
+         get_data,'mvn_lpw_swp1_IV',data=div,dtype=divtype
+         get_data,'mvn_lpw_lp_iv_l2',data=d,dtype=dtype
+         if dtype*divtype ne 0 then begin
+            w0 = where( div.x lt time_l2ok , nw0 )
+            w1 = where( d.x gt time_l2ok , nw1 )
+            if nw0 gt 0 and nw1 gt 0 then begin
+               tplot_rename,'mvn_lpw_swp1_IV','mvn_lpw_swp1_IV_old'
+               dnew = { x:[div.x[w0],d.x[w1]], $
+                        y:[div.y[w0,*],d.y[w1,*]], $
+                        v:[div.v[w0,*],d.v[w1,*]] }
+               store_data,'mvn_lpw_swp1_IV',data=dnew
+            endif
+         endif
+      endif
    endelse
 
    ;;; load SWEA data
@@ -160,7 +176,7 @@ if ~keyword_set(nol0load) then begin
    mvn_swe_sumplot,/loadonly
    mvn_swe_sc_pot,angcorr=angcorr
    mvn_swe_sc_negpot
-endif                           ;- nol0load
+endif                           ;- noload
 
 
 ;;; get SWEA potentials and LPW IV curves
@@ -335,7 +351,7 @@ for it=(ntsmo-1)/2,n_elements(div.x)-(ntsmo-1)/2-1 do begin
    ders[it,*] = ders[it,*] / max(ders[it,*],/nan) ;- normalize
 
    ;;; grab the dI/dV peak
-   w = where( vols[it,*] gt vrinfl[0]-1 and vols[it,*] lt vrinfl[1]+1 $
+    w = where( vols[it,*] gt vrinfl[0]-1 and vols[it,*] lt vrinfl[1]+1 $
               and finite(ders[it,*]), nw)
    if nw gt 6 then begin
       x = reform(vols[it,w])
@@ -445,9 +461,9 @@ for iorb=iorb0,iorb1 do begin
             x2 = x[w]
             y2 = y[w]
             t2 = t[w]
-            a = ladfit(x2,y2) ;- linear fit
+            a = ladfit(x2,y2)   ;- linear fit
             corr = correlate(x2,y2)
-            ww = where(x2 gt 0,nww)
+            ww = where(x2 gt 0,nww) ;- power law fit, obsolete
             if nww gt minNdata then begin
                apow = ladfit(x2[ww]^.35,y2[ww]) ;- get initial guess
                pow = {func:'power_law',h:apow[1],p:.35d,bkg:apow[0]}

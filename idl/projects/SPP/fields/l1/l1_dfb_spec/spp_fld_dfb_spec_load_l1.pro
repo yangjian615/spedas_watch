@@ -7,6 +7,7 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
   options, prefix + status_items, 'colors', 6
   options, prefix + status_items, 'psym', 4
   options, prefix + status_items, 'panel_size', 0.75
+  options, prefix + status_items, 'ysubtitle', ''
 
   options, prefix + 'spec', 'spec', 1
 
@@ -15,15 +16,35 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
 
   options, prefix + 'enable', 'yrange', [-0.25,1.25]
   options, prefix + 'enable', 'ystyle', 1
+  options, prefix + 'enable', 'yticks', 2
+  options, prefix + 'enable', 'ytickv', [0,1]
+  options, prefix + 'enable', 'yminor', 1
+  options, prefix + 'enable', 'ysubtitle', ''
+  options, prefix + 'enable', 'panel_size', 0.35
 
   options, prefix + 'bin', 'yrange', [-0.25,1.25]
   options, prefix + 'bin', 'ystyle', 1
+  options, prefix + 'bin', 'yticks', 2
+  options, prefix + 'bin', 'ytickv', [0,1]
+  options, prefix + 'bin', 'yminor', 1
+  options, prefix + 'bin', 'ysubtitle', ''
+  options, prefix + 'bin', 'panel_size', 0.35
 
   options, prefix + 'scm_rotate', 'yrange', [-0.25,1.25]
   options, prefix + 'scm_rotate', 'ystyle', 1
+  options, prefix + 'scm_rotate', 'yticks', 2
+  options, prefix + 'scm_rotate', 'ytickv', [0,1]
+  options, prefix + 'scm_rotate', 'yminor', 1
+  options, prefix + 'scm_rotate', 'ysubtitle', ''
+  options, prefix + 'scm_rotate', 'panel_size', 0.35
 
   options, prefix + 'gain', 'yrange', [-0.25,1.25]
   options, prefix + 'gain', 'ystyle', 1
+  options, prefix + 'gain', 'yticks', 2
+  options, prefix + 'gain', 'ytickv', [0,1]
+  options, prefix + 'gain', 'yminor', 1
+  options, prefix + 'gain', 'ysubtitle', ''
+  options, prefix + 'gain', 'panel_size', 0.35
 
   options, prefix + 'navg', 'yrange', [-0.5,15.5]
   options, prefix + 'navg', 'ystyle', 1
@@ -82,14 +103,15 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
 
       store_data, prefix + 'spec_converted', $
         data = {x:new_data_x, $
-        y:spp_fld_dfb_psuedo_log_decompress(new_data_y, type = 'spectra'), $
+        y:alog10(spp_fld_dfb_psuedo_log_decompress(new_data_y, type = 'spectra')), $
         v:data_v}
 
       options, prefix + 'spec_converted', 'panel_size', 2
       options, prefix + 'spec_converted', 'spec', 1
       options, prefix + 'spec_converted', 'no_interp', 1
-      options, prefix + 'spec_converted', 'zlog', 1
+      options, prefix + 'spec_converted', 'zlog', 0
       options, prefix + 'spec_converted', 'ylog', 1
+      options, prefix + 'spec_converted', 'ztitle', 'Log Auto [arb.]'
       options, prefix + 'spec_converted', 'ystyle', 1
       options, prefix + 'spec_converted', 'yrange', minmax(freq_bins.freq_avg)
 

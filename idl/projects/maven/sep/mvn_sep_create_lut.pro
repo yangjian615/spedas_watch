@@ -56,7 +56,7 @@ function mvn_sep_create_lut,mapname,mapnum=mapnum
 if ~keyword_set(mapname) then mapname = mvn_sep_mapnum_to_mapname(mapnum)
 ;dprint,/phelp,mapname
 case mapname of
-'ATLO': begin
+'ATLO': begin ; mapnum=4, used since launch until 2014-03-17/22:45 UTC
   startbin = 0
   mvn_sep_fill_lut,lut,startbin,TID=0,fto=1,nbins=[30,9,1],binwidth=[2,400,436]
   mvn_sep_fill_lut,lut,startbin,TID=0,fto=2,nbins=[30,9,1],binwidth=[2,400,436]
@@ -96,7 +96,7 @@ case mapname of
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=6,binwidth=bw16
   mvn_sep_fill_lut,lut,startbin,TID=1,fto=7,binwidth=bw16
   end
-'Flight2': begin   ; mapnum=8
+'Flight2': begin   ; mapnum=8, used since 2014-03-17/22:45 UTC until MOI: 2014-09-22/19:40 UTC (S/C in hybernation since 2014-07-17 UTC until MOI)
   startbin = 0
 ;  bw=round(exp(i/3.63)/3.))
 ;  BW32 = [7,2,2,2,3,4,5,6,7,9,11,13,15,19,23,29,35,42,53,64,79,96,118,144,176,216,268,326,400,490,600,832]
@@ -132,10 +132,11 @@ case mapname of
   
   end
 
-'Flight3': begin   ; mapnum=9
+'Flight3': begin   ; mapnum=9, used since 2014-09-22/19:40 UTC until present
   startbin = 0
 ;  bw=round(exp(i/3.63)/3.))
 ;  BW32 = [7,2,2,2,3,4,5,6,7,9,11,13,15,19,23,29,35,42,53,64,79,96,118,144,176,216,268,326,400,490,600,832]
+; BW32 = [4, 2, 1, 1, 1, 1, 2, 2, 3, 4, 5, 7, 9, 12, 16, 21, 27, 36, 47, 63, 82, 108, 143, 188, 248, 327, 430, 566, 746, 984, 9 ,1] ;Flight 2
   BW_O = [4+ 2, 1, 1, 1, 1, 2, 2, 3, 4, 5, 7, 9, 12, 16, 21, 27, 36, 47, 63, 82, 108, 143, 188, 248, 327, 430, 566, 746, 984+ 9 ,1]
   BW_F = BW_O
   ;       0  1  2  3  4  5  6  7  8  9  10 11 12 13  14  15  16  17  18  19  20   21   22   23   24   25   26   27   28   29 30 31
