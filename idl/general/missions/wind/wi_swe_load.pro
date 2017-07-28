@@ -12,14 +12,14 @@
 ;  This routine is still in development.
 ;
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-08 10:35:22 -0800 (Wed, 08 Mar 2017) $
-; $LastChangedRevision: 22926 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2017-07-27 16:30:01 -0700 (Thu, 27 Jul 2017) $
+; $LastChangedRevision: 23716 $
 ; $URL $
 ;-
 pro wi_swe_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
       get_support_data=get_support_data,varformat=varformat,datatype=datatype, $
-      tplotnames=tplotnames,source=source
+      tplotnames=tplotnames,source=source,suffix=suffix
 
    if not keyword_set(datatype) then datatype = 'k0'
 
@@ -54,7 +54,7 @@ files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_di
 if keyword_set(downloadonly) then return
 
 prefix='wi_swe_'
-cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix, tplotnames=tplotnames     ; load data into tplot variables
+cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix, tplotnames=tplotnames, suffix=suffix     ; load data into tplot variables
 dprint,tplotnames
 
 options,/def,strfilter(tplotnames,'*GSE*',/string), colors='bgr'

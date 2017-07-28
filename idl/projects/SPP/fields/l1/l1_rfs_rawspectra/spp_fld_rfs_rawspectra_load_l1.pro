@@ -196,19 +196,28 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
           print, ch, alg, src, match_count, ' ', tplot_prefix, $
             format = '(I2,I2,I2,I6,A,A)'
 
+          if hfr_lfr_str EQ 'lfr' then begin
+            freq_div = 1.e3
+            freq_div_str = '[kHz]'
+          endif else begin
+            freq_div = 1.e6
+            freq_div_str = '[MHz]'
+          endelse
+
           store_data, tplot_prefix + '_pow', $
             data = {x:dat_pow.x[match], $
-            y:dat_pow.y[match,*], $
-            v:dat_pow.v[match,*]}
+            y:alog10(dat_pow.y[match,*]), $
+            v:dat_pow.v[match,*]/freq_div}
 
           options, tplot_prefix + '_*', 'spec', 1
           options, tplot_prefix + '_*', 'ylog', 1
-          options, tplot_prefix + '_*', 'zlog', 1
+          options, tplot_prefix + '_*', 'zlog', 0
           options, tplot_prefix + '_*', 'no_interp', 1
           options, tplot_prefix + '_*', 'yrange', yrange
           options, tplot_prefix + '_*', 'ystyle', 1
           options, tplot_prefix + '_pow', 'ytitle', ytitle
-          options, tplot_prefix + '_*', 'ztitle', 'V2/Hz'
+          options, tplot_prefix + '_pow', 'ysubtitle', 'Freq ' + freq_div_str
+          options, tplot_prefix + '_*', 'ztitle', 'Log V2/Hz'
 
         endif else begin
           print, ch, alg, src, match_count, $
@@ -221,11 +230,13 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
 
   endforeach
 
-  options, 'spp_fld_rfs_rawspectra_ch0', 'ytitle', 'ch0'
-  options, 'spp_fld_rfs_rawspectra_ch1', 'ytitle', 'ch1'
+  options, 'spp_fld_rfs_rawspectra_ch0', 'ytitle', 'RFS!CCH0!CSRC'
+  options, 'spp_fld_rfs_rawspectra_ch1', 'ytitle', 'RFS!CCH1!CSRC'
   options, 'spp_fld_rfs_rawspectra_ch?', 'yminor', 1
   options, 'spp_fld_rfs_rawspectra_ch?', 'panel_size', 0.25
   options, 'spp_fld_rfs_rawspectra_ch?', 'ynozero', 1
+  options, 'spp_fld_rfs_rawspectra_ch?', 'ysubtitle', ''
+  options, 'spp_fld_rfs_rawspectra_ch?', 'ytickformat', '(I1)'
 
   ;tplot, 'spp_fld_rfs_rawspectra_?fr_ch?_src?_pow'
 

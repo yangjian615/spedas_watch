@@ -6,12 +6,21 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-12 08:02:22 -0700 (Wed, 12 Jul 2017) $
-; $LastChangedRevision: 23583 $
+; $LastChangedDate: 2017-07-27 09:10:05 -0700 (Thu, 27 Jul 2017) $
+; $LastChangedRevision: 23713 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/tplot_stuff_ut__define.pro $
 ;-
 
 ; ------- the following are some regression tests -------
+; the following is a regression test for using spd_smooth_time 
+function tplot_stuff_ut::test_smooth_time_different_var_types
+  mms_load_fpi, datatype='dis-moms', trange=['2015-12-15', '2015-12-16']
+  spd_smooth_time, 'mms3_dis_energyspectr_omni_fast', 10.0
+  spd_smooth_time, 'mms3_dis_numberdensity_fast', 10.0
+  assert, spd_data_exists('mms3_dis_numberdensity_fast_smth mms3_dis_energyspectr_omni_fast_smth', '2015-12-15', '2015-12-16'), 'Problem with smooth_time regression test'
+  return, 1
+end
+
 ; the following test is for a bug in avg_data when the resoulution is less than 1s
 function tplot_stuff_ut::test_avg_data_less_than_1
   mms_load_fgm, trange=['2015-12-15', '2015-12-16']

@@ -9,17 +9,18 @@
 ;       Empirically derives spacecraft potentials using SWEA and LPW.
 ;       Inflection points in LPW I-V curves are tuned to positive and negative
 ;       spacecraft potentials estimated from SWEA energy spectra.
-;       Most reliable for -5 V < Usc < +15 V.
 ;       Does not work in shadow.
 ;
 ; CALLING SEQUENCE:
 ;       timespan,'16-01-01',14   ;- make sure to set a long time range
 ;       mvn_swe_lpw_scpot
 ; OUTPUT TPLOT VARIABLES:
-;       mvn_swe_lpw_scpot :     default scpot data
-;                               (currently identical w/ mvn_swe_lpw_scpot_lin)
+;       mvn_swe_lpw_scpot :     best-estimate scpot data
+;                               (currently "mvn_swe_lpw_scpot_pol")
 ;       mvn_swe_lpw_scpot_lin : spacecraft potentials derived from
 ;                               linear fitting of Vswe v. -Vinfl
+;       mvn_swe_lpw_scpot_pol : spacecraft potentials derived from
+;                               polynominal fitting of Vswe v. -Vinfl
 ;       mvn_swe_lpw_scpot_pow : (obsolete)
 ; KEYWORDS:
 ;       trange: time range
@@ -31,7 +32,7 @@
 ;       noload: if set, use pre-existing input tplot variables:
 ;               'mvn_swe_sc_pot', 'mvn_lpw_swp1_IV'
 ;       vrinfl: voltage range for searching the inflection point
-;               (Def. [-15,15])
+;               (Def. [-15,18])
 ;       ntsmo: time smooth width (Def. 3)
 ;       noangcorr: if set, do not conduct angular distribution correction
 ;                  in mvn_swe_sc_pot
@@ -53,8 +54,8 @@
 ;       Major update on 2017-07-24 - incl. negative pot
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-07-26 13:36:34 -0700 (Wed, 26 Jul 2017) $
-; $LastChangedRevision: 23706 $
+; $LastChangedDate: 2017-07-27 10:50:53 -0700 (Thu, 27 Jul 2017) $
+; $LastChangedRevision: 23715 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
@@ -71,12 +72,12 @@ endif
 if ~keyword_set(norbwin) then norbwin = 37 ;- odd number
 if ~keyword_set(minndata) then minNdata = 1.e4
 if ~keyword_set(maxgap) then maxgap = 257.
-if ~keyword_set(vrinfl) then vrinfl = [-15,15] ;- inflection point V range
+if ~keyword_set(vrinfl) then vrinfl = [-15,18] ;- inflection point V range
 if ~keyword_set(ntsmo) then ntsmo = 3 ;- odd number, smooth IV curves in time
 if keyword_set(noangcorr) then angcorr = 0 else angcorr = 1
 if ~keyword_set(atrtname) then atrtname = 'mvn_lpw_atr_swp'
 if ~keyword_set(icur_thld) then icur_thld = -0.5 ;- 10^icur_thld drop from median -> invalid
-if ~keyword_set(thld_out) then thld_out = 2.5 ;- reject outliers of scatter plots
+if ~keyword_set(thld_out) then thld_out = 3. ;- reject outliers of scatter plots
 
 
 tr = timerange(trange)
@@ -439,6 +440,7 @@ for iorb=iorb0,iorb1 do begin
 
    a = [!values.d_nan,!values.d_nan]
    corr = !values.d_nan
+   apol = [!values.d_nan,!values.d_nan,!values.d_nan]
    pow = {func:'power_law',h:!values.d_nan,p:!values.d_nan,bkg:!values.d_nan}
    Nscat = 0l
 
@@ -452,10 +454,12 @@ for iorb=iorb0,iorb1 do begin
          y = -vinfl2[w]
          t = times[w]
 
-         alad = ladfit(x,y)        ;- initial fit
+;;          alad = ladfit(x,y)     ;- initial fit, obsolete
+         apol0 = [ -2.7, .73, -0.012 ]    ;- nominal parameters
 
          ;;; filter out outliers and fit
-         w = where( abs(x-(y/alad[1]-alad[0]/alad[1])) lt thld_out , nw )
+;;          w = where( abs(x-(y/alad[1]-alad[0]/alad[1])) lt thld_out , nw ) ;- obsolete
+         w = where( abs(apol0[0]+apol0[1]*x+apol0[2]*x^2 - y) lt thld_out , nw )
          Nscat = nw
          if nw gt minNdata then begin
             x2 = x[w]
@@ -463,6 +467,7 @@ for iorb=iorb0,iorb1 do begin
             t2 = t[w]
             a = ladfit(x2,y2)   ;- linear fit
             corr = correlate(x2,y2)
+            apol = poly_fit(x2,y2,2) ;- polynomial fit
             ww = where(x2 gt 0,nww) ;- power law fit, obsolete
             if nww gt minNdata then begin
                apow = ladfit(x2[ww]^.35,y2[ww]) ;- get initial guess
@@ -482,10 +487,12 @@ for iorb=iorb0,iorb1 do begin
          w = where( dvinfl.x gt trorb[0] and dvinfl.x lt trorb[1] , nw )
          tvinfl = dvinfl.x[w]
          scpot_lin = ( (-dvinfl.y[w]) - a[0] ) / a[1]
-         scpot_pow = 10.^( alog10(((-dvinfl.y[w])-pow.bkg > 0.)/pow.h)/pow.p )
+         scpot_pol = ( -apol[1] + sqrt(apol[1]^2 - 4.*(apol[0]+dvinfl.y[w])*apol[2]) ) / (2.*apol[2])
+         scpot_pow = 10.^( alog10(((-dvinfl.y[w])-pow.bkg > 0.)/pow.h)/pow.p ) ;- obsolete
 
          w = where( ~finite(scpot_lin) , nw )
          if nw gt 0 then scpot_pow[w] = !values.f_nan
+         if nw gt 0 then scpot_pol[w] = !values.f_nan
 
          ;;; Filter out shadow regions
          get_data, 'wake', data=dwake, dtype=dtype
@@ -494,6 +501,7 @@ for iorb=iorb0,iorb1 do begin
             w = where(shadow gt 0., nw)
             if nw gt 0 then scpot_lin[w] = !values.f_nan
             if nw gt 0 then scpot_pow[w] = !values.f_nan
+            if nw gt 0 then scpot_pol[w] = !values.f_nan
          endif
 
 
@@ -506,6 +514,10 @@ for iorb=iorb0,iorb1 do begin
                     data={x:tvinfl,y:scpot_pow}, $
                     dlim={colors:6,datagap:maxgap, $
                           ytitle:'power law fit!cscpot!c[V]'}
+         store_data,orbstr+'_mvn_swe_lpw_scpot_pol', $
+                    data={x:tvinfl,y:scpot_pol}, $
+                    dlim={colors:1,datagap:maxgap, $
+                          ytitle:'poly fit!cscpot!c[V]'}
          store_data,orbstr+'_mvn_swe_lpw_scpot_lin_para', $
                     data={x:mean(trorb),y:[[a[0]],[a[1]],[corr]]}, $
                     dlim={psym:1,datagap:maxgap,labflag:1, $
@@ -514,6 +526,10 @@ for iorb=iorb0,iorb1 do begin
                     data={x:mean(trorb),y:[[pow.p],[pow.h],[pow.bkg]]}, $
                     dlim={psym:1,datagap:maxgap,labflag:1, $
                           labels:['power','slope','offset'],colors:[0,2,6]}
+         store_data,orbstr+'_mvn_swe_lpw_scpot_pol_para', $
+                    data={x:mean(trorb),y:[[apol[0]],[apol[1]],[apol[2]]]}, $
+                    dlim={psym:1,datagap:maxgap,labflag:1, $
+                          labels:['a0','a1','a2'],colors:[2,6,0]}
          store_data,orbstr+'_mvn_swe_lpw_scpot_Ndata', $
                     data={x:mean(trorb),y:Nscat}, $
                     dlim={psym:1,datagap:maxgap}
@@ -541,9 +557,12 @@ for iorb=iorb0,iorb1 do begin
 
             xplot = findgen(601)/10.-30.
             oplot,xplot,a[0]+a[1]*xplot,color=2
+            oplot,xplot,apol[0]+apol[1]*xplot+apol[2]*xplot^2,color=1
 ;;             oplot,xplot,pow.bkg+pow.h*xplot^pow.p,color=6
-            oplot,xplot,alad[0]+alad[1]*(xplot+thld_out),linestyle=2
-            oplot,xplot,alad[0]+alad[1]*(xplot-thld_out),linestyle=2
+;;             oplot,xplot,alad[0]+alad[1]*(xplot+thld_out),linestyle=2
+;;             oplot,xplot,alad[0]+alad[1]*(xplot-thld_out),linestyle=2
+            oplot,xplot,apol0[0]+apol0[1]*xplot+apol0[2]*xplot^2+thld_out,linestyle=2
+            oplot,xplot,apol0[0]+apol0[1]*xplot+apol0[2]*xplot^2-thld_out,linestyle=2
             xyouts,/norm,color=2,.15,.97,'linear fit!c' + $
                    'y = '+string(a[0],f='(f5.2)') $
                    +string(a[1],f='(f+5.2)')+'x' $
@@ -553,6 +572,10 @@ for iorb=iorb0,iorb1 do begin
 ;;                    'y = '+string(pow.bkg,f='(f6.2)') $
 ;;                    +string(pow.h,f='(f+6.2)')+'x^' $
 ;;                    +string(pow.p,f='(f4.2)')
+            xyouts,/norm,color=1,.55,.97,'poly fit!c' + $
+                   'y = '+string(apol[0],f='(f6.2)') $
+                   +string(apol[1],f='(f+6.2)')+'x' $
+                   +string(apol[2],f='(f+8.4)')+'x^2'
             if keyword_set(figdir) then begin
                file_mkdir,figdir+time_string(mean(trorb),tf='scat/YYYY/MM/')
                makepng,figdir+time_string(mean(trorb),tf='scat/YYYY/MM/YYYYMMDD_')+orbstr
@@ -564,7 +587,7 @@ for iorb=iorb0,iorb1 do begin
 
 
    store_data,'scpots', $
-              data=['mvn_swe_sc_pot','pot_sweneg',orbstr+'_mvn_swe_lpw_scpot_lin'], $
+              data=['mvn_swe_sc_pot','pot_sweneg',orbstr+'_mvn_swe_lpw_scpot_pol'], $
               dlim={labels:['swepos','sweneg','swe-lpw'], $
                     colors:[2,6,0],labflag:1,dataga:maxgap,yrange:[-20,20], $
                     constant:[0,3],panel_size:1.5}
@@ -596,8 +619,8 @@ endfor                          ;- iorb
 
 
 ;;; concat and sort
-tf = ['mvn_swe_lpw_scpot_lin','mvn_swe_lpw_scpot_pow', $
-      'mvn_swe_lpw_scpot_lin_para','mvn_swe_lpw_scpot_pow_para', $
+tf = ['mvn_swe_lpw_scpot_lin','mvn_swe_lpw_scpot_pol','mvn_swe_lpw_scpot_pow', $
+      'mvn_swe_lpw_scpot_lin_para','mvn_swe_lpw_scpot_pol_para','mvn_swe_lpw_scpot_pow_para', $
       'mvn_swe_lpw_scpot_Ndata' ]
 for itf=0,n_elements(tf)-1 do begin
    tn = tnames('?????_'+tf[itf],ntn)
@@ -625,7 +648,7 @@ for itf=0,n_elements(tf)-1 do begin
 endfor
 
 
-def_scpot = 'mvn_swe_lpw_scpot_lin'
+def_scpot = 'mvn_swe_lpw_scpot_pol'
 get_data,def_scpot,data=d
 store_data,'mvn_swe_lpw_scpot',data=d, $
            dlim={datagap:maxgap,ytitle:'SWEA-LPW!cscpot!c[V]'}

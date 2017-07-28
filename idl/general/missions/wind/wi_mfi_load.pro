@@ -12,14 +12,14 @@
 ;  This routine is still in development.
 ; Author: Davin Larson
 ;
-; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-03-10 14:53:59 -0800 (Fri, 10 Mar 2017) $
-; $LastChangedRevision: 22941 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2017-07-27 16:30:01 -0700 (Thu, 27 Jul 2017) $
+; $LastChangedRevision: 23716 $
 ; $URL $
 ;-
 pro wi_mfi_load,type,files=files,trange=trange,verbose=verbose,downloadonly=downloadonly, $
       varformat=varformat,datatype=datatype, no_download=no_download, no_update=no_update, $
-      addmaster=addmaster,tplotnames=tn,source=source
+      addmaster=addmaster,tplotnames=tn,source=source,suffix=suffix
 
 if not keyword_set(datatype) then datatype = 'h0'
 if keyword_set(type) then datatype = type
@@ -58,7 +58,7 @@ files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_di
 if keyword_set(downloadonly) then return
 
 prefix = 'wi_'+datatype+'_mfi_'
-cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix ,tplotnames=tn    ; load data into tplot variables
+cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix ,tplotnames=tn, suffix=suffix    ; load data into tplot variables
 
 ; Set options for specific variables
 
