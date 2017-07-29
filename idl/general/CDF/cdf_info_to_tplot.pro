@@ -6,9 +6,9 @@
 ;
 ; Written by Davin Larson
 ;
-; $LastChangedBy: pulupa $
-; $LastChangedDate: 2016-11-18 12:20:32 -0800 (Fri, 18 Nov 2016) $
-; $LastChangedRevision: 22377 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-07-28 13:40:30 -0700 (Fri, 28 Jul 2017) $
+; $LastChangedRevision: 23719 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_info_to_tplot.pro $
 ;-
 pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
@@ -20,7 +20,7 @@ pro cdf_info_to_tplot,cdfi,varnames,loadnames=loadnames,  $
         load_labels=load_labels ;copy labels from labl_ptr_1 in attributes into dlimits
                                       ;resolve labels implemented as keyword to preserve backwards compatibility
 
-dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 22377 2016-11-18 20:20:32Z pulupa $'
+dprint,verbose=verbose,dlevel=4,'$Id: cdf_info_to_tplot.pro 23719 2017-07-28 20:40:30Z jimm $'
 tplotnames=''
 vbs = keyword_set(verbose) ? verbose : 0
 
@@ -41,7 +41,11 @@ for i=0,nv-1 do begin
        dprint,dlevel=5,verbose=verbose,'Invalid data pointer for ',v.name
        continue
    endif
-   attr = *v.attrptr
+   if(ptr_valid(v.attrptr) && keyword_set(*v.attrptr)) then begin
+      attr = *v.attrptr
+   endif else begin             ;fix for IDL 6.4.1
+      attr = 0 & undefine, attr ;undefined attr will default out of struct_value
+   endelse
    var_type = struct_value(attr,'var_type',def='')
    depend_time = struct_value(attr,'depend_time',def='time')
    depend_0 = struct_value(attr,'depend_0',def='Epoch')
@@ -53,7 +57,6 @@ for i=0,nv-1 do begin
    scaletyp = struct_value(attr,'scaletyp',def='linear')
    fillval = struct_value(attr,'fillval',def=!values.f_nan)
    fieldnam = struct_value(attr,'fieldnam',def=v.name)
-
    if strcmp(v.datatype,'CDF_TIME_TT2000',/fold_case) then begin
       defsysv,'!CDF_LEAP_SECONDS',exists=exists
   

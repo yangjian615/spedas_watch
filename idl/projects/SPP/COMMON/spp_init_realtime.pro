@@ -94,6 +94,7 @@ pro spp_init_realtime,filename=filename,base=base,hub=hub,itf=itf,RM133=RM133,rm
   endif
 
 if keyword_set(hires1) then begin
+  exec_proc = 'spp_ptp_stream_read'
   spp_ptp_recorder,title='HIRES1 (MOC) PTP',port=2028, host='128.32.13.202', exec_proc=exec_proc,destination=fileformat,directory=rootdir+'hires1/swem/',set_file_timeres=fileres
 
 endif

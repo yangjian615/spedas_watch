@@ -6,6 +6,9 @@
 ;       !!! This routine could take a very long time to generate the data !!!
 ;       !!! To load pre-generated data quickly, use 'mvn_swe_lpw_scpot_restore' !!!
 ;
+;       For more information, see 
+;       http://research.ssl.berkeley.edu/~haraday/tools/mvn_swe_lpw_scpot.pdf
+;
 ;       Empirically derives spacecraft potentials using SWEA and LPW.
 ;       Inflection points in LPW I-V curves are tuned to positive and negative
 ;       spacecraft potentials estimated from SWEA energy spectra.
@@ -54,8 +57,8 @@
 ;       Major update on 2017-07-24 - incl. negative pot
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-07-27 10:50:53 -0700 (Thu, 27 Jul 2017) $
-; $LastChangedRevision: 23715 $
+; $LastChangedDate: 2017-07-28 07:16:06 -0700 (Fri, 28 Jul 2017) $
+; $LastChangedRevision: 23717 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 

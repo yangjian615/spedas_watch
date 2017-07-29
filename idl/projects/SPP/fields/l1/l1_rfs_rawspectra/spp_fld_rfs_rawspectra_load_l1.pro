@@ -232,11 +232,16 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
 
   options, 'spp_fld_rfs_rawspectra_ch0', 'ytitle', 'RFS!CCH0!CSRC'
   options, 'spp_fld_rfs_rawspectra_ch1', 'ytitle', 'RFS!CCH1!CSRC'
-  options, 'spp_fld_rfs_rawspectra_ch?', 'yminor', 1
+  options, 'spp_fld_rfs_rawspectra_ch?', 'yminor', 4
   options, 'spp_fld_rfs_rawspectra_ch?', 'panel_size', 0.25
   options, 'spp_fld_rfs_rawspectra_ch?', 'ynozero', 1
   options, 'spp_fld_rfs_rawspectra_ch?', 'ysubtitle', ''
   options, 'spp_fld_rfs_rawspectra_ch?', 'ytickformat', '(I1)'
+  options, 'spp_fld_rfs_rawspectra_ch?', 'yticks', 2
+  options, 'spp_fld_rfs_rawspectra_ch?', 'ystyle', 1
+  options, 'spp_fld_rfs_rawspectra_ch?', 'yrange', [0,8]
+  
+
 
   ;tplot, 'spp_fld_rfs_rawspectra_?fr_ch?_src?_pow'
 

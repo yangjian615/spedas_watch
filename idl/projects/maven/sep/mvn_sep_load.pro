@@ -145,9 +145,8 @@ if ~keyword_set(format) then format='L1_SAV'
 
 if format eq 'L1_SAV' then begin
   
-  files = mvn_pfp_file_retrieve(/L0,/daily,trange=trange,source=source,verbose=verbose,RT=RT,files=files,pathnames)
-
   if keyword_set(use_cache) and keyword_set(source_filenames) then begin
+    files = mvn_pfp_file_retrieve(/L0,/daily,trange=trange,source=source,verbose=verbose,RT=RT,files=files,pathnames)
     if array_equal(files,source_filenames) then begin
       dprint,dlevel=2,'Using cached common block'
       return
