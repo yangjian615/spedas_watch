@@ -125,25 +125,26 @@
 ;                      interactive time range selection.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-08 17:30:59 -0700 (Mon, 08 May 2017) $
-; $LastChangedRevision: 23286 $
+; $LastChangedDate: 2017-07-31 15:24:02 -0700 (Mon, 31 Jul 2017) $
+; $LastChangedRevision: 23737 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
 ;-
 pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, ddd=ddd, $
-                   abins=abins, dbins=dbins, obins=obins, sum=sum, pot=pot, pdiag=pdiag, $
+                   abins=abins, dbins=dbins, obins=obins2, sum=sum, pot=pot, pdiag=pdiag, $
                    pxlim=pxlim, mb=mb, kap=kap, mom=mom, scat=scat, erange=erange, $
                    noerase=noerase, scp=scp, fixy=fixy, pepeaks=pepeaks, $
                    burst=burst, rainbow=rainbow, mask_sc=mask_sc, sec=sec, $
                    bkg=bkg, tplot=tplot, magdir=magdir, bck=bck, shiftpot=shiftpot, $
                    xrange=xrange,yrange=frange,sscale=sscale, popen=popen, times=times, $
                    flev=flev, pylim=pylim, k_e=k_e, peref=peref, error_bars=error_bars, $
-                   trange=tspan, tsmo=tsmo, wscale=wscale, cscale=cscale, voffset=voffset
+                   trange=tspan, tsmo=tsmo, wscale=wscale, cscale=cscale, voffset=voffset, $
+                   endx=endx
 
   @mvn_swe_com
+  @mvn_scpot_com
   @swe_snap_common
-  common swe_pot_com, Espan, thresh, dEmax, minflux
 
   mass = 5.6856297d-06             ; electron rest mass [eV/(km/s)^2]
   c1 = (mass/(2D*!dpi))^1.5
@@ -151,6 +152,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
   c3 = 4D*!dpi*1d-5*sqrt(mass/2D)  ; assume isotropic electron distribution
   tiny = 1.e-31
 
+  if (size(Espan,/type) eq 0) then mvn_scpot_defaults
   if (size(snap_index,/type) eq 0) then swe_snap_layout, 0
 
   if not keyword_set(archive) then aflg = 0 else aflg = 1
@@ -218,15 +220,18 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     if (size(mag,/type) eq 8) then domag = 1 else domag = 0
   endif
 
-  if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
-  if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
-  if (n_elements(obins) ne 96) then begin
-    obins = replicate(1B, 96, 2)
-    obins[*,0] = reform(abins # dbins, 96)
-    obins[*,1] = obins[*,0]
-  endif else obins = reform(byte(obins)) # [1B,1B]
-  if (size(mask_sc,/type) eq 0) then mask_sc = 1
-  if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+  if ((size(obins,/type) eq 0) or keyword_set(abins) or keyword_set(dbins) or $
+      keyword_set(obins2) or keyword_set(mask_sc)) then begin
+    if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
+    if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
+    if (n_elements(obins2) ne 96) then begin
+      obins = replicate(1B, 96, 2)
+      obins[*,0] = reform(abins # dbins, 96)
+      obins[*,1] = obins[*,0]
+    endif else obins = reform(byte(obins2)) # [1B,1B]
+    if (size(mask_sc,/type) eq 0) then mask_sc = 1
+   if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+  endif
   
   if (size(pot,/type) eq 0) then dopot = 1 else dopot = keyword_set(pot)
   if keyword_set(pepeaks) then dopep = 1 else dopep = 0
@@ -365,6 +370,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     if (finite(scp)) then pot = scp $
                      else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
     spec.sc_pot = pot
+    dt = min(abs(spec.time - mvn_swe_engy.time),endx)
   endelse
   if (fflg) then yrange = drange
   if keyword_set(frange) then yrange = frange
@@ -545,7 +551,7 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
     if (dopot) then begin
       apot = abs(pot)
       if (spflg) then oplot,[apot,apot],yrange,line=2,color=4 $
-                 else oplot,[apot,apot],yrange,line=2,color=6
+                 else oplot,[pot,pot],yrange,line=2,color=6
     endif
     
     if (dopep) then begin
@@ -827,10 +833,11 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
       
         dE = px[kmin] - px[kmax]
         oplot,[px[kmin],px[kmax]],[pymin,pymin],color=6
-        if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
+;       if ((kmax eq (n_e-1)) or (kmin eq 0)) then dE = 2.*dEmax
+        if (kmin eq 0) then dE = 2.*dEmax
       
         if (dE lt dEmax) then k = max(indx) else k = -1  ; only accept narrow features
-;        if (dE lt dEmax) then k = k0 else k = -1  ; only accept narrow features
+;       if (dE lt dEmax) then k = k0 else k = -1         ; only accept narrow features
 
         for j=0,(ncross-1) do oplot,[px[indx[j]],px[indx[j]]],ylim,color=2
 
@@ -843,7 +850,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
           ys -= dys
         endelse
 
-        xyouts,xs,ys,string(dE,format='("dE = ",f6.2)'),charsize=csize1,/norm
+        if (dE gt dEmax) then scol = 6 else scol = !p.color
+        xyouts,xs,ys,string(dE,format='("dE = ",f6.2)'),charsize=csize1,color=scol,/norm
         ys -= dys
 
         xyouts,xs,ys,string(dEmax,format='("dEmax = ",f6.2)'),charsize=csize1,/norm
@@ -958,6 +966,8 @@ pro swe_engy_snap, units=units, keepwins=keepwins, archive=archive, spec=spec, d
           if (finite(scp)) then pot = scp $
                            else if (finite(spec.sc_pot)) then pot = spec.sc_pot else pot = 0.
           spec.sc_pot = pot
+          dt = min(abs(spec.time - mvn_swe_engy.time),i)
+          endx = [endx,i]
         endelse
 
         if (spflg) then begin

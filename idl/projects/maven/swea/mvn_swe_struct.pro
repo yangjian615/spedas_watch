@@ -6,9 +6,9 @@
 ;
 ;  All times are for the center of the sample.
 ;
-; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-07-19 11:21:33 -0700 (Wed, 19 Jul 2017) $
-; $LastChangedRevision: 23651 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-07-31 10:10:57 -0700 (Mon, 31 Jul 2017) $
+; $LastChangedRevision: 23723 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_struct.pro $
 ;
 ;CREATED BY:	David L. Mitchell  2013-07-26
@@ -334,14 +334,22 @@ pro mvn_swe_struct
                     magf            : fltarr(3)                  } ; vector in SWEA coord. (nT)
 
 ; Define Spacecraft Potential data structure
+;   There are 6 methods used to estimate the potential:
+;     -1 : Invalid : No method works or has been attempted
+;      0 : Manual  : No algorithm at all, set by a human
+;      1 : SWE/LPW : I/V curves calibrated by SWE+ method
+;      2 : SWE+    : Sharp break in solar wind/sheath electron energy spectrum
+;      3 : SWE-    : Position of He-II photoelectron feature in SPEC data
+;      4 : STA     : Low-energy cutoff of H+ distribution (away from periapsis)
+;                  : or shift of O2+ and O+ energy w.r.t ram energy (periapsis)
+;      5 : SWE/SHD : Position of He-II photoelectron feature in PAD data
 
   swe_pot_struct = {project_name    : 'MAVEN'                 , $
-                    data_name       : 'SWEA SC POT'           , $
+                    data_name       : 'SC POT'                , $
                     units_name      : 'V'                     , $
-                    valid           : 0B                      , $
                     time            : 0D                      , $  ; unix time
-                    indx            : 0                       , $  ; 1-5, which potential used  
-                    potential       : 0.                         } ; spacecraft potential (V)
+                    potential       : 0.                      , $  ; spacecraft potential (V)
+                    method          : -1                         } ; method used (see above)
 
   return
 

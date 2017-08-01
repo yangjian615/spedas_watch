@@ -1,11 +1,11 @@
 ;+
-;PROCEDURE:   mvn_scpot
+;PROCEDURE:   mvn_scpot_restore
 ;PURPOSE:
 ;  Reads in save files mvn_swe_l3_scpot_YYYYMMDD_v??_r??, create tplot
 ;  varibles for s/c pot, store potential structures in results and/or full
 ;
 ;USAGE:
-;  mvn_scpot, trange
+;  mvn_scpot_restore, trange
 ;
 ;INPUTS:
 ;       trange:        Restore data over this time range.  If not specified, then
@@ -25,15 +25,15 @@
 ;       SUCCESS:       Set to 1 if valid potentials are found.
 ;       
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-21 10:56:15 -0700 (Fri, 21 Jul 2017) $
-; $LastChangedRevision: 23690 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_scpot.pro $
+; $LastChangedDate: 2017-07-31 10:25:02 -0700 (Mon, 31 Jul 2017) $
+; $LastChangedRevision: 23731 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot_restore.pro $
 ;
 ;CREATED BY:    Shaosui Xu  06-23-17
 ;FILE: mvn_scpot
 ;-
 
-Pro mvn_scpot, trange, results=results, tplot=tplot, orbit=orbit, full=full, $
+Pro mvn_scpot_restore, trange, results=results, tplot=tplot, orbit=orbit, full=full, $
                        success=ok
 
     ok = 0

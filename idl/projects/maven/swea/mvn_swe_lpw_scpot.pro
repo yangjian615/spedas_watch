@@ -6,13 +6,15 @@
 ;       !!! This routine could take a very long time to generate the data !!!
 ;       !!! To load pre-generated data quickly, use 'mvn_swe_lpw_scpot_restore' !!!
 ;
-;       For more information, see 
-;       http://research.ssl.berkeley.edu/~haraday/tools/mvn_swe_lpw_scpot.pdf
-;
 ;       Empirically derives spacecraft potentials using SWEA and LPW.
 ;       Inflection points in LPW I-V curves are tuned to positive and negative
-;       spacecraft potentials estimated from SWEA energy spectra.
+;       spacecraft potentials estimated from SWEA energy spectra
+;       (mvn_swe_sc_pot & mvn_swe_sc_negpot).
+;
 ;       Does not work in shadow.
+;
+;       For more information, see 
+;       http://research.ssl.berkeley.edu/~haraday/tools/mvn_swe_lpw_scpot.pdf
 ;
 ; CALLING SEQUENCE:
 ;       timespan,'16-01-01',14   ;- make sure to set a long time range
@@ -23,7 +25,7 @@
 ;       mvn_swe_lpw_scpot_lin : spacecraft potentials derived from
 ;                               linear fitting of Vswe v. -Vinfl
 ;       mvn_swe_lpw_scpot_pol : spacecraft potentials derived from
-;                               polynominal fitting of Vswe v. -Vinfl
+;                               2nd-order polynomial fitting of Vswe v. -Vinfl
 ;       mvn_swe_lpw_scpot_pow : (obsolete)
 ; KEYWORDS:
 ;       trange: time range
@@ -33,7 +35,7 @@
 ;       maxgap: maximum time gap allowed for interpolation (Def. 257)
 ;       plot: if set, plot the time series and fitting
 ;       noload: if set, use pre-existing input tplot variables:
-;               'mvn_swe_sc_pot', 'mvn_lpw_swp1_IV'
+;               'swe_pos', 'mvn_lpw_swp1_IV'
 ;       vrinfl: voltage range for searching the inflection point
 ;               (Def. [-15,18])
 ;       ntsmo: time smooth width (Def. 3)
@@ -56,9 +58,9 @@
 ;       Yuki Harada on 2016-02-29
 ;       Major update on 2017-07-24 - incl. negative pot
 ;
-; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-07-28 07:16:06 -0700 (Fri, 28 Jul 2017) $
-; $LastChangedRevision: 23717 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-07-31 11:17:56 -0700 (Mon, 31 Jul 2017) $
+; $LastChangedRevision: 23732 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
@@ -184,13 +186,13 @@ endif                           ;- noload
 
 
 ;;; get SWEA potentials and LPW IV curves
-get_data,'mvn_swe_sc_pot',data=dvswe,dtype=dvswetype
+get_data,'swe_pos',data=dvswe,dtype=dvswetype
 get_data,'mvn_lpw_swp1_IV',data=div,dtype=divtype
 if dvswetype*divtype eq 0 then begin
    dprint,'No valid tplot variables for mvn_swe_sc_pot and/or mvn_lpw_swp1_IV'
    return
 endif
-get_data,'pot_sweneg',data=dvsweneg,dtype=dvswenegtype
+get_data,'neg_pot',data=dvsweneg,dtype=dvswenegtype
 if dvswenegtype ne 0 then begin
    w = where(finite(dvsweneg.y),nw)
    if nw gt 0 then dvswe.y[w] = dvsweneg.y[w]
@@ -200,8 +202,8 @@ endif
 ;;; if plot, set up tplot options
 if keyword_set(plot) then begin
    options,'swe_a4',zrange=[1.e5,1.e9],minzlog=1.e-30,yticklen=-.01,datagap=maxgap
-   options,'mvn_swe_sc_pot',psym=3,constant=[3],yrange=[0,20]
-   store_data,'swe_comb',data=['swe_a4','mvn_swe_sc_pot'], $
+   options,'swe_pos',psym=3,constant=[3],yrange=[0,20]
+   store_data,'swe_comb',data=['swe_a4','swe_pos'], $
               dlim={yrange:[3,4627.5],ystyle:1}
    options,'mvn_lpw_swp1_IV',spec=1,zrange=[-1.e-7,1.e-7],yrange=[-20,20], $
            yticklen=-.01,no_interp=1,ytitle='LPW!cswp1',datagap=maxgap
@@ -590,7 +592,7 @@ for iorb=iorb0,iorb1 do begin
 
 
    store_data,'scpots', $
-              data=['mvn_swe_sc_pot','pot_sweneg',orbstr+'_mvn_swe_lpw_scpot_pol'], $
+              data=['swe_pos','neg_pot',orbstr+'_mvn_swe_lpw_scpot_pol'], $
               dlim={labels:['swepos','sweneg','swe-lpw'], $
                     colors:[2,6,0],labflag:1,dataga:maxgap,yrange:[-20,20], $
                     constant:[0,3],panel_size:1.5}
@@ -657,7 +659,7 @@ store_data,'mvn_swe_lpw_scpot',data=d, $
            dlim={datagap:maxgap,ytitle:'SWEA-LPW!cscpot!c[V]'}
 
 store_data,'scpots', $
-           data=['mvn_swe_sc_pot','pot_sweneg','mvn_swe_lpw_scpot'], $
+           data=['swe_pos','neg_pot','mvn_swe_lpw_scpot'], $
            dlim={labels:['swepos','sweneg','swe-lpw'], $
                  colors:[2,6,0],labflag:1,dataga:maxgap,yrange:[-20,20], $
                  constant:3}

@@ -23,43 +23,57 @@
 ;   none
 ;
 ;KEYWORDS:
+;	POTENTIAL: Returns spacecraft potentials in a structure.
 ;
-;   OVERLAY:   Overlay the result on the energy spectrogram.
+;   FILL:      Do not fill in the common block.  Default = 0 (no).
 ;
-;   FILL:      Store the potentials to the swe_sc_pot common block.
-;              Default = 1 (yes).
+;   RESET:     Initialize the spacecraft potential, discarding all previous 
+;              estimates, and start fresh.
 ;
 ;OUTPUTS:
-;   None - Result is stored as a TPLOT variable 'neg_pot'.
+;   None - Result is stored in the common block variables swe_sc_pot and 
+;          mvn_swe_engy, and as the TPLOT variable 'neg_pot'.
 ;
-; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-07-18 14:01:38 -0700 (Tue, 18 Jul 2017) $
-; $LastChangedRevision: 23636 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-07-31 15:24:02 -0700 (Mon, 31 Jul 2017) $
+; $LastChangedRevision: 23737 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_negpot.pro $
 ;
 ;-
 
-pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
+pro mvn_swe_sc_negpot, potential=pot, fill=fill, reset=reset
 
     compile_opt idl2
     
     @mvn_swe_com
-    
-    if (size(fill,/type) eq 0) then fill = 1
+    @mvn_scpot_com
+  
+    if (size(Espan,/type) eq 0) then mvn_scpot_defaults
 
-; Make sure SWEA data are loaded.
+    reset = keyword_set(reset)
+    dofill = keyword_set(fill)
 
-    get_data, 'swe_a4', data=spec, index=i
-    if (i eq 0) then begin
+; Make sure SWEA data are loaded, initialize potential structure
+
+    if (size(mvn_swe_engy, /type) ne 8) then begin
       print,"You must load SWEA data first."
       return
     endif
-    f40=spec.y[*,40]  ; electron flux of 43 eV
+
+    npts = n_elements(mvn_swe_engy)
+    pot = replicate(swe_pot_struct, npts)
+    pot.time = mvn_swe_engy.time
+    pot.potential = badval
+    pot.method = -1
+
+    badphi = !values.f_nan  ; bad value guaranteed to be a NaN
 
 ; Get the shape parameter from tplot.  Calculate it if necessary.
 
     get_data, 'mvn_swe_shape_par', data=shp, index=i
     if (i eq 0) then begin
+      get_data, 'swe_a4', index=i
+      if (i eq 0) then mvn_swe_sumplot, /loadonly
       mvn_swe_shape_par, var='swe_a4', erange=[15,100], /keep_nan
       get_data, 'mvn_swe_shape_par', data=shp, index=i
       if (i eq 0) then begin
@@ -82,20 +96,34 @@ pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
     get_data,'sza',data=sza0
     sza=sza0.y
 
-; Get d2(logF)/d(logE)2 from tplot.  Calculate it if necessary.
+; Make sure data are in energy flux units
 
-    get_data, 'd2f', data=d2f0, index=i
-    if (i eq 0) then begin
-      mvn_swe_sc_pot, /over
-      get_data, 'd2f', data=d2f0
+    old_units = mvn_swe_engy[0].units_name
+    mvn_swe_convert_units, mvn_swe_engy, 'eflux'
+    f40 = mvn_swe_engy.data[40]  ; electron energy flux at 43 eV
+
+; Get d2(logF)/d(logE)2.  Calculate it if necessary.
+
+    if (size(ee,/type) eq 0) then begin
+      foo = mvn_swe_sc_pospot(mvn_swe_engy.energy, mvn_swe_engy.data)
+      foo = 0
     endif
-    t1=d2f0.x
-    d2f=d2f0.y
-    en1=d2f0.v
+
+    n_t = n_elements((transpose(ee))[*,0])
+    if (n_t ne n_elements(mvn_swe_engy.time)) then begin
+      foo = mvn_swe_sc_pospot(mvn_swe_engy.energy, mvn_swe_engy.data)
+      foo = 0
+    endif
+
+    print,"Estimating negative potentials from SWEA."
+
+    t1=mvn_swe_engy.time
+    d2f=transpose(d2fs)
+    en1=transpose(ee)
     alt1=spline(talt,alt,t1)
     sza1=spline(talt,sza,t1)
     pot1=dblarr(n_elements(t1))
-    pot1[*]=!values.f_nan
+    pot1[*]=badphi
     heii_pot1=pot1
     altcut=400;8000
     ;calculate terminator
@@ -131,7 +159,7 @@ pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
                         pot1[indx[ino[i]]]=emin-ebase
                         heii_pot1[indx[ino[i]]] = emin
                         if (pot1[indx[ino[i]]] le -5 and alt1[indx[ino[i]]] gt altcut) then $
-                            pot1[indx[ino[i]]]=!values.f_nan
+                            pot1[indx[ino[i]]]=badphi
                     endif else begin
                         if alt1[indx[ino[i]]] le 200 and emin gt 6 and emin le 9 $
                             and emap le 10 and emap gt 5 then begin
@@ -143,48 +171,67 @@ pro mvn_swe_sc_negpot, overlay=overlay, fill=fill
                 ;stop
             endfor
 
-            inc=where(pot1[indx[ino]] eq pot1[indx[ino]], npts)
+            inc=where(pot1[indx[ino]] eq pot1[indx[ino]], mpts)
             dx=indx[ino[inc]]
-            if dx[0] ne -1 then pot1[indx[ino[inc[0]:inc[npts-1]]]]=$
-                interpol(pot1[indx[ino[inc[0]:inc[npts-1]]]],$
-                t1[indx[ino[inc[0]:inc[npts-1]]]],t1[indx[ino[inc[0]:inc[npts-1]]]],/nan)
+            if dx[0] ne -1 then pot1[indx[ino[inc[0]:inc[mpts-1]]]]=$
+                interpol(pot1[indx[ino[inc[0]:inc[mpts-1]]]],$
+                t1[indx[ino[inc[0]:inc[mpts-1]]]],t1[indx[ino[inc[0]:inc[mpts-1]]]],/nan)
             ;stop
         endif
     endfor
 
+; Make tplot variables
 
+    phi={x:t1,y:pot1}
+    str_element,phi,'thick',4,/add
+    str_element,phi,'psym',3,/add
+    store_data, 'neg_pot', data=phi
+;   options,'neg_pot','constant',15
 
-    pot={x:t1,y:pot1}
-    str_element,pot,'thick',4,/add
-    str_element,pot,'psym',3,/add
-    store_data, 'neg_pot', data=pot
-    options,'neg_pot','constant',15
+    phi={x:t1,y:heii_pot1}
+    str_element,phi,'thick',4,/add
+    str_element,phi,'psym',3,/add
+    store_data, 'heii_pot', data=phi
 
-    pot={x:t1,y:heii_pot1}
-    str_element,pot,'thick',4,/add
-    str_element,pot,'psym',3,/add
-    store_data, 'heii_pot', data=pot
+    store_data,'d2f_pot',data=['d2f','heii_pot']
+    ylim,'d2f_pot',0,30
+    zlim,'d2f_pot',-0.05,0.05
 
-    if keyword_set(overlay) then begin
-        store_data,'d2f_pot',data=['d2f','heii_pot']
-        ylim,'d2f_pot',0,30
-        zlim,'d2f_pot',-0.05,0.05
+; Fill in the potential structure with valid SWE- estimates
+
+  igud = where(finite(pot1), ngud, complement=ibad, ncomplement=nbad)
+  if (ngud gt 0) then begin
+    pot[igud].potential = pot1[igud]
+    pot[igud].method = 3   ; swe- method
+  endif
+
+  msg = string("SWE- : ",ngud," valid potentials from ",npts," spectra",format='(a,i8,a,i8,a)')
+  print, strcompress(strtrim(msg,2))
+
+; Update the common block
+
+  if (reset) then begin
+    swe_sc_pot = replicate(swe_pot_struct, npts)
+    swe_sc_pot.potential = badphi
+    swe_sc_pot.method = -1  ; invalid
+    mvn_swe_engy.sc_pot = badphi
+  endif
+
+  if (dofill) then begin
+    indx = where(swe_sc_pot.method lt 1, count)
+    if (count gt 0) then swe_sc_pot[indx] = pot[indx]
+    indx = where((alt1 le maxalt) and finite(pot1) and (swe_sc_pot.potential gt 0.), count)
+    if (count gt 0) then swe_sc_pot[indx] = pot[indx]
+
+    if (finite(badval)) then begin
+      indx = where(swe_sc_pot.method lt 1, count)
+      if (count gt 0L) then begin
+        swe_sc_pot[indx].potential = badval
+        swe_sc_pot[indx].method = 0  ; manually set to a finite value
+      endif
     endif
-    
-    if keyword_set(fill) then begin
-        indx = where(finite(pot1) and (swe_sc_pot.potential ne $
-                     swe_sc_pot.potential), cts)
-        if (cts gt 0) then begin
-           mvn_swe_engy[indx].sc_pot  = pot1[indx]
-           swe_sc_pot[indx].potential = pot1[indx]
-        endif
-        ;below 1000 km, using the smaller SWE pot
-        indx = where(alt1 le 1000 and finite(pot1) and $
-                     swe_sc_pot.potential gt 0,cts)
-        if (cts gt 0) then begin
-           mvn_swe_engy[indx].sc_pot  = pot1[indx]
-           swe_sc_pot[indx].potential = pot1[indx]
-        endif
-    endif
-    ;stop
+
+    mvn_swe_engy.sc_pot = pot.potential
+  endif
+
 end

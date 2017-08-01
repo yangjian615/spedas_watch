@@ -71,8 +71,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-20 10:06:48 -0700 (Thu, 20 Jul 2017) $
-; $LastChangedRevision: 23679 $
+; $LastChangedDate: 2017-07-31 10:12:37 -0700 (Mon, 31 Jul 2017) $
+; $LastChangedRevision: 23725 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -119,9 +119,6 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   if (i eq 0) then maven_orbit_tplot, /loadonly, datum=datum
 
   mvn_swe_sumplot,/loadonly
-  mvn_swe_sc_pot,/over
-  engy_pan = 'swe_a4_pot'
-  options,engy_pan,'ytitle','SWEA elec!ceV'
 
 ; Try to load resampled PAD data - mask noisy data
 
@@ -151,8 +148,8 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   alt_pan = 'alt2'
 
   if keyword_set(sun) then begin
-    mvn_sundir, frame=['MAVEN_SPACECRAFT','MAVEN_SWEA'], /polar
-    sun_pan = 'Sun_MAVEN_SPACECRAFT'
+    mvn_sundir, frame='swe', /polar
+    sun_pan = 'Sun_SWEA_The'
     get_data,sun_pan,index=i
     if (i eq 0) then sun_pan = ''
   endif else sun_pan = ''
@@ -222,8 +219,12 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
 ; Spacecraft Potential
 
+  mvn_scpot
+  engy_pan = 'swe_a4_pot'
+  options,engy_pan,'ytitle','SWEA elec!ceV'
+
   pot_pan = ''
-  if keyword_set(sc_pot) then pot_pan = 'mvn_swe_pot_all'
+  if keyword_set(sc_pot) then pot_pan = 'scpot_comp'
 
 ; Ephemeris information from SPICE
 
