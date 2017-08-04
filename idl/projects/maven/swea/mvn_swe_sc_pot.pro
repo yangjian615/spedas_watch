@@ -9,10 +9,6 @@
 ;   spacecraft is in darkness (expect negative potential) or below 250 km
 ;   altitude (expect small or negative potential).
 ;
-;       In this program, different potential estimations are put into
-;   the structures, swe_sc_pot and mvn_swe_engy.potential, in a
-;   particular order. A tplot variable is created that contains this
-;   composed s/c potential: 'scpot_comp'. 
 ; 
 ;AUTHOR: 
 ;	David L. Mitchell
@@ -81,9 +77,9 @@
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 15:24:02 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23737 $
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2017-08-01 13:10:30 -0700 (Tue, 01 Aug 2017) $
+; $LastChangedRevision: 23745 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-

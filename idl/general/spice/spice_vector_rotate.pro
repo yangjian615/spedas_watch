@@ -16,13 +16,13 @@
 ; $URL: $
 ;-
 
-function spice_vector_rotate,vector,utc,et=et,from_frame,to_frame,check_objects=check_objects,verbose=verbose,qrot=qrot
+function spice_vector_rotate,vector,utc,et=et,from_frame,to_frame,check_objects=check_objects,verbose=verbose,qrot=qrot,force_objects=force_objects
 
 if ~keyword_set(qrot) then begin    ;  shortcut if qrot is known  - Be careful when using this shortcut!!!
   ut = time_double(utc)
   et = time_ephemeris(ut,/ut2et)
   dprint,dlevel=3,verbose=verbose,'Obtaining rotation quaternion(s)'
-  qrot =  spice_body_att(from_frame,to_frame,ut,/quaternion,check_object=check_objects,verbose=verbose) 
+  qrot =  spice_body_att(from_frame,to_frame,ut,/quaternion,check_object=check_objects,force_objects=force_objects,verbose=verbose) 
 endif
 dprint,dlevel=3,verbose=verbose,'Start Vector Rotations'
 vector_prime = quaternion_rotation(vector,qrot,/last_ind)     

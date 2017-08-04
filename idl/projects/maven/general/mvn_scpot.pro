@@ -130,9 +130,9 @@
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 15:24:51 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23738 $
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2017-08-01 14:41:41 -0700 (Tue, 01 Aug 2017) $
+; $LastChangedRevision: 23749 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot.pro $
 ;
 ;-
@@ -247,7 +247,7 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
 
       phi = interpol(comp.potential, comp.time, swe_sc_pot.time)
       indx = nn(comp.time, swe_sc_pot.time)
-      method = comp[indx].indx
+      method = comp[indx].method
       gap = where(abs(comp[indx].time - swe_sc_pot.time) gt maxdt, count)
       if (count gt 0L) then begin
         phi[gap] = badphi

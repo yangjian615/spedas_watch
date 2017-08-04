@@ -2,7 +2,7 @@
 ;loads PFP data for use by MAVEN pickup ion model
 ;to be called by mvn_pui_model
 
-pro mvn_pui_data_load,do3d=do3d,nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice
+pro mvn_pui_data_load,do3d=do3d,nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice,c6=c6,d0=d0
 
 if ~keyword_set(nomag) then begin
   mvn_mag_load,'L2_1sec' ;load MAG data
@@ -24,6 +24,8 @@ endif
 
 if ~keyword_set(nostatic) then begin
   mvn_sta_l2_load,sta_apid='c0' ;load STATIC 1D spectra
+  if keyword_set(c6) then mvn_sta_l2_load,sta_apid='c6' ;load STATIC mass-energy spectra (32e64m)
+  if keyword_set(d0) then mvn_sta_l2_load,sta_apid='d0' ;load STATIC 3D spectra (32e4d16a8m)
 ;  mvn_sta_l2_tplot ;store STATIC data in tplot variables
 ;  ylim,'mvn_swim_swi_mode',0,1 ;because mvn_sta_l2_tplot messes with 'mvn_swim_swi_mode' !!!
   if keyword_set(do3d) then mvn_sta_l2_load,sta_apid=['d0','d1'] ;load STATIC 3D spectra

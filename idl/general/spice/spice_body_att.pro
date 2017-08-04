@@ -11,13 +11,13 @@
 ; $URL: $
 ;-
 
-function spice_body_att,from,to,utc,quaternion=quaternion,baserot=baserot,fix_qsign=fix_qsign,rel2start=rel2start,check_objects=check_objects,verbose=verbose
+function spice_body_att,from,to,utc,quaternion=quaternion,baserot=baserot,fix_qsign=fix_qsign,rel2start=rel2start,check_objects=check_objects,force_objects=force_objects,verbose=verbose
 ut = time_double(utc)
 et = time_ephemeris(ut,/ut2et)
 
 ns = n_elements(et)
 if keyword_set(check_objects) then begin
-  time_valid = spice_valid_times(et,object=check_objects,tol=tol) 
+  time_valid = spice_valid_times(et,object=check_objects,tol=tol,force_objects=force_objects) 
  ; printdat,check_objects,time_valid
   ind = where(time_valid ne 0,nind)
   dprint,dlevel=2,verbose=verbose,nind,' Valid times from:',check_objects

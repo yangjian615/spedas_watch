@@ -2,14 +2,16 @@
 ;creates the time array of structures containting the reduced time resolution data and model results.
 ;also defines instrument and model constants.
 
-pro mvn_pui_aos,nt=nt,np=np,ns=ns,binsize=binsize,trange=trange,do3d=do3d
+pro mvn_pui_aos,nt=nt,np=np,ns=ns,binsize=binsize,trange=trange,do3d=do3d,nomodel=nomodel,c6=c6,d0=d0
 
-if n_elements(nt) eq 0 then nt=2
-if n_elements(np) eq 0 then np=2
+if n_elements(nt) eq 0 then nt=4
+if n_elements(np) eq 0 then np=3
 if n_elements(ns) eq 0 then ns=2
 if n_elements(binsize) eq 0 then binsize=0.
 if n_elements(trange) eq 0 then trange=0.
 if n_elements(do3d) eq 0 then do3d=0
+if n_elements(d0) eq 0 then d0=0
+if n_elements(nomodel) eq 0 then nomodel=0
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -26,6 +28,7 @@ pui0={              $ ;instrument and model constants structure
   swieb:48L,        $ ;swia # of energy bins
   staeb:64L,        $ ;static C0 # of energy bins
   sd1eb:32L,        $ ;static D1 # of energy bins
+  sd1mb:8L,         $ ;static D1 # of mass bins
   sweeb:64L,        $ ;swea # of energy bins
   toteb:100L,       $ ;total flux # of energy bins
   euvwb:190L,       $ ;euv # wavelength bins
@@ -44,7 +47,9 @@ pui0={              $ ;instrument and model constants structure
   msub:0,           $ ;species subscript (0=H, 1=O)
   tbin:binsize,     $ ;time bin size (s)
   trange:trange,    $ ;trange
-  do3d:do3d         $ ;do3d
+  do3d:do3d,        $ ;do3d
+  d0:d0,            $ ;load static d0
+  nomodel:nomodel   $ ;no model, just load and reduce data cadence
 }
 
 pui1={ $ ;energy bins structure
@@ -56,19 +61,16 @@ pui1={ $ ;energy bins structure
   d1dee:replicate(fnan,nt)                                             $ ;STATIC D1 and D0 dE/E
 }
 
-pui2={vtot:fnan,rtot:fnan,dr:fnan,ke:fnan,de:fnan,mv:fnan}
-pui2=replicate(pui2,[np,nt]) ;temporary structure
-
 ;**********DATA**********
-sep={rate_bo:replicate(fnan,pui0.sopeb),att:byte(1),fov:xyz}
+sep={rate_bo:replicate(fnan,pui0.sopeb),att:byte(0),fov:xyz}
 sep=replicate(sep,2) ;2 SEP's
 swim2={usw:fnan,fsw:fnan,esw:fnan,efsw:fnan,mfsw:fnan}
 if keyword_set(swim) then swi={swim:swim[0],swis:swis[0],swica:swics[0],swics:swics[0],swim2:swim2} else swi={swim:{density:fnan,velocity_mso:replicate(fnan,3)},swim2:swim2}
 swe={eflux:replicate(fnan,pui0.sweeb),efpot:replicate(fnan,pui0.sweeb),enpot:replicate(fnan,pui0.sweeb),eden:fnan,edenpot:fnan}
 ;if keyword_set(mvn_swe_engy) then swe=mvn_swe_engy[0]
-c0={eflux:replicate(fnan,pui0.staeb,2),energy:replicate(fnan,pui0.staeb)}
+c0={eflux:replicate(fnan,[pui0.staeb,2]),energy:replicate(fnan,pui0.staeb)}
 d1=byte(0)
-if keyword_set(do3d) then d1={eflux:replicate(fnan,[pui0.sd1eb,pui0.swina,pui0.swine,8]),energy:replicate(fnan,pui0.sd1eb)}
+if do3d or d0 then d1={eflux:replicate(fnan,[pui0.sd1eb,pui0.swina,pui0.swine,pui0.sd1mb]),energy:replicate(fnan,pui0.sd1eb),mass:replicate(fnan,pui0.sd1mb)}
 sta={fov:{x:xyz,z:xyz},c0:c0,d1:d1}
 mag={payload:xyz,mso:xyz}
 euv={l2:xyz,l3:replicate(fnan,pui0.euvwb)} ;here xyz is the 3 EUVM wavelength bands
@@ -76,29 +78,35 @@ euv={l2:xyz,l3:replicate(fnan,pui0.euvwb)} ;here xyz is the 3 EUVM wavelength ba
 data={sep:sep,swi:swi,swe:swe,sta:sta,mag:mag,euv:euv,scp:xyz}
 
 ;*********MODEL**********
-pi={nm:replicate(fnan,pui0.euvwb),tot:fnan}
-ei={en:replicate(fnan,pui0.sweeb),tot:fnan}
-ifreq={pi:pi,cx:fnan,ei:ei,tot:fnan}
+if ~nomodel then begin
+  pui2={vtot:fnan,rtot:fnan,dr:fnan,ke:fnan,de:fnan,mv:fnan}
+  pui2=replicate(pui2,[np,nt]) ;temporary structure
 
-swi1d=replicate({eflux:0.},pui0.swieb)
-sta1d=replicate({eflux:0.},pui0.staeb)
-swi3d=byte(0)
-sta3d=byte(0)
-if keyword_set(do3d) then swi3d=replicate({eflux:0.,qf:fnan,rv:rv},[pui0.swieb,pui0.swina,pui0.swine])
-if keyword_set(do3d) then sta3d=replicate({eflux:0.,qf:fnan,rv:rv},[pui0.sd1eb,pui0.swina,pui0.swine])
-sep={incident_rate:replicate(fnan,pui0.sormd),model_rate:replicate(fnan,pui0.sopeb),rv:rv,qf:fnan}
-sep=replicate(sep,2) ;2 SEP's
-toteflux=replicate(fnan,pui0.toteb)
-fluxes={sep:sep,swi1d:swi1d,swi3d:swi3d,sta1d:sta1d,sta3d:sta3d,toteflux:toteflux}
-params={fg:fnan,tg:fnan,rg:fnan,kemax:fnan,totphi:fnan,toteph:fnan,totmph:fnan,totnnn:fnan}
+  pi={nm:replicate(fnan,pui0.euvwb),tot:fnan}
+  ei={en:replicate(fnan,pui0.sweeb),tot:fnan}
+  ifreq={pi:pi,cx:fnan,ei:ei,tot:fnan}
 
-model={ifreq:ifreq,rv:replicate(fnan,[6,np]),fluxes:fluxes,params:params}
-model=replicate(model,ns)
+  swi1d=replicate({eflux:0.},pui0.swieb)
+  sta1d=replicate({eflux:0.},pui0.staeb)
+  swi3d=byte(0)
+  sta3d=byte(0)
+  if do3d then swi3d=replicate({eflux:0.,qf:fnan,rv:rv},[pui0.swieb,pui0.swina,pui0.swine])
+  if do3d then sta3d=replicate({eflux:0.,qf:fnan,rv:rv},[pui0.sd1eb,pui0.swina,pui0.swine])
+  sep={incident_rate:replicate(fnan,pui0.sormd),model_rate:replicate(fnan,pui0.sopeb),rv:rv,qf:fnan}
+  sep=replicate(sep,2) ;2 SEP's
+  toteflux=replicate(fnan,pui0.toteb)
+  fluxes={sep:sep,swi1d:swi1d,swi3d:swi3d,sta1d:sta1d,sta3d:sta3d,toteflux:toteflux}
+  params={fg:fnan,tg:fnan,rg:fnan,kemax:fnan,totphi:fnan,toteph:fnan,totmph:fnan,totnnn:fnan}
 
-;*********Data to Model Ratio**********
-d2m=replicate({sep:xyz,swi:xyz,sta:xyz},ns) ;here xyz is tot[model,data,cme] for sep, and [mean,stdev,nsample] of different energy/anode/elevations for swi and sta
+  model={ifreq:ifreq,rv:replicate(fnan,[6,np]),fluxes:fluxes,params:params}
+  model=replicate(model,ns)
 
-pui={data:data,model:model,d2m:d2m,centertime:0d}
-pui=replicate(pui,nt) ;model-data array of structures
+  ;*********Data to Model Ratio**********
+  d2m=replicate({sep:xyz,swi:xyz,sta:xyz},ns) ;here xyz is tot[model,data,cme] for sep, and [mean,stdev,nsample] of different energy/anode/elevations for swi and sta
 
+  pui={data:data,model:model,d2m:d2m,centertime:0d}
+  pui=replicate(pui,nt) ;model-data array of structures
+endif else begin
+  pui=replicate({data:data,centertime:0d},nt) ;data array of structures
+endelse
 end

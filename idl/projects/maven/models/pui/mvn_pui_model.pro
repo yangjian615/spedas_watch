@@ -26,8 +26,8 @@
 ;   noeuv: skips loading euv data. if not already loaded, uses default photoionization frequencies
 ;   nospice: skips loading spice kernels (use in case spice is already loaded, otherwise the code will fail)
 
-pro mvn_pui_model,binsize=binsize,trange=trange,np=np,ns=ns,do3d=do3d,exoden=exoden,savetplot=savetplot,nodataload=nodataload, $
-                  nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice
+pro mvn_pui_model,binsize=binsize,trange=trange,np=np,ns=ns,do3d=do3d,exoden=exoden,savetplot=savetplot,nodataload=nodataload,c6=c6,d0=d0, $
+                  nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice,nomodel=nomodel
 
 @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -35,7 +35,7 @@ if ~keyword_set(binsize) then binsize=32. ;simulation resolution or cadense (sec
 if ~keyword_set(trange) then get_timespan,trange else timespan,trange
 if ~keyword_set(np) then np=3333; number of simulated particles (1000 is usually enough for one gyro-period; increase for better statistics)
 if ~keyword_set(ns) then ns=2;  number of simulated species. default is 2 (H and O)
-if ~keyword_set(nodataload) then mvn_pui_data_load,do3d=do3d,nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice
+if ~keyword_set(nodataload) then mvn_pui_data_load,do3d=do3d,nomag=nomag,noswia=noswia,noswea=noswea,nostatic=nostatic,nosep=nosep,noeuv=noeuv,nospice=nospice,c6=c6,d0=d0
 if np lt 2 then begin
   dprint,'number of simulated particles in each time bin must be greater than 1'
   return
@@ -44,21 +44,22 @@ endif
 trange=time_double(trange)
 binsize=float(binsize)
 nt=1+floor((trange[1]-binsize/2.-trange[0])/binsize) ;number of time steps
-mvn_pui_aos,nt=nt,np=np,ns=ns,binsize=binsize,trange=trange,do3d=do3d ;initializes the array of structures for time series (pui) and defines intrument constants
+mvn_pui_aos,nt=nt,np=np,ns=ns,binsize=binsize,trange=trange,do3d=do3d,nomodel=nomodel,c6=c6,d0=d0 ;initializes the array of structures for time series (pui) and defines intrument constants
 mvn_pui_data_res ;change data resolution and load instrument pointings and put them in arrays of structures
+if pui0.nomodel then return
 mvn_pui_data_analyze ;analyze data: calculate ionization frequencies
 
 ttdtsf=1. ;time to do the simulation factor
-if keyword_set(do3d) then ttdtsf=2.4 ;2.4 times slower if you do3d!
+if pui0.do3d then ttdtsf=2.4 ;2.4 times slower if you do3d!
 simpred=ceil(10.*np*nt/1000./2880.*ttdtsf) ;predicted simulation time (s)
 dprint,dlevel=2,'All data loaded successfully, the pickup ion model is now calculating...'
 dprint,dlevel=2,'The simulation should take ~'+strtrim(simpred,2)+' seconds on a modern machine.'
 simtime=systime(1) ;simulation start time, let's do this!
 ;----------------------------------------
 species=['H','O','H2']
-mamu=[1.,16.,2.]; mass of [H=1 O=16 H2=2] (amu)
-nfacs=[1.,1.,100.] ;neutral density scale factor (scales according to radius, seasonal change in hydrogen density, etc.)
-ngps=[5.,1.,1.] ;a few gyro-periods required for pickup H+ and (H2)+, 1 gyroperiod is enough for pickup O+
+mamu=[1.,16.,1.]; mass of [H=1 O=16 H2=2] (amu)
+nfacs=[1.,1.,1] ;neutral density scale factor (scales according to radius, seasonal change in hydrogen density, etc.)
+ngps=[3.,1.,1.] ;a few gyro-periods required for pickup H+ and (H2)+, 1 gyroperiod is enough for pickup O+
 ngpsexoden=1. ;1 gyro-period for SWIA/STATIC reverse model
 for is=0,ns-1 do begin ;modeling pickup ions
   pui0.msub=is ;species subscript (0=H, 1=O, 2=other stuff)

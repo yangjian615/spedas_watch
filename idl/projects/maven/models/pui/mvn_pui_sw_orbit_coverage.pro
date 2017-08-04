@@ -11,7 +11,7 @@ if ~keyword_set(times) then times=dgen(range=timerange(trange),res=res)
 
 times=time_double(times)
 rmars=3400. ;mars radius (km)
-pos=spice_body_pos('MAVEN','MARS',frame='MSO',utc=times,check_objects=['MARS','MAVEN']) ;orbit position (km)
+pos=spice_body_pos('MAVEN','MARS',frame='MSO',utc=times,check_objects=['MARS','MAVEN'],/force_objects) ;orbit position (km)
 posx=reform(pos[0,*])
 posy=reform(pos[1,*])
 posz=reform(pos[2,*])

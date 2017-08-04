@@ -59,11 +59,13 @@ for i=0L,nd-1 do begin
   
   if keyword_set(s1_hkp) then s1_hkp=average_hist(s1_hkp,s1_hkp.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
   if keyword_set(s1_svy) then s1_svy=average_hist(s1_svy,s1_svy.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(s1_arc) then s1_arc=average_hist(s1_arc,s1_arc.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
+;  if keyword_set(s1_arc) then s1_arc=average_hist(s1_arc,s1_arc.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
+  s1_arc=0
   if keyword_set(s1_nse) then s1_nse=average_hist(s1_nse,s1_nse.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
   if keyword_set(s2_hkp) then s2_hkp=average_hist(s2_hkp,s2_hkp.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
   if keyword_set(s2_svy) then s2_svy=average_hist(s2_svy,s2_svy.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(s2_arc) then s2_arc=average_hist(s2_arc,s2_arc.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
+;  if keyword_set(s2_arc) then s2_arc=average_hist(s2_arc,s2_arc.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
+  s2_arc=0
   if keyword_set(s2_nse) then s2_nse=average_hist(s2_nse,s2_nse.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
   if keyword_set(m1_hkp) then m1_hkp=average_hist(m1_hkp,m1_hkp.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
   if keyword_set(m2_hkp) then m2_hkp=average_hist(m2_hkp,m2_hkp.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)

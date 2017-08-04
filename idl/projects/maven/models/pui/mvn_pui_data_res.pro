@@ -35,7 +35,7 @@ endif else begin
   pui.centertime=centertime
 
   ;rotate MAG data into MSO coordinates (Tesla)
-  pui.data.mag.mso=spice_vector_rotate(pui.data.mag.payload,centertime,'MAVEN_SPACECRAFT','MAVEN_MSO',check_objects='MAVEN_SPACECRAFT')
+  pui.data.mag.mso=spice_vector_rotate(pui.data.mag.payload,centertime,'MAVEN_SPACECRAFT','MAVEN_MSO',check_objects='MAVEN_SPACECRAFT',/force_objects)
 endelse
 
 ;----------SWIA----------
@@ -113,11 +113,13 @@ if keyword_set(mvn_c0_dat) then begin ;static 1d data (64e2m)
   store_data,'mvn_sta_sweep_index',data={x:c0time,y:mvn_c0_dat.swp_ind},limits={ylog:1,panel_size:.5,colors:'r'}
 endif
 
-if keyword_set(mvn_d0_dat) and pui0.do3d then begin ;static 3d survey data (d0: 32e4a16d8m 128s)
-  d0time = (mvn_d0_dat.time + mvn_d0_dat.end_time)/2.
+if keyword_set(mvn_d0_dat) and (pui0.do3d or pui0.d0) then begin ;static 3d survey data (d0: 32e4a16d8m 128s)
+  d0time=(mvn_d0_dat.time + mvn_d0_dat.end_time)/2.
   d0ef=average_hist2(mvn_d0_dat.eflux,d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 energy flux
   d0en=average_hist2(mvn_d0_dat.energy[mvn_d0_dat.swp_ind,*,0,0],d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 energy table
+  d0ms=average_hist2(reform(mvn_d0_dat.mass_arr[mvn_d0_dat.swp_ind,0,0,*]),d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 mass array
   d0dt=average_hist2(mvn_d0_dat.delta_t,d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 dt
+  pui.data.sta.d1.mass=transpose(d0ms)
   store_data,'mvn_sta_d0_mass_(amu)',data={x:d0time,y:reform(mvn_d0_dat.mass_arr[mvn_d0_dat.swp_ind,0,0,*])},limits={ylog:1,labels:['0','1','2','3','4','5','6','7'],psym:3}
 
   if keyword_set(mvn_d1_dat) then begin ;static 3d archive (burst) data (d1: 32e4a16d8m 16s)
@@ -183,15 +185,15 @@ if keyword_set(fismdata) then begin
 endif
 
 ;----------SPICE check----------
-kinfo = spice_kernel_info(use_cache=1)
-if keyword_set(kinfo) then begin
+kinfo=spice_kernel_info(use_cache=1)
+if n_elements(kinfo) gt 3 then begin ;at least a few spice files loaded
 
 ;----------Boundaries----------
 ;get_data,'wind',data=wind ;s/c altitude when in the solar wind (km)
 mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw,/conservative
 ;pui.data.swalt=alt_sw ;s/c altitude when in the solar wind (km)
 ;----------Positions----------
-pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects=['MARS','MAVEN']) ;MAVEN position MSO (m)
+pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects=['MARS','MAVEN'],/force_objects) ;MAVEN position MSO (m)
 
 ;mvn_pui_au_ls,times=centertime,mars_au=mars_au,mars_ls=mars_ls
 ;pui.data.mars_au=mars_au ;Mars heliocentric distance (AU)
@@ -201,11 +203,11 @@ pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_
 xdir=[1.,0,0]#replicate(1.,pui0.nt) ;X-direction (SEP front FOV)
 ydir=[0,1.,0]#replicate(1.,pui0.nt) ;Y-direction
 zdir=[0,0,1.]#replicate(1.,pui0.nt) ;Z-direction (symmetry axis of SWIA and STATIC)
-pui.data.sep[0].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP1','MSO',check_objects='MAVEN_SPACECRAFT'); sep1 look direction MSO
-pui.data.sep[1].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP2','MSO',check_objects='MAVEN_SPACECRAFT'); sep2 look direction MSO
+pui.data.sep[0].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP1','MSO',check_objects='MAVEN_SPACECRAFT',/force_objects); sep1 look direction MSO
+pui.data.sep[1].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP2','MSO',check_objects='MAVEN_SPACECRAFT',/force_objects); sep2 look direction MSO
 ;swizld=transpose(spice_vector_rotate(zdir,centertime,'MAVEN_SWIA','MSO',check_objects='MAVEN_SPACECRAFT')); SWIA-Z look direction
-pui.data.sta.fov.x=spice_vector_rotate(xdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT']); STATIC-X look direction
-pui.data.sta.fov.z=spice_vector_rotate(zdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT']); STATIC-Z look direction
+pui.data.sta.fov.x=spice_vector_rotate(xdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT'],/force_objects); STATIC-X look direction
+pui.data.sta.fov.z=spice_vector_rotate(zdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT'],/force_objects); STATIC-Z look direction
 endif
 
 tplot_options,'no_interp',1

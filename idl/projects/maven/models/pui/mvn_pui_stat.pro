@@ -36,9 +36,9 @@ endif
 fnan=!values.f_nan
 xyz=replicate(fnan,3) ;xyz or [mean,stdev,nsample]
 ifreq=replicate({pi:fnan,cx:fnan,ei:fnan},2)
-sep={tot:xyz,xyz:xyz,qf:fnan}
+sep={tot:xyz,xyz:xyz,qf:fnan,att:0b}
 d2m=replicate({sep:sep,swi:xyz,sta:xyz},2) ;2 is [sep1,sep2] for sep and [H,O] for swi and sta
-stat=replicate({centertime:0d,mag:xyz,vsw:xyz,nsw:fnan,ifreq:ifreq,d2m:d2m},[nt,ndays])
+stat=replicate({centertime:0d,mag:xyz,vsw:xyz,nsw:fnan,swimode:fnan,ifreq:ifreq,d2m:d2m},[nt,ndays])
 
 for j=0,ndays-1 do begin ;loop over days
   tr=trange[0]+[j,j+1]*secinday
@@ -50,11 +50,13 @@ for j=0,ndays-1 do begin ;loop over days
   stat[*,j].mag=pui.data.mag.mso
   stat[*,j].vsw=pui.data.swi.swim.velocity_mso
   stat[*,j].nsw=pui.data.swi.swim.density
+  stat[*,j].swimode=pui.data.swi.swim.swi_mode
   stat[*,j].ifreq.pi=pui.model.ifreq.pi.tot
   stat[*,j].ifreq.ei=pui.model.ifreq.ei.tot
   stat[*,j].ifreq.cx=pui.model.ifreq.cx
   stat[*,j].d2m.sep.tot=pui.d2m.sep
   stat[*,j].d2m.sep.xyz=pui.model[1].fluxes.sep.rv[0:2]
+  stat[*,j].d2m.sep.att=pui.data.sep.att
   stat[*,j].d2m.sep.qf=pui.model[1].fluxes.sep.qf
   stat[*,j].d2m.swi=pui.d2m.swi
   stat[*,j].d2m.sta=pui.d2m.sta

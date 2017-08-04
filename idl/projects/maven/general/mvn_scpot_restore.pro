@@ -24,13 +24,13 @@
 ;
 ;       SUCCESS:       Set to 1 if valid potentials are found.
 ;       
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 10:25:02 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23731 $
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2017-08-01 14:35:08 -0700 (Tue, 01 Aug 2017) $
+; $LastChangedRevision: 23748 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot_restore.pro $
 ;
 ;CREATED BY:    Shaosui Xu  06-23-17
-;FILE: mvn_scpot
+;FILE: mvn_scpot_restore
 ;-
 
 Pro mvn_scpot_restore, trange, results=results, tplot=tplot, orbit=orbit, full=full, $
@@ -70,30 +70,35 @@ Pro mvn_scpot_restore, trange, results=results, tplot=tplot, orbit=orbit, full=f
 
     for j=0,nfiles-1 do begin
        restore,filename=file[indx[j]]
+
        pot_comp=[temporary(pot_comp),mvn_scpot.pot_comp]
-       intx=where(pot_comp.time ge tmin and pot_comp.time le tmax)
-       pot_comp=pot_comp[intx]
        
-       pot_swelpw=[temporary(pot_swelpw),mvn_scpot.pot_swelpw]
-       intx=where(pot_swelpw.time ge tmin and pot_swelpw.time le tmax)
-       pot_swelpw=pot_swelpw[intx]
+       pot_swelpw=[temporary(pot_swelpw),mvn_scpot.pot_swelpw]       
        
-       pot_swepos=[temporary(pot_swepos),mvn_scpot.pot_swepos]
-       intx=where(pot_swepos.time ge tmin and pot_swepos.time le tmax)
-       pot_swepos=pot_swepos[intx]
+       pot_swepos=[temporary(pot_swepos),mvn_scpot.pot_swepos]       
 
-       pot_sweneg=[temporary(pot_sweneg),mvn_scpot.pot_sweneg]
-       intx=where(pot_sweneg.time ge tmin and pot_sweneg.time le tmax)
-       pot_sweneg=pot_sweneg[intx]
+       pot_sweneg=[temporary(pot_sweneg),mvn_scpot.pot_sweneg]       
 
-       pot_sta=[temporary(pot_sta),mvn_scpot.pot_sta]
-       intx=where(pot_sta.time ge tmin and pot_sta.time le tmax)
-       pot_sta=pot_sta[intx]
+       pot_sta=[temporary(pot_sta),mvn_scpot.pot_sta]       
 
        pot_sweshdw=[temporary(pot_sweshdw),mvn_scpot.pot_sweshdw]
-       intx=where(pot_sweshdw.time ge tmin and pot_sweshdw.time le tmax)
-       pot_sweshdw=pot_sweshdw[intx]
+       
     endfor
+    
+    ;trim data
+    intx=where(pot_comp.time ge tmin and pot_comp.time le tmax)
+    pot_comp=pot_comp[intx]
+    intx=where(pot_swelpw.time ge tmin and pot_swelpw.time le tmax)
+    pot_swelpw=pot_swelpw[intx]
+    intx=where(pot_swepos.time ge tmin and pot_swepos.time le tmax)
+    pot_swepos=pot_swepos[intx]
+    intx=where(pot_sweneg.time ge tmin and pot_sweneg.time le tmax)
+    pot_sweneg=pot_sweneg[intx]
+    intx=where(pot_sta.time ge tmin and pot_sta.time le tmax)
+    pot_sta=pot_sta[intx]
+    intx=where(pot_sweshdw.time ge tmin and pot_sweshdw.time le tmax)
+    pot_sweshdw=pot_sweshdw[intx]
+
     scpot={pot_comp:pot_comp, pot_swelpw:pot_swelpw,$
                        pot_swepos:pot_swepos, pot_sweneg:pot_sweneg,$
                        pot_sta:pot_sta,pot_sweshdw:pot_sweshdw}
@@ -104,12 +109,13 @@ Pro mvn_scpot_restore, trange, results=results, tplot=tplot, orbit=orbit, full=f
     if(keyword_set(tplot)) then begin
        ;tplot variable "scpot_comp"
        varname=scpot.pot_comp[0].pot_name
+       varname=['pot_swelpw','pot_swepos','pot_sweneg','pot_staneg','pot_sweshdw']
        clr=[!p.color,2,6,4,1]
        nv=n_elements(varname)
        for i=0,nv-1 do begin
           x=scpot.pot_comp.time
           y=replicate(!values.f_nan,n_elements(x))
-          inx=where(scpot.pot_comp.indx eq i+1,cts)
+          inx=where(scpot.pot_comp.method eq i+1,cts)
           if cts gt 0L then begin
              y[inx]=scpot.pot_comp[inx].potential
              store_data,varname[i],data={x:x,y:y}
@@ -127,7 +133,7 @@ Pro mvn_scpot_restore, trange, results=results, tplot=tplot, orbit=orbit, full=f
        store_data,'swe_pot_lab',data={x:[tmin,tmax],$
                                       y:replicate(!values.f_nan,2,5)}
        options,'swe_pot_lab','labels',$
-               ['swe-(shdw)','sta','swe-','swe+','swe/lpw']
+               ['swe-(sh)','sta','swe-','swe+','swe/lpw']
        options,'swe_pot_lab','colors',[1,4,6,2,!p.color]
        options,'swe_pot_lab','labflag',1
 

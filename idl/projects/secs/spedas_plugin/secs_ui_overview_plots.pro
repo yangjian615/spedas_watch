@@ -85,12 +85,12 @@ pro secs_ui_overview_plots_event, event
           if state.plot_type[1] EQ 1 then begin
             state.statusBar->update,'Creating EIC Mosaic Plot'
             state.historyWin->update,'Creating EIC Mosaic Plot'
-            eics_ui_overlay_plots, trange=trange
+            eics_ui_overlay_plots, trange=trange, showgeo=state.geolatlon, showmag=state.maglatlon
           endif
           if state.plot_type[2] EQ 1 then begin
             ;state.statusBar->update,'SEC Mosaic Plot not yet available'
             ;state.shistoryWin->update,'SEC Mosaic Plot not yet available'
-            seca_ui_overlay_plots, trange=trange
+            seca_ui_overlay_plots, trange=trange, showgeo=state.geolatlon, showmag=state.maglatlon
           endif
         endelse
       endif else begin
@@ -122,12 +122,12 @@ pro secs_ui_overview_plots_event, event
          if state.plot_type[1] EQ 1 then begin
              state.statusBar->update,'Creating EIC Mosaic Plot and png file'
              state.historyWin->update,'Creating EIC Mosaic Plot and png file'
-             eics_ui_overlay_plots, trange=trange, /createpng
+             eics_ui_overlay_plots, trange=trange, /createpng, showgeo=state.geolatlon, showmag=state.maglatlon
          endif
          if state.plot_type[2] EQ 1 then begin
            ;state.statusBar->update,'SEC Mosaic Plot not yet available'
            ;state.shistoryWin->update,'SEC Mosaic Plot not yet available'
-           seca_ui_overlay_plots, trange=trange, /createpng
+           seca_ui_overlay_plots, trange=trange, /createpng, showgeo=state.geolatlon, showmag=state.maglatlon
          endif
        endif else begin
          ok = dialog_message('Invalid start/end time, please use: YYYY-MM-DD/hh:mm:ss', $
@@ -151,6 +151,14 @@ pro secs_ui_overview_plots_event, event
        state.plot_type[0]=0
        state.plot_type[1]=0
        state.plot_type[2]=1
+     END
+
+     'GEOLATLON': BEGIN
+       if state.geolatlon EQ 1 then state.geolatlon=0 else state.geolatlon=1
+     END
+
+     'MAGLATLON': BEGIN
+       if state.maglatlon EQ 1 then state.maglatlon=0 else state.maglatlon=1
      END
 
     'DONE': BEGIN
@@ -226,6 +234,14 @@ pro secs_ui_overview_plots, gui_id = gui_id, $
       UValue='EICMOSAIC', uname='eicmosaic', /align_left)
     secmosaicButton = Widget_Button(plotBase, Value=' Overplot SECA/THEMIS ASI Mosaics ', $
       UValue='SECMOSAIC', uname='secmosaic', /align_left)
+    ;displayLabel=Widget_Label(plotBase, Value=' Display Options: ', /align_left)
+    labelbase=widget_base(quickBase, /row, xpad=8, /align_left)
+    displayLabel=Widget_Label(labelbase, Value=' Display Options: ', /align_left)
+    latlonbase=Widget_Base(quickBase, /row, xpad=8, /align_left, /nonexclusive)   
+    geoButton=Widget_Button(latlonbase, value=' Show Geographic Lat/Lon ', UValue='GEOLATLON', $
+      uname='geolatlon')
+    magButton=Widget_Button(latlonbase, value=' Show Magnetic Lat/Lon ', UValue='MAGLATLON', $
+      uname='maglatlon')
     goWebBase = Widget_Base(mainBase, /Row, xpad=8, /align_center)
     buttonBase = Widget_Base(mainBase, /row, /align_center)
     davailabilitybutton = widget_button(goWebBase, val = ' Check Data Availability ', $
@@ -267,11 +283,13 @@ pro secs_ui_overview_plots, gui_id = gui_id, $
   plot_type = make_array(3, /integer)
   plot_type[0] = 1
    
+  widget_control, geoButton, set_button=1
+  widget_control, magButton, set_button=1
   widget_control, quicklookButton, set_button=1
   
   state = {tlb:tlb, gui_id:gui_id, historyWin:historyWin,statusBar:statusBar, $
            tr_obj:tr_obj, plot_type:plot_type, success:ptr_new(success), data:data_ptr, $
-           callSequence:callSequence,windowStorage:windowStorage,$
+           callSequence:callSequence,windowStorage:windowStorage, geolatlon:1, maglatlon:1, $
            loadedData:loadedData}
 
   Centertlb, tlb         
