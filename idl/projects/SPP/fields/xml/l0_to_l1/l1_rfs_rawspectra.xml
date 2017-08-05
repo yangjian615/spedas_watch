@@ -68,7 +68,8 @@
 
   <cdf_var
       name   = "ch0_gain"
-      type   = "integer">
+      type   = "integer"
+      string = "true">
   <cdf_att
         FIELDNAM = "ch0_gain"
         FORMAT = "I8"

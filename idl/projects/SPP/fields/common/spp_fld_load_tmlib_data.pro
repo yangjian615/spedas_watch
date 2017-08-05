@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: sppfields2 $
-;  $LastChangedDate: 2017-07-20 07:08:00 -0700 (Thu, 20 Jul 2017) $
-;  $LastChangedRevision: 23674 $
+;  $LastChangedBy: pulupa $
+;  $LastChangedDate: 2017-08-04 17:05:11 -0700 (Fri, 04 Aug 2017) $
+;  $LastChangedRevision: 23761 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -289,6 +289,8 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
         var_name = var_names[i]
 
+        if data_hash[var_name].HasKey('string') then has_string = 1 else has_string = 0
+
         ; Check whether the request should be suppressed
 
         !NULL = null_items.Where(var_name, count = data_null_count)
@@ -302,6 +304,12 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
           returned_item = !NULL
 
           var_type = strlowcase((data_hash[var_name])['type'])
+
+          if has_string then begin
+            err = tm_get_item_char(sid, var_name, returned_string, 256, n_chars_returned)
+            print, returned_string, strlen(returned_string)
+            ;stop
+          end
 
           case var_type of
             'double': err = tm_get_item_r8(sid, var_name, returned_item, nelem, n_returned)

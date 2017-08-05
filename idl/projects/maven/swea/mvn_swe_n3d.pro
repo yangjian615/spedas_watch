@@ -13,8 +13,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-02-05 15:53:33 -0800 (Thu, 05 Feb 2015) $
-; $LastChangedRevision: 16883 $
+; $LastChangedDate: 2017-08-04 12:16:07 -0700 (Fri, 04 Aug 2017) $
+; $LastChangedRevision: 23758 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_n3d.pro $
 ;
 ;-
@@ -34,7 +34,7 @@ pro mvn_swe_n3d, ebins=ebins, abins=abins, dbins=dbins, obins=obins, mask_sc=mas
   endif
   
   if (size(swe_sc_pot,/type) ne 8) then begin
-    print,"No spacecraft potential.  Use mvn_swe_sc_pot."
+    print,"No spacecraft potential.  Use mvn_scpot."
     return
   endif
 

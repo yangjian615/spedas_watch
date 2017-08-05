@@ -34,7 +34,7 @@
 ;       NORM:          At each energy step, normalize the distribution to the mean.
 ;
 ;       POT:           Overplot an estimate of the spacecraft potential.  Must run
-;                      mvn_swe_sc_pot first.  Default = 1 (yes).
+;                      mvn_scpot first.  Default = 1 (yes).
 ;
 ;       SCP:           Temporarily override any other estimates of the spacecraft
 ;                      potential and force it to be this value.
@@ -159,8 +159,8 @@
 ;        NOTE:         Insert a text label.  Keep it short.
 ;        
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-13 10:29:05 -0700 (Mon, 13 Mar 2017) $
-; $LastChangedRevision: 22948 $
+; $LastChangedDate: 2017-08-04 12:15:25 -0700 (Fri, 04 Aug 2017) $
+; $LastChangedRevision: 23757 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_pad_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12

@@ -71,8 +71,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 10:12:37 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23725 $
+; $LastChangedDate: 2017-08-04 11:27:10 -0700 (Fri, 04 Aug 2017) $
+; $LastChangedRevision: 23755 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -219,12 +219,14 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
 ; Spacecraft Potential
 
-  mvn_scpot
-  engy_pan = 'swe_a4_pot'
-  options,engy_pan,'ytitle','SWEA elec!ceV'
-
+  engy_pan = 'swe_a4'
   pot_pan = ''
-  if keyword_set(sc_pot) then pot_pan = 'scpot_comp'
+  if keyword_set(sc_pot) then begin
+    mvn_scpot
+    engy_pan = 'swe_a4_pot'
+    options,engy_pan,'ytitle','SWEA elec!ceV'
+    pot_pan = 'scpot_comp'
+  endif
 
 ; Ephemeris information from SPICE
 

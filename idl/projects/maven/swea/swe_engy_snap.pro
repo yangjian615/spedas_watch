@@ -39,7 +39,7 @@
 ;                      uncertainties are not stored in the tplot variable.
 ;
 ;       POT:           Overplot an estimate of the spacecraft potential.  Must run
-;                      mvn_swe_sc_pot first.
+;                      mvn_scpot first.
 ;
 ;       SCP:           Temporarily override any other estimates of the spacecraft 
 ;                      potential and force it to be this value.
@@ -125,8 +125,8 @@
 ;                      interactive time range selection.)
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 15:24:02 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23737 $
+; $LastChangedDate: 2017-08-04 12:15:25 -0700 (Fri, 04 Aug 2017) $
+; $LastChangedRevision: 23757 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/swe_engy_snap.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12

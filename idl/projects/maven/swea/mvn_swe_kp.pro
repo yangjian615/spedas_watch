@@ -46,8 +46,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-04-09 08:16:18 -0700 (Sat, 09 Apr 2016) $
-; $LastChangedRevision: 20770 $
+; $LastChangedDate: 2017-08-04 12:17:22 -0700 (Fri, 04 Aug 2017) $
+; $LastChangedRevision: 23760 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
@@ -121,9 +121,18 @@ pro mvn_swe_kp, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
 
   mvn_swe_shape_par, pans=pans
 
-; Calculate the spacecraft potential
+; Calculate the spacecraft potential (LPW/SWE and SWE+ only)
+; Don't calculate the density for negative potentials.  These
+; occur mainly in the EUV shadow and the ionosphere -- in both
+; cases SWEA is not measuring the bulk of the distribution.
 
-  mvn_swe_sc_pot
+  mvn_scpot, lpwpot=1, pospot=1, negpot=0, stapot=0
+
+  indx = where(swe_sc_pot.potential lt 0., count)
+  if (count gt 0L) then begin
+    swe_sc_pot[indx].potential = !values.f_nan
+    mvn_swe_engy[indx].sc_pot = !values.f_nan
+  endif
 
 ; Calculate the density and temperature
     
