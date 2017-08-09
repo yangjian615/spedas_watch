@@ -13,8 +13,8 @@
 ;         
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-07-18 14:55:05 -0700 (Tue, 18 Jul 2017) $
-;$LastChangedRevision: 23640 $
+;$LastChangedDate: 2017-08-08 13:00:17 -0700 (Tue, 08 Aug 2017) $
+;$LastChangedRevision: 23766 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -47,7 +47,7 @@ pro mms_part_getspec, probes=probes, $
                       mag_suffix=mag_suffix,$
                         
                       subtract_bulk=subtract_bulk, $
-                        
+                      center_measurement=center_measurement, $
                       tplotnames=tplotnames, $
                       _extra=ex ;TBD: consider implementing as _strict_extra
 
@@ -100,18 +100,18 @@ pro mms_part_getspec, probes=probes, $
 
     if instrument eq 'fpi' then begin
         mms_load_fpi, probes=probes, trange=trange, data_rate=data_rate, level=level, $
-            datatype='d'+species+'s-dist', /time_clip
+            datatype='d'+species+'s-dist', /time_clip, center_measurement=center_measurement
         ; load the bulk velocity if the user requested to subtract it
         if keyword_set(subtract_bulk) then mms_load_fpi, probes=probes, trange=trange, data_rate=data_rate, level=level, $
             datatype='d'+species+'s-moms'
     endif else if instrument eq 'hpca' then begin
         mms_load_hpca, probes=probes, trange=trange, data_rate=data_rate, level=level, $
-            datatype='ion', /time_clip
+            datatype='ion', /time_clip, center_measurement=center_measurement
         ; load the bulk velocity if the user requested to subtract it
         if keyword_set(subtract_bulk) then mms_load_hpca, probes=probes, trange=trange, $
           data_rate=data_rate, level=level, datatype='moments'
     endif
-    
+
     for probe_idx = 0, n_elements(probes)-1 do begin
         bname = 'mms'+probes[probe_idx]+'_fgm_b_dmpa_srvy_l2_bvec'+mag_suffix
         pos_name = 'mms'+probes[probe_idx]+ '_defeph_pos'
