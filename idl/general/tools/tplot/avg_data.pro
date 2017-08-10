@@ -12,8 +12,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-12 08:04:38 -0700 (Wed, 12 Jul 2017) $
-; $LastChangedRevision: 23585 $
+; $LastChangedDate: 2017-08-09 08:44:02 -0700 (Wed, 09 Aug 2017) $
+; $LastChangedRevision: 23768 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/avg_data.pro $
 ;-
 
@@ -77,7 +77,7 @@ time = *p1.x
 if keyword_set(day) then trange=(round(average(time,/nan)/86400d -day/2.)+[0,day])*86400d
 
 if not keyword_set(trange) then trange= (floor(minmax(time)/res,/L64)+[0,1]) * res $
-  else trange = [time_double(trange(0)),time_double(trange(1))]
+  else trange = [time_double(trange[0]),time_double(trange[1])]
 
 ;check for data in this time range
 time_test = where(time Ge trange[0] And time Lt trange[1], ntimes_ok,/L64)

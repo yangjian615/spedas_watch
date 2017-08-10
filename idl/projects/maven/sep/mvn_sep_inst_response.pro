@@ -19,7 +19,7 @@ pdunn = file_retrieve(/struct)
 if ~keyword_set(age_limit) then age_limit=900 ; 3600*4
 pdunn.min_age_limit=age_limit
 pdunn.local_data_dir = '~/data/pdunn/'
-pdunn.remote_data_dir = 'http://sprg.ssl.berkeley.edu/~pdunn/'
+pdunn.remote_data_dir = 'http://sprg.ssl.berkeley.edu/~davin/pdunn/'
 pdunn.archive_ext = '.arc'
 pdunn.archive_dir = 'archive/'
 pdunn.ignore_filesize = 1
@@ -326,13 +326,16 @@ options,lim,xlog=1,/ylog,xrange=xrange,/ystyle,/xstyle,yrange=yrange,xmargin=[10
 if not keyword_set(single) then !p.multi = [0,4,4]
 if not keyword_set(ok1) then ok1 = 1
 wnum=0
+atten = (['Open','Closed'])[r.attenuator]
+title = r.desc+' '+r.particle_name+' SEP '+atten+' '
+
 for side =0,1 do begin
   slabel = side ? 'B' : 'A'
   for fto = 1,8 do begin
      if fto eq 8 then G2 = total(r.g4[*,*,1:7,side],3) $
      else G2 = r.g4[*,*,fto,side]
 dprint,dlevel=3,side,fto,total(g2)
-    options,lim,title = slabel+'_'+labels[fto]
+    options,lim,title = title+slabel+'_'+labels[fto]
     if keyword_set(single) then begin
        if single ne fto then continue
        if side ne 0 then continue
@@ -1086,7 +1089,10 @@ if 0 then $
 ;testrun = 'Geom1_front'
 ;testrun = 'Geom1_back'
 ;testrun = '4pi_sim'
-if not keyword_set(testrun) then testrun = 'run03_sep2'
+testrun = '4pi_run05_sep1'
+;testrun = 0
+
+if not keyword_set(testrun) then testrun = 'run04_sep2'
 undefine,resp_e0,resp_p0,resp_g0,resp_e1,resp_p1,resp_g1,bmap
 
 if ~keyword_set(ltestrun) || ltestrun ne testrun then begin
@@ -1288,6 +1294,74 @@ resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
 end
 
 
+'run02B_sep1':begin
+  mvn_sep_read_mult_sim_files,simstat_e,pathnames='g4work/sep/results/run02/mvn_sep1_e-_atten0_seed??_.dat',type=-1,data_e
+  mvn_sep_read_mult_sim_files,simstat_p,pathnames='g4work/sep/results/run02/mvn_sep1_proton_atten0_seed??_.dat',type=+1,data_p
+  ;mvn_sep_read_mult_sim_files,simstat_g,pathnames='g4work/sep/results/run02/mvn_sep1_gamma_atten0_seed??_.dat',type=0,data_g
+  resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
+  resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
+  ;resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
+  mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='g4work/sep/results/run02/mvn_sep1_e-_atten1_seed??_.dat',type=-1
+  mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='g4work/sep/results/run02/mvn_sep1_proton_atten1_seed??_.dat',type=+1
+  ;mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='g4work/sep/results/run02/mvn_sep1_gamma_atten1_seed??_.dat',type=0
+  resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
+  resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
+  ;resp_g1 = mvn_sep_inst_response(simstat_g1,data_g1,mapnum=mapnum,bmap=bmap)
+end
+
+'run02B_sep2':begin
+  mvn_sep_read_mult_sim_files,simstat_e,pathnames='g4work/sep/results/run02/mvn_sep2_e-_atten0_seed??_.dat',type=-1,data_e
+  mvn_sep_read_mult_sim_files,simstat_p,pathnames='g4work/sep/results/run02/mvn_sep2_proton_atten0_seed??_.dat',type=+1,data_p
+  ;mvn_sep_read_mult_sim_files,simstat_g,pathnames='g4work/sep/results/run02/mvn_sep2_gamma_atten0_seed??_.dat',type=0,data_g
+  resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
+  resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
+  ;resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
+  mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='g4work/sep/results/run02/mvn_sep2_e-_atten1_seed??_.dat',type=-1
+  mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='g4work/sep/results/run02/mvn_sep2_proton_atten1_seed??_.dat',type=+1
+  ;mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='g4work/sep/results/run02/mvn_sep2_gamma_atten1_seed??_.dat',type=0
+  resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
+  resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
+  ;resp_g1 = mvn_sep_inst_response(simstat_g1,data_g1,mapnum=mapnum,bmap=bmap)
+end
+
+
+'4pi_run05_sep1':begin
+  mvn_sep_read_mult_sim_files,simstat_e,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep1_e-_atten0_seed??_.dat',type=-1,data_e
+  mvn_sep_read_mult_sim_files,simstat_p,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep1_proton_atten0_seed??_.dat',type=+1,data_p
+  ;mvn_sep_read_mult_sim_files,simstat_g,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep1_gamma_atten0_seed??_.dat',type=0,data_g
+  str_element,/add,simstat_e,'desc','4Pi'
+  str_element,/add,simstat_p,'desc','4Pi'
+;  str_element,/add,simstat_g1,'desc','4Pi'
+  resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
+  resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
+  ;resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
+  mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep1_e-_atten1_seed??_.dat',type=-1
+  mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep1_proton_atten1_seed??_.dat',type=+1
+  ;mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep1_gamma_atten1_seed??_.dat',type=0
+  str_element,/add,simstat_e1,'desc','4Pi'
+  str_element,/add,simstat_p1,'desc','4Pi'
+  ;  str_element,/add,simstat_g1,'desc','4Pi'
+  resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
+  resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
+  ;resp_g1 = mvn_sep_inst_response(simstat_g1,data_g1,mapnum=mapnum,bmap=bmap)
+end
+
+'4pi_run05_sep2':begin
+  mvn_sep_read_mult_sim_files,simstat_e,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_e-_atten0_seed??_.dat',type=-1,data_e
+  mvn_sep_read_mult_sim_files,simstat_p,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_proton_atten0_seed??_.dat',type=+1,data_p
+  ;mvn_sep_read_mult_sim_files,simstat_g,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_gamma_atten0_seed??_.dat',type=0,data_g
+  resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
+  resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
+  ;resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
+  mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_e-_atten1_seed??_.dat',type=-1
+  mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_proton_atten1_seed??_.dat',type=+1
+  ;mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_gamma_atten1_seed??_.dat',type=0
+  resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
+  resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)
+  ;resp_g1 = mvn_sep_inst_response(simstat_g1,data_g1,mapnum=mapnum,bmap=bmap)
+end
+
+
 endcase
 
 filename = testrun+'_response-map-'+strtrim(mapnum,2)+'.sav'
@@ -1314,7 +1388,7 @@ printdat,f,output=s,/val
 fdesc = strjoin(strcompress(s,/remove_all),', ')
 dprint,fdesc ;,/val
 
-if 0 then begin
+if 1 then begin
 mvn_sep_inst_bin_response,simstat_e,data_e,mapnum=mapnum,noise_level=noise_level
 mvn_sep_inst_bin_response,simstat_p,data_p,mapnum=mapnum,noise_level=noise_level
 mvn_sep_inst_bin_response,simstat_g,data_g,mapnum=mapnum,noise_level=noise_level
@@ -1324,9 +1398,9 @@ mvn_sep_inst_bin_response,simstat_g,data_g,mapnum=mapnum,noise_level=noise_level
 win=0
 mvn_sep_response_plots,simstat_e,data_e,window=win,filter=f
 mvn_sep_response_plots,simstat_p,data_p,window=win,filter=f
+mvn_sep_response_plots,simstat_p1,data_p1,window=win,filter=f
 mvn_sep_response_plots,simstat_g,data_g,window=win,filter=f
 
-wi,0
 endif
 
 if 0 then begin

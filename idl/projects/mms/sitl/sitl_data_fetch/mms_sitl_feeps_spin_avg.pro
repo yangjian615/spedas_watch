@@ -8,8 +8,8 @@
 ;       with each measurement)
 ;
 ;$LastChangedBy: rickwilder $
-;$LastChangedDate: 2016-08-12 15:41:13 -0700 (Fri, 12 Aug 2016) $
-;$LastChangedRevision: 21642 $
+;$LastChangedDate: 2017-08-09 13:51:06 -0700 (Wed, 09 Aug 2017) $
+;$LastChangedRevision: 23769 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_feeps_spin_avg.pro $
 ;-
 pro mms_sitl_feeps_spin_avg, probe=probe, data_units = data_units, datatype = datatype, $
@@ -53,14 +53,14 @@ pro mms_sitl_feeps_spin_avg, probe=probe, data_units = data_units, datatype = da
   current_start = spin_starts[0]
   ; loop through the spins for this telescope
   for spin_idx = 1, n_elements(spin_starts)-1 do begin
-    spin_sum_flux[spin_idx-1, *] = average(flux_data.Y[current_start:spin_starts[spin_idx], *], 1)
+    spin_sum_flux[spin_idx-1, *] = average(flux_data.Y[current_start:spin_starts[spin_idx], *], 1, /nan)
 
     current_start = spin_starts[spin_idx]+1
   endfor
 
   store_data,var_name+'_spin'+suffix, data={x: flux_data.X[spin_starts], y: spin_sum_flux, v: flux_data.V}, dlimits=flux_dl
   options, var_name+'_spin'+suffix, spec=1
-  
+
   ylim, var_name+'_spin'+suffix, lower_en, 600., 1
   zlim, var_name+'_spin'+suffix, 0, 0, 1
   

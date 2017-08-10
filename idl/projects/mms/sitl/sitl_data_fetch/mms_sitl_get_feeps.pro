@@ -69,8 +69,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: rickwilder $
-;$LastChangedDate: 2016-11-03 15:25:10 -0700 (Thu, 03 Nov 2016) $
-;$LastChangedRevision: 22291 $
+;$LastChangedDate: 2017-08-09 13:51:06 -0700 (Wed, 09 Aug 2017) $
+;$LastChangedRevision: 23769 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_get_feeps.pro $
 ;-
 pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -81,21 +81,31 @@ pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
                   time_clip = time_clip, no_update = no_update, suffix = suffix, $
                   varformat = varformat, cdf_filenames = cdf_filenames, $
                   cdf_version = cdf_version, latest_version = latest_version, $
-                  min_version = min_version, spdf = spdf
+                  min_version = min_version, spdf = spdf, num_smooth = num_smooth, $
+                  available = available, versions = versions, always_prompt = always_prompt, $
+                  major_version=major_version, no_flatfield_corrections=no_flatfield_corrections
 
+    if undefined(level) then level_in = 'l2' else level_in = level
     if undefined(probes) then probes_in = ['1'] else probes_in = probes
     if undefined(datatype) then datatype_in = 'electron' else datatype_in = datatype
-    if undefined(level) then level_in = 'l1b' else level_in = level
-    if undefined(data_units) then data_units = 'intensity'
+    if undefined(data_units) then data_units = ['count_rate', 'intensity']
     if undefined(data_rate) then data_rate_in = 'srvy' else data_rate_in = data_rate
-    if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) then min_version = '4.3.0'
+    if undefined(min_version) && undefined(latest_version) && undefined(cdf_version) && undefined(major_version) then min_version = '5.5.0'
     if undefined(get_support_data) then get_support_data = 1 ; support data needed for sun removal and spin averaging
     l1a_datatypes = ['electron-bottom', 'electron-top', 'ion-top', 'ion-bottom']
-
+    
     if level_in eq 'l1a' && ~is_array(ssl_set_intersection(l1a_datatypes, [datatype_in])) then begin
         dprint, dlevel = 0, 'Couldn''t find the datatype: "' + datatype_in + '" for L1a data; loading all data...'
         datatype_in = l1a_datatypes
     endif
+    
+    ; if the user requests a specific varformat, we'll need to load 
+    ; the support data required for sun removal and spin averaging
+    if ~undefined(varformat) && (varformat[0] ne '*') then begin
+      if is_array(varformat) then varformat = [varformat, '*_spinsectnum', '*_pitch_angle'] $
+      else varformat = varformat + ' *_spinsectnum *_pitch_angle'
+    endif
+    if ~undefined(varformat) && ~undefined(get_support_data) then undefine, get_support_data
     
     mms_load_data, trange = trange, probes = probes_in, level = level_in, instrument = 'feeps', $
         data_rate = data_rate_in, local_data_dir = local_data_dir, source = source, $
@@ -103,18 +113,29 @@ pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
         no_update = no_update, suffix = suffix, varformat = varformat, cdf_filenames = cdf_filenames, $
         cdf_version = cdf_version, latest_version = latest_version, min_version = min_version, $
-        spdf = spdf, available = available, versions = versions, always_prompt = always_prompt
+        spdf = spdf, available = available, versions = versions, always_prompt = always_prompt, $
+        major_version=major_version
     
     if undefined(tplotnames) || tplotnames[0] eq '' then return
     
     if level_in eq 'l1a' then return ; avoid the following for L1a data
+
+    ; correct energy tables based on probe, sensor head and sensor ID
+    mms_sitl_feeps_correct_energies, probes=probes_in, data_rate = data_rate_in, level = level_in, suffix = suffix
     
+    ; apply flat field corrections for ions
+    if undefined(no_flatfield_corrections) then mms_feeps_flat_field_corrections, probes = probes_in, data_rate = data_rate_in, suffix = suffix
+
     for probe_idx = 0, n_elements(probes_in)-1 do begin
       this_probe = string(probes_in[probe_idx])
       for datatype_idx = 0, n_elements(datatype_in)-1 do begin
         this_datatype = datatype_in[datatype_idx]
-        ; split the extra integral channel from all of the spectrograms
         
+        ; remove bad eyes, bad energy channels
+        mms_sitl_feeps_remove_bad_data, probe=this_probe, datatype=this_datatype, $
+          data_rate=data_rate_in, level = level, suffix = suffix
+        
+        ; split the extra integral channel from all of the spectrograms
         mms_sitl_feeps_split_integral_ch, data_units, this_datatype, this_probe, $
           suffix = suffix, data_rate = data_rate_in, level = level_in
         
@@ -126,7 +147,7 @@ pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
     
           ; calculate the omni-directional spectra
           mms_sitl_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units[data_units_idx], $
-              data_rate = data_rate_in, suffix=suffix, level = level_in
+            data_rate = data_rate_in, suffix=suffix, level = level_in
     
           ; calculate the spin averages
           mms_sitl_feeps_spin_avg, probe=this_probe, datatype=this_datatype, suffix = suffix, data_units = data_units[data_units_idx], $
@@ -138,13 +159,5 @@ pro mms_sitl_get_feeps, trange = trange, probes = probes, datatype = datatype, $
         endfor
       endfor
     endfor
-    
-    ; interpolate to account for gaps in data near perigee for srvy data
-    if data_rate_in eq 'srvy' then begin
-      tdeflag, tnames('*_intensity_*'), 'repeat', /overwrite
-      tdeflag, tnames('*_count_rate_*'), 'repeat', /overwrite
-      tdeflag, tnames('*_counts_*'), 'repeat', /overwrite
-    endif
-end
-
+   
 end
