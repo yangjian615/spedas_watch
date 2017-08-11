@@ -396,6 +396,7 @@ pro mvn_sep_response_plot_gf,r,window=win,ylog=ylog,xrange=xrange  ;,face=face
    einc = r.e_inc
    str_element,r,'xbinrange',xrange
    if not keyword_set(xrange) then xrange = minmax(einc)
+   xrange = [1e3,1e5]
    title = r.desc+' '+r.particle_name+' '+face_str
    for side=0,1 do begin
      ls = linestyle[side]
@@ -479,7 +480,8 @@ if ~keyword_set(ei_range) then ei_range = minmax(r.e_inc)
 bin_range = [-2,260]
 if n_elements(face) eq 0 then face=0
 face_str = (['Aft','Both','Front'])[face+1]
-title= r.desc+' '+r.particle_name+' ('+r.mapname+') '+face_str
+atten_str = (['Open','Closed'])[r.attenuator]
+title= r.desc+' '+r.particle_name+' ('+r.mapname+' '+atten_str+') '+face_str
 resp_matrix = float(r.bin3[*,*,0:255] )   * (r.sim_area /100 / r.nd * 3.14)
 zrange = minmax(resp_matrix ,/pos)
 if keyword_set(face) then z = reform( resp_matrix[*, face lt 0, *] ) else z = total(/pres,resp_matrix,2)
@@ -1066,7 +1068,7 @@ mvn_sep_response_matrix_plots,resp,window=win++,/single
 ;mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=0         ; both faces
 mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=-1
 mvn_sep_response_bin_matrix_plot,resp,window=win++ ,face=+1
-mvn_sep_response_plot_gf,resp,window=win++,/ylog
+mvn_sep_response_plot_gf,resp,window=win++,/ylog,xrange=[1e3,1e5]
 
 end
 
@@ -1090,7 +1092,9 @@ if 0 then $
 ;testrun = 'Geom1_back'
 ;testrun = '4pi_sim'
 testrun = '4pi_run05_sep1'
+testrun = '4pi_run05_sep2'
 ;testrun = 0
+mapnum=9
 
 if not keyword_set(testrun) then testrun = 'run04_sep2'
 undefine,resp_e0,resp_p0,resp_g0,resp_e1,resp_p1,resp_g1,bmap
@@ -1350,11 +1354,15 @@ end
   mvn_sep_read_mult_sim_files,simstat_e,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_e-_atten0_seed??_.dat',type=-1,data_e
   mvn_sep_read_mult_sim_files,simstat_p,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_proton_atten0_seed??_.dat',type=+1,data_p
   ;mvn_sep_read_mult_sim_files,simstat_g,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_gamma_atten0_seed??_.dat',type=0,data_g
+  str_element,/add,simstat_e,'desc','4Pi'
+  str_element,/add,simstat_p,'desc','4Pi'
   resp_e0 = mvn_sep_inst_response(simstat_e,data_e,mapnum=mapnum,bmap=bmap)
   resp_p0 = mvn_sep_inst_response(simstat_p,data_p,mapnum=mapnum,bmap=bmap)
   ;resp_g0 = mvn_sep_inst_response(simstat_g,data_g,mapnum=mapnum,bmap=bmap)
   mvn_sep_read_mult_sim_files,simstat_e1,data_e1,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_e-_atten1_seed??_.dat',type=-1
   mvn_sep_read_mult_sim_files,simstat_p1,data_p1,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_proton_atten1_seed??_.dat',type=+1
+  str_element,/add,simstat_e1,'desc','4Pi'
+  str_element,/add,simstat_p1,'desc','4Pi'
   ;mvn_sep_read_mult_sim_files,simstat_g1,data_g1 ,pathnames='g4work/davinMaven/results/4PI/run05/mvn_sep2_gamma_atten1_seed??_.dat',type=0
   resp_e1 = mvn_sep_inst_response(simstat_e1,data_e1,mapnum=mapnum,bmap=bmap)
   resp_p1 = mvn_sep_inst_response(simstat_p1,data_p1,mapnum=mapnum,bmap=bmap)

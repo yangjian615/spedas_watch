@@ -12,8 +12,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-08-09 08:44:02 -0700 (Wed, 09 Aug 2017) $
-; $LastChangedRevision: 23768 $
+; $LastChangedDate: 2017-08-10 10:17:27 -0700 (Thu, 10 Aug 2017) $
+; $LastChangedRevision: 23772 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tools/tplot/avg_data.pro $
 ;-
 
@@ -91,7 +91,8 @@ ind = floor( (time-trange[0])/res,/L64 )
 max = round((trange[1]-trange[0])/res,/L64)
 w = where( ind lt 0 or ind ge max, c,/L64)
 if c ne 0 then ind[w]=-1
-newtime = (dindgen(max)+.5)*res+trange[0]
+mx = max(ind)+1
+newtime = (dindgen(mx)+.5)*res+trange[0]
 
 ;n = n_elements(time)
 ;ind = floor(time / res)

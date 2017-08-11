@@ -6,12 +6,21 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-27 09:10:05 -0700 (Thu, 27 Jul 2017) $
-; $LastChangedRevision: 23713 $
+; $LastChangedDate: 2017-08-10 10:18:22 -0700 (Thu, 10 Aug 2017) $
+; $LastChangedRevision: 23773 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/tplot_stuff_ut__define.pro $
 ;-
 
 ; ------- the following are some regression tests -------
+; the following is a regression test for avg_data bug on EDP data
+function tplot_stuff_ut::test_avg_data_edp
+  mms_load_edp,trange=['2017-08-03','2017-08-04'],data_rate='slow',probes='2',datatype='scpot',level='l2',/time_clip
+  avg_data,'mms2_edp_scpot_slow_l2',15.d,trange=['2017-08-03','2017-08-04'] 
+  get_data, 'mms2_edp_scpot_slow_l2_avg', data=d
+  assert, n_elements(d.X) eq n_elements(d.Y), 'Problem with avg_data bug with EDP data'
+  return, 1
+end
+
 ; the following is a regression test for using spd_smooth_time 
 function tplot_stuff_ut::test_smooth_time_different_var_types
   mms_load_fpi, datatype='dis-moms', trange=['2015-12-15', '2015-12-16']
