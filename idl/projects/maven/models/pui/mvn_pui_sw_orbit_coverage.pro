@@ -3,8 +3,8 @@
 
 pro mvn_pui_sw_orbit_coverage,trange=trange,plot=plt,res=res,times=times,spice=spice,alt_sw=alt_sw,conservative=conservative
 
-if ~keyword_set(trange) then trange=[time_double('14-10-1'),systime(1)]
-if keyword_set(spice) then kernels=mvn_spice_kernels(['lsk','spk','std','sck','frm'],/load,trange=trange)
+if ~keyword_set(trange) then trange=[time_double('14-11-27'),systime(1)]
+if keyword_set(spice) then kernels=mvn_spice_kernels(['lsk','spk','std','sck','frm'],/load,trange=trange,/clear)
 
 if ~keyword_set(res) then res=60.*10. ;default time resolution (10 mins)
 if ~keyword_set(times) then times=dgen(range=timerange(trange),res=res)
@@ -32,7 +32,7 @@ if keyword_set(plt) and (count gt 2) then begin
   imx=.1*findgen(31)
   imy=.1*findgen(31)
   g=image(poshist2d,imx,imy,rgb_table=colortable(0,/reverse),axis_style=2,margin=.2)
-  mvn_pui_plot_mars_bow_shock,/rm,/half
+  mvn_pui_plot_mars_bow_shock,/half
   c=colorbar(target=g,/orientation)
 
   store_data,'mvn_pos_x',times,posx

@@ -161,7 +161,7 @@ if keyword_set(traj) then begin ;Trajectories and Ring Distribution
   p=scatterplot3d([0,seprv[*,0]],[0,seprv[*,1]],[0,seprv[*,2]],/o,rgb=34,magnitude=[1,0,2],name='SEP Source') ;SEP on birth curve (SEP1F: blue, SEP2F, red)
   p=legend()
   p=text(0,0,tstring)
-  mvn_pui_plot_mars_bow_shock,/p3d
+  mvn_pui_plot_mars_bow_shock,/p3d,/km
 
   p=getwindows('trajring')
   if keyword_set(p) then p.setcurrent else p=window(name='trajring')

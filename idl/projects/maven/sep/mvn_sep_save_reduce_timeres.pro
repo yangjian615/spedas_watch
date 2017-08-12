@@ -55,26 +55,40 @@ for i=0L,nd-1 do begin
   
   f = fullres_file
   if file_test(/regular,f) eq 0 then continue
+  source_filename=f
   restore,f
   
-  if keyword_set(s1_hkp) then s1_hkp=average_hist(s1_hkp,s1_hkp.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(s1_svy) then s1_svy=average_hist(s1_svy,s1_svy.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-;  if keyword_set(s1_arc) then s1_arc=average_hist(s1_arc,s1_arc.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
+  if keyword_set(s1_svy) then begin
+    datt1=shift(s1_svy.att,-1) ne shift(s1_svy.att,1) ;throwing out att actuation times, resulting in bad counts
+    w1=where(datt1,nw1)
+    if nw1 ne 0 then s1_svy[w1] = fill_nan(s1_svy[0])
+    s1_svy=average_hist(s1_svy,s1_svy.time,binsize=res,range=tr,/nan)
+  endif
+
+  if keyword_set(s2_svy) then begin
+    datt2=shift(s2_svy.att,-1) ne shift(s2_svy.att,1)
+    w2=where(datt2,nw2)
+    if nw2 ne 0 then s2_svy[w2] = fill_nan(s2_svy[0])
+    s2_svy=average_hist(s2_svy,s2_svy.time,binsize=res,range=tr,/nan)
+  endif
+  
+  if keyword_set(s1_hkp) then s1_hkp=average_hist(s1_hkp,s1_hkp.time,binsize=res,range=tr,/nan)
+  if keyword_set(s1_nse) then s1_nse=average_hist(s1_nse,s1_nse.time,binsize=res,range=tr,/nan)
   s1_arc=0
-  if keyword_set(s1_nse) then s1_nse=average_hist(s1_nse,s1_nse.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(s2_hkp) then s2_hkp=average_hist(s2_hkp,s2_hkp.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(s2_svy) then s2_svy=average_hist(s2_svy,s2_svy.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-;  if keyword_set(s2_arc) then s2_arc=average_hist(s2_arc,s2_arc.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
+
+  if keyword_set(s2_hkp) then s2_hkp=average_hist(s2_hkp,s2_hkp.time,binsize=res,range=tr,/nan)
+  if keyword_set(s2_nse) then s2_nse=average_hist(s2_nse,s2_nse.time,binsize=res,range=tr,/nan)
   s2_arc=0
-  if keyword_set(s2_nse) then s2_nse=average_hist(s2_nse,s2_nse.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(m1_hkp) then m1_hkp=average_hist(m1_hkp,m1_hkp.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(m2_hkp) then m2_hkp=average_hist(m2_hkp,m2_hkp.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(ap20) then ap20=average_hist(ap20,ap20.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(ap21) then ap21=average_hist(ap21,ap21.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(ap22) then ap22=average_hist(ap22,ap22.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(ap23) then ap23=average_hist(ap23,ap23.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
+
+  if keyword_set(m1_hkp) then m1_hkp=average_hist(m1_hkp,m1_hkp.time,binsize=res,range=tr,/nan)
+  if keyword_set(m2_hkp) then m2_hkp=average_hist(m2_hkp,m2_hkp.time,binsize=res,range=tr,/nan)
+
+  if keyword_set(ap20) then ap20=average_hist(ap20,ap20.time,binsize=res,range=tr,/nan)
+  if keyword_set(ap21) then ap21=average_hist(ap21,ap21.time,binsize=res,range=tr,/nan)
+  if keyword_set(ap22) then ap22=average_hist(ap22,ap22.time,binsize=res,range=tr,/nan)
+  if keyword_set(ap23) then ap23=average_hist(ap23,ap23.time,binsize=res,range=tr,/nan)
 ;  if keyword_set(ap24) then ap24=average_hist(ap24,ap24.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(ap25) then ap25=average_hist(ap25,ap25.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
+  if keyword_set(ap25) then ap25=average_hist(ap25,ap25.time,binsize=res,range=tr,/nan)
   
   save,filename=redures_file,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,ap20,ap21,ap22,ap23,ap24,ap25,source_filename,sw_version,prereq_info,spice_info,description=description
 

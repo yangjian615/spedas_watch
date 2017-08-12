@@ -88,7 +88,7 @@ if keyword_set(sweaefdata) then begin
   sweadata.energy-=replicate(1.,pui0.sweeb)#swescpot ;correct for s/c potential
   mvn_swe_convert_units,sweadata,'eflux' ;convert back to eflux
   
-  store_data,'swe_a4_pot',data={x:sweadata.time,y:transpose(sweadata.data),v:transpose(sweadata.energy)},limits={spec:1,ylog:1,zlog:1,ystyle:1,yrange:[1.,5e3],zrange:[1e4,1e9],ztitle:'Eflux',ytickunits:'scientific'}
+  store_data,'mvn_swea_pot',data={x:sweadata.time,y:transpose(sweadata.data),v:transpose(sweadata.energy)},limits={spec:1,ylog:1,zlog:1,ystyle:1,yrange:[1.,5e3],zrange:[1e4,1e9],ztitle:'Eflux',ytickunits:'scientific'}
   sweaefpot=average_hist2(transpose(sweadata.data),sweadata.time,binsize=binsize,trange=trange,centertime=centertime); swea energy flux corrected for s/c potential
   sweaenpot=average_hist2(transpose(sweadata.energy),sweadata.time,binsize=binsize,trange=trange,centertime=centertime); swea energy bins corrected for s/c potential
   pui.data.swe.efpot=transpose(sweaefpot)

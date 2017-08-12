@@ -20,7 +20,7 @@ secinday=86400L ;number of seconds in a day
 if ~keyword_set(trange) then trange=[time_double('14-11-27'),systime(1)]
 ;trange=['14-12-1','14-12-3']
 trange=time_double(trange)
-ndays=round((trange[1]-trange[0])/secinday) ;number of days
+ndays=ceil((trange[1]-trange[0])/secinday) ;number of days
 
 if ~keyword_set(np) then np=3333
 if ~keyword_set(binsize) then binsize=64.
@@ -39,6 +39,8 @@ ifreq=replicate({pi:fnan,cx:fnan,ei:fnan},2)
 sep={tot:xyz,xyz:xyz,qf:fnan,att:0b}
 d2m=replicate({sep:sep,swi:xyz,sta:xyz},2) ;2 is [sep1,sep2] for sep and [H,O] for swi and sta
 stat=replicate({centertime:0d,mag:xyz,vsw:xyz,nsw:fnan,swimode:fnan,ifreq:ifreq,d2m:d2m},[nt,ndays])
+mvn_pui_aos ;initialize pui3
+stat2=replicate({d2m:pui3},ndays)
 
 for j=0,ndays-1 do begin ;loop over days
   tr=trange[0]+[j,j+1]*secinday
@@ -60,12 +62,13 @@ for j=0,ndays-1 do begin ;loop over days
   stat[*,j].d2m.sep.qf=pui.model[1].fluxes.sep.qf
   stat[*,j].d2m.swi=pui.d2m.swi
   stat[*,j].d2m.sta=pui.d2m.sta
+  stat2[j].d2m=pui3
 
   datestr=strmid(time_string(tr[0]),0,10)
   if keyword_set(img) then mvn_pui_tplot_3d_save,graphics=g,datestr=datestr
 
 endfor
-save,stat,binsize,np
+save,stat,stat2,binsize,np
 
 stop
 end

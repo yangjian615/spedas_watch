@@ -2,7 +2,7 @@
 ;takes care of 3d tplots and plots
 
 pro mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,lineplot=lineplot,$
-  datimage=datimage,modimage=modimage,d2mimage=d2mimage,nowin=nowin,denprof=denprof,d2mqf=d2mqf
+  datimage=datimage,modimage=modimage,d2mimage=d2mimage,nowin=nowin,denprof=denprof,d2mqf=d2mqf,denmap=denmap
 
   @mvn_pui_commonblock.pro ;common mvn_pui_common
   centertime=pui.centertime
@@ -14,7 +14,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=
   if keyword_set(swia3d) || keyword_set(stah3d) || keyword_set(stao3d) then switch3d=1 else switch3d=0
   if keyword_set (lineplot) or keyword_set (datimage) or keyword_set (modimage) or keyword_set (d2mimage) then img=1 else img=0
 
-  if keyword_set(store) or img or keyword_set (denprof) or keyword_set (d2mqf) then begin
+  if keyword_set(store) or img or keyword_set (denprof) or keyword_set (d2mqf) or keyword_set (denmap) then begin
 
     minpara=1.1 ;discard eflux below this factor times min eflux
     maxthre=7e7 ;above this eflux, we're probably looking at solar wind protons
@@ -60,6 +60,7 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=
     knnsta=d1eflux/kefsta
 
     if keyword_set(denprof) then p=plot([0],/nodat,/xlog,/ylog,xtitle='d2m Ratio',ytitle='Altitude (km)')
+    if keyword_set(denmap) then p=window()
     if keyword_set(d2mqf) then p=plot([0],/nodat,/ylog,xtitle='Quality Flag',ytitle='d2m Ratio')
 
     for im=0,1 do begin ;loop over mass 0:H, 1:O
@@ -89,18 +90,34 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=
         store_data,'mvn_d2m_ratio_swia_'+mstr[im],data=['mvn_d2m_ratio_all_swia_'+mstr[im],'mvn_d2m_ratio_avg_swia_'+mstr[im],'mvn_pui_line_1'],limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
         store_data,'mvn_d2m_ratio_stat_'+mstr[im],data=['mvn_d2m_ratio_all_stat_'+mstr[im],'mvn_d2m_ratio_avg_stat_'+mstr[im],'mvn_pui_line_1'],limits={ylog:1,yrange:[1e-2,1e2],ytickunits:'scientific'}
       endif
-      if keyword_set(denprof) and keyword_set(alt_sw) then begin
-        p=plot(knnswi2[swindex,*,*,*],krrswi[swindex,0:ebinlim[im,0],*,*,im]-rmars,/o,frmtstr[im,0],name=mstr[im]+'+ SWIA')
-        p=plot(knnsta2[swindex,*,*,*],krrsta[swindex,0:ebinlim[im,1],*,*,im]-rmars,/o,frmtstr[im,1],name=mstr[im]+'+ STATIC')
-      endif
-      if keyword_set(d2mqf) and keyword_set(alt_sw) then begin
-        p=plot(kqfswi[swindex,0:ebinlim[im,0],*,*,im],knnswi2[swindex,*,*,*],/o,frmtstr[im,0],name=mstr[im]+'+ SWIA')
-        p=plot(kqfsta[swindex,0:ebinlim[im,1],*,*,im],knnsta2[swindex,*,*,*],/o,frmtstr[im,1],name=mstr[im]+'+ STATIC')
+
+      if keyword_set(swindex) then begin
+        pui3.swi[im]=mvn_pui_2d_map(krvswi[swindex,0:ebinlim[im,0],*,*,im,*],knnswi2[swindex,*,*,*],pui0.d2mmap)
+        pui3.sta[im]=mvn_pui_2d_map(krvsta[swindex,0:ebinlim[im,1],*,*,im,*],knnsta2[swindex,*,*,*],pui0.d2mmap)
+        if keyword_set(denprof)then begin
+          p=plot(knnswi2[swindex,*,*,*],krrswi[swindex,0:ebinlim[im,0],*,*,im]-rmars,/o,frmtstr[im,0],name=mstr[im]+' SWIA')
+          p=plot(knnsta2[swindex,*,*,*],krrsta[swindex,0:ebinlim[im,1],*,*,im]-rmars,/o,frmtstr[im,1],name=mstr[im]+' STATIC')
+        endif
+        if keyword_set(denmap)then begin
+          p=image(alog10(pui3.swi[im]),layout=[2,2,1+im],/current,min=-1,max=1,margin=.2,rgb_table=colortable(33),axis_style=2,title=mstr[im]+' SWIA d2m')
+          mvn_pui_plot_mars_bow_shock,/half,/kkm
+          p=image(alog10(pui3.sta[im]),layout=[2,2,3+im],/current,min=-1,max=1,margin=.2,rgb_table=colortable(33),axis_style=2,title=mstr[im]+' STATIC d2m')
+          mvn_pui_plot_mars_bow_shock,/half,/kkm
+        endif
+        if keyword_set(d2mqf) then begin
+          p=plot(kqfswi[swindex,0:ebinlim[im,0],*,*,im],knnswi2[swindex,*,*,*],/o,frmtstr[im,0],name=mstr[im]+'+ SWIA')
+          p=plot(kqfsta[swindex,0:ebinlim[im,1],*,*,im],knnsta2[swindex,*,*,*],/o,frmtstr[im,1],name=mstr[im]+'+ STATIC')
+        endif
       endif
     endfor
 
     if keyword_set(denprof) or keyword_set(d2mqf) then begin
       p=legend()
+      p=text(0,0,time_string(pui0.trange))
+    endif
+
+    if keyword_set(denmap) then begin
+      p=colorbar(/orient)
       p=text(0,0,time_string(pui0.trange))
     endif
 

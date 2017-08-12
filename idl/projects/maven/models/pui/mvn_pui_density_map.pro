@@ -1,5 +1,5 @@
 ;20170412 Ali
-;models pickup ion fluxes and creates a density map using given constant upstream driver parameters
+;models pickup ion fluxes and creates a pickup ion density map using given constant upstream driver parameters
 
 pro mvn_pui_density_map
 simtime=systime(1) ;simulation start time, let's do this!
@@ -53,7 +53,7 @@ endfor
 g=image(alog10(denmap),scx-nxrm/nx,scy-nyrm/ny,rgb_table=colortable(33),axis_style=2,margin=.2,max=-1.,min=-4.,title='$Log_{10} [Pickup O^+ Density (cm^{-3})]$')
 ;g=image(alog10(dnnmap),scx-nxrm/nx,scy-nyrm/ny,rgb_table=colortable(33),axis_style=2,margin=.1,max=4.,min=0.)
 c=colorbar(target=g,/orientation)
-mvn_pui_plot_mars_bow_shock,/rm,lbst=17,ytitle='$Z_{MSE} (R_M)$'
+mvn_pui_plot_mars_bow_shock,/rm,lbst=17
 dprint,dlevel=2,'Simulation time: '+strtrim(systime(1)-simtime,2)+' seconds'
 stop
 

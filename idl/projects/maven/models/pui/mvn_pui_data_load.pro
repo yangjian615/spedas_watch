@@ -68,13 +68,10 @@ endif
 if ~keyword_set(noswea) then begin
   mvn_swe_load_l2,/spec ;load SWEA spec data
   mvn_swe_sumplot,eph=0,orb=0,/loadonly ;plot SWEA data, without calling maven_orbit_tplot, changing orbnum tplot variable, or plotting anything!
-;  tlimit,/full ;revert back to full time period, since swea may change tlimit to its available trange
-  mvn_swe_sc_pot ;calculate the spacecraft potential from SWEA data
-
   zlim,'swe_a4',1e4,1e9
-  store_data,'swea_a4_pot',data='swe_a4 mvn_swe_sc_pot'
-  ylim,'swea_a4_pot',3.,5e3,1
-  options,'swea_a4_pot','ytickunits','scientific'
+;  tlimit,/full ;revert back to full time period, since swea may change tlimit to its available trange
+  mvn_swe_sc_pot,/reset,/fill ;calculate the spacecraft potential from SWEA data
+  options,'swe_a4_pot','ytickunits','scientific'
 endif
 
 end

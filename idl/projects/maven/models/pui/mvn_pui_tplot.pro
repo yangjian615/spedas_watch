@@ -13,7 +13,7 @@
 ;   savetplot: saves the tplots as png files
 
 pro mvn_pui_tplot,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,$
-  datimage=datimage,modimage=modimage,d2mimage=d2mimage,tohban=tohban,savetplot=savetplot,denprof=denprof,d2mqf=d2mqf
+  datimage=datimage,modimage=modimage,d2mimage=d2mimage,tohban=tohban,savetplot=savetplot,denprof=denprof,d2mqf=d2mqf,denmap=denmap
 
   @mvn_pui_commonblock.pro ;common mvn_pui_common
 
@@ -118,12 +118,12 @@ pro mvn_pui_tplot,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=sta
 
   endif
 
-  if pui0.do3d then mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,datimage=datimage,modimage=modimage,d2mimage=d2mimage,denprof=denprof,d2mqf=d2mqf
+  if pui0.do3d then mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=stah3d,stao3d=stao3d,datimage=datimage,modimage=modimage,d2mimage=d2mimage,denprof=denprof,d2mqf=d2mqf,denmap=denmap
 
   if keyword_set(tplot) then begin
     datestr=strmid(time_string(pui0.trange[0]),0,10)
     wi,10 ;tplot raw data
-    tplot,window=10,'mvn_pos_(km) swea_a4_pot mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_swics_dt_(s) mvn_swica_dt_(s) mvn_B_1sec mvn_sep?_svy_DURATION mvn_sep?_fov mvn_sep?_B-O_Rate_Energy mvn_euv_l3 mvn_euv_data mvn_staz_fov mvn_sta_att mvn_sta_mode mvn_sta_sweep_index mvn_sta_d0_mass_(amu) mvn_sta_d01_dt_(s) mvn_sta_D01_dE/E'
+    tplot,window=10,'mvn_pos_(km) swe_a4_pot mvn_swim_density mvn_swim_velocity_mso mvn_swim_atten_state mvn_swim_swi_mode mvn_swis_en_eflux mvn_swics_dt_(s) mvn_swica_dt_(s) mvn_B_1sec mvn_sep?_svy_DURATION mvn_sep?_fov mvn_sep?_B-O_Rate_Energy mvn_euv_l3 mvn_euv_data mvn_staz_fov mvn_sta_att mvn_sta_mode mvn_sta_sweep_index mvn_sta_d0_mass_(amu) mvn_sta_d01_dt_(s) mvn_sta_D01_dE/E'
     if keyword_set(savetplot) then makepng,datestr+'_raw_data'
     wi,20 ;tplot useful pickup ion parameters. for diagnostic purposes, best shown on a vertical screen
     tplot,window=20,'mvn_mag_Btot_(nT) Sin(thetaUB) E_Motional_(V/km) Pickup_* Ionization_Frequencies_(s-1)'
@@ -139,6 +139,6 @@ pro mvn_pui_tplot,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=sta
     if keyword_set(savetplot) then makepng,datestr+'_main'
   endif
 
-  if keyword_set(tohban) then tplot,'alt2 swea_a4_pot mvn_swis_en_eflux mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_sep1_A-F_Rate_Energy mvn_sep1_B-O_Rate_Energy mvn_mag_MSO_(nT) mvn_mag_Btot_(nT) mvn_redures_LOmass_sta_c0 mvn_redures_HImass_sta_c0'
+  if keyword_set(tohban) then tplot,'alt2 swe_a4_pot mvn_swis_en_eflux mvn_Nsw_(cm-3) mvn_Vsw_MSO_(km/s) mvn_sep1_A-F_Rate_Energy mvn_sep1_B-O_Rate_Energy mvn_mag_MSO_(nT) mvn_mag_Btot_(nT) mvn_redures_LOmass_sta_c0 mvn_redures_HImass_sta_c0'
 
 end

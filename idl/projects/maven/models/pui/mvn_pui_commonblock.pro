@@ -1,18 +1,12 @@
 ;20170126 Ali
 ;Pickup ion code common blocks
 ;pui:  model-data structure
-;pui0: instrument constants
-;pui1: energy tables
+;pui0: instrument and model constants
+;pui1: energy bins
 ;pui2: temporary variables
-; 
-common mvn_pui_com,pui,pui0,pui1,pui2
-
-;instrument constants >>> now in pui0,pui1
-;common mvn_pui_com0,srmd,sopeb,swieb,staeb,sweeb,toteb,euvwb,swina,swine,$
-;                   swiatsa,swidee,stadee,swedee,totdee,totet,swiet,staet,sweet
-
-;temporary common block >>> now in pui2
-;common mvn_pui_com1,r3x,r3y,r3z,v3x,v3y,v3z,vxyz,rxyz,drxyz,ke,de,mv
+;pui3: 2D mapping of pickup ion d2m ratios
+;pui4 to pui 9: reserved for future use
+common mvn_pui_com,pui,pui0,pui1,pui2,pui3,pui4,pui5,pui6,pui7,pui8,pui9
 
 ;SWIA common block
 common mvn_swia_data,info_str,swihsk,swics,swica,swifs,swifa,swim,swis

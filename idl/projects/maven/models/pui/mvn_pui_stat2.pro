@@ -61,7 +61,7 @@ if 1 then begin ;orbit averaging
   index4[-1]=count2-1 ;last orbit ending edge
   stat5=replicate(stat4[0],norbits+1) ;orbit average statistics
 
-  for j=0,norbits do begin ;loop over days
+  for j=0,norbits do begin ;loop over orbits
     stat6=stat4[index4[j]+1:index4[j+1]]
 
     stat5[j].centertime=average(stat6.centertime)

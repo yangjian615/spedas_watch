@@ -49,7 +49,8 @@ pui0={              $ ;instrument and model constants structure
   trange:trange,    $ ;trange
   do3d:do3d,        $ ;do3d
   d0:d0,            $ ;load static d0
-  nomodel:nomodel   $ ;no model, just load and reduce data cadence
+  nomodel:nomodel,  $ ;no model, just load and reduce data cadence
+  d2mmap:50         $ ;dimensions of 2D d2m map
 }
 
 pui1={ $ ;energy bins structure
@@ -81,6 +82,7 @@ data={sep:sep,swi:swi,swe:swe,sta:sta,mag:mag,euv:euv,scp:xyz}
 if ~nomodel then begin
   pui2={vtot:fnan,rtot:fnan,dr:fnan,ke:fnan,de:fnan,mv:fnan}
   pui2=replicate(pui2,[np,nt]) ;temporary structure
+  pui3=replicate({swi:fnanns,sta:fnanns},[pui0.d2mmap,pui0.d2mmap]) ;2D mapping of pickup ion d2m ratios
 
   pi={nm:replicate(fnan,pui0.euvwb),tot:fnan}
   ei={en:replicate(fnan,pui0.sweeb),tot:fnan}
