@@ -6,8 +6,40 @@
 ;	Merges five separate methods for estimating the spacecraft potential.
 ;   In cases where more than one method yields a potential, this routine
 ;   sets a hierarchy for which method takes precedence.  The hierarchy
-;   depends on location (altitude, shadow).
-; 
+;   depends on location (altitude, shadow).  The five methods are:
+;
+;       SWE+    : Estimate positive potentials by looking for a sharp
+;                 break in the electron energy spectrum.  Mainly for
+;                 the solar wind and sheath.
+;                 (Author: D. Mitchell)
+;
+;       SWE-    : Estimate negative potentials by measuring shifts in
+;                 position of the He-II photoelectron peak.  Mainly
+;                 for the ionosphere.
+;                 (Author: S. Xu)
+;
+;       SWE/LPW : Use LPW I/V curves, empirically calibrated by the
+;                 SWE+ and SWE- methods.  Works almost everywhere, 
+;                 except in the EUV shadow or when the spacecraft 
+;                 charges to large negative potentials.
+;                 (Author: Y. Harada)
+;
+;       STA-    : Estimate negative potentials by the low energy 
+;                 cutoff of the H+ distribution (away from periapsis),
+;                 or energy shifts, relative to the ram energy, of O+
+;                 and O2+ (near periapsis).
+;                 (Author: J. McFadden)
+;
+;       SWEPAD  : Use pitch angle resolved photoelectron spectra to 
+;                 estimate negative potentials in the wake.  Combined
+;                 with the STA- method, may be used to distinguish 
+;                 spacecraft and Mars potentials.  Only works with
+;                 burst data.
+;                 (Author: S. Xu)
+;
+;   The general order of precedence is: SWE/LPW, SWE+, SWE-, STA-, and
+;   SWEPAD (when activated by keyword).
+;
 ;AUTHOR: 
 ;	David L. Mitchell
 ;
@@ -18,19 +50,26 @@
 ;   none - energy spectra are obtained from SWEA common block.
 ;
 ;KEYWORDS:
-;	POTENTIAL: Returns a time-ordered array of spacecraft potentials
+;	POTENTIAL: Returns a time-ordered array of structures:
 ;
-;   ERANGE:    Energy range over which to search for the potential.
-;              Default = [3.,30.]
+;                {time            : 0D       , $
+;                 potential       : 0.       , $
+;                 method          : -1          }
 ;
-;   THRESH:    Threshold for the minimum slope: d(logF)/d(logE). 
-;              Default = 0.05
+;              The methods are: -1 (invalid), 0 (manually set), 
+;              1 (SWE/LPW), 2 (SWE+), 3 (SWE-), 4 (STA-), 5 (SWEPAD).
 ;
-;              A smaller value includes more data and extends the range 
-;              over which you can estimate the potential, but at the 
-;              expense of making more errors.
+;   ERANGE:    Energy range over which to search for the potential
+;              with the SWE+ method.  Default = [3.,30.]
 ;
-;   MINFLUX:   Minimum peak energy flux.  Default = 1e6.
+;   THRESH:    Minimum value of d(logF)/d(logE) for identifying a 
+;              discontinuity in the electron energy spectrum for the
+;              SWE+ method.  Default = 0.05.
+;
+;              The optimal value depends on the plasma environment.
+;
+;   MINFLUX:   Minimum peak energy flux for the SWE+ method.
+;              Default = 1e6.
 ;
 ;   DEMAX:     The largest allowable energy width of the spacecraft 
 ;              potential feature.  This excludes features not related
@@ -69,34 +108,13 @@
 ;              to emphasize the returning photoelectrons and improve 
 ;              the edge detection (added by Yuki Harada).
 ;
-;   COMPOSITE: Call mvn_scpot_restore to load the composite spacecraft potential.
-;              This uses a combination of SWEA, LPW, and STATIC to estimate
-;              both positive and negative potentials.  There are five methods:
+;   COMPOSITE: The composite potential (SWE/LPW, SWE+, SWE-, STA-) has  
+;              been pre-calculated with this routine and stored in save 
+;              files.  Set this keyword to simply restore this file and
+;              save lots of time.  (Works for multiple days and can span
+;              UT day boundaries.)  Soon to be the default.
 ;
-;                SWE+    : Estimate positive potentials by looking for a sharp
-;                          break in the electron energy spectrum.
-;
-;                SWE-    : Estimate negative potentials by measuring shifts in
-;                          position of the He-II photoelectron peak.
-;
-;                SWE/LPW : Use LPW I/V curves, calibrated by the SWE+ method,
-;                          to fill in gaps where the SWE+ method by itself does
-;                          not work.  Also effective at filtering out bogus SWE+
-;                          estimates.
-;
-;                STA-    : Estimate negative potentials by the low energy 
-;                          cutoff of the H+ distribution (away from periapsis),
-;                          or energy shifts, relative to the ram energy, of O+
-;                          and O2+ (near periapsis).
-;
-;                SWEPAD  : Use pitch angle resolved photoelectron spectra to 
-;                          estimate negative potentials in the wake.  Combined
-;                          with the STA- method, may be used to distinguish 
-;                          spacecraft and Mars potentials.  See POT_IN_SHDW.
-;
-;              The order of precedence is: SWE/LPW, SWE+, SWE-, STA-, SWEPAD.
-;
-;   LPWPOT:    Use pre-calculated SWEA+LPW-derived potentials.  There is
+;   LPWPOT:    Use pre-calculated LPW/SWE derived potentials.  There is
 ;              a ~2-week delay in the production of this dataset.  You can
 ;              set this keyword to the full path and filename of a tplot 
 ;              save/restore file, if one exists.  Otherwise, this routine 
@@ -120,19 +138,22 @@
 ;
 ;   MAXDT:     Maximum time gap to interpolate across.  Default = 64 sec.
 ;              
-;   SHAPOT:    Calculate negative potentials with 'mvn_swe_sc_negpot_twodir_burst',
-;              Default = 0 (no). This routine calculates He II in both field-aligned
-;              directions, and uses the less negative one as s/c potentials if detected
-;              in both directions. The results are filled to SWEA common block as well. 
-;              Right row, it requires keyword "NEGPOT" to be 1. 
+;   SHAPOT:    Calculate negative potentials with 'mvn_swe_sc_negpot_
+;              twodir_burst'.  Two estimates are obtained, one each for
+;              the parallel and anti-parallel electron populations.  If
+;              both directions yield a potential, then the one closer to 
+;              zero is chosen for merging with other methods.
+;              Requires keyword NEGPOT to be set. 
 ;
 ;OUTPUTS:
-;   None - Result is stored in SPEC data structure, returned via POTENTIAL
-;          keyword, and stored as a TPLOT variable.
+;   None - Result is stored in the SPEC data structure, returned via the 
+;          POTENTIAL keyword, and stored as TPLOT variables.  Two TPLOT
+;          variables are created: one with a single merged potential and
+;          one showing the five unmerged methods in one panel.
 ;
-; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-08-01 14:41:41 -0700 (Tue, 01 Aug 2017) $
-; $LastChangedRevision: 23749 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-08-14 11:26:26 -0700 (Mon, 14 Aug 2017) $
+; $LastChangedRevision: 23787 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot.pro $
 ;
 ;-

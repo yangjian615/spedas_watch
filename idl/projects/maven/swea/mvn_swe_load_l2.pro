@@ -59,9 +59,11 @@
 ;                      Best practice is to initialize SPICE before calling
 ;                      this routine (or any other data loader).
 ;
+;       NOSPICE:       Do not initialize SPICE.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-01-09 16:36:56 -0800 (Mon, 09 Jan 2017) $
-; $LastChangedRevision: 22542 $
+; $LastChangedDate: 2017-08-14 11:10:46 -0700 (Mon, 14 Aug 2017) $
+; $LastChangedRevision: 23783 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l2.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-02-15
@@ -69,7 +71,8 @@
 ;-
 pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pad, ddd=ddd, $
                      sumplot=sumplot, status=status, orbit=orbit, loadonly=loadonly, $
-                     burst=burst, archive=archive, all=all, noerase=noerase, spiceinit=spiceinit
+                     burst=burst, archive=archive, all=all, noerase=noerase, spiceinit=spiceinit, $
+                     nospice=nospice
 
   @mvn_swe_com
 
@@ -246,9 +249,11 @@ pro mvn_swe_load_l2, trange, filename=filename, latest=latest, spec=spec, pad=pa
 ; Initialize SPICE if not already done or if asked
 ;   Best practice is to initialize SPICE before calling this routine.
 
-  mk = spice_test('*', verbose=-1)
-  indx = where(mk ne '', count)
-  if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init,/force
+  if (not keyword_set(nospice)) then begin
+    mk = spice_test('*', verbose=-1)
+    indx = where(mk ne '', count)
+    if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init,/force
+  endif
 
 ; Define decompression, telemetry conversion factors, and data structures
 

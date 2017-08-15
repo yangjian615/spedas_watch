@@ -66,8 +66,8 @@
 ;       BURST:        Plot a color bar showing PAD burst coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-20 10:05:38 -0700 (Thu, 20 Jul 2017) $
-; $LastChangedRevision: 23678 $
+; $LastChangedDate: 2017-08-14 11:10:12 -0700 (Mon, 14 Aug 2017) $
+; $LastChangedRevision: 23781 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -120,9 +120,11 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   pdC = ['']
   TClab = replicate('',8)
   TCcol = round(findgen(8)*(247./7.)) + 7
+  TCcol[0] = !p.color
   Vlab = TClab
   Tlab = TClab[0:2]
-  store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)} 
+  store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)}
+  options,'TV_frame','colors',TCcol
 
   dTmax = 10.
   dCmax = 10.

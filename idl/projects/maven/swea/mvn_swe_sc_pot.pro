@@ -77,9 +77,9 @@
 ;   None - Result is stored in SPEC data structure, returned via POTENTIAL
 ;          keyword, and stored as a TPLOT variable.
 ;
-; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-08-01 13:10:30 -0700 (Tue, 01 Aug 2017) $
-; $LastChangedRevision: 23745 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-08-14 11:17:15 -0700 (Mon, 14 Aug 2017) $
+; $LastChangedRevision: 23784 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -114,7 +114,7 @@ pro mvn_swe_sc_pot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2,
   if (size(minflux2,/type) gt 0) then minflux = float(minflux2)
   if (size(badval2,/type)  gt 0) then badval = float(badval2)
 
-  reset = keyword_set(reset)
+  reset = (keyword_set(reset) or (size(swe_sc_pot,/type) ne 8))
   dofill = keyword_set(fill)
 
   if keyword_set(ddd) then dflg = 1 else dflg = 0
