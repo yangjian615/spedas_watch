@@ -58,8 +58,8 @@
 ;       VERBOSE:       If set, then print diagnostic information to stdout.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-06 14:40:20 -0700 (Thu, 06 Jul 2017) $
-; $LastChangedRevision: 23555 $
+; $LastChangedDate: 2017-08-15 17:52:47 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23797 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_read_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -483,7 +483,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
 	  T = swe_t[order] & for i=(order-1),0,-1 do T = swe_t[i] + T*ahsk[0]
 	  swe_hsk[k].LVPST  = T
 
-	  swe_hsk[k].MCPHV  = ahsk[1]*swe_v[1] + 50. ; pull-down resistor
+	  swe_hsk[k].MCPHV  = ahsk[1]*swe_v[1] + 40. ; pull-down resistor
 	  swe_hsk[k].NRV    = ahsk[2]*swe_v[2]
 	  swe_hsk[k].ANALV  = ahsk[3]*swe_v[3]
       swe_hsk[k].DEF1V  = ahsk[4]*swe_v[4]
@@ -1027,6 +1027,7 @@ pro mvn_swe_read_l0, filename, trange=trange, cdrift=cdrift, maxbytes=maxbytes, 
       for ch=0,3 do begin
         mux = mvn_swe_getbits(pkt[ch+12],[4,0])
         value = ahsk[(ch*224):(ch*224)+223]*swe_v[mux]
+        if (mux eq 1) then value += 40.  ; MCPHV pull-down resistor
         if ((mux eq 0) or (mux eq 9) or (mux eq 16)) then begin
           T = swe_t[order] & for i=(order-1),0,-1 do T = swe_t[i] + T*value
           value = T

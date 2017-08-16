@@ -49,8 +49,8 @@
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-06 14:41:29 -0700 (Thu, 06 Jul 2017) $
-; $LastChangedRevision: 23556 $
+; $LastChangedDate: 2017-08-15 17:53:53 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23800 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crosscal.pro $
 ;
 ;CREATED BY:    David L. Mitchell  05-04-16
@@ -138,7 +138,14 @@ function mvn_swe_crosscal, time, on=on, off=off, refresh=refresh, extrap=extrap,
     cc[indx] = (ac[0,i] + day*(ac[1,i] + day*ac[2,i])) > 2.25D
   endif
 
-  indx = where(t ge t_mcp[7], count)  ; last SWE-SWI cross calibration
+  indx = where(t ge t_mcp[7], count)  ; MCPHV = 2800 V
+  if (count gt 0L) then begin
+    cc[indx] = 2.29D  ; from matching e- density before and after bump (ratio = 1.38 +- 0.18)
+    if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
+                           time_string(t_mcp[7])
+  endif
+
+  indx = where(t ge time_double('3000-01-01'), count)  ; disable for now
   if (count gt 0L) then begin
     i = 3
     if (eflg) then begin

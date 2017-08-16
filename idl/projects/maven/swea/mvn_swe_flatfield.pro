@@ -52,8 +52,8 @@
 ;       TEST:         Returns calibration used.  For testing.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-04 11:28:06 -0700 (Fri, 04 Aug 2017) $
-; $LastChangedRevision: 23756 $
+; $LastChangedDate: 2017-08-15 17:53:32 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23799 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_flatfield.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2016-09-28
@@ -222,11 +222,11 @@ function mvn_swe_flatfield, time, nominal=nominal, off=off, set=set, silent=sile
       test = frac + 5.
     endif
 
-;   Use the last known calibration for later times.
+;   Assume calibration reverts to Solar Wind 5 after MCP bump at t_mcp[7]
 
     if (t ge t_mcp[7]) then begin
-      swe_ogf = swe_ff[*,6]
-      test = 6.
+      swe_ogf = swe_ff[*,5]
+      test = 5.
     endif
 
 ;   Override this with a specific calibration, if requested --> for testing

@@ -35,8 +35,8 @@
 ;                   changes in a tplot window (assumed to exist).
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-06 14:41:52 -0700 (Thu, 06 Jul 2017) $
-; $LastChangedRevision: 23557 $
+; $LastChangedDate: 2017-08-15 17:54:11 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23801 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_config.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-13
@@ -115,6 +115,8 @@ pro mvn_swe_config, list=list, timebar=timebar
 
 ; 2016-10-01/00:00                                     ; beginning of EM-2
   t_mcp = [t_mcp, time_double('2016-10-25/21:52:45')]  ; bias adjustment (2700 -> 2750 V)
+  t_mcp = [t_mcp, time_double('2017-08-12/07:24:27')]  ; bias adjustment (2750 -> 2800 V)
+
   t_mcp = [t_mcp, time_double('2017-07-04/00:00:00')]  ; last SWE-SWI cross calibration
 
 ; Gather all the configuration change times into one variable (for timebar).
@@ -136,6 +138,7 @@ pro mvn_swe_config, list=list, timebar=timebar
     print,time_string(t_mcp[4]),' --> MCP bias revert to 2600 V (unintentional)'
     print,time_string(t_mcp[5]),' --> MCP bias restore to 2700 V'
     print,time_string(t_mcp[6]),' --> MCP bias adjustment (2700 -> 2750 V)'
+    print,time_string(t_mcp[7]),' --> MCP bias adjustment (2750 -> 2800 V)'
   endif
 
 ; Overplot dotted time bars on the current tplot window (assumed to exist)

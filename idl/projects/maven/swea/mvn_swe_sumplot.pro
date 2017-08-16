@@ -66,8 +66,8 @@
 ;       BURST:        Plot a color bar showing PAD burst coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-14 11:10:12 -0700 (Mon, 14 Aug 2017) $
-; $LastChangedRevision: 23781 $
+; $LastChangedDate: 2017-08-15 17:51:40 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23796 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -119,8 +119,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   pdT = ['']
   pdC = ['']
   TClab = replicate('',8)
-  TCcol = round(findgen(8)*(247./7.)) + 7
-  TCcol[0] = !p.color
+  TCcol = round(findgen(8)*((254.-32.)/7.)) + 32  ; optimized for color table 43
   Vlab = TClab
   Tlab = TClab[0:2]
   store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)}
@@ -213,6 +212,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
     store_data,'LVPST' ,data={x:swe_hsk.time, y:swe_hsk.LVPST}
     store_data,'MCPHV' ,data={x:swe_hsk.time, y:swe_hsk.MCPHV}
+       options,'MCPHV','ynozero',1
     store_data,'NRV'   ,data={x:swe_hsk.time, y:swe_hsk.NRV}
     store_data,'ANALV' ,data={x:swe_hsk.time, y:swe_hsk.ANALV}
     store_data,'DEF1V' ,data={x:swe_hsk.time, y:swe_hsk.DEF1V}
@@ -471,6 +471,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     options,mname,'yminor',4
     options,mname,'labels',['AZ','EL+90']
     options,mname,'labflag',1
+    options,mname,'colors',TCcol[[1,6]]
     options,mname,'psym',3
     
     if (plotap[2]) then pans = [pans,pname,mname]

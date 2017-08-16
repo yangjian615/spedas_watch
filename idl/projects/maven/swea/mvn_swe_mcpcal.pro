@@ -17,8 +17,8 @@
 ;                      across calibration sequence.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-04 12:16:32 -0700 (Fri, 04 Aug 2017) $
-; $LastChangedRevision: 23759 $
+; $LastChangedDate: 2017-08-15 17:53:12 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23798 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_mcpcal.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -88,8 +88,7 @@ pro mvn_swe_mcpcal, trange
   oplot,[2600.,2600.],[1e-6,1e3],line=2,color=6
   crosshairs,x,y
 
-  x = round(x)
-  print,x,round(x*mcp_to_hex),format='(i4," = ",z4.4)'
+  print,round(x),round(x*mcp_to_hex),format='(i4," = ",z4.4)'
 
   wset, Twin
 
