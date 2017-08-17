@@ -15,9 +15,9 @@
 ;OUTPUT:
 ; None
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2017-07-11 11:26:35 -0700 (Tue, 11 Jul 2017) $
-;$LastChangedRevision: 23576 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-08-16 09:38:01 -0700 (Wed, 16 Aug 2017) $
+;$LastChangedRevision: 23802 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_itype_sel.pro $
 ;-
 pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
@@ -182,7 +182,7 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
         
               if n_invali eq 0 then begin
                   if array_equal(dlist2_all,'*',/no_typeconv) then dlist2_all = 'None'
-              endif else if state.instr ne 'sst' then begin ;don't remove coord selections from list for sst l2
+              endif else if (state.instr ne 'sst') and (state.instr ne 'esa') then begin ;don't remove coord selections from list for sst l2
                   invali = invali[where(invali gt 0, n_invali_i)]
                   dlist2_all_t[invali] = 'invalid'
                   dlist2_all = dlist2_all[where(dlist2_all_t ne 'invalid')]
@@ -192,7 +192,7 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
       
           if (state.instr eq 'fbk') || (state.instr eq 'fft') || $
              (state.instr eq 'mom') || (state.instr eq 'spin') || $
-             (state.instr eq 'sst') || (state.instr eq 'gmom') then begin
+             (state.instr eq 'sst') || (state.instr eq 'gmom') || (state.instr eq 'esa') then begin
               widget_control, state.coordDroplist, Sensitive=0 ; Desensitize 'Output Coordinates' dropdown list
               state.outCoord = 'N/A'
           endif else begin

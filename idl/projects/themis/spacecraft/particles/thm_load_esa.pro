@@ -189,26 +189,27 @@ pro thm_load_esa,probe=probe, datatype=datatype, trange=trange, $
   moments_0 = ['mode', 'en_eflux', 'sc_pot', 'sc_current', 'magf', 'density', 'avgtemp', $
                'vthermal', 'flux', 'ptens', 'mftens', 't3', 'symm', $
                'symm_ang', 'magt3', 'data_quality']
-  if keyword_set(coord) then begin
-    coordkey=0
-    if size(coord,/dimen) eq 0 then coord=strsplit(coord,' ',/extract)
-    for i=0,2 do if total(strmatch(strtrim(strlowcase(coord),2),vcoord(i))) gt 0 then coordkey=coordkey+(i+2)
-    if total(strmatch(strtrim(strlowcase(coord),2),vcoord(3))) gt 0 then coordkey=9
-    case coordkey of
-      0 : begin
-          dprint,  "Invalid coordinate keyword.  Valid coordinates: 'dsl gse gsm all'"
-          return
-          end
-      2 : vl2coords='dsl'
-      3 : vl2coords='gse'
-      4 : vl2coords='gsm'
-      5 : vl2coords=['dsl', 'gse']
-      6 : vl2coords=['dsl', 'gsm']
-      7 : vl2coords=['gse', 'gsm']
-      else : vl2coords=['dsl', 'gse', 'gsm']
-    endcase
-  endif else vl2coords=['dsl', 'gse', 'gsm']
+;  if keyword_set(coord) then begin
+;    coordkey=0
+;    if size(coord,/dimen) eq 0 then coord=strsplit(coord,' ',/extract)
+;    for i=0,2 do if total(strmatch(strtrim(strlowcase(coord),2),vcoord(i))) gt 0 then coordkey=coordkey+(i+2)
+;    if total(strmatch(strtrim(strlowcase(coord),2),vcoord(3))) gt 0 then coordkey=9
+;    case coordkey of
+;      0 : begin
+;          dprint,  "Invalid coordinate keyword.  Valid coordinates: 'dsl gse gsm all'"
+;          return
+;          end
+;      2 : vl2coords='dsl'
+;      3 : vl2coords='gse'
+;      4 : vl2coords='gsm'
+;      5 : vl2coords=['dsl', 'gse']
+;      6 : vl2coords=['dsl', 'gsm']
+;      7 : vl2coords=['gse', 'gsm']
+;      else : vl2coords=['dsl', 'gse', 'gsm']
+;    endcase
+;  endif else vl2coords=['dsl', 'gse', 'gsm']
 
+  vl2coords=['dsl', 'gse', 'gsm']
   vl2dt = ''
   for k = 0, n_elements(instr_0)-1 Do Begin
     vl2dt = [vl2dt, instr_0[k]+'_'+moments_0]
