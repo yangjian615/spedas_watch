@@ -7,7 +7,7 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
 
   if typename(file) EQ 'UNDEFINED' then begin
 
-    dprint, 'No file provided to spp_fld_dfb_wf_load_l1', dlevel = 2
+    dprint, 'No file provided to spp_fld_rfs_rawspectra_load_l1', dlevel = 2
 
     return
 
@@ -114,7 +114,7 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
         alg_match = where((dat_algorithm.y MOD 2) EQ alg, alg_count)
         src_match = where(src_data EQ src, src_count)
 
-        match = where(dat_algorithm.y EQ alg and src_data EQ src, match_count)
+        match_t = where(dat_algorithm.y EQ alg and src_data EQ src, match_count)
 
         if match_count GT 0 then begin
 
@@ -176,20 +176,20 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
           gain = dblarr(match_count) + gain0
 
           if source_txt NE 'SCM' then begin
-            lo_gain = where(gain_data[match] EQ 0, n_lo_gain)
+            lo_gain = where(gain_data[match_t] EQ 0, n_lo_gain)
             if n_lo_gain GT 0 then gain[lo_gain] = 5d
           endif
 
           V2_factor = 2d * 4096d / 38.4d6 / ((gain*2048d)^2d * 0.782d * 65536d)
 
           if hfr_lfr_str EQ 'lfr' then V2_factor *= 8
-          dat_pow.y[match,*] *= transpose(rebin(V2_factor,n_elements(V2_factor),2048))
+          dat_pow.y[match_t,*] *= transpose(rebin(V2_factor,n_elements(V2_factor),2048))
 
           tplot_prefix = 'spp_fld_rfs_rawspectra_' + hfr_lfr_str + $
             '_ch' + string(ch, format='(I1)') + $
             '_src' + string(src, format = '(I1)')
 
-          ytitle = 'RFS ' + strupcase(hfr_lfr_str) + ' AUTO!C' + $
+          ytitle = 'RFS!C' + strupcase(hfr_lfr_str) + ' AUTO!C' + $
             'CH' + string(ch, format='(I1)') + ' ' + $
             source_txt
 
@@ -199,24 +199,42 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
           if hfr_lfr_str EQ 'lfr' then begin
             freq_div = 1.e3
             freq_div_str = '[kHz]'
+            yrange = [1.,3.e3]
+            freqs = spp_fld_rfs_freqs(/lfr)
+            clean_pfb = where(freqs.full_pfb_db LT -89.5)
+
           endif else begin
             freq_div = 1.e6
             freq_div_str = '[MHz]'
+            yrange = [5.e-3,30.]
+            freqs = spp_fld_rfs_freqs()
+            clean_pfb = where(freqs.full_pfb_db LT -89.5)
           endelse
 
-          store_data, tplot_prefix + '_pow', $
-            data = {x:dat_pow.x[match], $
-            y:alog10(dat_pow.y[match,*]), $
-            v:dat_pow.v[match,*]/freq_div}
+          dat_pow_str = {x:dat_pow.x[match_t], $
+            y:alog10(dat_pow.y[match_t,*]), $
+            v:dat_pow.v[match_t,*]/freq_div}
 
+          store_data, tplot_prefix + '_pow', $
+            data = dat_pow_str
+            
+          dat_pow_str_clean = {x:dat_pow_str.x, $
+            y:dat_pow_str.y[*,clean_pfb], $
+            v:dat_pow_str.v[*,clean_pfb]}
+
+          store_data, tplot_prefix + '_pow_clean', $
+            data = dat_pow_str_clean
+            
           options, tplot_prefix + '_*', 'spec', 1
           options, tplot_prefix + '_*', 'ylog', 1
           options, tplot_prefix + '_*', 'zlog', 0
           options, tplot_prefix + '_*', 'no_interp', 1
           options, tplot_prefix + '_*', 'yrange', yrange
           options, tplot_prefix + '_*', 'ystyle', 1
+          options, tplot_prefix + '_*', 'panel_size', 2
           options, tplot_prefix + '_pow', 'ytitle', ytitle
-          options, tplot_prefix + '_pow', 'ysubtitle', 'Freq ' + freq_div_str
+          options, tplot_prefix + '_pow_clean', 'ytitle', ytitle + '!CCLEAN'
+          options, tplot_prefix + '_pow*', 'ysubtitle', freq_div_str
           options, tplot_prefix + '_*', 'ztitle', 'Log V2/Hz'
 
         endif else begin
@@ -230,19 +248,101 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
 
   endforeach
 
+  ; Auto spectra
+
+  options, 'spp_fld_rfs_rawspectra_ch?_pow', 'ysubtitle', '[Hz]'
+  options, 'spp_fld_rfs_rawspectra_ch0_pow', 'ytitle', 'RFS!CAUTO!CCH0'
+  options, 'spp_fld_rfs_rawspectra_ch1_pow', 'ytitle', 'RFS!CAUTO!CCH1'
+
+  ; Compression
+
+  options, 'spp_fld_rfs_rawspectra_compression', 'psym', -4
+  options, 'spp_fld_rfs_rawspectra_compression', 'panel_size', 0.35
+  options, 'spp_fld_rfs_rawspectra_compression', 'ysubtitle', ''
+  options, 'spp_fld_rfs_rawspectra_compression', 'yrange', [-0.1,1.1]
+  options, 'spp_fld_rfs_rawspectra_compression', 'yticks', 1
+  options, 'spp_fld_rfs_rawspectra_compression', 'ytickv', [0.,1.]
+  options, 'spp_fld_rfs_rawspectra_compression', 'ytickname', ['No','Yes']
+  options, 'spp_fld_rfs_rawspectra_compression', 'ystyle', 1
+  options, 'spp_fld_rfs_rawspectra_compression', 'ytitle', 'RFS!CCompress'
+
+  ; Algorithm
+
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'psym', -4
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'panel_size', 0.35
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'ysubtitle', ''
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'yrange', [-0.1,1.1]
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'yticks', 1
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'ytickv', [0.,1.]
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'ytickname', ['HFR','LFR']
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'ystyle', 1
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'ytitle', 'RFS!CAlgorithm'
+
+
+  ; Raw 2048 bin real and imaginary
+
+  options, 'spp_fld_rfs_rawspectra_ch?_??', 'spec', 1
+  options, 'spp_fld_rfs_rawspectra_ch?_??', 'no_interp', 1
+  options, 'spp_fld_rfs_rawspectra_ch?_??', 'yrange', [0,2048]
+  options, 'spp_fld_rfs_rawspectra_ch?_??', 'ystyle', 1
+  options, 'spp_fld_rfs_rawspectra_ch?_??', 'yticks', 8
+  options, 'spp_fld_rfs_rawspectra_ch?_??', 'ysubtitle', '[Freq Bin]'
+  options, 'spp_fld_rfs_rawspectra_ch0_re', 'ytitle', 'RFS!CRAW RE!CCH0'
+  options, 'spp_fld_rfs_rawspectra_ch0_im', 'ytitle', 'RFS!CRAW IM!CCH1'
+  options, 'spp_fld_rfs_rawspectra_ch1_re', 'ytitle', 'RFS!CRAW RE!CCH0'
+  options, 'spp_fld_rfs_rawspectra_ch1_im', 'ytitle', 'RFS!CRAW IM!CCH1'
+
+  ; Source (integer value, not the string one)
+
+  options, 'spp_fld_rfs_rawspectra_ch?', 'psym', -4
+  options, 'spp_fld_rfs_rawspectra_ch?', 'panel_size', 0.75
+  options, 'spp_fld_rfs_rawspectra_ch?', 'ysubtitle', ''
+  options, 'spp_fld_rfs_rawspectra_ch?', 'yrange', [-0.5,7.5]
+  options, 'spp_fld_rfs_rawspectra_ch?', 'ystyle', 1
+  options, 'spp_fld_rfs_rawspectra_ch?', 'yminor', 1
+  options, 'spp_fld_rfs_rawspectra_ch?', 'yticks', 7
+  options, 'spp_fld_rfs_rawspectra_ch?', 'ytickv', findgen(8)
+
+  options, 'spp_fld_rfs_rawspectra_ch0', 'ytickname', ['V1-V2','V1-V3','SCM','GND','V1','V3','GND','GND']
+  options, 'spp_fld_rfs_rawspectra_ch1', 'ytickname', ['V3-V4','V3-V2','V1-V2','SCM','V2','V4','GND','GND']
+  options, 'spp_fld_rfs_rawspectra_ch0', 'colors', 6
+  options, 'spp_fld_rfs_rawspectra_ch1', 'colors', 2
+  options, 'spp_fld_rfs_rawspectra_ch?', 'ystyle', 1
   options, 'spp_fld_rfs_rawspectra_ch0', 'ytitle', 'RFS!CCH0!CSRC'
   options, 'spp_fld_rfs_rawspectra_ch1', 'ytitle', 'RFS!CCH1!CSRC'
-  options, 'spp_fld_rfs_rawspectra_ch?', 'yminor', 4
-  options, 'spp_fld_rfs_rawspectra_ch?', 'panel_size', 0.25
-  options, 'spp_fld_rfs_rawspectra_ch?', 'ynozero', 1
-  options, 'spp_fld_rfs_rawspectra_ch?', 'ysubtitle', ''
-  options, 'spp_fld_rfs_rawspectra_ch?', 'ytickformat', '(I1)'
-  options, 'spp_fld_rfs_rawspectra_ch?', 'yticks', 2
-  options, 'spp_fld_rfs_rawspectra_ch?', 'ystyle', 1
-  options, 'spp_fld_rfs_rawspectra_ch?', 'yrange', [0,8]
-  
 
+  ; Gain (integer value, not the string one)
 
-  ;tplot, 'spp_fld_rfs_rawspectra_?fr_ch?_src?_pow'
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'psym', -4
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'panel_size', 0.35
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'ysubtitle', ''
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'yrange', [-0.1,1.1]
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'yticks', 1
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'ytickv', [0.,1.]
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'ytickname', ['Lo','Hi']
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'ystyle', 1
+  options, 'spp_fld_rfs_rawspectra_ch0_gain', 'colors', 6
+  options, 'spp_fld_rfs_rawspectra_ch1_gain', 'colors', 2
+  options, 'spp_fld_rfs_rawspectra_ch0_gain', 'ytitle', 'RFS!CCH0!CGain'
+  options, 'spp_fld_rfs_rawspectra_ch1_gain', 'ytitle', 'RFS!CCH1!CGain'
+
+  ; String options
+
+  options, 'spp_fld_rfs_rawspectra_*_string', 'tplot_routine', 'strplot'
+  options, 'spp_fld_rfs_rawspectra_*_string', 'yrange', [-0.1,1.0]
+  options, 'spp_fld_rfs_rawspectra_*_string', 'panel_size', 0.35
+  options, 'spp_fld_rfs_rawspectra_*_string', 'ystyle', 1
+  options, 'spp_fld_rfs_rawspectra_*_string', 'yticks', 1
+  options, 'spp_fld_rfs_rawspectra_*_string', 'ytickformat', '(A1)'
+  options, 'spp_fld_rfs_rawspectra_*_string', 'ysubtitle', ''
+
+  options, 'spp_fld_rfs_rawspectra_ch0_gain_string', 'ytitle', $
+    'RFS!CCH0!CGain'
+  options, 'spp_fld_rfs_rawspectra_ch0_string', 'ytitle', $
+    'RFS!CCH0!CSRC'
+  options, 'spp_fld_rfs_rawspectra_ch1_gain_string', 'ytitle', $
+    'RFS!CCH1!CGain'
+  options, 'spp_fld_rfs_rawspectra_ch1_string', 'ytitle', $
+    'RFS!CCH1!CSRC'
 
 end

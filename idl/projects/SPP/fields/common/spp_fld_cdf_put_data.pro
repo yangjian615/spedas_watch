@@ -33,14 +33,17 @@
 ; CREATED BY:
 ;   pulupa
 ;
-; $LastChangedBy: pulupalap $
-; $LastChangedDate: 2017-05-20 11:46:22 -0700 (Sat, 20 May 2017) $
-; $LastChangedRevision: 23342 $
+; $LastChangedBy: pulupa $
+; $LastChangedDate: 2017-08-17 17:21:12 -0700 (Thu, 17 Aug 2017) $
+; $LastChangedRevision: 23810 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_put_data.pro $
 ;-
 pro spp_fld_cdf_put_data, fileid, data, close = close
 
   foreach data_item, data, item_name do begin
+
+    data_array = []
+    data_array_string = []
 
     if data_item.HasKey('cdf_att') EQ 0 then begin
 
@@ -78,9 +81,9 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
             data_array = call_function(data_item['convert_routine'], raw_data_array)
 
           endif else begin
-            
+
             data_array = raw_data_array
-                        
+
           endelse
 
         endif else begin
@@ -95,6 +98,12 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
         dprint, 'Data Type: ', size(data_array, /tname), dlevel = 3
         dprint, 'Data Dimensions: ', data_dim, dlevel = 3
         dprint, 'Number of CDF dimensions: ', data_ndim, dlevel = 3
+
+        data_array_string = (data_item['data_string']).ToArray()
+
+        dprint, 'Number of Strings:', n_elements(data_array_string), dlevel = 3
+
+        ;stop
 
       end
 
@@ -147,6 +156,15 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
       endelse
 
+      if n_elements(data_array_string) GT 0 then begin
+
+        varid_str = cdf_varcreate(fileid, cdf_var_name + '_string', $
+          numelem = strlen(data_array_string[0]), /rec_vary, /zvariable, $
+          /cdf_char)
+
+      endif
+
+
       dprint, '', dlevel = 3
       dprint, 'Variable ', varid, cdf_var_name, $
         format = '(A, I6, A20)', dlevel = 3
@@ -164,11 +182,29 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
         if cdf_attname EQ 'VAR_SPARSERECORDS' then begin
 
           if cdf_att EQ 'PAD_MISSING' then begin
-            cdf_control, fileid, var = cdf_var_name, SET_SPARSERECORDS = 'PAD_SPARSERECORDS'
+            cdf_control, fileid, var = cdf_var_name, $
+              SET_SPARSERECORDS = 'PAD_SPARSERECORDS'
           endif
 
         endif
 
+        if n_elements(data_array_string) GT 0 then begin
+
+          case cdf_attname of 
+            'FORMAT': ; no FORMAT attribute for string variable
+            'FILLVAL': cdf_attput, fileid, cdf_attname, varid_str, $
+              ' ', /zvariable
+            'SCALEMIN': ; no SCALEMIN attribute for string variable
+            'SCALEMAX': ; no SCALEMAX attribute for string variable
+            'VALIDMIN': ; no VALIDMIN attribute for string variable
+            'VALIDMAX': ; no VALIDMAX attribute for string variable
+            'DATA_TYPE': cdf_attput, fileid, cdf_attname, varid_str, $
+              'CDF_CHAR', /zvariable
+            ELSE: cdf_attput, fileid, cdf_attname, varid_str, $
+              cdf_att, /zvar
+          end
+
+        end
         ;end
 
       endforeach
@@ -176,6 +212,12 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
       if non_null_count GT 0 then begin
 
         cdf_varput, fileid, cdf_var_name, data_array
+
+        if n_elements(data_array_string) GT 0 then begin
+
+          cdf_varput, fileid, cdf_var_name + '_string', data_array_string
+
+        endif
 
       endif else begin
 

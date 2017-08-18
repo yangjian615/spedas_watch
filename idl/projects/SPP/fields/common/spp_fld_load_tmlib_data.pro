@@ -1,7 +1,7 @@
 ;
 ;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-08-04 17:05:11 -0700 (Fri, 04 Aug 2017) $
-;  $LastChangedRevision: 23761 $
+;  $LastChangedDate: 2017-08-17 17:21:12 -0700 (Thu, 17 Aug 2017) $
+;  $LastChangedRevision: 23810 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -20,11 +20,11 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   cdf_xml = spp_fld_l1_cdf_xml_file(l1_data_type)
 
   if cdf_xml EQ '' then begin
-    
+
     dprint, 'No XML file found for data type ' + l1_data_type, dlevel = 1
-    
+
     return, 0
-    
+
   endif
 
   ;
@@ -156,6 +156,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     for i = 0, n_elements(match_ind) - 1 do begin
 
       (data_hash[var_names[i]])['data'] = LIST()
+      (data_hash[var_names[i]])['data_string'] = LIST()
 
     endfor
 
@@ -289,7 +290,13 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
         var_name = var_names[i]
 
-        if data_hash[var_name].HasKey('string') then has_string = 1 else has_string = 0
+        if data_hash[var_name].HasKey('string') and data_hash[var_name].HasKey('string_len') then begin
+          has_string = 1
+          string_length = (data_hash[var_name])['string_len']
+        endif else begin
+          has_string = 0
+          string_length = 0
+        endelse
 
         ; Check whether the request should be suppressed
 
@@ -306,8 +313,19 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
           var_type = strlowcase((data_hash[var_name])['type'])
 
           if has_string then begin
-            err = tm_get_item_char(sid, var_name, returned_string, 256, n_chars_returned)
-            print, returned_string, strlen(returned_string)
+
+            ; Get the string data from TMlib
+
+            err = tm_get_item_char(sid, var_name, returned_string, string_length, n_chars_returned)
+
+            ; Add the string (with a constant width) to the data variable
+            ; (IDL CDF write routines seem to only allow storing CDF string
+            ; variables if they are all of the same width.
+
+            (data_hash[var_name])['data_string'].Add, $
+              returned_string + String(Replicate(32B, string_length - strlen(returned_string)))
+
+            dprint, returned_string, strlen(returned_string), dlevel = 4
             ;stop
           end
 
@@ -340,11 +358,11 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     endif
 
   endwhile
-  
+
   err = tm_close(sid)
-  
+
   ; TODO: find or add tm_close
-  ; 
+  ;
   ; Return (optional) IDL attributes from XML file.
   ; IDL attributes are used in processing of data (e.g. manipulation of
   ; the MAG survey APIDs to change from ~512 vectors per a single packet time to
