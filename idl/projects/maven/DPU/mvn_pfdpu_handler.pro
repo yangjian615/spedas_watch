@@ -153,8 +153,8 @@ end
 
 
 
-pro mvn_pfdpu_handler,ccsds,decom=decom,reset=reset  ,clear=clear ,set_realtime=set_realtime,debug=debug,finish=finish, $
-    hkp_tags=hkp_tags,shkp_tags=shkp_tags,oper_tags=oper_tags
+pro mvn_pfdpu_handler,ccsds,decom=decom,reset=reset,clear=clear,set_realtime=set_realtime,debug=debug,finish=finish, $
+    hkp_tags=hkp_tags,shkp_tags=shkp_tags,oper_tags=oper_tags,lowres=lowres
 
 @mvn_pfdpu_handler_commonblock.pro
 ;common mvn_apid_misc_handler_com,manage,realtime,apid20x,apid21x,apid22x,apid23x,apid24x,apid25x
@@ -171,6 +171,7 @@ pro mvn_pfdpu_handler,ccsds,decom=decom,reset=reset  ,clear=clear ,set_realtime=
         endif
         dprint,dlevel=2,'PFDPU handler ' ,keyword_set(clear) ? 'Clearing' : ''
         prefix='mvn_
+        if keyword_set(lowres) then prefix='mvn_5min_'
         if keyword_set(finish) then begin
            if ~keyword_set(hkp_tags) then hkp_tags='*TEMP PFPP28V *28I'
            if ~keyword_set(shkp_tags) then shkp_tags='ACT*'

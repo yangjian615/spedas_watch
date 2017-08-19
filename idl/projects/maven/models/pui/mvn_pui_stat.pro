@@ -38,9 +38,9 @@ xyz=replicate(fnan,3) ;xyz or [mean,stdev,nsample]
 ifreq=replicate({pi:fnan,cx:fnan,ei:fnan},2)
 sep={tot:xyz,xyz:xyz,qf:fnan,att:0b}
 d2m=replicate({sep:sep,swi:xyz,sta:xyz},2) ;2 is [sep1,sep2] for sep and [H,O] for swi and sta
-stat=replicate({centertime:0d,mag:xyz,vsw:xyz,nsw:fnan,swimode:fnan,ifreq:ifreq,d2m:d2m},[nt,ndays])
+stat=replicate({centertime:0d,mag:xyz,vsw:xyz,nsw:fnan,swimode:fnan,swiatt:fnan,ifreq:ifreq,d2m:d2m},[nt,ndays])
 mvn_pui_aos ;initialize pui3
-stat2=replicate({d2m:pui3},ndays)
+stat2d=replicate({d2m:pui3},ndays)
 
 for j=0,ndays-1 do begin ;loop over days
   tr=trange[0]+[j,j+1]*secinday
@@ -52,7 +52,10 @@ for j=0,ndays-1 do begin ;loop over days
   stat[*,j].mag=pui.data.mag.mso
   stat[*,j].vsw=pui.data.swi.swim.velocity_mso
   stat[*,j].nsw=pui.data.swi.swim.density
-  stat[*,j].swimode=pui.data.swi.swim.swi_mode
+  if keyword_set(swim) then begin
+    stat[*,j].swimode=pui.data.swi.swim.swi_mode
+    stat[*,j].swiatt=pui.data.swi.swim.swi_atten_state
+  endif
   stat[*,j].ifreq.pi=pui.model.ifreq.pi.tot
   stat[*,j].ifreq.ei=pui.model.ifreq.ei.tot
   stat[*,j].ifreq.cx=pui.model.ifreq.cx
@@ -62,13 +65,13 @@ for j=0,ndays-1 do begin ;loop over days
   stat[*,j].d2m.sep.qf=pui.model[1].fluxes.sep.qf
   stat[*,j].d2m.swi=pui.d2m.swi
   stat[*,j].d2m.sta=pui.d2m.sta
-  stat2[j].d2m=pui3
+  stat2d[j].d2m=pui3
 
   datestr=strmid(time_string(tr[0]),0,10)
   if keyword_set(img) then mvn_pui_tplot_3d_save,graphics=g,datestr=datestr
 
 endfor
-save,stat,stat2,binsize,np
+save,stat,stat2d,binsize,np
 
 stop
 end

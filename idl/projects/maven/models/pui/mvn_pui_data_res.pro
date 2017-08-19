@@ -47,8 +47,8 @@ if ~keyword_set(swim) then begin
   pui.data.swi.swim.velocity_mso=[!values.f_nan,!values.f_nan,!values.f_nan] ;solar wind velocity (km/s)
   pui.data.swi.swim.density=!values.f_nan ;solar wind density (cm-3)
 endif else begin
-  pui.data.swi.swim=average_hist(swim,swim.time_unix+2.,binsize=binsize,range=trange,xbins=centertime); swia moments
-  pui.data.swi.swis=average_hist(swis,swis.time_unix+2.,binsize=binsize,range=trange,xbins=centertime); swia spectra
+  pui.data.swi.swim=average_hist(swim,swim.time_unix+2.,binsize=binsize,range=trange,xbins=centertime,/nan); swia moments
+  pui.data.swi.swis=average_hist(swis,swis.time_unix+2.,binsize=binsize,range=trange,xbins=centertime,/nan); swia spectra
   ;nsw=average_hist2(swian.y,swian.x,binsize=binsize,trange=trange,centertime=centertime); solar wind density (cm-3)
   ;vsw=1e3*average_hist2(swiav.y,swiav.x,binsize=binsize,trange=trange,centertime=centertime); solar wind velocity (m/s)
   ;swiaef=average_hist2(swiaefdata.y,swiaefdata.x,binsize=binsize,trange=trange,centertime=centertime); swia energy flux
@@ -59,13 +59,13 @@ endif else begin
 
   if n_elements(swics) gt 1 then begin ;swia survey data
     swiactime = swics.time_unix +4.0*swics.num_accum/2  ;center time of sample/sum
-    pui.data.swi.swics=average_hist(swics,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse survey
+    pui.data.swi.swics=average_hist(swics,swiactime,binsize=binsize,range=trange,xbins=centertime,/nan); swia coarse survey
     swicsdt=swics[1:*].time_unix-swics[0:-1].time_unix
     store_data,'mvn_swics_dt_(s)',data={x:swics[1:*].time_unix,y:swicsdt},limits={ylog:1,panel_size:.5,colors:'r'}
 
     if n_elements(swica) gt 1 then begin ;swia archive (burst) data
       swiactime = swica.time_unix +4.0*swica.num_accum/2  ;center time of sample/sum
-      pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse archive
+      pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime,/nan); swia coarse archive
       swicadt=swica[1:*].time_unix-swica[0:-1].time_unix
       store_data,'mvn_swica_dt_(s)',data={x:swica[1:*].time_unix,y:swicadt},limits={ylog:1,panel_size:.5,colors:'r',psym:3}
       badindex=where(~finite(pui.data.swi.swica.time_unix),/null,count) ;no archive available index
@@ -151,8 +151,8 @@ get_data,'mvn_sep2_svy_ATT',data=sep2at ; SEP2 attenuator state
 if keyword_set(sep1data) then begin
 ;  sep1att=interp(sep1at.y,sep1at.x,centertime)
 ;  sep2att=interp(sep2at.y,sep2at.x,centertime)
-  sep1att=average_hist(sep1at.y,sep1at.x,binsize=binsize,range=trange,xbins=centertime)
-  sep2att=average_hist(sep2at.y,sep2at.x,binsize=binsize,range=trange,xbins=centertime)
+  sep1att=average_hist(sep1at.y,sep1at.x,binsize=binsize,range=trange,xbins=centertime,/nan)
+  sep2att=average_hist(sep2at.y,sep2at.x,binsize=binsize,range=trange,xbins=centertime,/nan)
   sep1cps=average_hist2(sep1data.y,sep1data.x,binsize=binsize,trange=trange,centertime=centertime); sep1 counts/sec
   sep2cps=average_hist2(sep2data.y,sep2data.x,binsize=binsize,trange=trange,centertime=centertime); sep1 counts/sec
   pui.data.sep[0].rate_bo=transpose(sep1cps)

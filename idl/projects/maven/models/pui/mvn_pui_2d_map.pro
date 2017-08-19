@@ -1,0 +1,33 @@
+;20170804 Ali
+;creates 2D maps of pickup ion d2m ratios
+;inputs:
+; krv: positions (xyz)
+; knn: d2m ratios
+; dim: map dimensions
+;output:
+; map2d: 2d map
+
+function mvn_pui_2d_map,krv,knn,dim
+
+finswi=where(finite(knn),/null,fincount)
+binrx0=floor(krv[*,*,*,*,*,0]/1e6) ;position binning (1000 km)
+binyz0=floor(sqrt(total(krv[*,*,*,*,*,1:2]^2,6))/1e6)
+knn2=knn[finswi]
+binrx=binrx0[finswi]
+binyz=binyz0[finswi]
+binrx[where(binrx gt dim-1,/null)]=-1
+binyz[where(binyz gt dim-1,/null)]=-1
+
+d2mr=replicate(0.,[dim,dim])
+d2mn=d2mr
+if fincount gt 0 then begin
+  for i=0,fincount-1 do begin
+    d2mr[binrx[i],binyz[i]]+=knn2[i]
+    d2mn[binrx[i],binyz[i]]+=1.
+  endfor
+  map2d=d2mr/d2mn
+endif
+;stop
+return,map2d
+
+end

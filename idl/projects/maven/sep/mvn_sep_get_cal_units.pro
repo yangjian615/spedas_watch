@@ -67,13 +67,14 @@ end
 
 
 pro mvn_sep_conv_units,  rawdat, bkgdat,  exmat, bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg_nt, dnrg=dnrg_nt, sub_eflux=sub_eflux,unc_eflux=unc_eflux, $
-   tot_eflux_sub=tot_eflux_sub, tot_eflux_unc=tot_eflux_unc
+   tot_eflux_sub=tot_eflux_sub, tot_eflux_unc=tot_eflux_unc,lowres=lowres
   ; exmat                          ; n_s x 256
 
   geoms = [!values.f_nan,.18, .0018, !values.f_nan]
   dt = rawdat.duration            ;  n_t
   att_state = rawdat.ATT          ;  n_t
   geom = geoms[att_state]             ;  n_t
+  if keyword_set(lowres) then geom=.18*(2.01-att_state) ;works with a float att (lowres only)
   ;     one_nt  = replicate(1.,nt)
   data = rawdat.data            ;  256 x n_t
 
@@ -117,7 +118,7 @@ ddata = sqrt( rebin # ddata^2)
 end
 
 
-function mvn_sep_get_cal_units ,rawdat  ,units_names=units_name,background=bkgdat
+function mvn_sep_get_cal_units ,rawdat  ,units_names=units_name,background=bkgdat,lowres=lowres
 
   if not keyword_set(rawdat) then begin
     dprint,'No data'    
@@ -237,7 +238,7 @@ str_additions = {   $
      convmat = mvn_sep_rebin_matrix(mapid,sepn)
      bmap = convmat.bmap
      
-     mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.f_ion ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux
+     mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.f_ion ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux,lowres=lowres
      caldata[wt].f_ion_flux = subflux
      caldata[wt].f_ion_flux_unc = uncflux
      caldata[wt].f_ion_eflux = sub_eflux
@@ -249,7 +250,7 @@ str_additions = {   $
      caldata[wt].f_ion_flux_tot = total(subflux * dnrg,1)
      caldata[wt].f_ion_flux_tot_unc = sqrt( total((uncflux * dnrg)^2,1))
 
-     mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.r_ion ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux
+     mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.r_ion ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux,lowres=lowres
      caldata[wt].r_ion_flux = subflux
      caldata[wt].r_ion_flux_unc = uncflux
      caldata[wt].r_ion_eflux = sub_eflux
@@ -261,7 +262,7 @@ str_additions = {   $
      caldata[wt].r_ion_flux_tot = total(subflux * dnrg,1)
      caldata[wt].r_ion_flux_tot_unc = sqrt( total((uncflux * dnrg)^2,1))
 
-     mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.f_elec ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux
+     mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.f_elec ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux,lowres=lowres
      caldata[wt].f_elec_flux = subflux
      caldata[wt].f_elec_flux_unc = uncflux
      caldata[wt].f_elec_eflux = sub_eflux
@@ -273,7 +274,7 @@ str_additions = {   $
      caldata[wt].f_elec_flux_tot = total(subflux * dnrg,1)
      caldata[wt].f_elec_flux_tot_unc = sqrt( total((uncflux * dnrg)^2,1))
 
-     mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.r_elec ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux
+     mvn_sep_conv_units, rawdat[wt], bkgdat, convmat.r_elec ,bmap,  subflux=subflux, uncflux=uncflux, nrg=nrg, dnrg=dnrg, sub_eflux=sub_eflux, unc_eflux=unc_eflux,lowres=lowres
      caldata[wt].r_elec_flux = subflux
      caldata[wt].r_elec_flux_unc = uncflux
      caldata[wt].r_elec_eflux = sub_eflux
@@ -303,7 +304,7 @@ str_additions = {   $
     caldata.quality_flag  = qf
     
     
-    if 1 then begin
+    if ~keyword_set(lowres) then begin
       w=where(datt,nw)
       if nw ne 0 then caldata[w] = fill_nan(caldata[0])
       

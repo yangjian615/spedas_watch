@@ -2,9 +2,6 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
 
   if not keyword_set(prefix) then prefix = 'spp_fld_rfs_rawspectra_'
 
-  ;file = '/Users/pulupa/Desktop/spp_fld_make_cdf/20170713_rfs_rawspectra_test/' + $
-  ;  'spp_fld_l1_rfs_rawspectra_20170706_210000_20170707_000000_v00.cdf'
-
   if typename(file) EQ 'UNDEFINED' then begin
 
     dprint, 'No file provided to spp_fld_rfs_rawspectra_load_l1', dlevel = 2
@@ -257,6 +254,7 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
   ; Compression
 
   options, 'spp_fld_rfs_rawspectra_compression', 'psym', -4
+  options, 'spp_fld_rfs_rawspectra_compression', 'symsize', 0.65
   options, 'spp_fld_rfs_rawspectra_compression', 'panel_size', 0.35
   options, 'spp_fld_rfs_rawspectra_compression', 'ysubtitle', ''
   options, 'spp_fld_rfs_rawspectra_compression', 'yrange', [-0.1,1.1]
@@ -269,6 +267,7 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
   ; Algorithm
 
   options, 'spp_fld_rfs_rawspectra_algorithm', 'psym', -4
+  options, 'spp_fld_rfs_rawspectra_algorithm', 'symsize', 0.65
   options, 'spp_fld_rfs_rawspectra_algorithm', 'panel_size', 0.35
   options, 'spp_fld_rfs_rawspectra_algorithm', 'ysubtitle', ''
   options, 'spp_fld_rfs_rawspectra_algorithm', 'yrange', [-0.1,1.1]
@@ -295,6 +294,7 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
   ; Source (integer value, not the string one)
 
   options, 'spp_fld_rfs_rawspectra_ch?', 'psym', -4
+  options, 'spp_fld_rfs_rawspectra_ch?', 'symsize', 0.65
   options, 'spp_fld_rfs_rawspectra_ch?', 'panel_size', 0.75
   options, 'spp_fld_rfs_rawspectra_ch?', 'ysubtitle', ''
   options, 'spp_fld_rfs_rawspectra_ch?', 'yrange', [-0.5,7.5]
@@ -314,6 +314,7 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
   ; Gain (integer value, not the string one)
 
   options, 'spp_fld_rfs_rawspectra_ch?_gain', 'psym', -4
+  options, 'spp_fld_rfs_rawspectra_ch?_gain', 'symsize', 0.65
   options, 'spp_fld_rfs_rawspectra_ch?_gain', 'panel_size', 0.35
   options, 'spp_fld_rfs_rawspectra_ch?_gain', 'ysubtitle', ''
   options, 'spp_fld_rfs_rawspectra_ch?_gain', 'yrange', [-0.1,1.1]
@@ -335,6 +336,7 @@ pro spp_fld_rfs_rawspectra_load_l1, file, prefix = prefix
   options, 'spp_fld_rfs_rawspectra_*_string', 'yticks', 1
   options, 'spp_fld_rfs_rawspectra_*_string', 'ytickformat', '(A1)'
   options, 'spp_fld_rfs_rawspectra_*_string', 'ysubtitle', ''
+  options, 'spp_fld_rfs_rawspectra_*_string', 'noclip', 0
 
   options, 'spp_fld_rfs_rawspectra_ch0_gain_string', 'ytitle', $
     'RFS!CCH0!CGain'

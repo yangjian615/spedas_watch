@@ -2,8 +2,8 @@
 ;statistical analysis on results of mvn_pui_stat
 
 pro mvn_pui_stat2
-filename_all='C:\Users\rahmati\idl\idlsave_all7.dat'
-filename_sw='C:\Users\rahmati\idl\idlsave_sw7.dat'
+filename_all='C:\Users\rahmati\idl\idlsave_all8.dat'
+filename_sw='C:\Users\rahmati\idl\idlsave_sw8.dat'
 
 if 0 then begin ;load all data
   restore,filename_all ;restores stat,binsize,np
@@ -21,7 +21,14 @@ sizesep=size(stat4.d2m.sep) ;for backward compatibitily
 if sizesep[0] eq 3 then sw6=1 else sw6=0 ;idlsave_sw6 and below
 if sizesep[0] eq 2 then sw7=1 else sw7=0 ;idlsave_sw7 and above
 
-if 0 then begin ;getting rid of unfavorable upstream parameters
+if sw7 then begin
+  ct=stat4.centertime
+  store_data,'pui_stat_tot_sep1',ct,data={x:ct,y:[[transpose(stat4.d2m[0].sep.tot)],[100.*replicate(1.,n_elements(ct))]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
+  store_data,'pui_stat_tot_sep2',ct,data={x:ct,y:[[transpose(stat4.d2m[1].sep.tot)],[100.*replicate(1.,n_elements(ct))]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
+  store_data,'pui_stat_qf_sep',ct,data={x:ct,y:transpose(stat4.d2m.sep.qf)},limits={colors:'br',labels:['SEP1','SEP2'],labflag:1}
+endif
+
+if 1 then begin ;getting rid of unfavorable upstream parameters
   usw=sqrt(total(stat4.vsw^2,1)) ;solar wind speed (km/s)
   mag=sqrt(total(stat4.mag^2,1)) ;magnetic field (T)
   costub=total(stat4.vsw*stat4.mag,1)/(usw*mag) ;cos(thetaUB)
@@ -30,9 +37,8 @@ if 0 then begin ;getting rid of unfavorable upstream parameters
   lowmag=mag lt 1e-9 ;low mag (high error in B)
   lowtub=abs(costub) gt .9 ;low thetaUB < 26deg
   if sw7 then begin
-    stat4[where(lowmag or lowtub or stat4.d2m[0].sep.qf lt .1 or stat4.d2m[0].sep.tot[2] gt 100.,/null)].d2m[0].sep.tot[0]=!values.f_nan ;more reliable SEP
-    stat4[where(lowmag or lowtub or stat4.d2m[1].sep.qf lt .1 or stat4.d2m[1].sep.tot[2] gt 100.,/null)].d2m[1].sep.tot[0]=!values.f_nan ;more reliable SEP
-    stat4.d2m.sep.qf=stat4.d2m.sep.tot[1]/stat4.d2m.sep.tot[0] ;turn qf into d2m!
+    stat4[where(lowmag or lowtub or stat4.d2m[0].sep.qf lt .1 or stat4.d2m[0].sep.tot[0] lt 200./stat4.d2m[0].sep.att^7. or stat4.d2m[0].sep.tot[1] lt 200./stat4.d2m[0].sep.att^7. or stat4.d2m[0].sep.tot[2] gt 100./stat4.d2m[0].sep.att^7.,/null)].d2m[0].sep.tot[0]=!values.f_nan ;more reliable SEP
+    stat4[where(lowmag or lowtub or stat4.d2m[1].sep.qf lt .1 or stat4.d2m[1].sep.tot[0] lt 200./stat4.d2m[1].sep.att^7. or stat4.d2m[1].sep.tot[1] lt 200./stat4.d2m[1].sep.att^7. or stat4.d2m[1].sep.tot[2] gt 100./stat4.d2m[1].sep.att^7.,/null)].d2m[1].sep.tot[0]=!values.f_nan ;more reliable SEP
   endif
   if sw6 then stat4[where(lowusw or lowmag or lowtub,/null)].d2m.sep=!values.f_nan ;more reliable SEP
   stat4[where(lowmag or lowtub,/null)].d2m.swi[0]=!values.f_nan
@@ -48,6 +54,8 @@ if 0 then begin ;getting rid of unfavorable upstream parameters
     p=plot(tub_hist,xtitle='thetaUB (degrees)')
   endif
 endif
+
+if sw7 then stat4.d2m.sep.qf=stat4.d2m.sep.tot[1]/stat4.d2m.sep.tot[0] ;turn qf into d2m!
 
 if 1 then begin ;orbit averaging
   count2=n_elements(stat4) ;should be equal to count1 above
@@ -87,7 +95,7 @@ if 1 then begin ;orbit averaging
 end
 
 if 0 then begin ;arbitrary averaging of orbit averages
-  nbins=100
+  nbins=300
   range=minmax(stat4.centertime)
   stat6=stat5
   stat5=replicate(stat4[0],nbins)
@@ -134,8 +142,8 @@ if 1 then begin ;tplot stuff
   store_data,'pui_stat_ifreq_cx_O',data={x:ct,y:stat5.ifreq[1].cx},limits={ylog:1,yrange:[1e-8,1e-6]}
   store_data,'pui_stat_ifreq_ei_H',data={x:ct,y:stat5.ifreq[0].ei},limits={ylog:1,yrange:[1e-8,1e-6]}
   store_data,'pui_stat_ifreq_ei_O',data={x:ct,y:stat5.ifreq[1].ei},limits={ylog:1,yrange:[1e-8,1e-6]}
-  store_data,'pui_stat_ifreq_H',data={x:ct,y:stat5.ifreq[0].pi+stat5.ifreq[0].cx},limits={ylog:1,yrange:[1e-7,1e-6]}
-  store_data,'pui_stat_ifreq_O',data={x:ct,y:stat5.ifreq[1].pi+stat5.ifreq[1].cx},limits={ylog:1,yrange:[1e-7,1e-6]}
+  store_data,'pui_stat_ifreq_H',data={x:ct,y:stat5.ifreq[0].pi+stat5.ifreq[0].cx+stat5.ifreq[0].ei},limits={ylog:1,yrange:[1e-7,1e-6]}
+  store_data,'pui_stat_ifreq_O',data={x:ct,y:stat5.ifreq[1].pi+stat5.ifreq[1].cx+stat5.ifreq[1].ei},limits={ylog:1,yrange:[1e-7,1e-6]}
 ;  ylim,'pui_stat_ifreq_*',1e-8,1e-7,0
   options,'pui_stat_ifreq_pi_?','ystyle',1
 
@@ -144,17 +152,19 @@ if 1 then begin ;tplot stuff
   if sw7 then begin
     store_data,'pui_stat_d2m_sep1',ct,stat5.d2m[0].sep.qf
     store_data,'pui_stat_d2m_sep2',ct,stat5.d2m[1].sep.qf
-    store_data,'pui_stat_tot_sep1',ct,data={x:ct,y:[[transpose(stat5.d2m[0].sep.tot)],[100.*replicate(1.,n_elements(ct))]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
-    store_data,'pui_stat_tot_sep2',ct,data={x:ct,y:[[transpose(stat5.d2m[1].sep.tot)],[100.*replicate(1.,n_elements(ct))]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
   endif
   store_data,'pui_stat_d2m_swi_H',ct,stat5.d2m[0].swi[0]
   store_data,'pui_stat_d2m_swi_O',ct,stat5.d2m[1].swi[0]
   store_data,'pui_stat_d2m_sta_H',ct,stat5.d2m[0].sta[0]
   store_data,'pui_stat_d2m_sta_O',ct,stat5.d2m[1].sta[0]
   ylim,'pui_stat_d2m*',.1,10,1
+  ylim,'pui_stat_d2m_sep?',.01,100,1
 
-  options,'pui_stat_*','psym',3
-  tplot,'pui_stat_*
+  options,'pui_stat_*','psym',0
+  wi,0
+  tplot,wi=0,'pui*mag pui*usw pui*nsw pui*ifreq*'
+  wi,1
+  tplot,wi=1,'pui*tot* pui*qf* pui*d2m*
 endif
 
 if 0 then begin

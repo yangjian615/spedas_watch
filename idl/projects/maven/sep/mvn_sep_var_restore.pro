@@ -76,8 +76,8 @@ if keyword_set(full_tags) then begin
   oper_tags='*'
 endif
 
-mvn_pfdpu_handler,finish= ~keyword_set(no_finish),hkp_tags=pfdpu_hkp_tags,shkp_tags=shkp_tags,oper_tags=oper_tags
-mvn_sep_handler,finish= ~keyword_set(no_finish),units_name=units_name,svy_tags=svy_tags,hkp_tags=hkp_tags,noise_tags=noise_tags
+mvn_pfdpu_handler,finish= ~keyword_set(no_finish),hkp_tags=pfdpu_hkp_tags,shkp_tags=shkp_tags,oper_tags=oper_tags,lowres=lowres
+mvn_sep_handler,finish= ~keyword_set(no_finish),units_name=units_name,svy_tags=svy_tags,hkp_tags=hkp_tags,noise_tags=noise_tags,lowres=lowres
 end
 
 

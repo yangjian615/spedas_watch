@@ -3,7 +3,7 @@
 pro mvn_sep_load,pathnames=pathnames,trange=trange,files=files,RT=RT,download_only=download_only, $
         mag=mag,pfdpu=pfdpu,sep=sep,lpw=lpw,sta=sta,format=format,use_cache=use_cache,  $
         source=source,verbose=verbose,L1=L1,L0=L0,L2=L2,ancillary=ancillary, anc_structure = anc_structure,$
-                 pad = pad, eflux = eflux, lowres=lowres,units_name=units_name
+                 pad = pad, eflux = eflux, lowres=lowres,units_name=units_name,basic_tags=basic_tags,full_tags=full_tags
         
       @mvn_sep_handler_commonblock.pro
 ;common mvn_sep_load_com, last_files
@@ -153,7 +153,7 @@ if format eq 'L1_SAV' then begin
     endif
   endif
   
-  mvn_sep_var_restore,trange=trange,download_only=download_only,verbose=verbose,lowres=lowres,units_name=units_name
+  mvn_sep_var_restore,trange=trange,download_only=download_only,verbose=verbose,lowres=lowres,units_name=units_name,basic_tags=basic_tags,full_tags=full_tags
   if ~keyword_set(download_only) then begin
     mvn_sep_cal_to_tplot,sepn=1,lowres=lowres
     mvn_sep_cal_to_tplot,sepn=2,lowres=lowres
@@ -180,7 +180,7 @@ if format eq 'L2_CDF' then begin
 
    if keyword_set (eflux) then begin
 ; also load Energy flux
-      stop
+;      stop
       get_data,  'MVN_SEP1f_ion_flux', data = ion_1F
       get_data,  'MVN_SEP2f_ion_flux', data = ion_2F
       get_data,  'MVN_SEP1r_ion_flux', data = ion_1R

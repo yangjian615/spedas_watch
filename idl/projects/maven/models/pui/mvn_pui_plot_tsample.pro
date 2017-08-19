@@ -95,8 +95,8 @@ if keyword_set(sep) then begin ;SEP
     if keyword_set(p) then p.setcurrent else p=window(name='sepqf')
     p.erase
     p=plot(/current,[0],/nodata,/ylog,xtitle='Quality Flag',ytitle='d2m Ratio')
-    p=plot(/o,pui[tsteps].model[1].fluxes.sep[0].qf,pui[tsteps].d2m[0].sep[1]/pui[tsteps].d2m[0].sep[0],'bo',name='SEP1F')
-    p=plot(/o,pui[tsteps].model[1].fluxes.sep[1].qf,pui[tsteps].d2m[1].sep[1]/pui[tsteps].d2m[1].sep[0],'ro',name='SEP2F')
+    p=plot(/o,[pui[tsteps].model[1].fluxes.sep[0].qf],[pui[tsteps].d2m[0].sep[1]/pui[tsteps].d2m[0].sep[0]],'bo',name='SEP1F')
+    p=plot(/o,[pui[tsteps].model[1].fluxes.sep[1].qf],[pui[tsteps].d2m[1].sep[1]/pui[tsteps].d2m[1].sep[0]],'ro',name='SEP2F')
     p=legend()
     p=text(0,0,tstring)
   endif

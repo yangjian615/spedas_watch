@@ -50,7 +50,7 @@ pui0={              $ ;instrument and model constants structure
   do3d:do3d,        $ ;do3d
   d0:d0,            $ ;load static d0
   nomodel:nomodel,  $ ;no model, just load and reduce data cadence
-  d2mmap:50         $ ;dimensions of 2D d2m map
+  d2mmap:100         $ ;dimensions of 2D d2m map
 }
 
 pui1={ $ ;energy bins structure

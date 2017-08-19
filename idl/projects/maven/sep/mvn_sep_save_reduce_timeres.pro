@@ -3,7 +3,32 @@
 ;for reducing SEP L1 time resolution.
 ;main keyword: RESSTR: resolution string (e.g. 64sec, 5min, 1hr). default is 5min.
 
-pro mvn_sep_save_reduce_timeres,pathformat=pathformat,trange=trange0,init=init,timestamp=timestamp,verbose=verbose,resstr=resstr,resolution=res,description=description
+function mvn_sep_att_correction,data,res,fltatt=fltatt ;throws out att actuation times that result in bad/mixed counts
+  datt=shift(data.att,-1) ne shift(data.att,1)
+  w=where(datt,nw)
+  if nw ne 0 then begin
+    if keyword_set(fltatt) then begin
+      datafltatt=data
+      str_element,datafltatt,'att',0.,/add ;turning att from byte to float for averaging mixed state att's
+      datafltatt.att=data.att
+      data=datafltatt
+      data[where(data.att eq 0.,/null)].att=!values.f_nan ;turning att state 0b to fNaN
+      data[w]=fill_nan(data[0])
+    endif else begin ;gets rid of .5res on each side of an att flip to preserve single att state at each time bin
+      fnan=fill_nan(data[0])
+      for iw=0,nw-1 do begin
+        ww=where(data.time gt data[w[iw]].time-res/2. and data.time lt data[w[iw]].time+res/2.,nww)
+        if nww ne 0 then data[ww] = fnan
+      endfor
+    endelse
+  endif
+
+return,data
+end
+
+
+pro mvn_sep_save_reduce_timeres,pathformat=pathformat,trange=trange0,init=init,timestamp=timestamp,verbose=verbose,$
+  resstr=resstr,resolution=res,description=description
 
 if keyword_set(init) then begin
   trange0=[time_double('2014-9-22'),systime(1)]
@@ -59,26 +84,23 @@ for i=0L,nd-1 do begin
   restore,f
   
   if keyword_set(s1_svy) then begin
-    datt1=shift(s1_svy.att,-1) ne shift(s1_svy.att,1) ;throwing out att actuation times, resulting in bad counts
-    w1=where(datt1,nw1)
-    if nw1 ne 0 then s1_svy[w1] = fill_nan(s1_svy[0])
+    s1_svy=mvn_sep_att_correction(s1_svy,res,/fltatt)
     s1_svy=average_hist(s1_svy,s1_svy.time,binsize=res,range=tr,/nan)
   endif
 
   if keyword_set(s2_svy) then begin
-    datt2=shift(s2_svy.att,-1) ne shift(s2_svy.att,1)
-    w2=where(datt2,nw2)
-    if nw2 ne 0 then s2_svy[w2] = fill_nan(s2_svy[0])
+    s2_svy=mvn_sep_att_correction(s2_svy,res,/fltatt)
     s2_svy=average_hist(s2_svy,s2_svy.time,binsize=res,range=tr,/nan)
   endif
   
-  if keyword_set(s1_hkp) then s1_hkp=average_hist(s1_hkp,s1_hkp.time,binsize=res,range=tr,/nan)
-  if keyword_set(s1_nse) then s1_nse=average_hist(s1_nse,s1_nse.time,binsize=res,range=tr,/nan)
   s1_arc=0
-
-  if keyword_set(s2_hkp) then s2_hkp=average_hist(s2_hkp,s2_hkp.time,binsize=res,range=tr,/nan)
-  if keyword_set(s2_nse) then s2_nse=average_hist(s2_nse,s2_nse.time,binsize=res,range=tr,/nan)
   s2_arc=0
+
+  if keyword_set(s1_hkp) then s1_hkp=average_hist(s1_hkp,s1_hkp.time,binsize=res,range=tr,/nan)
+  if keyword_set(s2_hkp) then s2_hkp=average_hist(s2_hkp,s2_hkp.time,binsize=res,range=tr,/nan)
+
+  if keyword_set(s1_nse) then s1_nse=average_hist(s1_nse,s1_nse.time,binsize=res,range=tr,/nan)
+  if keyword_set(s2_nse) then s2_nse=average_hist(s2_nse,s2_nse.time,binsize=res,range=tr,/nan)
 
   if keyword_set(m1_hkp) then m1_hkp=average_hist(m1_hkp,m1_hkp.time,binsize=res,range=tr,/nan)
   if keyword_set(m2_hkp) then m2_hkp=average_hist(m2_hkp,m2_hkp.time,binsize=res,range=tr,/nan)
@@ -87,13 +109,12 @@ for i=0L,nd-1 do begin
   if keyword_set(ap21) then ap21=average_hist(ap21,ap21.time,binsize=res,range=tr,/nan)
   if keyword_set(ap22) then ap22=average_hist(ap22,ap22.time,binsize=res,range=tr,/nan)
   if keyword_set(ap23) then ap23=average_hist(ap23,ap23.time,binsize=res,range=tr,/nan)
-;  if keyword_set(ap24) then ap24=average_hist(ap24,ap24.time,binsize=res,range=tr,stdev=sigma,xbins=centertime)
-  if keyword_set(ap25) then ap25=average_hist(ap25,ap25.time,binsize=res,range=tr,/nan)
+;  if keyword_set(ap24) then ap24=average_hist(ap24,ap24.time,binsize=res,range=tr,stdev=sigma,xbins=centertime) ;lower cadence than 5min
+;  if keyword_set(ap25) then ap25=average_hist(ap25,ap25.time,binsize=res,range=tr,/nan) ;apid not available
   
-  save,filename=redures_file,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,ap20,ap21,ap22,ap23,ap24,ap25,source_filename,sw_version,prereq_info,spice_info,description=description
+  save,filename=redures_file,verbose=verbose,s1_hkp,s1_svy,s1_arc,s1_nse,s2_hkp,s2_svy,s2_arc,s2_nse,m1_hkp,m2_hkp,$
+    ap20,ap21,ap22,ap23,ap24,source_filename,sw_version,prereq_info,spice_info,description=description
 
 endfor
   
 end
-
-
