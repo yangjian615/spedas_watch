@@ -22,12 +22,15 @@
 ; NOTES:
 ;     Will only work in IDL 8.0+, due to the hash table data structure
 ;
-;     Updated to use CSV files, 8/1/2016; files must be in the same
-;     directory as this routine.
+;     Updated to use CSV files, 8/1/2016
+;     
+;     Updated to use the CSV file closest to the requested trange (uses trange[0]), 8/15/2017
+;     
+;     
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-08-15 14:49:33 -0700 (Tue, 15 Aug 2017) $
-; $LastChangedRevision: 23792 $
+; $LastChangedDate: 2017-08-21 14:00:27 -0700 (Mon, 21 Aug 2017) $
+; $LastChangedRevision: 23819 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_read_feeps_sector_masks_csv.pro $
 ;-
 

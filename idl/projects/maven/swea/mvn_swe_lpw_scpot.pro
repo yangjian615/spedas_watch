@@ -58,9 +58,9 @@
 ;       Yuki Harada on 2016-02-29
 ;       Major update on 2017-07-24 - incl. negative pot
 ;
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 11:17:56 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23732 $
+; $LastChangedBy: haraday $
+; $LastChangedDate: 2017-08-21 05:30:56 -0700 (Mon, 21 Aug 2017) $
+; $LastChangedRevision: 23817 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot.pro $
 ;-
 
@@ -594,7 +594,7 @@ for iorb=iorb0,iorb1 do begin
    store_data,'scpots', $
               data=['swe_pos','neg_pot',orbstr+'_mvn_swe_lpw_scpot_pol'], $
               dlim={labels:['swepos','sweneg','swe-lpw'], $
-                    colors:[2,6,0],labflag:1,dataga:maxgap,yrange:[-20,20], $
+                    colors:[2,6,0],labflag:1,datagap:maxgap,yrange:[-20,20], $
                     constant:[0,3],panel_size:1.5}
 
    ;;; tplot
@@ -661,7 +661,7 @@ store_data,'mvn_swe_lpw_scpot',data=d, $
 store_data,'scpots', $
            data=['swe_pos','neg_pot','mvn_swe_lpw_scpot'], $
            dlim={labels:['swepos','sweneg','swe-lpw'], $
-                 colors:[2,6,0],labflag:1,dataga:maxgap,yrange:[-20,20], $
+                 colors:[2,6,0],labflag:1,datagap:maxgap,yrange:[-20,20], $
                  constant:3}
 
 

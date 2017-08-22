@@ -6,10 +6,22 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-29 14:00:57 -0700 (Wed, 29 Mar 2017) $
-; $LastChangedRevision: 23069 $
+; $LastChangedDate: 2017-08-21 14:43:13 -0700 (Mon, 21 Aug 2017) $
+; $LastChangedRevision: 23820 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_time_dependent_sun_masks
+  mask_sectors = mms_read_feeps_sector_masks_csv(trange=['2015-12-15', '2015-12-16'])
+  assert, array_equal(mask_sectors['mms2imaskt1'], [32, 33, 34]), 'Problem with sun masks'
+  mask_sectors = mms_read_feeps_sector_masks_csv(trange=['2016-12-15', '2016-12-16'])
+  assert, array_equal(mask_sectors['mms1imaskt1'], [2, 3, 4, 5, 6]), 'Problem with sun masks'
+  mask_sectors = mms_read_feeps_sector_masks_csv(trange=['2017-5-15', '2017-5-16'])
+  assert, array_equal(mask_sectors['mms2imaskt1'], [32, 33]), 'Problem with sun masks'
+  mask_sectors = mms_read_feeps_sector_masks_csv(trange=['2016-4-15', '2016-3-16'])
+  assert, array_equal(mask_sectors['mms2imaskt1'], [32, 33, 34]), 'Problem with sun masks'
+  return, 1
+end
 
 function mms_load_feeps_ut::test_omni_not_replacing_0s_with_nans
   mms_load_feeps, probe=1
