@@ -37,7 +37,8 @@ function DataManagement::init, olep, oConf
 
   self.olep = olep
   self.oConf = oConf
- 
+  
+
   self.oPalette = obj_new('IDLgrPalette')
   ;self.oPalette->LoadCT, 33
   self.oPalette->LoadCT, oConf.color_table
@@ -74,6 +75,13 @@ function DataManagement::init, olep, oConf
     yrange=yrange, $
     zrange=zrange, $
     range=range
+    
+  if ~ptr_valid(self.xrange) && ~undefined(xrange) then self.xrange = ptr_new(xrange)
+  if ~ptr_valid(self.yrange) && ~undefined(yrange) then self.yrange = ptr_new(yrange)
+  if ~ptr_valid(self.zrange) && ~undefined(zrange) then self.zrange = ptr_new(zrange)
+  
+  if ~undefined(xrange) or ~undefined(yrange) or ~undefined(zrange) then self.range_set_by_kws = 1b
+
   if n_elements(xrange) ne 2 then xrange = self->getXSouceRange()
   if n_elements(yrange) ne 2 then yrange = self->getYSouceRange()
   if n_elements(zrange) ne 2 then zrange = self->getZSouceRange()
@@ -104,15 +112,17 @@ function DataManagement::init, olep, oConf
   rt = self->reload_data(trange[0])
   voldata = self->GetVolumeData()
   sz = self->GetVolDimension()
-  xrange = self->getXSouceRange()
-  yrange = self->getYSouceRange()
-  zrange = self->getZSouceRange()
+  if undefined(xrange) then xrange = self->getXSouceRange()
+  if undefined(yrange) then yrange = self->getYSouceRange()
+  if undefined(zrange) then zrange = self->getZSouceRange()
   range=[[xrange], [yrange], [zrange]]
+  
+  
   self.oConf->GetProperty, SLICE_YZ=slice_yz, SLICE_XZ=slice_xz, SLICE_XY=slice_xy
   for i = 0, 2 do begin
-    t = fix(range[0, i] + ((abs(range[0, i])+abs(range[0, i]))/sz[i]) * indgen(sz[i]))
-    if t[sz[i]-1] gt range[1, i] then t[sz[i]-1] = fix(range[1, i])
-    if t[0] lt range[0, i] then t[0] = fix(range[0, i])
+    t = fix(type=5,range[0, i] + ((abs(range[0, i])+abs(range[0, i]))/sz[i]) * indgen(sz[i]))
+    if t[sz[i]-1] gt range[1, i] then t[sz[i]-1] = fix(type=5,range[1, i])
+    if t[0] lt range[0, i] then t[0] = fix(type=5,range[0, i])
     if i eq 0 then self.plSliderEX = ptr_new(t, /NO_COPY)
     if i eq 1 then self.plSliderEY = ptr_new(t, /NO_COPY)
     if i eq 2 then self.plSliderEZ = ptr_new(t, /NO_COPY)
@@ -124,14 +134,14 @@ function DataManagement::init, olep, oConf
   rt = self->reload_data(trange[0])
   voldata = self->GetVolumeData()
   sz = self->GetVolDimension()
-  xrange = self->getXSouceRange()
-  yrange = self->getYSouceRange()
-  zrange = self->getZSouceRange()
+  if undefined(xrange) then xrange = self->getXSouceRange()
+  if undefined(yrange) then yrange = self->getYSouceRange()
+  if undefined(zrange) then zrange = self->getZSouceRange()
   range=[[xrange], [yrange], [zrange]]
   for i = 0, 2 do begin
-    t = fix(range[0, i] + ((abs(range[0, i])+abs(range[0, i]))/sz[i]) * INDGEN(sz[i]))
-    if t[sz[i]-1] gt range[1, i] then t[sz[i]-1] = fix(range[1, i])
-    if t[0] lt range[0, i] then t[0] = fix(range[0, i])
+    t = fix(type=5,range[0, i] + ((abs(range[0, i])+abs(range[0, i]))/sz[i]) * INDGEN(sz[i]))
+    if t[sz[i]-1] gt range[1, i] then t[sz[i]-1] = fix(type=5,range[1, i])
+    if t[0] lt range[0, i] then t[0] = fix(type=5,range[0, i])
     if i eq 0 then self.plSliderVX = ptr_new(t, /NO_COPY)
     if i eq 1 then self.plSliderVY = ptr_new(t, /NO_COPY)
     if i eq 2 then self.plSliderVZ = ptr_new(t, /NO_COPY)
@@ -199,9 +209,9 @@ function DataManagement::reload_data, starttime, NO_DATA_UPDATE=no_data_update
   self.lShowNum = self.lDataNum
   
   self.oConf->SetProperty, $
-    XRANGE = self.getXSouceRange(), $
-    YRANGE = self.getYSouceRange(), $
-    ZRANGE = self.getZSouceRange(), $
+ ;   XRANGE = self.getXSouceRange(), $
+ ;   YRANGE = self.getYSouceRange(), $
+ ;   ZRANGE = self.getZSouceRange(), $
     RANGE = self.getNSouceRange(), $
     ; MAGNETIC FIELD VECTOR 
     BFIELD= tBfield, $      ; 磁場ベクトル
@@ -412,6 +422,7 @@ pro DataManagement::updateShowIdx
   self.plShowIdx =ptr_new(indexslist.toarray(), /NO_COPY)
   self.lShowNum = indexslist.Count()
 
+ ; if self.lShowNum ne 0 and self.range_set_by_kws eq 0b then begin
   if self.lShowNum ne 0 then begin
     fMinN = min((*self.pfN)[(*self.plShowIdx)], MAX=fMaxN)
     self.fXdim = abs(min((*self.pfX)[(*self.plShowIdx)]) - max((*self.pfX)[(*self.plShowIdx)]))
@@ -421,6 +432,13 @@ pro DataManagement::updateShowIdx
     print, 'dim: ', self.fXdim, self.fYdim, self.fZdim
     print, 'n: ', fMinN, fMaxN
   endif
+  
+;  if self.range_set_by_kws eq 1b then begin
+;    self.fXdim = abs(min((*self.xrange)[(*self.plShowIdx)]) - max((*self.xrange)[(*self.plShowIdx)]))
+;    self.fYdim = abs(min((*self.yrange)[(*self.plShowIdx)]) - max((*self.yrange)[(*self.plShowIdx)]))
+;    self.fZdim = abs(min((*self.zrange)[(*self.plShowIdx)]) - max((*self.zrange)[(*self.plShowIdx)]))
+;    print, 'dim: ', self.fXdim, self.fYdim, self.fZdim
+;  endif
 
   ;print, self.lShowNum ;ッ�ヂ�用
 end
@@ -576,12 +594,14 @@ function DataManagement::getVolumeData, ORIGINAL=original ;, XRANGE=xrange, YRAN
   ;
   dimmax = max([self.fxdim, self.fydim, self.fzdim])
   fac = dimmax/50
-  self.volxdim = fix(self.fXdim/fac)
+
+  self.volxdim = fix(type=5,self.fXdim/fac)
   if (self.volxdim mod 2) then ++(self.volxdim)
-  self.volydim = fix(self.fYdim/fac)
+  self.volydim = fix(type=5,self.fYdim/fac)
   if (self.volydim mod 2) then ++(self.volydim)
-  self.volzdim = fix(self.fZdim/fac)
+  self.volzdim = fix(type=5,self.fZdim/fac)
   if (self.volzdim mod 2) then ++(self.volzdim)
+
   ;
   ; 離散�タからボリュー��タに変換
   ;
@@ -593,12 +613,13 @@ function DataManagement::getVolumeData, ORIGINAL=original ;, XRANGE=xrange, YRAN
       qhull, fx, fy, fz, tet, /DELAUNAY
       vol = qgrid3(fx, fy, fz, fn, tet, $
         DIMENSION=[self.volxdim, self.volydim, self.volzdim])
-      
+
       if keyword_set(original) then begin ; need to get original data without scaling
         return, vol
       endif else begin 
 ;        print, (self.oConf).color_min_val
 ;        print, (self.oConf).color_max_val
+
         if unit eq 'psd' then begin
           vol = temporary(bytscl(/nan,alog10(vol > (self.oConf).color_min_val < (self.oConf).color_max_val)))
         endif else begin
@@ -610,6 +631,7 @@ function DataManagement::getVolumeData, ORIGINAL=original ;, XRANGE=xrange, YRAN
     end
     else: print, 'other'
   endcase
+
   return, vol
 end
 ;+
@@ -716,7 +738,7 @@ end
 ;-
 function DataManagement::getXSouceRange
 ;  @stel3d_common
-
+  if ptr_valid(self.xrange) then return, *self.xrange
   fmin = min((*self.pfX), MAX=fmax)
   return, [fmin, fmax]
 end
@@ -731,6 +753,7 @@ end
 ;-
 function DataManagement::getYSouceRange
 ;  @stel3d_common
+  if ptr_valid(self.yrange) then return, *self.yrange
 
   fmin = min((*self.pfY), MAX=fmax)
   return, [fmin, fmax]
@@ -745,6 +768,7 @@ end
 ;
 ;-
 function DataManagement::getZSouceRange
+  if ptr_valid(self.zrange) then return, *self.zrange
   fmin = min((*self.pfZ), MAX=fmax)
   return, [fmin, fmax]
 end
@@ -792,7 +816,6 @@ function DataManagement::getCoordConv, XS=xs, YS=ys, ZS=zs
   ;zs = [(-zMin2/(zMax2-zMin2))-0.5, 1.0/(zMax2-zMin2)]
   zoom = 1.0
   zs = [-0.5*zMax/maxDim, 1.0/maxDim]*zoom
-  
   return,1
   
 end
@@ -853,6 +876,10 @@ pro DataManagement__define
     pfY:ptr_new(), $
     pfZ:ptr_new(), $
     pfN:ptr_new(), $
+    xrange: ptr_new(), $
+    yrange: ptr_new(), $
+    zrange: ptr_new(), $
+    range_set_by_kws: 0b, $
     plSliderVX:ptr_new(), $ ;スライダーヂ�ス�
     plSliderVY:ptr_new(), $ ;スライダーヂ�ス�
     plSliderVZ:ptr_new(), $ ;スライダーヂ�ス�

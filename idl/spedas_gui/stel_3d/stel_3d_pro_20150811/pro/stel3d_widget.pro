@@ -473,22 +473,22 @@ pro stel3d_widget_event, ev
       ; Set values to Ticktext for each Axis
       ;
       (val['oAxisX']).GetProperty, TICKTEXT=oTickX
-      oTickX.SetProperty, STRINGS= [string(fix(xrange[0])), '0', string(fix(xrange[1]))]
+      oTickX.SetProperty, STRINGS= [string(fix(type=5,xrange[0])), '0', string(fix(type=5,xrange[1]))]
       (val['oAxisY']).GetProperty, TICKTEXT=oTickY
-      oTickY.SetProperty, STRINGS= [string(fix(yrange[0])), '0', string(fix(yrange[1]))]
+      oTickY.SetProperty, STRINGS= [string(fix(type=5,yrange[0])), '0', string(fix(type=5,yrange[1]))]
       (val['oAxisZ']).GetProperty, TICKTEXT=oTickZ
-      oTickZ.SetProperty, STRINGS= [string(fix(zrange[0])), '0', string(fix(zrange[1]))]
+      oTickZ.SetProperty, STRINGS= [string(fix(type=5,zrange[0])), '0', string(fix(type=5,zrange[1]))]
       (val['oConf']).GetProperty, CURTIME=curtime, AXIS_UNIT=axis_unit
       (val['oTitle']).SetProperty, STRINGS= curtime+' : '+axis_unit
       ;
       ; Set values to slice range
       ;
-      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:XYMINLABEL'), SET_VALUE=string(fix(zrange[0]))
-      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:XYMAXLABEL'), SET_VALUE=string(fix(zrange[1]))
-      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:YZMINLABEL'), SET_VALUE=string(fix(xrange[0]))
-      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:YZMAXLABEL'), SET_VALUE=string(fix(xrange[1]))
-      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:XZMINLABEL'), SET_VALUE=string(fix(yrange[0]))
-      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:XZMAXLABEL'), SET_VALUE=string(fix(yrange[1]))
+      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:XYMINLABEL'), SET_VALUE=string(fix(type=5,zrange[0]))
+      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:XYMAXLABEL'), SET_VALUE=string(fix(type=5,zrange[1]))
+      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:YZMINLABEL'), SET_VALUE=string(fix(type=5,xrange[0]))
+      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:YZMAXLABEL'), SET_VALUE=string(fix(type=5,xrange[1]))
+      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:XZMINLABEL'), SET_VALUE=string(fix(type=5,yrange[0]))
+      widget_control, widget_info(ev.top, FIND_BY_UNAME='slicetab:XZMAXLABEL'), SET_VALUE=string(fix(type=5,yrange[1]))
       xtex=(val['oData']).getXSliceText()
       ytex=(val['oData']).getYSliceText()
       ztex=(val['oData']).getZSliceText()
@@ -604,7 +604,7 @@ pro stel3d_widget, oData, $
     MAX_VEL_VEC=max_vel_vec
   
   curtimeArr = oData.getTimearray()
-  
+
   if n_elements(xrange) ne 2 then xrange =  oData.getXSouceRange()
   if n_elements(yrange) ne 2 then yrange = oData.getYSouceRange()
   if n_elements(zrange) ne 2 then zrange = oData.getZSouceRange()
@@ -635,6 +635,7 @@ pro stel3d_widget, oData, $
   xMax = sz[0]
   yMax = sz[1]
   zMax = sz[2]
+
   ;
   ; SETTING OF VECTOR COLOE ETC. 
   ; ベクトルのカラー情報などの設定
@@ -759,7 +760,7 @@ pro stel3d_widget, oData, $
   wLabel = widget_label(wBase1, VALUE='XY-Plane', SCR_XSIZE=50)
   wXY2DText = widget_text(wBase1, /EDITABLE, SCR_XSIZE=60,  $
     UVALUE='slicetab:XYText', UNAME='slicetab:XYText', $
-    VALUE=strcompress(string(fix(zrange[0])), /REMOVE_ALL) )
+    VALUE=strcompress(string(fix(type=5,zrange[0])), /REMOVE_ALL) )
   wXY2DSlider = widget_slider(wBase1, SCR_XSIZE=100, MAX=(zMax-1), MIN=0 ,/SUPPRESS_VALUE, UVALUE='slicetab:XY', $
     UNAME='slicetab:XY')
   wTemp = widget_base(wBase1, XPAD=0, YPAD=0, SCR_XSIZE=15)
@@ -772,10 +773,10 @@ pro stel3d_widget, oData, $
   wBase2 = widget_base(wSlice2DBase, column=3, YPAD=0)
   wTmpBase = widget_base(wBase2, SCR_XSIZE=120, YPAD=0)
   wXYLowerLabel = widget_label(wBase2, $
-    VALUE=strcompress(string(fix(zrange[0])),/REMOVE_ALL), SCR_XSIZE=50, /ALIGN_LEFT, FONT="TIMES*12", $
+    VALUE=strcompress(string(fix(type=5,zrange[0])),/REMOVE_ALL), SCR_XSIZE=50, /ALIGN_LEFT, FONT="TIMES*12", $
     UVALUE='slicetab:XYMINLABEL', UNAME='slicetab:XYMINLABEL')
   wXYUpperLabel = widget_label(wBase2, $
-    VALUE=strcompress(string(fix(zrange[1])),/REMOVE_ALL), SCR_XSIZE=50, /ALIGN_RIGHT, FONT="TIMES*12", $
+    VALUE=strcompress(string(fix(type=5,zrange[1])),/REMOVE_ALL), SCR_XSIZE=50, /ALIGN_RIGHT, FONT="TIMES*12", $
     UVALUE='slicetab:XYMAXLABEL', UNAME='slicetab:XYMAXLABEL')
 
   ; YZ PLANE 
@@ -783,7 +784,7 @@ pro stel3d_widget, oData, $
   wBase3 = widget_base(wSlice2DBase, /row, YPAD=0)
   wLabel = widget_label(wBase3, VALUE='YZ-Plane', SCR_XSIZE=50)
   wYZ2DText = widget_text(wBase3, /EDITABLE, UVALUE='slicetab:YZText', UNAME='slicetab:YZText', $
-    VALUE=strcompress(string(fix(xrange[0])), /REMOVE_ALL), SCR_XSIZE=60)
+    VALUE=strcompress(string(fix(type=5,xrange[0])), /REMOVE_ALL), SCR_XSIZE=60)
   wYZ2DSlider = widget_slider(wBase3, VALUE=slice_yz.position, MAX=(xMax-1), MIN=0, SCR_XSIZE=100, /SUPPRESS_VALUE, $
     UVALUE='slicetab:YZ', UNAME='slicetab:YZ')
 
@@ -797,15 +798,15 @@ pro stel3d_widget, oData, $
   wBase4 = widget_base(wSlice2DBase, COLUMN=3, YPAD=0)
   wTmpBase = widget_base(wBase4, SCR_XSIZE=120, YPAD=0)
   wYZLowerLabel = widget_label(wBase4, SCR_XSIZE=50, /ALIGN_LEFT, FONT="TIMES*12", $
-    VALUE=strcompress(string(fix(xrange[0])),/REMOVE_ALL), UVALUE='slicetab:YZMINLABEL', UNAME='slicetab:YZMINLABEL')
+    VALUE=strcompress(string(fix(type=5,xrange[0])),/REMOVE_ALL), UVALUE='slicetab:YZMINLABEL', UNAME='slicetab:YZMINLABEL')
   wYZUpperLabel = widget_label(wBase4, SCR_XSIZE=50, /ALIGN_RIGHT, FONT="TIMES*12", $
-    VALUE=strcompress(string(fix(xrange[1])),/REMOVE_ALL), UVALUE='slicetab:YZMAXLABEL', UNAME='slicetab:YZMAXLABEL')
+    VALUE=strcompress(string(fix(type=5,xrange[1])),/REMOVE_ALL), UVALUE='slicetab:YZMAXLABEL', UNAME='slicetab:YZMAXLABEL')
 
   ; ZX PLANE 
   ; ZX面
   wBase5 = widget_base(wSlice2DBase, /row, YPAD=0)
   wLabel = widget_label(wBase5, VALUE='XZ-Plane', SCR_XSIZE=50)
-  wXZ2DText = widget_text(wBase5, VALUE=strcompress(string(fix(yrange[0]))), $
+  wXZ2DText = widget_text(wBase5, VALUE=strcompress(string(fix(type=5,yrange[0]))), $
     UVALUE='slicetab:XZText', UNAME='slicetab:XZText', /EDITABLE, SCR_XSIZE=60)
   wXZ2DSlider = widget_slider(wBase5,  VALUE=slice_xz.position, MIN=0, MAX=(yMax-1), SCR_XSIZE=100, /SUPPRESS_VALUE, $
     UVALUE='slicetab:XZ', UNAME='slicetab:XZ')
@@ -819,10 +820,10 @@ pro stel3d_widget, oData, $
   wBase6 = widget_base(wSlice2DBase, column=3, YPAD=0)
   wTmpBase = widget_base(wBase6, SCR_XSIZE=120, YPAD=0)
   wZXLowerLabel = widget_label(wBase6, $
-    VALUE=strcompress(string(fix(yrange[0])),/REMOVE_ALL), $
+    VALUE=strcompress(string(fix(type=5,yrange[0])),/REMOVE_ALL), $
     SCR_XSIZE=50, /ALIGN_LEFT, FONT="TIMES*12", UVALUE='slicetab:XZMINLABEL', UNAME='slicetab:XZMINLABEL')
   wZXUpperLabel = widget_label(wBase6, $
-    VALUE=strcompress(string(fix(yrange[0])),/REMOVE_ALL), $
+    VALUE=strcompress(string(fix(type=5,yrange[1])),/REMOVE_ALL), $
     SCR_XSIZE=50, /ALIGN_RIGHT, FONT="TIMES*12", UVALUE='slicetab:XZMAXLABEL', UNAME='slicetab:XZMAXLABEL')
 
   ;==========================================================================
@@ -1147,14 +1148,14 @@ pro stel3d_widget, oData, $
 
   wXMaxBase = widget_base(wXRangeBase2, /ROW, /BASE_ALIGN_CENTER, YPAD=0)
   wLabel = widget_label(wXMaxBase, VALUE='X max', SCR_XSIZE=40)
-  wXMaxText = widget_text(wXMaxBase, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(xrange))), /REMOVE_ALL), UNAME='rangetab:XMAXTEXT')
-  ;wXMaxText = widget_text(wXMaxBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(xrange))), /REMOVE_ALL), UVALUE='rangetab:XMAXTEXT')
+  wXMaxText = widget_text(wXMaxBase, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(type=5,xrange))), /REMOVE_ALL), UNAME='rangetab:XMAXTEXT')
+  ;wXMaxText = widget_text(wXMaxBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(type=5,xrange))), /REMOVE_ALL), UVALUE='rangetab:XMAXTEXT')
   wXMaxSlider = widget_slider(wXMaxBase, SCR_XSIZE=100, /SUPPRESS_VALUE, MIN=0, MAX=sz[0], UNAME='rangetab:XMAXSLIDER', UVALUE='rangetab:XMAXSLIDER')
   
   wXMinBase = widget_base(wXRangeBase2, /ROW, /BASE_ALIGN_CENTER, YPAD=0)
   wLabel = widget_label(wXMinBase, VALUE='X min', SCR_XSIZE=40)
-  wXMinText = widget_text(wXMinBase, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(xrange))), /REMOVE_ALL), UNAME='rangetab:XMINTEXT')
-  ;wXMinText = widget_text(wXMinBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(xrange))), /REMOVE_ALL), UVALUE='rangetab:XMINTEXT')
+  wXMinText = widget_text(wXMinBase, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(type=5,xrange))), /REMOVE_ALL), UNAME='rangetab:XMINTEXT')
+  ;wXMinText = widget_text(wXMinBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(type=5,xrange))), /REMOVE_ALL), UVALUE='rangetab:XMINTEXT')
   wXMinSlider = widget_slider(wXMinBase, SCR_XSIZE=100, MIN=0, MAX=sz[0], /SUPPRESS_VALUE, UNAME='rangetab:XMINSLIDER', UVALUE='rangetab:XMINSLIDER')
 
   wSliderBase = widget_base(wXRangeBase2, column=3, YPAD=0)
@@ -1172,14 +1173,14 @@ pro stel3d_widget, oData, $
 
   wYMaxBase = widget_base(wYRangeBase2, /ROW, /BASE_ALIGN_CENTER, YPAD=0)
   wLabel = widget_label(wYMaxBase, VALUE='Y max', SCR_XSIZE=40)
-  wYMaxText = widget_text(wYMaxBase, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(yrange)))), UNAME='rangetab:YMAXTEXT')
-  ;wYMaxText = widget_text(wYMaxBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(yrange)))))
+  wYMaxText = widget_text(wYMaxBase, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(type=5,yrange)))), UNAME='rangetab:YMAXTEXT')
+  ;wYMaxText = widget_text(wYMaxBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(type=5,yrange)))))
   wYMaxSlider = widget_slider(wYMaxBase, SCR_XSIZE=100,  MIN=0, MAX=sz[1], /SUPPRESS_VALUE, UNAME='rangetab:YMAXSLIDER', UVALUE='rangetab:YMAXSLIDER')
 
   wYMinBase = widget_base(wYRangeBase2, /ROW, /BASE_ALIGN_CENTER, YPAD=0)
   wLabel = widget_label(wYMinBase, VALUE='Y min', SCR_XSIZE=40)
-  wYMinText = widget_text(wYMinBase, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(yrange)))), UNAME='rangetab:YMINTEXT')
-  ;wYMinText = widget_text(wYMinBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(yrange)))))
+  wYMinText = widget_text(wYMinBase, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(type=5,yrange)))), UNAME='rangetab:YMINTEXT')
+  ;wYMinText = widget_text(wYMinBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(type=5,yrange)))))
   wYMinSlider = widget_slider(wYMinBase, SCR_XSIZE=100,  MIN=0, MAX=sz[1], /SUPPRESS_VALUE, UNAME='rangetab:YMINSLIDER', UVALUE='rangetab:YMINSLIDER')
 
   wSliderBase = widget_base(wYRangeBase2, column=3, YPAD=0)
@@ -1197,14 +1198,14 @@ pro stel3d_widget, oData, $
 
   wZMaxBase = widget_base(wZRangeBase2, /ROW, /BASE_ALIGN_CENTER, YPAD=0)
   wLabel = widget_label(wZMaxBase, VALUE='Z max', SCR_XSIZE=40)
-  wZMaxText = widget_text(wZMaxBase, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(zrange)))), UNAME='rangetab:ZMAXTEXT')
-  ;wZMaxText = widget_text(wZMaxBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(zrange)))))
+  wZMaxText = widget_text(wZMaxBase, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(type=5,zrange)))), UNAME='rangetab:ZMAXTEXT')
+  ;wZMaxText = widget_text(wZMaxBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(max(fix(type=5,zrange)))))
   wZMaxSlider = widget_slider(wZMaxBase, SCR_XSIZE=100, MIN=0, MAX=sz[2], /SUPPRESS_VALUE, UNAME='rangetab:ZMAXSLIDER', UVALUE='rangetab:ZMAXSLIDER')
 
   wZMinBase = widget_base(wZRangeBase2, /ROW, /BASE_ALIGN_CENTER, YPAD=0)
   wLabel = widget_label(wZMinBase, VALUE='Z min', SCR_XSIZE=40)
- ;wZMinText = widget_text(wZMinBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(zrange)))))
-  wZMinText = widget_text(wZMinBase, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(zrange)))), UNAME='rangetab:ZMINTEXT')
+ ;wZMinText = widget_text(wZMinBase, /EDITABLE, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(type=5,zrange)))))
+  wZMinText = widget_text(wZMinBase, SCR_XSIZE=50, VALUE=strcompress(string(min(fix(type=5,zrange)))), UNAME='rangetab:ZMINTEXT')
   wZMinSlider = widget_slider(wZMinBase, SCR_XSIZE=100,  MIN=0, MAX=sz[2], /SUPPRESS_VALUE, UNAME='rangetab:ZMINSLIDER', UVALUE='rangetab:ZMINSLIDER')
 
   wSliderBase = widget_base(wZRangeBase2, column=3, YPAD=0)
@@ -1483,7 +1484,8 @@ pro stel3d_widget, oData, $
   ; Create X-axis objects.
   ;--------------------------
   oXTitle = obj_new('IDLgrText', '<-  VX  ->', FONT=oFont)
-  oXTickText = obj_new('IDLgrText', [string(fix(xrange[0])), '0', string(fix(xrange[1]))], FONT=oFont)
+ ; oXTickText = obj_new('IDLgrText', [string(fix(type=5,xrange[0])), '0', string(fix(type=5,xrange[1]))], FONT=oFont) ; broken on xrange is too large to be an int
+  oXTickText = obj_new('IDLgrText', [string(xrange[0]), '0', string(xrange[1])], FONT=oFont)
   oAxisX = obj_new('IDLgrAxis', 0, COLOR=!color.black, $
     RANGE=[0, xMax], /EXACT, TITLE=oXTitle, TICKLEN=1, MAJOR=3, TICKTEXT=oXTickText, $
     XCOORD_CONV=xs, YCOORD_CONV=ys, ZCOORD_CONV=zs)
@@ -1493,7 +1495,8 @@ pro stel3d_widget, oData, $
   ; Create Y-axis objects.
   ;--------------------------
   oYTitle = obj_new('IDLgrText','<-  VY  ->', FONT=oFont)
-  oYTickText = obj_new('IDLgrText', [string(fix(yrange[0])), '0', string(fix(yrange[1]))], FONT=oFont)
+ ; oYTickText = obj_new('IDLgrText', [string(fix(type=5,yrange[0])), '0', string(fix(type=5,yrange[1]))], FONT=oFont) ; broken on yrange is too large to be an int
+  oYTickText = obj_new('IDLgrText', [string(yrange[0]), '0', string(yrange[1])], FONT=oFont)
   oAxisY = obj_new('IDLgrAxis', 1, COLOR=!color.black, $
     RANGE=[0, yMax], /EXACT, TITLE=oYTitle, TICKLEN=1, MAJOR=3, TICKTEXT=oYTickText, $
     XCOORD_CONV=xs, YCOORD_CONV=ys, ZCOORD_CONV=zs)
@@ -1503,7 +1506,8 @@ pro stel3d_widget, oData, $
   ; Create Z-axis objects.
   ;--------------------------
   oZTitle = obj_new('IDLgrText','<-  VZ  ->', FONT=oFont)
-  oZTickText = obj_new('IDLgrText', [string(fix(zrange[0])), '0', string(fix(zrange[1]))], FONT=oFont)
+;  oZTickText = obj_new('IDLgrText', [string(fix(type=5,zrange[0])), '0', string(fix(type=5,zrange[1]))], FONT=oFont) ; broken on zrange is too large to be an int
+  oZTickText = obj_new('IDLgrText', [string(zrange[0]), '0', string(zrange[1])], FONT=oFont)
   oAxisZ = obj_new('IDLgrAxis', 2, COLOR=!color.black, $
     RANGE=[0, zMax], $
     /EXACT, $
@@ -1621,7 +1625,7 @@ pro stel3d_widget, oData, $
   val['ThickList'] = cThicknessList
   val['SaveType'] = 'png'
   val['tSliderval'] = 0L
-  
+
   widget_control, wBase, SET_UVALUE=val, /NO_COPY
   xmanager, 'stel3d_widget', wBase, CLEANUP='stel3d_widget_cleanup', /NO_BLOCK
 

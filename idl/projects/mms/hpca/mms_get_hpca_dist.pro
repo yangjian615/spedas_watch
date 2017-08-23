@@ -32,8 +32,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-10-03 15:19:11 -0700 (Mon, 03 Oct 2016) $
-;$LastChangedRevision: 22008 $
+;$LastChangedDate: 2017-08-22 09:32:41 -0700 (Tue, 22 Aug 2017) $
+;$LastChangedRevision: 23825 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
@@ -92,6 +92,15 @@ get_data, 'mms'+probe+'_hpca_azimuth_angles_per_ev_degrees', ptr=azimuth
 
 if ~is_struct(azimuth) then begin
   dprint, dlevel=0, 'No azimuth data found for the current time range'
+  return, 0
+endif
+
+; check if the time series is monotonic
+; to avoid doing incorrect calculations when there's a problem with the CDF files
+time_data = *azimuth.x
+wherenonmono = where(time_data[1:*] le time_data, countnonmono)
+if countnonmono ne 0 then begin
+  dprint, dlevel = 0, 'Error, non-monotonic data found in the HPCA Epoch_Angles time series data'
   return, 0
 endif
 
