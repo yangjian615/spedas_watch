@@ -27,9 +27,9 @@
 ;   their transformed copies.
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-06-12 17:07:08 -0700 (Fri, 12 Jun 2015) $
-;$LastChangedRevision: 17873 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2017-08-25 16:18:12 -0700 (Fri, 25 Aug 2017) $
+;$LastChangedRevision: 23832 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/cotrans/spd_ui_cotrans.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -101,7 +101,7 @@ for i = 0,n_elements(active)-1 do begin
   ;check input coord validity
   if ~in_set(strlowcase(in_coord),validcoords) then begin
     errors = array_concat(name + ':  Input coordinates not recognized.  ' + $
-                                'See "More..." menu for more options.  ' + $
+                                'See "More..." menu for mission-specific cotrans tools.  ' + $
                                 'Verify coordinates with File > Manage Data.', errors)
     continue
   endif
