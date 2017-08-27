@@ -66,7 +66,7 @@ pui1={ $ ;energy bins structure
 sep={rate_bo:replicate(fnan,pui0.sopeb),att:byte(0),fov:xyz}
 sep=replicate(sep,2) ;2 SEP's
 swim2={usw:fnan,fsw:fnan,esw:fnan,efsw:fnan,mfsw:fnan}
-if keyword_set(swim) then swi={swim:swim[0],swis:swis[0],swica:swics[0],swics:swics[0],swim2:swim2} else swi={swim:{density:fnan,velocity_mso:replicate(fnan,3)},swim2:swim2}
+if keyword_set(swim) then swi={swim:swim[0],swis:swis[0],swica:swics[0],swics:swics[0],swim2:swim2} else swi={swim:{density:fnan,velocity_mso:xyz},swim2:swim2}
 swe={eflux:replicate(fnan,pui0.sweeb),efpot:replicate(fnan,pui0.sweeb),enpot:replicate(fnan,pui0.sweeb),eden:fnan,edenpot:fnan}
 ;if keyword_set(mvn_swe_engy) then swe=mvn_swe_engy[0]
 c0={eflux:replicate(fnan,[pui0.staeb,2]),energy:replicate(fnan,pui0.staeb)}

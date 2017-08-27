@@ -52,7 +52,20 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=
     dim3d=pui0.swina*pui0.swine*(ebinlim+1) ;used to create tplots of all energy/anode/elevation d2m's
 
     get_data,'mvn_alt_sw_(km)',data=alt_sw
-    if keyword_set(alt_sw) then swindex=where(finite(alt_sw.y),/null) else swindex=!null ;only solar wind
+    if keyword_set(alt_sw) and keyword_set(swim) then begin
+      goodsw=finite(alt_sw.y)
+      swimode=pui.data.swi.swim.swi_mode eq 0 ;swia in solar wind mode
+      swiqf=pui.data.swi.swim.quality_flag gt .9
+      vsw=pui.data.swi.swim.velocity_mso
+      usw=sqrt(total(vsw^2,1)) ;solar wind speed (km/s)
+      mag=pui.data.mag.mso
+      imf=sqrt(total(mag^2,1)) ;magnetic field (T)
+      costub=total(vsw*mag,1)/(usw*imf) ;cos(thetaUB)
+      tub=!radeg*acos(costub) ;thetaUB 0<tub<180
+      himag=imf gt 1e-9 ;high mag (low error in B)
+      hitub=abs(costub) lt .97 ;thetaUB > 14deg
+      swindex=where(goodsw and swimode and swiqf and himag and hitub,/null) ;only good solar wind
+    endif else swindex=!null
 
     ;get rid of too low model and data flux (below detection threshold) and too high data flux (solar wind)
     kefsta2=kefsta
@@ -99,9 +112,9 @@ pro mvn_pui_tplot_3d,store=store,tplot=tplot,trange=trange,swia3d=swia3d,stah3d=
           p=plot(knnsta2[swindex,*,*,*],krrsta[swindex,0:ebinlim[im,1],*,*,im]-rmars,/o,frmtstr[im,1],name=mstr[im]+' STATIC')
         endif
         if keyword_set(denmap)then begin
-          p=image(alog10(pui3.swi[im]),layout=[2,2,1+im],/current,min=-1,max=1,margin=.2,rgb_table=colortable(33),axis_style=2,title=mstr[im]+' SWIA d2m')
+          p=image(alog10(pui3.swi[im]),layout=[2,2,1+im],/current,min=-1,max=1,margin=.1,rgb_table=colortable(33),axis_style=2,title=mstr[im]+' SWIA d2m')
           mvn_pui_plot_mars_bow_shock,/half,/kkm
-          p=image(alog10(pui3.sta[im]),layout=[2,2,3+im],/current,min=-1,max=1,margin=.2,rgb_table=colortable(33),axis_style=2,title=mstr[im]+' STATIC d2m')
+          p=image(alog10(pui3.sta[im]),layout=[2,2,3+im],/current,min=-1,max=1,margin=.1,rgb_table=colortable(33),axis_style=2,title=mstr[im]+' STATIC d2m')
           mvn_pui_plot_mars_bow_shock,/half,/kkm
         endif
         if keyword_set(d2mqf) then begin

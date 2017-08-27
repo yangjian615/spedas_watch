@@ -35,34 +35,42 @@ endif
 
 fnan=!values.f_nan
 xyz=replicate(fnan,3) ;xyz or [mean,stdev,nsample]
-ifreq=replicate({pi:fnan,cx:fnan,ei:fnan},2)
-sep={tot:xyz,xyz:xyz,qf:fnan,att:0b}
-d2m=replicate({sep:sep,swi:xyz,sta:xyz},2) ;2 is [sep1,sep2] for sep and [H,O] for swi and sta
-stat=replicate({centertime:0d,mag:xyz,vsw:xyz,nsw:fnan,swimode:fnan,swiatt:fnan,ifreq:ifreq,d2m:d2m},[nt,ndays])
+swi={vsw:xyz,nsw:fnan,mode:fnan,att:fnan,qf:fnan}
+ifreq=replicate({pi:fnan,cx:fnan,ei:fnan},2) ;2 for [H,O]
+sep=replicate({tot:xyz,xyz:xyz,qf:fnan,att:0b},2) ;2 for sep1 and sep2
+d2m=replicate({swi:xyz,sta:xyz},2) ;2 for [H,O]
+stat=replicate({centertime:0d,ifreq:ifreq,mag:xyz,swi:swi,sep:sep,d2m:d2m},[nt,ndays])
 mvn_pui_aos ;initialize pui3
-stat2d=replicate({d2m:pui3},ndays)
 
+swdays=replicate(1,ndays)
 for j=0,ndays-1 do begin ;loop over days
   tr=trange[0]+[j,j+1]*secinday
   mvn_pui_sw_orbit_coverage,trange=tr,res=binsize,alt_sw=alt_sw
-  if where(finite(alt_sw),/null) eq !null then continue ;if no solar wind coverage, go to next day
+  if where(finite(alt_sw),/null) eq !null then swdays[j]=0 ;no solar wind coverage
+endfor
+
+jsw=where(swdays,nswdays,/null)
+stat2d=replicate({d2m:pui3},nswdays)
+
+for j=0,nswdays-1 do begin ;loop over days
+  tr=trange[0]+[jsw[j],jsw[j]+1]*secinday
   mvn_pui_model,binsize=binsize,np=np,/do3d,savetplot=keyword_set(img),/nospice,trange=tr,nodataload=nodataload
+  if ~keyword_set(swim) then continue ;no swia data available
 
   stat[*,j].centertime=pui.centertime
-  stat[*,j].mag=pui.data.mag.mso
-  stat[*,j].vsw=pui.data.swi.swim.velocity_mso
-  stat[*,j].nsw=pui.data.swi.swim.density
-  if keyword_set(swim) then begin
-    stat[*,j].swimode=pui.data.swi.swim.swi_mode
-    stat[*,j].swiatt=pui.data.swi.swim.swi_atten_state
-  endif
   stat[*,j].ifreq.pi=pui.model.ifreq.pi.tot
   stat[*,j].ifreq.ei=pui.model.ifreq.ei.tot
   stat[*,j].ifreq.cx=pui.model.ifreq.cx
-  stat[*,j].d2m.sep.tot=pui.d2m.sep
-  stat[*,j].d2m.sep.xyz=pui.model[1].fluxes.sep.rv[0:2]
-  stat[*,j].d2m.sep.att=pui.data.sep.att
-  stat[*,j].d2m.sep.qf=pui.model[1].fluxes.sep.qf
+  stat[*,j].mag=pui.data.mag.mso
+  stat[*,j].swi.vsw=pui.data.swi.swim.velocity_mso
+  stat[*,j].swi.nsw=pui.data.swi.swim.density
+  stat[*,j].swi.mode=pui.data.swi.swim.swi_mode
+  stat[*,j].swi.att=pui.data.swi.swim.atten_state
+  stat[*,j].swi.qf=pui.data.swi.swim.quality_flag
+  stat[*,j].sep.tot=pui.d2m.sep
+  stat[*,j].sep.xyz=pui.model[1].fluxes.sep.rv[0:2]
+  stat[*,j].sep.att=pui.data.sep.att
+  stat[*,j].sep.qf=pui.model[1].fluxes.sep.qf
   stat[*,j].d2m.swi=pui.d2m.swi
   stat[*,j].d2m.sta=pui.d2m.sta
   stat2d[j].d2m=pui3

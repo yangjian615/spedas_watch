@@ -2,8 +2,8 @@
 ;statistical analysis on results of mvn_pui_stat
 
 pro mvn_pui_stat2
-filename_all='C:\Users\rahmati\idl\idlsave_all8.dat'
-filename_sw='C:\Users\rahmati\idl\idlsave_sw8.dat'
+filename_all='C:\Users\rahmati\idl\idlsave_all9.dat'
+filename_sw='C:\Users\rahmati\idl\idlsave_sw9.dat'
 
 if 0 then begin ;load all data
   restore,filename_all ;restores stat,binsize,np
@@ -23,9 +23,11 @@ if sizesep[0] eq 2 then sw7=1 else sw7=0 ;idlsave_sw7 and above
 
 if sw7 then begin
   ct=stat4.centertime
-  store_data,'pui_stat_tot_sep1',ct,data={x:ct,y:[[transpose(stat4.d2m[0].sep.tot)],[100.*replicate(1.,n_elements(ct))]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
-  store_data,'pui_stat_tot_sep2',ct,data={x:ct,y:[[transpose(stat4.d2m[1].sep.tot)],[100.*replicate(1.,n_elements(ct))]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
-  store_data,'pui_stat_qf_sep',ct,data={x:ct,y:transpose(stat4.d2m.sep.qf)},limits={colors:'br',labels:['SEP1','SEP2'],labflag:1}
+  store_data,'pui_stat_sep1_tot',ct,data={x:ct,y:[[transpose(stat4.d2m[0].sep.tot)],[100.*replicate(1.,n_elements(ct))]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
+  store_data,'pui_stat_sep2_tot',ct,data={x:ct,y:[[transpose(stat4.d2m[1].sep.tot)],[100.*replicate(1.,n_elements(ct))]]},limits={ylog:1,yrange:[1,1e4],colors:'brgm',labels:['model','data','cme','100'],labflag:1,ytickunits:'scientific'}
+  store_data,'pui_stat_sep_qf',ct,data={x:ct,y:transpose(stat4.d2m.sep.qf)},limits={yrange:[0,1],colors:'br',labels:['SEP1','SEP2'],labflag:1}
+  store_data,'pui_stat_swi_mode',ct,data={x:ct,y:stat4.swimode},limits={yrange:[-1,2]} ;0: sw mode, 1:sheath mode
+  store_data,'pui_stat_swi_att',ct,data={x:ct,y:stat4.swiatt},limits={yrange:[0,3]} ;1:open att, 2:closed att
 endif
 
 if 1 then begin ;getting rid of unfavorable upstream parameters
@@ -37,12 +39,13 @@ if 1 then begin ;getting rid of unfavorable upstream parameters
   lowmag=mag lt 1e-9 ;low mag (high error in B)
   lowtub=abs(costub) gt .9 ;low thetaUB < 26deg
   if sw7 then begin
-    stat4[where(lowmag or lowtub or stat4.d2m[0].sep.qf lt .1 or stat4.d2m[0].sep.tot[0] lt 200./stat4.d2m[0].sep.att^7. or stat4.d2m[0].sep.tot[1] lt 200./stat4.d2m[0].sep.att^7. or stat4.d2m[0].sep.tot[2] gt 100./stat4.d2m[0].sep.att^7.,/null)].d2m[0].sep.tot[0]=!values.f_nan ;more reliable SEP
-    stat4[where(lowmag or lowtub or stat4.d2m[1].sep.qf lt .1 or stat4.d2m[1].sep.tot[0] lt 200./stat4.d2m[1].sep.att^7. or stat4.d2m[1].sep.tot[1] lt 200./stat4.d2m[1].sep.att^7. or stat4.d2m[1].sep.tot[2] gt 100./stat4.d2m[1].sep.att^7.,/null)].d2m[1].sep.tot[0]=!values.f_nan ;more reliable SEP
+    swimode=stat4.swimode ne 0. ;swia not in solar wind mode (unreliable velocity and density)
+    swiatt=stat4.swiatt eq 0. ;all att's
+    stat4[where(lowmag or lowtub or swimode or swiatt,/null)]=fill_nan(stat4[0])
+    stat4[where(stat4.d2m[0].sep.qf lt .3 or stat4.d2m[0].sep.tot[0] lt 300./stat4.d2m[0].sep.att^6. or stat4.d2m[0].sep.tot[1] lt 300./stat4.d2m[0].sep.att^6. or stat4.d2m[0].sep.tot[2] gt 30./stat4.d2m[0].sep.att^6.,/null)].d2m[0].sep.tot[0]=!values.f_nan ;more reliable SEP
+    stat4[where(stat4.d2m[1].sep.qf lt .3 or stat4.d2m[1].sep.tot[0] lt 300./stat4.d2m[1].sep.att^6. or stat4.d2m[1].sep.tot[1] lt 300./stat4.d2m[1].sep.att^6. or stat4.d2m[1].sep.tot[2] gt 30./stat4.d2m[1].sep.att^6.,/null)].d2m[1].sep.tot[0]=!values.f_nan ;more reliable SEP
   endif
   if sw6 then stat4[where(lowusw or lowmag or lowtub,/null)].d2m.sep=!values.f_nan ;more reliable SEP
-  stat4[where(lowmag or lowtub,/null)].d2m.swi[0]=!values.f_nan
-  stat4[where(lowmag or lowtub,/null)].d2m.sta[0]=!values.f_nan
   if 0 then begin ;plot upstream parameter histogram distributions
     nsw_hist=histogram(10.*stat4.nsw)
     usw_hist=histogram(usw)
@@ -57,7 +60,7 @@ endif
 
 if sw7 then stat4.d2m.sep.qf=stat4.d2m.sep.tot[1]/stat4.d2m.sep.tot[0] ;turn qf into d2m!
 
-if 1 then begin ;orbit averaging
+if 0 then begin ;orbit averaging
   count2=n_elements(stat4) ;should be equal to count1 above
   dt=stat4[1:-1].centertime-stat4[0:-2].centertime ;must be equal to binsize, otherwise orbit jump
   index2=where(dt gt 60.*60.*24.*10.,/null,swjumps) ;solar wind jumps (swjumps: number of time periods entirely inside the bowshock)
@@ -128,7 +131,7 @@ endif
 
 ct=stat5.centertime
 ;stop
-if 1 then begin ;tplot stuff
+if 0 then begin ;tplot stuff
   store_data,'pui_stat_mag',ct,1e9*stat5.mag[0]
   ylim,'pui_stat_mag',.1,100,1
   store_data,'pui_stat_usw',ct,stat5.vsw[0]
@@ -162,9 +165,18 @@ if 1 then begin ;tplot stuff
 
   options,'pui_stat_*','psym',0
   wi,0
-  tplot,wi=0,'pui*mag pui*usw pui*nsw pui*ifreq*'
+  tplot,wi=0,'pui*swi_mode pui*swi_att pui*mag pui*usw pui*nsw pui*ifreq*'
   wi,1
   tplot,wi=1,'pui*tot* pui*qf* pui*d2m*
+endif
+
+if 1 then begin
+  sep1map=mvn_pui_2d_map(stat5.d2m[0].sep.xyz,stat5.d2m[0].sep.qf,200,/sep)
+  sep2map=mvn_pui_2d_map(stat5.d2m[1].sep.xyz,stat5.d2m[1].sep.qf,200,/sep)
+  p=image(alog10(sep1map),min=-1,max=1,margin=.1,rgb_table=colortable(33),axis_style=2,title='SEP1 d2m')
+  mvn_pui_plot_mars_bow_shock,/half,/kkm
+  p=image(alog10(sep2map),min=-1,max=1,margin=.1,rgb_table=colortable(33),axis_style=2,title='SEP2 d2m')
+  mvn_pui_plot_mars_bow_shock,/half,/kkm
 endif
 
 if 0 then begin
@@ -184,37 +196,37 @@ p=plot(stat5.vsw[0],stat5.d2m[1].sta[0],'.',/xlog,/ylog,yrange=[.1,10],xtitle=['
 p=plot(stat5.nsw,stat5.d2m[1].sta[0],'.',/xlog,/ylog,yrange=[.1,10],xtitle=['Nsw (cm-3)'],ytitle=['STATIC O d2m ratio'])
 endif
 
-if 0 then begin
+if 0 then begin ;escape rate comparison
 p=plot(/o,6e25*stat5.d2m[0].swi[0],'b')
 p=plot(/o,6e25*stat5.d2m[0].sta[0],'r')
 p=plot(/o,6e32*stat5.ifreq[0].cx,'g')
 endif
 
-if 0 then begin
+if 0 then begin ;escape rate vs. Ls
 mvn_pui_au_ls,times=ct,mars_au=mars_au,mars_ls=mars_ls,spice=0
 p=plot([0],/nodata,yrange=[1e25,1e27],/ylog,xtitle='$L_s$',ytitle='H escape rate ($s^{-1}$)')
 p=plot(/o,mars_ls,6e25*(stat5.d2m[0].sta[0]+stat5.d2m[0].swi[0])/2.,'g.')
 p=scatterplot(/o,mars_ls,6e25*(stat5.d2m[0].sta[0]+stat5.d2m[0].swi[0])/2.,magnitude=ct,rgb=33)
 endif
 
-if 0 then begin
+if 0 then begin ;sta/swi ratios
 p=plot(ct,stat5.d2m[0].sta[0]/stat5.d2m[0].swi[0],'b',/ylog,yrange=[.1,10],/stairs)
 p=plot(ct,stat5.d2m[1].sta[0]/stat5.d2m[1].swi[0],'r',/o,/stairs)
 endif
 
-if 0 then begin
+if 0 then begin ;sep qf vs. d2m ratios
 p=plot([0],/nodata,/ylog,xtitle='Quality Flag',ytitle='SEP d2m Ratio',yrange=[1e-3,1e3])
 p=plot(/o,stat5.d2m[0].sep.qf,stat5.d2m[0].sep.tot[1]/stat5.d2m[0].sep.tot[0],'b.',name='SEP1F')
 p=plot(/o,stat5.d2m[1].sep.qf,stat5.d2m[1].sep.tot[1]/stat5.d2m[1].sep.tot[0],'r.',name='SEP2F')
 endif
 
-if 0 then begin
+if 0 then begin ;sep d2m ratio vs. birth distance
 p=plot([0],/nodata,/xlog,/ylog,xtitle='SEP d2m Ratio',ytitle='Radial Distance (km)')
 p=plot(/o,stat5.d2m[0].sep.qf,1e-3*sqrt(total((stat5.d2m[0].sep.xyz)^2,1)),'b.',name='SEP1F')
 p=plot(/o,stat5.d2m[1].sep.qf,1e-3*sqrt(total((stat5.d2m[1].sep.xyz)^2,1)),'r.',name='SEP2F')
 endif
 
-if 0 then begin
+if 0 then begin ;sep d2m ratio vs. birth sza
 p=plot([0],/nodata,/ylog,xtitle='SZA',ytitle='SEP d2m Ratio')
 p=plot(/o,!radeg*mvn_pui_sza(stat5.d2m[0].sep.xyz[0],stat5.d2m[0].sep.xyz[1],stat5.d2m[0].sep.xyz[2]),stat5.d2m[0].sep.qf,'b.',name='SEP1F')
 p=plot(/o,!radeg*mvn_pui_sza(stat5.d2m[1].sep.xyz[0],stat5.d2m[1].sep.xyz[1],stat5.d2m[1].sep.xyz[2]),stat5.d2m[1].sep.qf,'r.',name='SEP2F')

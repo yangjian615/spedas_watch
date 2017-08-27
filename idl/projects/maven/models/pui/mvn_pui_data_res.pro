@@ -44,7 +44,7 @@ if ~keyword_set(swim) then begin
 ;  pui.data.swi.swim.velocity_mso=[-500,0,0] ;solar wind velocity (km/s)
 ;  pui.data.swi.swim.density=2. ;solar wind density (cm-3)
   dprint,'No SWIA data available, using !values.f_nan'
-  pui.data.swi.swim.velocity_mso=[!values.f_nan,!values.f_nan,!values.f_nan] ;solar wind velocity (km/s)
+  pui.data.swi.swim.velocity_mso=!values.f_nan ;solar wind velocity (km/s)
   pui.data.swi.swim.density=!values.f_nan ;solar wind density (cm-3)
 endif else begin
   pui.data.swi.swim=average_hist(swim,swim.time_unix+2.,binsize=binsize,range=trange,xbins=centertime,/nan); swia moments
