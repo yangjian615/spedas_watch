@@ -22,16 +22,19 @@
 ; NOTES:
 ;     Will only work in IDL 8.0+, due to the hash table data structure
 ;
-;     Updated to use CSV files, 8/1/2016; files must be in the same
-;     directory as this routine.
+;     Updated to use CSV files, 8/1/2016
+;     
+;     Updated to use the CSV file closest to the requested trange (uses trange[0]), 8/15/2017
+;     
+;     
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-08-02 14:22:16 -0700 (Tue, 02 Aug 2016) $
-; $LastChangedRevision: 21592 $
+; $LastChangedDate: 2017-08-21 14:00:27 -0700 (Mon, 21 Aug 2017) $
+; $LastChangedRevision: 23819 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_read_feeps_sector_masks_csv.pro $
 ;-
 
-function mms_read_feeps_sector_masks_csv 
+function mms_read_feeps_sector_masks_csv, trange=trange
     masks = hash()
 
     ; assuming the CSV files containing the sector mask data are
@@ -39,8 +42,16 @@ function mms_read_feeps_sector_masks_csv
     feeps_info = routine_info('mms_read_feeps_sector_masks_csv', /source, /function)
     path = file_dirname(feeps_info.path) + PATH_SEP()
 
+    dates = [1447200000.0000000, $ ; 11/11/2015
+             1468022400.0000000, $ ; 7/9/2016
+             1477612800.0000000, $ ; 10/28/2016
+             1496188800.0000000] ; 5/31/2017
+    
+    nearest_date = find_nearest_neighbor(dates, time_double(trange[0]), /allow_outside)
+    dprint, dlevel = 2, 'Removing sun contamination using the file: MMS#_FEEPS_ContaminatedSectors_'+time_string(nearest_date, tformat='YYYYMMDD')+'.csv
+    
     for mms_sc = 1, 4 do begin
-      csv_file = path+'MMS'+strcompress(string(mms_sc), /rem)+'_FEEPS_ContaminatedSectors_20160709.csv'
+      csv_file = path+'/sun/MMS'+strcompress(string(mms_sc), /rem)+'_FEEPS_ContaminatedSectors_'+time_string(nearest_date, tformat='YYYYMMDD')+'.csv'
   
       test = read_csv(csv_file)
       

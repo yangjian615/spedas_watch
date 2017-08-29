@@ -55,11 +55,13 @@
 ;       + 2016-09-19, E. Grimes     : updated to support v3 L1b files, as well as integer probes
 ;       + 2016-10-26  E. Grimes     : fixed bug for burst mode data; n_azi=32 (burst), n_azi=8 (srvy)
 ;       + 2016-11-08  E. Grimes     : now programmatically getting number of azimuths from the sector variable; setting species='electron' when datatype='electronenergy';
-;                                   : also now checking that data exists before trying to access the data
+;                                   : also now checking that data exists before trying to access the data                            
+;       + 2017-05-05  I. Cohen      : added ability to use "helium" as species; altered EIS varformat to include look direction and magnetic field;
+;                                   : added print command to inform if data is unavailable
 ;                        
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-08 07:25:57 -0800 (Tue, 08 Nov 2016) $
-;$LastChangedRevision: 22334 $
+;$LastChangedDate: 2017-06-06 10:59:40 -0700 (Tue, 06 Jun 2017) $
+;$LastChangedRevision: 23419 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/eis_ang_ang.pro $
 ;-
 
@@ -82,6 +84,7 @@ if not KEYWORD_SET(trange) && n_elements(trange) eq 2 $
 
 ; species should always be 'electron' for 'electronenergy' datatypes
 if datatype eq 'electronenergy' then species = 'electron'
+if species eq 'helium' then species = 'alpha'
 
 date_dir = strmid(trange(0),0,10)
 date_filename = strmid(trange(0),0,4)+strmid(trange(0),5,2)+strmid(trange(0),8,2)
@@ -93,12 +96,15 @@ nenergies = n_elements(energy_chan)
 if (data_rate eq 'brst') then prefix = 'mms'+probe+'_epd_eis_brst_' else prefix = 'mms'+probe+'_epd_eis_'
 
 ; load EIS data:
-mms_load_eis, probes=probe, trange=trange, datatype=datatype, level = level, data_rate = data_rate, data_units=data_units, /time_clip
+mms_load_eis, probes=probe, trange=trange, datatype=datatype, level = level, data_rate = data_rate, data_units=data_units, /time_clip, varformat = ['*'+species+'_P*_'+data_units+'_t*','*spin*','*sector*','*pitch_angle*','*look*','*_b']
 
 get_data, prefix+datatype+'_look_t0', data = d
 
 ; check if there's valid data before continuing
-if ~is_struct(d) then return
+if ~is_struct(d) then begin
+  print,'No valid data found'
+  return
+endif
 
 azi = dblarr(6,n_elements(d.x))
 pol = dblarr(6,n_elements(d.x))

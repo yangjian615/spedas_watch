@@ -1,13 +1,17 @@
 ;+
-;Procedure:
+; Procedure:
 ;  mms_feeps_split_integral_ch
 ;
-;Purpose:
-;    this function splits the last integral channel from the FEEPS spectra
+; Purpose:
+;    this procedure splits the last integral channel from the FEEPS spectra, 
+;    creating 2 new tplot variables:
+;    
+;       [original variable]_clean - spectra with the integral channel removed
+;       [original variable]_500keV_int - the integral channel that was removed
 ;
 ;$LastChangedBy: rickwilder $
-;$LastChangedDate: 2016-08-12 14:00:11 -0700 (Fri, 12 Aug 2016) $
-;$LastChangedRevision: 21641 $
+;$LastChangedDate: 2017-08-09 13:51:06 -0700 (Wed, 09 Aug 2017) $
+;$LastChangedRevision: 23769 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_feeps_split_integral_ch.pro $
 ;-
 
@@ -41,6 +45,15 @@ pro mms_sitl_feeps_split_integral_ch, types, species, probe, suffix = suffix, da
 
       get_data, top_name+suffix, data=top_data, dlimits=top_dl
       get_data, bottom_name+suffix, data=bottom_data, dlimits=bottom_dl
+      
+      if ~is_struct(top_data) then begin
+        dprint, dlevel = 0, 'Couldnt find the variable: ' + top_name+suffix
+        continue
+      endif
+      if level ne 'sitl' and ~is_struct(bottom_data) then begin
+        dprint, dlevel = 0, 'Couldnt find the variable: ' + bottom_name+suffix
+        continue
+      endif
 
 ;      top_name_out = strcompress('mms'+probe+'_epd_feeps_top_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
 ;      bottom_name_out = strcompress('mms'+probe+'_epd_feeps_bottom_'+type+'_sensorID_'+string(sensors[sensor_idx])+'_clean', /rem)
@@ -54,11 +67,13 @@ pro mms_sitl_feeps_split_integral_ch, types, species, probe, suffix = suffix, da
      
       ; limit the lower energy plotted
       options, top_name_out+suffix, ystyle=1
-      options, bottom_name_out+suffix, ystyle=1
       ylim, top_name_out+suffix, bottom_en, 510., 1
-      ylim, bottom_name_out+suffix, bottom_en, 510., 1
       zlim, top_name_out+suffix, 0, 0, 1
-      zlim, bottom_name_out+suffix, 0, 0, 1
+      if level ne 'sitl' then begin
+        options, bottom_name_out+suffix, ystyle=1
+        ylim, bottom_name_out+suffix, bottom_en, 510., 1
+        zlim, bottom_name_out+suffix, 0, 0, 1
+      endif
   
       ; store the integral channel
       store_data, top_name+'_500keV_int'+suffix, data={x: top_data.X, y: top_data.Y[*, n_elements(top_data.V)-1]}
@@ -67,7 +82,7 @@ pro mms_sitl_feeps_split_integral_ch, types, species, probe, suffix = suffix, da
       ; delete the variable that contains both the spectra and the integral channel
       ; so users don't accidently plot the wrong quantity (discussed with Drew Turner 2/4/16)
       del_data, top_name+suffix
-      del_data, bottom_name+suffix
+      if level ne 'sitl' then del_data, bottom_name+suffix
     endfor
   endfor
 end

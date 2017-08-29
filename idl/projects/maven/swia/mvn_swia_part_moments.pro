@@ -17,8 +17,8 @@
 ;	MAGT3: Produce temperature in magnetic field coordinates (you need to have run 'mvn_swia_add_magf' first)
 ;
 ; $LastChangedBy: jhalekas $
-; $LastChangedDate: 2014-12-12 07:28:57 -0800 (Fri, 12 Dec 2014) $
-; $LastChangedRevision: 16479 $
+; $LastChangedDate: 2017-07-13 06:50:10 -0700 (Thu, 13 Jul 2017) $
+; $LastChangedRevision: 23595 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swia/mvn_swia_part_moments.pro $
 ;
 ;-
@@ -51,6 +51,7 @@ if nw gt 0 and n_elements(swifs) gt 1 then begin
 		temperatures = fltarr(nt,4)
 		heatfluxes = fltarr(nt,3)
 		if keyword_set(magt3) then t3ds = fltarr(nt,4)
+		if keyword_set(magt3) then p3ds = fltarr(nt,6)
 
 
 		for i = 0L,nt-1 do begin
@@ -73,6 +74,7 @@ if nw gt 0 and n_elements(swifs) gt 1 then begin
 			temperatures[i,*] = t_3d(dat)
 			heatfluxes[i,*] = je_3d(dat)
 			if keyword_set(magt3) then t3ds[i,*] = t_3d_new(dat)
+			if keyword_set(magt3) then p3ds[i,*] = p_3d_new(dat)
 		endfor
 
 		store_data,'mvn_swifs_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e9], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
@@ -88,6 +90,8 @@ if nw gt 0 and n_elements(swifs) gt 1 then begin
 		store_data,'mvn_swifs_heatflux', data = {x:ctime,y:heatfluxes, v:[0,1,2], labels: ['Qx','Qy','Qz'], labflag:1, ytitle: 'SWIA!cHeat Flux!c[ergs/cm!E2!N s]'}
 
 		if keyword_set(magt3) then store_data,'mvn_swifs_magt3',data = {x:ctime,y:t3ds,v:[0,1,2,3], labels: ['Tperp1','Tperp2','Tpar','Tmag'],labflag:1,ytitle: 'SWIA!cTemperature!c[eV]'}
+
+		if keyword_set(magt3) then store_data,'mvn_swifs_magp3',data = {x:ctime,y:p3ds,v:[0,1,2,3,4,5], labels: ['Pperp1','Pperp2','Ppar','Pod1','Pod2','Pod3'],labflag:1, ytitle: 'SWIA!cPressure!c[eV/cm!E3!N]'}
 
 
 	endif
@@ -109,6 +113,7 @@ if nw gt 0 and n_elements(swifa) gt 1 then begin
 		temperatures = fltarr(nt,4)
 		heatfluxes = fltarr(nt,3)
 		if keyword_set(magt3) then t3ds = fltarr(nt,4)
+		if keyword_set(magt3) then p3ds = fltarr(nt,6)
 
 
 		for i = 0L,nt-1 do begin
@@ -130,6 +135,7 @@ if nw gt 0 and n_elements(swifa) gt 1 then begin
 			temperatures[i,*] = t_3d(dat)
 			heatfluxes[i,*] = je_3d(dat)
 			if keyword_set(magt3) then t3ds[i,*] = t_3d_new(dat)
+			if keyword_set(magt3) then p3ds[i,*] = p_3d_new(dat)
 		endfor
 
 		store_data,'mvn_swifa_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e5,1e9], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
@@ -146,6 +152,7 @@ if nw gt 0 and n_elements(swifa) gt 1 then begin
 
 		if keyword_set(magt3) then store_data,'mvn_swifa_magt3',data = {x:ctime,y:t3ds,v:[0,1,2,3], labels: ['Tperp1','Tperp2','Tpar','Tmag'],labflag:1,ytitle: 'SWIA!cTemperature!c[eV]'}
 
+		if keyword_set(magt3) then store_data,'mvn_swifa_magp3',data = {x:ctime,y:p3ds,v:[0,1,2,3,4,5], labels: ['Pperp1','Pperp2','Ppar','Pod1','Pod2','Pod3'],labflag:1, ytitle: 'SWIA!cPressure!c[eV/cm!E3!N]'}
 	endif
 endif
 
@@ -166,6 +173,7 @@ if nw gt 0 and n_elements(swics) gt 1 then begin
 		temperatures = fltarr(nt,4)
 		heatfluxes = fltarr(nt,3)
 		if keyword_set(magt3) then t3ds = fltarr(nt,4)
+		if keyword_set(magt3) then p3ds = fltarr(nt,6)
 
 
 		for i = 0L,nt-1 do begin
@@ -188,6 +196,7 @@ if nw gt 0 and n_elements(swics) gt 1 then begin
 			temperatures[i,*] = t_3d(dat)
 			heatfluxes[i,*] = je_3d(dat)
 			if keyword_set(magt3) then t3ds[i,*] = t_3d_new(dat)
+			if keyword_set(magt3) then p3ds[i,*] = p_3d_new(dat)
 		endfor
 
 		store_data,'mvn_swics_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e4,1e8], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
@@ -204,6 +213,7 @@ if nw gt 0 and n_elements(swics) gt 1 then begin
 
 		if keyword_set(magt3) then store_data,'mvn_swics_magt3',data = {x:ctime,y:t3ds,v:[0,1,2,3], labels: ['Tperp1','Tperp2','Tpar','Tmag'],labflag:1,ytitle: 'SWIA!cTemperature!c[eV]'}
 
+		if keyword_set(magt3) then store_data,'mvn_swics_magp3',data = {x:ctime,y:p3ds,v:[0,1,2,3,4,5], labels: ['Pperp1','Pperp2','Ppar','Pod1','Pod2','Pod3'],labflag:1, ytitle: 'SWIA!cPressure!c[eV/cm!E3!N]'}
 	endif
 endif
 
@@ -223,6 +233,7 @@ if nw gt 0 and n_elements(swica) gt 1 then begin
 		temperatures = fltarr(nt,4)
 		heatfluxes = fltarr(nt,3)
 		if keyword_set(magt3) then t3ds = fltarr(nt,4)
+		if keyword_set(magt3) then p3ds = fltarr(nt,6)
 
 
 		for i = 0L,nt-1 do begin
@@ -245,6 +256,7 @@ if nw gt 0 and n_elements(swica) gt 1 then begin
 			temperatures[i,*] = t_3d(dat)
 			heatfluxes[i,*] = je_3d(dat)
 			if keyword_set(magt3) then t3ds[i,*] = t_3d_new(dat)
+			if keyword_set(magt3) then p3ds[i,*] = p_3d_new(dat)
 		endfor
 
 		store_data,'mvn_swica_en_eflux',data = {x:ctime, y: efluxes, v:energies, ylog:1, zlog:1, spec: 1, no_interp:1, yrange: [4,30000], ystyle: 1, zrange: [1e4,1e8], ytitle: 'SWIA!cEnergy (eV)', ztitle: 'eV/[eV cm!E2!N s sr]'}, dlimits = {datagap:180}
@@ -261,6 +273,7 @@ if nw gt 0 and n_elements(swica) gt 1 then begin
 
 		if keyword_set(magt3) then store_data,'mvn_swica_magt3',data = {x:ctime,y:t3ds,v:[0,1,2,3], labels: ['Tperp1','Tperp2','Tpar','Tmag'],labflag:1,ytitle: 'SWIA!cTemperature!c[eV]'}
 
+		if keyword_set(magt3) then store_data,'mvn_swica_magp3',data = {x:ctime,y:p3ds,v:[0,1,2,3,4,5], labels: ['Pperp1','Pperp2','Ppar','Pod1','Pod2','Pod3'],labflag:1, ytitle: 'SWIA!cPressure!c[eV/cm!E3!N]'}
 	endif
 endif
 

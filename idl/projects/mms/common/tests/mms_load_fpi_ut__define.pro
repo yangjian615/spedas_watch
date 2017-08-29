@@ -5,10 +5,13 @@
 ; Requires both the SPEDAS QA folder (not distributed with SPEDAS) and mgunit
 ; in the local path
 ;
-;
+; warning: ACR tests in test_integration_time_get_dist require special, non-public CDFs
+; to work / expect this test to fail if you don't have those files
+; 
+; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-04-03 08:15:42 -0700 (Mon, 03 Apr 2017) $
-; $LastChangedRevision: 23082 $
+; $LastChangedDate: 2017-07-19 11:08:11 -0700 (Wed, 19 Jul 2017) $
+; $LastChangedRevision: 23650 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
@@ -16,43 +19,70 @@
 ; same as below, except using mms_get_dist
 function mms_load_fpi_ut::test_integration_time_get_dist
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='brst'
+  mms_load_fpi, trange=['2016-12-09', '2016-12-10'], datatype=['dis-dist', 'des-dist'], data_rate='brst', level='acr', suffix='acr', probe=1
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='fast'
+  fpi_dist = mms_get_dist('mms1_dis_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'i')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0375)/0.0375d lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst, ACR)'
+  fpi_dist = mms_get_dist('mms1_des_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'e')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0075)/0.0075d lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst, ACR)'
+  
+  ; with the level keyword
+  fpi_dist = mms_get_dist('mms1_dis_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'i', level='acr', data_rate='brst')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0375)/0.0375d lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst, level=ACR)'
+  fpi_dist = mms_get_dist('mms1_des_dist_brstacr',trange=time_double(['2016-12-09', '2016-12-10']), probe = 1, species = 'e', level='acr', data_rate='brst')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.0075)/0.0075d lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst, level=ACR)'
+
+  
   fpi_dist = mms_get_dist('mms3_dis_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15)/0.15d lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, brst)'
   fpi_dist = mms_get_dist('mms3_des_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03)/0.03d lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, brst)'
   fpi_dist = mms_get_dist('mms3_dis_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, fast)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5)/4.5d lt 0.001, 'Problem with integration time returned by mms_get_dist (ions, fast)'
   fpi_dist = mms_get_dist('mms3_des_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, fast)'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5)/4.5d lt 0.001, 'Problem with integration time returned by mms_get_dist (electrons, fast)'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_integration_time_get_i_dist_slow
+  mms_load_fpi, trange=['2015-10-16', '2015-10-17'], datatype='dis-dist', data_rate='slow', level='l1b', probe=4
+  fpi_dist = mms_get_fpi_dist('mms4_dis_dist_slow',trange=time_double(['2015-10-16', '2015-10-17']), probe = 4, species = 'i')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-59)/59d lt 0.02, 'Problem with integration time returned by mms_get_fpi_dist'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_integration_time_get_e_dist_slow
+  mms_load_fpi, trange=['2015-10-16', '2015-10-17'], datatype='des-dist', data_rate='slow', level='l1b', probe=4
+  fpi_dist = mms_get_fpi_dist('mms4_des_dist_slow',trange=time_double(['2015-10-16', '2015-10-17']), probe = 4, species = 'e')
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-59)/59d lt 0.02, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
 function mms_load_fpi_ut::test_integration_time_get_i_dist_brst
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='dis-dist', data_rate='brst'
   fpi_dist = mms_get_fpi_dist('mms3_dis_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15) lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.15)/0.15d lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
 function mms_load_fpi_ut::test_integration_time_get_e_dist_brst
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='des-dist', data_rate='brst'
   fpi_dist = mms_get_fpi_dist('mms3_des_dist_brst',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03) lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-0.03)/0.03d lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
 function mms_load_fpi_ut::test_integration_time_get_i_dist_fast
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='dis-dist', data_rate='fast'
   fpi_dist = mms_get_fpi_dist('mms3_dis_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'i')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5)/4.5d lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
 function mms_load_fpi_ut::test_integration_time_get_e_dist_fast
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype='des-dist', data_rate='fast'
   fpi_dist = mms_get_fpi_dist('mms3_des_dist_fast',trange=time_double(['2015-10-16/13:00', '2015-10-16/13:10']), probe = 3, species = 'e')
-  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5) lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
+  assert, abs(((*fpi_dist)[0].end_time-(*fpi_dist)[0].time)-4.5)/4.5d lt 0.001, 'Problem with integration time returned by mms_get_fpi_dist'
   return, 1
 end
 
@@ -240,6 +270,27 @@ function mms_load_fpi_ut::test_load_local_file_badversion
   return, 1
 end
 
+; the following tests loading the ACR burst mode data (that doesn't exist at the SDC yet)
+; and tests /center_measurement functionality; these data files will need to be saved
+; on your local machine before running these tests
+function mms_load_fpi_ut::test_acr_brst_data
+  mms_load_fpi, level='acr', trange=['2016-12-09', '2016-12-10'], probe=1, data_rate='brst'
+  mms_load_fpi, level='acr', trange=['2016-12-09', '2016-12-10'], probe=1, data_rate='brst', suffix='centered', /center_measurement
+  get_data, 'mms1_des_bulkv_dbcs_brst', data=d
+  get_data, 'mms1_dis_bulkv_dbcs_brstcentered', data=c
+  assert, spd_data_exists('mms1_des_bulkv_dbcs_brst mms1_dis_bulkv_dbcs_brstcentered', '2016-12-09', '2016-12-10'), 'Problem checking /center_measurement with ACR brst files'
+  assert, time_string(c.X[0], tformat='YYYY-MM-DD/hh:mm:ss.fff') eq '2016-12-09/08:58:54.110', 'Problem checking /center_measurement with ACR brst files'
+  assert, time_string(d.X[0], tformat='YYYY-MM-DD/hh:mm:ss.fff') eq '2016-12-09/08:58:54.005', 'Problem checking /center_measurement with ACR brst files'
+  return, 1
+end
+
+; the following tests for a regression when the user runs
+; mms_get_fpi_dist on a burst interval with gaps
+function mms_load_fpi_ut::test_dist_burst_with_gaps
+  mms_load_fpi, trange=['2015-12-15/11:18', '2015-12-15/11:36'], data_rate='brst', /time_clip, datatype='des-dist'
+  return, 1
+end
+
 ; end of regression tests <------
 
 ; check multiple data rates
@@ -249,6 +300,17 @@ end
 ;    'Problem loading FPI data with multiple data rates specified'
 ;  return, 1
 ;end
+
+function mms_load_fpi_ut::test_ang_ang_elec
+  @error_is_pass
+  mms_fpi_ang_ang, '2015-10-15/13:06:30', species='elec'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_ang_ang_e
+  mms_fpi_ang_ang, '2015-10-15/13:06:30', species='e'
+  return, 1
+end
 
 function mms_load_fpi_ut::test_load
   mms_load_fpi, probe=4, level='l2', datatype='des-moms'

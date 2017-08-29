@@ -21,9 +21,9 @@
 ;OUTPUT:
 ;  none
 ;  
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-12-11 10:44:53 -0800 (Thu, 11 Dec 2014) $
-;$LastChangedRevision: 16456 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2017-07-19 14:37:28 -0700 (Wed, 19 Jul 2017) $
+;$LastChangedRevision: 23669 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_overplot_key.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ pro spd_ui_overplot_key_draw, state
 
   if state.poes eq 1 then begin
     key = read_png(rpath + 'poes_key.png')
-  endif else if state.goes eq 0 && state.poes eq 0 then begin
+  endif else if state.goes eq 0 && state.poes eq 0 && state.secs eq 0 then begin
     key = read_png(rpath + 'overplotkey.png')
   endif else if state.goes ge 8 && state.goes le 12 then begin
     ; GOES 8-12
@@ -43,8 +43,17 @@ pro spd_ui_overplot_key_draw, state
   endif else if state.goes ge 13 && state.goes le 15 then begin
     ; GOES 13-15
     key = read_png(rpath + 'goes13-15key.png')
+  endif else if state.secs eq 1 then begin
+    ; SECS Quicklook Plots
+    key = read_png(rpath + 'secs_quicklook_key.png')
+  endif else if state.secs eq 2 then begin
+    ; SECS eics mosaic Plots
+    key = read_png(rpath + 'secs_mosaic_key.png')
+  endif else if state.secs eq 3 then begin
+    ; SECS seca mosaic Plots
+    key = read_png(rpath + 'seca_mosaic_key.png')
   endif
-  
+
   keyImageObj = obj_new('IDLgrImage', key, dimen=[1,1])
   
   model = obj_new('IDLgrModel')
@@ -128,10 +137,11 @@ pro spd_ui_overplot_key_event, event
   Return
 end
 
-pro spd_ui_overplot_key, gui_id, historyWin, modal = modal, goes = goes, poes = poes
+pro spd_ui_overplot_key, gui_id, historyWin, modal = modal, goes = goes, poes = poes, $
+  secs = secs
 
   compile_opt idl2, hidden
-  
+ 
   y_length = 0
   screen_size = GET_SCREEN_SIZE()
   y_length = screen_size[1] - 140
@@ -140,14 +150,23 @@ pro spd_ui_overplot_key, gui_id, historyWin, modal = modal, goes = goes, poes = 
   ; check if the GOES or POES overview plot panel sent us here
   if undefined(goes) then goes=0
   if undefined(poes) then poes=0
-  
+  if undefined(secs) then secs=0
+ 
   overplot_xsize = 750
   
   ; ysize for overview plots:
   ;  THEMIS: 900px, GOES: 1015px, POES: 800px
   overplot_ysize = goes ne 0 ? 1015 : 900
   overplot_ysize = poes ne 0 ? 800 : overplot_ysize
-  
+  if (secs EQ 1) then begin    
+     overplot_ysize = 550
+     overplot_xsize = 850
+  endif 
+  if secs GE 2 then begin
+    overplot_ysize = 450
+    overplot_xsize = 750     
+  endif
+ 
   keyid = widget_base(/col, title='Overview Plot Key', group_leader=gui_id, modal=modal, TLB_FRAME_ATTR=1)
   
   keyDisplay = widget_draw(keyid, graphics_level=2, renderer=0, retain=2, XSize=overplot_xsize, YSIZE=overplot_ysize, units=0, x_scroll_size=overplot_xsize, y_scroll_size=y_length, /expose_events)
@@ -155,7 +174,7 @@ pro spd_ui_overplot_key, gui_id, historyWin, modal = modal, goes = goes, poes = 
   exitButtonBase = widget_base(buttons, /col, /align_center)
   exitButton = widget_button(exitButtonBase, val=' Close ', uval='EXIT', /align_center)
 
-  state = {gui_id:gui_id, historyWin:historyWin, keyDisplay:keyDisplay, goes:goes, poes:poes}
+  state = {gui_id:gui_id, historyWin:historyWin, keyDisplay:keyDisplay, goes:goes, poes:poes, secs:secs}
   
   Widget_Control, keyid, Set_UValue=state, /No_Copy
   CenterTLB, keyid

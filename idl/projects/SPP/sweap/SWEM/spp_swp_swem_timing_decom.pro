@@ -10,16 +10,16 @@ store_data,'foo2',data={x:d.x,y:dc}
 
 end
 
-
-function spp_swp_data_select,bytearray,startbit,nbits
-case nbits of 
-8:    v =  bytearray[startbit/8]
-16:   v = (swap_endian( uint(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
-32:   v = (swap_endian(ulong(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
-else:  dprint,'error'  
-endcase
-return,v
-end
+;
+;function spp_swp_data_select,bytearray,startbit,nbits
+;case nbits of 
+;8:    v =  bytearray[startbit/8]
+;16:   v = (swap_endian( uint(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
+;32:   v = (swap_endian(ulong(bytearray,startbit/8,1) ,/swap_if_little_endian ))[0]
+;else:  dprint,'error'  
+;endcase
+;return,v
+;end
 
 
 
@@ -65,7 +65,7 @@ if ccsds.pkt_size eq 56 then begin
   fields_clk_cycles =  ishft(values[4],-1)
 ;  return,0
   
-endif else if ccsds.pkt_size eq 72 then begin
+endif else if ccsds.pkt_size ge 66 then begin
   dprint,'Op mode',dlevel=4
   sample_clk_per = spp_swp_data_select(ccsds_data,80,16)
   scpps_met_time = spp_swp_data_select(ccsds_data,96,32)

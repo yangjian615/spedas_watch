@@ -8,8 +8,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-07-29 09:01:51 -0700 (Fri, 29 Jul 2016) $
-; $LastChangedRevision: 21571 $
+; $LastChangedDate: 2017-07-13 07:42:47 -0700 (Thu, 13 Jul 2017) $
+; $LastChangedRevision: 23599 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_datarates.pro $
 ;-
 
@@ -21,7 +21,7 @@ function mms_gui_datarates, instrument
   valid_rates['hpca'] = ['srvy', 'brst']
   valid_rates['eis'] = ['srvy', 'brst']
   valid_rates['feeps'] = ['srvy', 'brst']
-  valid_rates['fpi'] = ['fast', 'brst']
+  valid_rates['fpi'] = ['fast', 'brst', 'slow']
   valid_rates['scm'] = ['srvy', 'brst', 'slow', 'fast']
   valid_rates['edi'] = ['srvy', 'brst']
   valid_rates['edp'] = ['srvy', 'fast', 'brst', 'slow']

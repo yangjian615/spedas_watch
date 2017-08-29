@@ -17,8 +17,8 @@
 ;                      across calibration sequence.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 11:59:51 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22274 $
+; $LastChangedDate: 2017-08-15 17:53:12 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23798 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_mcpcal.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -26,18 +26,25 @@
 ;-
 pro mvn_swe_mcpcal, trange
 
+  @mvn_swe_com
   @swe_snap_common
   
   tmin = min(time_double(trange), max=tmax)
-
-  get_data,'swe_pot_overlay',data=scp,index=i
-  if (i eq 0) then begin
-    print,"Error getting spacecraft potential."
+  
+  str_element, mvn_swe_engy, 'sc_pot', scpot, success=ok
+  if (not ok) then begin
+    print,"You must load SWEA data first."
     return
   endif
-  indx = where((scp.x ge tmin) and (scp.x le tmax), count)
-  if (count gt 0) then pot = average(scp.y[indx],/nan) else pot = 0.
-  mvn_swe_sc_pot, set=pot
+
+  igud = where(scpot ne 0.), ngud)
+  if (ngud eq 0) then begin
+    print,"You must determine the spacecraft potential first."
+    return
+  endif
+  indx = where((mvn_swe_engy.time ge tmin) and (mvn_swe_engy.time le tmax), count)
+  if (count gt 0) then pot = average(scpot[indx],/nan) else pot = 0.
+  mvn_scpot, set=pot
   mvn_swe_n1d, minden=1e-5
 
 ; Conversion from decimal to hex (for commanding the MCP bias)
@@ -81,8 +88,7 @@ pro mvn_swe_mcpcal, trange
   oplot,[2600.,2600.],[1e-6,1e3],line=2,color=6
   crosshairs,x,y
 
-  x = round(x)
-  print,x,round(x*mcp_to_hex),format='(i4," = ",z4.4)'
+  print,round(x),round(x*mcp_to_hex),format='(i4," = ",z4.4)'
 
   wset, Twin
 

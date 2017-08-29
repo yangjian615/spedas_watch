@@ -17,12 +17,12 @@ function mvn_sep_response_load,atten=atten,sepn=sepn,reset=reset,bmap=bm,mapnum=
   if ~keyword_set(sepn) then return,[ptr_new(),ptr_new()]
 
   if not keyword_set(mn) then mn=8
-  if mn ne 8 then message,'Only Map 8 is ready'
+;  if mn ne 8 then message,'Only Map 8 is ready'
 
   case sepn of
   1:  begin
       if not keyword_set(sep1_filename) then begin
-         sep1_filename='run04_sep1_response-map-8.sav
+         sep1_filename='4pi_run05_sep1_response-map-9.sav'
          restore,file=sep1_filename,/verbose
          dprint,sep1_filename,dlevel=1
          sep1_response = [[ptr_new(resp_e0),ptr_new(resp_e1)], $
@@ -33,7 +33,7 @@ function mvn_sep_response_load,atten=atten,sepn=sepn,reset=reset,bmap=bm,mapnum=
       end
   2:  begin
       if not keyword_set(sep2_filename) then begin
-         sep2_filename='run04_sep2_response-map-8.sav
+         sep2_filename='4pi_run05_sep2_response-map-9.sav'
          restore,file=sep2_filename,/verbose
          dprint,sep2_filename,dlevel=1
 ;         *sep2_response[0,0] = resp_e0
@@ -891,7 +891,7 @@ endif
 if ~keyword_set(init) then begin
 ;   timespan,'14 3 18',65
  ;  timespan,current=35
-   timespan,['14 4 18',time_string(systime(1),prec=-3)]
+   timespan,['17 7 25',time_string(systime(1),prec=-3)]
    mvn_sep_var_restore
    tplot,'*SEPS*ATT mvn_sep2*Rate*'
 restore,/verbose,'sep2_background.sav'

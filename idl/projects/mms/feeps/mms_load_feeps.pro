@@ -84,8 +84,8 @@
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-23 11:11:30 -0800 (Thu, 23 Feb 2017) $
-;$LastChangedRevision: 22856 $
+;$LastChangedDate: 2017-08-15 14:21:36 -0700 (Tue, 15 Aug 2017) $
+;$LastChangedRevision: 23791 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -114,6 +114,11 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
         datatype_in = l1a_datatypes
     endif
     
+    ; we need trange in this routine for the time dependent sun masks
+    if ~undefined(trange) && n_elements(trange) eq 2 $
+      then tr = timerange(trange) $
+    else tr = timerange()
+    
     ; if the user requests a specific varformat, we'll need to load 
     ; the support data required for sun removal and spin averaging
     if ~undefined(varformat) && (varformat[0] ne '*') then begin
@@ -122,7 +127,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
     endif
     if ~undefined(varformat) && ~undefined(get_support_data) then undefine, get_support_data
     
-    mms_load_data, trange = trange, probes = probes_in, level = level_in, instrument = 'feeps', $
+    mms_load_data, trange = tr, probes = probes_in, level = level_in, instrument = 'feeps', $
         data_rate = data_rate_in, local_data_dir = local_data_dir, source = source, $
         datatype = datatype_in, get_support_data=get_support_data, $ ; support data is needed for spin averaging, etc.
         tplotnames = tplotnames, no_color_setup = no_color_setup, time_clip = time_clip, $
@@ -158,7 +163,7 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
           ; remove the sunlight contamination
           mms_feeps_remove_sun, probe = this_probe, datatype = this_datatype, level = level_in, $
               data_rate = data_rate_in, suffix = suffix, data_units = data_units[data_units_idx], $
-              tplotnames = tplotnames
+              tplotnames = tplotnames, trange=tr
     
           ; calculate the omni-directional spectra
           mms_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units[data_units_idx], $

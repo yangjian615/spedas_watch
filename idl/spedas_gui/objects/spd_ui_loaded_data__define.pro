@@ -49,9 +49,9 @@
 ;
 ;HISTORY:
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2015-07-09 15:14:03 -0700 (Thu, 09 Jul 2015) $
-;$LastChangedRevision: 18055 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-08-15 17:21:26 -0700 (Tue, 15 Aug 2017) $
+;$LastChangedRevision: 23795 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/objects/spd_ui_loaded_data__define.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ FUNCTION SPD_UI_LOADED_DATA::Add, name, file=file, mission=mission,observatory=o
     return, 0
   endif
   
-  return,self->addData(name,d,limit=l,dlimit=dl,file=file, mission=mission,observatory=observatory,coordSys=coordSys,instrument=instrument,timerange=timerange,isSpect=isSpect,groupname=groupname,component_names=component_names,added_name=added_name,units=units,yaxisunits=yaxisunits,isYaxis=isYaxis,suffix=suffix,indepName=indepName,yaxisparent=yaxisparent)
+  return,self->addData(name,d,limit=l,dlimit=dl,file=file, mission=mission,observatory=observatory,instrument=instrument,timerange=timerange,isSpect=isSpect,groupname=groupname,component_names=component_names,added_name=added_name,units=units,yaxisunits=yaxisunits,isYaxis=isYaxis,suffix=suffix,indepName=indepName,yaxisparent=yaxisparent)
     
 end
 

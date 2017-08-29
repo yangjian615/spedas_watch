@@ -23,8 +23,10 @@ trange=pui0.trange
 ;----------MAG----------
 get_data,'mvn_B_1sec',data=magdata; magnetic field vector, payload coordinates (nT)
 if ~keyword_set(magdata) then begin
-  dprint,'No MAG data available, using default B=[0,3,0] nT'
-  pui.data.mag.mso=1e-9*[0,3,0] ;magnetic field (T)
+;  dprint,'No MAG data available, using default B=[0,3,0] nT'
+;  pui.data.mag.mso=1e-9*[0,3,0] ;magnetic field (T)
+  dprint,'No MAG data available, using !values.f_nan'
+  pui.data.mag.mso=[!values.f_nan,!values.f_nan,!values.f_nan] ;magnetic field (T)
   centertime=dgen(pui0.nt,range=timerange(trange))
   pui.centertime=centertime
 endif else begin
@@ -33,36 +35,39 @@ endif else begin
   pui.centertime=centertime
 
   ;rotate MAG data into MSO coordinates (Tesla)
-  pui.data.mag.mso=spice_vector_rotate(pui.data.mag.payload,centertime,'MAVEN_SPACECRAFT','MAVEN_MSO',check_objects='MAVEN_SPACECRAFT')
+  pui.data.mag.mso=spice_vector_rotate(pui.data.mag.payload,centertime,'MAVEN_SPACECRAFT','MAVEN_MSO',check_objects='MAVEN_SPACECRAFT',/force_objects)
 endelse
 
 ;----------SWIA----------
 if ~keyword_set(swim) then begin
-  dprint,'No SWIA data available, using default values: Usw = 500 km/s, Nsw = 2 cm-3'
-  pui.data.swi.swim.velocity_mso=[-500,0,0] ;solar wind velocity (km/s)
-  pui.data.swi.swim.density=2. ;solar wind density (cm-3)
+;  dprint,'No SWIA data available, using default values: Usw = 500 km/s, Nsw = 2 cm-3'
+;  pui.data.swi.swim.velocity_mso=[-500,0,0] ;solar wind velocity (km/s)
+;  pui.data.swi.swim.density=2. ;solar wind density (cm-3)
+  dprint,'No SWIA data available, using !values.f_nan'
+  pui.data.swi.swim.velocity_mso=!values.f_nan ;solar wind velocity (km/s)
+  pui.data.swi.swim.density=!values.f_nan ;solar wind density (cm-3)
 endif else begin
-  pui.data.swi.swim=average_hist(swim,swim.time_unix+2.,binsize=binsize,range=trange,xbins=centertime); swia moments
-  pui.data.swi.swis=average_hist(swis,swis.time_unix+2.,binsize=binsize,range=trange,xbins=centertime); swia spectra
+  pui.data.swi.swim=average_hist(swim,swim.time_unix+2.,binsize=binsize,range=trange,xbins=centertime,/nan); swia moments
+  pui.data.swi.swis=average_hist(swis,swis.time_unix+2.,binsize=binsize,range=trange,xbins=centertime,/nan); swia spectra
   ;nsw=average_hist2(swian.y,swian.x,binsize=binsize,trange=trange,centertime=centertime); solar wind density (cm-3)
   ;vsw=1e3*average_hist2(swiav.y,swiav.x,binsize=binsize,trange=trange,centertime=centertime); solar wind velocity (m/s)
   ;swiaef=average_hist2(swiaefdata.y,swiaefdata.x,binsize=binsize,trange=trange,centertime=centertime); swia energy flux
   ;swiaet=average_hist2(swiaefdata.v,swiaefdata.x,binsize=binsize,trange=trange,centertime=centertime); swia energy table
 
   swisen=transpose(info_str[pui.data.swi.swis.info_index].energy_coarse)
-  store_data,'mvn_redures_swia',data={x:centertime,y:transpose(pui.data.swi.swis.data),v:swisen},limits={ylog:1,zlog:1,spec:1,yrange:[25,25e3],ystyle:1,zrange:[1e3,1e8],ztitle:'Eflux',ytickunits:'scientific'}
+  store_data,'mvn_redures_swia',data={x:centertime,y:transpose(pui.data.swi.swis.data),v:swisen},limits={ylog:1,zlog:1,spec:1,yrange:[25.,25e3],ystyle:1,zrange:[1e3,1e8],ztitle:'Eflux',ytickunits:'scientific'}
 
   if n_elements(swics) gt 1 then begin ;swia survey data
     swiactime = swics.time_unix +4.0*swics.num_accum/2  ;center time of sample/sum
-    pui.data.swi.swics=average_hist(swics,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse survey
+    pui.data.swi.swics=average_hist(swics,swiactime,binsize=binsize,range=trange,xbins=centertime,/nan); swia coarse survey
     swicsdt=swics[1:*].time_unix-swics[0:-1].time_unix
     store_data,'mvn_swics_dt_(s)',data={x:swics[1:*].time_unix,y:swicsdt},limits={ylog:1,panel_size:.5,colors:'r'}
 
-    if n_elements(swics) gt 1 then begin ;swia archive (burst) data
+    if n_elements(swica) gt 1 then begin ;swia archive (burst) data
       swiactime = swica.time_unix +4.0*swica.num_accum/2  ;center time of sample/sum
-      pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime); swia coarse archive
+      pui.data.swi.swica=average_hist(swica,swiactime,binsize=binsize,range=trange,xbins=centertime,/nan); swia coarse archive
       swicadt=swica[1:*].time_unix-swica[0:-1].time_unix
-      store_data,'mvn_swica_dt_(s)',data={x:swica[1:*].time_unix,y:swicadt},limits={ylog:1,panel_size:.5,colors:'r'}
+      store_data,'mvn_swica_dt_(s)',data={x:swica[1:*].time_unix,y:swicadt},limits={ylog:1,panel_size:.5,colors:'r',psym:3}
       badindex=where(~finite(pui.data.swi.swica.time_unix),/null,count) ;no archive available index
       if count gt 0 then pui[badindex].data.swi.swica=pui[badindex].data.swi.swics ;use survey instead
     endif else pui.data.swi.swica=pui.data.swi.swics ;if no archive available at all, use survey instead
@@ -83,7 +88,7 @@ if keyword_set(sweaefdata) then begin
   sweadata.energy-=replicate(1.,pui0.sweeb)#swescpot ;correct for s/c potential
   mvn_swe_convert_units,sweadata,'eflux' ;convert back to eflux
   
-  store_data,'swe_a4_pot',data={x:sweadata.time,y:transpose(sweadata.data),v:transpose(sweadata.energy)},limits={spec:1,ylog:1,zlog:1,ystyle:1,yrange:[1.,5e3],zrange:[1e4,1e9],ztitle:'Eflux',ytickunits:'scientific'}
+  store_data,'mvn_swea_pot',data={x:sweadata.time,y:transpose(sweadata.data),v:transpose(sweadata.energy)},limits={spec:1,ylog:1,zlog:1,ystyle:1,yrange:[1.,5e3],zrange:[1e4,1e9],ztitle:'Eflux',ytickunits:'scientific'}
   sweaefpot=average_hist2(transpose(sweadata.data),sweadata.time,binsize=binsize,trange=trange,centertime=centertime); swea energy flux corrected for s/c potential
   sweaenpot=average_hist2(transpose(sweadata.energy),sweadata.time,binsize=binsize,trange=trange,centertime=centertime); swea energy bins corrected for s/c potential
   pui.data.swe.efpot=transpose(sweaefpot)
@@ -104,16 +109,18 @@ if keyword_set(mvn_c0_dat) then begin ;static 1d data (64e2m)
   store_data,'mvn_redures_HImass_sta_c0',centertime,c0eflux[*,*,1],c0energy
   store_data,'mvn_redures_LOmass_sta_c0',centertime,c0eflux[*,*,0],c0energy
   store_data,'mvn_sta_att',data={x:c0time,y:mvn_c0_dat.att_ind},limits={yrange:[-1,4],panel_size:.5,colors:'r'}
-  store_data,'mvn_sta_mode',data={x:c0time,y:mvn_c0_dat.mode},limits={yrange:[-1,7],panel_size:.5,colors:'r'}
+  store_data,'mvn_sta_mode',data={x:c0time,y:mvn_c0_dat.mode},limits={yrange:[-1,7],ystyle:1,panel_size:.5,colors:'r'}
   store_data,'mvn_sta_sweep_index',data={x:c0time,y:mvn_c0_dat.swp_ind},limits={ylog:1,panel_size:.5,colors:'r'}
 endif
 
-if keyword_set(mvn_d0_dat) and pui0.do3d then begin ;static 3d survey data (d0: 32e4a16d8m 128s)
-  d0time = (mvn_d0_dat.time + mvn_d0_dat.end_time)/2.
+if keyword_set(mvn_d0_dat) and (pui0.do3d or pui0.d0) then begin ;static 3d survey data (d0: 32e4a16d8m 128s)
+  d0time=(mvn_d0_dat.time + mvn_d0_dat.end_time)/2.
   d0ef=average_hist2(mvn_d0_dat.eflux,d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 energy flux
   d0en=average_hist2(mvn_d0_dat.energy[mvn_d0_dat.swp_ind,*,0,0],d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 energy table
+  d0ms=average_hist2(reform(mvn_d0_dat.mass_arr[mvn_d0_dat.swp_ind,0,0,*]),d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 mass array
   d0dt=average_hist2(mvn_d0_dat.delta_t,d0time,binsize=binsize,trange=trange,centertime=centertime); static d0 dt
-  store_data,'mvn_sta_d0_mass_(amu)',data={x:d0time,y:reform(mvn_d0_dat.mass_arr[mvn_d0_dat.swp_ind,0,0,*])},limits={ylog:1}
+  pui.data.sta.d1.mass=transpose(d0ms)
+  store_data,'mvn_sta_d0_mass_(amu)',data={x:d0time,y:reform(mvn_d0_dat.mass_arr[mvn_d0_dat.swp_ind,0,0,*])},limits={ylog:1,labels:['0','1','2','3','4','5','6','7'],psym:3}
 
   if keyword_set(mvn_d1_dat) then begin ;static 3d archive (burst) data (d1: 32e4a16d8m 16s)
     d1time = (mvn_d1_dat.time + mvn_d1_dat.end_time)/2.
@@ -133,8 +140,7 @@ if keyword_set(mvn_d0_dat) and pui0.do3d then begin ;static 3d survey data (d0: 
   endelse
   pui.data.sta.d1.eflux=transpose(reform(d1ef,[pui0.nt,pui0.sd1eb,pui0.swine,pui0.swina,8]),[1,3,2,4,0])
   pui.data.sta.d1.energy=transpose(d1en)
-  d1dtind=where(finite(d1dt),/null,count) ;where data available index (due to average_hist time bin being smaller than dt)
-  if count gt 0 then store_data,'mvn_sta_d01_dt_(s)',data={x:centertime[d1dtind],y:d1dt[d1dtind]},limits={ylog:1,panel_size:.5,colors:'r'}
+  store_data,'mvn_sta_d01_dt_(s)',data={x:centertime,y:d1dt},limits={ylog:1,panel_size:.5,colors:'r',psym:3}
 endif
 
 ;----------SEP----------
@@ -145,8 +151,8 @@ get_data,'mvn_sep2_svy_ATT',data=sep2at ; SEP2 attenuator state
 if keyword_set(sep1data) then begin
 ;  sep1att=interp(sep1at.y,sep1at.x,centertime)
 ;  sep2att=interp(sep2at.y,sep2at.x,centertime)
-  sep1att=average_hist(sep1at.y,sep1at.x,binsize=binsize,range=trange,xbins=centertime)
-  sep2att=average_hist(sep2at.y,sep2at.x,binsize=binsize,range=trange,xbins=centertime)
+  sep1att=average_hist(sep1at.y,sep1at.x,binsize=binsize,range=trange,xbins=centertime,/nan)
+  sep2att=average_hist(sep2at.y,sep2at.x,binsize=binsize,range=trange,xbins=centertime,/nan)
   sep1cps=average_hist2(sep1data.y,sep1data.x,binsize=binsize,trange=trange,centertime=centertime); sep1 counts/sec
   sep2cps=average_hist2(sep2data.y,sep2data.x,binsize=binsize,trange=trange,centertime=centertime); sep1 counts/sec
   pui.data.sep[0].rate_bo=transpose(sep1cps)
@@ -174,15 +180,20 @@ if keyword_set(euvdata) then pui.data.euv.l2=transpose(average_hist2(euvdata.y,e
 get_data,'mvn_euv_l3',data=fismdata ;FISM minute data
 if keyword_set(fismdata) then begin
   fismtime=fismdata.x
-  if (centertime[0] gt fismtime[0]) and (centertime[-1] lt fismtime[-1]+60.) then pui.data.euv.l3=transpose(interp(fismdata.y,fismdata.x,centertime))
+  if (centertime[0] gt fismtime[0]-6000.) and (centertime[-1] lt fismtime[-1]+6000.) then $ ;only if centertime edges within 100 minutes of fismdata edges,
+    pui.data.euv.l3=transpose(interp(fismdata.y,fismdata.x,centertime)) ;otherwise, interpolation will give unreasonable results
 endif
+
+;----------SPICE check----------
+kinfo=spice_kernel_info(use_cache=1)
+if n_elements(kinfo) gt 3 then begin ;at least a few spice files loaded
+
 ;----------Boundaries----------
 ;get_data,'wind',data=wind ;s/c altitude when in the solar wind (km)
-;pui.model.swalt=average_hist2(wind.y,wind.x,binsize=binsize,trange=trange,centertime=centertime)
 mvn_pui_sw_orbit_coverage,times=centertime,alt_sw=alt_sw,/conservative
 ;pui.data.swalt=alt_sw ;s/c altitude when in the solar wind (km)
 ;----------Positions----------
-pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects=['MARS','MAVEN']) ;MAVEN position MSO (m)
+pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_objects=['MARS','MAVEN'],/force_objects) ;MAVEN position MSO (m)
 
 ;mvn_pui_au_ls,times=centertime,mars_au=mars_au,mars_ls=mars_ls
 ;pui.data.mars_au=mars_au ;Mars heliocentric distance (AU)
@@ -192,11 +203,12 @@ pui.data.scp=1e3*spice_body_pos('MAVEN','MARS',frame='MSO',utc=centertime,check_
 xdir=[1.,0,0]#replicate(1.,pui0.nt) ;X-direction (SEP front FOV)
 ydir=[0,1.,0]#replicate(1.,pui0.nt) ;Y-direction
 zdir=[0,0,1.]#replicate(1.,pui0.nt) ;Z-direction (symmetry axis of SWIA and STATIC)
-pui.data.sep[0].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP1','MSO',check_objects='MAVEN_SPACECRAFT'); sep1 look direction MSO
-pui.data.sep[1].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP2','MSO',check_objects='MAVEN_SPACECRAFT'); sep2 look direction MSO
+pui.data.sep[0].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP1','MSO',check_objects='MAVEN_SPACECRAFT',/force_objects); sep1 look direction MSO
+pui.data.sep[1].fov=spice_vector_rotate(xdir,centertime,'MAVEN_SEP2','MSO',check_objects='MAVEN_SPACECRAFT',/force_objects); sep2 look direction MSO
 ;swizld=transpose(spice_vector_rotate(zdir,centertime,'MAVEN_SWIA','MSO',check_objects='MAVEN_SPACECRAFT')); SWIA-Z look direction
-pui.data.sta.fov.x=spice_vector_rotate(xdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT']); STATIC-X look direction
-pui.data.sta.fov.z=spice_vector_rotate(zdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT']); STATIC-Z look direction
+pui.data.sta.fov.x=spice_vector_rotate(xdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT'],/force_objects); STATIC-X look direction
+pui.data.sta.fov.z=spice_vector_rotate(zdir,centertime,'MAVEN_STATIC','MSO',check_objects=['MAVEN_APP_OG','MAVEN_SPACECRAFT'],/force_objects); STATIC-Z look direction
+endif
 
 tplot_options,'no_interp',1
 

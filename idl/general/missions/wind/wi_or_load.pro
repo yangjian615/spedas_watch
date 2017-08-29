@@ -12,14 +12,14 @@
 ;  This routine is still in development.
 ; Author: Davin Larson
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-08 10:35:22 -0800 (Wed, 08 Mar 2017) $
-; $LastChangedRevision: 22926 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2017-07-27 16:30:01 -0700 (Thu, 27 Jul 2017) $
+; $LastChangedRevision: 23716 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wi_or_load.pro $
 ;-
 pro wi_or_load,type,trange=trange,verbose=verbose,downloadonly=downloadonly, $
       varformat=varformat,datatype=datatype, no_download=no_download, no_update=no_update, $
-      addmaster=addmaster,data_source=data_source,tplotnames=tn,source_options=source
+      addmaster=addmaster,data_source=data_source,tplotnames=tn,source_options=source,suffix=suffix
 
 if not keyword_set(datatype) then datatype = 'pre'
 
@@ -47,7 +47,7 @@ files = spd_download(remote_file=relpathnames, remote_path=source.remote_data_di
 if keyword_set(downloadonly) then return
 
 prefix = 'wi_'+datatype+'_or_'
-cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix ,tplotnames=tn    ; load data into tplot variables
+cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix ,tplotnames=tn,suffix=suffix    ; load data into tplot variables
 
 ; Set options for specific variables
 

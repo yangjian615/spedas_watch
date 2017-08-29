@@ -46,6 +46,12 @@
 ;       HSK:          String array indicating additional housekeeping panels to plot
 ;                     (e.g., HSK = ['MCPHV'] during HV ramps).  Default = [''].
 ;
+;       FHSK:         Create tplot variables for fast housekeeping.  Default = 0 (no).
+;
+;       FSHIFT:       Shift fast housekeeping packets to the start time of the first.
+;
+;       FNORM:        Normalize the fast housekeeping channels to the nominal value.
+;
 ;       LUT:          Plot the active LUT.
 ;
 ;       SIFCTL:       Plot SIF control register bits.
@@ -60,8 +66,8 @@
 ;       BURST:        Plot a color bar showing PAD burst coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-22 13:32:57 -0700 (Sat, 22 Apr 2017) $
-; $LastChangedRevision: 23217 $
+; $LastChangedDate: 2017-08-15 17:51:40 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23796 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -70,7 +76,8 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
                      tfirst=tfirst, title=title, tspan=tspan, apid=apid, hsk=hsk, $
                      lut=lut, timing=timing, sifctl=sifctl, tplot_vars_out=pans, $
                      eunits=eunits, png=png, pad_smo=smo, eph=eph, orb=orb, $
-                     burst=burst, loadonly=loadonly
+                     burst=burst, loadonly=loadonly, fhsk=fhsk, fshift=fshift, $
+                     fnorm=fnorm
 
   @mvn_swe_com
 
@@ -87,7 +94,11 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   if (size(eph,/type) eq 0) then doeph = 1 else doeph = keyword_set(eph)
   if (size(burst,/type) eq 0) then doburst = 1 else doburst = keyword_set(burst)
   if (size(orb,/type) eq 0) then doorb = 1 else doorb = keyword_set(orb)
-  
+  fhsk = keyword_set(fhsk)
+
+  swe_hsk_norm = [1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 12., -12., 28., 28., $
+                  1., 1., 1., 2.5, 5., 3.3, 5., -5., 28., 1.]
+
   if not keyword_set(apid) then apid = ['A2','A4']
   
   plotap = replicate(0,6)
@@ -108,10 +119,11 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   pdT = ['']
   pdC = ['']
   TClab = replicate('',8)
-  TCcol = round(findgen(8)*(247./7.)) + 7
+  TCcol = round(findgen(8)*((254.-32.)/7.)) + 32  ; optimized for color table 43
   Vlab = TClab
   Tlab = TClab[0:2]
-  store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)} 
+  store_data,'TV_frame',data={x:[0D], y:replicate(-100.,1,7), v:findgen(7)}
+  options,'TV_frame','colors',TCcol
 
   dTmax = 10.
   dCmax = 10.
@@ -200,6 +212,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
 
     store_data,'LVPST' ,data={x:swe_hsk.time, y:swe_hsk.LVPST}
     store_data,'MCPHV' ,data={x:swe_hsk.time, y:swe_hsk.MCPHV}
+       options,'MCPHV','ynozero',1
     store_data,'NRV'   ,data={x:swe_hsk.time, y:swe_hsk.NRV}
     store_data,'ANALV' ,data={x:swe_hsk.time, y:swe_hsk.ANALV}
     store_data,'DEF1V' ,data={x:swe_hsk.time, y:swe_hsk.DEF1V}
@@ -458,6 +471,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     options,mname,'yminor',4
     options,mname,'labels',['AZ','EL+90']
     options,mname,'labflag',1
+    options,mname,'colors',TCcol[[1,6]]
     options,mname,'psym',3
     
     if (plotap[2]) then pans = [pans,pname,mname]
@@ -897,30 +911,48 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   endif
 
 ; Fast Housekeeping (APID A6)
-; Don't plot data (which is done with swe_plot_fhsk), just plot packet stats
-; For A6, just plot the packet times.
+; Use swe_plot_fhsk to plot the analyzer voltage pattern.
 
   if (size(a6,/type) eq 8) then begin      
     tmin = min(a6.time, max=tmax)
     tsp = [tsp, tmin, tmax]
 
-    if (n_elements(a6) gt 0L) then begin
-      store_data,'dca6',data={x:a6.time, y:replicate(1,n_elements(a6))}
-      store_data,'dta6',data={x:a6.time, y:replicate(6D,n_elements(a6))}
-      options,'dca6','ytitle','dN (A6)'
-      options,'dca6','psym',5
-      options,'dta6','ytitle','dT (A6)'
-      options,'dta6','psym',5
-      options,'dta6','ynozero',1
-      options,'dca6','color',TCcol[7]
-      options,'dta6','color',TCcol[7]
+    store_data,'dca6',data={x:a6.time, y:replicate(1,n_elements(a6))}
+    store_data,'dta6',data={x:a6.time, y:replicate(6D,n_elements(a6))}
+    options,'dca6','ytitle','dN (A6)'
+    options,'dca6','psym',5
+    options,'dta6','ytitle','dT (A6)'
+    options,'dta6','psym',5
+    options,'dta6','ynozero',1
+    options,'dca6','color',TCcol[7]
+    options,'dta6','color',TCcol[7]
       
-      dCmax = dCmax > max(dca0,/nan)
-      dTmax = dTmax > max(dta0,/nan)
+    dCmax = dCmax > max(dca0,/nan)
+    dTmax = dTmax > max(dta0,/nan)
 
-      pdC = [pdC,'dca6']
-      pdT = [pdT,'dta6']
-      TClab[7] = 'A6'
+    pdC = [pdC,'dca6']
+    pdT = [pdT,'dta6']
+    TClab[7] = 'A6'
+
+    if (fhsk) then begin
+      na6 = n_elements(a6)
+      tpkt = ((1.95D/224D)*dindgen(224)) # replicate(1D,4)
+      spkt = replicate(1D,224) # (2D*dindgen(4))
+      tpkt = reform(tpkt + spkt, 224*4) # replicate(1D,na6)
+      if keyword_set(fshift) then spkt = replicate(1D,224*4) # replicate(a6[0].time,na6) $
+                             else spkt = replicate(1D,224*4) # a6.time
+      x = reform(tpkt + spkt, 224L*4L*na6)
+      y = reform(a6.value, 224L*4L*na6)
+      mux = reform(replicate(1B,224) # reform(a6.mux,4L*na6), 224L*4L*na6)
+      if keyword_set(fnorm) then ynorm = swe_hsk_norm else ynorm = replicate(1.,24)
+      for i=0,23 do begin
+        indx = where(mux eq i, count)
+        if (count gt 0L) then begin
+          tname = 'F_' + swe_hsk_names[i]
+          store_data,tname,data={x:x[indx], y:y[indx]/ynorm[i]}
+          options,tname,'ynozero',1
+        endif
+      endfor
     endif
   endif
 

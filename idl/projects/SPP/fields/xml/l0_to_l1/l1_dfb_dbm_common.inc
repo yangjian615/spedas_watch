@@ -209,8 +209,6 @@
   	</cdf_att>
 	</cdf_var>
 
-
-
   <cdf_var
       name   = "dbm_data"
       type   = "integer"

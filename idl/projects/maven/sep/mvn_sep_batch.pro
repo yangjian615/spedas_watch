@@ -21,8 +21,8 @@ mvn_save_reduce_timeres,init=1,/mag,resstr='1sec',verbose=1
 mvn_save_reduce_timeres,init=1,/mag,resstr='30sec',verbose=1
 
 ;mvn_sep_gen_plots,init=-10
-timespan,[time_double('2014-9-22'),systime(1)]
-mvn_sep_makefile  ;,init=-200
+timespan,[time_double('2014-3-18'),systime(1)]
+mvn_sep_makefile,/init
 mvn_sep_save_reduce_timeres,init=-1
 
 generate_checksums,root_data_dir()+'maven/data/sci/sep/',dir_pattern='*.{sav,cdf}',file_pattern='*.???',/include_dir

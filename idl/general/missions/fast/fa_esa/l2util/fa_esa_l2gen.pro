@@ -14,8 +14,8 @@
 ;HISTORY:
 ; 2015-09-02, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-03-28 15:56:35 -0700 (Mon, 28 Mar 2016) $
-; $LastChangedRevision: 20609 $
+; $LastChangedDate: 2017-05-26 12:02:12 -0700 (Fri, 26 May 2017) $
+; $LastChangedRevision: 23357 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/fast/fa_esa/l2util/fa_esa_l2gen.pro $
 ;-
 Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
@@ -48,7 +48,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
 ;Clear all common blocks
   fa_esa_clear_common_blocks
 
-  If(keyword_set(local_data_dir)) Then ldir = local_data-dir $
+  If(keyword_set(local_data_dir)) Then ldir = local_data_dir $
   Else Begin
      If(~is_string(getenv('ROOT_DATA_DIR'))) Then Begin
         ldir = root_data_dir()
@@ -71,7 +71,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
   load_position = type
   fa_esa_l2create, type = type, orbit = orbit, data_struct = dat
   If(is_struct(dat)) Then Begin
-     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile
+     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile, _extra = _extra
      If(~is_struct(otp_struct)) Then message, type+' Write to CDF failed: orbit'+strcompress(/remove_all, string(orbit))
   Endif Else Begin
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
@@ -86,7 +86,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
   load_position = type
   fa_esa_l2create, type = type, orbit = orbit, data_struct = dat
   If(is_struct(dat)) Then Begin
-     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile
+     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile, _extra = _extra
      If(~is_struct(otp_struct)) Then message, type+' Write to CDF failed: orbit'+strcompress(/remove_all, string(orbit))
   Endif Else Begin
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
@@ -101,7 +101,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
   load_position = type
   fa_esa_l2create, type = type, orbit = orbit, data_struct = dat
   If(is_struct(dat)) Then Begin
-     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile
+     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile, _extra = _extra
      If(~is_struct(otp_struct)) Then message, type+' Write to CDF failed: orbit'+strcompress(/remove_all, string(orbit))
   Endif Else Begin
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))
@@ -116,7 +116,7 @@ Pro fa_esa_l2gen, orbit, local_data_dir = local_data_dir, _extra = _extra
   load_position = type
   fa_esa_l2create, type = type, orbit = orbit, data_struct = dat
   If(is_struct(dat)) Then Begin
-     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile
+     fa_esa_cmn_l2gen, dat, esa_type = type, otp_struct = otp_struct, fullfile_out =  fullfile, _extra = _extra
      If(~is_struct(otp_struct)) Then message, type+' Write to CDF failed: orbit'+strcompress(/remove_all, string(orbit))
   Endif Else Begin
      message, type+' L2 generation failed: orbit'+strcompress(/remove_all, string(orbit))

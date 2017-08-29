@@ -62,8 +62,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-12 14:22:41 -0800 (Thu, 12 Jan 2017) $
-;$LastChangedRevision: 22583 $
+;$LastChangedDate: 2017-07-20 07:56:21 -0700 (Thu, 20 Jul 2017) $
+;$LastChangedRevision: 23675 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/edi/mms_load_edi.pro $
 ;-
 
@@ -86,6 +86,7 @@ pro mms_load_edi, trange = trange, probes = probes, datatype = datatype, $
     ; load the support data - includes energy of measured electrons for ambient data
     ; delta +- time, velocity and energy for efield data
     if undefined(get_support_data) then get_support_data = 1 
+    if undefined(cdf_version) and undefined(latest_version) and undefined(min_version) and undefined(major_version) then min_version = '0.0.1'
 
     mms_load_data, trange = trange, probes = probes, level = level, instrument = 'edi', $
         data_rate = data_rate, local_data_dir = local_data_dir, source = source, $

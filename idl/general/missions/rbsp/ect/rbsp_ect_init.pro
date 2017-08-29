@@ -54,9 +54,9 @@
 ;HISTORY
 ; Forked from rbsp_efw_init, Jan 2013 - Kris Kersten, kris.kersten@gmail.com
 ;
-;$LastChangedBy: peters $
-;$LastChangedDate: 2014-02-06 15:30:23 -0800 (Thu, 06 Feb 2014) $
-;$LastChangedRevision: 14188 $
+;$LastChangedBy: aaronbreneman $
+;$LastChangedDate: 2017-06-13 14:34:31 -0700 (Tue, 13 Jun 2017) $
+;$LastChangedRevision: 23463 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/ect/rbsp_ect_init.pro $
 ;-
 
@@ -145,4 +145,3 @@ print,days,hours,mins,secs,format= '("RBSP countdown:",i4," Days, ",i02," Hours,
 
 
 end
-

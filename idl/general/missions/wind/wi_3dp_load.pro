@@ -20,19 +20,20 @@
 ;Notes:
 ; Author: Davin Larson
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-03-08 10:35:22 -0800 (Wed, 08 Mar 2017) $
-; $LastChangedRevision: 22926 $
+; $LastChangedBy: jwl $
+; $LastChangedDate: 2017-07-27 16:30:01 -0700 (Thu, 27 Jul 2017) $
+; $LastChangedRevision: 23716 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/wind/wi_3dp_load.pro $
 ;-
 pro wi_3dp_load,type,files=files,trange=trange,verbose=verbose,$
                 downloadonly=downloadonly, no_download=no_download, no_update=no_update, $
                 varformat=varformat,datatype=datatype, $
                 version=version, $
-                addmaster=addmaster,tplotnames=tn,source=source
+                addmaster=addmaster,tplotnames=tn,source=source,suffix=suffix
 
 if keyword_set(type) then datatype=type
 if not keyword_set(datatype) then datatype = 'k0'
+if not keyword_set(suffix) then suffix = ''
 
 ;All 3dp data, except for 'k0' is at SSL, but the path is different,
 ;so make the distinction, to avoid trying to download to the
@@ -198,35 +199,35 @@ if(nkeep eq 0) then begin
    return
 endif else files = files[keep_files]
 
-cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix ,tplotnames=tn    ; load data into tplot variables
+cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix ,tplotnames=tn,suffix=suffix    ; load data into tplot variables
 
 ; Set options for specific variables
 
 if keyword_set(fix_elpd_flux) or keyword_set(fix_sopd_flux) then begin   ;  perform cluge because CDF file attributes are not set for these files
-   get_data,prefix+'FLUX',ptr=p_flux
-   get_data,prefix+'PANGLE',ptr=p_pangles
-   get_data,prefix+'ENERGY',ptr=p_energy
+   get_data,prefix+'FLUX'+suffix,ptr=p_flux
+   get_data,prefix+'PANGLE'+suffix,ptr=p_pangles
+   get_data,prefix+'ENERGY+suffix',ptr=p_energy
    str_element,/add,p_flux,'V1',p_energy.y
    str_element,/add,p_flux,'V2',p_pangles.y
-   store_data,prefix+'FLUX',data = p_flux
+   store_data,prefix+'FLUX'+suffix,data = p_flux
 endif
 
 
 if keyword_set(fix_sosp_flux) then begin
   ;  printdat,tn
-   get_data,prefix+'FLUX',ptr=p_flux
-   get_data,prefix+'ENERGY',ptr=p_energy
+   get_data,prefix+'FLUX'+suffix,ptr=p_flux
+   get_data,prefix+'ENERGY'+suffix,ptr=p_energy
    str_element,/add,p_flux,'V',p_energy.y
-   store_data,prefix+'FLUX',data = p_flux
+   store_data,prefix+'FLUX'+suffix,data = p_flux
 
 endif
 
 
 
 if datatype eq 'elpd' then begin
-   reduce_pads,'wi_3dp_elpd_FLUX',1,4,4
-   reduce_pads,'wi_3dp_elpd_FLUX',2,0,0
-   reduce_pads,'wi_3dp_elpd_FLUX',2,12,12
+   reduce_pads,'wi_3dp_elpd_FLUX'+suffix,1,4,4
+   reduce_pads,'wi_3dp_elpd_FLUX'+suffix,2,0,0
+   reduce_pads,'wi_3dp_elpd_FLUX'+suffix,2,12,12
 endif
 
 options,/def,strfilter(tn,'wi_3dp_ion_vel',delim=' ') , colors='bgr', labels=['Vx','Vy','Vz']   ; set colors for the vector quantities

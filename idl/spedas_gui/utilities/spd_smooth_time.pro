@@ -14,8 +14,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-27 07:57:43 -0700 (Mon, 27 Mar 2017) $
-;$LastChangedRevision: 23037 $
+;$LastChangedDate: 2017-07-27 09:01:57 -0700 (Thu, 27 Jul 2017) $
+;$LastChangedRevision: 23712 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_smooth_time.pro $
 ;-
 
@@ -77,7 +77,10 @@ pro spd_smooth_time, tname, dt, newname=newname, nan=nan
     for var_idx = 0, n_elements(d.Y[0, *])-1 do begin
         out[*, var_idx] = smooth(reform(d.Y[*, var_idx]), nrv, nan=nan, /edge_truncate)
     endfor
-    store_data, newname, data={x: d.x, y: out, v: d.v}, dlimits=dl, limits=l
+    if tag_exist(d, 'v') then $
+      store_data, newname, data={x: d.x, y: out, v: d.v}, dlimits=dl, limits=l $
+    else $
+      store_data, newname, data={x: d.x, y: out}, dlimits=dl, limits=l
 end
 
 

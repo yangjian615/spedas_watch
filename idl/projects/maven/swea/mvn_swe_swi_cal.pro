@@ -4,7 +4,7 @@
 ;  Compares ion density from SWIA and electron density from SWEA for the purpose 
 ;  of cross calibration.  Beware of situations where SWEA and/or SWIA are not
 ;  measuring important parts of the distribution.  Furthermore, SWEA data must be
-;  corrected for spacecraft potential (see mvn_swe_sc_pot), and photoelectron 
+;  corrected for spacecraft potential (see mvn_scpot), and photoelectron 
 ;  contamination must be removed for any hope of a decent cross calibration.
 ;
 ;USAGE:
@@ -41,8 +41,8 @@
 ;   FUDGE:     Fudge factor for determining spacecraft potential.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-09-19 17:02:20 -0700 (Mon, 19 Sep 2016) $
-; $LastChangedRevision: 21868 $
+; $LastChangedDate: 2017-08-04 12:15:25 -0700 (Fri, 04 Aug 2017) $
+; $LastChangedRevision: 23757 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_swi_cal.pro $
 ;
 ;CREATED BY:    David L. Mitchell

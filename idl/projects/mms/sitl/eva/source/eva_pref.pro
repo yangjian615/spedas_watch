@@ -17,7 +17,12 @@ PRO eva_pref_event, event
       widget_control, wid.pfData,                          GET_VALUE=pfState
       widget_control, widget_info(wid.gl,find='eva_data'), SET_VALUE=pfState.pref
       mms_config_write, pfState.pref
-      
+
+      widget_control, wid.pfGen,                          GET_VALUE=pfState
+      ; There is no corresponding module for the Gen pref. 
+      ;widget_control, widget_info(wid.gl,find='eva_pref_gen'), SET_VALUE=pfState.pref
+      mms_config_write, pfState.pref
+
       exitcode=1
       end
     wid.btnCancel:begin
@@ -48,6 +53,9 @@ PRO eva_pref, GROUP_LEADER=group_leader
   baseTab = widget_tab(base, xsize=xsize)
     str_element,/add,wid,'pfData', eva_data_pref(baseTab,xsize=xsize,group_leader=group_leader); DATA MODULE
     str_element,/add,wid,'pfSitl', eva_sitl_pref(baseTab,xsize=xsize,group_leader=group_leader); SITL MODULE
+    str_element,/add,wid,'pfSitl2', eva_sitl_pref2(baseTab,xsize=xsize,group_leader=group_leader); SITL MODULE
+    str_element,/add,wid,'pfGen', eva_pref_gen(baseTab,xsize=xsize,group_leader=group_leader); SITL MODULE
+    
 ;    str_element,/add,wid,'pfOrbit',eva_orbit_pref(baseTab,xsize=xsize,group_leader=group_leader); ORBIT MODULE
     
   

@@ -26,9 +26,9 @@
 ;NOTES:
 ;  
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-08-19 10:13:30 -0700 (Fri, 19 Aug 2016) $
-;$LastChangedRevision: 21680 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2017-07-11 11:26:35 -0700 (Tue, 11 Jul 2017) $
+;$LastChangedRevision: 23576 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file.pro $
 ;
 ;-
@@ -298,7 +298,7 @@ pro thm_ui_load_data_file, tab_id, loadedData, historyWin, statusText, $
       bottomloadBase = Widget_Base(ldBase, /Row, YPad=2, /Align_Center)  
 
   validIType = [' ASK', ' ESA', ' EFI', ' FBK', ' FFT', ' FGM', $
-                ' FIT ', ' GMAG', ' MOM', ' SCM', ' SST', ' STATE']
+                ' FIT ', ' GMAG', ' MOM', ' GMOM', ' SCM', ' SST', ' STATE']
                 
   itypeDroplistLabel = Widget_Label(itypeBase, Value='Instrument Type:  ')
   itypeDroplist = Widget_ComboBox(itypeBase, Value=validIType, $ 

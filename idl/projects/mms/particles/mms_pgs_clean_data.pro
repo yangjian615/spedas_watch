@@ -26,30 +26,32 @@
 ;  -use for fpi and hpca for now
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2016-05-17 15:25:18 -0700 (Tue, 17 May 2016) $
-;$LastChangedRevision: 21101 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2017-06-30 07:36:07 -0700 (Fri, 30 Jun 2017) $
+;$LastChangedRevision: 23532 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_pgs_clean_data.pro $
 ;
 ;-
 pro mms_pgs_clean_data, data_in, output=output,units=units
 
   compile_opt idl2,hidden
-  
-  
+
   mms_convert_flux_units,data_in,units=units,output=data
-  
+
   dims = dimen(data.data)
   
   output= {  $
+    dims: dims, $
     time: data.time, $
     end_time:data.end_time, $
     charge:data.charge, $
     mass:data.mass,$
+    species: data.species, $
     magf:[0.,0.,0.],$
     sc_pot:0.,$
     scaling:fltarr(dims[0],dims[1]*dims[2])+1,$
     units:units,$
+    psd: reform(data_in.data,dims[0],dims[1]*dims[2]), $
     data: reform(data.data,dims[0],dims[1]*dims[2]), $
     bins: reform(data.bins,dims[0],dims[1]*dims[2]), $
     energy: reform(data.energy,dims[0],dims[1]*dims[2]), $
@@ -59,6 +61,8 @@ pro mms_pgs_clean_data, data_in, output=output,units=units
     theta:reform(data.theta,dims[0],dims[1]*dims[2]), $
     dtheta:reform(data.dtheta,dims[0],dims[1]*dims[2]) $
   }
+
+  if tag_exist(data, 'orig_energy') then str_element, output, 'orig_energy', data.orig_energy, /add
 
   de = output.energy-shift(output.energy,1,0)
   output.denergy=shift((de+shift(de,1,0))/2.,-1)

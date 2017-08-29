@@ -6,10 +6,17 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-05-15 12:18:17 -0700 (Mon, 15 May 2017) $
-; $LastChangedRevision: 23319 $
+; $LastChangedDate: 2017-06-06 11:46:01 -0700 (Tue, 06 Jun 2017) $
+; $LastChangedRevision: 23421 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_eis_ut__define.pro $
 ;-
+
+function mms_load_eis_ut::test_num_smooth_pad
+  mms_load_eis, level='l2'
+  mms_eis_pad, num_smooth=20.0
+  assert, spd_data_exists('mms1_epd_eis_extof_0-1000keV_proton_flux_omni_pad mms1_epd_eis_extof_0-1000keV_proton_flux_omni_pad_spin mms1_epd_eis_extof_0-1000keV_proton_flux_omni_pad_smth', '2015-12-15', '2015-12-16'), 'Problem with creating smooted PAD (EIS)'
+  return, 1
+end
 
 function mms_load_eis_ut::test_ang_ang_energychan
   eis_ang_ang, energy_chan=[1, 2]
@@ -25,19 +32,25 @@ end
 
 function mms_load_eis_ut::test_ang_ang_datatype_phxtof
   eis_ang_ang, datatype='phxtof', probe=3
-  assert, spd_data_exists('mms3_epd_eis_phxtof_proton_flux_omni mms3_epd_eis_phxtof_oxygen_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle datatype PHxTOF'
+  assert, spd_data_exists('mms3_epd_eis_phxtof_proton_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle datatype PHxTOF'
   return, 1
 end
 
 function mms_load_eis_ut::test_ang_ang_data_rate
   eis_ang_ang, data_rate='brst', trange=['2015-10-16/13:00', '2015-10-16/13:10']
-  assert, spd_data_exists('mms1_epd_eis_brst_extof_proton_flux_omni mms1_epd_eis_brst_extof_alpha_flux_omni mms1_epd_eis_brst_extof_oxygen_flux_omni', '2015-10-16/13:00', '2015-10-16/13:10'), 'Problem with EIS angle-angle burst mode?'
+  assert, spd_data_exists('mms1_epd_eis_brst_extof_proton_flux_omni', '2015-10-16/13:00', '2015-10-16/13:10'), 'Problem with EIS angle-angle burst mode?'
   return, 1
 end
 
 function mms_load_eis_ut::test_ang_ang_data_units
   eis_ang_ang, data_units='cps'
   assert, spd_data_exists('mms1_epd_eis_extof_proton_cps_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle data_units keyword'
+  return, 1
+end
+
+function mms_load_eis_ut::test_ang_ang_extof_helium
+  eis_ang_ang, datatype='extof', species='helium'
+  assert, spd_data_exists('mms1_epd_eis_extof_alpha_flux_omni', '2015-12-15', '2015-12-16'), 'Problem with EIS angle-angle with ExTOF oxygen'
   return, 1
 end
 

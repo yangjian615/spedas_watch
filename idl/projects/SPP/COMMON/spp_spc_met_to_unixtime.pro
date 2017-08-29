@@ -8,7 +8,7 @@ function spp_spc_met_to_unixtime,met
   ;; long(time_double('2010-1-1/0:00')) ; Correct SWEM use
   epoch =  1262304000
   if met lt 1e6 then begin
-    dprint,dlevel=2,'Bad MET',dwait=15.
+    dprint,dlevel=2,'Bad MET ',time_string(met+epoch),dwait=15.
     met = !values.d_nan
   endif
   unixtime =  met +  epoch

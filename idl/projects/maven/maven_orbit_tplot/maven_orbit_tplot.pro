@@ -38,6 +38,12 @@
 ;       SWIA:     Calculate viewing geometry for SWIA, based on nominal s/c
 ;                 pointing.
 ;
+;       DATUM:    String for specifying the datum, or reference surface, for
+;                 calculating altitude.  Can be one of "sphere", "ellipsoid",
+;                 "areoid", or "surface".  Default = 'ellipsoid'.
+;                 Minimum matching is used for this keyword.
+;                 See mvn_altitude.pro for more information.
+;
 ;       IALT:     Ionopause altitude.  Highly variable, but nominally ~400 km.
 ;                 For display only - not included in statistics.  Default is NaN.
 ;
@@ -77,6 +83,9 @@
 ;
 ;       LOADONLY: Create the TPLOT variables, but do not plot.
 ;
+;       NOLOAD:   Don't load or refresh the ephemeris information.  Just fill in any
+;                 keywords and exit.
+;
 ;       RESET_TRANGE: If set, then reset the time span to cover the entire ephemeris
 ;                     time range, overwriting any existing time range.  This will
 ;                     affect any routines that use timespan for determining what
@@ -106,8 +115,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-28 10:39:33 -0700 (Tue, 28 Mar 2017) $
-; $LastChangedRevision: 23055 $
+; $LastChangedDate: 2017-06-12 16:58:52 -0700 (Mon, 12 Jun 2017) $
+; $LastChangedRevision: 23459 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -116,14 +125,45 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
                        colors=colors, reset_trange=reset_trange, nocrop=nocrop, spk=spk, $
-                       segments=segments, shadow=shadow
+                       segments=segments, shadow=shadow, datum=datum, noload=noload
 
   @maven_orbit_common
 
-  R_m = 3389.9D
-  R_equ = 3396.2D
-  R_pol = 3376.2D
-  R_vol = (R_equ*R_equ*R_pol)^(1D/3D)
+; Quick access to the state vector
+
+  if keyword_set(noload) then begin
+    eph = state
+    return
+  endif
+
+; Geodetic parameters for Mars (from the 2009 IAU Report)
+;   Archinal et al., Celest Mech Dyn Astr 109, Issue 2, 101-135, 2011
+;     DOI 10.1007/s10569-010-9320-4
+;   These are the values used by SPICE (pck00010.tpc).
+;   Last update: 2017-05-29.
+
+  R_equ = 3396.19D  ; +/- 0.1
+  R_pol = 3376.20D  ; N pole = 3373.19 +/- 0.1 ; S pole = 3379.21 +/- 0.1
+  R_vol = 3389.50D  ; +/- 0.2
+
+  R_m = R_vol       ; use the mean radius for converting to Mars radii
+
+; Determine the reference surface for calculating altitude
+
+  dlist = ['sphere','ellipsoid','areoid','surface']
+  if (size(datum,/type) ne 7) then datum = dlist[1]
+  i = strmatch(dlist, datum+'*', /fold)
+  case (total(i)) of
+     0   : begin
+             print, "Datum not recognized: ", datum
+             return
+           end
+     1   : datum = (dlist[where(i eq 1)])[0]
+    else : begin
+             print, "Datum is ambiguous: ", dlist[where(i eq 1)]
+             return
+           end
+  endcase
 
   rootdir = 'maven/anc/spice/sav/'
   ssrc = mvn_file_source(archive_ext='')  ; don't archive old files
@@ -225,10 +265,6 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     r = sqrt(x*x + y*y + z*z)
     s = sqrt(y*y + z*z)
     sza = atan(s,x)
-    hgt = (r - 1.)*R_m
-    
-    lon = 0.  ; no GEO coordinates for MEX
-    lat = 0.
     
     mso_x = fltarr(n_elements(mex.x),3)
     mso_x[*,0] = mex.x
@@ -239,9 +275,16 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     mso_v[*,0] = mex.vx
     mso_v[*,1] = mex.vy
     mso_v[*,2] = mex.vz
+
+; No GEO coordinates for MEX, so use aerocentric altitude and
+; set lon and lat to zero.
     
-    geo_x = 0.  ; no GEO coordinates for MEX
+    geo_x = 0.
     geo_v = 0.
+
+    hgt = (r - 1.)*R_m 
+    lon = 0.
+    lat = 0.
 
     eph = {time:time, mso_x:mso_x, mso_v:mso_v, geo_x:geo_x, geo_v:geo_v}
 
@@ -284,7 +327,6 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     s = sqrt(y*y + z*z)
     if (sflg) then shadow = 1D + (150D/R_m) else shadow = 1D  ; EUV shadow
     sza = atan(s,x)
-    hgt = (r - 1.)*R_m
 
     mso_x = fltarr(n_elements(maven.x),3)
     mso_x[*,0] = maven.x
@@ -321,12 +363,6 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
       endif else print, "File not found: ", file[i]
     endfor
     maven_g = temporary(eph[1:*])
-
-    lon = atan(maven_g.y, maven_g.x)*!radeg
-    lat = asin(maven_g.z/(R_m*r))*!radeg
-    
-    indx = where(lon lt 0., count)
-    if (count gt 0L) then lon[indx] = lon[indx] + 360.
     
     geo_x = fltarr(n_elements(maven_g.x),3)
     geo_x[*,0] = maven_g.x
@@ -337,6 +373,12 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     geo_v[*,0] = maven_g.vx
     geo_v[*,1] = maven_g.vy
     geo_v[*,2] = maven_g.vz
+
+    print,"Reference surface for calculating altitude: ",strlowcase(datum)
+    mvn_altitude, cart=transpose(geo_x), datum=datum, result=adat
+    hgt = adat.alt
+    lon = adat.lon
+    lat = adat.lat
 
     maven_g = 0
     
@@ -376,19 +418,21 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   npts = n_elements(time)
   state = eph
 
-  result = {t   : time  , $   ; time (UTC)
-            x   : x     , $   ; MSO X
-            y   : y     , $   ; MSO Y
-            z   : z     , $   ; MSO Z
-            vx  : vx    , $   ; MSO Vx
-            vy  : vy    , $   ; MSO Vy
-            vz  : vz    , $   ; MSO Vz
-            r   : r     , $   ; sqrt(x*x + y*y + z*z)
-            s   : s     , $   ; sqrt(y*y + z*z)
-            sza : sza   , $   ; atan(s,x)
-            hgt : hgt   , $   ; aerocentric altitude
-            lon : lon   , $   ; GEO longitude
-            lat : lat      }  ; GEO latitude
+  result = {t     : time     , $   ; time (UTC)
+            x     : x        , $   ; MSO X (R_m)
+            y     : y        , $   ; MSO Y (R_m)
+            z     : z        , $   ; MSO Z (R_m)
+            vx    : vx       , $   ; MSO Vx (km/s)
+            vy    : vy       , $   ; MSO Vy (km/s)
+            vz    : vz       , $   ; MSO Vz (km/s)
+            r     : r        , $   ; sqrt(x*x + y*y + z*z)
+            s     : s        , $   ; sqrt(y*y + z*z)
+            sza   : sza      , $   ; atan(s,x)
+            hgt   : hgt      , $   ; altitude (km)
+            lon   : lon      , $   ; GEO longitude (deg)
+            lat   : lat      , $   ; GEO latitude  (deg)
+            R_m   : R_m      , $   ; Mean radius of Mars (km)
+            datum : datum       }  ; reference surface
   
 ; Shock conic (Trotignon)
 
@@ -437,11 +481,12 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
 ; Define the regions
 
-  ss = dblarr(npts, 4)
+  ss = dblarr(npts, 5)
   ss[*,0] = x
   ss[*,1] = y
   ss[*,2] = z
   ss[*,3] = r
+  ss[*,4] = hgt
 
   indx = where(rho_s ge shock, count)
   sheath = ss
@@ -450,6 +495,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     sheath[indx,1] = !values.f_nan
     sheath[indx,2] = !values.f_nan
     sheath[indx,3] = !values.f_nan
+    sheath[indx,4] = !values.f_nan
   endif
 
   indx = where(rho_p ge MPB, count)
@@ -459,6 +505,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     pileup[indx,1] = !values.f_nan
     pileup[indx,2] = !values.f_nan
     pileup[indx,3] = !values.f_nan
+    pileup[indx,4] = !values.f_nan
   endif
 
   indx = where((x gt 0D) or (s gt shadow), count)
@@ -468,6 +515,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     wake[indx,1] = !values.f_nan
     wake[indx,2] = !values.f_nan
     wake[indx,3] = !values.f_nan
+    wake[indx,4] = !values.f_nan
   endif
 
   indx = where(finite(sheath[*,0]) eq 1, count)
@@ -477,6 +525,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     wind[indx,1] = !values.f_nan
     wind[indx,2] = !values.f_nan
     wind[indx,3] = !values.f_nan
+    wind[indx,4] = !values.f_nan
   endif
   
   indx = where(finite(pileup[*,0]) eq 1, count)
@@ -485,6 +534,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     sheath[indx,1] = !values.f_nan
     sheath[indx,2] = !values.f_nan
     sheath[indx,3] = !values.f_nan
+    sheath[indx,4] = !values.f_nan
   endif
   
   indx = where(finite(wake[*,0]) eq 1, count)
@@ -493,18 +543,20 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     sheath[indx,1] = !values.f_nan
     sheath[indx,2] = !values.f_nan
     sheath[indx,3] = !values.f_nan
+    sheath[indx,4] = !values.f_nan
 
     pileup[indx,0] = !values.f_nan
     pileup[indx,1] = !values.f_nan
     pileup[indx,2] = !values.f_nan
     pileup[indx,3] = !values.f_nan
+    pileup[indx,4] = !values.f_nan
   endif
 
   tmin = min(time, max=tmax)
 
 ; Make the time series plot
 
-  store_data,'alt',data={x:time, y:(ss[*,3] - 1D)*R_m}
+  store_data,'alt',data={x:time, y:hgt}
 
   store_data,'sza',data={x:time, y:sza*!radeg}
   ylim,'sza',0,180,0
@@ -513,16 +565,16 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   options,'sza','panel_size',0.5
   options,'sza','ytitle','Solar Zenith Angle'
 
-  store_data,'sheath',data={x:time, y:(sheath[*,3] - 1D)*R_m}
+  store_data,'sheath',data={x:time, y:sheath[*,4]}
   options,'sheath','color',rcols[0]
 
-  store_data,'pileup',data={x:time, y:(pileup[*,3] - 1D)*R_m}
+  store_data,'pileup',data={x:time, y:pileup[*,4]}
   options,'pileup','color',rcols[1]
 
-  store_data,'wake',data={x:time, y:(wake[*,3] - 1D)*R_m}
+  store_data,'wake',data={x:time, y:wake[*,4]}
   options,'wake','color',rcols[2]
 
-  store_data,'wind',data={x:time, y:(wind[*,3] - 1D)*R_m}
+  store_data,'wind',data={x:time, y:wind[*,4]}
 
   store_data,'iono',data={x:[tmin,tmax], y:[ialt,ialt]}
   options,'iono','color',6
@@ -536,7 +588,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   store_data,'alt2',data=['alt_lab','alt','sheath','pileup','wake','wind','iono']
   ylim, 'alt2', 0, 0, 0
-  options,'alt2','ytitle','Altitude (km)'
+  options,'alt2','ytitle','Altitude (km)!c' + strlowcase(datum)
 
   if keyword_set(segments) then options,'alt2','constant',[500,1200,4970,5270] $
                            else options,'alt2','constant',-1
@@ -545,7 +597,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
 ; Calculate statistics (orbit by orbit)
 
-  alt = (ss[*,3] - 1D)*R_m
+  alt = (ss[*,3] - 1D)*R_m  ; just used to separate orbits
   palt = min(alt)
   gndx = where(alt lt 500.)
   di = gndx - shift(gndx,1)
@@ -700,7 +752,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   options,'period','ynozero',1
   
   store_data, 'palt', data = {x:torb, y:palt}
-  options,'palt','ytitle','Periapsis'
+  options,'palt','ytitle','Periapsis (km)!c' + strlowcase(datum)
   
   store_data, 'lon', data = {x:time, y:lon}
   ylim,'lon',-180,180,0

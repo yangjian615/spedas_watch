@@ -27,8 +27,8 @@
 ;   and less for electrons.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-16 09:46:56 -0800 (Thu, 16 Feb 2017) $
-;$LastChangedRevision: 22802 $
+;$LastChangedDate: 2017-07-11 08:59:21 -0700 (Tue, 11 Jul 2017) $
+;$LastChangedRevision: 23572 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_slice2d_fpi_crib.pro $
 ;-
 
@@ -90,7 +90,7 @@ species='i'
 data_rate='brst'
 
 name =  'mms'+probe+'_d'+species+'s_dist_'+data_rate
-bname = 'mms'+probe+'_fgm_b_gse_srvy_l2_bvec' ;name of bfield vector
+bname = 'mms'+probe+'_fgm_b_gse_'+data_rate+'_l2_bvec' ;name of bfield vector
 vname = 'mms'+probe+'_d'+species+'s_bulkv_gse_'+data_rate     ;name of bulk velocity vector
 
 trange=['2015-10-16/13:06', '2015-10-16/13:07']
@@ -102,7 +102,7 @@ mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-dist', $
 dist = mms_get_dist(name, trange=trange)
 
 ;load B field data
-mms_load_fgm, probe=probe, trange=trange, level='l2'
+mms_load_fgm, probe=probe, trange=trange, level='l2', data_rate=data_rate
 
 ;load velocity moment
 mms_load_fpi, data_rate=data_rate, level=level, datatype='d'+species+'s-moms', $

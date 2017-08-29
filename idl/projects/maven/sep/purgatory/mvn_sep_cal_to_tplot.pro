@@ -2,7 +2,7 @@ pro mvn_sep_cal_to_tplot,newdat,sepnum=sepnum,qfilter=qfilter,smoothcounts=smoot
 
 @mvn_sep_handler_commonblock.pro
 
-if ~keyword_set(newdat) then begin
+if ~keyword_set(newdat) and keyword_set(sep1_svy) then begin
   rawdat = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
   if keyword_set(smoothcounts) then begin
     raw_data=transpose(rawdat.data)
@@ -12,8 +12,10 @@ if ~keyword_set(newdat) then begin
   bkgfile= (mvn_pfp_file_retrieve('maven/data/sci/sep/l1/sav/sep2_bkg.sav'))[0]
   if file_test(bkgfile[0]) then   restore,file=bkgfile,/verb
   ; mvn_sep_spectra_plot,bkg2
-  newdat = mvn_sep_get_cal_units(rawdat,background = bkg2)
+  newdat = mvn_sep_get_cal_units(rawdat,background = bkg2,lowres=lowres)
 endif
+
+if ~keyword_set(newdat) then return
 
 if keyword_set(qfilter) then  begin
   w = where((newdat.quality_flag and qfilter) ne 0,nw)

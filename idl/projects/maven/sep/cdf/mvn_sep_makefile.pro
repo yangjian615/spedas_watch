@@ -17,10 +17,9 @@ pro mvn_sep_make_raw_cdf_wrap,sepnum=sepnum,source_files = source_files,   trang
   L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
-;  source_fi = file_info([source_files,prereq_files]) ;Ali 2070317: commented out to prevent regeneration of SEP data products due to a change in the sep_sw_version file timestamp
-  source_fi = file_info([source_files,prereq_files[1]]) ;only considers the l0 file timestamp, not the sep_sw_version one.
+  source_fi = file_info([source_files,prereq_files])
   if lri.mtime lt max([source_fi.mtime,source_fi.ctime]) then begin
-    mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
+    mvn_sep_load,/use_cache,files=source_files,trange=trange,/L1
     sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
     if size(/type,sepdata) ne 8 then begin
       dprint,'sepdata is not a structure.  No Data?'
@@ -54,10 +53,9 @@ pro mvn_sep_make_cal_cdf_wrap,sepnum=sepnum,source_files=source_files,   trange=
       L2_fileformat =  'maven/data/sci/sep/l2/YYYY/MM/mvn_sep_l2_'+data_type+'_YYYYMMDD_'+ver+'_r??.cdf'
   lastrev_fname = mvn_pfp_file_retrieve(l2_fileformat,/daily_name,trange=trange[0],verbose=verbose,/last_version)
   lri = file_info(lastrev_fname)
-;  source_fi = file_info([source_files,prereq_files]) ;Ali 2070317: commented out to prevent regeneration of SEP data products due to a change in the sep_sw_version file timestamp
-  source_fi = file_info([source_files,prereq_files[1]]) ;only considers the l0 file timestamp, not the sep_sw_version one.
+  source_fi = file_info([source_files,prereq_files])
   if lri.mtime lt max([source_fi.mtime,source_fi.ctime]) then begin
-    mvn_sep_load,/use_cache,files=source_files,trange=trange,/L0
+    mvn_sep_load,/use_cache,files=source_files,trange=trange,/L1
     sepdata = sepnum eq 1 ? *sep1_svy.x : *sep2_svy.x
     bkgfile=mvn_pfp_file_retrieve('maven/data/sci/sep/l1/sav/sep2_bkg.sav')
     if keyword_set(bkgfile) and file_test(/regular,bkgfile) then restore,file=bkgfile,/verb
@@ -105,7 +103,8 @@ end
 pro mvn_sep_makefile,init=init,trange=trange0
 
 if keyword_set(init) then begin
-  trange0 = [time_double('2014-9-20'), systime(1) ]
+;  trange0 = [time_double('2014-9-20'), systime(1) ]
+  trange0 = [time_double('2014-3-18'), systime(1) ] ;now can handle Flight2 energy map (MAPID=8)
   if init lt 0 then trange0 = systime(1) + [init,0 ]*24L*3600
 endif else trange0 = timerange(trange0)
 
@@ -129,8 +128,9 @@ for i=0L,nd-1 do begin
 
   sw_version = mvn_sep_sw_version()
   prereq_files = sw_version.sw_time_stamp_file
+  sw_info = file_info(prereq_files)
 
-  L0_files = mvn_pfp_file_retrieve(/l0,trange=tr)   ; should be scaler
+  L0_files = mvn_pfp_file_retrieve(/l0,trange=tr)   ; should be scalar
   
   if total(file_test(/regular,l0_files)) eq 0 then begin
     dprint,dlevel=2,'File not found: '+l0_files
@@ -153,12 +153,16 @@ for i=0L,nd-1 do begin
 
   L1_filename = mvn_pfp_file_retrieve(L1fmt,/daily,trange=tr[0],source=source,verbose=verbose,create_dir=1)
 
-;  prereq_info = file_info(prereq_files) ;Ali 2070317: commented out to prevent regeneration of SEP data products due to a change in the sep_sw_version file timestamp
-  prereq_info = file_info(prereq_files[1]) ;only considers the l0 file timestamp, not the sep_sw_version one.
-  prereq_timestamp = max([prereq_info.mtime, prereq_info.ctime])
+  ;Ali 20170614:
+  ;don't check for ctime of mvn_sep_sw_version file timestamp,
+  ;as there is no way to set ctime to a previous date on unix (tried touch and svn config to no avail!)
+  ;this is to prevent regeneration of L1 files after initial svn checkout of mvn_sep_sw_version
+
+  L0_info = file_info(L0_files)
+  prereq_timestamp = max([sw_info.mtime, L0_info.mtime, L0_info.ctime])
 
   target_info = file_info(l1_filename)
-  target_timestamp =  target_info.mtime
+  target_timestamp = target_info.mtime
 
   if prereq_timestamp gt target_timestamp then begin    ; skip if L1 does not need to be regenerated
     mvn_sep_load,/l0,files = l0_files

@@ -11,7 +11,8 @@
 ;
 ;ARGUMENTS:
 ;  NAMES: Array of tplot variable names to be joined into single variable
-;  NEW_NAME: Single string containing the name of the tplot variable to be created   
+;  NEW_NAME: Single string containing the name of the tplot variable to be created 
+;  IGNORE_DLIMITS: Set this flag to ignore warnings about dlimits (meta data)  
 ;
 ;KEYWORDS
 ;  display_object = Object reference to be passed to dprint for output.
@@ -21,7 +22,7 @@
 ;
 ;-
 
-pro join_vec, names, new_name, display_object=display_object, fail=fail
+pro join_vec, names, new_name, display_object=display_object, fail=fail, ignore_dlimits=ignore_dlimits
 
      compile_opt idl2
 
@@ -109,7 +110,7 @@ if keyword_set(dls) then begin
       str_element, new_dl, 'colors', dls.colors, /add_replace
     endif
     
-    if in_set(dl_tags,'data_att') then begin
+    if in_set(dl_tags,'data_att') && ~keyword_set(ignore_dlimits) then begin
       att_tags = strlowcase(tag_names(dls.data_att))
       if in_set(att_tags,'coord_sys') then begin
         if total(strlowcase(new_dl.data_att.coord_sys) eq strlowcase(dls.data_att.coord_sys)) lt nnames then begin

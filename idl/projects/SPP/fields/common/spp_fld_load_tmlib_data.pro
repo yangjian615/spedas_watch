@@ -1,7 +1,7 @@
 ;
 ;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-05-16 15:19:27 -0700 (Tue, 16 May 2017) $
-;  $LastChangedRevision: 23324 $
+;  $LastChangedDate: 2017-08-17 17:21:12 -0700 (Thu, 17 Aug 2017) $
+;  $LastChangedRevision: 23810 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -17,11 +17,15 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   if n_elements(varformat) EQ 0 then varformat = '.*'
 
-  cdf_xml_dir = getenv('SPP_FLD_CDF_XML_DIR')
+  cdf_xml = spp_fld_l1_cdf_xml_file(l1_data_type)
 
-  cdf_xml_l0_to_l1_dir = cdf_xml_dir + 'l0_to_l1/'
+  if cdf_xml EQ '' then begin
 
-  cdf_xml = cdf_xml_l0_to_l1_dir + 'l1_' + l1_data_type + '.xml'
+    dprint, 'No XML file found for data type ' + l1_data_type, dlevel = 1
+
+    return, 0
+
+  endif
 
   ;
   ; Prepare data structure for storing the data
@@ -152,6 +156,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     for i = 0, n_elements(match_ind) - 1 do begin
 
       (data_hash[var_names[i]])['data'] = LIST()
+      (data_hash[var_names[i]])['data_string'] = LIST()
 
     endfor
 
@@ -179,11 +184,11 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   ; Select TMlib server
 
-  defsysv, '!TMLIB', exists = exists
+  defsysv, '!SPP_FLD_TMLIB', exists = exists
 
   if exists then begin
 
-    server = !tmlib.server
+    server = !spp_fld_tmlib.server
 
   endif else begin
 
@@ -208,11 +213,14 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   if err NE 0 then spp_fld_print_error_stack, err, sid
 
   ; Find an event
+  first_event = 1
   serr = tm_find_event(sid)
   dprint, 'First event status', dlevel = 3
   if serr NE 0 then begin
 
     spp_fld_print_error_stack, serr, sid
+    err = tm_close(sid)
+
     return, 0
 
   end
@@ -223,11 +231,24 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   while (serr GE 0) do begin
 
+    if first_event EQ 1 then begin
+
+      first_event = 0
+
+    endif else begin
+
+      serr = tm_find_event(sid)
+      dprint, 'serr', serr, dlevel = 4
+
+    endelse
+
     err = tm_get_position(sid, ur8)
     err = tm_get_item_r8(sid, "ccsds_scet_ur8", ur8_ccsds, 1, size)
 
     err = tm_get_item_i4(sid, "ccsds_total_packet_length", $
       ccsds_pkt_len, 1, size)
+
+    ;print, 'CCSDS Packet length: ', ccsds_pkt_len
 
     ;err = tm_get_item_i4(sid, "ccsds_met_sec", met_ccsds, 1, size)
 
@@ -249,10 +270,6 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
     end
 
-    serr = tm_find_event(sid)
-
-    dprint, 'serr', serr, dlevel = 4
-
     if serr EQ 0 then begin
 
       times.Add, time
@@ -273,6 +290,14 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
         var_name = var_names[i]
 
+        if data_hash[var_name].HasKey('string') and data_hash[var_name].HasKey('string_len') then begin
+          has_string = 1
+          string_length = (data_hash[var_name])['string_len']
+        endif else begin
+          has_string = 0
+          string_length = 0
+        endelse
+
         ; Check whether the request should be suppressed
 
         !NULL = null_items.Where(var_name, count = data_null_count)
@@ -286,6 +311,23 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
           returned_item = !NULL
 
           var_type = strlowcase((data_hash[var_name])['type'])
+
+          if has_string then begin
+
+            ; Get the string data from TMlib
+
+            err = tm_get_item_char(sid, var_name, returned_string, string_length, n_chars_returned)
+
+            ; Add the string (with a constant width) to the data variable
+            ; (IDL CDF write routines seem to only allow storing CDF string
+            ; variables if they are all of the same width.
+
+            (data_hash[var_name])['data_string'].Add, $
+              returned_string + String(Replicate(32B, string_length - strlen(returned_string)))
+
+            dprint, returned_string, strlen(returned_string), dlevel = 4
+            ;stop
+          end
 
           case var_type of
             'double': err = tm_get_item_r8(sid, var_name, returned_item, nelem, n_returned)
@@ -317,6 +359,10 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   endwhile
 
+  err = tm_close(sid)
+
+  ; TODO: find or add tm_close
+  ;
   ; Return (optional) IDL attributes from XML file.
   ; IDL attributes are used in processing of data (e.g. manipulation of
   ; the MAG survey APIDs to change from ~512 vectors per a single packet time to

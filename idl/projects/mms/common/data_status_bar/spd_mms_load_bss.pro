@@ -34,8 +34,8 @@
 ; Updated by egrimes, June 2016
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-09-28 12:07:43 -0700 (Wed, 28 Sep 2016) $
-;$LastChangedRevision: 21963 $
+;$LastChangedDate: 2017-08-08 11:39:45 -0700 (Tue, 08 Aug 2017) $
+;$LastChangedRevision: 23765 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/spd_mms_load_bss.pro $
 ;-
 
@@ -80,7 +80,7 @@ PRO spd_mms_load_bss, trange=trange, datatype=datatype, include_labels=include_l
       'status': begin
          mms_load_bss_status, trange=trange, include_labels=include_labels
          options,'mms_bss_status',thick=5,xstyle=4,ystyle=4,yrange=[-0.001,0.001],ytitle='',$
-          ticklen=0,panel_size=panel_size,colors=4, labels=[status_label], labsize=1, charsize=1.
+          ticklen=0,panel_size=panel_size,labels=[status_label], labsize=1, charsize=1.
        end
       'fom': begin
          mms_load_bss_fom, trange=trange

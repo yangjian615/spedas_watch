@@ -29,8 +29,8 @@
 ; 2015-04-10, moka, Created based on 'thm_config'
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-05 09:57:22 -0800 (Thu, 05 Jan 2017) $
-; $LastChangedRevision: 22495 $
+; $LastChangedDate: 2017-07-13 07:40:27 -0700 (Thu, 13 Jul 2017) $
+; $LastChangedRevision: 23598 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_config.pro $
 ;
 ;-
@@ -113,7 +113,7 @@ PRO mms_config, no_color_setup=no_color_setup, colortable=colortable
   ; Some other useful options:
   tplot_options,window=0            ; Forces tplot to use only window 0 for all time plots
   tplot_options,'wshow',1           ; Raises tplot window when tplot is called
-  ;If(!themis.verbose Eq 0) Then tplot_options, 'verbose', 0 $ ;turn off default to verbose if !themis.verbose is zero, jmm, 30-sep-2009
+  ;If(!mms.verbose Eq 0) Then tplot_options, 'verbose', 0 $ ;turn off default to verbose if !mms.verbose is zero, jmm, 30-sep-2009
   ;Else tplot_options,'verbose',1         ; Displays some extra messages in tplot (e.g. When variables get created/altered)
   ;tplot_options,'psym_lim',100      ; Displays symbols if less than 100 point in panel
   tplot_options,'ygap',.5           ; Set gap distance between tplot panels.

@@ -40,7 +40,7 @@ timett2000 = long64((add_tt2000_offset(time)-time_double('2000-01-01/12:00'))*1e
 tstr= time_string(minmax(time),tformat='YYYY-MM-DDThh:mm:ss.fffZ')
 
 
-file_mkdir2,file_dirname(filename),add_link=add_link
+file_mkdir2,file_dirname(filename),add_link = add_link
 fileid = cdf_create(filename,/single_file,/network_encoding,/clobber)
 
 id0 = cdf_attcreate(fileid,'Acknowledgement',/global_scope)
@@ -82,7 +82,7 @@ cdf_attput,fileid,'Source_name',0,'MAVEN>Mars Atmosphere and Volatile Evolution 
 cdf_attput,fileid,'Descriptor',0,'SEP>Solar Energetic Particle Experiment'
 cdf_attput,fileid,'Data_type',0,global.data_type
 cdf_attput,fileid,'Data_version',0,ver_str
-cdf_attput,fileid,'TEXT',0,'MAVEN SEP electron and ion FLux'
+cdf_attput,fileid,'TEXT',0,'MAVEN SEP electron and ion Flux'
 cdf_attput,fileid,'MODS',0,'Revision 0'
 cdf_attput,fileid,'Logical_file_id',0,global.filename
 cdf_attput,fileid,'Logical_source',0,global.logical_source  
@@ -133,8 +133,6 @@ cdf_varput,fileid,time_name,time
 
 ;Epoch
 
-
-
 ;TT2000
 
 varname = 'epoch'
@@ -156,7 +154,6 @@ cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
 
 cdf_varput,fileid,varname,timett2000
 
-
 ;MET
 varname = 'time_met'
 varid = cdf_varcreate(fileid, varname, /CDF_DOUBLE, /REC_VARY,/ZVARIABLE)
@@ -174,6 +171,7 @@ cdf_attput,fileid,'UNITS',varid,'s',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Time, middle of sample, in raw mission elapsed time',/ZVARIABLE
 cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
+
 
 cdf_varput,fileid,varname,data_vary.met
 
@@ -196,6 +194,7 @@ cdf_attput,fileid,'UNITS',varid,'s',/ZVARIABLE
 cdf_attput,fileid,'MONOTON',varid,'INCREASE',/ZVARIABLE
 cdf_attput,fileid,'CATDESC',varid,'Ephermeris Time, middle of sample, compatible with spice',/ZVARIABLE
 cdf_attput,fileid,'DEPEND_0',varid,epoch_name,/ZVARIABLE
+
 
 str_element,data_vary,'time_ephemeris',et
 str_element,data_vary,'et',et

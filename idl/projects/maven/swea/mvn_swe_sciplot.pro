@@ -33,6 +33,11 @@
 ;
 ;   NADIR:     Create a panel for the Nadir direction in spacecraft coordinates.
 ;
+;   DATUM:     Reference surface for calculating altitude.  Can be one of
+;              "sphere", "ellipsoid", "areoid", or "surface".  Passed to 
+;              maven_orbit_tplot.  Default = 'ellipsoid'.
+;              See mvn_altitude.pro for details.
+;
 ;   SEP:       Include two panels for SEP data: one for ions, one for electrons.
 ;
 ;   SWIA:      Include panels for SWIA ion density and bulk velocity (coarse
@@ -40,12 +45,6 @@
 ;
 ;   STATIC:    Include two panels for STATIC data: one mass spectrum, one energy
 ;              spectrum.
-;
-;   NO2:       Include O2+ density calculated from STATIC.  Has no effect unless
-;              STATIC keyword is set.
-;
-;   NO1:       Include O+ density calculated from STATIC.  Has no effect unless
-;              STATIC keyword is set.
 ;
 ;   APID:      Additional STATIC APID's to load.  (Hint: D0, D1 might be useful.)
 ;
@@ -72,32 +71,54 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-18 16:16:25 -0700 (Sat, 18 Mar 2017) $
-; $LastChangedRevision: 22987 $
+; $LastChangedDate: 2017-08-04 11:27:10 -0700 (Fri, 04 Aug 2017) $
+; $LastChangedRevision: 23755 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
 
 pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lpw, euv=euv, $
-                     sc_pot=sc_pot, eph=eph, nO1=nO1, nO2=nO2, min_pad_eflux=min_pad_eflux, $
-                     loadonly=loadonly, pans=pans, padsmo=padsmo, apid=apid, shape=shape, $
-                     nadir=nadir
+                     sc_pot=sc_pot, eph=eph, min_pad_eflux=min_pad_eflux, loadonly=loadonly, $
+                     pans=pans, padsmo=padsmo, apid=apid, shape=shape, nadir=nadir, datum=datum
 
   compile_opt idl2
 
   @mvn_swe_com
   @maven_orbit_common
   
-  if keyword_set(nO1) then doO1 = 1 else doO1 = 0
-  if keyword_set(nO2) then doO2 = 1 else doO2 = 0
   if not keyword_set(APID) then apid = 0
   
   if (size(min_pad_eflux,/type) eq 0) then min_pad_eflux = 6.e4
 
+; Make sure the datum is valid
+
+  dlist = ['sphere','ellipsoid','areoid','surface']
+  if (size(datum,/type) ne 7) then datum = dlist[1]
+  i = strmatch(dlist, datum+'*', /fold)
+  case (total(i)) of
+     0   : begin
+             print, "Datum not recognized: ", datum
+             result = 0
+             return
+           end
+     1   : datum = (dlist[where(i eq 1)])[0]
+    else : begin
+             print, "Datum is ambiguous: ", dlist[where(i eq 1)]
+             result = 0
+             return
+           end
+  endcase
+
+  mvn_swe_stat, /silent, npkt=npkt
+  if (npkt[4] eq 0) then begin
+    print,"No SWEA data loaded."
+    return
+  endif
+
+  get_data,'alt2',data=alt2,index=i
+  if (i eq 0) then maven_orbit_tplot, /loadonly, datum=datum
+
   mvn_swe_sumplot,/loadonly
-  mvn_swe_sc_pot,/over
-  engy_pan = 'swe_a4_pot'
-  options,engy_pan,'ytitle','SWEA elec!ceV'
 
 ; Try to load resampled PAD data - mask noisy data
 
@@ -127,8 +148,8 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   alt_pan = 'alt2'
 
   if keyword_set(sun) then begin
-    mvn_sundir, frame=['MAVEN_SPACECRAFT','MAVEN_SWEA'], /polar
-    sun_pan = 'Sun_MAVEN_SPACECRAFT'
+    mvn_sundir, frame='swe', /polar
+    sun_pan = 'Sun_SWEA_The'
     get_data,sun_pan,index=i
     if (i eq 0) then sun_pan = ''
   endif else sun_pan = ''
@@ -159,9 +180,16 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
   shape_pan = ''
   if keyword_set(shape) then begin
-    mvn_swe_shape_par_pad_l2, spec=45, /pot, tsmo=16
-    shape_pan = 'Shape_PAD'
-    options, shape_pan, 'ytitle', 'Elec Shape'
+    mvn_swe_shape_par_pad_restore
+    get_data,'Shape_PAD',index=i
+    if (i eq 0) then begin
+      mvn_swe_shape_par_pad_l2, spec=45, /pot, tsmo=16
+      get_data,'Shape_PAD',index=i
+    endif
+    if (i gt 0) then begin
+      shape_pan = 'Shape_PAD'
+      options, shape_pan, 'ytitle', 'Elec Shape'
+    endif
   endif
 
 ; SEP electron and ion data - sum all look directions for both units
@@ -177,7 +205,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 ; STATIC data
 
   sta_pan = ''
-  if keyword_set(static) then mvn_swe_addsta, pans=sta_pan, nO1=doO1, nO2=doO2, apid=apid
+  if keyword_set(static) then mvn_swe_addsta, pans=sta_pan, apid=apid
 
 ; LPW data
 
@@ -191,8 +219,14 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
 ; Spacecraft Potential
 
+  engy_pan = 'swe_a4'
   pot_pan = ''
-  if keyword_set(sc_pot) then pot_pan = 'mvn_swe_pot_all'
+  if keyword_set(sc_pot) then begin
+    mvn_scpot
+    engy_pan = 'swe_a4_pot'
+    options,engy_pan,'ytitle','SWEA elec!ceV'
+    pot_pan = 'scpot_comp'
+  endif
 
 ; Ephemeris information from SPICE
 
@@ -205,68 +239,6 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   str_element, eph, 'lst', mlt.lst, /add
   str_element, eph, 'slon', mlt.slon, /add
   str_element, eph, 'slat', mlt.slat, /add
-
-; Make density overlay if both STATIC and LPW densities are present
-
-  n_pans = ['']
-  n_labs = ['']
-  n_cols = [0]
-  n_sta = 0
-  n_lpw = 0
-  i = strpos(sta_pan,'mvn_sta_O2+_raw_density')
-  if (i gt -1) then begin
-    n_pans = [n_pans,'mvn_sta_O2+_raw_density']
-    n_labs = [n_labs,'O2+']
-    n_cols = [n_cols,6]
-    sta_pan = strmid(sta_pan,0,i) + strmid(sta_pan,(i+23))
-    n_sta++
-  endif
-  i = strpos(sta_pan,'mvn_sta_O+_raw_density')
-  if (i gt -1) then begin
-    n_pans = [n_pans,'mvn_sta_O+_raw_density']
-    n_labs = [n_labs,'O+']
-    n_cols = [n_cols,4]
-    sta_pan = strmid(sta_pan,0,i) + strmid(sta_pan,(i+22))
-    n_sta++
-  endif
-  i = strpos(lpw_pan,'mvn_lpw_lp_ne_l2')
-  if (i gt -1) then begin
-    n_pans = [n_pans,'mvn_lpw_lp_ne_l2']
-    n_labs = [n_labs,'e-']
-    n_cols = [n_cols,2]
-    lpw_pan = strmid(lpw_pan,0,i) + strmid(lpw_pan,(i+16))
-    n_lpw++
-  endif
-  
-  np = n_elements(n_pans) - 1
-
-  if (np gt 1) then begin
-    n_pans = n_pans[1:np]
-    n_labs = n_labs[1:np]
-    n_cols = n_cols[1:np]
-    tplot_options, get=topt
-    tsp = time_double(topt.trange_full)
-
-    if (n_sta gt 10) then begin  ; disable for now (not very helpful)
-      add_data, 'mvn_sta_O2+_raw_density', 'mvn_sta_O+_raw_density',  $
-                newname='mvn_sta_ion_raw_density'
-      n_pans = ['mvn_sta_ion_raw_density', n_pans]
-      n_labs = ['i+', n_labs]
-      n_cols = [!p.color, n_cols]
-      np++
-    endif
-
-    store_data,'n_lab',data={x:tsp, y:replicate(-1.,2,np), v:indgen(np)}
-    options,'n_lab','labels',n_labs
-    options,'n_lab','colors',n_cols
-    options,'n_lab','labflag',1
-
-    store_data,'n_ion',data=['n_lab', n_pans]
-    ylim,'n_ion',10,1e5,1
-    options,'n_ion','ytitle','Density!c!c(cm!u-3!n)'
-
-    sta_pan = sta_pan + ' ' + 'n_ion'
-  endif
 
 ; Burst bar, if available
 

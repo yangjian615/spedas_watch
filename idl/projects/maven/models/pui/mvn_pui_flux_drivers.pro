@@ -52,22 +52,22 @@ if nt eq 1 then begin
   dnnn=dphi/(1e2*pui2.vtot) ;differential density (cm-3)
   nnn=total(dnnn,/nan,/cumulative) ;cumulative density (cm-3)
   phi=total(dphi,/cumulative) ;cumulative phi (cm-2 s-1)
-  store_data,'r_(km)',data={x:times,y:[[rxyz],[pui2.rtot]]/1e3},limits={labels:['x','y','z','r'],colors:'bgrk',labflag:1}
-  store_data,'v_(km/s)',data={x:times,y:[[vxyz],[pui2.vtot]]/1e3},limits={labels:['x','y','z','v'],colors:'bgrk',labflag:1}
-  ;  store_data,'R_(km)',data={x:times,y:transpose([pui2.rtot,rcss]/1e3)},limits={colors:'br',labels:['Mars','CSS'],labflag:1}
-  store_data,'neutral_n_(cm-3)',data={x:times,y:[[nnh],[nno]]},limits={labels:['H','O','CSS'],colors:'brg',labflag:1,ylog:1}
-  store_data,'dr_(km)',times,pui2.dr/1e3
-  store_data,'E_(keV)',times,pui2.ke/1e3
-  store_data,'dE_(keV)',times,pui2.de/1e3
-  store_data,'E/dE',data={x:times,y:pui2.ke/abs(pui2.de)},limits={ylog:1}
-  store_data,'dr/dE_(m/eV)',data={x:times,y:pui2.dr/abs(pui2.de)},limits={ylog:1}
-  store_data,'dphi/dE_(/cm2.s.eV)',data={x:times,y:dphi/abs(pui2.de)},limits={ylog:1}
-  store_data,'dphi_(/cm2.s)',data={x:times,y:dphi},limits={ylog:1}
-  store_data,'cumulative_phi_(/cm2.s)',data={x:times,y:phi}
-  store_data,'dEphi/dE_(eV/cm2.s.eV)',data={x:times,y:deph/abs(pui2.de)},limits={ylog:1}
-  store_data,'dn/dE_(/cm3.eV)',data={x:times,y:dnnn/abs(pui2.de)},limits={ylog:1}
-  store_data,'pickup_dn_(cm-3)',data={x:times,y:dnnn},limits={ylog:1}
-  store_data,'pickup_cumulative_n_(cm-3)',times,nnn
+  store_data,'pui_r_(km)',data={x:times,y:[[rxyz],[pui2.rtot]]/1e3},limits={labels:['x','y','z','r'],colors:'bgrk',labflag:1}
+  store_data,'pui_v_(km/s)',data={x:times,y:[[vxyz],[pui2.vtot]]/1e3},limits={labels:['x','y','z','v'],colors:'bgrk',labflag:1}
+  ;  store_data,'pui_R_(km)',data={x:times,y:transpose([pui2.rtot,rcss]/1e3)},limits={colors:'br',labels:['Mars','CSS'],labflag:1}
+  store_data,'pui_source_neutral_n_(cm-3)',data={x:times,y:[[nnh],[nno]]},limits={labels:['H','O','CSS'],colors:'brg',labflag:1,ylog:1}
+  store_data,'pui_dr_(km)',times,pui2.dr/1e3
+  store_data,'pui_E_(keV)',times,pui2.ke/1e3
+  store_data,'pui_dE_(keV)',times,pui2.de/1e3
+  store_data,'pui_E/dE',data={x:times,y:pui2.ke/abs(pui2.de)},limits={ylog:1}
+  store_data,'pui_dr/dE_(m/eV)',data={x:times,y:pui2.dr/abs(pui2.de)},limits={ylog:1}
+  store_data,'pui_dphi/dE_(/cm2.s.eV)',data={x:times,y:dphi/abs(pui2.de)},limits={ylog:1}
+  store_data,'pui_dphi_(/cm2.s)',data={x:times,y:dphi},limits={ylog:1}
+  store_data,'pui_cumulative_phi_(/cm2.s)',data={x:times,y:phi}
+  store_data,'pui_dEphi/dE_(eV/cm2.s.eV)',data={x:times,y:deph/abs(pui2.de)},limits={ylog:1}
+  store_data,'pui_dn/dE_(/cm3.eV)',data={x:times,y:dnnn/abs(pui2.de)},limits={ylog:1}
+  store_data,'pui_dn_(cm-3)',data={x:times,y:dnnn},limits={ylog:1}
+  store_data,'pui_cumulative_n_(cm-3)',times,nnn
   
 ;  p=plot([0],/nodata,/xlog,/ylog,xrange=[100,100e3],yrange=[1000,1000e3],xtitle='Pickup Ion Energy (eV)',ytitle='Differential Energy Flux (eV/[cm2 s eV])')
 ;  p=plot(pui2.ke,deph/abs(pui2.de),/o,'b')

@@ -104,8 +104,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-03-20 16:07:36 -0700 (Mon, 20 Mar 2017) $
-;$LastChangedRevision: 23004 $
+;$LastChangedDate: 2017-06-23 09:42:54 -0700 (Fri, 23 Jun 2017) $
+;$LastChangedRevision: 23505 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products.pro $
 ;-
 pro mms_part_products, $
@@ -385,6 +385,8 @@ pro mms_part_products, $
     dist = mms_get_dist(in_tvarname, time_idx[i], /structure, probe=probe, $
                         species=species, instrument=instrument, units=input_units)
 
+    str_element, dist, 'orig_energy', dist.energy[*, 0, 0], /add
+                      
     ;Sanitize Data.
     ;#1 removes unneeded fields from struct to increase efficiency
     ;#2 Reforms into angle by energy data 

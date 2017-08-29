@@ -72,9 +72,9 @@
 ;
 ;
 ; VERSION:
-; $LastChangedBy: jianbao_tao $
-; $LastChangedDate: 2013-02-06 10:59:30 -0800 (Wed, 06 Feb 2013) $
-; $LastChangedRevision: 11535 $
+; $LastChangedBy: aaronbreneman $
+; $LastChangedDate: 2017-06-22 15:01:48 -0700 (Thu, 22 Jun 2017) $
+; $LastChangedRevision: 23496 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_spinfit.pro $
 ;
 ;-
@@ -160,6 +160,11 @@ spinfit, thx_xxx_in.x, thx_xxx_in.y, $
   phase_mask_starts = phase_mask_starts, $
   phase_mask_ends=phase_mask_ends, $
   sun2sensor=sun2sensor
+
+
+
+
+
 t2 = systime(/sec)
 print, 'SPINFIT time: ', t2 - t1, ' seconds'
 

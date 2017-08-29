@@ -6,12 +6,39 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-03 09:10:21 -0800 (Tue, 03 Jan 2017) $
-; $LastChangedRevision: 22474 $
+; $LastChangedDate: 2017-08-10 10:18:22 -0700 (Thu, 10 Aug 2017) $
+; $LastChangedRevision: 23773 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/tplot_stuff_ut__define.pro $
 ;-
 
 ; ------- the following are some regression tests -------
+; the following is a regression test for avg_data bug on EDP data
+function tplot_stuff_ut::test_avg_data_edp
+  mms_load_edp,trange=['2017-08-03','2017-08-04'],data_rate='slow',probes='2',datatype='scpot',level='l2',/time_clip
+  avg_data,'mms2_edp_scpot_slow_l2',15.d,trange=['2017-08-03','2017-08-04'] 
+  get_data, 'mms2_edp_scpot_slow_l2_avg', data=d
+  assert, n_elements(d.X) eq n_elements(d.Y), 'Problem with avg_data bug with EDP data'
+  return, 1
+end
+
+; the following is a regression test for using spd_smooth_time 
+function tplot_stuff_ut::test_smooth_time_different_var_types
+  mms_load_fpi, datatype='dis-moms', trange=['2015-12-15', '2015-12-16']
+  spd_smooth_time, 'mms3_dis_energyspectr_omni_fast', 10.0
+  spd_smooth_time, 'mms3_dis_numberdensity_fast', 10.0
+  assert, spd_data_exists('mms3_dis_numberdensity_fast_smth mms3_dis_energyspectr_omni_fast_smth', '2015-12-15', '2015-12-16'), 'Problem with smooth_time regression test'
+  return, 1
+end
+
+; the following test is for a bug in avg_data when the resoulution is less than 1s
+function tplot_stuff_ut::test_avg_data_less_than_1
+  mms_load_fgm, trange=['2015-12-15', '2015-12-16']
+  avg_data, 'mms1_fgm_b_gse_srvy_l2_bvec', 0.5
+  get_data, 'mms1_fgm_b_gse_srvy_l2_bvec_avg', data=d
+  assert, d.X[1]-d.X[0] eq 0.5, 'Problem with avg_data res < 1 test'
+  return, 1
+end
+
 function tplot_stuff_ut::test_time_clip_multi_dimen_v3
   store_data, 'test_data', data={x: [1, 2, 3, 4, 5], y: findgen(5, 16, 32, 32), v1: findgen(5, 16), v2: findgen(5, 32), v3: findgen(32)}
   time_clip, 'test_data', 2, 4, /replace

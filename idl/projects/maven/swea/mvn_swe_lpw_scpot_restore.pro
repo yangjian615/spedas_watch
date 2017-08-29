@@ -1,8 +1,11 @@
 ;+
 ;PROCEDURE:   mvn_swe_lpw_scpot_restore
 ;PURPOSE:
-;  Reads in scpot data precalculated by mvn_swe_lpw_scpot_resample
+;  Reads in scpot data precalculated by mvn_swe_lpw_scpot
 ;  and stored in a tplot save/restore file. 
+;
+;       For more information, see
+;       http://research.ssl.berkeley.edu/~haraday/tools/mvn_swe_lpw_scpot.pdf
 ;
 ;USAGE:
 ;  timespan,'2016-01-01',2
@@ -16,14 +19,9 @@
 ;                                  1 = good, 0 = bad
 ;          As a rule of thumb, the data quality is generally good if flag > 0.8
 ;          You may need caution if 0.5 < flag < 0.8 (check the consistency with SWEA spectra)
-;       3) Short time scale variations will be smoothed out by default.
-;          Setting ntsmo=1 will improve the time resolution
-;          at the expense of better statistics.
-;       4) Potential values < +3 V and > +20 V are extrapolated from
-;          the empirical relation between 3-20 V
-;          - they are not verified nor tuned by SWEA measurements.
-;          If the estimated potentials < +1, they are replaced by +1.
-;          Potential values < +3 V just mean that scpot is smaller than ~+3 V
+;       3) Short time scale variations will be smoothed out by default
+;       4) Potential values between 0 and +3 V are interpolated
+;          - they cannot be verified by SWEA measurements
 ;
 ;INPUTS:
 ;       trange:        Restore data over this time range.  If not specified, then
@@ -35,8 +33,8 @@
 ;       LOADONLY:      Download but do not restore any pad data.
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-01-19 15:44:29 -0800 (Thu, 19 Jan 2017) $
-; $LastChangedRevision: 22636 $
+; $LastChangedDate: 2017-07-28 07:16:06 -0700 (Fri, 28 Jul 2017) $
+; $LastChangedRevision: 23717 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot_restore.pro $
 ;
 ;CREATED BY:    Yuki Harada  03-24-16

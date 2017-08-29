@@ -9,8 +9,8 @@
 ; NOTES:
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-04-06 14:13:10 -0700 (Thu, 06 Apr 2017) $
-; $LastChangedRevision: 23124 $
+; $LastChangedDate: 2017-06-07 11:21:03 -0700 (Wed, 07 Jun 2017) $
+; $LastChangedRevision: 23437 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_bad_data.pro $
 ;-
 
@@ -32,16 +32,18 @@ pro mms_feeps_remove_bad_data, probe=probe, data_rate=data_rate, datatype=dataty
 ;  These are for all modes, burst and survey:
 
 ;  MMS1:
-;  Top Eyes: None (all good)
+;  Top Eyes: Top 1 (added 6/7/2017)
 ;  Bottom Eyes: 1, 11
   if probe eq '1' then begin
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_count_rate_sensorid_1'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_intensity_sensorid_1'+suffix)
+      append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_top_counts_sensorid_1'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_count_rate_sensorid_1'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_intensity_sensorid_1'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_1'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_count_rate_sensorid_11'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_intensity_sensorid_11'+suffix)
       append_array, vars, tnames('mms1_epd_feeps_'+data_rate_level+'_electron_bottom_counts_sensorid_11'+suffix)
-
   endif else if probe eq '2' then begin
       ;  MMS2:
       ;  Top Eyes: 5 (update 2/10/17, MMS2, T12 is also bad)

@@ -1,55 +1,57 @@
 
-pro mvn_sep_pfdpu_tplot_options,tplot=tplot
+pro mvn_sep_pfdpu_tplot_options,tplot=tplot,lowres=lowres
+  prefix = 'mvn_'
+  if keyword_set(lowres) then prefix='mvn_5min_'
    tplot_options,'no_interp',1                       ;  This is rude!
    tplot_options,'ynozero',1
 ;   store_data,'mav_apid_all',data=tnames('MAV_APIDS MAV_APID_SKIPPED') ;,dlimit=tplot_routine='bitplot'
-   options,'mvn_sep?_noise_DATA mvn_sep?_svy_DATA mvn_sep?_arc_DATA',spec=1
-   zlim,'mvn_sep?_svy_DATA',.9,10000,1
-   ylim,'mvn_sep?_svy_DATA',0,260,0
-   options,'mvn_sep?_svy_DATA',panel_size=2
-   zlim,'mvn_sep?_arc_DATA',.9,100,1
-   ylim,'mvn_sep?_arc_DATA',0,260,0
-   options,'mvn_sep?_arc_DATA',panel_size=2
-;   ylim,'mvn_sep?_hkp_RATE_CNTR',0,0,0
-   ylim,'mvn_sep?_hkp_RATE_CNTR',.5,1e5,1,/default
-   options,'mvn_sep?_hkp_RATE_CNTR',/default,psym=-3
-   ylim,'mvn_sep?_svy_COUNTS_TOTAL',1,1,1  ;,0,0,0
-   ylim,'mvn_sep?_noise_SIGMA',1,2
-   store_data,'mvn_sep1_COUNTS',data='mvn_sep1_svy_RATE mvn_sep1_hkp_RATE_CNTR mvn_sep1_hkp_EVENT_CNTR'
-   store_data,'mvn_sep2_COUNTS',data='mvn_sep2_svy_RATE mvn_sep2_hkp_RATE_CNTR mvn_sep2_hkp_EVENT_CNTR'
+   options,prefix+'sep?_noise_DATA '+prefix+'sep?_svy_DATA '+prefix+'sep?_arc_DATA',spec=1
+   zlim,prefix+'sep?_svy_DATA',.9,10000,1
+   ylim,prefix+'sep?_svy_DATA',0,260,0
+   options,prefix+'sep?_svy_DATA',panel_size=2
+   zlim,prefix+'sep?_arc_DATA',.9,100,1
+   ylim,prefix+'sep?_arc_DATA',0,260,0
+   options,prefix+'sep?_arc_DATA',panel_size=2
+;   ylim,prefix+'sep?_hkp_RATE_CNTR',0,0,0
+   ylim,prefix+'sep?_hkp_RATE_CNTR',.5,1e5,1,/default
+   options,prefix+'sep?_hkp_RATE_CNTR',/default,psym=-3
+   ylim,prefix+'sep?_svy_COUNTS_TOTAL',1,1,1  ;,0,0,0
+   ylim,prefix+'sep?_noise_SIGMA',1,2
+   store_data,prefix+'sep1_COUNTS',data=prefix+'sep1_svy_RATE '+prefix+'sep1_hkp_RATE_CNTR '+prefix+'sep1_hkp_EVENT_CNTR'
+   store_data,prefix+'sep2_COUNTS',data=prefix+'sep2_svy_RATE '+prefix+'sep2_hkp_RATE_CNTR '+prefix+'sep2_hkp_EVENT_CNTR'
    store_data,'APIDS',data='MAV_APIDS MAV_APID_SKIPPED',dlim={panel_size:3.}
  
    
-   options,'mvn_sep?_hkp_RATE_CNTR',psym=-3,/default
-   options,'mvn_pfdpu_shkp_ACT_PWRCNTRL_FLAG',colors='BGR',labels=strsplit('Mag1 Mag2 SWEA SWIA LPW STA SEP',/extract)
-   options,'mvn_pfdpu_oper_ACT_REQUEST_FLAG',colors = 'GR',labels=strsplit('S1o S1s S2o S2s SWIA SWIA STATIC STATIC . . EUVEo EUVEs',/extract)
-   options,'mvn_pfdpu_oper_ACT_STATUS_FLAG',colors = 'GR',labels=strsplit('S1o S1s S2o S2s SWIAo SWIAs STATICo STATICs . . EUVEo EUVEs',/extract)
-   options,'mvn_pfdpu_*FLAG',panel_size=.4
-   options,'mvn_sep?_hkp_MODE_FLAGS',colors='BGRBGRYYBGRBGRMD',labels=strsplit(/extract,'D1 D2 D3 D4 D5 D6 BLR1 BLR2 TP_AO TP_AT TP_AF TP_BO TP_BT TP_BF TP_ENA Spare')
-   options,'mvn_sep?_hkp_NOISE_FLAGS',labels=strsplit(/extract,'. . . . . . . . R R R Ena D1 D2 D3 D4'),colors='GGGGGGGGRRRBGRGR'
-   store_data,'mvn_DPU_TEMP',data='mvn_sep1_hkp_AMON_TEMP_DAP mvn_sep2_hkp_AMON_TEMP_DAP mvn_pfdpu*_TEMP'
-   store_data,'mvn_SEPS_TEMP',data='mvn_sep?_hkp_AMON_TEMP_S?'
-   store_data,'mvn_pfp_TEMPS',data = 'mvn_sep?_hkp_AMON_TEMP_* mvn_pfdpu*_TEMP',dlim={yrange:[-45.,50],ystyle:1,panel_size:2.}
-   options,'mvn_sep1_hkp_* mvn_sep1_svy_ATT mvn_sep1_svy_COUNTS_TOTAL',colors='b',ystyle=2
-   options,'mvn_sep2_hkp_* mvn_sep2_svy_ATT mvn_sep2_svy_COUNTS_TOTAL',colors='r',ystyle=2
-   options,'mvn_sep?_???_ATT',yrange=[0,3],panel_size=.3
-  ; options,'mvn_sep?_???_ATT',yrange=[0,1],zrange=[0,2],/ystyle,spec=1,panel_size=.2
+   options,prefix+'sep?_hkp_RATE_CNTR',psym=-3,/default
+   options,prefix+'pfdpu_shkp_ACT_PWRCNTRL_FLAG',colors='BGR',labels=strsplit('Mag1 Mag2 SWEA SWIA LPW STA SEP',/extract)
+   options,prefix+'pfdpu_oper_ACT_REQUEST_FLAG',colors = 'GR',labels=strsplit('S1o S1s S2o S2s SWIA SWIA STATIC STATIC . . EUVEo EUVEs',/extract)
+   options,prefix+'pfdpu_oper_ACT_STATUS_FLAG',colors = 'GR',labels=strsplit('S1o S1s S2o S2s SWIAo SWIAs STATICo STATICs . . EUVEo EUVEs',/extract)
+   options,prefix+'pfdpu_*FLAG',panel_size=.4
+   options,prefix+'sep?_hkp_MODE_FLAGS',colors='BGRBGRYYBGRBGRMD',labels=strsplit(/extract,'D1 D2 D3 D4 D5 D6 BLR1 BLR2 TP_AO TP_AT TP_AF TP_BO TP_BT TP_BF TP_ENA Spare')
+   options,prefix+'sep?_hkp_NOISE_FLAGS',labels=strsplit(/extract,'. . . . . . . . R R R Ena D1 D2 D3 D4'),colors='GGGGGGGGRRRBGRGR'
+   store_data,prefix+'DPU_TEMP',data=prefix+'sep1_hkp_AMON_TEMP_DAP '+prefix+'sep2_hkp_AMON_TEMP_DAP '+prefix+'pfdpu*_TEMP'
+   store_data,prefix+'SEPS_TEMP',data=prefix+'sep?_hkp_AMON_TEMP_S?'
+   store_data,prefix+'pfp_TEMPS',data = prefix+'sep?_hkp_AMON_TEMP_* '+prefix+'pfdpu*_TEMP',dlim={yrange:[-45.,50],ystyle:1,panel_size:2.}
+   options,prefix+'sep1_hkp_* '+prefix+'sep1_svy_ATT '+prefix+'sep1_svy_COUNTS_TOTAL',colors='b',ystyle=2
+   options,prefix+'sep2_hkp_* '+prefix+'sep2_svy_ATT '+prefix+'sep2_svy_COUNTS_TOTAL',colors='r',ystyle=2
+   options,prefix+'sep?_???_ATT',yrange=[0,3],panel_size=.3
+  ; options,prefix+'sep?_???_ATT',yrange=[0,1],zrange=[0,2],/ystyle,spec=1,panel_size=.2
    
-   options,'mvn_sep?_*DACS mvn_sep?_hkp_*RATE_CNTR','colors'
-   options,'mvn_sep?_*DACS',colors='bgrdbgrdbgrd'
+   options,prefix+'sep?_*DACS '+prefix+'sep?_hkp_*RATE_CNTR','colors'
+   options,prefix+'sep?_*DACS',colors='bgrdbgrdbgrd'
 ;   tnames = 'sep1_hkp_AMON_*'
-   store_data,'mvn_SEPS_hkp_VCMD_CNTR',data='mvn_sep?_hkp_VCMD_CNTR'
-   store_data,'mvn_SEPS_hkp_MEM_CHECKSUM',data='mvn_sep?_hkp_MEM_CHECKSUM'
-   store_data,'mvn_SEPS_svy_ATT',data='mvn_sep?_svy_ATT',dlim={panel_size:.4,yrange:[0,3]}
-   store_data,'mvn_SEPS_svy_COUNTS_TOTAL',data='mvn_sep?_svy_COUNTS_TOTAL',dlim={yrange:[.8,1e5],ylog:1,panel_size:1.5}
-   store_data,'mvn_SEPS_svy_ALLTID',data='mvn_sep?_?'
-   store_data,'mvn_SEPS_QL' , data='mvn_sep?_?_????_tot mvn_sep?_svy_ATT',dlim={yrange:[.8,1e5],ylog:1,panel_size:2.}
+   store_data,prefix+'SEPS_hkp_VCMD_CNTR',data=prefix+'sep?_hkp_VCMD_CNTR'
+   store_data,prefix+'SEPS_hkp_MEM_CHECKSUM',data=prefix+'sep?_hkp_MEM_CHECKSUM'
+   store_data,prefix+'SEPS_svy_ATT',data=prefix+'sep?_svy_ATT',dlim={panel_size:.4,yrange:[0,3]}
+   store_data,prefix+'SEPS_svy_COUNTS_TOTAL',data=prefix+'sep?_svy_COUNTS_TOTAL',dlim={yrange:[.8,1e5],ylog:1,panel_size:1.5}
+   store_data,prefix+'SEPS_svy_ALLTID',data=prefix+'sep?_?'
+   store_data,prefix+'SEPS_QL' , data=prefix+'sep?_?_????_tot '+prefix+'sep?_svy_ATT',dlim={yrange:[.8,1e5],ylog:1,panel_size:2.}
    
    
    temps = tnames('SEPS_TEMP DPU_TEMP HTR_TEMP HTR_DC')
    
    if keyword_set(tplot) then $
-      tplot,'mvn_SEPS_hkp_VCMD_CNTR mvn_sep?_svy_DATA mvn_sep?_noise_SIGMA mvn_sep?_hkp_RATE_CNTR'
+      tplot,prefix+'SEPS_hkp_VCMD_CNTR '+prefix+'sep?_svy_DATA '+prefix+'sep?_noise_SIGMA '+prefix+'sep?_hkp_RATE_CNTR'
    
   if 0 then begin
      tplot,'SEPS_hkp_VCMD_CNTR sep1_svy_DATA sep1_svy_COUNTS_TOTAL sep1_hkp_RATE_CNTR P*ACT_*T*_FLAG'

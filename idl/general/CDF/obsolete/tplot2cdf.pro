@@ -23,8 +23,8 @@ printdat,vn
 dp0 = {name:'', datatype:'', numelem:1, recvar:1, depend_0:'', depend_1:'', $
      dataptr:ptr_new(), attrptr:ptr_new()  }
 
-;defattr = {depend_0:'Epoch'}
-defattr = 0
+defattr = {depend_0:'Epoch', VAR_TYPE: 'data'}
+;defattr = 0
 
 for i=0,n-1 do begin
    dp1 = dp0
@@ -48,7 +48,7 @@ for i=0,n-1 do begin
       if tp1.dataptr ne data.x then begin
          if array_equal(*tp1.dataptr,*data.x) eq 0 then $
              message,/info,'Time arrays are not equal!'
-             page,'Time error ',+filename
+             dprint,'Time error ',+filename
       endif
    endelse
    val = struct_value(data,'v',default=0)

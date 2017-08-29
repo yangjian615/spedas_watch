@@ -1,14 +1,27 @@
 ;
-;  $LastChangedBy: spfuser $
-;  $LastChangedDate: 2017-04-19 14:58:30 -0700 (Wed, 19 Apr 2017) $
-;  $LastChangedRevision: 23197 $
+;  $LastChangedBy: pulupa $
+;  $LastChangedDate: 2017-07-11 16:45:28 -0700 (Tue, 11 Jul 2017) $
+;  $LastChangedRevision: 23582 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/l1/l1_mag_survey/spp_fld_magi_survey_load_l1.pro $
 ;
 
-pro spp_fld_magi_survey_load_l1, file
+pro spp_fld_magi_survey_load_l1, file, prefix = prefix
 
-  prefix = 'spp_fld_magi_survey_'
+  if not keyword_set(prefix) then prefix = 'spp_fld_magi_survey_'
 
   spp_fld_mag_survey_load_l1, file, prefix = prefix
+
+  magi_survey_names = tnames(prefix + '*')
+
+  if magi_survey_names[0] NE '' then begin
+
+    for i = 0, n_elements(magi_survey_names) - 1 do begin
+
+      options, magi_survey_names[i], 'colors', [6]
+      options, magi_survey_names[i], 'symsize', 0.5
+
+    endfor
+
+  endif
 
 end

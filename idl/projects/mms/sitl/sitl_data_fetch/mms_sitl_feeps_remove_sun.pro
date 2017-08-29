@@ -11,8 +11,8 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: rickwilder $
-; $LastChangedDate: 2016-08-12 15:41:13 -0700 (Fri, 12 Aug 2016) $
-; $LastChangedRevision: 21642 $
+; $LastChangedDate: 2017-08-09 13:51:06 -0700 (Wed, 09 Aug 2017) $
+; $LastChangedRevision: 23769 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_feeps_remove_sun.pro $
 ;-
 
@@ -45,7 +45,7 @@ pro mms_sitl_feeps_remove_sun, probe = probe, datatype = datatype, data_units = 
     ; get the sector masks
     ;mask_sectors = mms_feeps_sector_masks()
     ; egrimes updated to use the CSV files on 8/2/2016
-    mask_sectors = mms_read_feeps_sector_masks_csv()
+    mask_sectors = mms_sitl_read_feeps_sector_masks_csv()
     
     for data_units_idx = 0, n_elements(data_units)-1 do begin
         these_units = data_units[data_units_idx]
@@ -65,6 +65,10 @@ pro mms_sitl_feeps_remove_sun, probe = probe, datatype = datatype, data_units = 
 
           
           get_data, var_name+suffix, data = top_data, dlimits=top_dlimits
+          
+          ; don't crash if the data couldn't be found
+          if ~is_struct(top_data) then continue
+          
           if mask_sectors.haskey('mms'+probe+'imaskt'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]] ne !NULL then begin
             bad_sectors = mask_sectors['mms'+probe+'imaskt'+sensors[sensor_idx]]
     
@@ -91,6 +95,10 @@ pro mms_sitl_feeps_remove_sun, probe = probe, datatype = datatype, data_units = 
             var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_bottom_'+these_units+'_sensorid_'+string(sensors[sensor_idx])+'_clean', /rem)
 
             get_data, var_name+suffix, data = bottom_data, dlimits=bottom_dlimits
+            
+            ; don't crash if the data couldn't be found
+            if ~is_struct(bottom_data) then continue
+
             if mask_sectors.haskey('mms'+probe+'imaskb'+sensors[sensor_idx]) && mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]] ne !NULL then begin
               bad_sectors = mask_sectors['mms'+probe+'imaskb'+sensors[sensor_idx]]
       

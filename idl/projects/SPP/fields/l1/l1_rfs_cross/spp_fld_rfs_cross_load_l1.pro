@@ -1,7 +1,7 @@
 pro spp_fld_rfs_cross_load_l1, file, prefix = prefix, color = color
 
   ; TODO improve this check for valid CDF file and add to other routines
-  if n_elements(file) NE 1 then return
+  if n_elements(file) NE 1 or file EQ '' then return
 
   receiver_str = strupcase(strmid(prefix, 12, 3))
 
@@ -67,8 +67,29 @@ pro spp_fld_rfs_cross_load_l1, file, prefix = prefix, color = color
   options, prefix + 'xspec_im', 'ytitle', receiver_str + ' Cross!CImag Raw'
 
   get_data, prefix + 'gain', data = rfs_gain_dat
+  get_data, prefix + 'nsum', data = rfs_nsum
 
   lo_gain = where(rfs_gain_dat.y EQ 0, n_lo_gain)
+
+  ; Using definition of power spectral density
+  ;  S = 2 * Nfft / fs |x|^2 / Wss where
+  ; where |x|^2 is an auto spec value of the PFB/DFT
+  ;
+  ; 2             : from definition of S_PFB
+  ; 3             : number of spectral bins summed together
+  ; 4096          : number of FFT points
+  ; 38.4e6        : fs in Hz (divide fs by 8 for LFR)
+  ; 250           : RFS high gain (multiply by 50^2 later on if in low gain)
+  ; 2048          : 2048 counts in the ADC = 1 volt
+  ; 0.782         : WSS for our implementation of the PFB (see pfb_norm.pdf)
+  ; 65536         : factor from integer PFB, equal to (2048./8.)^2
+
+  ; TODO: Correct this for SCM data
+
+  V2_factor = (2d/3d) * 4096d / 38.4d6 / ((250d*2048d)^2d * 0.782d * 65536d)
+
+  if lfr_flag then V2_factor *= 8
+
 
   get_data, prefix + 'xspec_re', data = rfs_dat_xspec_re
 
@@ -76,7 +97,13 @@ pro spp_fld_rfs_cross_load_l1, file, prefix = prefix, color = color
 
   ; TODO replace hard coded gain value w/calibrated
 
+  converted_data_xspec_re *= V2_factor
+  
   if n_lo_gain GT 0 then converted_data_xspec_re[lo_gain, *] *= 2500.d
+
+  converted_data_xspec_re /= rebin(rfs_nsum.y,$
+    n_elements(rfs_nsum.x),$
+    n_elements(rfs_freqs.reduced_freq))
 
   store_data, prefix + 'xspec_re_converted', $
     data = {x:rfs_dat_xspec_re.x, y:converted_data_xspec_re, $
@@ -84,11 +111,17 @@ pro spp_fld_rfs_cross_load_l1, file, prefix = prefix, color = color
 
   get_data, prefix + 'xspec_im', data = rfs_dat_xspec_im
 
-  converted_data_xspec_im = rfs_float(rfs_dat_xspec_im.y, /cross)
+  converted_data_xspec_im = spp_fld_rfs_float(rfs_dat_xspec_im.y, /cross)
 
   ; TODO replace hard coded gain value w/calibrated
 
+  converted_data_xspec_im *= V2_factor
+
   if n_lo_gain GT 0 then converted_data_xspec_im[lo_gain, *] *= 2500.d
+
+  converted_data_xspec_im /= rebin(rfs_nsum.y,$
+    n_elements(rfs_nsum.x),$
+    n_elements(rfs_freqs.reduced_freq))
 
   store_data, prefix + 'xspec_im_converted', $
     data = {x:rfs_dat_xspec_im.x, y:converted_data_xspec_im, $
@@ -98,6 +131,7 @@ pro spp_fld_rfs_cross_load_l1, file, prefix = prefix, color = color
   options, prefix + 'xspec_??_converted', 'no_interp', 1
   options, prefix + 'xspec_??_converted', 'ylog', 1
   options, prefix + 'xspec_??_converted', 'zlog', 0
+  options, prefix + 'xspec_??_converted', 'ztitle', '[V2/Hz]'
   options, prefix + 'xspec_??_converted', 'yrange', [min(rfs_freqs.reduced_freq), max(rfs_freqs.reduced_freq)]
   options, prefix + 'xspec_??_converted', 'ystyle', 1
   options, prefix + 'xspec_??_converted', 'datagap', 60
@@ -115,5 +149,5 @@ pro spp_fld_rfs_cross_load_l1, file, prefix = prefix, color = color
     'SRC:' + $
     strcompress(string(ch0_src_dat.y[0]), /rem) + '-' + $
     strcompress(string(ch1_src_dat.y[0]), /rem)
-    
+
 end

@@ -12,8 +12,8 @@
 ;         end_times:    returns an array of unix times (double) containing the end of each fast interval
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-11-01 15:48:52 -0700 (Tue, 01 Nov 2016) $
-;$LastChangedRevision: 22256 $
+;$LastChangedDate: 2017-08-08 09:33:48 -0700 (Tue, 08 Aug 2017) $
+;$LastChangedRevision: 23763 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/data_status_bar/mms_load_fast_segments.pro $
 ;-
 
@@ -35,7 +35,7 @@ pro mms_load_fast_segments, trange=trange, suffix=suffix, start_times=start_time
     unix_start = reverse(fast_intervals.start_times)
     unix_end = reverse(fast_intervals.end_times)
     
-    times_in_range = where(unix_start ge tr[0]-86400.0 and unix_start le tr[1]+86400.0, t_count)
+    times_in_range = where(unix_start ge tr[0]-2*86400.0 and unix_start le tr[1]+2*86400.0, t_count)
 
     if t_count ne 0 then begin
       unix_start = unix_start[times_in_range]

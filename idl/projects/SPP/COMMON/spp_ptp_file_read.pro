@@ -1,5 +1,5 @@
 
-pro spp_ptp_file_read,files,dwait=dwait
+pro spp_ptp_file_read,files,dwait=dwait,no_products=no_products
   
   oldmethod =0
   
@@ -8,8 +8,8 @@ pro spp_ptp_file_read,files,dwait=dwait
   if oldmethod then begin
     spp_swp_startup,rt_flag=0,save=1,/clear
   endif else begin
-    spp_swp_apdat_init
-    spp_apdat_info,rt_flag=0,save_flag=1,/clear   
+    spp_swp_apdat_init  ,no_products=no_products
+    spp_apdat_info,rt_flag=0,save_flag=1,/clear 
   endelse
   info = {socket_recorder   }
   info.run_proc = 1

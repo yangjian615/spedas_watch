@@ -3,8 +3,8 @@
 <items>
 
   <tmlib
-  	tmlib_event = 'rfs_hfr_cross'
-  	>
+    tmlib_event = 'rfs_hfr_cross'
+    >
   </tmlib>
 
   <cdf_global
@@ -20,7 +20,7 @@
       >
   </cdf_global>
   
-	<idl_att
+  <idl_att
       convert_routine = 'spp_fld_rfs_hfr_cross_convert'>
   </idl_att>
 
@@ -30,7 +30,7 @@
   <cdf_att
         FIELDNAM = "compression"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "compression"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -53,7 +53,7 @@ comment out peaks/averages for cross
   <cdf_att
         FIELDNAM = "peaks"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "peaks"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -74,7 +74,7 @@ comment out peaks/averages for cross
   <cdf_att
         FIELDNAM = "averages"
         FORMAT = "I8"
-		DATA_TYPE = "CDF_INT2"
+    DATA_TYPE = "CDF_INT2"
         LABLAXIS = "averages"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -96,7 +96,7 @@ comment out peaks/averages for cross
   <cdf_att
         FIELDNAM = "hl"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "hl"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -117,7 +117,7 @@ comment out peaks/averages for cross
   <cdf_att
         FIELDNAM = "ch0"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "ch0"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -138,7 +138,7 @@ comment out peaks/averages for cross
   <cdf_att
         FIELDNAM = "ch1"
         FORMAT = "I8"
-		DATA_TYPE = "CDF_INT2"
+    DATA_TYPE = "CDF_INT2"
         LABLAXIS = "ch1"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -159,7 +159,7 @@ comment out peaks/averages for cross
   <cdf_att
         FIELDNAM = "gain"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "gain"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -180,7 +180,7 @@ comment out peaks/averages for cross
   <cdf_att
         FIELDNAM = "nsum"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_INT2"
+        DATA_TYPE = "CDF_INT2"
         LABLAXIS = "nsum"
         VAR_TYPE = "data"
         FILLVAL = "-32767"
@@ -196,13 +196,13 @@ comment out peaks/averages for cross
   </cdf_var>
   
   <cdf_var
-  		name = "xspec_re"
-  		type = "integer"
-  		nelem = "64">
+      name = "xspec_re"
+      type = "integer"
+      nelem = "64">
   <cdf_att
         FIELDNAM = "xspec_re"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_UINT2"
+        DATA_TYPE = "CDF_UINT2"
         LABLAXIS = "spec0_ch0"
         VAR_TYPE = "data"
         FILLVAL = "65534"
@@ -218,13 +218,13 @@ comment out peaks/averages for cross
   </cdf_var>
 
   <cdf_var
-  		name = "xspec_im"
-  		type = "integer"
-  		nelem = "64">
+      name = "xspec_im"
+      type = "integer"
+      nelem = "64">
   <cdf_att
         FIELDNAM = "xspec_im"
         FORMAT = "I8"
-				DATA_TYPE = "CDF_UINT2"
+        DATA_TYPE = "CDF_UINT2"
         LABLAXIS = "spec0_ch1"
         VAR_TYPE = "data"
         FILLVAL = "65534"

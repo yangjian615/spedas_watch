@@ -1,7 +1,7 @@
 mvn_pui_model: models oxygen and hydrogen pickup ions measured by MAVEN SEP, SWIA, STATIC
 please send bugs/comments to rahmati@ssl.berkeley.edu
 
-20170214: complete overhaul of the code. s/c potential corrected swea specra are now used to calculate electron impact ionization rates. model/data are stored in arrays of structures (common block mvn_pui_com). new visualization and analysis routines added.
+20170214: complete overhaul of the code. s/c potential corrected swea specra are now used to calculate electron impact ionization rates. model/data are stored in arrays of structures (common block mvn_pui_com). new visualization and analysis routines added. see mvn_pui_crib.
 
 20160712: modified/added a few routines for better visualization of model results.
 

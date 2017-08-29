@@ -21,8 +21,8 @@
 ;       and then split and save them into one-day files.
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-01-13 15:07:18 -0800 (Fri, 13 Jan 2017) $
-; $LastChangedRevision: 22599 $
+; $LastChangedDate: 2017-07-27 06:54:01 -0700 (Thu, 27 Jul 2017) $
+; $LastChangedRevision: 23711 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot_save.pro $
 ;
 ;CREATED BY:    Yuki Harada  03-04-16
@@ -36,9 +36,13 @@ pro mvn_swe_lpw_scpot_save, start_day=start_day, ndays=ndays, norbwin=norbwin, _
   froot = 'mvn_swe_lpw_scpot_'
   tname = ['mvn_lpw_swp1_IV_vinfl', $ ;'mvn_lpw_swp1_dIV_smo',
            'mvn_lpw_swp1_IV_vinfl_qflag', $
-           'mvn_swe_lpw_scpot_lin_para','mvn_swe_lpw_scpot_pow_para', $
+           'mvn_swe_lpw_scpot_lin_para', $
+           'mvn_swe_lpw_scpot_pow_para', $
+           'mvn_swe_lpw_scpot_pol_para', $
            'mvn_swe_lpw_scpot_Ndata', $
-           'mvn_swe_lpw_scpot_lin','mvn_swe_lpw_scpot_pow', $
+           'mvn_swe_lpw_scpot_lin', $
+           'mvn_swe_lpw_scpot_pow', $
+           'mvn_swe_lpw_scpot_pol', $
            'mvn_swe_lpw_scpot']
   oneday = 86400D
 

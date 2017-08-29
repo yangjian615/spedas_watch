@@ -58,8 +58,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-08 08:48:28 -0800 (Wed, 08 Feb 2017) $
-;$LastChangedRevision: 22749 $
+;$LastChangedDate: 2017-06-12 15:08:37 -0700 (Mon, 12 Jun 2017) $
+;$LastChangedRevision: 23455 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cotrans/mms_cotrans.pro $
 ;-
 
@@ -325,27 +325,20 @@ for i = 0, n_elements(in_names)-1 do begin
 
   dprint, 'Coordinate system of input '+in_name+': '+in_c
 
+  ; Note: L_vec is used here because it assumes rigid-body rotation even when the 
+  ; wire booms are oscillating, and thus, at any point in time it does not give L, 
+  ; but rather the average orientation of the nutating MPA (which is also assumed 
+  ; fixed relative to the rigid body) as it wobbles in inertial space with a 
+  ; period of ~7 minutes.   
   spinras = 'mms'+probe+'_defatt_spinras'+support_suffix
   spindec = 'mms'+probe+'_defatt_spindec'+support_suffix
-;  spinper = 'mms'+probe+'???'+support_suffix
-;  spinphase = 'mms'+probe+'_mec_ang_mom_phase'+support_suffix
+
 
   ; check if the defatt spinras/spindec variables were loaded
   ras = tnames(spinras)
   decl = tnames(spindec)
   if ras eq '' && decl eq '' then begin
       dprint, dlevel = 0, 'Error, couldnt find the right ascension/declination variables'
-      ; couldn't find the defatt spinras/spindec, should
-      ; check if the RADec variable was loaded (exists in the 
-      ; AFG/DFG QL files)
-;      ras_decl = tnames('mms'+probe+'_ql_RADec_gse'+support_suffix)
-;      if ras_decl eq '' then begin
-;          dprint, dlevel = 0, 'Error, couldnt find the right ascension/declination variables'
-;      endif else begin
-;          split_vec, ras_decl, names=ras_decl
-;          spinras = ras_decl[0]
-;          spindec = ras_decl[1]
-;      endelse
   endif
  
   mms_cotrans_transformer, in_name, out_name, in_c, out_coord, $

@@ -75,13 +75,15 @@
 ;
 ;       SPICEINIT:     Force a re-initialization of SPICE.  Use with caution!
 ;
+;       NOSPICE:       Do not initialize SPICE.
+;
 ;       NODUPE:        Filter out identical packets.  Default = 1 (yes).
 ;
 ;       REALTIME:      Use realtime file naming convention: YYYYMMDD_HHMMSS_*_l0.dat
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-22 13:29:24 -0700 (Sat, 22 Apr 2017) $
-; $LastChangedRevision: 23213 $
+; $LastChangedDate: 2017-08-14 11:10:32 -0700 (Mon, 14 Aug 2017) $
+; $LastChangedRevision: 23782 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -90,7 +92,7 @@
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
                              cdrift=cdrift, sumplot=sumplot, status=status, orbit=orbit, $
                              loadonly=loadonly, spiceinit=spiceinit, nodupe=nodupe, $
-                             realtime=realtime
+                             realtime=realtime, nospice=nospice
 
   @mvn_swe_com
 
@@ -200,9 +202,11 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
 ; Initialize SPICE if not already done
 ;   This is needed for MET -> UNIX time conversion.
 
-  mk = spice_test('*', verbose=-1)
-  indx = where(mk ne '', count)
-  if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init,/force
+  if (not keyword_set(nospice)) then begin
+    mk = spice_test('*', verbose=-1)
+    indx = where(mk ne '', count)
+    if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init,/force
+  endif
 
 ; Define decompression, telemetry conversion factors, and data structures
 

@@ -2,7 +2,8 @@ pro spp_fld_make_cdf_l1, apid_name, $
   fileid = fileid, $
   varformat = varformat, $
   trange = trange, $
-  filename = filename
+  filename = filename, $
+  load = load
 
   if not keyword_set(apid_name) then return ; TODO: Better checking and error reporting
 
@@ -16,8 +17,10 @@ pro spp_fld_make_cdf_l1, apid_name, $
     cdf_att = cdf_att, times = times, idl_att = idl_att)
 
   if dat_success NE 1 then begin
-    
+
     if dat_success EQ -1 then dprint, 'No data found for ' + apid_name, dlevel = 2
+
+    filename = ''
 
     return ; TODO: error reporting here
 
@@ -33,9 +36,27 @@ pro spp_fld_make_cdf_l1, apid_name, $
   spp_fld_cdf_put_metadata, fileid, filename, cdf_att
 
   spp_fld_cdf_put_time, fileid, times.ToArray()
-  
+
   spp_fld_cdf_put_depend, fileid, idl_att = idl_att
 
   spp_fld_cdf_put_data, fileid, data, /close
+
+  ;
+  ; If load keyword set, load file into tplot variables
+  ;
+
+  if keyword_set(load) then begin
+
+    if file_test(filename) then begin
+
+      spp_fld_load_l1, filename
+
+      file_mkdir, !spp_fld_tmlib.test_cdf_dir
+
+      file_copy, filename, !spp_fld_tmlib.test_cdf_dir, /over
+
+    end
+
+  endif
 
 end

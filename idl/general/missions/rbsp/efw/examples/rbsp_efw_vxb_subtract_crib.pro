@@ -37,6 +37,10 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
                                hires=hires,qa=qa,bad_probe=bad_probe
 
 
+  if ~KEYWORD_SET(ql) and ~KEYWORD_SET(l2) then level = 'l3'
+  if KEYWORD_SET(ql) then level = 'ql'
+  if KEYWORD_SET(l2) then level = 'l2'
+
 ;Set timerange if it's not already set
   x = timerange()
   date = strmid(time_string(x[0]),0,10)
@@ -160,7 +164,7 @@ pro rbsp_efw_vxb_subtract_crib,probe,no_spice_load=no_spice_load,noplot=noplot,q
 
 
 ;Determine corotation Efield
-  rbsp_corotation_efield,probe,date,/no_spice_load ;,/data_preloaded
+  rbsp_corotation_efield,probe,date,/no_spice_load,level=level ;,/data_preloaded
 
 
 

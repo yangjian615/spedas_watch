@@ -2,7 +2,7 @@
 ; NAME: rbsp_corotation_efield
 ;
 ; PURPOSE: Determine the co-rotation electric field for RBSP. Saves as tplot variable
-;		
+;
 ;
 ; INPUT: probe -> 'a' or 'b'
 ;		 date  -> ex '2012-10-13'
@@ -11,7 +11,7 @@
 ;
 ;
 ; NOTES: 1) I've tested this with the hires mag data as well as lowres 4-sec data.
-;		 The lowres data work just as well. 
+;		 The lowres data work just as well.
 ;        2) uses accurate 1-min cadence spinaxis pointing direction
 ;
 ; HISTORY:
@@ -22,16 +22,19 @@
 ;
 ; VERSION:
 ; $LastChangedBy: aaronbreneman $
-; $LastChangedDate: 2015-02-19 15:24:35 -0800 (Thu, 19 Feb 2015) $
-; $LastChangedRevision: 17012 $
+; $LastChangedDate: 2017-06-15 11:18:24 -0700 (Thu, 15 Jun 2017) $
+; $LastChangedRevision: 23480 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/missions/rbsp/efw/rbsp_corotation_efield.pro $
 ;
 ;-
 
 
 
-pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load,data_preloaded=data_preloaded
+pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load,data_preloaded=data_preloaded,level=level
 
+  probe = strlowcase(probe)
+
+  if ~KEYWORD_SET(level) then level = 'na'
 
 ;Initializing stuff...
   timespan,date
@@ -42,7 +45,7 @@ pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load,data_preloaded
 
 
 
-;Get the spinphase variable. 
+;Get the spinphase variable.
   if ~keyword_set(data_preloaded) then rbsp_load_state,probe=probe,/no_spice_load,$
      datatype=['pos','vel','spinper','spinphase','mat_dsc','Lvec']
   get_data,'rbsp'+probe+'_Lvec',data=lvec
@@ -50,7 +53,7 @@ pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load,data_preloaded
 
 ;Load spice for position and velocity data
   if ~keyword_set(data_preloaded) then rbsp_load_spice_state,probe=probe,coord='gse',/no_spice_load
-  
+
 
 
 ;Get spin-axis pointing direction once/minute
@@ -75,17 +78,20 @@ pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load,data_preloaded
 
 
 ;Load EMFISIS data (first try to load L3, if no L3 then load quicklook)
-  if ~keyword_set(data_preloaded) then rbsp_load_emfisis,probe=probe,coord='gse',cadence='4sec',level='l3'
-  get_data,'rbsp'+probe+'_emfisis_l3_4sec_gse_Mag',data=Bmag
-  
-  if ~is_struct(Bmag) and ~keyword_set(data_preloaded) then begin
-     rbsp_load_emfisis,probe=probe,/quicklook
+  if ~keyword_set(data_preloaded) and level eq 'l3' then rbsp_load_emfisis,probe=probe,coord='gse',cadence='1sec',level='l3'
+  if ~keyword_set(data_preloaded) and level eq 'l2' then rbsp_load_emfisis,probe=probe,coord='uvw',level='l2'
+  if ~keyword_set(data_preloaded) and level eq 'ql' then rbsp_load_emfisis,probe=probe,/quicklook
 
-                                ;no need to have data at very high res
+
+  if level eq 'l3' then get_data,'rbsp'+probe+'_emfisis_l3_1sec_gse_Mag',data=Bmag
+  if level eq 'l2' then get_data,'rbsp'+probe+'_emfisis_l2_uvw_Mag',data=Bmag
+  if level eq 'ql' then get_data,'rbsp'+probe+'_emfisis_quicklook_Mag',data=Bmag
+
+
+  ;Load EMFISIS data if necessary
+  if level eq 'ql' then begin
      rbsp_downsample,'rbsp'+probe+'_emfisis_quicklook_Mag',1/11.8,suffix='_tmp'
-
      rbsp_uvw_to_mgse,probe,'rbsp'+probe+'_emfisis_quicklook_Mag_tmp',/no_spice_load
-
 
      time4 = time_string(time3) ;put into yyyy-mm-dd/hh:mm:ss format
 
@@ -98,9 +104,29 @@ pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load,data_preloaded
                    /no_spice_load,newname='rbsp'+probe+'_emfisis_quicklook_Mag_gse'
 
      copy_data,'rbsp'+probe+'_emfisis_quicklook_Mag_gse','bfield_data'
+  endif
 
-  endif else copy_data,'rbsp'+probe+'_emfisis_l3_4sec_gse_Mag','bfield_data'
-  
+  if level eq 'l3' then copy_data,'rbsp'+probe+'_emfisis_l3_1sec_gse_Mag','bfield_data'
+
+
+  if level eq 'l2' then begin
+     rbsp_downsample,'rbsp'+probe+'_emfisis_l2_uvw_Mag',1/11.8,suffix='_tmp'
+     rbsp_uvw_to_mgse,probe,'rbsp'+probe+'_emfisis_l2_uvw_Mag_tmp',/no_spice_load
+
+     time4 = time_string(time3) ;put into yyyy-mm-dd/hh:mm:ss format
+
+     get_data,'rbsp'+probe+'_emfisis_l2_uvw_Mag_tmp_mgse',data=Bmag
+     wsc_gsetmp = [[interpol(wsc_GSE[0,*],time_double(time4),Bmag.x)],$
+                   [interpol(wsc_GSE[1,*],time_double(time4),Bmag.x)],$
+                   [interpol(wsc_GSE[2,*],time_double(time4),Bmag.x)]]
+
+     rbsp_mgse2gse,'rbsp'+probe+'_emfisis_l2_uvw_Mag_tmp_mgse',wsc_gsetmp,probe=probe,$
+                   /no_spice_load,newname='rbsp'+probe+'_emfisis_l2_uvw_Mag_gse'
+
+     copy_data,'rbsp'+probe+'_emfisis_l2_uvw_Mag_gse','bfield_data'
+
+  endif
+
 
 
   if ~is_struct(Bmag) or ~is_struct(lvec) then begin
@@ -131,13 +157,12 @@ pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load,data_preloaded
 
   Omega_E = (2*!Pi)/(24.0*3600.0) ;Earth's rotation angular frequency
 
-  Vel_coro = fltarr(n_elements(xgei),3) ;set up array for velocity of corotating frame at RBSP location 
+  Vel_coro = fltarr(n_elements(xgei),3) ;set up array for velocity of corotating frame at RBSP location
 
-                                ;V=Omega X position  (rigid body rotation) 
-  Vel_coro[*,0] = -ygei*Omega_E  
+                                ;V=Omega X position  (rigid body rotation)
+  Vel_coro[*,0] = -ygei*Omega_E
   Vel_coro[*,1] = xgei*Omega_E
   Vel_coro[*,2] = 0.0
-
 
 
 ;Transform magnetic field into GEI coordinates
@@ -153,7 +178,7 @@ pro rbsp_corotation_efield,probe,date,no_spice_load=no_spice_load,data_preloaded
   store_data,'rbsp'+probe+'_state_vel_coro_gei',data={x:mag_times,y:Vel_coro}
 
   E_coro=fltarr(n_elements(mag_times),3)
-  for xx=0L,n_elements(mag_times)-1 do E_coro[xx,*]=-crossp(Vel_coro[xx,*],Bgei[xx,*])/1000.0 
+  for xx=0L,n_elements(mag_times)-1 do E_coro[xx,*]=-crossp(Vel_coro[xx,*],Bgei[xx,*])/1000.0
 
   store_data,'rbsp'+probe+'_E_coro_gei',data={x:mag_times,y:E_coro},dlim={colors:[2,4,6],lables:['Ex','Ey','Ez']}
 

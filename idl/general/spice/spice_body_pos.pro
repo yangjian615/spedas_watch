@@ -13,7 +13,7 @@
 ; $URL: $
 ;-
 
-function spice_body_pos,body_name,obs_name,utc=utc,et=et,frame=frame,ltime=ltime,abcorr=abcorr,check_objects=check_objects
+function spice_body_pos,body_name,obs_name,utc=utc,et=et,frame=frame,ltime=ltime,abcorr=abcorr,check_objects=check_objects,force_objects=force_objects
 
 on_error,2
 if not keyword_set(frame) then frame = 'ECLIPJ2000'
@@ -23,9 +23,10 @@ et = time_ephemeris(ut,/ut2et)
 
 ns = n_elements(et)
 if keyword_set(check_objects) then begin
-  time_valid = spice_valid_times(et,object=check_objects) 
+  time_valid = spice_valid_times(et,object=check_objects,force_objects=force_objects) 
 ;  printdat,check_objects,time_valid
   ind = where(time_valid ne 0,nind)
+  dprint,dlevel=2,verbose=verbose,nind,' Valid times from:',check_objects
 endif else begin
  ; nind = ns
   ind = lindgen((nind = ns))

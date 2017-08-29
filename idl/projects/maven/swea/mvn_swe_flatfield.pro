@@ -21,6 +21,7 @@
 ;      3 : 2015-12-13 to 2016-04-05
 ;      4 : 2016-05-29 to 2016-10-06
 ;      5 : 2016-11-28 to 2017-03-15
+;      6 : 2017-06-13 to 2017-08-22
 ;
 ;  Solar wind periods 1 and 3 yield calibrations that are very similar.
 ;  These are combined into a single FOV calibration.  Solar wind period
@@ -48,16 +49,18 @@
 ;
 ;       INIT:         Reinitialize the flatfield common block.
 ;
+;       TEST:         Returns calibration used.  For testing.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-08 17:28:38 -0700 (Mon, 08 May 2017) $
-; $LastChangedRevision: 23281 $
+; $LastChangedDate: 2017-08-15 17:53:32 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23799 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_flatfield.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2016-09-28
 ;FILE: mvn_swe_flatfield.pro
 ;-
 function mvn_swe_flatfield, time, nominal=nominal, off=off, set=set, silent=silent, $
-                            calnum=calnum, init=init
+                            calnum=calnum, init=init, test=test
 
   @mvn_swe_com
   common swe_flatfield_com, cc_t, kmax, swe_ff
@@ -65,7 +68,7 @@ function mvn_swe_flatfield, time, nominal=nominal, off=off, set=set, silent=sile
 ; Initialize the common block, if necessary
 
   if ((size(cc_t,/type) eq 0) or (keyword_set(init))) then begin
-    kmax = 5
+    kmax = 6
     swe_ff = replicate(1.,96,kmax+1)
 
 ;   Solar wind calibration period 1  (2014-10-27 to 2015-03-14).
@@ -130,13 +133,38 @@ function mvn_swe_flatfield, time, nominal=nominal, off=off, set=set, silent=sile
                    0.888254 , 0.913448 , 0.855490 , 0.848276 , 0.850046 , 0.814710 , $
                    0.921029 , 0.872874 , 0.934441 , 0.924436 , 0.836592 , 0.881278    ]
 
-;   Solar wind calibration periods 4 and 5  (2016-05-29 to 2017-13-15)
+;   Solar wind calibration periods 4 and 5  (2016-05-29 to 2017-03-15)
 
     swe_ff[*,5] = swe_ff[*,4]
 
-;   Centers of solar wind calibration periods 1-5
+;   Solar wind calibration period 6 (2017-06-13 to 2017-08-22)
 
-    tt = time_double(['2014-12-22','2015-08-02','2016-01-28','2016-08-22','2017-01-13'])
+    swe_ff[*,6] = [1.000000 , 1.000000 , 1.000000 , 1.000000 , 0.920653 , 0.905603 , $
+                   1.055325 , 1.125814 , 0.922363 , 1.007165 , 1.052942 , 1.062421 , $
+                   1.047355 , 1.078589 , 1.000000 , 1.000000 , 1.000000 , 1.000000 , $
+                   1.000000 , 0.875645 , 0.876079 , 1.151663 , 1.190861 , 1.225228 , $
+                   1.205628 , 1.272357 , 1.324324 , 1.341160 , 1.363010 , 1.286093 , $
+                   1.096406 , 1.000000 , 0.886535 , 0.890125 , 1.073771 , 1.110285 , $
+                   1.083552 , 1.062879 , 1.081455 , 1.116896 , 1.110129 , 1.151852 , $
+                   1.215135 , 1.170782 , 1.206371 , 1.155624 , 1.122229 , 1.112117 , $
+                   0.811266 , 0.969495 , 0.987332 , 0.986065 , 1.019033 , 0.997037 , $
+                   0.976763 , 1.008488 , 0.995645 , 1.024118 , 1.066638 , 1.029193 , $
+                   1.074978 , 1.037592 , 0.956857 , 1.010420 , 0.730332 , 0.846291 , $
+                   0.884903 , 0.948798 , 0.967243 , 0.918950 , 0.825930 , 0.893100 , $
+                   0.858518 , 0.905677 , 0.968644 , 0.993661 , 0.984572 , 0.937099 , $
+                   0.887494 , 0.953622 , 0.789998 , 0.755985 , 0.989610 , 0.938570 , $
+                   0.886700 , 0.848482 , 0.803069 , 0.834783 , 0.816239 , 0.848178 , $
+                   0.849890 , 0.888701 , 0.869474 , 0.890123 , 0.792140 , 0.802523    ]
+
+;   Centers of solar wind calibration periods 1-6
+
+    tt = time_double(['2014-12-22', $    ; Solar Wind 1
+                      '2015-08-02', $    ; Solar Wind 2
+                      '2016-01-28', $    ; Solar Wind 3
+                      '2016-08-22', $    ; Solar Wind 4
+                      '2017-01-13', $    ; Solar Wind 5
+                      '2017-06-29'   ])  ; Solar Wind 6
+
     cc_t = mvn_swe_crosscal(tt,/silent)
 
   endif
@@ -144,6 +172,7 @@ function mvn_swe_flatfield, time, nominal=nominal, off=off, set=set, silent=sile
 ; Process keywords to determine configuration
 
   blab = ~keyword_set(silent)
+  test = 0.
 
 ; Only one configuration at a time.  Precedence: off, set, nominal.
 
@@ -168,17 +197,37 @@ function mvn_swe_flatfield, time, nominal=nominal, off=off, set=set, silent=sile
     t = time_double(time)
     cc = (mvn_swe_crosscal(t,/silent))[0]
 
+;   Cruise to the beginning of Solar Wind 3.
+;   (Note that calibrations for SW1 and SW3 are identical.)
+
     if (t lt t_mcp[5]) then begin
       frac = (((cc - cc_t[0])/(cc_t[1] - cc_t[0])) > 0.) < 1.
       swe_ogf = swe_ff[*,1]*(1. - frac) + swe_ff[*,2]*frac
+      test = frac + 1.
     endif
+
+;   Beginning of Solar Wind 3 to the end of Solar Wind 4.
 
     if ((t ge t_mcp[5]) and (t lt t_mcp[6])) then begin
       frac = (((cc - cc_t[2])/(cc_t[3] - cc_t[2])) > 0.) < 1.
       swe_ogf = swe_ff[*,3]*(1. - frac) + swe_ff[*,4]*frac
+      test = frac + 3.
     endif
 
-    if (t ge t_mcp[6]) then swe_ogf = swe_ff[*,5]
+;   Beginning of Solar Wind 5 through Solar Wind 6.
+
+    if ((t ge t_mcp[6]) and (t lt t_mcp[7])) then begin
+      frac = (((cc - cc_t[4])/(cc_t[5] - cc_t[4])) > 0.) < 1.
+      swe_ogf = swe_ff[*,5]*(1. - frac) + swe_ff[*,6]*frac
+      test = frac + 5.
+    endif
+
+;   Assume calibration reverts to Solar Wind 5 after MCP bump at t_mcp[7]
+
+    if (t ge t_mcp[7]) then begin
+      swe_ogf = swe_ff[*,5]
+      test = 5.
+    endif
 
 ;   Override this with a specific calibration, if requested --> for testing
 

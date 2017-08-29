@@ -39,9 +39,9 @@
 ;HISTORY:
 ;  07-sep-2008, bck  begin modification for use in spd_gui from spd_ui_load_data_fn
 ; 
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-08-30 17:48:41 -0700 (Tue, 30 Aug 2016) $
-;$LastChangedRevision: 21776 $
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2017-07-11 11:26:35 -0700 (Tue, 11 Jul 2017) $
+;$LastChangedRevision: 23576 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data2obj.pro $
 ;
 ;-
@@ -571,6 +571,21 @@ pro thm_ui_load_data2obj,$
   ;          progobj = progobj
   ;      Endif
   ;    Endfor
+    Endif
+
+    ; GMOM
+    ss = where(instr Eq 'gmom')
+    If(ss[0] Ne -1) Then Begin
+      lvl_1 = where(dlvl[ss] Eq 'l1',  nl1)
+      If(nl1 Gt 0) Then Begin
+        ;report no level one
+      Endif
+      lvl_2 = where(dlvl[ss] Eq 'l2',  nl2)
+      If(nl2 Gt 0) Then Begin
+        ssj = where(dlvl[ss] Eq 'l2')
+        thm_load_gmom, probe=observ[i], datatype=iname[ss[ssj]], $
+          level='l2', trange=[st_time, en_time], files=fns4obj, suffix=suffix[0]
+      Endif
     Endif
 
   ;SST

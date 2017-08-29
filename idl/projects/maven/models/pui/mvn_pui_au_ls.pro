@@ -1,10 +1,11 @@
 ;20170111 Ali
 ;calculates Mars heliocentric distance (AU) and solar longitude (Ls)
 
-pro mvn_pui_au_ls,times=times,trange=trange,mars_au=mars_au,mars_ls=mars_ls,res=res
+pro mvn_pui_au_ls,times=times,trange=trange,mars_au=mars_au,mars_ls=mars_ls,res=res,spice=spice
 
-au=149598000. ;astronomical unit (km)
+au=149597870. ;astronomical unit (km)
 
+if keyword_set(spice) then kernels=mvn_spice_kernels(['lsk','spk','std','sck','frm'],/load,trange=trange)
 if ~keyword_set(res) then res=3600. ;3600 seconds (1 hour) default time resolution
 if keyword_set(times) then times=time_double(times)
 if keyword_set(trange) then times=dgen(range=timerange(trange),res=res)

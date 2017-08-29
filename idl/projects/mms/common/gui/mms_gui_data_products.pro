@@ -12,8 +12,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-08 13:46:13 -0800 (Wed, 08 Feb 2017) $
-; $LastChangedRevision: 22752 $
+; $LastChangedDate: 2017-07-25 10:34:54 -0700 (Tue, 25 Jul 2017) $
+; $LastChangedRevision: 23698 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/gui/mms_gui_data_products.pro $
 ;-
 
@@ -103,6 +103,7 @@ function mms_gui_data_products, probes, instrument, rate, level
     valid_products['fpi-fast-l2'] = ['_des_pitchangdist_lowen_fast', $
                                     '_des_pitchangdist_miden_fast', $
                                     '_des_pitchangdist_highen_fast', $
+                                    '_des_numberdensity_fast', $
                                     '_des_numberdensity_dbcs_fast', $
                                     '_des_numberdensity_gse_fast', $
                                     '_des_numberdensity_err_fast', $
@@ -136,7 +137,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_energyspectr_par_fast', $
                                     '_des_energyspectr_anti_fast', $
                                     '_des_energyspectr_perp_fast', $
-                                    '_des_energyspectr_omni_avg', $
+                                    '_des_energyspectr_omni_fast', $
                                     '_des_pitchangdist_avg', $
                                     '_des_temptensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_des_temptensor_gse_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
@@ -147,6 +148,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_pitchangdist_lowen_fast', $
                                     '_dis_pitchangdist_miden_fast', $
                                     '_dis_pitchangdist_highen_fast', $
+                                    '_dis_numberdensity_fast', $
                                     '_dis_numberdensity_dbcs_fast', $
                                     '_dis_numberdensity_gse_fast', $
                                     '_dis_numberdensity_err_fast', $
@@ -180,7 +182,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_energyspectr_par_fast', $
                                     '_dis_energyspectr_anti_fast', $
                                     '_dis_energyspectr_perp_fast', $
-                                    '_dis_energyspectr_omni_avg', $
+                                    '_dis_energyspectr_omni_fast', $
                                     '_dis_temptensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_temptensor_gse_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_prestensor_err_fast_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
@@ -189,10 +191,102 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_temppara_fast', $
                                     '_dis_tempperp_fast']
 
+                                  valid_products['fpi-slow-l2'] = ['_des_pitchangdist_lowen_slow', $
+                                    '_des_pitchangdist_miden_slow', $
+                                    '_des_pitchangdist_highen_slow', $
+                                    '_des_numberdensity_slow', $
+                                    '_des_numberdensity_dbcs_slow', $
+                                    '_des_numberdensity_gse_slow', $
+                                    '_des_numberdensity_err_slow', $
+                                    '_des_bulkspeed_dbcs_slow', $
+                                    '_des_bulkspeed_gse_slow', $
+                                    '_des_bulkspeed_err_slow', $
+                                    '_des_bulkazimuth_dbcs_slow', $
+                                    '_des_bulkazimuth_gse_slow', $
+                                    '_des_bulkazimuth_err_slow', $
+                                    '_des_bulkzenith_dbcs_slow', $
+                                    '_des_bulkzenith_gse_slow', $
+                                    '_des_bulkzenith_err_slow', $
+                                    '_des_bulkx_dbcs_slow', $
+                                    '_des_bulkx_gse_slow', $
+                                    '_des_bulkx_err_slow', $
+                                    '_des_bulky_dbcs_slow', $
+                                    '_des_bulky_gse_slow', $
+                                    '_des_bulky_err_slow', $
+                                    '_des_bulkz_dbcs_slow', $
+                                    '_des_bulkz_gse_slow', $
+                                    '_des_bulkz_err_slow', $
+                                    '_des_bulkv_dbcs_slow', $
+                                    '_des_bulkv_gse_slow', $
+                                    '_des_bulkv_err_slow', $
+                                    '_des_energyspectr_px_slow', $
+                                    '_des_energyspectr_mx_slow', $
+                                    '_des_energyspectr_py_slow', $
+                                    '_des_energyspectr_my_slow', $
+                                    '_des_energyspectr_pz_slow', $
+                                    '_des_energyspectr_mz_slow', $
+                                    '_des_energyspectr_par_slow', $
+                                    '_des_energyspectr_anti_slow', $
+                                    '_des_energyspectr_perp_slow', $
+                                    '_des_energyspectr_omni_slow', $
+                                    '_des_pitchangdist_avg', $
+                                    '_des_temptensor_err_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_temptensor_gse_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_prestensor_err_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_prestensor_gse_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_des_temppara_slow', $
+                                    '_des_tempperp_slow', $
+                                    '_dis_pitchangdist_lowen_slow', $
+                                    '_dis_pitchangdist_miden_slow', $
+                                    '_dis_pitchangdist_highen_slow', $
+                                    '_dis_numberdensity_slow', $
+                                    '_dis_numberdensity_dbcs_slow', $
+                                    '_dis_numberdensity_gse_slow', $
+                                    '_dis_numberdensity_err_slow', $
+                                    '_dis_bulkspeed_dbcs_slow', $
+                                    '_dis_bulkspeed_gse_slow', $
+                                    '_dis_bulkspeed_err_slow', $
+                                    '_dis_bulkazimuth_dbcs_slow', $
+                                    '_dis_bulkazimuth_gse_slow', $
+                                    '_dis_bulkazimuth_err_slow', $
+                                    '_dis_bulkzenith_dbcs_slow', $
+                                    '_dis_bulkzenith_gse_slow', $
+                                    '_dis_bulkzenith_err_slow', $
+                                    '_dis_bulkx_dbcs_slow', $
+                                    '_dis_bulkx_gse_slow', $
+                                    '_dis_bulkx_err_slow', $
+                                    '_dis_bulky_dbcs_slow', $
+                                    '_dis_bulky_gse_slow', $
+                                    '_dis_bulky_err_slow', $
+                                    '_dis_bulkz_dbcs_slow', $
+                                    '_dis_bulkz_gse_slow', $
+                                    '_dis_bulkz_err_slow', $
+                                    '_dis_bulkv_dbcs_slow', $
+                                    '_dis_bulkv_gse_slow', $
+                                    '_dis_bulkv_err_slow', $
+                                    '_dis_energyspectr_px_slow', $
+                                    '_dis_energyspectr_mx_slow', $
+                                    '_dis_energyspectr_py_slow', $
+                                    '_dis_energyspectr_my_slow', $
+                                    '_dis_energyspectr_pz_slow', $
+                                    '_dis_energyspectr_mz_slow', $
+                                    '_dis_energyspectr_par_slow', $
+                                    '_dis_energyspectr_anti_slow', $
+                                    '_dis_energyspectr_perp_slow', $
+                                    '_dis_energyspectr_omni_slow', $
+                                    '_dis_temptensor_err_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_temptensor_gse_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_prestensor_err_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_prestensor_gse_slow_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
+                                    '_dis_pitchangdist_avg', $
+                                    '_dis_temppara_slow', $
+                                    '_dis_tempperp_slow']
+
     valid_products['fpi-brst-l2'] = ['_des_pitchangdist_lowen_brst', $
                                     '_des_pitchangdist_miden_brst', $
                                     '_des_pitchangdist_highen_brst', $
                                     '_des_numberdensity_dbcs_brst', $
+                                    '_des_numberdensity_brst', $
                                     '_des_numberdensity_gse_brst', $
                                     '_des_numberdensity_err_brst', $
                                     '_des_bulkspeed_dbcs_brst', $
@@ -225,7 +319,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_des_energyspectr_par_brst', $
                                     '_des_energyspectr_anti_brst', $
                                     '_des_energyspectr_perp_brst', $
-                                    '_des_energyspectr_omni_avg', $
+                                    '_des_energyspectr_omni_brst', $
                                     '_des_pitchangdist_avg', $
                                     '_des_temptensor_err_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_des_temptensor_gse_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
@@ -237,6 +331,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_pitchangdist_miden_brst', $
                                     '_dis_pitchangdist_highen_brst', $
                                     '_dis_numberdensity_dbcs_brst', $
+                                    '_dis_numberdensity_brst', $
                                     '_dis_numberdensity_gse_brst', $
                                     '_dis_numberdensity_err_brst', $
                                     '_dis_bulkspeed_dbcs_brst', $
@@ -269,7 +364,7 @@ function mms_gui_data_products, probes, instrument, rate, level
                                     '_dis_energyspectr_par_brst', $
                                     '_dis_energyspectr_anti_brst', $
                                     '_dis_energyspectr_perp_brst', $
-                                    '_dis_energyspectr_omni_avg', $
+                                    '_dis_energyspectr_omni_brst', $
                                     '_dis_pitchangdist_avg', $
                                     '_dis_temptensor_err_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $
                                     '_dis_temptensor_gse_brst_'+['xx', 'xy', 'xz', 'yx', 'yy', 'yz', 'zx', 'zy', 'zz'], $

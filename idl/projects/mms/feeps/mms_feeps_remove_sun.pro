@@ -11,12 +11,12 @@
 ;       Originally based on code from Drew Turner, 2/1/2016
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-21 14:04:28 -0800 (Tue, 21 Feb 2017) $
-; $LastChangedRevision: 22836 $
+; $LastChangedDate: 2017-08-15 14:21:36 -0700 (Tue, 15 Aug 2017) $
+; $LastChangedRevision: 23791 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_remove_sun.pro $
 ;-
 
-pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_units, $
+pro mms_feeps_remove_sun, trange=trange, probe = probe, datatype = datatype, data_units = data_units, $
     data_rate = data_rate, level = level, suffix = suffix, tplotnames = tplotnames
     
     if undefined(data_units) then data_units = 'flux'
@@ -45,7 +45,8 @@ pro mms_feeps_remove_sun, probe = probe, datatype = datatype, data_units = data_
     ; get the sector masks
     ;mask_sectors = mms_feeps_sector_masks()
     ; egrimes updated to use the CSV files on 8/2/2016
-    mask_sectors = mms_read_feeps_sector_masks_csv()
+    ; egrimes updated to use the time dependent CSV files on 8/15/2017
+    mask_sectors = mms_read_feeps_sector_masks_csv(trange=trange)
     
     for data_units_idx = 0, n_elements(data_units)-1 do begin
         these_units = data_units[data_units_idx]

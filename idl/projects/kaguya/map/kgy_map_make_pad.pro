@@ -30,8 +30,8 @@
 ;     Yuki Harada on 2015-01-23
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2016-09-09 11:33:47 -0700 (Fri, 09 Sep 2016) $
-; $LastChangedRevision: 21810 $
+; $LastChangedDate: 2017-08-25 14:41:26 -0700 (Fri, 25 Aug 2017) $
+; $LastChangedRevision: 23831 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/kaguya/map/kgy_map_make_pad.pro $
 ;-
 
@@ -183,6 +183,9 @@ pro kgy_map_make_pad, sensor=sensor, trange=trange, nocntcorr=nocntcorr, erange=
         pangles[i,indgen(npa)] = (findgen(npa)+.5)*180./npa
 
      endfor
+
+     w = where( ~finite(pangles[*,0]) , nw ) ;- prevents crash when making eps
+     if nw gt 0 then pangles[w,*] = transpose(rebin((findgen(num_pa_h)+.5)*180./num_pa_h,num_pa_h,nw))
 
      store_data,'kgy_'+sensornname+'_pa_eflux'+suffix,verbose=verbose, $
                 data={x:stimes[idx_uniq],y:pads,v:pangles}, $

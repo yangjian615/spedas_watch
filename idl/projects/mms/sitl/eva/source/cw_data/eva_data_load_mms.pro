@@ -36,7 +36,8 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
     eva_error_message, error_status
     msg = [!Error_State.MSG,' ','...EVA will igonore this error.']
     if ~keyword_set(no_gui) then begin 
-      ok = dialog_message(msg,/center,/error)
+      ;ok = dialog_message(msg,/center,/error)
+      print, 'EVA: '+msg
       progressbar -> Destroy
     endif
     message, /reset; Clear !ERROR_STATE
@@ -86,7 +87,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
       
       if ct eq 0 then begin; if not loaded
         ;-----------
-        ; ASPOC
+        ; ASPOCis
         ;-----------
         pcode=10
         ip=where(perror eq pcode,cp)
@@ -119,7 +120,7 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
           tn=tnames(tnf,jmax)
           if (strlen(tn[0]) gt 0) and (jmax ge 1) then begin
             options, tnf, ytitle=sc+'!CFEEPS!Cintnsty',ysubtitle='[keV]'
-            ylim, tnf, 30, 530
+            ylim, tnf, 50, 530
           endif
           answer = 'Yes'
         endif
@@ -142,9 +143,9 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
               tarr = strsplit(tn[k],'_',/extract)
               options, tn[k],ytitle=sc+'!CEIS!C'+tarr[4],ysubtitle='[keV]'
               case tarr[4] of
-                'proton': yrange = [50, 1000]
-                'alpha': yrange = [70, 700]
-                'oxygen': yrange = [130,1000]
+                'proton': yrange = [50, 530];1000]
+                'alpha': yrange = [70, 530];700]
+                'oxygen': yrange = [130,530];1000]
               endcase
               ylim, tn[k], yrange
             endfor
@@ -464,19 +465,19 @@ FUNCTION eva_data_load_mms, state, no_gui=no_gui, force=force
         pcode=85
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_jtot_curl_b') and (cp eq 0)) then begin
-          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/curlB)
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/curlB,no_gui=no_gui)
           answer = 'Yes'
         endif
         pcode=86
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_diffb') and (cp eq 0)) then begin
-          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/diffB)
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/diffB,no_gui=no_gui)
           answer = 'Yes'
         endif
         pcode=87
         ip=where(perror eq pcode,cp)
         if (strmatch(paramlist[i],'mms_sitl_jtot_combb') and (cp eq 0)) then begin
-          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/combB)
+          LOADED_4FGM = eva_data_load_mms_jtot(LOADED_4FGM=LOADED_4FGM,/combB,no_gui=no_gui)
           answer = 'Yes'
         endif
         

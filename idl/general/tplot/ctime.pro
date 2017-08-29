@@ -323,7 +323,7 @@ if not silent then begin
     strput,prompt2,'comp',21
     prompt2=prompt2+'        (zvalue)'
   end
-  dprint,prompt,prompt2,format='(a)'
+  print,prompt,prompt2,format='(a)'
 endif
 ;;;;;;
 
@@ -394,7 +394,7 @@ endif else begin
   v =  !values.f_nan
   var = 'Null'
 endelse
-dprint,form=form1,var,time_string(t,prec=prec,local_time=local_time),float(v),cr
+print,form=form1,var,time_string(t,prec=prec,local_time=local_time),float(v),cr
 ;;;;;;
 
 ;;;;;; create an error handling routine
@@ -441,6 +441,7 @@ if (exact ne 0) and (var ne 'Null') then $
 xnorm = make_array(max, value = !values.f_nan, /float)
 ynorm = make_array(max, value = !values.f_nan, /float)
 ;------ end JBT block ----
+print,'Use right button to exit'
 while n lt max do begin
   ;the main loop calls cursor,
   ;which waits until there is a button press or cursor movement
@@ -502,9 +503,9 @@ while n lt max do begin
     if not silent then begin    ;print the new data
       if keyword_set(subvar) then varn = var+"->"+subvar else varn = var
       tstr = time_string(t,prec=prec,local_time=local_time)
-      if ind2 eq -1 then dprint,form=form1,varn,     tstr,v,spaces,cr $
-      else if spec then  dprint,form=form5,varn,ind2,tstr,v,z     ,cr $
-      else               dprint,form=form2,varn,ind2,tstr,v,spaces,cr
+      if ind2 eq -1 then print,form=form1,varn,     tstr,v,spaces,cr $
+      else if spec then  print,form=form5,varn,ind2,tstr,v,z     ,cr $
+      else               print,form=form2,varn,ind2,tstr,v,spaces,cr
     endif
   endif
   ;;;; got the current data
@@ -524,9 +525,9 @@ while n lt max do begin
         append_array,inds,ind
         append_array,inds2,ind2 > 0     ;if ind2 eq -1 set to zero
         if not silent then begin
-          if ind2 eq -1 then dprint,form=form3,np-1,varn,     tstr,v,spaces $
-          else if spec then  dprint,form=form6,np-1,varn,ind2,tstr,v,z      $
-          else               dprint,form=form4,np-1,varn,ind2,tstr,v,spaces
+          if ind2 eq -1 then print,form=form3,np-1,varn,     tstr,v,spaces $
+          else if spec then  print,form=form6,np-1,varn,ind2,tstr,v,z      $
+          else               print,form=form4,np-1,varn,ind2,tstr,v,spaces
         endif
         if keyword_set(psym) then plots,t-time_offset,v,psym = psym
         n = n + 1
@@ -552,7 +553,7 @@ while n lt max do begin
           inds   = 0
           inds2  = 0
           zvalue = 0
-          if not silent then dprint,$
+          if not silent then print,$
             form="(79x,a,TL79,'Zero sample (',i0,') set to zero.')",cr,np-1
           n = (n-1) > 0
         end
@@ -569,7 +570,8 @@ while n lt max do begin
   opy = py
   ohx = hx
   ohy = hy
-  dprint,dwait=5.,dlevel=1,'Use right button to exit'
+;  print,'Use right button to exit'
+;  print,dwait=5.,dlevel=1,'Use right button to exit'
   wait, sleep                   ;Be nice
 
 endwhile ;;;;;; end main loop

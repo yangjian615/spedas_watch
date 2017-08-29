@@ -5,8 +5,8 @@
 ; ran the code for all four spacecraft outside of the routine, and all appropriate tplot variables are stored.
 
 ;  $LastChangedBy: rickwilder $
-;  $LastChangedDate: 2016-12-09 10:19:03 -0800 (Fri, 09 Dec 2016) $
-;  $LastChangedRevision: 22450 $
+;  $LastChangedDate: 2017-07-20 09:15:54 -0700 (Thu, 20 Jul 2017) $
+;  $LastChangedRevision: 23676 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/sitl/sitl_data_fetch/mms_sitl_diffb.pro $
 
 
@@ -20,6 +20,8 @@ times = timerange(/current)
 
 if times(0) gt time_double('2016-09-15/00:00:00') then begin
   sep = 7d
+endif else if times(0) gt time_double('2017-06-15/00:00:00') then begin
+  sep = 15d
 endif else begin
   sep = 10d
 endelse

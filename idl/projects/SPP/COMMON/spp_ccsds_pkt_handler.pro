@@ -8,10 +8,10 @@ pro spp_ccsds_pkt_handler,dbuffer,offset,buffer_length,ptp_header=ptp_header,rem
   remainder = !null
   
   while offset lt buffer_length do begin
-    ccsds = spp_swp_ccsds_decom(dbuffer,offset,buffer_length,remainder=remainder,dlevel=3)
+    ccsds = spp_swp_ccsds_decom(dbuffer,offset,buffer_length,remainder=remainder,dlevel=4)
     if ~keyword_set(ccsds) then begin
       if debug(2) then begin
-        dprint,dlevel=3,'Incomplete CCSDS, saving ',n_elements(remainder),' bytes for later '    ;,pkt_size,pkt_size - n_elements(b)
+        dprint,dlevel=4,'Incomplete CCSDS, saving ',n_elements(remainder),' bytes for later '    ;,pkt_size,pkt_size - n_elements(b)
       endif
       break
     endif

@@ -25,8 +25,8 @@
 ;           *_flux
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-02-14 11:50:00 -0800 (Tue, 14 Feb 2017) $
-;$LastChangedRevision: 22778 $
+;$LastChangedDate: 2017-08-08 13:01:28 -0700 (Tue, 08 Aug 2017) $
+;$LastChangedRevision: 23767 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_hpca_calc_anodes.pro $
 ;-
 function mms_hpca_elevations
@@ -84,6 +84,8 @@ function mms_hpca_avg_fov, data_struct, fov = fov, anodes = anodes
     
     str_element, data_struct, 'v2', energy_table, success=success
     
+    if undefined(energy_table) then return, -1 ; no energy table on the input?
+    
     ; check if the energy table is all 0s, if so, default to the hard-coded table
     wherezeros = where(energy_table eq 0, zerocount)
     if zerocount eq 63 then success = 0
@@ -134,6 +136,8 @@ function mms_hpca_sum_fov, data_struct, fov = fov, anodes = anodes
 
     ;anode_elevation = mms_hpca_elevations()
     str_element, data_struct, 'v2', energy_table, success=success
+    
+    if undefined(energy_table) then return, -1 ; no energy table?
     
     ; check if the energy table is all 0s, if so, default to the hard-coded table
     wherezeros = where(energy_table eq 0, zerocount)
