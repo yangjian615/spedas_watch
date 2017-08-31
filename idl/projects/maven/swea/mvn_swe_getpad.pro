@@ -27,15 +27,18 @@
 ;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
 ;                      Default = 'eflux'.
 ;
+;       SHIFTPOT:      Correct for spacecraft potential.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-13 12:35:38 -0700 (Thu, 13 Apr 2017) $
-; $LastChangedRevision: 23149 $
+; $LastChangedDate: 2017-08-30 13:55:27 -0700 (Wed, 30 Aug 2017) $
+; $LastChangedRevision: 23859 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
 ;FILE: mvn_swe_getpad.pro
 ;-
-function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, burst=burst
+function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, burst=burst, $
+                         shiftpot=shiftpot
 
   @mvn_swe_com
 
@@ -47,10 +50,12 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
   endif
   
   time = time_double(time)
-  
+
+  if (size(units,/type) ne 7) then units = 'EFLUX'
+  if keyword_set(shiftpot) then if (n_elements(swe_sc_pot) lt 2) then mvn_scpot
+
   if (size(swe_mag1,/type) eq 8) then addmag = 1 else addmag = 0
   if (size(swe_sc_pot,/type) eq 8) then addpot = 1 else addpot = 0
-  if (size(units,/type) ne 7) then units = 'eflux'
   if keyword_set(burst) then archive = 1
 
 ;---------------------------------------------------------------------------------
@@ -150,7 +155,16 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
     pad.domega = (2.*!dtor)*pad.dphi*cos(pad.theta*!dtor)*sin(pad.dtheta*!dtor/2.)
 
     if (keyword_set(sum) and (npts gt 1)) then pad = mvn_swe_padsum(pad)
-    mvn_swe_convert_units, pad, units
+
+; Correct for spacecraft potential and convert units
+
+    if keyword_set(shiftpot) then begin
+      if (stregex(units,'flux',/boo,/fold)) then begin
+        mvn_swe_convert_units, pad, 'df'
+        for n=0,(npts-1) do pad[n].energy -= pad[n].sc_pot
+        mvn_swe_convert_units, pad, units
+      endif else for n=0,(npts-1) do pad[n].energy -= pad[n].sc_pot
+    endif else mvn_swe_convert_units, pad, units
 
     return, pad
   endif
@@ -411,7 +425,13 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 
 ; Convert units
 
-  mvn_swe_convert_units, pad, units
+  if keyword_set(shiftpot) then begin
+    if (stregex(units,'flux',/boo,/fold)) then begin
+      mvn_swe_convert_units, pad, 'df'
+      for n=0,(npts-1) do pad[n].energy -= pad[n].sc_pot
+      mvn_swe_convert_units, pad, units
+    endif else for n=0,(npts-1) do pad[n].energy -= pad[n].sc_pot
+  endif else mvn_swe_convert_units, pad, units
 
   return, pad
 

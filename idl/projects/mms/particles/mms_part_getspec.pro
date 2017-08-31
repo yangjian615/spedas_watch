@@ -5,16 +5,30 @@
 ;
 ; Purpose:
 ;         This is a wrapper around mms_part_products that loads required 
-;         support data (if not already loaded)
+;         support data (if not already loaded), and optionally creates
+;         angular spectrograms with B-field and S/C ram directions specified 
+;         using symbols
 ;
 ; Keywords:
 ;         probes: array of probes
 ;         instrument: fpi or hpca
-;         
+;         species: depends on instrument:
+;             FPI: 'e' for electrons, 'i' for ions
+;             HPCA: 'hplus' for H+, 'oplus' for O+, 'heplus' for He+, 'heplusplus', for He++
+;         outputs: list of requested output types, 
+;             'energy' - energy spectrogram
+;             'phi' - azimuthal spectrogram
+;             'theta' - latitudinal spectrogram
+;             'gyro' - gyrophase spectrogram
+;             'pa' - pitch angle spectrogram
+;             'moments' - distribution moments (density, velocity, etc.) - see warning at the top of mms_part_products before using this!
+;         add_bfield_dir: add B-field direction (+, -) to the angular spectrograms (phi, theta)
+;         add_ram_dir: add S/C ram direction (X) to the angular spectrograms (phi, theta)
+;         dir_interval: number of seconds between B-field and S/C ram direction symbols on angular spectrogram plots
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-08-29 16:13:19 -0700 (Tue, 29 Aug 2017) $
-;$LastChangedRevision: 23848 $
+;$LastChangedDate: 2017-08-30 09:53:49 -0700 (Wed, 30 Aug 2017) $
+;$LastChangedRevision: 23853 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -57,6 +71,7 @@ pro mms_part_getspec, probes=probes, $
                       
                       add_bfield_dir=add_bfield_dir, $
                       add_ram_dir=add_ram_dir, $
+                      dir_interval=dir_interval, $
                       
                       _extra=ex 
 
@@ -93,6 +108,7 @@ pro mms_part_getspec, probes=probes, $
     endif else probes = strcompress(string(probes), /rem)
     
     if ~keyword_set(mag_suffix) then mag_suffix = ''
+    if ~keyword_set(dir_interval) then dir_interval = 60d 
     
     support_trange = trange + [-60,60]
     
@@ -144,50 +160,54 @@ pro mms_part_getspec, probes=probes, $
             outputs=outputs, suffix=suffix, datagap=datagap, subtract_bulk=subtract_bulk, $
             tplotnames=tplotnames, _extra=ex
         
+        if undefined(tplotnames) then continue ; nothing created by mms_part_products
+        
         if keyword_set(add_ram_dir) then begin
             ; average the velocity data before adding to the plot
-            avg_data, 'mms'+probes[probe_idx]+'_mec_v_gse', 60.0
+            avg_data, 'mms'+probes[probe_idx]+'_mec_v_gse', dir_interval
             get_data, 'mms'+probes[probe_idx]+'_mec_v_gse_avg', data=velocity_gse
             cart_to_sphere, velocity_gse.Y[*, 0], velocity_gse.Y[*, 1], velocity_gse.Y[*, 2], vel_r, vel_theta, vel_phi, /PH_0_360
-            store_data, name+'phi_vdata', data={x: velocity_gse.X, y: vel_phi}
-            store_data, name+'theta_vdata', data={x: velocity_gse.X, y: vel_theta}
-            options, name+'phi_vdata', psym=7, linestyle=6 ; X
-            options, name+'theta_vdata', psym=7, linestyle=6 ; X
-            store_data, name+'phi_with_v', data=name+'_phi '+name+'phi_vdata'
-            store_data, name+'theta_with_v', data=name+'_theta '+name+'theta_vdata'
+            store_data, name+'_phi_vdata', data={x: velocity_gse.X, y: vel_phi}
+            store_data, name+'_theta_vdata', data={x: velocity_gse.X, y: vel_theta}
+            options, name+'_phi_vdata', psym=7, linestyle=6 ; X
+            options, name+'_theta_vdata', psym=7, linestyle=6 ; X
+            store_data, name+'_phi_with_v', data=name+'_phi '+name+'_phi_vdata'
+            store_data, name+'_theta_with_v', data=name+'_theta '+name+'_theta_vdata'
+            ylim, name+'_phi_with_v', 0., 360., 0
+            ylim, name+'_theta_with_v', -90., 90., 0
         endif
         if keyword_set(add_bfield_dir) then begin
             ; average the B-field before adding to the plot
-            avg_data, 'mms'+probes[probe_idx]+'_fgm_b_dmpa_srvy_l2_bvec', 60.0
+            avg_data, 'mms'+probes[probe_idx]+'_fgm_b_dmpa_srvy_l2_bvec', dir_interval
             get_data, 'mms'+probes[probe_idx]+'_fgm_b_dmpa_srvy_l2_bvec_avg', data=b_field_data
             neg_b_field = -b_field_data.Y
             
             cart_to_sphere, b_field_data.Y[*, 0], b_field_data.Y[*, 1], b_field_data.Y[*, 2], r, theta, phi, /PH_0_360
             cart_to_sphere, neg_b_field[*, 0], neg_b_field[*, 1], neg_b_field[*, 2], negr, negtheta, negphi, /PH_0_360
             
-            store_data, name+'phi_bdata', data={x: b_field_data.X, y: phi}
-            store_data, name+'minusphi_bdata', data={x: b_field_data.X, y: negphi}
-            store_data, name+'theta_bdata', data={x: b_field_data.X, y: theta}
-            store_data, name+'minustheta_bdata', data={x: b_field_data.X, y: negtheta}
+            store_data, name+'_phi_bdata', data={x: b_field_data.X, y: phi}
+            store_data, name+'_minusphi_bdata', data={x: b_field_data.X, y: negphi}
+            store_data, name+'_theta_bdata', data={x: b_field_data.X, y: theta}
+            store_data, name+'_minustheta_bdata', data={x: b_field_data.X, y: negtheta}
             
             usersym, [-1, 1], [0, 0] ; minus sign
             
-            options, name+'phi_bdata',psym=1, linestyle=6 ; +
-            options, name+'minusphi_bdata',psym=8, linestyle=6 ; -
-            options, name+'theta_bdata',psym=1, linestyle=6 ; +
-            options, name+'minustheta_bdata',psym=8, linestyle=6 ; -
+            options, name+'_phi_bdata',psym=1, linestyle=6 ; +
+            options, name+'_minusphi_bdata',psym=8, linestyle=6 ; -
+            options, name+'_theta_bdata',psym=1, linestyle=6 ; +
+            options, name+'_minustheta_bdata',psym=8, linestyle=6 ; -
             
-            store_data, name+'phi_with_b', data=name+'_phi '+name+'phi_bdata '+name+'minusphi_bdata'
-            store_data, name+'theta_with_b', data=name+'_theta '+name+'theta_bdata '+name+'minustheta_bdata'
-            ylim, name+'phi_with_b', 0., 360., 0
-            ylim, name+'theta_with_b', -90., 90., 0
+            store_data, name+'_phi_with_b', data=name+'_phi '+name+'_phi_bdata '+name+'_minusphi_bdata'
+            store_data, name+'_theta_with_b', data=name+'_theta '+name+'_theta_bdata '+name+'_minustheta_bdata'
+            ylim, name+'_phi_with_b', 0., 360., 0
+            ylim, name+'_theta_with_b', -90., 90., 0
         endif
         if keyword_set(add_bfield_dir) and keyword_set(add_ram_dir) then begin
-            store_data, name+'phi_with_bv', data=name+'_phi '+name+'phi_bdata '+name+'minusphi_bdata '+name+'phi_vdata'
-            store_data, name+'theta_with_bv', data=name+'_theta '+name+'theta_bdata '+name+'minustheta_bdata '+name+'theta_vdata'
-            ylim, name+'phi_with_bv', 0., 360., 0
-            ylim, name+'theta_with_bv', -90., 90., 0
-        endif
+            store_data, name+'_phi_with_bv', data=name+'_phi '+name+'_phi_bdata '+name+'_minusphi_bdata '+name+'_phi_vdata'
+            store_data, name+'_theta_with_bv', data=name+'_theta '+name+'_theta_bdata '+name+'_minustheta_bdata '+name+'_theta_vdata'
+            ylim, name+'_phi_with_bv', 0., 360., 0
+            ylim, name+'_theta_with_bv', -90., 90., 0
+        endif 
     endfor
     
 end

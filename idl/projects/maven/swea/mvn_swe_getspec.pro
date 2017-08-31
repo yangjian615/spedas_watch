@@ -21,19 +21,22 @@
 ;
 ;       SUM:           If set, then sum all spectra selected.
 ;
-;       UNITS:         Convert data to these units.  (See mvn_swe_convert_units)
+;       UNITS:         Convert data to these units.  Default = 'EFLUX'.
+;
+;       SHIFTPOT:      Correct for spacecraft potential (must call mvn_scpot first).
 ;
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2016-11-03 14:55:08 -0700 (Thu, 03 Nov 2016) $
-; $LastChangedRevision: 22289 $
+; $LastChangedDate: 2017-08-30 14:30:37 -0700 (Wed, 30 Aug 2017) $
+; $LastChangedRevision: 23860 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
 ;FILE: mvn_swe_getspec.pro
 ;-
-function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yrange, burst=burst
+function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yrange, burst=burst, $
+                          shiftpot=shiftpot
 
   @mvn_swe_com  
 
@@ -51,6 +54,20 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
       print, "No SPEC archive data."
       return, 0
     endif
+  endif else begin
+    if (size(mvn_swe_engy, /type) ne 8) then begin
+      print, "No SPEC survey data."
+      return, 0
+    endif
+  endelse
+
+  if (size(units,/type) ne 7) then units = 'EFLUX'
+  if (keyword_set(shiftpot) and (max(abs(mvn_swe_engy.sc_pot)) eq 0.)) then begin
+    if (n_elements(swe_sc_pot) lt 2) then mvn_scpot
+    mvn_swe_engy.sc_pot = swe_sc_pot.potential
+  endif
+
+  if keyword_set(archive) then begin
     if (npts gt 1) then begin
       iref = where((mvn_swe_engy_arc.time ge tmin) and $
                    (mvn_swe_engy_arc.time le tmax), count)
@@ -64,10 +81,6 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
     endif
     spec = mvn_swe_engy_arc[iref]
   endif else begin
-    if (size(mvn_swe_engy, /type) ne 8) then begin
-      print, "No SPEC survey data."
-      return, 0
-    endif
     if (npts gt 1) then begin
       iref = where((mvn_swe_engy.time ge tmin) and $
                    (mvn_swe_engy.time le tmax), count)
@@ -86,9 +99,15 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
 
   if keyword_set(sum) then spec = mvn_swe_specsum(spec)
 
-; Convert units
+; Correct for spacecraft potential and convert units
 
-  if (size(units,/type) eq 7) then mvn_swe_convert_units, spec, units
+  if keyword_set(shiftpot) then begin
+    if (stregex(units,'flux',/boo,/fold)) then begin
+      mvn_swe_convert_units, spec, 'df'
+      for n=0,(npts-1) do spec[n].energy -= spec[n].sc_pot
+      mvn_swe_convert_units, spec, units
+    endif else for n=0,(npts-1) do spec[n].energy -= spec[n].sc_pot
+  endif else mvn_swe_convert_units, spec, units
 
 ; Convenient plot limits (returned via keyword)
 
