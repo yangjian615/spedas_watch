@@ -30,8 +30,8 @@
 ;       SHIFTPOT:      Correct for spacecraft potential.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-30 13:55:27 -0700 (Wed, 30 Aug 2017) $
-; $LastChangedRevision: 23859 $
+; $LastChangedDate: 2017-08-31 11:31:33 -0700 (Thu, 31 Aug 2017) $
+; $LastChangedRevision: 23867 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getpad.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -426,12 +426,11 @@ function mvn_swe_getpad, time, archive=archive, all=all, sum=sum, units=units, b
 ; Convert units
 
   if keyword_set(shiftpot) then begin
-    if (stregex(units,'flux',/boo,/fold)) then begin
-      mvn_swe_convert_units, pad, 'df'
-      for n=0,(npts-1) do pad[n].energy -= pad[n].sc_pot
-      mvn_swe_convert_units, pad, units
-    endif else for n=0,(npts-1) do pad[n].energy -= pad[n].sc_pot
-  endif else mvn_swe_convert_units, pad, units
+    if (stregex(units,'flux',/boo,/fold)) then mvn_swe_convert_units, pad, 'df'
+    for n=0L,(n_elements(pad)-1L) do pad[n].energy -= pad[n].sc_pot
+  endif
+
+  mvn_swe_convert_units, pad, units
 
   return, pad
 

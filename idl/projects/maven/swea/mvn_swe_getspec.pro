@@ -28,8 +28,8 @@
 ;       YRANGE:        Returns the data range, excluding zero counts.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-30 14:30:37 -0700 (Wed, 30 Aug 2017) $
-; $LastChangedRevision: 23860 $
+; $LastChangedDate: 2017-08-31 11:31:33 -0700 (Thu, 31 Aug 2017) $
+; $LastChangedRevision: 23867 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_getspec.pro $
 ;
 ;CREATED BY:    David L. Mitchell  03-29-14
@@ -102,12 +102,11 @@ function mvn_swe_getspec, time, archive=archive, sum=sum, units=units, yrange=yr
 ; Correct for spacecraft potential and convert units
 
   if keyword_set(shiftpot) then begin
-    if (stregex(units,'flux',/boo,/fold)) then begin
-      mvn_swe_convert_units, spec, 'df'
-      for n=0,(npts-1) do spec[n].energy -= spec[n].sc_pot
-      mvn_swe_convert_units, spec, units
-    endif else for n=0,(npts-1) do spec[n].energy -= spec[n].sc_pot
-  endif else mvn_swe_convert_units, spec, units
+    if (stregex(units,'flux',/boo,/fold)) then mvn_swe_convert_units, spec, 'df'
+    for n=0L,(n_elements(spec)-1L) do spec[n].energy -= spec[n].sc_pot
+  endif
+
+  mvn_swe_convert_units, spec, units
 
 ; Convenient plot limits (returned via keyword)
 
