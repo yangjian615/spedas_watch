@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-08-30 11:38:00 -0700 (Wed, 30 Aug 2017) $
-; $LastChangedRevision: 23854 $
+; $LastChangedDate: 2017-09-01 13:52:32 -0700 (Fri, 01 Sep 2017) $
+; $LastChangedRevision: 23879 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_getspec_ut__define.pro $
 ;-
 
@@ -142,31 +142,34 @@ end
 
 function mms_part_getspec_ut::test_all_outputs_hpca_srvy
   species = ['hplus', 'oplus', 'heplus', 'heplusplus']
-  for i = 0, n_elements(species)-1 do mms_part_getspec, probe=1, trange=['2015-12-15/15:00', '2015-12-15/16:00'], instrument='hpca', species=species[i],  /silent, data_rate='srvy', outputs='energy phi theta pa gyro moments'
+  mms_part_getspec, probe=1, trange=['2015-12-15/15:00', '2015-12-15/16:00'], instrument='hpca', species='hplus',  /silent, data_rate='srvy', outputs='energy phi theta pa gyro moments'
+  mms_part_getspec, probe=1, trange=['2015-12-15/15:00', '2015-12-15/16:00'], instrument='hpca', species='oplus',  /silent, data_rate='srvy', outputs='energy phi theta pa gyro moments'
+  mms_part_getspec, probe=1, trange=['2015-12-15/15:00', '2015-12-15/16:00'], instrument='hpca', species='heplus',  /silent, data_rate='srvy', outputs='energy phi theta pa gyro moments'
+  mms_part_getspec, probe=1, trange=['2015-12-15/15:00', '2015-12-15/16:00'], instrument='hpca', species='heplusplus',  /silent, data_rate='srvy', outputs='energy phi theta pa gyro moments'
   assert, spd_data_exists('mms1_hpca_heplusplus_phase_space_density_energy mms1_hpca_heplusplus_phase_space_density_theta mms1_hpca_heplusplus_phase_space_density_phi mms1_hpca_heplusplus_phase_space_density_pa mms1_hpca_heplusplus_phase_space_density_gyro', '2015-12-15/15:00', '2015-12-15/16:00'), 'Problem testing all outputs for HPCA'
   return, 1
 end
 
 function mms_part_getspec_ut::test_all_outputs_fpi_fast
-  species = ['e','i']
-  for i = 0, n_elements(species)-1 do mms_part_getspec, probe=1, trange=['2015-12-15/10:00', '2015-12-15/11:00'], instrument='fpi', species=species[i],  /silent, data_rate='fast', outputs='energy phi theta pa gyro moments'
+  mms_part_getspec, probe=1, trange=['2015-12-15/10:00', '2015-12-15/11:00'], instrument='fpi', species='i', /silent, data_rate='fast', outputs='energy phi theta pa gyro moments'
+  mms_part_getspec, probe=1, trange=['2015-12-15/10:00', '2015-12-15/11:00'], instrument='fpi', species='e', /silent, data_rate='fast', outputs='energy phi theta pa gyro moments'
   assert, spd_data_exists('mms1_des_dist_fast_energy mms1_des_dist_fast_pa mms1_des_dist_fast_phi mms1_des_dist_fast_theta mms1_des_dist_fast_gyro', '2015-12-15/10:00', '2015-12-15/11:00'), 'Problem with FPI fast with all outputs!'
   return, 1
 end
 
 function mms_part_getspec_ut::test_add_dir_hpca
   mms_part_getspec, trange=['2015-12-15', '2015-12-15/00:20'], /add_bfield, /add_ram, probe=1, instrument='hpca'
-  assert, spd_data_exists('mms1_hpca_hplus_phase_space_density_phi_with_bv', '2015-12-15', '2015-12-15/00:20'), 'Problem with HPCA add direction'
-  assert, spd_data_exists('mms1_hpca_hplus_phase_space_density_phi_with_b', '2015-12-15', '2015-12-15/00:20'), 'Problem with HPCA add direction'
-  assert, spd_data_exists('mms1_hpca_hplus_phase_space_density_phi_with_v', '2015-12-15', '2015-12-15/00:20'), 'Problem with HPCA add direction'
+  assert, spd_data_exists('mms1_hpca_hplus_phase_space_density_theta mms1_hpca_hplus_phase_space_density_theta_bdata mms1_hpca_hplus_phase_space_density_minustheta_bdata mms1_hpca_hplus_phase_space_density_theta_vdata', '2015-12-15', '2015-12-15/00:20'), 'Problem with HPCA add direction'
+  assert, spd_data_exists('mms1_hpca_hplus_phase_space_density_phi mms1_hpca_hplus_phase_space_density_phi_bdata mms1_hpca_hplus_phase_space_density_minusphi_bdata', '2015-12-15', '2015-12-15/00:20'), 'Problem with HPCA add direction'
+  assert, spd_data_exists('mms1_hpca_hplus_phase_space_density_phi mms1_hpca_hplus_phase_space_density_phi_vdata', '2015-12-15', '2015-12-15/00:20'), 'Problem with HPCA add direction'
   return, 1
 end
 
 function mms_part_getspec_ut::test_add_dir_fpi
   mms_part_getspec, trange=['2015-12-15', '2015-12-15/00:20'], /add_bfield, /add_ram, probe=1, instrument='fpi'
-  assert, spd_data_exists('mms1_des_dist_brst_phi_with_bv', '2015-12-15', '2015-12-15/00:20'), 'Problem with FPI add direction'
-  assert, spd_data_exists('mms1_des_dist_brst_phi_with_v', '2015-12-15', '2015-12-15/00:20'), 'Problem with FPI add direction'
-  assert, spd_data_exists('mms1_des_dist_brst_phi_with_b', '2015-12-15', '2015-12-15/00:20'), 'Problem with FPI add direction'
+  assert, spd_data_exists('mms1_des_dist_fast_phi mms1_des_dist_fast_phi_bdata mms1_des_dist_fast_minusphi_bdata mms1_des_dist_fast_phi_vdata', '2015-12-15', '2015-12-15/00:20'), 'Problem with FPI add direction'
+  assert, spd_data_exists('mms1_des_dist_fast_phi mms1_des_dist_fast_phi_vdata', '2015-12-15', '2015-12-15/00:20'), 'Problem with FPI add direction'
+  assert, spd_data_exists('mms1_des_dist_fast_phi mms1_des_dist_fast_phi_bdata mms1_des_dist_fast_minusphi_bdata', '2015-12-15', '2015-12-15/00:20'), 'Problem with FPI add direction'
   return, 1
 end
 

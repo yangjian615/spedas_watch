@@ -27,8 +27,8 @@
 ;         dir_interval: number of seconds between B-field and S/C ram direction symbols on angular spectrogram plots
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-08-30 09:53:49 -0700 (Wed, 30 Aug 2017) $
-;$LastChangedRevision: 23853 $
+;$LastChangedDate: 2017-09-01 12:27:34 -0700 (Fri, 01 Sep 2017) $
+;$LastChangedRevision: 23878 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -113,8 +113,8 @@ pro mms_part_getspec, probes=probes, $
     support_trange = trange + [-60,60]
     
     for probe_idx = 0, n_elements(probes)-1 do begin
-        if (tnames('mms'+strcompress(string(probes[probe_idx]), /rem)+'_fgm_b_dmpa_srvy_l2_bvec'+mag_suffix) eq '') or keyword_set(forceload) then append_array, fgm_to_load, probes[probe_idx]
-        if (tnames('mms'+strcompress(string(probes[probe_idx]), /rem)+'_defeph_pos') eq '') or keyword_set(forceload) then append_array, state_to_load, probes[probe_idx]
+        if ~spd_data_exists('mms'+strcompress(string(probes[probe_idx]), /rem)+'_fgm_b_dmpa_srvy_l2_bvec'+mag_suffix, trange[0], trange[1]) or keyword_set(forceload) then append_array, fgm_to_load, probes[probe_idx]
+        if ~spd_data_exists('mms'+strcompress(string(probes[probe_idx]), /rem)+'_defeph_pos', trange[0], trange[1]) or keyword_set(forceload) then append_array, state_to_load, probes[probe_idx]
     endfor
 
     ; load state data (needed for coordinate transforms and field aligned coordinates)

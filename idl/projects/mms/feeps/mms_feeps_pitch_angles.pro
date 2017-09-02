@@ -12,8 +12,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-07-25 16:17:13 -0700 (Tue, 25 Jul 2017) $
-;$LastChangedRevision: 23701 $
+;$LastChangedDate: 2017-09-01 07:50:30 -0700 (Fri, 01 Sep 2017) $
+;$LastChangedRevision: 23874 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pitch_angles.pro $
 ;-
 
@@ -28,7 +28,7 @@ pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=d
   get_data, 'mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pitch_angle'+suffix, data=pad_data, dlimits=pad_dl
 
   if ~is_struct(pad_data) then begin
-    dprint, dlevel = 0, 'Error, could not find current pitch angle variable for time array'
+    dprint, dlevel = 0, 'Error, could not find current pitch angles for calculating PAD; if you specified a suffix when loading FEEPS data, be sure to specify the same suffix to mms_feeps_pad'
     return
   endif
   
