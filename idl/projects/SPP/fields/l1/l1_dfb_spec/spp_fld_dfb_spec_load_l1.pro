@@ -119,4 +119,54 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
 
   endif
 
+  ; Clean up some formatting
+
+  ac_dc_string = strupcase(strmid(prefix,12,2))
+  spec_ind = strmid(prefix, strlen(prefix)-2, 1)
+
+  dfb_spec_names = tnames(prefix + '*')
+
+  if dfb_spec_names[0] NE '' then begin
+
+    for i = 0, n_elements(dfb_spec_names) - 1 do begin
+
+      dfb_spec_name_i = strmid(dfb_spec_names[i], strlen(prefix))
+
+      if dfb_spec_name_i EQ 'spec_converted' then begin
+
+        options, prefix + dfb_spec_name_i, 'ytitle', 'SPP DFB!C' + ac_dc_string + ' SPEC' + $
+          string(spec_ind)
+
+        options, prefix + dfb_spec_name_i, 'ysubtitle', 'Freq [Hz]'
+
+      endif else begin
+
+        if strmid(prefix + dfb_spec_name_i,6,/rev) EQ '_string' then begin
+
+          options, prefix + dfb_spec_name_i, 'ysubtitle', ''
+
+          dfb_spec_name_ytitle = strmid(dfb_spec_name_i, 0, strlen(dfb_spec_name_i) - 7)
+
+        endif else begin
+
+          dfb_spec_name_ytitle = dfb_spec_name_i
+
+        endelse
+
+        options, prefix + dfb_spec_name_i, 'ytitle', 'SPP DFB!C' + ac_dc_string + ' SPEC' + $
+          string(spec_ind) + '!C' + strupcase(dfb_spec_name_ytitle)
+
+      endelse
+
+    endfor
+
+  endif
+
+  options, prefix + '*string', 'tplot_routine', 'strplot'
+  options, prefix + '*string', 'yrange', [-0.1,1.0]
+  options, prefix + '*string', 'ystyle', 1
+  options, prefix + '*string', 'yticks', 1
+  options, prefix + '*string', 'ytickformat', '(A1)'
+  options, prefix + '*string', 'noclip', 0
+
 end

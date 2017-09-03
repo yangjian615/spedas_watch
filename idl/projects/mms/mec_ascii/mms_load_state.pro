@@ -84,8 +84,8 @@
 ;        
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-12 14:10:42 -0700 (Mon, 12 Jun 2017) $
-;$LastChangedRevision: 23453 $
+;$LastChangedDate: 2017-08-29 15:25:58 -0700 (Tue, 29 Aug 2017) $
+;$LastChangedRevision: 23843 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec_ascii/mms_load_state.pro $
 ;-
 
@@ -200,7 +200,7 @@ pro mms_load_state, trange = trange_in, probes = probes, datatypes = datatypes, 
        for j = 0, n_elements(level)-1 do begin
             if mec_flag EQ 1 && level[j] NE 'pred' then begin
                  mms_load_mec, probe = probes[i], trange = trange_in, cdf_filenames=cdf_files, $
-                  varformat=mec_varformat, suffix=suffix
+                  varformat=mec_varformat, suffix=suffix, /time_clip
                  if ~keyword_set(attitude_only) then begin
                     copy_data, 'mms'+probes[i]+'_mec_r_eci'+suffix, 'mms'+probes[i]+'_defeph_pos'+suffix
                     copy_data, 'mms'+probes[i]+'_mec_v_eci'+suffix, 'mms'+probes[i]+'_defeph_vel'+suffix

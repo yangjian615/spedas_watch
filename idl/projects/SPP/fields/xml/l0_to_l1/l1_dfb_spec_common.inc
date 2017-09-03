@@ -1,6 +1,8 @@
   <cdf_var
       name   = "dfb_spec_src"
-      type   = "integer">
+      type   = "integer"      
+      string = "true"
+      string_len = "8">
   <cdf_att
         FIELDNAM = "src_sel"
         FORMAT = "I08"
@@ -14,14 +16,16 @@
         SCALEMIN = "0"
         SCALEMAX = "15"
         UNITS = "None"
-        CATDESC = "src_sel"
+        CATDESC = "Source select"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
       name   = "dfb_spec_enable"
-      type   = "integer">
+      type   = "integer"
+    	string = "true"
+      string_len = "8">
   <cdf_att
         FIELDNAM = "enable"
         FORMAT = "I08"
@@ -35,14 +39,16 @@
         SCALEMIN = "0"
         SCALEMAX = "1"
         UNITS = "None"
-        CATDESC = "enable"
+        CATDESC = "DFB spectra enable"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
       name   = "dfb_spec_bin"
-      type   = "integer">
+      type   = "integer"
+      string = "true"
+      string_len = "8">
   <cdf_att
         FIELDNAM = "bin"
         FORMAT = "I08"
@@ -56,14 +62,16 @@
         SCALEMIN = "0"
         SCALEMAX = "1"
         UNITS = "None"
-        CATDESC = "bin"
+        CATDESC = "DFB spectra binning mode"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
   
   <cdf_var
       name   = "dfb_spec_scm_rotate"
-      type   = "integer">
+      type   = "integer"
+      string = "true"
+      string_len = "20">
   <cdf_att
         FIELDNAM = "scm_rotate"
         FORMAT = "I08"
@@ -77,14 +85,16 @@
         SCALEMIN = "0"
         SCALEMAX = "1"
         UNITS = "None"
-        CATDESC = "scm_rotate"
+        CATDESC = "DFB spectra SCM rotation"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
       name   = "dfb_spec_gain"
-      type   = "integer">
+      type   = "integer"
+      string = "true"
+      string_len = "12">
   <cdf_att
         FIELDNAM = "gain"
         FORMAT = "I08"
@@ -98,7 +108,7 @@
         SCALEMIN = "0"
         SCALEMAX = "1"
         UNITS = "None"
-        CATDESC = "gain"
+        CATDESC = "DFB spectra gain setting"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -119,7 +129,7 @@
         SCALEMIN = "0"
         SCALEMAX = "10"
         UNITS = "None"
-        CATDESC = "navg"
+        CATDESC = "Number of averaged 1024-point FFTs per DFB spectra = 2^navg"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -140,7 +150,7 @@
         SCALEMIN = "0"
         SCALEMAX = "15"
         UNITS = "None"
-        CATDESC = "concat"
+        CATDESC = "Number of spectra concatenated in a packet"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -161,7 +171,7 @@
         SCALEMIN = "0"
         SCALEMAX = "1536"
         UNITS = "None"
-        CATDESC = "spec_nelem"
+        CATDESC = "Number of elements in the DFB spectral packet"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>

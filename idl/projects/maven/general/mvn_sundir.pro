@@ -33,8 +33,8 @@
 ;                 default frame, this would be 'Sun_MAVEN_SPACECRAFT'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-20 09:42:50 -0700 (Mon, 20 Mar 2017) $
-; $LastChangedRevision: 22992 $
+; $LastChangedDate: 2017-08-30 12:57:52 -0700 (Wed, 30 Aug 2017) $
+; $LastChangedRevision: 23855 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -96,6 +96,7 @@ pro mvn_sundir, trange, dt=dt, pans=pans, frame=frame, polar=polar
     options,pname,'ytitle','Sun (' + fname + ')'
     options,pname,'labels',labels
     options,pname,'labflag',1
+    options,pname,spice_frame=to_frame,spice_master_frame='MAVEN_SPACECRAFT'
     pans = [pans, pname]
 
     if (dopol) then begin
