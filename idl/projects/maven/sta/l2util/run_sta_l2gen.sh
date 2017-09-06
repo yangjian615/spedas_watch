@@ -11,16 +11,16 @@ setenv datestr `date +%Y%m%d%H%M%S`
 set suffix="$datestr"
 
 #check for lock file here
-if (! -e /tmp/STAL2lock.txt) then
+if (! -e /mydisks/home/maven/muser/STAL2lock.txt) then
     cd /mydisks/home/maven
     rm -f run_sta_l2gen.bm
-    rm -f /tmp/run_sta_l2gen.txt
+    rm -f /mydisks/home/maven/muser/run_sta_l2gen.txt
 
     set line="run_sta_l2gen"
     echo $line > run_sta_l2gen.bm
     echo exit >> run_sta_l2gen.bm
 
-    idl run_sta_l2gen.bm > /tmp/run_sta_l2gen.txt &
+    idl run_sta_l2gen.bm > /mydisks/home/maven/muser/run_sta_l2gen.txt &
 
 #else close quietly
 endif 

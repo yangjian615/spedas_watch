@@ -9,8 +9,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-01 13:52:32 -0700 (Fri, 01 Sep 2017) $
-; $LastChangedRevision: 23879 $
+; $LastChangedDate: 2017-09-05 10:07:46 -0700 (Tue, 05 Sep 2017) $
+; $LastChangedRevision: 23884 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_part_getspec_ut__define.pro $
 ;-
 
@@ -46,6 +46,13 @@ end
 function mms_part_getspec_ut::test_tplotnames
   mms_part_getspec, probe=4, trange=['2015-12-15/10:50', '2015-12-15/11:00'], tplotnames=tn
   assert, n_elements(tn) eq 5 && array_equal(tn, 'mms4_des_dist_fast_'+['energy', 'theta', 'phi', 'pa', 'gyro']), 'Problem with tplotnames keyword'
+  return, 1
+end
+
+function mms_part_getspec_ut::test_tplotnames_multi_sc
+  mms_part_getspec, probes=[1, 2, 3, 4], trange=['2015-12-15/10:50', '2015-12-15/11:00'], tplotnames=tn
+  vars = ['mms1_des_dist_fast_'+['energy', 'theta', 'phi', 'pa', 'gyro'], 'mms2_des_dist_fast_'+['energy', 'theta', 'phi', 'pa', 'gyro'], 'mms3_des_dist_fast_'+['energy', 'theta', 'phi', 'pa', 'gyro'], 'mms4_des_dist_fast_'+['energy', 'theta', 'phi', 'pa', 'gyro']]
+  assert, n_elements(tn) eq 20 && array_equal(tn, vars), 'Problem with tplotnames keyword'
   return, 1
 end
 

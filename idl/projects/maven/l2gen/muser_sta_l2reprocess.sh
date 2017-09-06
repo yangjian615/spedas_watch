@@ -22,16 +22,16 @@ setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 setenv CDF_TMP /mydisks/home/maven
 
 #check for lock file(s) here
-if (! -e /tmp/STAL2lock.txt && ! -e /tmp/STAL2Rlock.txt) then
+if (! -e /mydisks/home/maven/muser/STAL2lock.txt && ! -e /mydisks/home/maven/muser/STAL2Rlock.txt) then
     cd /mydisks/home/maven
     rm -f run_sta_l2reprocess.bm
-    rm -f /tmp/run_sta_l2reprocess.txt
+    rm -f /mydisks/home/maven/muser/run_sta_l2reprocess.txt
 
     set line="rerun_sta_l2gen"
     echo $line > run_sta_l2reprocess.bm
     echo exit >> run_sta_l2reprocess.bm
 
-    idl run_sta_l2reprocess.bm > /tmp/run_sta_l2reprocess.txt &
+    idl run_sta_l2reprocess.bm > /mydisks/home/maven/muser/run_sta_l2reprocess.txt &
 #else close quietly
 endif 
 

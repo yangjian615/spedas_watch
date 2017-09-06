@@ -13,9 +13,9 @@
 ; out_dir = the directory in which you write the data, default is './'
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen, 2016-10-18, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-10-18 10:44:39 -0700 (Tue, 18 Oct 2016) $
-; $LastChangedRevision: 22122 $
+; $LastChangedBy: jimmpc1 $
+; $LastChangedDate: 2017-09-05 11:35:05 -0700 (Tue, 05 Sep 2017) $
+; $LastChangedRevision: 23885 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2l2.pro $
 ;-
 Pro mvn_call_sta_l2l2, out_dir = out_dir, $
@@ -36,14 +36,14 @@ Pro mvn_call_sta_l2l2, out_dir = out_dir, $
      If(ecount Lt 1) Then Begin
         ecount = ecount+1
         ec = strcompress(string(ecount), /remove_all)
-        openw, eunit, '/tmp/sta_l2l2_err_msg'+ec+'.txt', /get_lun
+        openw, eunit, '/mydisks/home/maven/muser/sta_l2l2_err_msg'+ec+'.txt', /get_lun
         For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
         If(keyword_set(timei)) Then Begin
            printf, eunit, timei
         Endif
         free_lun, eunit
 ;mail it to jimm@ssl.berkeley.edu
-        cmd_rq = 'mailx -s "Problem with STA L2L2 process" jimm@ssl.berkeley.edu < /tmp/sta_l2l2_err_msg'+ec+'.txt'
+        cmd_rq = 'mailx -s "Problem with STA L2L2 process" jimm@ssl.berkeley.edu < /mydisks/home/maven/muser/sta_l2l2_err_msg'+ec+'.txt'
         spawn, cmd_rq
      Endif
 
@@ -102,11 +102,11 @@ Pro mvn_call_sta_l2l2, out_dir = out_dir, $
   timep_do = time_string(days, precision = -3)
   nproc = n_elements(days)
 ;Send a message that processing is starting
-  openw, tunit, '/tmp/sta_l2l2_msg0.txt', /get_lun
+  openw, tunit, '/mydisks/home/maven/muser/sta_l2l2_msg0.txt', /get_lun
   printf, tunit, 'Processing: sta'
   For i = 0, nproc-1 Do printf, tunit, timep_do[i]
   free_lun, tunit
-  cmd0 = 'mailx -s "STA L2L2 process start" jimm@ssl.berkeley.edu < /tmp/sta_l2l2_msg0.txt'
+  cmd0 = 'mailx -s "STA L2L2 process start" jimm@ssl.berkeley.edu < /mydisks/home/maven/muser/sta_l2l2_msg0.txt'
   spawn, cmd0
   message, /info, 'Processing: sta'
   For i = 0, nproc-1 Do print, timep_do[i]
@@ -138,10 +138,10 @@ Pro mvn_call_sta_l2l2, out_dir = out_dir, $
   load_position = 'Done'
 
 ;Send a message that processing is done
-  openw, tunit, '/tmp/sta_l2l2_msg1.txt', /get_lun
+  openw, tunit, '/mydisks/home/maven/muser/sta_l2l2_msg1.txt', /get_lun
   printf, tunit, 'Finished Processing: sta'
   free_lun, tunit
-  cmd1 = 'mailx -s "STA L2L2 process end" jimm@ssl.berkeley.edu < /tmp/sta_l2l2_msg1.txt'
+  cmd1 = 'mailx -s "STA L2L2 process end" jimm@ssl.berkeley.edu < /mydisks/home/maven/muser/sta_l2l2_msg1.txt'
   spawn, cmd1
 ;reset file time
   If(btime_set_from_file) Then Begin

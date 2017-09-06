@@ -29,7 +29,8 @@ rm -f mvn_spice_kernels_update.bm
 set line="mvn_spice_kernels_update"
 echo $line > mvn_spice_kernels_update.bm
 echo exit >> mvn_spice_kernels_update.bm
-idl mvn_spice_kernels_update.bm > /tmp/spice_update.txt &
+rm -f /mydisks/home/maven/muser/spice_update.txt
+idl mvn_spice_kernels_update.bm > /mydisks/home/maven/muser/spice_update.txt &
 
 endif 
 

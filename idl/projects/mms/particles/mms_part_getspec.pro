@@ -27,8 +27,8 @@
 ;         dir_interval: number of seconds between B-field and S/C ram direction symbols on angular spectrogram plots
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-09-01 12:27:34 -0700 (Fri, 01 Sep 2017) $
-;$LastChangedRevision: 23878 $
+;$LastChangedDate: 2017-09-05 10:06:52 -0700 (Tue, 05 Sep 2017) $
+;$LastChangedRevision: 23883 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -158,9 +158,10 @@ pro mms_part_getspec, probes=probes, $
             mag_name=bname, pos_name=pos_name, vel_name=vel_name, energy=energy, $
             pitch=pitch, gyro=gyro_in, phi=phi_in, theta=theta, regrid=regrid, $
             outputs=outputs, suffix=suffix, datagap=datagap, subtract_bulk=subtract_bulk, $
-            tplotnames=tplotnames, _extra=ex
+            tplotnames=tplotnames_thisprobe, _extra=ex
         
-        if undefined(tplotnames) then continue ; nothing created by mms_part_products
+        if undefined(tplotnames_thisprobe) then continue ; nothing created by mms_part_products
+        append_array, tplotnames, tplotnames_thisprobe
         
         if keyword_set(add_ram_dir) then begin
             ; average the velocity data before adding to the plot

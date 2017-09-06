@@ -22,14 +22,14 @@
 
 Pro run_swe_l2gen
 
-  test_file = file_search('/tmp/SWEL2lock.txt')
+  test_file = file_search('/mydisks/home/maven/muser/SWEL2lock.txt')
   If(is_string(test_file[0])) Then Begin
-     message, /info, 'Lock file /tmp/SWEL2lock.txt Exists, Returning'
+     message, /info, 'Lock file /mydisks/home/maven/muser/SWEL2lock.txt Exists, Returning'
   Endif Else Begin
-     test_file = '/tmp/SWEL2lock.txt'
+     test_file = '/mydisks/home/maven/muser/SWEL2lock.txt'
      spawn, 'touch '+test_file[0]
      mvn_call_swe_l2gen
-     message, /info, 'Removing Lock file /tmp/SWEL2lock.txt'
+     message, /info, 'Removing Lock file /mydisks/home/maven/muser/SWEL2lock.txt'
      file_delete, test_file[0]
   Endelse
 

@@ -192,7 +192,7 @@
 ;
 ;Example: ttrace2equator,'tha_state_pos',newname='tha_out_foot'
 ;
-;See: ttrace_crib for more examples
+;See: crib_ttrace for more examples
 ;
 ;Notes:
 ;  1. Relies on the IDL/Geopack Module provided by Haje Korth JHU/APL
@@ -209,9 +209,9 @@
 ;  4. All calculations are done internally in double precision
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-07-18 14:10:46 -0700 (Sat, 18 Jul 2015) $
-; $LastChangedRevision: 18174 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-09-05 12:34:37 -0700 (Tue, 05 Sep 2017) $
+; $LastChangedRevision: 23889 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/trace/ttrace2equator.pro $
 ;-
 

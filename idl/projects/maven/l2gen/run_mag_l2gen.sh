@@ -16,11 +16,11 @@ endif
 setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 
 #check for lock file here
-if (! -e /tmp/MAGL2lock.txt) then
+if (! -e /mydisks/home/maven/muser/MAGL2lock.txt) then
 
-    rm -f /tmp/run_mag_l2gen.txt
+    rm -f /mydisks/home/maven/muser/run_mag_l2gen.txt
 #mvn_mag_batch is runnable from batch mode
-    idl /home/muser/export_socware/idl_socware/projects/maven/mag/mvn_mag_batch.pro > /tmp/run_mag_l2gen.txt &
+    idl /home/muser/export_socware/idl_socware/projects/maven/mag/mvn_mag_batch.pro > /mydisks/home/maven/muser/run_mag_l2gen.txt &
 
 #else close quietly
 endif 

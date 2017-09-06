@@ -17,16 +17,16 @@ setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 setenv CDF_TMP /mydisks/home/maven
 
 #check for lock file here
-if (! -e /tmp/PFPL2PLOTlock.txt) then
+if (! -e /mydisks/home/maven/muser/PFPL2PLOTlock.txt) then
     cd /mydisks/home/maven
     rm -f run_pfpl2plot.bm
-    rm -f /tmp/run_pfpl2plot.txt
+    rm -f /mydisks/home/maven/muser/run_pfpl2plot.txt
 
     set line="run_pfpl2plot"
     echo $line > run_pfpl2plot.bm
     echo exit >> run_pfpl2plot.bm
 
-    idl run_pfpl2plot.bm > /tmp/run_pfpl2plot.txt &
+    idl run_pfpl2plot.bm > /mydisks/home/maven/muser/run_pfpl2plot.txt &
 #else close quietly
 endif 
 
