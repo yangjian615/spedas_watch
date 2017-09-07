@@ -23,7 +23,7 @@
 function average_hist,a,x,stdev=std,log=log, $
   range=range,binsize=binsize,nbins=nbins,xbins=xbins,$
   binval=bins, minimum=minimum,shift=shft,nan=rnan,ret_total=ret_total,$
-  histogram=h,reverse=ri
+  histogram=h,reverse=ri,weight=weight
   
 if keyword_set(x) then begin
   if n_elements(x) ne n_elements(a) then message,'Inputs must have same number of elements'
@@ -52,7 +52,8 @@ for j=0l,count-1 do begin
   i = whn0[j]
   ind = ri[ ri[i]: ri[i+1]-1 ]
 if n_elements(ind) ne h[i] then dprint ,'Histogram error'
-  avg[i] = average(a[ind],stdev=s,nan=rnan,ret_total=ret_total)
+if keyword_set(weight) then wght=weight[ind] else wght=1.
+  avg[i] = average(a[ind],stdev=s,nan=rnan,ret_total=ret_total,weight=wght)
 if arg_present(minimum) && size(/type,a) lt 7 then  minimum[i] = min(a[ind])
   std[i] = s
 endfor

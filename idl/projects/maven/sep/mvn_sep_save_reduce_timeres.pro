@@ -3,25 +3,35 @@
 ;for reducing SEP L1 time resolution.
 ;main keyword: RESSTR: resolution string (e.g. 64sec, 5min, 1hr). default is 5min.
 
-function mvn_sep_att_correction,data,res,fltatt=fltatt ;throws out att actuation times that result in bad/mixed counts
-  datt=shift(data.att,-1) ne shift(data.att,1)
-  w=where(datt,nw)
-  if nw ne 0 then begin
-    if keyword_set(fltatt) then begin
-      datafltatt=data
-      str_element,datafltatt,'att',0.,/add ;turning att from byte to float for averaging mixed state att's
-      datafltatt.att=data.att
-      data=datafltatt
-      data[where(data.att eq 0.,/null)].att=!values.f_nan ;turning att state 0b to fNaN
-      data[w]=fill_nan(data[0])
-    endif else begin ;gets rid of .5res on each side of an att flip to preserve single att state at each time bin
+function mvn_sep_att_correction,data,res,tr,fltatt=fltatt ;throws out att actuation times that result in bad/mixed counts
+  datt=shift(data.att,-1) ne shift(data.att,1) ;att flips
+  w=where(datt,nw,/null)
+  if keyword_set(fltatt) then begin ;use float for averaging
+    dataflt=data
+    str_element,dataflt,'att',0.,/add ;turning att from byte to float for averaging mixed state att's
+    str_element,dataflt,'duration',0.,/add ;turning duration from uint to float for averaging mixed durations
+    dataflt.att=data.att
+    dataflt.duration=data.duration
+    data=dataflt
+    data[where(data.att eq 0.,/null)].att=!values.f_nan ;turning att state 0b to fNaN
+    if nw ne 0 then data[w]=fill_nan(data[0])
+  endif else begin ;gets rid of .5res on each side of an att flip to preserve single att state at each time bin
+    if nw ne 0 then begin
       fnan=fill_nan(data[0])
       for iw=0,nw-1 do begin
-        ww=where(data.time gt data[w[iw]].time-res/2. and data.time lt data[w[iw]].time+res/2.,nww)
+        ww=where(data.time gt data[w[iw]].time-res/2. and data.time lt data[w[iw]].time+res/2.,nww,/null)
         if nww ne 0 then data[ww] = fnan
       endfor
-    endelse
-  endif
+    endif
+  endelse
+  dataatt=average_hist(data.att,data.time,binsize=res,range=tr,/nan,weight=data.duration)
+  datarate=average_hist(data.rate,data.time,binsize=res,range=tr,/nan,weight=data.duration)
+  data=average_hist(data,data.time,binsize=res,range=tr,/nan,xbins=centertime)
+  data.att=dataatt
+  data.rate=datarate
+  data.time=centertime
+  ntimes=n_elements(centertime)
+  data.trange=transpose(rebin(centertime,[ntimes,2]))+rebin(res/2.*[-1.,1.],[2,ntimes])
 
 return,data
 end
@@ -83,18 +93,11 @@ for i=0L,nd-1 do begin
   source_filename=f
   restore,f
   
-  if keyword_set(s1_svy) then begin
-    s1_svy=mvn_sep_att_correction(s1_svy,res,/fltatt)
-    s1_svy=average_hist(s1_svy,s1_svy.time,binsize=res,range=tr,/nan)
-  endif
-
-  if keyword_set(s2_svy) then begin
-    s2_svy=mvn_sep_att_correction(s2_svy,res,/fltatt)
-    s2_svy=average_hist(s2_svy,s2_svy.time,binsize=res,range=tr,/nan)
-  endif
-  
   s1_arc=0
   s2_arc=0
+
+  if keyword_set(s1_svy) then s1_svy=mvn_sep_att_correction(s1_svy,res,tr,/fltatt)
+  if keyword_set(s2_svy) then s2_svy=mvn_sep_att_correction(s2_svy,res,tr,/fltatt)
 
   if keyword_set(s1_hkp) then s1_hkp=average_hist(s1_hkp,s1_hkp.time,binsize=res,range=tr,/nan)
   if keyword_set(s2_hkp) then s2_hkp=average_hist(s2_hkp,s2_hkp.time,binsize=res,range=tr,/nan)
