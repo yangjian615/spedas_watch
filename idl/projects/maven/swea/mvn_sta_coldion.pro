@@ -76,8 +76,8 @@
 ;    SUCCESS:       Processing success flag.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-06 18:06:46 -0700 (Wed, 06 Sep 2017) $
-; $LastChangedRevision: 23900 $
+; $LastChangedDate: 2017-09-07 11:54:02 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23910 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_coldion.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -199,7 +199,7 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
     if (i eq 0) then mvn_scpot
   endif
 
-  mvn_sta_scpot_set
+  mvn_sta_scpot_update
 
 ; Determine the ion suppression method.  Anode-dependent ion suppression
 ; uses experimental code and is for testing purposes only.

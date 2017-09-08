@@ -5,52 +5,61 @@
 ;  See mvn_sta_coldion.pro for details.
 ;
 ;USAGE:
-;  mvn_sta_cio_save, start_day, interval, ndays
+;  mvn_sta_cio_save, trange [, ndays]
 ;
 ;INPUTS:
-;       None.
+;       trange:        Start time or time range for making save files, in any 
+;                      format accepted by time_double().  If only one time is 
+;                      specified, it is taken as the start time and NDAYS is 
+;                      used to get the end time.  If two or more times are 
+;                      specified, then the earliest and latest times are used.
+;                      Fractional days (hh:mm:ss) are ignored.
+;
+;       ndays:         Number of dates to process.  Only used if TRANGE has
+;                      only one element.  Default = 1.
 ;
 ;KEYWORDS:
-;       start_day:     Start date for making save files.
-;
-;       interval:      If start_day is defined and ndays > 1, then this is the number 
-;                      of days to skip before loading the next date.  (Only useful
-;                      for poor-man's parallel processing.)  Default = 1
-;
-;       ndays:         Number of dates to process, each separated by interval.
-;                      Default = 1
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-06 18:06:57 -0700 (Wed, 06 Sep 2017) $
-; $LastChangedRevision: 23901 $
+; $LastChangedDate: 2017-09-07 15:20:50 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23917 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_cio_save.pro $
 ;
 ;CREATED BY:    David L. Mitchell
 ;FILE: mvn_sta_cio_save.pro
 ;-
-pro mvn_sta_cio_save, start_day=start_day, interval=interval, ndays=ndays
+pro mvn_sta_cio_save, trange, ndays
 
   dpath = root_data_dir() + 'maven/data/sci/sta/l3/cio/'
   froot = 'mvn_sta_cio_'
-  oneday = 86400D
+  dt = 86400D  ; process one day at a time
 
-  if (size(start_day,/type) eq 0) then begin
-    print,'You must specify a start date.'
-    return
-  endif
-  start_day = time_double(time_string(start_day,prec=-3))
-
-  if (size(interval,/type) eq 0) then interval = 1
-  if (size(ndays,/type) eq 0) then ndays = 1
-  dt = double(interval)*oneday
+  case n_elements(trange) of
+     0  :  begin
+             print,'You must specify a start time or time range.'
+             return
+           end
+     1  :  begin
+             tstart = time_double(time_string(trange,prec=-3))
+             if (size(ndays,/type) eq 0) then ndays = 1
+           end
+    else : begin
+             tmin = min(time_double(trange), max=tmax)
+             tstart = time_double(time_string(tmin,prec=-3))
+             tstop = time_double(time_string((tmax + dt - 1D),prec=-3))
+             ndays = (tstop - tstart)/dt
+           end
+  endcase
 
 ; Process the data one calendar day at a time
 
   for i=0L,(ndays - 1L) do begin
-    tstart = start_day + double(i)*dt
-    timespan, tstart, 1
+    timer_start = systime(/sec)
 
-    tstring = time_string(tstart)
+    time = tstart + double(i)*dt
+    timespan, time, 1
+
+    tstring = time_string(time)
     yyyy = strmid(tstring,0,4)
     mm = strmid(tstring,5,2)
     dd = strmid(tstring,8,2)
@@ -72,7 +81,11 @@ pro mvn_sta_cio_save, start_day=start_day, interval=interval, ndays=ndays
 
       if (ok) then save, cio_h, cio_o1, cio_o2, file=ofile $
               else print,'CIO pipeline failed: ',tstring
-    endif
+
+      elapsed_min = (systime(/sec) - timer_start)/60D
+      print,elapsed_min,format='("Time to process (min): ",f6.2)'
+
+    endif else print,'No SWEA data: ',tstring
   endfor
 
   return

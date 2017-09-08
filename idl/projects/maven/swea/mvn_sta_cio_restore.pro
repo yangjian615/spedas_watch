@@ -25,8 +25,8 @@
 ;       PANS:          Tplot panel names created when DOPLOT is set.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-06 18:07:08 -0700 (Wed, 06 Sep 2017) $
-; $LastChangedRevision: 23902 $
+; $LastChangedDate: 2017-09-07 15:22:24 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23918 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_cio_restore.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -158,7 +158,8 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     store_data,'temp_o1',data={x:result_o1.time, y:result_o1.temp}
     store_data,'temp_o2',data={x:result_o2.time, y:result_o2.temp}
     store_data,'temp_i+',data=['temp_h','temp_o1','temp_o2']
-    ylim,'temp_i+',0.1,40,1
+    ylim,'temp_i+',0.1,100,1
+    options,'temp_i+','constant',[1,10]
     options,'temp_i+','ytitle','Ion Temp!ceV'
     options,'temp_i+','colors',icols
     options,'temp_i+','labels',species
@@ -170,8 +171,10 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     store_data,'vel_h',data={x:result_h.time, y:result_h.vbulk}
     store_data,'vel_o1',data={x:result_o1.time, y:result_o1.vbulk}
     store_data,'vel_o2',data={x:result_o2.time, y:result_o2.vbulk}
+    store_data,'Vesc',data={x:result_h.time, y:result_h.v_esc}
     store_data,'vel_i+',data=['vel_h','vel_o1','vel_o2','Vesc']
-    ylim,'vel_i+',1,40,1
+    ylim,'vel_i+',1,500,1
+    options,'vel_i+','constant',[10,100]
     options,'vel_i+','ytitle','Ion Vel!ckm/s'
     options,'vel_i+','colors',[icols,!p.color]
     options,'vel_i+','labels',[species,'ESC']
@@ -184,7 +187,8 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     store_data,'engy_o1',data={x:result_o1.time, y:result_o1.energy}
     store_data,'engy_o2',data={x:result_o2.time, y:result_o2.energy}
     store_data,'engy_i+',data=['engy_h','engy_o1','engy_o2']
-    ylim,'engy_i+',1,40,1
+    ylim,'engy_i+',0.1,100,1
+    options,'engy_i+','constant',[1,10]
     options,'engy_i+','ytitle','Ion Energy!ceV'
     options,'engy_i+','colors',icols
     options,'engy_i+','labels',species
@@ -209,7 +213,8 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
 ; Shape Parameter
 
     store_data,'Shape_PAD2',data={x:result_h.time, y:transpose(result_h.shape^2.), v:[0,1]}
-    ylim,'Shape_PAD2',0,4,0
+    ylim,'Shape_PAD2',0,5,0
+    options,'Shape_PAD2','yminor',1
     options,'Shape_PAD2','constant',1
     options,'Shape_PAD2','ytitle','Shape'
     options,'Shape_PAD2','colors',[2,6]
@@ -236,6 +241,26 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     options,'flux_i+','labels',species
     options,'flux_i+','labflag',1
     pans = [pans, 'flux_i+']
+
+; Ephemeris and geometry
+
+    slon = result_h.slon
+    indx = where(slon lt 0., count)
+    if (count gt 0L) then slon[indx] += 360.
+    store_data,'Sun_GEO_Lon',data={x:result_h.time, y:slon}
+    ylim,'Sun_GEO_Lon',0,360,0
+    options,'Sun_GEO_Lon','yticks',4
+    options,'Sun_GEO_Lon','yminor',3
+    options,'Sun_GEO_Lon','psym',3
+    options,'Sun_GEO_Lon','colors',4
+    options,'Sun_GEO_Lon','ytitle','Sun Lon!cIAU_MARS'
+    pans = [pans, 'Sun_GEO_Lon']
+
+    store_data,'Sun_PL_The',data={x:result_h.time, y:result_h.sthe}
+    options,'Sun_PL_The','colors',4
+    options,'Sun_PL_The','ynozero',1
+    options,'Sun_PL_The','ytitle','Sun The!cS/C'
+    pans = [pans, 'Sun_PL_The']
 
   endif else pans = ''
 

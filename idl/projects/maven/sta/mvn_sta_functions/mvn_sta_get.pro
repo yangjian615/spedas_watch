@@ -49,7 +49,8 @@ if dat.time gt tt[1] or dat.end_time lt tt[0] then return,dat
 nnn=0l
 nnn_max = round((tt[1]-tt[0])/4.+4) < 300000
 while dat.end_time lt tt[1] and dat.end_time gt tt[0] and nnn lt nnn_max do begin
-	dat=sum4d(dat,call_function(routine,/ad))
+    dat1 = call_function(routine,/ad)
+	if (dat.mode eq dat1.mode) then dat=sum4d(dat,dat1)
 	nnn=nnn+1l
 endwhile
 

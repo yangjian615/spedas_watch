@@ -21,8 +21,8 @@
 ;       and then split and save them into one-day files.
 ;
 ; $LastChangedBy: haraday $
-; $LastChangedDate: 2017-07-27 06:54:01 -0700 (Thu, 27 Jul 2017) $
-; $LastChangedRevision: 23711 $
+; $LastChangedDate: 2017-09-07 09:29:15 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23903 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_lpw_scpot_save.pro $
 ;
 ;CREATED BY:    Yuki Harada  03-04-16
@@ -44,6 +44,7 @@ pro mvn_swe_lpw_scpot_save, start_day=start_day, ndays=ndays, norbwin=norbwin, _
            'mvn_swe_lpw_scpot_pow', $
            'mvn_swe_lpw_scpot_pol', $
            'mvn_swe_lpw_scpot']
+  maintname = 'mvn_swe_lpw_scpot'
   oneday = 86400D
 
 ;  if (size(interval,/type) eq 0) then interval = 1
@@ -81,6 +82,11 @@ pro mvn_swe_lpw_scpot_save, start_day=start_day, ndays=ndays, norbwin=norbwin, _
     opath = dpath + time_string(tstart,tf='YYYY/MM/')
     file_mkdir2, opath, mode='0775'o  ; create directory structure, if needed
     ofile = opath + froot + time_string(tstart,tf='YYYYMMDD') + suffix
+
+    get_data,maintname+'_all',data=dmain,dtype=dmaintype ;- skip if no main data
+    if dmaintype eq 0 then continue
+    w = where( dmain.x ge tstart and dmain.x lt tstart+oneday , nw)
+    if nw eq 0 then continue
 
     store_data,tname,/del
     for itn=0,n_elements(tname)-1 do begin

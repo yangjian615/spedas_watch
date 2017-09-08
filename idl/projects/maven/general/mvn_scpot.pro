@@ -120,6 +120,8 @@
 ;              save/restore file, if one exists.  Otherwise, this routine 
 ;              will determine the potential from SWEA alone.
 ;
+;   LPW_L2:    Load the LPW L2 potentials for comparison.
+;
 ;   MIN_LPW_POT : Minumum valid LPW potential.
 ;
 ;   POSPOT:    Calculate positive potentials with mvn_swe_sc_pot.
@@ -152,8 +154,8 @@
 ;          one showing the five unmerged methods in one panel.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-14 11:26:26 -0700 (Mon, 14 Aug 2017) $
-; $LastChangedRevision: 23787 $
+; $LastChangedDate: 2017-09-07 17:09:08 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23922 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot.pro $
 ;
 ;-
@@ -287,18 +289,30 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
     endif else print,"SWE/LPW/STA composite potential not available."
   endif
 
+; Get the EUV shadow location
+
+  get_data, 'wake', data=wake, index=i
+  if (i eq 0) then begin
+    maven_orbit_tplot, /load, /shadow
+    get_data, 'wake', data=wake, index=i
+  endif
+  if (i eq 0) then begin
+    print,"Cannot get orbit information!  Problem with maven_orbit_tplot."
+    return
+  endif
+  str_element, wake, 'shadow', value=shadow
+  if (strupcase(shadow[0]) ne 'EUV') then begin
+    maven_orbit_tplot, /load, /shadow
+    get_data, 'wake', data=wake
+  endif
+  wake = interpol(wake.y, wake.x, swe_sc_pot.time)
+  indx = where(finite(wake), count)
+  wake = replicate(0B, n_elements(swe_sc_pot.time))
+  if (count gt 0L) then wake[indx] = 1B
+
 ; Get the altitude
 
-  get_data, 'alt', data=alt, index=i
-  if (i eq 0) then begin
-    maven_orbit_tplot,/load
-    get_data, 'alt', data=alt, index=i
-    if (i eq 0) then begin
-      print,"Cannot determine spacecraft altitude!"
-      return
-    endif
-  endif
-
+  get_data, 'alt', data=alt
   alt = spline(alt.x, alt.y, swe_sc_pot.time)
 
 ; First priority: Get pre-calculated potentials from combined SWEA-LPW analysis
@@ -357,8 +371,7 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
     options,'neg_pot','color',6
   endif        
 
-; Fourth priority: STATIC-derived negative potential.  Only used to fill in times when
-; swe- potential is unavailable (mainly optical shadow).
+; Fourth priority: Use STATIC-derived negative potential in the EUV shadow.
 
   if (stapot) then begin
     print,"Getting negative potentials from STATIC."
@@ -395,8 +408,8 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
         indx = where((phi lt -12.) and (alt lt 200.), count)
         if (count gt 0L) then phi[indx] = badphi  ; don't trust large negative values
                                                   ; at periapsis because of saturation
-
-        indx = where(((alt le maxalt) and (swe_sc_pot.potential gt 0.) and finite(phi)) or $
+        
+        indx = where((wake and finite(phi)) or $  ; trust values within EUV shadow
                      ((swe_sc_pot.method lt 1) and finite(phi)), count)
         if (count gt 0L) then begin
           swe_sc_pot[indx].potential = phi[indx]

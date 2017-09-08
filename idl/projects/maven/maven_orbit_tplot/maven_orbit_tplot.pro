@@ -115,8 +115,8 @@
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-06-12 16:58:52 -0700 (Mon, 12 Jun 2017) $
-; $LastChangedRevision: 23459 $
+; $LastChangedDate: 2017-09-07 17:08:04 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23921 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -571,7 +571,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   store_data,'pileup',data={x:time, y:pileup[*,4]}
   options,'pileup','color',rcols[1]
 
-  store_data,'wake',data={x:time, y:wake[*,4]}
+  if (sflg) then stype = 'EUV' else stype = 'OPT'
+  store_data,'wake',data={x:time, y:wake[*,4], shadow:stype}
   options,'wake','color',rcols[2]
 
   store_data,'wind',data={x:time, y:wind[*,4]}
@@ -735,7 +736,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   store_data, 'twind'  , data = {x:torb, y:twind}
   store_data, 'tsheath', data = {x:torb, y:tsheath}
   store_data, 'tpileup', data = {x:torb, y:tpileup}
-  store_data, 'twake'  , data = {x:torb, y:twake}
+  store_data, 'twake'  , data = {x:torb, y:twake, shadow:stype}
 
   options, 'tsheath', 'color', rcols[0]
   options, 'tpileup', 'color', rcols[1]

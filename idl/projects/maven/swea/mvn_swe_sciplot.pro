@@ -71,8 +71,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-06 18:03:00 -0700 (Wed, 06 Sep 2017) $
-; $LastChangedRevision: 23898 $
+; $LastChangedDate: 2017-09-07 17:07:02 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23920 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -116,7 +116,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   endif
 
   get_data,'alt2',data=alt2,index=i
-  if (i eq 0) then maven_orbit_tplot, /loadonly, datum=datum
+  if (i eq 0) then maven_orbit_tplot, /loadonly, /shadow, datum=datum
 
   mvn_swe_sumplot,/loadonly
 

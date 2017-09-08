@@ -6,10 +6,35 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-08-21 14:43:13 -0700 (Mon, 21 Aug 2017) $
-; $LastChangedRevision: 23820 $
+; $LastChangedDate: 2017-09-07 14:14:48 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23914 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_active_eyes
+  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'srvy', 'electron')
+  assert, array_equal(eye_table['bottom'], [2, 4, 5, 9, 10]), 'Problem with FEEPS active eyes function'
+  assert, array_equal(eye_table['top'], [3, 5, 9, 10, 12]), 'Problem with FEEPS active eyes function'
+  eye_table = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 1, 'srvy', 'electron')
+  assert, array_equal(eye_table['bottom'], [3, 4, 5, 11, 12]), 'Problem with FEEPS active eyes function'
+  assert, array_equal(eye_table['top'], [3, 4, 5, 11, 12]), 'Problem with FEEPS active eyes function'
+  eye_table = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 1, 'srvy', 'ion')
+  assert, array_equal(eye_table['bottom'], [6, 7, 8]), 'Problem with FEEPS active eyes function'
+  assert, array_equal(eye_table['top'], [6, 7, 8]), 'Problem with FEEPS active eyes function'
+  eye_table = mms_feeps_active_eyes(['2017-08-20', '2017-08-21'], 2, 'srvy', 'ion')
+  assert, array_equal(eye_table['bottom'], [6, 7, 8]), 'Problem with FEEPS active eyes function'
+  assert, array_equal(eye_table['top'], [6, 8]), 'Problem with FEEPS active eyes function'
+  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 2, 'srvy', 'electron')
+  assert, array_equal(eye_table['bottom'], [1, 4, 5, 9, 11]), 'Problem with FEEPS active eyes function'
+  assert, array_equal(eye_table['top'], [1, 2, 3, 5, 10, 11]), 'Problem with FEEPS active eyes function'
+  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 3, 'srvy', 'electron')
+  assert, array_equal(eye_table['bottom'], [1, 2, 3, 9, 10]), 'Problem with FEEPS active eyes function'
+  assert, array_equal(eye_table['top'], [3, 5, 9, 10, 12]), 'Problem with FEEPS active eyes function'
+  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 4, 'srvy', 'electron')
+  assert, array_equal(eye_table['bottom'], [3, 5, 9, 10, 12]), 'Problem with FEEPS active eyes function'
+  assert, array_equal(eye_table['top'], [3, 4, 5, 9, 10, 11]), 'Problem with FEEPS active eyes function'
+  return, 1
+end
 
 function mms_load_feeps_ut::test_time_dependent_sun_masks
   mask_sectors = mms_read_feeps_sector_masks_csv(trange=['2015-12-15', '2015-12-16'])

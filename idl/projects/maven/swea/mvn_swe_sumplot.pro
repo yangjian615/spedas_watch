@@ -66,8 +66,8 @@
 ;       BURST:        Plot a color bar showing PAD burst coverage.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-15 17:51:40 -0700 (Tue, 15 Aug 2017) $
-; $LastChangedRevision: 23796 $
+; $LastChangedDate: 2017-09-07 17:06:46 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23919 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sumplot.pro $
 ;
 ;CREATED BY:    David L. Mitchell  07-24-12
@@ -535,6 +535,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     options,mname,'yminor',4
     options,mname,'labels',['AZ','EL+90']
     options,mname,'labflag',1
+    options,mname,'colors',TCcol[[1,6]]
     options,mname,'psym',3
 
     if (n_elements(a2) gt 1L) then begin
@@ -677,6 +678,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     options,mname,'yminor',4
     options,mname,'labels',['AZ','EL+90']
     options,mname,'labflag',1
+    options,mname,'colors',TCcol[[1,6]]
     options,mname,'psym',3
     
     if (plotap[2]) then pans = [pans,pname,mname]
@@ -738,6 +740,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
     options,mname,'yminor',4
     options,mname,'labels',['AZ','EL']
     options,mname,'labflag',1
+    options,mname,'colors',TCcol[[1,6]]
     options,mname,'psym',3
     
     if (doburst) then begin
@@ -1029,7 +1032,7 @@ pro mvn_swe_sumplot, vnorm=vflg, cmdcnt=cmdcnt, sflg=sflg, pad_e=pad_e, a4_sum=a
   
   if (doeph) then begin
     get_data,'alt2',data=alt2,index=i
-    if (i eq 0) then maven_orbit_tplot, /current, /loadonly
+    if (i eq 0) then maven_orbit_tplot, /loadonly, /shadow
     pans = ['alt2', pans]
   endif
   

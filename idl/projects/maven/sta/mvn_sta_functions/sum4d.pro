@@ -18,7 +18,7 @@ if size(/type,d1) ne 8 then return,d2
 if d2.valid eq 0 then return,d1
 if d1.valid eq 0 then return,d2
 if d1.data_name ne d2.data_name or d1.mode ne d2.mode then begin
-  print,'Incompatible data types'
+  print,'SUM4D: Incompatible data types'
   return,d2
 endif
 sum = d1

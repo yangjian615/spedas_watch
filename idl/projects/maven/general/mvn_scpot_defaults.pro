@@ -65,8 +65,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 15:51:52 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23740 $
+; $LastChangedDate: 2017-09-07 17:09:40 -0700 (Thu, 07 Sep 2017) $
+; $LastChangedRevision: 23923 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot_defaults.pro $
 ;
 ;-
@@ -110,7 +110,7 @@ pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
 
   badval = !values.f_nan  ; fill value for potential when no method works
   maxalt = 1000.          ; maximum altitude for replacing SWE/LPW and SWE+ potentials
-  min_lpw_pot = -25.      ; minimum valid LPW potential
+  min_lpw_pot = -14.      ; minimum valid LPW potential
   maxdt = 64D             ; maximum time gap to interpolate over
 
 ; Override defaults by keyword.  Affects all routines that use mvn_scpot_com.
