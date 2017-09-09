@@ -33,12 +33,12 @@
 ;                       
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-09-08 16:20:52 -0700 (Fri, 08 Sep 2017) $
-;$LastChangedRevision: 23943 $
+;$LastChangedDate: 2017-06-27 20:54:36 -0700 (Tue, 27 Jun 2017) $
+;$LastChangedRevision: 23523 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
-pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = level, $
+pro mms_feeps_pad_old, bin_size = bin_size, probe = probe, energy = energy, level = level, $
   suffix = suffix_in, datatype = datatype, data_units = data_units, data_rate = data_rate, $
   num_smooth = num_smooth
 
@@ -81,7 +81,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
 
   ; temporary solution to issue with NaNs in the _pitch_angle variable
   ; calculate the pitch angles from the magnetic field data
-  mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=data_rate, datatype=datatype, suffix=suffix_in, idx_maps=idx_maps
+  mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=data_rate, datatype=datatype, suffix=suffix_in
   get_data, prefix+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pa'+suffix_in, data=pa_data, dlimits=pa_dlimits
 
   if ~is_struct(pa_data) then begin
@@ -89,21 +89,19 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
     return
   endif
 
-  eyes = mms_feeps_active_eyes(trange, probe, data_rate, datatype, level)
-  
   pa_data_map = hash()
   if data_rate eq 'srvy' then begin
     ; From Allison Jaynes @ LASP: The 6,7,8 sensors (out of 12) are ions,
     ; so in the pitch angle array, the 5,6,7 columns (counting from zero) will be the ion pitch angles.
     ; for electrons:
-    if datatype eq 'electron' then pa_data_map['top-electron'] = (idx_maps[0])['electron-top']
-    if datatype eq 'electron' then pa_data_map['bottom-electron'] = (idx_maps[1])['electron-bottom']
+    pa_data_map['top-electron'] = [0, 1, 2, 3, 4]
+    pa_data_map['bottom-electron'] = [5, 6, 7, 8, 9]
     ; and ions:
-    if datatype eq 'ion' then pa_data_map['top-ion'] = (idx_maps[0])['ion-top']
-    if datatype eq 'ion' then pa_data_map['bottom-ion'] = (idx_maps[1])['ion-bottom']
+    pa_data_map['top-ion'] = [0, 1, 2]
+    pa_data_map['bottom-ion'] = [3, 4, 5]
 
     ; these should match n-1, where n is the telescope # in the variable names
-   ; particle_idxs = datatype eq 'electron' ? [2, 3, 4, 10, 11] : [5, 6, 7]
+    particle_idxs = datatype eq 'electron' ? [2, 3, 4, 10, 11] : [5, 6, 7]
   endif else if data_rate eq 'brst' then begin
     ; note: the following are indices of the top/bottom sensors in pa_data
     ; they should be consistent with pa_dlimits.labels
@@ -114,7 +112,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
     pa_data_map['bottom-ion'] = [3, 4, 5]
 
     ; these should match n-1, where n is the telescope # in the variable names
-  ;  particle_idxs = datatype eq 'electron' ? [0, 1, 2, 3, 4, 8, 9, 10, 11] : [5, 6, 7]
+    particle_idxs = datatype eq 'electron' ? [0, 1, 2, 3, 4, 8, 9, 10, 11] : [5, 6, 7]
   endif
 
   sensor_types = ['top', 'bottom']
@@ -127,8 +125,6 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
   for s_type_idx = 0, n_elements(sensor_types)-1 do begin ; loop through top and bottom
     s_type = sensor_types[s_type_idx]
     pa_map = pa_data_map[s_type+'-'+datatype]
-    particle_idxs = eyes[s_type]-1
-
     for isen=0, n_elements(particle_idxs)-1 do begin ; loop through sensors
       ; get data
       var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+s_type+'_'+data_units+'_sensorid_'+strcompress(string(particle_idxs[isen]+1), /rem)+'_clean_sun_removed'+suffix_in, /rem)

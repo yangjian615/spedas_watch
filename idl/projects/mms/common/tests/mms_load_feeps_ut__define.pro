@@ -6,10 +6,20 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-07 14:14:48 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23914 $
+; $LastChangedDate: 2017-09-08 09:22:59 -0700 (Fri, 08 Sep 2017) $
+; $LastChangedRevision: 23929 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
+
+function mms_load_feeps_ut::test_active_eyes_brst
+  eye_table_e = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'brst', 'electron')
+  eye_table_i = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'brst', 'ion')
+  assert, array_equal(eye_table_e['bottom'], [1, 2, 3, 4, 5, 9, 10, 11, 12]), 'Problem with active eyes function (brst)
+  assert, array_equal(eye_table_e['top'], [1, 2, 3, 4, 5, 9, 10, 11, 12]), 'Problem with active eyes function (brst)
+  assert, array_equal(eye_table_i['bottom'], [6, 7, 8]), 'Problem with active eyes function (brst)
+  assert, array_equal(eye_table_i['top'], [6, 7, 8]), 'Problem with active eyes function (brst)
+  return, 1
+end
 
 function mms_load_feeps_ut::test_active_eyes
   eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'srvy', 'electron')
@@ -577,7 +587,7 @@ function mms_load_feeps_ut::init, _extra=e
                             'mms_feeps_spin_avg', 'mms_feeps_split_integral_ch', $
                             'mms_feeps_correct_energies', 'mms_feeps_flat_field_corrections', $
                             'mms_feeps_pitch_angles', 'mms_feeps_remove_bad_data']
-  self->addTestingRoutine, ['mms_read_feeps_sector_masks_csv', 'mms_feeps_energy_table'], /is_function
+  self->addTestingRoutine, ['mms_read_feeps_sector_masks_csv', 'mms_feeps_energy_table', 'mms_feeps_active_eyes'], /is_function
   return, 1
 end
 

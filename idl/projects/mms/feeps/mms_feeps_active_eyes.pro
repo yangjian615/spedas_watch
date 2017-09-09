@@ -3,10 +3,13 @@
 ;     mms_feeps_active_eyes
 ;
 ; Purpose:
-;    this function returns the FEEPS active eyes for srvy mode,
-;    based on date/probe/species
+;    this function returns the FEEPS active eyes,
+;    based on date/probe/species/rate
 ;
 ; Notes:
+; 
+; From Drew Turner, 9/7/2017, srvy mode:
+; 
 ; - before 16 August 2017:
 ;   electron sensors = ['3', '4', '5', '11', '12'] 
 ;   ion sensors = ['6', '7', '8']
@@ -30,16 +33,23 @@
 ;   
 ;   
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-09-07 14:03:34 -0700 (Thu, 07 Sep 2017) $
-;$LastChangedRevision: 23913 $
+;$LastChangedDate: 2017-09-08 14:59:38 -0700 (Fri, 08 Sep 2017) $
+;$LastChangedRevision: 23939 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_active_eyes.pro $
 ;-
 
-function mms_feeps_active_eyes, trange, probe, data_rate, species
-  ; old eyes, prior to 16 August 2017
+function mms_feeps_active_eyes, trange, probe, data_rate, species, level
+  if level eq 'sitl' && species eq 'electron' then return, hash('top', [5, 11, 12], 'bottom', [])
+  
+  ; handle burst mode first
+  if data_rate eq 'brst' and species eq 'electron' then return, hash('top', [1, 2, 3, 4, 5, 9, 10, 11, 12], 'bottom', [1, 2, 3, 4, 5, 9, 10, 11, 12])
+  if data_rate eq 'brst' and species eq 'ion' then return, hash('top', [6, 7, 8], 'bottom', [6, 7, 8])
+  
+  ; old eyes, srvy mode, prior to 16 August 2017
   if species eq 'electron' then sensors = hash('top', [3, 4, 5, 11, 12], 'bottom', [3, 4, 5, 11, 12]) else sensors = hash('top', [6, 7, 8], 'bottom', [6, 7, 8])
   
-  if time_double(trange[0]) ge time_double('2017-08-16') then begin
+  ; srvy mode, after 16 August 2017
+  if time_double(trange[0]) ge time_double('2017-08-16') and data_rate eq 'srvy' then begin
     active_table = hash()
     active_table['1-electron'] = hash('top', [3, 5, 9, 10, 12], 'bottom', [2, 4, 5, 9, 10])
     active_table['1-ion'] = hash('top', [6, 7, 8], 'bottom', [6, 7, 8])

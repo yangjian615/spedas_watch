@@ -21,11 +21,6 @@
 ;    None:          Data are loaded based on timespan.
 ;
 ;KEYWORDS:
-;    APID:          Additional APID's to load.  This procedure always 
-;                   loads c0, c6, and ca.  For example, set this keyword
-;                   to 'd0' (4D distributions) or 'd1' (4D distributions,
-;                   burst) in order to calculate velocity distributions.
-;
 ;    BEAM:          Use the beam version of the moment calculation.  Provides
 ;                   the most accurate densities around periapsis.  Does not
 ;                   work at all away from periapsis.
@@ -76,13 +71,13 @@
 ;    SUCCESS:       Processing success flag.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-07 11:54:02 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23910 $
+; $LastChangedDate: 2017-09-08 14:07:27 -0700 (Fri, 08 Sep 2017) $
+; $LastChangedRevision: 23937 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_coldion.pro $
 ;
 ;CREATED BY:    David L. Mitchell
 ;-
-pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
+pro mvn_sta_coldion, beam=beam, potential=potential, adisc=adisc, $
                      density=density, velocity=velocity, tavg=tavg, pans=pans, $
                      result_h=cio_h, result_o1=cio_o1, result_o2=cio_o2, $
                      noload=noload, temperature=temperature, reset=reset, $
@@ -90,6 +85,9 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
 
   common mvn_sta_kk3_anode, kk3_anode
   common mvn_coldi_com, result_h, result_o1, result_o2
+  common mvn_c6, mvn_c6_ind, mvn_c6_dat
+  common mvn_d0, mvn_d0_ind, mvn_d0_dat
+  common mvn_d1, mvn_d1_ind, mvn_d1_dat
 
   success = 0
 
@@ -126,15 +124,37 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
 
 ; Load STATIC data
 
-  sta_apid = ['c0','c6','ca']
-  if (size(apid,/type) eq 7) then sta_apid = [sta_apid, apid]
-  sta_apid = sta_apid[uniq(sta_apid, sort(sta_apid))]
+  get_data, 'mvn_sta_c6_M', index=i
+  get_data, 'mvn_sta_d1_E', index=j
+  get_data, 'mvn_sta_d0_E', index=k
+  if ((i eq 0) or (j+k eq 0)) then noload = 0
 
   if ~keyword_set(noload) then begin
-    mvn_sta_l2_load, sta_apid=sta_apid
-    mvn_sta_l2_tplot,/replace
+    mvn_sta_l2_load, sta_apid=['c0','c6']
+    str_element, mvn_c6_dat, 'valid', valid, success=ok
+    if (ok) then indx = where(valid, count) else count = 0L
+    if (count eq 0L) then begin
+      print,"No STATIC c6 data."
+      return
+    endif
+
+    mvn_sta_l2_load, sta_apid=['d1']
+    str_element, mvn_d1_dat, 'valid', valid, success=ok
+    if (ok) then indx = where(valid, count) else count = 0L
+    if (count eq 0L) then begin
+      print,"No STATIC d1 data."
+      mvn_sta_l2_load, sta_apid=['d0']
+      str_element, mvn_d0_dat, 'valid', valid, success=ok
+      if (ok) then indx = where(valid, count) else count = 0L
+      if (count eq 0L) then begin
+        print,"No STATIC d0 data."
+        return
+      endif
+    endif
+
+    mvn_sta_l2_tplot, /replace
   endif
-  
+
   pans = ['']
   
   get_data, 'mvn_sta_c0_E', index=i
@@ -150,30 +170,18 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
     options,'mvn_sta_c6_M','ytitle','sta c6!CMass!Camu'
   endif
 
-  if (n_elements(pans) eq 1) then begin
-    print,"No STATIC data are loaded."
-    return
-  endif else pans = pans[1:*]
+  pans = pans[1:*]
 
   if (~doden and ~dotmp and (max(dovel) eq 0)) then return
 
-  vaps = ['d1','d0','cf','ce']  ; in order of preference
-  ok = [0,0,0,0]
-  for i=0,3 do begin
-    j = strcmp(sta_apid,vaps[i],/fold)
-    ok[i] = total(j) gt 0
-  endfor
-  indx = where(ok, count)
-  if (count eq 0) then begin
-    print,"Please load one of these APID's: d1, d0, ce, cf"
-    return
-  endif else v_apid = vaps[indx[0]]
-
-  get_data, 'mvn_sta_' + v_apid + '_E', data=dat4d, index=i
+  get_data, 'mvn_sta_d1_E', data=dat4d, index=i
   if (i eq 0) then begin
-    print,"Could not load APID: ",v_apid
-    return
-  endif
+    get_data, 'mvn_sta_d0_E', data=dat4d, index=i
+    if (i eq 0) then begin
+      print, "No STATIC d1 or d0 data loaded."
+      return
+    endif else v_apid = 'd0'
+  endif else v_apid = 'd1'
 
   if keyword_set(tavg) then dt = double(tavg) else dt = 16D
   tmin = min(timerange(), max=tmax)
@@ -671,7 +679,7 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
     options,'den_i+','colors',[!p.color,1,icols]
     options,'den_i+','labels',['i+','e-',species]
     options,'den_i+','labflag',1
-    pans = [pans, 'den_i+']
+    pans = ['den_i+']
 
 ; Temperature
 
@@ -679,7 +687,8 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
     store_data,'temp_o1',data={x:result_o1.time, y:result_o1.temp}
     store_data,'temp_o2',data={x:result_o2.time, y:result_o2.temp}
     store_data,'temp_i+',data=['temp_h','temp_o1','temp_o2']
-    ylim,'temp_i+',0.1,40,1
+    ylim,'temp_i+',0.1,100,1
+    options,'temp_i+','constant',[1,10]
     options,'temp_i+','ytitle','Ion Temp!ceV'
     options,'temp_i+','colors',icols
     options,'temp_i+','labels',species
@@ -691,8 +700,10 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
     store_data,'vel_h',data={x:result_h.time, y:result_h.vbulk}
     store_data,'vel_o1',data={x:result_o1.time, y:result_o1.vbulk}
     store_data,'vel_o2',data={x:result_o2.time, y:result_o2.vbulk}
+    store_data,'Vesc',data={x:result_h.time, y:result_h.v_esc}
     store_data,'vel_i+',data=['vel_h','vel_o1','vel_o2','Vesc']
-    ylim,'vel_i+',1,40,1
+    ylim,'vel_i+',1,500,1
+    options,'vel_i+','constant',[10,100]
     options,'vel_i+','ytitle','Ion Vel!ckm/s'
     options,'vel_i+','colors',[icols,!p.color]
     options,'vel_i+','labels',[species,'ESC']
@@ -705,7 +716,8 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
     store_data,'engy_o1',data={x:result_o1.time, y:result_o1.energy}
     store_data,'engy_o2',data={x:result_o2.time, y:result_o2.energy}
     store_data,'engy_i+',data=['engy_h','engy_o1','engy_o2']
-    ylim,'engy_i+',1,40,1
+    ylim,'engy_i+',0.1,100,1
+    options,'engy_i+','constant',[1,10]
     options,'engy_i+','ytitle','Ion Energy!ceV'
     options,'engy_i+','colors',icols
     options,'engy_i+','labels',species
@@ -729,9 +741,9 @@ pro mvn_sta_coldion, apid=apid, beam=beam, potential=potential, adisc=adisc, $
 
 ; Shape Parameter
 
-    get_data,'Shape_PAD',data=dat
-    store_data,'Shape_PAD2',data={x:dat.x, y:dat.y^2., v:[0,1]}
-    ylim,'Shape_PAD2',0,4,0
+    store_data,'Shape_PAD2',data={x:result_h.time, y:transpose(result_h.shape^2.), v:[0,1]}
+    ylim,'Shape_PAD2',0,5,0
+    options,'Shape_PAD2','yminor',1
     options,'Shape_PAD2','constant',1
     options,'Shape_PAD2','ytitle','Shape'
     options,'Shape_PAD2','colors',[2,6]

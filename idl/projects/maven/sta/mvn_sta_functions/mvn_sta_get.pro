@@ -19,16 +19,11 @@
 ;	Or as input to plotting programs like spec3d, plot3d, contour4d
 ;	Or used in conjunction with iterative programs such as get_2dt.pro, get_en_spec.pro
 ;-
-FUNCTION mvn_sta_get,apid,tt=tt
+FUNCTION mvn_sta_get, apid, tt=tt
 
-if not keyword_set(apid) then begin
-	print,' ERROR - mvn_sta_get requires a string input of the apid, i.e. c0,c2,...'
-	dat = 	{project_name:'MAVEN',valid:0}
-	return,dat
-endif else if size(/type,apid) ne 7 then begin
-	print,' ERROR - mvn_sta_get requires a string input of the apid, i.e. c0,c2,...'
-	dat = 	{project_name:'MAVEN',valid:0}
-	return,dat
+if size(/type,apid) ne 7 then begin
+   print,' ERROR - mvn_sta_get requires a string input of the apid, i.e. c0,c2,...'
+   return, {project_name:'MAVEN', valid:0}
 endif else routine = 'mvn_sta_get_'+apid
 
 choose_tt: 
@@ -42,19 +37,21 @@ endif
 
 if tt[0] gt tt[1] then tt=reverse(tt)
 
-dat = call_function(routine,tt[0]) 
-
-if dat.time gt tt[1] or dat.end_time lt tt[0] then return,dat
+dat = call_function(routine,tt[0])
+str_element, dat, 'mode', mode, success=gotmode
+if (~gotmode) then return, dat
+if dat.time gt tt[1] or dat.end_time lt tt[0] then return, dat
 
 nnn=0l
 nnn_max = round((tt[1]-tt[0])/4.+4) < 300000
 while dat.end_time lt tt[1] and dat.end_time gt tt[0] and nnn lt nnn_max do begin
     dat1 = call_function(routine,/ad)
-	if (dat.mode eq dat1.mode) then dat=sum4d(dat,dat1)
+    str_element, dat1, 'mode', mode1, success=gotmode
+    if (gotmode) then if (mode eq mode1) then dat = sum4d(dat, dat1)
 	nnn=nnn+1l
 endwhile
 
-return,dat
+return, dat
 
 end
 

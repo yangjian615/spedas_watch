@@ -26,12 +26,12 @@
 
   <cdf_var
       name = "DCBFPGAT"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_hk_temp_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "DCBFPGAT"
         FORMAT = "F15.3"
         LABLAXIS = "DCBFPGAT"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -47,12 +47,12 @@
 
   <cdf_var
       name = "DCBTEMP"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_hk_temp_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "DCBTEMP"
         FORMAT = "F15.3"
         LABLAXIS = "DCBTEMP"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -68,12 +68,12 @@
 
   <cdf_var
       name = "DFBTEMP"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_hk_temp_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "DFBTEMP"
         FORMAT = "F15.3"
         LABLAXIS = "DFBTEMP"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -89,12 +89,12 @@
 
   <cdf_var
       name = "LVDSZNR"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_znr_v_convert">
+      type = "double">
     <cdf_att
     	FIELDNAM = "LVDSZNR"
         FORMAT = "F15.3"
         LABLAXIS = "LVDSZNR"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -110,12 +110,12 @@
 
   <cdf_var
       name = "LVDSVD"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_flashv_convert">
+      type = "double">
     <cdf_att
     	FIELDNAM = "LVDSVD"
         FORMAT = "F15.3"
         LABLAXIS = "LVDSVD"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -131,12 +131,12 @@
 
   <cdf_var
       name = "DCB15VD"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_15vd_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "DCB15VD"
         FORMAT = "F15.3"
         LABLAXIS = "DCB15VD"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -152,12 +152,12 @@
 
   <cdf_var
       name = "DCB25VD"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_25v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "DCB25VD"
         FORMAT = "F15.3"
         LABLAXIS = "DCB25VD"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -173,12 +173,12 @@
 
   <cdf_var
       name = "DCB25VA"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_25v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "DCB25VA"
         FORMAT = "F15.3"
         LABLAXIS = "DCB25VA"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -194,12 +194,12 @@
 
   <cdf_var
       name = "FLASH0"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_flashv_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "FLASH0"
         FORMAT = "F15.3"
         LABLAXIS = "FLASH0"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -215,12 +215,12 @@
 
   <cdf_var
       name = "FLASH1"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_flashv_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "FLASH1"
         FORMAT = "F15.3"
         LABLAXIS = "FLASH1"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -236,12 +236,12 @@
 
   <cdf_var
       name = "FLASH2"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_flashv_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "FLASH2"
         FORMAT = "F15.3"
         LABLAXIS = "FLASH2"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -257,12 +257,12 @@
 
   <cdf_var
       name = "FLASH3"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_flashv_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "FLASH3"
         FORMAT = "F15.3"
         LABLAXIS = "FLASH3"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -278,12 +278,12 @@
 
   <cdf_var
       name = "DCBGND1"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_hk_gnd_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "DCBGND1"
         FORMAT = "F15.3"
         LABLAXIS = "DCBGND1"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -299,12 +299,12 @@
 
   <cdf_var
       name = "DCBGND2"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_hk_gnd_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "DCBGND2"
         FORMAT = "F15.3"
         LABLAXIS = "DCBGND2"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -320,12 +320,12 @@
 
   <cdf_var
       name = "LNPS1_GND"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_hk_gnd_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_GND"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_GND"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -341,12 +341,12 @@
 
   <cdf_var
       name = "LNPS1_A18V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_18v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_A18V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_A18V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -362,12 +362,12 @@
 
   <cdf_var
       name = "LNPS1_B18V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_18v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_B18V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_B18V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -383,12 +383,12 @@
 
   <cdf_var
       name = "LNPS1_A33V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_33v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_A33V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_A33V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -404,12 +404,12 @@
 
   <cdf_var
       name = "LNPS1_B33V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_33v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_B33V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_B33V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -425,12 +425,12 @@
 
   <cdf_var
       name = "LNPS1_4V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_4v_5v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_4V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_4V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -446,12 +446,12 @@
 
   <cdf_var
       name = "LNPS1_5V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_4v_5v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_5V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_5V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -467,12 +467,12 @@
 
   <cdf_var
       name = "LNPS1_P6V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_p6v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_P6V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_P6V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -488,12 +488,12 @@
 
   <cdf_var
       name = "LNPS1_N6V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_n6v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_N6V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_N6V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -509,12 +509,12 @@
 
   <cdf_var
       name = "LNPS1_P12V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_p12v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_P12V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_P12V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -530,12 +530,12 @@
 
   <cdf_var
       name = "LNPS1_N12V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_n12v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_N12V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_N12V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -551,12 +551,12 @@
 
   <cdf_var
       name = "LNPS1_P100V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_p100v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_P100V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_P100V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -572,12 +572,12 @@
 
   <cdf_var
       name = "LNPS1_N100V"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps1_n100v_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_N100V"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_N100V"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -593,12 +593,12 @@
 
   <cdf_var
       name = "LNPSTEMP"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps_scm_temp_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPSTEMP"
         FORMAT = "F15.3"
         LABLAXIS = "LNPSTEMP"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -614,12 +614,12 @@
 
   <cdf_var
       name = "SCMTEMP"
-      type = "Integer"
-      convert_routine = "spp_fld_lnps_scm_temp_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "SCMTEMP"
         FORMAT = "F15.3"
         LABLAXIS = "SCMTEMP"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"
@@ -635,12 +635,12 @@
 
   <cdf_var
       name = "LNPS1_SPARE"
-      type = "Integer"
-      convert_routine = "spp_fld_dcb_hk_gnd_convert">
+      type = "double">
     <cdf_att
         FIELDNAM = "LNPS1_SPARE"
         FORMAT = "F15.3"
         LABLAXIS = "LNPS1_SPARE"
+        DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
         DISPLAY_TYPE = "time_series"

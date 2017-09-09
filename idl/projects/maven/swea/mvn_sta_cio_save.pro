@@ -21,8 +21,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-07 15:20:50 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23917 $
+; $LastChangedDate: 2017-09-08 14:43:48 -0700 (Fri, 08 Sep 2017) $
+; $LastChangedRevision: 23938 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_cio_save.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -75,7 +75,7 @@ pro mvn_sta_cio_save, trange, ndays
       mvn_scpot
       mvn_sundir, frame='swe', /polar
 
-      mvn_sta_coldion, apid='d1', density=1, temperature=1, velocity=[1,1,1], $
+      mvn_sta_coldion, density=1, temperature=1, velocity=[1,1,1], $
             result_h=cio_h, result_o1=cio_o1, result_o2=cio_o2, /reset, tavg=16, $
             success=ok
 
