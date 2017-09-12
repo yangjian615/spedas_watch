@@ -36,9 +36,9 @@
 ;SEE ALSO:    "GET_DATA", "TPLOT_NAMES",  "TPLOT", "OPTIONS"
 ;
 ;CREATED BY:    Davin Larson
-; $LastChangedBy: davin-mac $
-; $LastChangedDate: 2016-08-08 15:07:11 -0700 (Mon, 08 Aug 2016) $
-; $LastChangedRevision: 21616 $
+; $LastChangedBy: jimmpc1 $
+; $LastChangedDate: 2017-09-11 12:30:20 -0700 (Mon, 11 Sep 2017) $
+; $LastChangedRevision: 23946 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/store_data.pro $
 ;-
 pro store_data,name, time,ydata,values, $
@@ -247,7 +247,7 @@ if n_elements(newname) ne 0 then begin
     endif
     nindex = where(data_quants.name eq newname, count)
     if count gt 0 then begin
-       dprint,verbose=verbose,dlevel=0,'New name must not already be in use!
+       dprint,verbose=verbose,dlevel=0,'New name must not already be in use!'
        error=2
        return
     endif else dq.name = newname

@@ -6,14 +6,14 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-08 09:22:59 -0700 (Fri, 08 Sep 2017) $
-; $LastChangedRevision: 23929 $
+; $LastChangedDate: 2017-09-11 08:29:05 -0700 (Mon, 11 Sep 2017) $
+; $LastChangedRevision: 23945 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
 
 function mms_load_feeps_ut::test_active_eyes_brst
-  eye_table_e = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'brst', 'electron')
-  eye_table_i = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'brst', 'ion')
+  eye_table_e = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'brst', 'electron', 'l2')
+  eye_table_i = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'brst', 'ion', 'l2')
   assert, array_equal(eye_table_e['bottom'], [1, 2, 3, 4, 5, 9, 10, 11, 12]), 'Problem with active eyes function (brst)
   assert, array_equal(eye_table_e['top'], [1, 2, 3, 4, 5, 9, 10, 11, 12]), 'Problem with active eyes function (brst)
   assert, array_equal(eye_table_i['bottom'], [6, 7, 8]), 'Problem with active eyes function (brst)
@@ -22,25 +22,25 @@ function mms_load_feeps_ut::test_active_eyes_brst
 end
 
 function mms_load_feeps_ut::test_active_eyes
-  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'srvy', 'electron')
+  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'srvy', 'electron', 'l2')
   assert, array_equal(eye_table['bottom'], [2, 4, 5, 9, 10]), 'Problem with FEEPS active eyes function'
   assert, array_equal(eye_table['top'], [3, 5, 9, 10, 12]), 'Problem with FEEPS active eyes function'
-  eye_table = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 1, 'srvy', 'electron')
+  eye_table = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 1, 'srvy', 'electron', 'l2')
   assert, array_equal(eye_table['bottom'], [3, 4, 5, 11, 12]), 'Problem with FEEPS active eyes function'
   assert, array_equal(eye_table['top'], [3, 4, 5, 11, 12]), 'Problem with FEEPS active eyes function'
-  eye_table = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 1, 'srvy', 'ion')
+  eye_table = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 1, 'srvy', 'ion', 'l2')
   assert, array_equal(eye_table['bottom'], [6, 7, 8]), 'Problem with FEEPS active eyes function'
   assert, array_equal(eye_table['top'], [6, 7, 8]), 'Problem with FEEPS active eyes function'
-  eye_table = mms_feeps_active_eyes(['2017-08-20', '2017-08-21'], 2, 'srvy', 'ion')
+  eye_table = mms_feeps_active_eyes(['2017-08-20', '2017-08-21'], 2, 'srvy', 'ion', 'l2')
   assert, array_equal(eye_table['bottom'], [6, 7, 8]), 'Problem with FEEPS active eyes function'
   assert, array_equal(eye_table['top'], [6, 8]), 'Problem with FEEPS active eyes function'
-  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 2, 'srvy', 'electron')
+  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 2, 'srvy', 'electron', 'l2')
   assert, array_equal(eye_table['bottom'], [1, 4, 5, 9, 11]), 'Problem with FEEPS active eyes function'
   assert, array_equal(eye_table['top'], [1, 2, 3, 5, 10, 11]), 'Problem with FEEPS active eyes function'
-  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 3, 'srvy', 'electron')
+  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 3, 'srvy', 'electron', 'l2')
   assert, array_equal(eye_table['bottom'], [1, 2, 3, 9, 10]), 'Problem with FEEPS active eyes function'
   assert, array_equal(eye_table['top'], [3, 5, 9, 10, 12]), 'Problem with FEEPS active eyes function'
-  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 4, 'srvy', 'electron')
+  eye_table = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 4, 'srvy', 'electron', 'l2')
   assert, array_equal(eye_table['bottom'], [3, 5, 9, 10, 12]), 'Problem with FEEPS active eyes function'
   assert, array_equal(eye_table['top'], [3, 4, 5, 9, 10, 11]), 'Problem with FEEPS active eyes function'
   return, 1

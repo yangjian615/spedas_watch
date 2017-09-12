@@ -33,23 +33,23 @@
 ;   
 ;   
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-09-08 14:59:38 -0700 (Fri, 08 Sep 2017) $
-;$LastChangedRevision: 23939 $
+;$LastChangedDate: 2017-09-11 14:32:48 -0700 (Mon, 11 Sep 2017) $
+;$LastChangedRevision: 23947 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_active_eyes.pro $
 ;-
 
 function mms_feeps_active_eyes, trange, probe, data_rate, species, level
-  if level eq 'sitl' && species eq 'electron' then return, hash('top', [5, 11, 12], 'bottom', [])
+  if strlowcase(level) eq 'sitl' && strlowcase(species) eq 'electron' then return, hash('top', [5, 11, 12], 'bottom', [])
   
   ; handle burst mode first
-  if data_rate eq 'brst' and species eq 'electron' then return, hash('top', [1, 2, 3, 4, 5, 9, 10, 11, 12], 'bottom', [1, 2, 3, 4, 5, 9, 10, 11, 12])
-  if data_rate eq 'brst' and species eq 'ion' then return, hash('top', [6, 7, 8], 'bottom', [6, 7, 8])
+  if strlowcase(data_rate) eq 'brst' and strlowcase(species) eq 'electron' then return, hash('top', [1, 2, 3, 4, 5, 9, 10, 11, 12], 'bottom', [1, 2, 3, 4, 5, 9, 10, 11, 12])
+  if strlowcase(data_rate) eq 'brst' and strlowcase(species) eq 'ion' then return, hash('top', [6, 7, 8], 'bottom', [6, 7, 8])
   
   ; old eyes, srvy mode, prior to 16 August 2017
-  if species eq 'electron' then sensors = hash('top', [3, 4, 5, 11, 12], 'bottom', [3, 4, 5, 11, 12]) else sensors = hash('top', [6, 7, 8], 'bottom', [6, 7, 8])
+  if strlowcase(species) eq 'electron' then sensors = hash('top', [3, 4, 5, 11, 12], 'bottom', [3, 4, 5, 11, 12]) else sensors = hash('top', [6, 7, 8], 'bottom', [6, 7, 8])
   
   ; srvy mode, after 16 August 2017
-  if time_double(trange[0]) ge time_double('2017-08-16') and data_rate eq 'srvy' then begin
+  if time_double(trange[0]) ge time_double('2017-08-16') and strlowcase(data_rate) eq 'srvy' then begin
     active_table = hash()
     active_table['1-electron'] = hash('top', [3, 5, 9, 10, 12], 'bottom', [2, 4, 5, 9, 10])
     active_table['1-ion'] = hash('top', [6, 7, 8], 'bottom', [6, 7, 8])

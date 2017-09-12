@@ -62,6 +62,8 @@
 ;
 ;     UNITS:      Specifies the units (e.g., 'eflux', 'df', etc). Default is 'df'.
 ;
+;     V_ESC:      Overplot a circle with radius = escape velocity.
+;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
 ;                 ; Uses archive data, and shows the B field direction.
@@ -90,16 +92,17 @@
 ;CREATED BY:      Takuya Hara on 2015-05-22.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: hara $
-; $LastChangedDate: 2017-04-05 10:48:55 -0700 (Wed, 05 Apr 2017) $
-; $LastChangedRevision: 23115 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-09-11 16:04:35 -0700 (Mon, 11 Sep 2017) $
+; $LastChangedRevision: 23948 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id, units=units, $
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
-                          dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange, datplot=datplot
+                          dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange, $
+                          v_esc=v_esc, datplot=datplot
 
   IF STRUPCASE(STRMID(!version.os, 0, 3)) EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
@@ -209,15 +212,16 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         str_element, d, 'nenergy', (d.nenergy), /add_replace
         str_element, d, 'bins', REBIN(TRANSPOSE(d.bins), d.nenergy, d.nbins), /add_replace
         str_element, d, 'bins_sc', REBIN(TRANSPOSE(d.bins_sc), d.nenergy, d.nbins), /add_replace
+        tmid = (d.time + d.end_time)/2D
         IF (dopot OR keyword_set(vsc)) THEN BEGIN
            IF keyword_set(vsc) THEN BEGIN
-              sstat = EXECUTE("v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')")
+              sstat = EXECUTE("v_sc = spice_body_vel('MAVEN', 'MARS', utc=tmid, frame='MAVEN_MSO')")
               IF sstat EQ 0 THEN BEGIN
                  mvn_spice_load, /download, verbose=verbose
-                 v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')
+                 v_sc = spice_body_vel('MAVEN', 'MARS', utc=tmid, frame='MAVEN_MSO')
               ENDIF 
               IF SIZE(v_sc, /type) NE 0 THEN BEGIN
-                 v_sc = spice_vector_rotate(v_sc, 0.5*(d.time + d.end_time), 'MAVEN_MSO', 'MAVEN_STATIC', verbose=verbose)
+                 v_sc = spice_vector_rotate(v_sc, tmid, 'MAVEN_MSO', 'MAVEN_STATIC', verbose=verbose)
                  dprint, dlevel=2, verbose=verbose, $
                          lbreak + '  Correcting f(v) for the spacecraft velocity:' + lbreak + $
                          '  V_sc (km/s) = [   ' + STRING(v_sc, '(3(F0, :, ",   "))') + '].'
@@ -241,6 +245,21 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            IF nbad GT 0 THEN d.bins[badbin] = 0
            vel -= v_sc                                 ; Removing V_sc from the bulk flow.
         ENDIF ELSE vel = v_3d(d)
+        
+        if keyword_set(v_esc) then begin
+          M = 6.4171d26    ; https://nssdc.gsfc.nasa.gov/planetary/factsheet/index.html
+          G = 6.673889d-8  ; Anderson, J.D., et al., EPL 110 (2015) 10002 doi: 10.1209/0295-5075/110/10002
+
+          sstat = execute("pos = spice_body_pos('MAVEN', 'MARS', utc=tmid, frame='MAVEN_MSO')")
+          if (sstat eq 0) then begin
+            mvn_spice_load, /download, verbose=verbose
+            pos = spice_body_pos('MAVEN', 'MARS', utc=tmid, frame='MAVEN_MSO')
+          endif
+          Vesc = sqrt(2D*G*M/(1.d15*sqrt(total(pos^2.))))
+          phi = 2.*!pi*findgen(101)/100.
+          Vesc_x = Vesc*cos(phi)
+          Vesc_y = Vesc*sin(phi)
+        endif
 
         IF !d.name NE 'PS' THEN BEGIN
            wstat = EXECUTE("wset, wnum")
@@ -257,6 +276,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
 
         status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=datplot, units=units")
         IF status EQ 1 THEN BEGIN
+           if keyword_set(v_esc) then oplot, Vesc_x, Vesc_y, linestyle=2, thick=2
            x0 = !x.window[0]*1.2
            y0 = !y.window[1]*0.95
            dy = 0.04
