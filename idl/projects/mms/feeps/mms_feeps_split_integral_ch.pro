@@ -10,8 +10,8 @@
 ;       [original variable]_500keV_int - the integral channel that was removed
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-09-08 10:51:42 -0700 (Fri, 08 Sep 2017) $
-;$LastChangedRevision: 23933 $
+;$LastChangedDate: 2017-09-12 11:01:04 -0700 (Tue, 12 Sep 2017) $
+;$LastChangedRevision: 23954 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_split_integral_ch.pro $
 ;-
 
@@ -23,14 +23,6 @@ pro mms_feeps_split_integral_ch, types, species, probe, suffix = suffix, data_ra
   if undefined(data_rate) then data_rate = 'srvy'
   bottom_en = species eq 'electron' ? 71 : 78
   
-  ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
-  if species eq 'electron' then sensors = [3, 4, 5, 11, 12] else sensors = [6, 7, 8]
-  if level eq 'sitl' && species eq 'electron' then sensors = [5, 11, 12]
-  
-  ; special case for burst mode data
-  if data_rate eq 'brst' && species eq 'electron' then sensors = ['1','2','3','4','5','9','10','11','12']
-  if data_rate eq 'brst' && species eq 'ion' then sensors = ['6','7','8']
-
   top_sensors = sensor_eyes['top']
   bot_sensors = sensor_eyes['bottom']
   

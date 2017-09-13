@@ -144,6 +144,7 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
 
  ;;SPANB PRE VIBE CAL
  ; Note that these should be loaded as spanea
+ ;NOTE NO ATTENUATOR MOTIONS.
  trange = '2016 11 '+ ['28/18','28/19'] ; SPAN-B FM FPGAcheck
  trange = '2016 11 '+ ['28/19','28/21'] ; SPAN-B FM ph thresh scan (changing pulse height on test pulser)
  trange = '2016 11 '+ ['28/20','28/21'] ; SPAN-B FM thresh scan. (changing threshold with no input but noise)
@@ -177,11 +178,12 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  spp_ptp_file_read, spp_file_retrieve('spp/data/sci/sweap/prelaunch/gsedata/EM/mgsehires1/20161223_163710_test/PTP_data.dat') ;SPANB second cycling attempt cover open
  trange = '2016 12 '+ ['28/23','29/12'] ; second attempt at opening cover; no DAG, after official TBAL. Cover opens when SPANB warms.
  files = spp_file_retrieve(/spaneb,/snout2,trange=trange)
+ ;the following files are located in /spaneb, no clue why!
  trange = '2017 01 '+ ['05/00','05/01'] ; cover opening attempt semi cold - opened but after timeout.
  trange = '2017 01 '+ ['06/22','06/23'] ; second cover opening attempt at cold - opened less than timeout
  
  
- ;; SPANB TVAC
+ ;; SPANB TV 
  trange = '2017 01 '+ ['11/16','11/18'] ; SPAN-B FM Cover Test post tbal, pre tvac, turn on & cpt.
  trange = '2017 01 '+ ['12/18','13/05'] ; SPAN-B FM turn on and low voltage CPT
  trange = '2017 01 '+ ['13/17','14/10'] ; SPAN-B FM Anode 5 failure #1
@@ -192,6 +194,10 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  trange = '2017 02 '+ ['07/11','07/12'] ; SPAN-Ae rotation
  
  ;; SPAN-B Cal chamber re-check: started on Feb 13th. Instrument is noisy.
+ trange = '2017 02 '+ ['13/23','14/01'] ; energy angle scan
+ trange = '2017 02 '+ ['14/02','14/04'] ; energy angle scan
+ trange = '2017 02 '+ ['14/04','14/06'] ; energy angle scan with attenuator
+ 
  
  ;; SPAN-B Cal:
  ; At some point before Feb 25th @ noon local time, maja quit recording.
@@ -201,6 +207,10 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  ; started on Feb 13th, ops started the 15th.
  trange = '2017 02 ' + ['15/00','16/00'] ; first op day
  trange = '2017 02 ' + ['15/17','15/18'] ; cover opening cold (~-50)
+ ;SPAN-B TVAC something...
+ trange = '2017 02 ' + ['18/00','19/00'] ; NOISY AS FUCK
+ trange = '2017 02 ' + ['19/08','20/08'] ; still fucking noisy, what the fuck??
+ trange = '2017 02 ' + ['20/08','21/08'] ; noisy until ~ 1800 on the 20th. Then it looks pretty normal.
  
  ;; SPAN-Ae TBAL
  trange = '2017 02 ' + ['26/20','27/12'] ; searching for cover open
@@ -235,7 +245,8 @@ files = spp_file_retrieve(/elec,/cal,trange=['2016 9 28 12','2016 9 29 8'])
  trange = '2017 03 ' + ['29/19','29/23'] ; spoiler + rotation test (mode 2)
  trange = '2017 03 ' + ['30/01','31/01'] ; spoiler tests.
  trange = '2017 03 ' + ['31/17','31/
- trange = ['2017 03 28/02','2017 03 29/00'] ; loaded currently
+ trange = ['2017 03 31/01','2017 04 01/01'] ;includes rotation & yaw test
+ ;trange = ['2017 03 28/02','2017 03 29/00'] ; loaded currently
 
 
 ;  Get recent data files:

@@ -54,7 +54,7 @@ Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
     dt = end_day2 - start_day2
     nday = floor(dt/oneday)
 
-    print,start_day,end_day,nday
+    print,start_day2,end_day2,nday
 
     for j=0L,nday-1L do begin
         tst = start_day2+j*oneday

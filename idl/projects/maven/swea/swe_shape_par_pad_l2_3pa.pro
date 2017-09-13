@@ -1,11 +1,11 @@
 ;+
 ;PROCEDURE:
-;   mvn_swe_shape_par_pad_l2
+;   swe_shape_par_pad_l2_3pa
 ;
 ;PURPOSE:
 ;
 ;   Calculate pitch angle resolved shape parameters for loaded SWEA L2
-;   PAD survey data and create tplot variable "Shape_PAD"
+;   PAD survey data for three PA ranges and create tplot variable "Shape_PAD"
 ;
 ;AUTHOR:
 ;   Shaosui Xu
@@ -53,15 +53,15 @@
 ;
 ;   Tplot variable "EFlux_ratio": store the flux ratio for two directions
 ;
-; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-09-12 10:39:13 -0700 (Tue, 12 Sep 2017) $
-; $LastChangedRevision: 23951 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_par_pad_l2.pro $
+; $LastChangedBy:  $
+; $LastChangedDate:  $
+; $LastChangedRevision: $
+; $URL: $
 ;
-;CREATED BY:    Shaosui Xu  12-08-16
+;CREATED BY:    Shaosui Xu  12-09-17
 ;-
 
-Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
+Pro swe_shape_par_pad_l2_3pa, burst=burst, spec=spec, $
     nsmo=nsmo, erange=erange, obins=obins, mask_sc=mask_sc, $
     abins=abins, dbins=dbins, mag_geo=mag_geo, pot=pot, $
     tsmo=tsmo, min_pad_eflux=min_pad_eflux
@@ -115,20 +115,12 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
     endif else begin
         swidth = 30.*!dtor
     endelse
-
-;    if (n_elements(abins) ne 16) then abins = replicate(1B, 16)
-;    if (n_elements(dbins) ne  6) then dbins = replicate(1B, 6)
-;    if (n_elements(obins) ne 96) then begin
-;        obins = replicate(1B, 96, 2)
-;        obins[*,0] = reform(abins # dbins, 96)
-;        obins[*,1] = obins[*,0]
-;    endif else obins = byte(obins # [1B,1B])
-;    if (size(mask_sc,/type) eq 0) then mask_sc = 1
-;    if keyword_set(mask_sc) then obins = swe_sc_mask * obins
+    swidth = 30.*!dtor
 
     print, "Calculating shape parameter with PAD data"
 
-    shape = fltarr(npad, 3)
+    shape = fltarr(npad,3,3)
+    f3pa = fltarr(64,3,3,npad)
     time = dblarr(npad)
     ratio = dblarr(npad,64)
     print, 'Total PAD data points: ', npad
@@ -151,7 +143,7 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
     
     padall = mvn_swe_pad
     padall.data = pdat  ; don't overwrite mvn_swe_pad
-    faway = dblarr(64,npad)
+    faway = dblarr(64,3,npad)
     ftwd = faway
     fmid = faway
     Bindx = where(B_elev le 0)
@@ -166,75 +158,102 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
 ;        indx = where(obins[pad.k3d,boom] eq 0B, count)
 ;        if (count gt 0L) then pad.data[*,indx] = !values.f_nan
 
-        Fp = replicate(!values.f_nan,64)
-        Fm = replicate(!values.f_nan,64)
-        Fz = replicate(!values.f_nan,64)
+        Fp = replicate(!values.f_nan,64,3)
+        Fm = replicate(!values.f_nan,64,3)
+        Fz = replicate(!values.f_nan,64,3)
 
         pndx = where(reform(pad.pa[63,*]) lt swidth, count)
-        if (count gt 0L) then Fp = average(reform(pad.data[*,pndx]*pad.dpa[*,pndx]), 2, /nan)$
+        if (count gt 0L) then Fp[*,0] = average(reform(pad.data[*,pndx]*pad.dpa[*,pndx]), 2, /nan)$
             /average(pad.dpa[*,pndx], 2, /nan)
+        pndx = where(reform(pad.pa[63,*]) lt 45.*!dtor, count)
+        if (count gt 0L) then Fp[*,1] = average(reform(pad.data[*,pndx]*pad.dpa[*,pndx]), 2, /nan)$
+            /average(pad.dpa[*,pndx], 2, /nan)
+        pndx = where(reform(pad.pa[63,*]) lt 60.*!dtor, count)
+        if (count gt 0L) then Fp[*,2] = average(reform(pad.data[*,pndx]*pad.dpa[*,pndx]), 2, /nan)$
+            /average(pad.dpa[*,pndx], 2, /nan)
+       
         mndx = where(reform(pad.pa[63,*]) gt (!pi - swidth), count)
-        if (count gt 0L) then Fm =average(reform(pad.data[*,mndx]*pad.dpa[*,mndx]), 2, /nan)$
+        if (count gt 0L) then Fm[*,0] =average(reform(pad.data[*,mndx]*pad.dpa[*,mndx]), 2, /nan)$
             /average(pad.dpa[*,mndx], 2, /nan)
+        mndx = where(reform(pad.pa[63,*]) gt (!pi - 45.*!dtor), count)
+        if (count gt 0L) then Fm[*,1] =average(reform(pad.data[*,mndx]*pad.dpa[*,mndx]), 2, /nan)$
+            /average(pad.dpa[*,mndx], 2, /nan)
+        mndx = where(reform(pad.pa[63,*]) gt (!pi - 60.*!dtor), count)
+        if (count gt 0L) then Fm[*,2] =average(reform(pad.data[*,mndx]*pad.dpa[*,mndx]), 2, /nan)$
+            /average(pad.dpa[*,mndx], 2, /nan)
+
         zndx = where((reform(pad.pa[63,*]) lt (!pi - swidth)) and $
             (reform(pad.pa[63,*]) gt swidth), count)
-        if (count gt 0L) then Fz=average(reform(pad.data[*,zndx]*pad.dpa[*,zndx]), 2, /nan)$
+        if (count gt 0L) then Fz[*,0] =average(reform(pad.data[*,zndx]*pad.dpa[*,zndx]), 2, /nan)$
+            /average(pad.dpa[*,zndx], 2, /nan)
+        zndx = where((reform(pad.pa[63,*]) lt (!pi - 45.*!dtor)) and $
+            (reform(pad.pa[63,*]) gt 45.*!dtor), count)
+        if (count gt 0L) then Fz[*,1] =average(reform(pad.data[*,zndx]*pad.dpa[*,zndx]), 2, /nan)$
+            /average(pad.dpa[*,zndx], 2, /nan)
+        zndx = where((reform(pad.pa[63,*]) lt (!pi - 60.*!dtor)) and $
+            (reform(pad.pa[63,*]) gt 60.*!dtor), count)
+        if (count gt 0L) then Fz[*,2] =average(reform(pad.data[*,zndx]*pad.dpa[*,zndx]), 2, /nan)$
             /average(pad.dpa[*,zndx], 2, /nan)
 
         parange[n,0]=max(pad.pa[63,*])
         parange[n,1]=min(pad.pa[63,*])
 
+        Fpc = Fp
+        Fzc = Fz
+        Fmc = Fm
         if dopot then begin
             ipot = swe_sc_pot[nn(swe_sc_pot.time, pad.time)].potential
             pots[n] = ipot
             if ipot eq ipot and abs(ipot) le 20 then begin;and ipot le -2
-                mvn_swe_pot_conve, pad.energy[*,0], Fp, outEn, Fpc, ipot
-                mvn_swe_pot_conve, pad.energy[*,0], Fz, outEn, Fzc, ipot
-                mvn_swe_pot_conve, pad.energy[*,0], Fm, outEn, Fmc, ipot
-                ;if ipot le -10 then stop
-            endif else begin
-                Fpc = Fp
-                Fzc = Fz
-                Fmc = Fm
-            endelse
-        endif else begin
-            Fpc = Fp
-            Fzc = Fz
-            Fmc = Fm
-        endelse
+               for ijk=0,2 do begin
 
-        faway[*,n] = Fpc
-        fmid[*,n] = Fzc
-        ftwd[*,n] = Fmc
+                  mvn_swe_pot_conve, pad.energy[*,0], reform(Fp[*,ijk]), outEn, tFpc, ipot
+                  mvn_swe_pot_conve, pad.energy[*,0], reform(Fz[*,ijk]), outEn, tFzc, ipot
+                  mvn_swe_pot_conve, pad.energy[*,0], reform(Fm[*,ijk]), outEn, tFmc, ipot
+                  Fpc[*,ijk] = tFpc
+                  Fzc[*,ijk] = tFzc
+                  Fmc[*,ijk] = tFmc
+               endfor
+  
+            endif 
+        endif
+
+        faway[*,*,n] = Fpc
+        fmid[*,*,n] = Fzc
+        ftwd[*,*,n] = Fmc
     endfor
 
-
-    tmp1 =  faway[*,Bindx]
-    tmp2 = ftwd[*,Bindx]
-    ftwd[*,Bindx] = tmp1
-    faway[*,Bindx] = tmp2
+    tmp1 =  faway[*,*,Bindx]
+    tmp2 = ftwd[*,*,Bindx]
+    ftwd[*,*,Bindx] = tmp1
+    faway[*,*,Bindx] = tmp2
     ratio = transpose(faway/ftwd)
+    
+    f3pa[*,*,0,*] = faway
+    f3pa[*,*,2,*] = fmid
+    f3pa[*,*,1,*] = ftwd
 
-    mvn_swe_calc_shape_arr, npad, faway, padall[1].energy[*,0], par_away, erange, aflg
-    mvn_swe_calc_shape_arr, npad, fmid, padall[1].energy[*,0], par_mid, erange, aflg
-    mvn_swe_calc_shape_arr, npad, ftwd, padall[1].energy[*,0], par_twd, erange, aflg
+    for ijk=0,2 do begin
+       
+       mvn_swe_calc_shape_arr, npad, reform(faway[*,ijk,*]), padall[1].energy[*,0], par_away, erange, aflg
+       mvn_swe_calc_shape_arr, npad, reform(fmid[*,ijk,*]), padall[1].energy[*,0], par_mid, erange, aflg
+       mvn_swe_calc_shape_arr, npad, reform(ftwd[*,ijk,*]), padall[1].energy[*,0], par_twd, erange, aflg
 
-
-    shape[*, 0] = par_away
-    shape[*, 1] = par_twd
-    shape[*, 2] = par_mid
+       shape[*,0,ijk] = par_away
+       shape[*,1,ijk] = par_twd
+       shape[*,2,ijk] = par_mid
+    endfor
     ; stop
     ;create tplot variables
-    store_data,'Shape_PAD',data={x:time, y:shape[*,0:1],mid:shape[*,2],$
-        pots:pots,parange:parange}
+    store_data,'Shape_PAD',data={x:time, y:shape[*,0:1,0],mid:shape[*,2,0],$
+        pots:pots,parange:parange,shape:shape,f3pa:f3pa}
     options,'Shape_PAD','ytitle','Shape_PAD'
     options,'Shape_PAD','labels',['Away','Towards']
     options,'Shape_PAD','labflag',1
     options,'Shape_PAD','colors',[120,254]
     options,'Shape_PAD','constant',1.
 
-    store_data,'EFlux_ratio',data={x:time,y:ratio,v:pad.energy[*,0],$
-                                   faway:faway,ftwd:ftwd,fmid:fmid}
+    store_data,'EFlux_ratio',data={x:time,y:ratio,v:pad.energy[*,0]}
     ename='EFlux_ratio'
     options,ename,'spec',1
     ylim,ename,3,5000,1

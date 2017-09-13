@@ -31,8 +31,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-08 10:51:42 -0700 (Fri, 08 Sep 2017) $
-; $LastChangedRevision: 23933 $
+; $LastChangedDate: 2017-09-12 11:01:04 -0700 (Tue, 12 Sep 2017) $
+; $LastChangedRevision: 23954 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 
@@ -53,15 +53,6 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   probe = strcompress(string(probe), /rem)
 
   prefix = 'mms'+probe+'_epd_feeps_'
-
-  ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
-  if datatype eq 'electron' then sensors = ['3', '4', '5', '11', '12'] else sensors = ['6', '7', '8']
-  
-  ; special case for burst mode data
-  if data_rate eq 'brst' && datatype eq 'electron' then sensors = ['1','2','3','4','5','9','10','11','12']
-  if data_rate eq 'brst' && datatype eq 'ion' then sensors = ['6','7','8']
-  
-  if level eq 'sitl' && datatype eq 'electron' then sensors = ['5','11','12']
 
   if datatype eq 'electron' then begin
     energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
