@@ -16,15 +16,15 @@
 ;       RESULTS:       Hold the full structure of shape parameters and other parameters
 ;
 ;       TPLOT:         Create tplot varible for two-stream shape parameter, being
-;                      stored as tplot variable "Shape_PAD"
+;                      stored as tplot variable "Shape_PAD" and "rat_a2t"
 ;
 ;       PARNG:         Shape parameter calculated based on 30, 45, and 60 deg, 
 ;                      corresponding to PARNG=1,2,3. Default is PA=45
 ;       
-; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-20 10:20:02 -0700 (Thu, 20 Jul 2017) $
-; $LastChangedRevision: 23680 $
-; $URL: svn+ssh:$
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2017-09-13 16:51:25 -0700 (Wed, 13 Sep 2017) $
+; $LastChangedRevision: 23964 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_restore.pro $
 ;
 ;CREATED BY:    Shaosui Xu  06-23-17
 ;FILE: mvn_swe_shape_restore
@@ -88,5 +88,13 @@ Pro mvn_swe_shape_restore,trange,results=results,tplot=tplot,orbit=orbit,parng=p
         options,'Shape_PAD','colors',[120,254]
         options,'Shape_PAD','constant',1.
         ylim,'Shape_PAD',0,3,0
+
+        store_data,'rat_a2t',data={x:shp.t,y:transpose(shp.fratio_a2t[0:1,indx])}
+        ename='rat_a2t'
+        options,ename,'ytitle',('flux ratio!c away/twd !c'+npa)
+        options,ename,'labels',['35-60 eV','100-300 eV']
+        options,ename,'colors',[1,2]
+        options,ename,'constant',[1.,0.75]
+        ylim,ename,0,2.5,0
     endif
 end

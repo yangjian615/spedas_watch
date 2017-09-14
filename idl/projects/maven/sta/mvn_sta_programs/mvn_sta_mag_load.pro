@@ -14,9 +14,9 @@
 ;  verbose:     Display information.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-03-16 12:03:14 -0700 (Mon, 16 Mar 2015) $
-; $LastChangedRevision: 17141 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-09-13 18:12:29 -0700 (Wed, 13 Sep 2017) $
+; $LastChangedRevision: 23966 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_programs/mvn_sta_mag_load.pro $
 ;
 ;-
@@ -119,9 +119,10 @@ pro mvn_sta_mag_load, frame=frame, verbose=verbose,  tplot=tplot
         pp=where(tags eq 'POS_SC_MSO' or $
                  tags eq 'MAGF',cc)
         if cc eq 2 then begin
-           temp=execute('utc=time_string(mvn_'+apid[api]+'_dat.time)')
-           nn=n_elements(utc)
-           apid_time=time_double(utc)
+           temp=execute('start_time=time_string(mvn_'+apid[api]+'_dat.time)')
+           temp=execute('end_time=time_string(mvn_'+apid[api]+'_dat.end_time)')
+           nn=n_elements(start_time)
+           apid_time=(time_double(start_time) + time_double(end_time))/2D
            xx=interpol(magf[*,0],time,apid_time)
            yy=interpol(magf[*,1],time,apid_time)
            zz=interpol(magf[*,2],time,apid_time)
