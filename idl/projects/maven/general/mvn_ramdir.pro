@@ -52,8 +52,8 @@
 ;                 default frame, this would be 'V_sc_MAVEN_SPACECRAFT'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-20 09:42:50 -0700 (Mon, 20 Mar 2017) $
-; $LastChangedRevision: 22992 $
+; $LastChangedDate: 2017-09-13 18:17:22 -0700 (Wed, 13 Sep 2017) $
+; $LastChangedRevision: 23968 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_ramdir.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -133,6 +133,7 @@ pro mvn_ramdir, trange, dt=dt, pans=pans, frame=frame, mso=mso, polar=polar
 
     vname = 'V_sc_' + to_frame
     options,vname,'ytitle','RAM (' + fname + ')!ckm/s'
+    options,vname,'colors',[2,4,6]
     options,vname,'labels',labels
     options,vname,'labflag',1
     options,vname,'constant',0

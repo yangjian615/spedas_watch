@@ -19,10 +19,10 @@
 ;                      end_day and ndays are not specified, ndays=7
 ;
 ;
-; $LastChangedBy:  $
-; $LastChangedDate:  $
-; $LastChangedRevision:  $
-; $URL:  $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-09-14 11:32:26 -0700 (Thu, 14 Sep 2017) $
+; $LastChangedRevision: 23977 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot_comp_dailysave.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 08/01/2017
 ;FILE: mvn_scpot_comp_dailysave.pro

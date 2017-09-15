@@ -85,12 +85,13 @@
 ;     - Ion Eyes: 6, 7, 8
 ;     
 ;     8Sept17: Updated to use different active telescopes before/after the CIDP software update on 16 August 2017
+;     14Sept17: Updated to use different active telescopes for level=SITL ^^
 ;     
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-09-08 14:59:38 -0700 (Fri, 08 Sep 2017) $
-;$LastChangedRevision: 23939 $
+;$LastChangedDate: 2017-09-14 16:09:04 -0700 (Thu, 14 Sep 2017) $
+;$LastChangedRevision: 23980 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $

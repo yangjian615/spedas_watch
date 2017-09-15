@@ -33,8 +33,8 @@
 ;                 default frame, this would be 'Sun_MAVEN_SPACECRAFT'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-30 12:57:52 -0700 (Wed, 30 Aug 2017) $
-; $LastChangedRevision: 23855 $
+; $LastChangedDate: 2017-09-13 18:17:22 -0700 (Wed, 13 Sep 2017) $
+; $LastChangedRevision: 23968 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_sundir.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -94,6 +94,7 @@ pro mvn_sundir, trange, dt=dt, pans=pans, frame=frame, polar=polar
       else         : ; do nothing
     endcase
     options,pname,'ytitle','Sun (' + fname + ')'
+    options,pname,'colors',[2,4,6]
     options,pname,'labels',labels
     options,pname,'labflag',1
     options,pname,spice_frame=to_frame,spice_master_frame='MAVEN_SPACECRAFT'

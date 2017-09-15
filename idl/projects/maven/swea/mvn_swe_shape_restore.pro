@@ -22,8 +22,8 @@
 ;                      corresponding to PARNG=1,2,3. Default is PA=45
 ;       
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-09-13 16:51:25 -0700 (Wed, 13 Sep 2017) $
-; $LastChangedRevision: 23964 $
+; $LastChangedDate: 2017-09-14 10:36:02 -0700 (Thu, 14 Sep 2017) $
+; $LastChangedRevision: 23974 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_restore.pro $
 ;
 ;CREATED BY:    Shaosui Xu  06-23-17
@@ -93,6 +93,7 @@ Pro mvn_swe_shape_restore,trange,results=results,tplot=tplot,orbit=orbit,parng=p
         ename='rat_a2t'
         options,ename,'ytitle',('flux ratio!c away/twd !c'+npa)
         options,ename,'labels',['35-60 eV','100-300 eV']
+        options,ename,'labflag',1
         options,ename,'colors',[1,2]
         options,ename,'constant',[1.,0.75]
         ylim,ename,0,2.5,0

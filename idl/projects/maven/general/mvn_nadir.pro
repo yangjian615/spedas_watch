@@ -34,8 +34,8 @@
 ;                 default frame, this would be 'Nadir_MAVEN_SPACECRAFT'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-28 14:02:00 -0700 (Tue, 28 Mar 2017) $
-; $LastChangedRevision: 23058 $
+; $LastChangedDate: 2017-09-13 18:17:22 -0700 (Wed, 13 Sep 2017) $
+; $LastChangedRevision: 23968 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_nadir.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -105,6 +105,7 @@ pro mvn_nadir, trange, dt=dt, pans=pans, frame=frame, polar=polar
       else         : ; do nothing
     endcase
     options,pname,'ytitle','Nadir (' + fname + ')'
+    options,pname,'colors',[2,4,6]
     options,pname,'labels',labels
     options,pname,'labflag',1
     pans = [pans, pname]

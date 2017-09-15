@@ -47,8 +47,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-07 17:28:19 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23924 $
+; $LastChangedDate: 2017-09-14 10:43:04 -0700 (Thu, 14 Sep 2017) $
+; $LastChangedRevision: 23975 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_functions/mvn_sta_v4d.pro $
 ;
 ;-
@@ -82,6 +82,8 @@ PRO mvn_sta_v4d, trange, frame=frame, _extra=_extra, mass=mass, m_int=mq, $
                 mrange : [NaN,NaN]     , $   ; mass range for integration (amu)
                 frame  : ''            , $   ; reference frame (for all vectors)
                 shape  : [NaN,NaN]     , $   ; e- shape parameter [away, toward]
+                ratio  : NaN           , $   ; e- flux ratio (away/toward)
+                flux40 : NaN           , $   ; e- energy flux at 40 eV
                 mso    : NaN3          , $   ; MSO coordinates of spacecraft
                 geo    : NaN3          , $   ; GEO coordinates of spacecraft
                 alt    : NaN           , $   ; spacecraft altitude (ellipsoid)

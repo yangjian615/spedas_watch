@@ -25,8 +25,8 @@
 ;       PANS:          Tplot panel names created when DOPLOT is set.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-07 15:22:24 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23918 $
+; $LastChangedDate: 2017-09-13 18:18:57 -0700 (Wed, 13 Sep 2017) $
+; $LastChangedRevision: 23969 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_cio_restore.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -172,6 +172,7 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     store_data,'vel_o1',data={x:result_o1.time, y:result_o1.vbulk}
     store_data,'vel_o2',data={x:result_o2.time, y:result_o2.vbulk}
     store_data,'Vesc',data={x:result_h.time, y:result_h.v_esc}
+    options,'Vesc','linestyle',2
     store_data,'vel_i+',data=['vel_h','vel_o1','vel_o2','Vesc']
     ylim,'vel_i+',1,500,1
     options,'vel_i+','constant',[10,100]
@@ -180,6 +181,52 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     options,'vel_i+','labels',[species,'ESC']
     options,'vel_i+','labflag',1
     pans = [pans, 'vel_i+']
+
+; Polarity of the O2+ bulk flow (+X or -X)
+
+    V_phi = atan(result_o2.vel[2],result_o2.vel[1])*!radeg
+    indx = where(V_phi lt 0., count)
+    if (count gt 0L) then V_phi[indx] += 360.
+    V_the = asin(result_o2.vel[0]/result_o2.vbulk)*!radeg
+
+    store_data,'V_o2_phi',data={x:result_o2.time, y:V_phi}
+    ylim,'V_o2_phi',0,360,0
+    options,'V_o2_phi','ytitle','V_O2 (MSO)!cYZ Clock'
+    options,'V_o2_phi','yticks',4
+    options,'V_o2_phi','yminor',3
+    options,'V_o2_phi','constant',[90,180,270]
+    options,'V_o2_phi','psym',3
+    options,'V_o2_phi','colors',[4]
+
+    store_data,'V_o2_the',data={x:result_o2.time, y:V_the}
+    ylim,'V_o2_the',-90,90,0
+    options,'V_o2_the','ytitle','V_O2 (MSO)!cX Polar'
+    options,'V_o2_the','yticks',2
+    options,'V_o2_the','yminor',3
+    options,'V_o2_the','constant',[0]
+    options,'V_o2_the','psym',3
+    options,'V_o2_the','colors',[4]
+
+    pans = [pans, 'V_o2_phi', 'V_o2_the']
+
+    Vx = result_o2.vel[0] # [1.,1.]
+    indx = where(Vx ge 0., npos, complement=jndx, ncomplement=nneg)
+    if (npos gt 0L) then Vx[indx,*] = -1.
+    if (nneg gt 0L) then Vx[jndx,*] =  1.
+
+    bname = 'Vx_o2'
+    store_data,bname,data={x:result_o2.time, y:Vx, v:[-1,1]}
+    ylim,bname,0,1,0
+    zlim,bname,-1.5,1,0  ; optimized for color table 43
+    options,bname,'spec',1
+    options,bname,'panel_size',0.05
+    options,bname,'ytitle',''
+    options,bname,'yticks',1
+    options,bname,'yminor',1
+    options,bname,'no_interp',1
+    options,bname,'xstyle',4
+    options,bname,'ystyle',4
+    options,bname,'no_color_scale',1
 
 ; Kinetic Energy of Bulk Flow
 
@@ -242,6 +289,13 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     options,'flux_i+','labflag',1
     pans = [pans, 'flux_i+']
 
+; Spacecraft potential (when not otherwise available)
+
+    store_data,'cio_scp',data={x:result_h.time, y:result_h.sc_pot}
+    options,'cio_scp','ytitle','S/C Pot!cV'
+    options,'cio_scp','constant',[0.]
+    pans = [pans, 'cio_scp']
+
 ; Ephemeris and geometry
 
     slon = result_h.slon
@@ -252,15 +306,36 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     options,'Sun_GEO_Lon','yticks',4
     options,'Sun_GEO_Lon','yminor',3
     options,'Sun_GEO_Lon','psym',3
-    options,'Sun_GEO_Lon','colors',4
+    options,'Sun_GEO_Lon','colors',5
     options,'Sun_GEO_Lon','ytitle','Sun Lon!cIAU_MARS'
-    pans = [pans, 'Sun_GEO_Lon']
+
+    x = reform(result_h.geo[0])
+    y = reform(result_h.geo[1])
+    lon = atan(y,x)*!radeg
+    indx = where(lon lt 0., count)
+    if (count gt 0L) then lon[indx] += 360.
+    store_data,'Mvn_GEO_Lon',data={x:result_h.time, y:lon}
+    ylim,'Mvn_GEO_Lon',0,360,0
+    options,'Mvn_GEO_Lon','yticks',4
+    options,'Mvn_GEO_Lon','yminor',3
+    options,'Mvn_GEO_Lon','psym',3
+    options,'Mvn_GEO_Lon','colors',4
+    options,'Mvn_GEO_Lon','ytitle','Mvn Lon!cIAU_MARS'
+
+    store_data,'Lon_GEO',data=['Sun_GEO_Lon','Mvn_GEO_Lon']
+    ylim,'Lon_GEO',0,360,0
+    options,'Lon_GEO','colors',[5,4]
+    options,'Lon_GEO','ytitle','Lon!cIAU_MARS'
+    options,'Lon_GEO','labels',['Sun','Mvn']
+    options,'Lon_GEO','labflag',1
+
+    pans = ['Lon_GEO', pans]
 
     store_data,'Sun_PL_The',data={x:result_h.time, y:result_h.sthe}
     options,'Sun_PL_The','colors',4
     options,'Sun_PL_The','ynozero',1
     options,'Sun_PL_The','ytitle','Sun The!cS/C'
-    pans = [pans, 'Sun_PL_The']
+    pans = ['Sun_PL_The', pans]
 
   endif else pans = ''
 

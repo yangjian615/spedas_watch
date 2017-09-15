@@ -154,8 +154,8 @@
 ;          one showing the five unmerged methods in one panel.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-07 17:09:08 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23922 $
+; $LastChangedDate: 2017-09-13 18:16:46 -0700 (Wed, 13 Sep 2017) $
+; $LastChangedRevision: 23967 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot.pro $
 ;
 ;-
@@ -384,7 +384,7 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
     endif
 
     if (i eq 0) then begin
-      mvn_sta_l2_load, sta_apid=['c0','c6','ca']
+      mvn_sta_l2_load, sta_apid=['c6']
       mvn_sta_l2_tplot, /replace
       get_data,'mvn_sta_c6_scpot',data=stapot,index=i
     endif

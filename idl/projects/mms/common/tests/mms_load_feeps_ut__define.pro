@@ -6,17 +6,39 @@
 ; in the local path
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-12 11:00:37 -0700 (Tue, 12 Sep 2017) $
-; $LastChangedRevision: 23953 $
+; $LastChangedDate: 2017-09-14 08:44:58 -0700 (Thu, 14 Sep 2017) $
+; $LastChangedRevision: 23972 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_feeps_ut__define.pro $
 ;-
 
-function mms_load_feeps_ut::test_active_eyes_sitl
-  eye_table_e = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'srvy', 'electron', 'sitl')
-  eye_table_i = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'srvy', 'ion', 'sitl')
+function mms_load_feeps_ut::test_active_eyes_sitl_before_updates
+  eye_table_e = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 1, 'srvy', 'electron', 'sitl')
   assert, array_equal(eye_table_e['top'], [5, 11, 12]), 'Problem with active eyes (SITL) test'
   assert, eye_table_e['bottom'] eq !NULL, 'Problem with active eyes (SITL) test'
-  assert, array_equal(eye_table_i['top'], [6, 7, 8]), 'Problem with active eyes (SITL) test'
+  eye_table_e = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 2, 'srvy', 'electron', 'sitl')
+  assert, array_equal(eye_table_e['top'], [5, 11, 12]), 'Problem with active eyes (SITL) test'
+  assert, eye_table_e['bottom'] eq !NULL, 'Problem with active eyes (SITL) test'
+  eye_table_e = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 3, 'srvy', 'electron', 'sitl')
+  assert, array_equal(eye_table_e['top'], [5, 11, 12]), 'Problem with active eyes (SITL) test'
+  assert, eye_table_e['bottom'] eq !NULL, 'Problem with active eyes (SITL) test'
+  eye_table_e = mms_feeps_active_eyes(['2015-12-15', '2015-12-16'], 4, 'srvy', 'electron', 'sitl')
+  assert, array_equal(eye_table_e['top'], [5, 11, 12]), 'Problem with active eyes (SITL) test'
+  assert, eye_table_e['bottom'] eq !NULL, 'Problem with active eyes (SITL) test'
+  return, 1
+end
+
+function mms_load_feeps_ut::test_active_eyes_sitl_after_updates
+  eye_table_e = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 1, 'srvy', 'electron', 'sitl')
+  assert, array_equal(eye_table_e['top'], [5, 12]), 'Problem with active eyes (SITL) test'
+  assert, eye_table_e['bottom'] eq !NULL, 'Problem with active eyes (SITL) test'
+  eye_table_e = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 2, 'srvy', 'electron', 'sitl')
+  assert, array_equal(eye_table_e['top'], [5, 11]), 'Problem with active eyes (SITL) test'
+  assert, eye_table_e['bottom'] eq !NULL, 'Problem with active eyes (SITL) test'
+  eye_table_e = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 3, 'srvy', 'electron', 'sitl')
+  assert, array_equal(eye_table_e['top'], [5, 12]), 'Problem with active eyes (SITL) test'
+  assert, eye_table_e['bottom'] eq !NULL, 'Problem with active eyes (SITL) test'
+  eye_table_e = mms_feeps_active_eyes(['2017-12-15', '2017-12-16'], 4, 'srvy', 'electron', 'sitl')
+  assert, array_equal(eye_table_e['top'], [5, 11]), 'Problem with active eyes (SITL) test'
   assert, eye_table_e['bottom'] eq !NULL, 'Problem with active eyes (SITL) test'
   return, 1
 end

@@ -6,8 +6,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-02-21 14:29:49 -0800 (Tue, 21 Feb 2017) $
-; $LastChangedRevision: 22840 $
+; $LastChangedDate: 2017-09-14 12:45:51 -0700 (Thu, 14 Sep 2017) $
+; $LastChangedRevision: 23978 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/quicklook/mms_load_feeps_crib_qlplots.pro $
 ;-
 
@@ -20,7 +20,7 @@ timespan, date, 1
 ; 1) intensity
 ; 2) count_rate
 ; 3) counts
-;;; note, supposed to be count_rate for production; but I'm currently testing with intensity
+;;; note, supposed to be count_rate for production
 type = 'count_rate'
 data_rate = 'srvy'
 
@@ -50,7 +50,7 @@ tdeflag, tnames('*_count_rate_*'), 'repeat', /overwrite
 tdeflag, tnames('*_counts_*'), 'repeat', /overwrite
 
 mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[84, 85], data_units = type, level='l1b'
-mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[214, 215], data_units = type, level='l1b'
+mms_feeps_pad, probe = probe, datatype = 'electron', suffix='_electrons', energy=[200, 250], data_units = type, level='l1b'
 mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[76, 77], data_units = type, level='l1b'
 mms_feeps_pad, probe = probe, datatype = 'ion', suffix='_ions', energy=[205, 206], data_units = type, level='l1b'
 
@@ -96,7 +96,7 @@ spd_mms_load_bss, datatype=['fast', 'burst'], /include_labels
 panels = 'mms'+probe+['_dfg_srvy_dmpa_clipped', $
   '_epd_feeps_srvy_l1b_electron_'+type+'_omni_spin_electrons', $
   '_epd_feeps_srvy_l1b_electron_'+type+'_84-85keV_pad_spin_electrons', $
-  '_epd_feeps_srvy_l1b_electron_'+type+'_214-215keV_pad_spin_electrons', $
+  '_epd_feeps_srvy_l1b_electron_'+type+'_200-250keV_pad_spin_electrons', $
   '_epd_feeps_srvy_l1b_ion_'+type+'_omni_spin_ions', $
   '_epd_feeps_srvy_l1b_ion_'+type+'_76-77keV_pad_spin_ions', $
   '_epd_feeps_srvy_l1b_ion_'+type+'_205-206keV_pad_spin_ions']

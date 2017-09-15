@@ -64,6 +64,8 @@
 ;
 ;     V_ESC:      Overplot a circle with radius = escape velocity.
 ;
+;      DIAG:      Print out diagnistics on the plot: S/C pot, S/C velocity
+;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
 ;                 ; Uses archive data, and shows the B field direction.
@@ -93,8 +95,8 @@
 ;
 ;LAST MODIFICATION:
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-11 16:04:35 -0700 (Mon, 11 Sep 2017) $
-; $LastChangedRevision: 23948 $
+; $LastChangedDate: 2017-09-14 10:47:13 -0700 (Thu, 14 Sep 2017) $
+; $LastChangedRevision: 23976 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
@@ -102,7 +104,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id, units=units, $
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
                           dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange, $
-                          v_esc=v_esc, datplot=datplot
+                          v_esc=v_esc, datplot=datplot, diag=diag
 
   IF STRUPCASE(STRMID(!version.os, 0, 3)) EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
@@ -277,26 +279,22 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=datplot, units=units")
         IF status EQ 1 THEN BEGIN
            if keyword_set(v_esc) then oplot, Vesc_x, Vesc_y, linestyle=2, thick=2
+
            x0 = !x.window[0]*1.2
            y0 = !y.window[1]*0.95
            dy = 0.04
            XYOUTS, x0, y0, mtit, charsize=!p.charsize, /normal
-           if (dopot) then begin
+           y0 -= dy
+           vmsg = strtrim(string(vel,'(f11.2)'),2)
+           msg = 'V_bulk = [' + vmsg[0] + ', ' + vmsg[1] + ', ' + vmsg[2] + '] km/s'
+           if keyword_set(diag) then begin
              y0 -= dy
              msg = string(-d.sc_pot,'("s/c pot = ",f5.1," V")')
              XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
-           endif
-           if keyword_set(vsc) then begin
              y0 -= dy
              msg = string(sqrt(total(v_sc*v_sc)),'("s/c vel = ",f5.2," km/s")')
              XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
            endif
-           y0 -= dy
-           msg = string(sqrt(total(vel*vel)),'("bulk vel = ",f5.2," km/s")')
-           XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
-           y0 -= dy
-           vbulk=sqrt(total(vel*vel))
-           msg = string(vbulk^2*0.005*mq,'("energy = ",f5.2," eV")')
            XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
            IF keyword_set(showdata) THEN BEGIN
               wb = WHERE(block.v LE 0., nwb, complement=wf, ncomplement=nwf)
