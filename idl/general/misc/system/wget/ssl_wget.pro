@@ -1,6 +1,6 @@
 ; This version only works on Windows (so far)
 
-pro wget,cmd,serverdir=serverdir,localdir=localdir,pathnames=pathnames,nowait=nowait, $
+pro ssl_wget,cmd,serverdir=serverdir,localdir=localdir,pathnames=pathnames,nowait=nowait, $
   outputfile=outputfile, $
   exit_status=exit_status, $
   verbose=verbose, $

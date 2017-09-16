@@ -21,8 +21,8 @@
 ;       saveflux:      If set to 1, will save eflux for 3 PA ranges to
 ;                      a provided directory. 
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-09-13 17:02:30 -0700 (Wed, 13 Sep 2017) $
-; $LastChangedRevision: 23965 $
+; $LastChangedDate: 2017-09-15 12:09:24 -0700 (Fri, 15 Sep 2017) $
+; $LastChangedRevision: 23984 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_dailysave.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 08/01/2017
@@ -102,17 +102,19 @@ Pro mvn_swe_shape_dailysave,start_day=start_day,end_day=end_day,ndays=ndays,$
             options,'mvn_B_1sec_iau_mars','labflag',1
             options,'mvn_B_1sec_iau_mars','constant',0.
             mvn_mag_geom            
+            get_data,'mvn_B_1sec_iau_mars',data=mage
 
             mvn_scpot
-            swe_shape_par_pad_l2_3pa,spec=30,erange=[20,80],mag_geo=mag,pot=1,tsmo=16
+            swe_shape_par_pad_l2_3pa,spec=30,mag_geo=mage,erange=[20,80],$
+                                     pot=1,tsmo=16
 
             str_element, mvn_swe_pad, 'time', ptime, success=ok
             get_mvn_eph,ptime,eph
             store_data,'ephall',data={x:eph.time, xmso:eph.x_ss, $
-                                      ymso:eph.y_ss, zmso:eph.z_ss,$
-                                      xgeo:eph.x_pc, ygeo:eph.y_pc, zgeo:eph.z_pc,$
-                                      lon:eph.elon, lat:eph.lat, alt:eph.alt, $
-                                      sza:eph.sza, lst:eph.lst}
+                                ymso:eph.y_ss, zmso:eph.z_ss,$
+                                xgeo:eph.x_pc, ygeo:eph.y_pc, zgeo:eph.z_pc,$
+                                lon:eph.elon, lat:eph.lat, alt:eph.alt, $
+                                sza:eph.sza, lst:eph.lst}
 
             get_data,'Shape_PAD',data=shp
             tsh=shp.x
@@ -125,7 +127,7 @@ Pro mvn_swe_shape_dailysave,start_day=start_day,end_day=end_day,ndays=ndays,$
             Nt=n_elements(tsh)
             amp=dblarr(Nt) & az=amp & elev=az & clk=az
 
-            get_data,'mvn_B_1sec_iau_mars',data=mage
+            ;get_data,'mvn_B_1sec_iau_mars',data=mage
             tmag=mage.x
             amp_ori=mage.amp
             azim_ori=mage.azim
