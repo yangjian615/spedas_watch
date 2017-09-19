@@ -112,9 +112,9 @@
 ;     ignore_filedate, archive_ext, archive_dir, min_age_limit
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-14 13:48:17 -0700 (Wed, 14 Jun 2017) $
-;$LastChangedRevision: 23471 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-09-18 15:32:58 -0700 (Mon, 18 Sep 2017) $
+;$LastChangedRevision: 23999 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download.pro $
 ;
 ;-
@@ -223,12 +223,16 @@ endif
 
 ;if wildcards are used then contact the server(s) and expand list to include all matches
 if ~keyword_set(no_download) and ~keyword_set(no_wildcards) then begin
-
+ 
+  url_original = url
   spd_download_expand, url, last_version=last_version, ssl_verify_peer=ssl_verify_peer, ssl_verify_host=ssl_verify_host, _extra=_extra
-  
+
   if array_equal(url,'') then begin
-    dprint, dlevel=1, 'No matching remote files found.'
-    return, output
+    ; we did not find remote files but we could still have local files
+    ; for example, when the internet is disconnected and we are using wildcards 
+    url = url_original
+    local_no_download = 1 
+    dprint, dlevel=1, 'No matching remote files found. Searching for local files.'
   endif
 
 endif
@@ -262,7 +266,7 @@ file_list = strarr(n_elements(filename))
 
 ; Loop over URLs to download 
 ;--------------------------------------------
-if ~keyword_set(no_download) then begin
+if ~keyword_set(no_download) and ~keyword_set(local_no_download) then begin
 
   for i=0, n_elements(url)-1 do begin
 
