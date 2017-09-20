@@ -10,8 +10,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-18 15:32:49 -0700 (Mon, 18 Sep 2017) $
-; $LastChangedRevision: 23998 $
+; $LastChangedDate: 2017-09-19 09:16:10 -0700 (Tue, 19 Sep 2017) $
+; $LastChangedRevision: 24003 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_flipbook_crib.pro $
 ;-
 ;
@@ -79,6 +79,7 @@ tplot, ['mms1_fgm_b_gse_srvy_l2_bvec', 'mms1_dis_heatq_dbcs_brst', 'temp', 'mms1
 ; note: the slices may not show up in the tplot window when saving to postscript
 ; --> they will be in the files, though
 mms_flipbookify, time_step=10, probe=1, species='i', /postscript
+stop
 
 ;------------------------------------------------------
 ; FPI example with limited trange

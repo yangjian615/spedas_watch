@@ -36,7 +36,15 @@
 ;         'perp_yz':  The data's y & z axes are projected onto the plane normal to the B field
 ;
 ;         default: ['xy', 'xz', 'yz']
+;         
+;     three_d_interp: use the 3D interpolation method
+;     two_d_interp: use the 2D interpolation method (default, fastest)
+;     geometric: use the geometric interpolation method
 ;     
+;     custom_rotation: Applies a custom rotation matrix to the data.  Input may be a
+;                   3x3 rotation matrix or a tplot variable containing matrices.
+;                   If the time window covers multiple matrices they will be averaged.
+;                   This is applied before other transformations
 ;     
 ;     /energy: produce energy slices instead of velocity slices
 ;     
@@ -53,6 +61,9 @@
 ;     right_margin: adjust the right-margin of the output images (where the 
 ;         slices are stored)
 ;     
+;     title: title of the plot; accepts common time string formats, e.g.,
+;         title="YYYY-MM-DD/hh:mm:ss.fff"
+;     
 ;     time_step: integer specifying the interval to produce plots at 
 ;         (e.g., time_step=1 -> plot at every time, time_step=2 -> every other time, etc)
 ;     /postscript: save the images as postscript files instead of PNGs
@@ -64,6 +75,8 @@
 ; EXAMPLES:
 ;     MMS> .run mms_basic_dayside
 ;     MMS> mms_flipbookify, data_rate='fast', time_step=10000
+;     
+;     see examples/advanced/mms_flipbook_crib.pro for more examples
 ; 
 ; NOTES:
 ; 
@@ -77,8 +90,8 @@
 ;     
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-18 15:27:02 -0700 (Mon, 18 Sep 2017) $
-; $LastChangedRevision: 23997 $
+; $LastChangedDate: 2017-09-19 09:01:46 -0700 (Tue, 19 Sep 2017) $
+; $LastChangedRevision: 24002 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_flipbookify.pro $
 ;-
 
@@ -87,7 +100,8 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
   instrument=instrument, time_step=time_step, xrange=xrange, yrange=yrange, zrange=zrange, $
   slices=slices, box_color=box_color, linestyle=linestyle, thickness=thickness, $
   postscript=postscript, box_style=box_style, box_thickness=box_thickness, no_box=no_box, $
-  output_dir=output_dir, video=video
+  output_dir=output_dir, video=video, custom_rotation=custom_rotation, geometric=geometric, $
+  two_d_interp=two_d_interp, three_d_interp=three_d_interp, title=title
   
   @tplot_com.pro 
 
@@ -102,6 +116,7 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
   if undefined(slices) then slices = ['xy', 'xz', 'yz']
   if undefined(linestyle) then linestyle=2
   if undefined(thickness) then thickness=1
+  if undefined(three_d_interp) and undefined(geometric) then two_d_interp = 1
   
   if ~is_struct(tplot_vars) then begin
     dprint, dlevel=0, 'Error, no tplot window found'
@@ -127,12 +142,17 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
     if undefined(no_box) then draw_box = 1
   endelse
   tplot_options, 'xmargin', [left_margin, right_margin]
+
+  ; make sure the output directory exists, if not, create it
+  dir_search = file_search(output_dir, /test_directory)
+  if dir_search eq '' then file_mkdir2, output_dir
   
   if instrument eq 'fpi' then begin
     name =  'mms'+probe+'_d'+species+'s_dist_'+data_rate
     bfield = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
     vel_data = 'mms'+probe+'_d'+species+'s_bulkv_gse_'+data_rate
-    if ~spd_data_exists(name, trange[0], trange[1]) then mms_load_fpi, data_rate=data_rate, level=level, datatype=['d'+species+'s-dist', 'd'+species+'s-moms'], probe=probe, trange=trange, /time_clip
+    if ~spd_data_exists(vel_data, trange[0], trange[1]) then append_array, datatypes, ['d'+species+'s-dist', 'd'+species+'s-moms'] else append_array, datatypes, 'd'+species+'s-dist'
+    if ~spd_data_exists(name, trange[0], trange[1]) then mms_load_fpi, data_rate=data_rate, level=level, datatype=datatypes, probe=probe, trange=trange, /time_clip
     if ~spd_data_exists(bfield, trange[0], trange[1]) then mms_load_fgm, level=level, probe=probe, trange=trange, /time_clip
   endif else if instrument eq 'hpca' then begin
     name = 'mms'+probe+'_hpca_'+species+'_phase_space_density'
@@ -155,10 +175,10 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
 
   for time_idx=0, n_elements(times)-1, time_step do begin
     if keyword_set(postscript) then popen, output_dir+instrument+'_'+time_string(times[time_idx], tformat='YYYY-MM-DD-hh-mm-ss.fff'), /land
-    slice = spd_slice2d(dist, time=times[time_idx], energy=energy, /two, rotation=slices[0], mag_data=bfield, vel_data=vel_data)
-    slice2 = spd_slice2d(dist, time=times[time_idx], energy=energy, /two, rotation=slices[1], mag_data=bfield, vel_data=vel_data) 
-    slice3 = spd_slice2d(dist, time=times[time_idx], energy=energy, /two, rotation=slices[2], mag_data=bfield, vel_data=vel_data)
-    tplot
+    slice = spd_slice2d(dist, time=times[time_idx], energy=energy, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[0], mag_data=bfield, vel_data=vel_data)
+    slice2 = spd_slice2d(dist, time=times[time_idx], energy=energy, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[1], mag_data=bfield, vel_data=vel_data) 
+    slice3 = spd_slice2d(dist, time=times[time_idx], energy=energy, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[2], mag_data=bfield, vel_data=vel_data)
+    tplot, title=time_string(times[time_idx], tformat=title)
     
     spd_slice2d_plot, slice, /custom, window=1, /noerase, position=[0.75, 0.1, 0.90, 1], title='', /NOCOLORBAR, xrange=xrange, yrange=yrange, zrange=zrange
     spd_slice2d_plot, slice2, /custom, window=1, /noerase, position=[0.75, 0.4, 0.90, 1], title='', xrange=xrange, yrange=yrange, zrange=zrange
