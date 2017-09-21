@@ -109,8 +109,26 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          data = cnts/znorm
                          units = 'Cnts/s'
                          spec = 1
-                         zrange = [.03,10]
+                         zrange = [.03,100]
                          if (det eq 1) || (det eq 3) then zrange=[.03,1000]
+                         tdata = total(data,2)
+                      end
+           'ratebin': begin
+                         znorm = dt#denergy
+                         data = cnts/znorm
+                         units = 'Cnts/s/keV'
+                         spec = 1
+                         zrange = [.001,1]
+                         if (det eq 1) || (det eq 3) then zrange=[.001,100]
+                         tdata = total(data,2)
+                      end
+           'eratebin':begin
+                         znorm = dt#(denergy/energy)
+                         data = cnts/znorm
+                         units = 'keV*Cnts/s/keV'
+                         spec = 1
+                         zrange = [.1,1000]
+                         if (det eq 1) || (det eq 3) then zrange=[.1,1e4]
                          tdata = total(data,2)
                       end
            'flux'   : begin
@@ -137,7 +155,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
 ;          rnorm[*,d] = ((nw gt 1) ? total(tdata,2) : tdata)
           tempdata = {x:ptr_new(t),y:ptr_new(data,/no_copy),v:ptr_new(vals,/no_copy),znorm:ptr_new(znorm,/no_copy),map:ptr_new(bmap)}
           store_data,tname+'_'+cname+'_'+zname+'_'+yval,data=tempdata, dlimit={spec:spec,ystyle:1,zrange:zrange,ylog:ylog,zlog:1,$
-             labels:energy_label,labflag:-1 ,panel_size:.5+nw/80.,ztitle:units,colors:'mybycygyry'}
+             labels:energy_label,labflag:-1 ,panel_size:.5+nw/80.,ztitle:units,colors:'mybycygyry',ytickunits:'scientific',ztickunits:'scientific'}
        endfor
 ;       tempdata = {x:ptr_new(t),y:ptr_new(rdata/rnorm,/no_copy),znorm:ptr_new(dt # replicate(1.,6),/no_copy),map:ptr_new(bmap)}
        tempdata = {x:ptr_new(t),y:ptr_new(rdata,/no_copy),map:ptr_new(bmap)}

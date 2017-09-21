@@ -22,8 +22,8 @@
 ;                      corresponding to PARNG=1,2,3. Default is PA=45
 ;       
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-09-14 10:36:02 -0700 (Thu, 14 Sep 2017) $
-; $LastChangedRevision: 23974 $
+; $LastChangedDate: 2017-09-20 14:51:45 -0700 (Wed, 20 Sep 2017) $
+; $LastChangedRevision: 24006 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_restore.pro $
 ;
 ;CREATED BY:    Shaosui Xu  06-23-17
@@ -62,7 +62,7 @@ Pro mvn_swe_shape_restore,trange,results=results,tplot=tplot,orbit=orbit,parng=p
     file = file[indx]
 
     for j=0,nfiles-1 do begin
-        restore,filename=file[indx[j]]
+        restore,filename=file[j]
         shp=[temporary(shp),strday]
     endfor
     intx=where(shp.t ge tmin and shp.t le tmax)
