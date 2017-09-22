@@ -122,11 +122,11 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
     get_data, prefix + raw_spec_i, data = raw_spec_data
 
     converted_spec_data = spp_fld_rfs_float(raw_spec_data.y)
-    
+
     ; Using definition of power spectral density
     ;  S = 2 * Nfft / fs |x|^2 / Wss where
     ; where |x|^2 is an auto spec value of the PFB/DFT
-    ;  
+    ;
     ; 2             : from definition of S_PFB
     ; 3             : number of spectral bins summed together
     ; 4096          : number of FFT points
@@ -135,21 +135,21 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
     ; 2048          : 2048 counts in the ADC = 1 volt
     ; 0.782         : WSS for our implementation of the PFB (see pfb_norm.pdf)
     ; 65536         : factor from integer PFB, equal to (2048./8.)^2
-    
+
     ; TODO: Correct this for SCM data
-    
+
     V2_factor = (2d/3d) * 4096d / 38.4d6 / ((250d*2048d)^2d * 0.782d * 65536d)
-    
+
     if lfr_flag then V2_factor *= 8
-    
+
     converted_spec_data *= V2_factor
 
     if n_lo_gain GT 0 then converted_spec_data[lo_gain, *] *= 2500.d
-    
+
     converted_spec_data /= rebin(rfs_nsum.y,$
       n_elements(rfs_nsum.x),$
       n_elements(rfs_freqs.reduced_freq))
-    
+
     store_data, prefix + raw_spec_i + '_converted', $
       data = {x:raw_spec_data.x, y:converted_spec_data, $
       v:rfs_freqs.reduced_freq}
@@ -165,8 +165,7 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
     options, prefix + raw_spec_i + '_converted', 'datagap', 60
     options, prefix + raw_spec_i + '_converted', 'panel_size', 2.
 
-    options, prefix + raw_spec_i + '_converted', 'ytitle', $
-      receiver_str + ' AUTO!C' + strupcase(raw_spec_i)
+    ytitle = receiver_str + ' AUTO!C' + strupcase(raw_spec_i)
 
     ch_str = strmid(raw_spec_i,strlen(raw_spec_i) - 3, 3)
 
@@ -174,8 +173,15 @@ pro spp_fld_rfs_auto_load_l1, file, prefix = prefix, color = color
 
     if size(ch_src_dat, /type) EQ 8 then $
       if n_elements(uniq(ch_src_dat.y) EQ 1) then $
-      options, prefix + raw_spec_i + '_converted', 'ysubtitle', $
-      'SRC:' + strcompress(string(ch_src_dat.y[0]))
+      ;options, prefix + raw_spec_i + '_converted', 'ysubtitle', $
+      ;'SRC:' + strcompress(string(ch_src_dat.y[0]))
+      ytitle = ytitle + '!C' + 'SRC' + strcompress(string(ch_src_dat.y[0]))
+
+    options, prefix + raw_spec_i + '_converted', 'ytitle', $
+      ytitle
+
+    options, prefix + raw_spec_i + '_converted', 'ysubtitle', $
+      'Freq [Hz]'
 
   endfor
 

@@ -41,6 +41,7 @@ pro spp_fld_dfb_ac_bpf_load_l1, file, prefix = prefix
     options, prefix + 'peak_converted', 'ylog', 1
     options, prefix + 'peak_converted', 'ystyle', 1
     options, prefix + 'peak_converted', 'yrange', minmax(freq_bins.freq_avg)
+    options, prefix + 'peak_converted', 'ysubtitle', 'Freq [Hz]'
 
   endif
 
@@ -59,6 +60,7 @@ pro spp_fld_dfb_ac_bpf_load_l1, file, prefix = prefix
     options, prefix + 'avg_converted', 'ylog', 1
     options, prefix + 'avg_converted', 'ystyle', 1
     options, prefix + 'avg_converted', 'yrange', minmax(freq_bins.freq_avg)
+    options, prefix + 'avg_converted', 'ysubtitle', 'Freq [Hz]'
 
   endif
 
@@ -72,7 +74,6 @@ pro spp_fld_dfb_ac_bpf_load_l1, file, prefix = prefix
 
       options, prefix + ac_bpf_name_i, 'ytitle', 'SPP DFB!CAC BPF' + $
         string(bpf_ind) + '!C' + strupcase(ac_bpf_name_i)
-      options, prefix + ac_bpf_name_i, 'ysubtitle', '[Hz]'
 
     endfor
 

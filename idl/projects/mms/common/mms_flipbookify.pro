@@ -46,6 +46,7 @@
 ;                   If the time window covers multiple matrices they will be averaged.
 ;                   This is applied before other transformations
 ;     
+;     /subtract_bulk: subtract the bulk velocity from the slices before plotting
 ;     /energy: produce energy slices instead of velocity slices
 ;     
 ;     thickness: thickness of the vertical line drawn at each time step
@@ -69,8 +70,12 @@
 ;     /postscript: save the images as postscript files instead of PNGs
 ;     
 ;     output_dir: directory where the plots are saved (default: 'flipbook/')
+;     filename_suffix: suffix to append to the end of the newly created files
+;     
 ;     /video: save the sequence of images as a video (.mp4) - currently only works for PNG
-; 
+;     vid_format: format of the output video; default .mp4; 
+;         (options include: avi flv gif matroska mjpeg mov mp4 swf wav webm)
+;     vid_fps: frames per second for the video; default: 6
 ; 
 ; EXAMPLES:
 ;     MMS> .run mms_basic_dayside
@@ -90,8 +95,8 @@
 ;     
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-19 09:01:46 -0700 (Tue, 19 Sep 2017) $
-; $LastChangedRevision: 24002 $
+; $LastChangedDate: 2017-09-21 10:57:24 -0700 (Thu, 21 Sep 2017) $
+; $LastChangedRevision: 24010 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_flipbookify.pro $
 ;-
 
@@ -101,7 +106,9 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
   slices=slices, box_color=box_color, linestyle=linestyle, thickness=thickness, $
   postscript=postscript, box_style=box_style, box_thickness=box_thickness, no_box=no_box, $
   output_dir=output_dir, video=video, custom_rotation=custom_rotation, geometric=geometric, $
-  two_d_interp=two_d_interp, three_d_interp=three_d_interp, title=title
+  two_d_interp=two_d_interp, three_d_interp=three_d_interp, title=title, filename_suffix=filename_suffix, $
+  vid_format=vid_format, vid_fps=vid_fps, vid_bit_rate=vid_bit_rate, vid_codec=vid_codec, $
+  subtract_bulk=subtract_bulk
   
   @tplot_com.pro 
 
@@ -116,7 +123,11 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
   if undefined(slices) then slices = ['xy', 'xz', 'yz']
   if undefined(linestyle) then linestyle=2
   if undefined(thickness) then thickness=1
+  if undefined(filename_suffix) then filename_suffix = ''
   if undefined(three_d_interp) and undefined(geometric) then two_d_interp = 1
+  if undefined(vid_format) then vid_format = 'mp4'
+  if undefined(vid_fps) then vid_fps = 6 ; video frames per second
+  if undefined(vid_bit_rate) then vid_bit_rate = 3000
   
   if ~is_struct(tplot_vars) then begin
     dprint, dlevel=0, 'Error, no tplot window found'
@@ -167,17 +178,17 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
   endelse
   
   if keyword_set(video) then begin
-    video = idlffvideowrite(output_dir+'mms'+probe+'_'+instrument+'_flipbook.mp4')
-    stream = video.addvideostream(tplot_vars.settings.d.x_size, tplot_vars.settings.d.y_size, 6)
+    video = idlffvideowrite(output_dir+'mms'+probe+'_'+instrument+'_flipbook'+filename_suffix+'.'+vid_format)
+    stream = video.addvideostream(tplot_vars.settings.d.x_size, tplot_vars.settings.d.y_size, vid_fps, bit_rate=vid_bit_rate, codec=vid_codec)
   endif
   
   dist = mms_get_dist(name, trange=trange)
 
   for time_idx=0, n_elements(times)-1, time_step do begin
-    if keyword_set(postscript) then popen, output_dir+instrument+'_'+time_string(times[time_idx], tformat='YYYY-MM-DD-hh-mm-ss.fff'), /land
-    slice = spd_slice2d(dist, time=times[time_idx], energy=energy, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[0], mag_data=bfield, vel_data=vel_data)
-    slice2 = spd_slice2d(dist, time=times[time_idx], energy=energy, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[1], mag_data=bfield, vel_data=vel_data) 
-    slice3 = spd_slice2d(dist, time=times[time_idx], energy=energy, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[2], mag_data=bfield, vel_data=vel_data)
+    if keyword_set(postscript) then popen, output_dir+instrument+'_'+time_string(times[time_idx], tformat='YYYY-MM-DD-hh-mm-ss.fff')+filename_suffix, /land
+    slice = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[0], mag_data=bfield, vel_data=vel_data)
+    slice2 = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[1], mag_data=bfield, vel_data=vel_data) 
+    slice3 = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[2], mag_data=bfield, vel_data=vel_data)
     tplot, title=time_string(times[time_idx], tformat=title)
     
     spd_slice2d_plot, slice, /custom, window=1, /noerase, position=[0.75, 0.1, 0.90, 1], title='', /NOCOLORBAR, xrange=xrange, yrange=yrange, zrange=zrange
@@ -189,7 +200,7 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
     if ~undefined(draw_box) then timebar, (minmax(trange))[1], color=box_color, linestyle=box_style, thick=box_thickness
     wait, 0.02
     if keyword_set(postscript) then pclose
-    if ~keyword_set(postscript) then makepng, output_dir+instrument+'_'+time_string(times[time_idx], tformat='YYYY-MM-DD-hh-mm-ss.fff')
+    if ~keyword_set(postscript) then makepng, output_dir+instrument+'_'+time_string(times[time_idx], tformat='YYYY-MM-DD-hh-mm-ss.fff')+filename_suffix
     if keyword_set(video) then begin
       void = video.put(stream, tvrd(/true))
     endif
