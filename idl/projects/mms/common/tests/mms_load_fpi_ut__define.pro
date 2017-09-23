@@ -10,12 +10,21 @@
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-19 11:08:11 -0700 (Wed, 19 Jul 2017) $
-; $LastChangedRevision: 23650 $
+; $LastChangedDate: 2017-09-22 14:39:36 -0700 (Fri, 22 Sep 2017) $
+; $LastChangedRevision: 24021 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
 ; regression tests ---------->
+
+; FPI distribution error data
+function mms_load_fpi_ut::test_get_fpi_dist_err
+  mms_load_fpi, datatype='des-dist', trange=['2015-12-15', '2015-12-16'], probe=1
+  fpi_err_dist = mms_get_dist('mms1_des_disterr_fast')
+  assert, is_struct(*fpi_err_dist), 'Problem with FPI distribution error regression in mms_get_dist'
+  return, 1
+end
+
 ; same as below, except using mms_get_dist
 function mms_load_fpi_ut::test_integration_time_get_dist
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='brst'

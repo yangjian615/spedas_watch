@@ -44,8 +44,8 @@
 ;  Fixed eflux calculation 2017-05-12
 ;  
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-05-12 16:02:44 -0700 (Fri, 12 May 2017) $
-;$LastChangedRevision: 23316 $
+;$LastChangedDate: 2017-09-22 14:38:22 -0700 (Fri, 22 Sep 2017) $
+;$LastChangedRevision: 24020 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
 ;-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
@@ -80,7 +80,6 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   if size(tname,/type) eq 7 then begin; if 'tname' is string...
     distime = mms_get_dist(tname,/time)
     if (time_double(trange[1]) lt distime[0]) or (max(distime) lt time_double(trange[0])) then begin
-      stop
       message,'trange is out of '+tname+' time range.'
     endif
     dist    = mms_get_dist(tname,index,trange=trange,/structure)
@@ -91,7 +90,11 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   if ~undefined(ename) then begin
     if size(ename,/type) eq 7 then begin; if 'ename' is string...
       distErr = mms_get_dist(ename,index,trange=trange,/structure)
-      USEERR = 1
+      if n_tags(distErr) gt 0 then begin
+        USEERR = 1
+      endif else begin
+        print, 'WARNING: distErr not loaded properly.'
+      endelse
     endif else stop
   endif
 
@@ -193,7 +196,7 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
     endif else begin
       moka_mms_clean_data,dist[n],output=data,units=units_lc
     endelse
-    
+
     ;------------------------
     ; Bulk Velocity
     ;------------------------

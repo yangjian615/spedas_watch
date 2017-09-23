@@ -29,10 +29,12 @@
 ;  -FPI angles stored in tplot describe instrument look directions, 
 ;   this converts those to presumed trajectories (swaps direction).
 ;
+;  - Updated to accept FPI error data on 22Sept2017 
+;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-07-19 15:47:25 -0700 (Wed, 19 Jul 2017) $
-;$LastChangedRevision: 23672 $
+;$LastChangedDate: 2017-09-22 14:13:01 -0700 (Fri, 22 Sep 2017) $
+;$LastChangedRevision: 24018 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
@@ -64,13 +66,13 @@ if size(*p.y,/n_dim) ne 4 then begin
 endif
 
 ;get info from tplot variable name
-var_info = stregex(tname, 'mms([1-4])_d([ei])s_dist_(brst|fast|slow).*', /subexpr, /extract)
+var_info = stregex(tname, 'mms([1-4])_d([ei])s_dist(err)?_(brst|fast|slow).*', /subexpr, /extract)
 
 ;use info from the variable name if not explicitly set
 if var_info[0] ne '' then begin
   if ~is_string(probe) then probe = var_info[1]
   if ~is_string(species) then species = var_info[2]
- ; if undefined(data_rate) then data_rate = var_info[3]
+ ; if undefined(data_rate) then data_rate = var_info[4]
 endif
 
 ;double check that required info is defined

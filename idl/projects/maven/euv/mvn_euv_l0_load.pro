@@ -15,8 +15,8 @@
 ; HISTORY:
 ; VERSION:
 ;  $LastChangedBy: ali $
-;  $LastChangedDate: 2017-09-16 19:00:20 -0700 (Sat, 16 Sep 2017) $
-;  $LastChangedRevision: 23987 $
+;  $LastChangedDate: 2017-09-22 14:00:42 -0700 (Fri, 22 Sep 2017) $
+;  $LastChangedRevision: 24017 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/euv/mvn_euv_l0_load.pro $
 ;CREATED BY:  ali 20160830
 ;FILE: mvn_euv_l0_load.pro
@@ -50,7 +50,7 @@ pro mvn_euv_l0_load,trange=trange,tplot=tplot,verbose=verbose,save=save,l0=l0,ge
         mvn_euv_l0_load,trange=tr,/l0,/save
       endif
     endfor
-    dprint,'EUV tplot generation complete!
+    dprint,'EUV tplot file generation complete!
     return
   endif
 
