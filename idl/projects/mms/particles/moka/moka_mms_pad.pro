@@ -5,6 +5,7 @@
 ;Purpose:
 ;  Returns a pitch-angle-distribution from MMS FPI data (angle vs energy plot)
 ;  as well as energy spectrum in the omni, para, perp and anti-para directions.
+;  One-count-level is also returned.
 ;
 ;Calling Sequence:
 ;  structure = moka_mms_pad(bname, tname [,index] [,trange=trange] [,units=units],[,/norm],
@@ -19,8 +20,10 @@
 ;   vname: bulk flow velocity for frame transformation, tplot-variable name,
 ;          vname & tname should have the same data_rate
 ;   norm: Set this keyword for normalizing the data at each energy bin
-;   units: units for the pitch-angle-distribution (pad). The default is 'eflux', but
-;          phase-space-density 'df' is always used for energy spectrum.
+;   units: units for both the pitch-angle-distribution (pad) and energy spectrum.
+;          Options are 'eflux' [eV/(cm!U2!N s sr eV)] or
+;                      'df'    [s!U3!N / km!U6!N'] 
+;          The default is 'eflux'. The return structure contains a tag "UNITS".
 ;   pr___0: pitch angle range for the "para" spectrum, default = [0,45]
 ;   pr__90: pitch angle range for the "perp" spectrum, default = [45,135]
 ;   pr_180: pitch angle range for the "anti-para" spectrum, default = [135,180]
@@ -44,8 +47,8 @@
 ;  Fixed eflux calculation 2017-05-12
 ;  
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-09-22 14:38:22 -0700 (Fri, 22 Sep 2017) $
-;$LastChangedRevision: 24020 $
+;$LastChangedDate: 2017-09-23 21:52:13 -0700 (Sat, 23 Sep 2017) $
+;$LastChangedRevision: 24022 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
 ;-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
@@ -83,9 +86,12 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
       message,'trange is out of '+tname+' time range.'
     endif
     dist    = mms_get_dist(tname,index,trange=trange,/structure)
+    if (n_tags(dist) eq 0) then begin
+      message,'FPI data could not be extracted from the specified time period.'
+    endif
     spc = strmid(tname,6,1)
   endif else stop
-  
+
   USEERR = 0
   if ~undefined(ename) then begin
     if size(ename,/type) eq 7 then begin; if 'ename' is string...
@@ -105,7 +111,8 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   dr = !dpi/180.d0
   rd = 1.d0/dr
 
-  if keyword_set(subtract_bulk) then begin
+  ;if keyword_set(subtract_bulk) then begin
+  if strmatch(units_lc,'eflux') then begin
     if undefined(vname) then begin
       msg = "Please specify vname"
       result = dialog_message(msg,/center)
@@ -185,7 +192,9 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   ;----------------
   ; Main Loop
   ;----------------
-
+  iecl = 0L
+  iecm = 0L
+  
   for n=0,nmax-1 do begin
 
     ;----------------
@@ -280,16 +289,20 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
       ; If shifted to plasma rest-frame, 'eflux' should be re-evaluated
       ; from 'psd' because 'eflux' depends on the particle energy. We don't need to 
       ; worry about this if we want the output in 'psd'.   
-      if keyword_set(subtract_bulk) and strmatch(units_lc,'eflux') then begin; If plasma rest-frame AND efluxs
+      newenergy = wegy[j]
+      if strmatch(units_lc,'eflux') then begin; If plasma rest-frame AND efluxs
         ; See 'mms_convert_flux_units'
-        newenergy = wegy[j]
-        newdata = double(data.data_psd[i]) * double(newenergy)^exp[0] * (flux_to_df^exp[1] * cm_to_km^exp[2])
+        newdat = double(data.data_psd[i]) * double(newenergy)^exp[0] * (flux_to_df^exp[1] * cm_to_km^exp[2])
+        newpsd = newdat
+        newerr = double(data.data_err[i]) * double(newenergy)^exp[0] * (flux_to_df^exp[1] * cm_to_km^exp[2])
       endif else begin
-        newdata = data.data_dat[i]
+        newdat = data.data_dat[i]
+        newpsd = data.data_psd[i]
+        newerr = data.data_err[i]
       endelse
       
       ; pitch-angle distribution
-      pad[j,k] += newdata 
+      pad[j,k] += newdat
       count_pad[j,k] += 1L
 
       ; energy spectrum (para, perp, anti-para)
@@ -301,26 +314,34 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
         if (pr_180[0] le data.pa[i]) and (data.pa[i] le pr_180[1]) then m=2
       endelse
       if (m ge 0) and (m le 2) then begin
-        f_dat[j,m] += newdata
-        f_psd[j,m] += data.data_psd[i]
-        f_err[j,m] += data.data_err[i]
+        f_dat[j,m] += newdat
+        f_psd[j,m] += newpsd
+        f_err[j,m] += newerr
         f_cnt[j,m] += data.data_cnt[i]
         count_dat[j,m] += 1L
       endif
 
       ; energy spectrum (omni-direction)
       m = 3
-      f_dat[j,m] += newdata
-      f_psd[j,m] += data.data_psd[i]
-      f_err[j,m] += data.data_err[i]
+      f_dat[j,m] += newdat
+      f_psd[j,m] += newpsd
+      f_err[j,m] += newerr
       f_cnt[j,m] += data.data_cnt[i]
       count_dat[j,m] += 1L
       
       endif else begin; if j ge 0
-        print, "data point at energy=",data.energy[i]," eV is skipped"
+        iecl += 1L
       endelse
     endfor; for each particle
+    iecm += imax
   endfor; for n=0,nmax-1
+  if iecl gt 0 then begin
+    print, '---'
+    print, strtrim(string(iecl),2)+' out of '+strtrim(string(iecm),2)+' particles were not'
+    print,'used in the result because of the bulk-speed subtraction'
+    print,'and their energies have moved outside the defined energy bins.'
+    print,'---'
+  endif
 
 
   pad /= float(count_pad)
@@ -380,12 +401,13 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   ;---------------
     
   return, {egy:wegy, pa:wpa, data:transpose(pad), datanorm:transpose(padnorm), $
-    numSlices: nmax, nbin:kmax, units:units_gl,$
+    numSlices: nmax, nbin:kmax, units:units_gl,subtract_bulk:subtract_bulk,$
     egyrange:[min(wegy),max(wegy)], parange:[min(wpa),max(wpa)], $
     spec___0:f_psd[*,0], spec__90:f_psd[*,1], spec_180:f_psd[*,2], spec_omn:f_psd[*,3], $
     cnts___0:f_cnt[*,0], cnts__90:f_cnt[*,1], cnts_180:f_cnt[*,2], cnts_omn:f_cnt[*,3], $
     oclv___0:f_ocl[*,0], oclv__90:f_ocl[*,1], oclv_180:f_ocl[*,2], oclv_omn:f_ocl[*,3], $
     eror___0:f_err[*,0], eror__90:f_err[*,1], eror_180:f_err[*,2], eror_omn:f_err[*,3], $
-    trange:tr, vbulk_para:vbulk_para, vbulk_perp_abs:vbulk_perp, vbulk_vxb:vbulk_vxb, vbulk_exb:vbulk_exb, bnrm:bnrm, Vbulk:Vbulk}
+    trange:tr, vbulk_para:vbulk_para, vbulk_perp_abs:vbulk_perp, vbulk_vxb:vbulk_vxb, $
+    vbulk_exb:vbulk_exb, bnrm:bnrm, Vbulk:Vbulk}
 
 END
