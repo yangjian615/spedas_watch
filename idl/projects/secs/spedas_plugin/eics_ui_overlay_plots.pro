@@ -52,8 +52,13 @@ pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   ;construct magnetic lats
   aacgmidl
   thm_init
-  geographic_lons=[150,180,210,240,270,300,330,360]
-  geographic_lats=[0,20,30,40,50,60,70,80]
+  ;geographic_lons=[150,180,210,240,270,300,330,360]
+  ;geographic_lats=[0,20,30,40,50,60,70,80]
+  ; figure out magnetic midnight
+  ts=time_struct(tr[0])
+  midnight=ts.sod/3600.
+  geographic_lons=[150,180,210,240,270,300,330,360,midnight]
+  geographic_lats=[0,20,30,40,50,60,70,80,0]
   nmlats=round((max(geographic_lats)-min(geographic_lats))/float(10)+1)
   mlats=min(geographic_lats)+findgen(nmlats)*10
   n2=150
@@ -70,6 +75,7 @@ pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   ;plot magnetic lats
   if keyword_set(showmag) then begin
      for i=0,nmlats-1 do oplot,v_lon[i,*],v_lat[i,*],color=250,thick=contour_thick,linestyle=1
+     ;oplot,v_lon[nmlats-1,*],v_lat[nmlats-1,*],color=250,thick=2
   endif
 
   ; construct and plot geographic lats
@@ -84,6 +90,7 @@ pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   endfor
   if keyword_set(showgeo) then begin
      for i=0,nmlats-1 do oplot,v1_lon[i,*],v1_lat[i,*],color=0,thick=contour_thick,linestyle=1
+     ;oplot,v1_lon[nmlats-1,*],v1_lat[nmlats-1,*],color=0
   endif 
 
   ;construct geographic lons
@@ -121,6 +128,7 @@ pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
     for i=0,nmlons-1 do begin
       idx=where(u_lon[i,*] NE 0)
       oplot,u_lon[i,idx],u_lat[i,idx],color=250,thick=contour_thick,linestyle=1
+;      oplot,u_lon[nmlons-1,idx],u_lat[nmlons-1,idx],color=250
     endfor
   endif
 
@@ -181,17 +189,28 @@ pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
 
   xyouts, 215.5, 20, 'SECS - EICS', color=0, charsize=1.45  
   xyouts, 297.9, 25, '200 mA/m',charsize=1.45, charthick=1.25,color=5
+
   if keyword_set(showgeo) && keyword_set(showmag) then begin
      xyouts, 297.7, 29.25, 'Geo Black dot line', color=0, charthick=1.25, charsize=1.13
      xyouts, 299.2, 31, 'Mag Red dot line', color=250, charthick=1.2, charsize=1.125
+     if is_struct(stations) then xyouts, 300.85, 32.65, 'GMAG green star', color=150, $
+       charthick=1.2, charsize=1.125
   endif 
   if keyword_set(showgeo) && ~keyword_set(showmag) then begin
      xyouts, 297.7, 29.25, 'Geo Black dot line', color=0, charthick=1.25, charsize=1.13
+     if is_struct(stations) then xyouts, 299.2, 31, 'GMAG green star', color=150, $
+       charthick=1.2, charsize=1.125
   endif
   if ~keyword_set(showgeo) && keyword_set(showmag) then begin
      xyouts, 297.7, 29.25, 'Mag Red dot line', color=250, charthick=1.2, charsize=1.125   
+     if is_struct(stations) then xyouts, 299.2, 31, 'GMAG green star', color=150, $
+       charthick=1.2, charsize=1.125
   endif
-  
+  if ~keyword_set(showgeo) && ~keyword_set(showmag) then begin
+    if is_struct(stations) then xyouts, 297.7, 29.25, 'GMAG green star', color=150, $
+      charthick=1.2, charsize=1.125
+  endif
+ 
   if keyword_set(createpng) then begin
     ; construct png file name
     tstruc = time_struct(tr[0])

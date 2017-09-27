@@ -95,8 +95,8 @@
 ;     
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-21 10:57:24 -0700 (Thu, 21 Sep 2017) $
-; $LastChangedRevision: 24010 $
+; $LastChangedDate: 2017-09-26 12:19:55 -0700 (Tue, 26 Sep 2017) $
+; $LastChangedRevision: 24032 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_flipbookify.pro $
 ;-
 
@@ -108,7 +108,8 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
   output_dir=output_dir, video=video, custom_rotation=custom_rotation, geometric=geometric, $
   two_d_interp=two_d_interp, three_d_interp=three_d_interp, title=title, filename_suffix=filename_suffix, $
   vid_format=vid_format, vid_fps=vid_fps, vid_bit_rate=vid_bit_rate, vid_codec=vid_codec, $
-  subtract_bulk=subtract_bulk
+  subtract_bulk=subtract_bulk, samples=samples, window=window, center_time=center_time, $
+  resolution=resolution, smooth=smooth, log=log, determ_tolerance=determ_tolerance
   
   @tplot_com.pro 
 
@@ -186,9 +187,9 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
 
   for time_idx=0, n_elements(times)-1, time_step do begin
     if keyword_set(postscript) then popen, output_dir+instrument+'_'+time_string(times[time_idx], tformat='YYYY-MM-DD-hh-mm-ss.fff')+filename_suffix, /land
-    slice = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[0], mag_data=bfield, vel_data=vel_data)
-    slice2 = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[1], mag_data=bfield, vel_data=vel_data) 
-    slice3 = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[2], mag_data=bfield, vel_data=vel_data)
+    slice = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[0], mag_data=bfield, vel_data=vel_data, samples=samples, window=window, center_time=center_time, resolution=resolution, smooth=smooth, log=log, determ_tolerance=determ_tolerance)
+    slice2 = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[1], mag_data=bfield, vel_data=vel_data, samples=samples, window=window, center_time=center_time, resolution=resolution, smooth=smooth, log=log, determ_tolerance=determ_tolerance) 
+    slice3 = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[2], mag_data=bfield, vel_data=vel_data, samples=samples, window=window, center_time=center_time, resolution=resolution, smooth=smooth, log=log, determ_tolerance=determ_tolerance)
     tplot, title=time_string(times[time_idx], tformat=title)
     
     spd_slice2d_plot, slice, /custom, window=1, /noerase, position=[0.75, 0.1, 0.90, 1], title='', /NOCOLORBAR, xrange=xrange, yrange=yrange, zrange=zrange

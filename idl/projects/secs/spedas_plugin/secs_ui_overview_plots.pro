@@ -70,6 +70,15 @@ pro secs_ui_overview_plots_event, event
       if valid then begin
         state.tr_obj->getproperty, starttime=starttime, endtime=endtime
         starttime->getproperty, year=year, month=month, date=date, hour=hour, min=min, sec=sec
+        ;round times to 1 minute
+        starttime->getproperty, tdouble=t0
+        if sec lt 30 then t10=t0-sec else t10=t0+(60-sec) 
+        sec=0       
+        starttime->setproperty, tdouble=t10
+        state.tr_obj->setproperty, starttime=starttime
+        starttime->getproperty, tstring=ts
+        starttime->getproperty, year=year, month=month, date=date, hour=hour, min=min, sec=sec
+        widget_control, timeid, set_value=ts, func_get_value='spd_ui_time_widget_set_value'        
         ; Check which plot
         if state.plot_type[0] EQ 1 then begin
           ; For some reason, the & cannot be sent as part of the URL. So we are going to use a single string variable that will be split by PHP.
@@ -105,6 +114,15 @@ pro secs_ui_overview_plots_event, event
        if valid then begin
          state.tr_obj->getproperty, starttime=starttime, endtime=endtime
          starttime->getproperty, year=year, month=month, date=date, hour=hour, min=min, sec=sec
+        ;round times to 1 minute
+        starttime->getproperty, tdouble=t0
+        if sec lt 30 then t10=t0-sec else t10=t0+(60-sec) 
+        sec=0       
+        starttime->setproperty, tdouble=t10
+        state.tr_obj->setproperty, starttime=starttime
+        starttime->getproperty, tstring=ts
+        starttime->getproperty, year=year, month=month, date=date, hour=hour, min=min, sec=sec
+        widget_control, timeid, set_value=ts, func_get_value='spd_ui_time_widget_set_value'        
          ; Check which plot
          if state.plot_type[0] EQ 1 then begin
            state.statusBar->update,'PNG files can be downloaded from the web site.'
@@ -177,7 +195,7 @@ pro secs_ui_overview_plots_event, event
       idx=where(state.plot_type EQ 1) 
       spd_ui_overplot_key, state.gui_id, state.historyWin, /modal, secs=idx+1      
     end
-
+    
     ELSE: 
   ENDCASE
   Widget_Control, event.top, Set_UValue=state, /No_Copy

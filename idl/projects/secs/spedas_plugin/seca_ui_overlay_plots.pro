@@ -139,15 +139,27 @@ pro seca_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   xyouts, 296., 26, '+/- 20000 A',charsize=1.2, charthick=1.25,color=0
   xyouts, 297., 27.5, '+',charsize=1.4, charthick=2,color=250
   oplot, [300.95,300.95], [25.75,25.75], psym=6, color=50
+  
+  
   if keyword_set(showgeo) && keyword_set(showmag) then begin
      xyouts, 298, 29., 'Geo Black dot line', color=0, charthick=1.25, charsize=1.13
      xyouts, 299.2, 31, 'Mag Red dot line', color=250, charthick=1.2, charsize=1.125
+     if is_struct(stations) then xyouts, 300.85, 32.65, 'GMAG green star', color=150, $
+       charthick=1.2, charsize=1.125
   endif
   if keyword_set(showgeo) && ~keyword_set(showmag) then begin
     xyouts, 298, 29., 'Geo Black dot line', color=0, charthick=1.25, charsize=1.13
+    if is_struct(stations) then xyouts, 299.2, 31, 'GMAG green star', color=150, $
+      charthick=1.2, charsize=1.125
   endif
   if ~keyword_set(showgeo) && keyword_set(showmag) then begin
      xyouts, 298, 29., 'Mag Red dot line', color=250, charthick=1.2, charsize=1.125
+     if is_struct(stations) then xyouts, 299.2, 31, 'GMAG green star', color=150, $
+       charthick=1.2, charsize=1.125
+  endif
+  if ~keyword_set(showgeo) && ~keyword_set(showmag) then begin
+    if is_struct(stations) then xyouts, 298., 29., 'GMAG green star', color=150, $
+      charthick=1.2, charsize=1.125
   endif
 
   if keyword_set(createpng) then begin
