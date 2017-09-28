@@ -54,9 +54,9 @@
 ;  -checks contents of "http_proxy" environment variable for proxy server
 ;
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-17 14:40:44 -0800 (Tue, 17 Jan 2017) $
-;$LastChangedRevision: 22612 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-09-27 10:02:57 -0700 (Wed, 27 Sep 2017) $
+;$LastChangedRevision: 24036 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -231,9 +231,44 @@ endif
 ;   prevents current valid files from being immediately overwritten and allows
 ;   empty or incomplete files to be deleted safely in the case of an error.
 file_suffix = spd_download_temp()
+first_time_download = 1
 
 catch, error
-if error eq 0 then begin
+net_object->getproperty, response_code=response_code, response_header=response_header, url_scheme=url_scheme
+if (error eq -1006) && (first_time_download eq 1) && (response_code eq 401) then begin
+; when we have two directories with usename/password,   
+; sometimes we need to try again to get the file
+    
+  first_time_download = 0
+  dprint, dlevel=2, 'Download failed. Trying a second time.'
+  
+  ;get the file
+  filepath = net_object->get(filename=filename+file_suffix,string_array=string_array)
+
+  if ~keyword_set(string_array) then begin
+
+    ;move file to the requested location
+    file_move, filepath, filename, /overwrite
+
+    ;set permissions for downloaded file
+    if ~undefined(file_mode) then begin
+      file_chmod, filename, file_mode
+    endif
+
+    ;output the final location
+    output = filename
+
+    dprint, dlevel=2, 'Download complete:  '+filename
+    endif else begin
+
+    ;output file's contents
+    output = filepath
+
+    dprint, dlevel=2, 'Download complete'
+
+  endelse
+      
+endif else if error eq 0 then begin
 
   ;get the file
   filepath = net_object->get(filename=filename+file_suffix,string_array=string_array)

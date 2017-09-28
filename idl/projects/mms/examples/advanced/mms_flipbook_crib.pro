@@ -10,8 +10,8 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-19 09:16:10 -0700 (Tue, 19 Sep 2017) $
-; $LastChangedRevision: 24003 $
+; $LastChangedDate: 2017-09-27 14:04:49 -0700 (Wed, 27 Sep 2017) $
+; $LastChangedRevision: 24041 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_flipbook_crib.pro $
 ;-
 ;
@@ -124,7 +124,7 @@ store_data, 'temp', data='mms1_d'+species+'s_temppara_brst mms1_d'+species+'s_te
 tplot, ['mms1_fgm_b_gse_srvy_l2_bvec', 'mms1_d'+species+'s_heatq_dbcs_brst', 'temp', 'mms1_d'+species+'s_bulkv_gse_brst', $
   'mms1_d'+species+'s_numberdensity_brst', 'mms1_d'+species+'s_energyspectr_omni_brst']
 
-mms_flipbookify, slices=['bv', 'perp', 'xvel'], time_step=10, probe=1, species=species
+mms_flipbookify, slices=['bv', 'be', 'perp'], time_step=10, probe=1, species=species
 stop
 
 ;------------------------------------------------------
