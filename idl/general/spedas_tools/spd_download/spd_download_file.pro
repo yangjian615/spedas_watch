@@ -55,8 +55,8 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-09-27 10:02:57 -0700 (Wed, 27 Sep 2017) $
-;$LastChangedRevision: 24036 $
+;$LastChangedDate: 2017-09-28 11:17:56 -0700 (Thu, 28 Sep 2017) $
+;$LastChangedRevision: 24049 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_download/spd_download_file.pro $
 ;
 ;-
@@ -235,7 +235,7 @@ first_time_download = 1
 
 catch, error
 net_object->getproperty, response_code=response_code, response_header=response_header, url_scheme=url_scheme
-if (error eq -1006) && (first_time_download eq 1) && (response_code eq 401) then begin
+if (error ne 0) && (first_time_download eq 1) && (response_code eq 401) then begin
 ; when we have two directories with usename/password,   
 ; sometimes we need to try again to get the file
     

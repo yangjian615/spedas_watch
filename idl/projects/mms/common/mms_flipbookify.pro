@@ -95,8 +95,8 @@
 ;     
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-26 12:19:55 -0700 (Tue, 26 Sep 2017) $
-; $LastChangedRevision: 24032 $
+; $LastChangedDate: 2017-09-28 12:19:40 -0700 (Thu, 28 Sep 2017) $
+; $LastChangedRevision: 24057 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/mms_flipbookify.pro $
 ;-
 
@@ -109,7 +109,9 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
   two_d_interp=two_d_interp, three_d_interp=three_d_interp, title=title, filename_suffix=filename_suffix, $
   vid_format=vid_format, vid_fps=vid_fps, vid_bit_rate=vid_bit_rate, vid_codec=vid_codec, $
   subtract_bulk=subtract_bulk, samples=samples, window=window, center_time=center_time, $
-  resolution=resolution, smooth=smooth, log=log, determ_tolerance=determ_tolerance
+  resolution=resolution, smooth=smooth, log=log, determ_tolerance=determ_tolerance, $
+  plotbfield=plotbfield, plotbulk=plotbulk, background_color_index=background_color_index, $
+  background_color_rgb=background_color_rgb
   
   @tplot_com.pro 
 
@@ -192,9 +194,9 @@ pro mms_flipbookify, trange=trange, probe=probe, level=level, data_rate=data_rat
     slice3 = spd_slice2d(dist, time=times[time_idx], energy=energy, subtract_bulk=subtract_bulk, geometric=geometric, two_d_interp=two_d_interp, three_d_interp=three_d_interp, custom_rotation=custom_rotation, rotation=slices[2], mag_data=bfield, vel_data=vel_data, samples=samples, window=window, center_time=center_time, resolution=resolution, smooth=smooth, log=log, determ_tolerance=determ_tolerance)
     tplot, title=time_string(times[time_idx], tformat=title)
     
-    spd_slice2d_plot, slice, /custom, window=1, /noerase, position=[0.75, 0.1, 0.90, 1], title='', /NOCOLORBAR, xrange=xrange, yrange=yrange, zrange=zrange
-    spd_slice2d_plot, slice2, /custom, window=1, /noerase, position=[0.75, 0.4, 0.90, 1], title='', xrange=xrange, yrange=yrange, zrange=zrange
-    spd_slice2d_plot, slice3, /custom, window=1, /noerase, position=[0.75, 0.7, 0.90, 1], title='', /NOCOLORBAR, xrange=xrange, yrange=yrange, zrange=zrange
+    spd_slice2d_plot, slice, /custom, window=1, /noerase, position=[0.75, 0.1, 0.90, 1], title='', /NOCOLORBAR, xrange=xrange, yrange=yrange, zrange=zrange, plotbfield=plotbfield, plotbulk=plotbulk, background_color_index=background_color_index, background_color_rgb=background_color_rgb
+    spd_slice2d_plot, slice2, /custom, window=1, /noerase, position=[0.75, 0.4, 0.90, 1], title='', xrange=xrange, yrange=yrange, zrange=zrange, plotbfield=plotbfield, plotbulk=plotbulk, background_color_index=background_color_index, background_color_rgb=background_color_rgb
+    spd_slice2d_plot, slice3, /custom, window=1, /noerase, position=[0.75, 0.7, 0.90, 1], title='', /NOCOLORBAR, xrange=xrange, yrange=yrange, zrange=zrange, plotbfield=plotbfield, plotbulk=plotbulk, background_color_index=background_color_index, background_color_rgb=background_color_rgb
 
     timebar, times[time_idx], linestyle=linestyle, thick=thickness
     if ~undefined(draw_box) then timebar, (minmax(trange))[0], color=box_color, linestyle=box_style, thick=box_thickness

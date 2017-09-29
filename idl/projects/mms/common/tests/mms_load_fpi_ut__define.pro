@@ -10,12 +10,20 @@
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-22 14:39:36 -0700 (Fri, 22 Sep 2017) $
-; $LastChangedRevision: 24021 $
+; $LastChangedDate: 2017-09-28 15:18:18 -0700 (Thu, 28 Sep 2017) $
+; $LastChangedRevision: 24059 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
 ; regression tests ---------->
+; problem / crash with compressionloss variable for fast survey data
+function mms_load_fpi_ut::test_fast_compressionloss
+  tr_load  = time_double('2017-07-17/'+['14:05:00','16:00:00'])
+  mms_load_fpi,trange=tr_load,probe='3',data_rate='fast',level='l2', datatype=['des-dist']
+  get_data, 'mms3_des_compressionloss_fast_dist', data=d
+  assert, n_elements(d.X) eq n_elements(d.Y), 'Problem with FPI fast survey compressionloss variable'
+  return, 1
+end
 
 ; FPI distribution error data
 function mms_load_fpi_ut::test_get_fpi_dist_err

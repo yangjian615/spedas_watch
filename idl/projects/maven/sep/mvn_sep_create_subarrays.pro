@@ -120,16 +120,16 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          spec = 1
                          zrange = [.001,1]
                          if (det eq 1) || (det eq 3) then zrange=[.001,100]
-                         tdata = total(data,2)
+                         tdata = total(data*(replicate(1,nt)#denergy),2)
                       end
            'eratebin':begin
                          znorm = dt#(denergy/energy)
                          data = cnts/znorm
                          units = 'keV*Cnts/s/keV'
                          spec = 1
-                         zrange = [.1,1000]
-                         if (det eq 1) || (det eq 3) then zrange=[.1,1e4]
-                         tdata = total(data,2)
+                         zrange = [.1,300]
+                         if (det eq 1) || (det eq 3) then zrange=[.1,3e3]
+                         tdata = total(data*(replicate(1,nt)#denergy),2)
                       end
            'flux'   : begin
                          znorm = (geom * dt) # (eff * denergy)
@@ -149,6 +149,15 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          units = 'Eflux'
                          if n_elements(denergy) gt 1  then tdata = total(data * (replicate(1,nt) # denergy),2) else tdata=data
                      end
+           'eflux1'  : begin ;assuming open attenuator
+                         znorm = (geoms[1] *dt) # ( eff * denergy/energy)
+                         data = cnts / znorm
+                         spec = 1
+                         zrange = [1.,3e4]
+                         yrange = zrange * 100
+                         units = 'Eflux1'
+                       if n_elements(denergy) gt 1  then tdata = total(data * (replicate(1,nt) # denergy),2) else tdata=data
+                     end
           endcase
           rdata[*,det-1] = tdata 
 ;          rdata[*,d] = ((nw gt 1) ? total(data,2) : data)
@@ -159,7 +168,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
        endfor
 ;       tempdata = {x:ptr_new(t),y:ptr_new(rdata/rnorm,/no_copy),znorm:ptr_new(dt # replicate(1.,6),/no_copy),map:ptr_new(bmap)}
        tempdata = {x:ptr_new(t),y:ptr_new(rdata,/no_copy),map:ptr_new(bmap)}
-       store_data,tname+'_'+sidename[s]+'_'+zname+'_tot',data=tempdata,dlimit ={colors:[2,4,6,1,3,0],yrange:yrange,ylog:1,ystyle:1,panel_size:1.,psym:-3,reverse_order:1}
+       store_data,tname+'_'+sidename[s]+'_'+zname+'_tot',data=tempdata,dlimit ={colors:[2,4,6,1,3,0],yrange:yrange,ylog:1,ystyle:1,panel_size:1.,psym:-3,reverse_order:1,labels:['O','T','F','OT','FT','FTO'],labflag:-1}
      endfor
    endfor
 end

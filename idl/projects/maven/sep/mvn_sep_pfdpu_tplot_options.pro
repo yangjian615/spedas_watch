@@ -13,16 +13,19 @@ pro mvn_sep_pfdpu_tplot_options,tplot=tplot,lowres=lowres
    ylim,prefix+'sep?_arc_DATA',0,260,0
    options,prefix+'sep?_arc_DATA',panel_size=2
 ;   ylim,prefix+'sep?_hkp_RATE_CNTR',0,0,0
-   ylim,prefix+'sep?_hkp_RATE_CNTR',.5,1e5,1,/default
-   options,prefix+'sep?_hkp_RATE_CNTR',/default,psym=-3
+   options,prefix+'sep?_hkp_RATE_CNTR',/default,psym=-3,colors='bgrckm'
+   options,prefix+'sep?_hkp_RATE_CNTR',labels=['A-O','A-T','A-F','B-O','B-T','B-F'],labflag=-1
+   ylim,prefix+'sep?_hkp_RATE_CNTR',.5,1e5,1
    ylim,prefix+'sep?_svy_COUNTS_TOTAL',1,1,1  ;,0,0,0
    ylim,prefix+'sep?_noise_SIGMA',1,2
+   options,prefix+'sep?_noise_SIGMA',colors='bgrckm',labels=['A-O','A-T','A-F','B-O','B-T','B-F'],labflag=-1
+   options,prefix+'sep?_noise_BASELINE',colors='bgrckm',labels=['A-O','A-T','A-F','B-O','B-T','B-F'],labflag=-1
+   options,prefix+'sep?_noise_TOT',colors='bgrckm',labels=['A-O','A-T','A-F','B-O','B-T','B-F'],labflag=-1
    store_data,prefix+'sep1_COUNTS',data=prefix+'sep1_svy_RATE '+prefix+'sep1_hkp_RATE_CNTR '+prefix+'sep1_hkp_EVENT_CNTR'
    store_data,prefix+'sep2_COUNTS',data=prefix+'sep2_svy_RATE '+prefix+'sep2_hkp_RATE_CNTR '+prefix+'sep2_hkp_EVENT_CNTR'
    store_data,'APIDS',data='MAV_APIDS MAV_APID_SKIPPED',dlim={panel_size:3.}
  
    
-   options,prefix+'sep?_hkp_RATE_CNTR',psym=-3,/default
    options,prefix+'pfdpu_shkp_ACT_PWRCNTRL_FLAG',colors='BGR',labels=strsplit('Mag1 Mag2 SWEA SWIA LPW STA SEP',/extract)
    options,prefix+'pfdpu_oper_ACT_REQUEST_FLAG',colors = 'GR',labels=strsplit('S1o S1s S2o S2s SWIA SWIA STATIC STATIC . . EUVEo EUVEs',/extract)
    options,prefix+'pfdpu_oper_ACT_STATUS_FLAG',colors = 'GR',labels=strsplit('S1o S1s S2o S2s SWIAo SWIAs STATICo STATICs . . EUVEo EUVEs',/extract)
