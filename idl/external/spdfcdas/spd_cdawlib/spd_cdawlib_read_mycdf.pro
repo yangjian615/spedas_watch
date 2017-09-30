@@ -1,8 +1,8 @@
-;$Author: nikos $
-;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
-;$Header: /home/cdaweb/dev/control/RCS/spd_cdawlib_read_mycdf.pro,v 1.302 2014/03/18 16:34:46 kovalick Exp kovalick $
-;$Locker: kovalick $
-;$Revision: 17856 $
+;Author: ryurow $
+;Date: 2017/03/24 19:30:01 $
+;Header: /home/cdaweb/dev/control/RCS/read_myCDF.pro,v 1.338 2017/03/24 19:30:01 ryurow Exp kovalick $
+;Locker: kovalick $
+;Revision: 1.338 $
 ;+------------------------------------------------------------------------
 ; This package of IDL functions facilitates reading data and metadata from
 ; Common Data Format (CDF) files.  While CDF provides all the benefits
@@ -76,18 +76,47 @@
 ; routine is provided as is without any express or implied warranties
 ; whatsoever.
 ;-------------------------------------------------------------------------
-
-;+-----------------------------------------------------------------------
-; Search the tnames array for the instring, returning the index in tnames
-; if it is present, or -1 if it is not.
-;TJK this function is in a separate file called spd_cdawlib_tagindex.pro
-;since its called from many different routines in this system.
-;FUNCTION spd_cdawlib_tagindex, instring, tnames
-;instring = STRUPCASE(instring) ; tagnames are always uppercase
-;a = where(tnames eq instring,count)
-;if count eq 0 then return, -1 $
-;else return, a(0)
-;end
+; NAME: SET_CDF_MSG
+; PURPOSE: 
+;       Store message that can be read from anywhere in the module.
+;       (equivalent to a global variable) 
+; CALLING SEQUENCE:
+;       SET_CDF_MSG, msg
+; INPUTS:
+;       msg = input text string
+; KEYWORD PARAMETERS:
+;       None.
+; OUTPUTS:
+;       None.
+; AUTHOR:
+;       Ron Yurow  March 24, 2017
+; MODIFICATION HISTORY:
+;-------------------------------------------------------------------------
+PRO SET_CDF_MSG, msg
+    COMMON CDF_ERR_MSG, errmsg
+    errmsg = msg
+END
+;-------------------------------------------------------------------------
+; NAME: SET_CDF_MSG
+; PURPOSE: 
+;       Retrieve a previously stored text message from anywhere in the module.
+;       (equivalent to a global variable) 
+; CALLING SEQUENCE:
+;       msg = GET_CDF_MSG ()
+; INPUTS:
+;       None.
+; KEYWORD PARAMETERS:
+;       None.
+; OUTPUTS:
+;       msg = a previously stored text string
+; AUTHOR:
+;       Ron Yurow  March 24, 2017
+; MODIFICATION HISTORY:
+;-------------------------------------------------------------------------
+FUNCTION GET_CDF_MSG
+    COMMON CDF_ERR_MSG, errmsg
+    RETURN, errmsg
+END
 
 ;+------------------------------------------------------------------------
 ; NAME: AMI_ISTPPTR
@@ -112,7 +141,7 @@ if (aname eq 'FORM_PTR')        then return,1
 ;if (aname eq 'DELTA_PLUS_VAR')  then return,1
 ;if (aname eq 'DELTA_MINUS_VAR') then return,1
 len = strlen(aname) & pos = strpos(aname,'LABL_PTR_')
-if ((len gt 9)AND(pos eq 0)) then begin ; label pointer found
+if ((len gt 9) AND (pos eq 0)) then begin ; label pointer found
   ON_IOERROR,escape ; return false if non-digit found
   for j=0,(len-10) do begin ; check one character at a time
     r = strmid(aname,(9+j),1) & READS,r,v,FORMAT='(I1)'
@@ -120,7 +149,7 @@ if ((len gt 9)AND(pos eq 0)) then begin ; label pointer found
   return,1 ; remaining characters in label pointer are valid
 endif
 pos = strpos(aname,'OFFSET_')
-if ((len gt 7)AND(pos eq 0)) then begin ; label pointer found
+if ((len gt 7) AND (pos eq 0)) then begin ; label pointer found
   ON_IOERROR,escape ; return false if non-digit found
   for j=0,(len-8) do begin ; check one character at a time
     r = strmid(aname,(7+j),1) & READS,r,v,FORMAT='(I1)'
@@ -148,7 +177,8 @@ end
 ; MODIFICATION HISTORY:
 ;-------------------------------------------------------------------------
 FUNCTION amI_VAR, aname
-if (strpos(aname, 'DEPEND') eq 0) then return,1
+;TJK 8/11/2015 - do not include DEPEND_EPOCH0 which is a THEMIS specific attribute
+if (strpos(aname, 'DEPEND') eq 0 and (aname ne 'DEPEND_EPOCH0')) then return,1
 if (strpos(aname, 'COMPONENT') eq 0) then return,1
 return,0
 end
@@ -191,7 +221,7 @@ b = spd_cdawlib_break_mystring(a[lastn],delimiter=',') ; Parse the string into s
 for i=0,n_elements(b)-1 do begin ; examine each substring
    s = strpos(b[i],'=') & p = strpos(b[i],'(') ; find '=' and '(' signs
    if s ne -1 then begin ; probably a properly formated DISPLAY_TYPE vattr
-      if(strlowcase(strmid(b[i],0,s)) ne 'symsize') then begin
+      if (strlowcase(strmid(b[i],0,s)) ne 'symsize') then begin
         s = s + 1 ; point to first character past the '=' sign
         if p ne -1 then vname = strmid(b[i],s,[p-s]) $ ; extract vname
            else vname = strmid(b[i],s,(strlen(b[i])-s))   ; extract vname
@@ -255,10 +285,10 @@ end
 ;-------------------------------------------------------------------------
 PRO follow_myDEPENDS, metadata, vnames, vvarys, ctypes, dhids, mhids
 
-tnames = tag_names(metadata)
-for i=0,n_elements(tnames)-1 do begin
+cdaw_tnames = tag_names(metadata)
+for i=0,n_elements(cdaw_tnames)-1 do begin
    ; Determine if the current tagname is a legal ISTP-style DISPLAY_TYPE vattr
-   if (tnames[i] eq 'DISPLAY_TYPE') then begin
+   if (cdaw_tnames[i] eq 'DISPLAY_TYPE') then begin
       dvnames = parse_DISPLAY_TYPE(metadata.(i)) & dvs = size(dvnames)
       if (dvs[n_elements(dvs)-2] eq 7) then begin ; variable names found
          for j=0,n_elements(dvnames)-1 do begin
@@ -268,7 +298,7 @@ for i=0,n_elements(tnames)-1 do begin
 	    ;so that their associated data can be
 	    ;retrieved from the cdf files.
             a = where(vnames eq dvnames[j],count) ; search vnames array so no duplicates.
-            if ((dvnames[j] ne '')AND(count eq 0)) then begin
+            if ((dvnames[j] ne '') AND (count eq 0)) then begin
                ; add the display variable name all array parameters
                n = n_elements(vnames)
                newn = strarr(n+1) & newd = lonarr(n+1) & newm = lonarr(n+1)
@@ -286,11 +316,12 @@ for i=0,n_elements(tnames)-1 do begin
    endif
 
    ; Determine if the current tagname is a legal ISTP-style depend attribute
-   len = strlen(tnames[i]) & pos = strpos(tnames[i],'DEPEND_')
-   if ((len gt 7)AND(pos eq 0)) then begin ; DEPEND found, check remainder
+   ;TJK 8/11/2015 - do not include DEPEND_EPOCH0 which is a THEMIS specific attribute
+   len = strlen(cdaw_tnames[i]) & pos = strpos(cdaw_tnames[i],'DEPEND_') & th_exclude = (cdaw_tnames[i] ne 'DEPEND_EPOCH0')
+   if ((len gt 7) AND (pos eq 0) AND th_exclude) then begin ; DEPEND found, check remainder
       ON_IOERROR, escape ; return false if non-digit found
       for j=0,(len-8) do begin ; check one character at a time
-         r = strmid(tnames[i],(7+j),1) & READS,r,v,FORMAT='(I1)'
+         r = strmid(cdaw_tnames[i],(7+j),1) & READS,r,v,FORMAT='(I1)'
       endfor
       dvname = metadata.(i) ; depend attribute FOUND
       dvname = correct_vnames(dvname) ;look for variable names that have
@@ -307,7 +338,7 @@ for i=0,n_elements(tnames)-1 do begin
 
       a = where(vnames eq dvname,count) ;search vnames array to make sure
 				      ;there are no duplicates
-      if ((dvname ne '')AND(count eq 0)) then begin
+      if ((dvname ne '') AND (count eq 0)) then begin
          ; add the depend variable name to all array parameters
          n = n_elements(vnames)
          newn = strarr(n+1) & newd = lonarr(n+1) & newm = lonarr(n+1)
@@ -552,7 +583,7 @@ case obsme[0] of
 ;  data = [[[[old]]],[[[new]]]]  so do this the old fashioned way
          a = size(new)
          b = size(old)
-         data = make_array(a[1],a[2],a[3],a[4]+b[4],type=a(5))
+         data = make_array(a[1],a[2],a[3],a[4]+b[4],type=a[5])
          data[*,*,*,0:b[4]-1]=old[*,*,*,*]
          data[*,*,*,b[4]:*]=new[*,*,*,*]
      end
@@ -594,15 +625,15 @@ end
 PRO add_myDEPENDS, metadata, vnames
 common global_table, table
 
-tnames = tag_names(metadata)
+cdaw_tnames = tag_names(metadata)
 
-for k=0,n_elements(tnames)-1 do begin
-   len = strlen(tnames[k]) & pos = strpos(tnames[k],'DEPEND_')
+for k=0,n_elements(cdaw_tnames)-1 do begin
+   len = strlen(cdaw_tnames[k]) & pos = strpos(cdaw_tnames[k],'DEPEND_')
    if ((len gt 7) AND (pos eq 0)) then begin 
       ; DEPEND found, check remainder
       ON_IOERROR, escape ; return false if non-digit found
       for j=0,(len-11) do begin ; check one character at a time
-         r = strmid(tnames[k],(10+j),1) & READS,r,v,FORMAT='(I1)'
+         r = strmid(cdaw_tnames[k],(10+j),1) & READS,r,v,FORMAT='(I1)'
       endfor
       dvname = metadata.(k) ; depend attribute FOUND
       dvname = correct_vnames(dvname) ;look for variable names that have
@@ -613,9 +644,9 @@ for k=0,n_elements(tnames)-1 do begin
       v_count = 0  
       e_index = where(dvname eq table.equiv, e_count)
       if (e_count gt 0) then begin 
-         v_index = where(vnames eq table.varname(e_index), v_count)
+         v_index = where(vnames eq table.varname[e_index], v_count)
       endif
-      if ((dvname ne '')AND(count eq 0)AND(v_count eq 0)) then begin
+      if ((dvname ne '') AND (count eq 0) AND (v_count eq 0)) then begin
          ;print, 'Adding ',dvname,' to vnames'
          ;  if DEPEND variable not already requested, add it to the vnames
          ;  array, but change data_type so it won't be plotted...
@@ -652,18 +683,18 @@ end
 PRO add_myCOMPONENTS, metadata, vnames
 common global_table, table
 
-tnames = tag_names(metadata)
+cdaw_tnames = tag_names(metadata)
 
 ;TJK changed the i to k since that's what's used below
-;for i=0,n_elements(tnames)-1 do begin
+;for i=0,n_elements(cdaw_tnames)-1 do begin
 
-for k=0,n_elements(tnames)-1 do begin
-   len = strlen(tnames[k]) & pos = strpos(tnames[k],'COMPONENT_')
+for k=0,n_elements(cdaw_tnames)-1 do begin
+   len = strlen(cdaw_tnames[k]) & pos = strpos(cdaw_tnames[k],'COMPONENT_')
    if ((len gt 10) AND (pos eq 0)) then begin 
       ; COMPONENT found, check remainder
       ON_IOERROR, escape ; return false if non-digit found
       for j=0,(len-11) do begin ; check one character at a time
-         r = strmid(tnames[k],(10+j),1) & READS,r,v,FORMAT='(I1)'
+         r = strmid(cdaw_tnames[k],(10+j),1) & READS,r,v,FORMAT='(I1)'
       endfor
       dvname = metadata.(k) ; component attribute FOUND
       dvname = correct_vnames(dvname) ;look for variable names that have
@@ -674,9 +705,9 @@ for k=0,n_elements(tnames)-1 do begin
       v_count = 0  
       e_index = where(dvname eq table.equiv, e_count)
       if (e_count gt 0) then begin 
-         v_index = where(vnames eq table.varname(e_index), v_count)
+         v_index = where(vnames eq table.varname[e_index], v_count)
       endif
-      if ((dvname ne '')AND(count eq 0)AND(v_count eq 0)) then begin
+      if ((dvname ne '') AND (count eq 0) AND (v_count eq 0)) then begin
          ;print, 'Adding ',dvname,' to vnames'
          ;  if COMPONENT variable not already requested, add it to the vnames
          ;  array, but change data_type so it won't be plotted...
@@ -695,11 +726,11 @@ end
 PRO add_myDELTAS, metadata, vnames
 common global_table, table
 
-tnames = tag_names(metadata)
+cdaw_tnames = tag_names(metadata)
 
-for i=0,n_elements(tnames)-1 do begin
-   pos1 = strpos(tnames[i],'DELTA_PLUS_VAR') $
-          & pos2 = strpos(tnames[i],'DELTA_MINUS_VAR')
+for i=0,n_elements(cdaw_tnames)-1 do begin
+   pos1 = strpos(cdaw_tnames[i],'DELTA_PLUS_VAR') $
+          & pos2 = strpos(cdaw_tnames[i],'DELTA_MINUS_VAR')
    if ((pos1[0] ne -1) or (pos2[0] ne -1)) then begin ; DELTA found, 
       dvname = metadata.(i) 
       dvname = correct_vnames(dvname) ;look for variable names that have
@@ -711,10 +742,10 @@ for i=0,n_elements(tnames)-1 do begin
       v_count = 0  
       e_index = where(dvname eq table.equiv, e_count)
       if (e_count gt 0) then begin 
-         v_index = where(vnames eq table.varname(e_index), v_count)
+         v_index = where(vnames eq table.varname[e_index], v_count)
       endif
-      if ((dvname ne '')AND(count eq 0)AND(v_count eq 0)) then begin
-      ;if ((dvname ne '')AND(q[0] eq -1)) then begin
+      if ((dvname ne '') AND (count eq 0) AND (v_count eq 0)) then begin
+      ;if ((dvname ne '') AND (q[0] eq -1)) then begin
 	 ;print,metadata.var_type
          ; add the delta variable name to all array parameters
 
@@ -755,11 +786,14 @@ end
 ; 	the records in a cdf.
 ;-------------------------------------------------------------------------
 FUNCTION read_myVARIABLE, vname, CDFid, vary, $
-	 dtype, recs, START_REC=START_REC, REC_COUNT=REC_COUNT,DEBUG=DEBUG
+	 dtype, recs, START_REC=START_REC, REC_COUNT=REC_COUNT,set_column_major=set_column_major,DEBUG=DEBUG
 
 ;
 ; Get needed information about the cdf and variable
 ;stop;
+CDF_LIB_INFO, VERSION=V, RELEASE=R, COPYRIGHT=C, INCREMENT=I
+cdfversion = string(V, R, I, FORMAT='(I0,".",I0,".",I0,A)')
+
 cinfo = cdf_inquire(CDFid) ; inquire about the cdf
 vinfo = cdf_varinq(CDFid,vname) ; inquire about the variable
 cdf_control,CDFid,VAR=vname,GET_VAR_INFO=vinfo2 ; inquire more about the var
@@ -787,16 +821,23 @@ if keyword_set(REC_COUNT) then recs = REC_COUNT else recs = vinfo2.maxrec+1
 ; use maxrec and this should work the same for both r and z variables.
 ;if keyword_set(REC_COUNT) then begin 
 ;  recs = REC_COUNT 
-;endif else if(zflag eq 1) then begin ;set the z variable max recs
+;endif else if (zflag eq 1) then begin ;set the z variable max recs
 ;  recs = vinfo2.maxrec+1
 ;endif else recs = vinfo2.maxrecs+1 ;set the r variable max recs
 
 vary = vinfo.RECVAR & dtype = vinfo.DATATYPE
-
+if keyword_set(DEBUG) then begin
+  if keyword_set(set_column_major) then print, 'In read_myvariable, to_column SET in varget' else print, 'In read_myvariable, to_column NOT set in varget' 
+endif
 ; Read the CDF for the data for the requested variable
 if (zflag eq 1) then begin ; read the z-variable
    cdf_control,CDFid,VAR=vname,GET_VAR_INFO=zvinfo
-   if zvinfo.MAXREC eq -1 then begin  ; this means NO records have been written
+   ; Add the condition that the variable is Record Variant before entering this branch.  According
+   ; to the documentation, NRV variables should return a MAXREC = 0, however, at least in some cases,
+   ; the structure returned in GET_VAR_INFOR when calling CDF_CONTROL on a NRV variable has MAXREC
+   ; set to -1.
+   ; Ron Yurow (October 6, 2015)
+   if zvinfo.MAXREC eq -1  && vary eq "VARY" then begin  ; this means NO records have been written
       if keyword_set(DEBUG) then print,'WARNING=',vname,' has ZERO records!'
 ;TJK 11/17/2006 - instead of reading 1 record when maxrec = -1 (which
 ;                 indicates that no records for the variable were
@@ -855,13 +896,22 @@ if (zflag eq 1) then begin ; read the z-variable
 ;                                 help, /struct, cinfo
                                endif 
                              endif else begin ; if component_1 isn't found, then use the maxrec for this variable
-                                if (vinfo2.maxrec+1 gt 0) then make_records = vinfo2.maxrec+1 else make_records = 1
+                                ;if (vinfo2.maxrec+1 gt 0) then make_records = vinfo2.maxrec+1 else make_records = 1
+				; RCJ 10/09/2014  Recs seems to have the correct number of records to be read. 
+                                ; if (recs gt 0) then make_records = recs else make_records = 1
+                                ; It looks what is needed is maximum records of the depend_0 variable.  This is 
+                                ; done in the following two lines.
+                                ; Ron Yurow (Feb 12, 2016)
+                                cdf_control,CDFid,VAR=depend0,GET_VAR_INFO=dinfo
+                                if (dinfo.maxrec+1 gt 0) then make_records = dinfo.maxrec+1 else make_records = 1
                                 if keyword_set(DEBUG) then print,'WARNING, ',vname,' has no records but its depend_0 ',depend0,' does. Filling in array with ',make_records,' elements.'  
                                 return, make_array(vinfo.dim,make_records,value=wfill)
                              endelse
                          endif
                       endif else begin ; if depend_0 isn't found, then use the maxrec for this variable
-                        if (vinfo2.maxrec+1 gt 0) then make_records = vinfo2.maxrec+1 else make_records = 1
+                        ;if (vinfo2.maxrec+1 gt 0) then make_records = vinfo2.maxrec+1 else make_records = 1
+			; RCJ 10/09/2014 Recs seems to have the correct number of records to be read.
+                        if (recs gt 0) then make_records = recs else make_records = 1
                         if keyword_set(DEBUG) then print,'WARNING, ',vname,' has no records and no depend_0. Filling in array with ',make_records,' elements.'  
                         return, make_array(vinfo.dim,make_records,value=wfill)
                       endelse
@@ -891,14 +941,21 @@ if (zflag eq 1) then begin ; read the z-variable
   
       endif else begin ;if don't have a fill value, go ahead and read 1 rec.
 ;        if keyword_set(DEBUG) then vtime = systime(1)
-         cdf_varget,CDFid,vname,dat,REC_COUNT=1 & return,dat
+         if (cdfversion ge '3.5.0') then begin
+           cdf_varget,CDFid,vname,dat,REC_COUNT=1,to_column_major=set_column_major & return,dat
+        endif else begin
+           cdf_varget,CDFid,vname,dat,REC_COUNT=1 & return,dat
+        endelse
 ;        if keyword_set(DEBUG) then print, '1 Took ',systime(1)-vtime, ' seconds to do cdf_varget for ',vname
       endelse
    
    endif else begin
 
 ;     if keyword_set(DEBUG) then vtime = systime(1)
-      cdf_varget,CDFid,vname,dat,REC_START=start_rec,REC_COUNT=recs
+      if (cdfversion ge '3.5.0') then begin
+        cdf_varget,CDFid,vname,dat,REC_START=start_rec,REC_COUNT=recs,to_column_major=set_column_major
+     endif else cdf_varget,CDFid,vname,dat,REC_START=start_rec,REC_COUNT=recs
+
 ;     if keyword_set(DEBUG) then print, '2 Took ',systime(1)-vtime, ' seconds to do cdf_varget for ',vname
 
    endelse
@@ -918,7 +975,9 @@ endif else begin ; read the r-variable
       ;  endif else CDF_varget,CDFid,vname,dat,COUNT=dimc,REC_COUNT=rcount
    endif else begin
 ;     if keyword_set(DEBUG) then vtime = systime(1)
-       CDF_varget,CDFid,vname,dat,COUNT=dimc,REC_START=start_rec,REC_COUNT=recs
+      if (cdfversion ge '3.5.0') then begin
+       CDF_varget,CDFid,vname,dat,COUNT=dimc,REC_START=start_rec,REC_COUNT=recs, to_column_major=set_column_major
+    endif else CDF_varget,CDFid,vname,dat,COUNT=dimc,REC_START=start_rec,REC_COUNT=recs
 ;     if keyword_set(DEBUG) then print, '3 Took ',systime(1)-vtime, ' seconds to do cdf_varget for ',vname
    endelse
 
@@ -948,12 +1007,21 @@ if ((vinfo.DATATYPE eq 'CDF_CHAR') or (vinfo.DATATYPE eq 'CDF_UCHAR')) then begi
        dat = d2
      endelse
   endelse
-if keyword_set(DEBUG) then print, 'Converted cdf_char BYTE to STRING ', dat
+if keyword_set(DEBUG) then print, 'Converted ',vinfo.datatype,' to STRING ', dat
 endif
 
 ; Check for sign loss for cdf unsigned integer data.  IDL (as of v4.0.1b)
 ; returns unsigned cdf variables as signed IDL variables with the same
 ; number of bytes.  This could cause a sign flip.  Detect and Correct.
+if (vinfo.DATATYPE eq 'CDF_UINT1' and strupcase(vinfo.recvar) eq 'NOVARY') then begin
+; RCJ 03/09/2016  Doing this for novary vars only at the moment.  There are 'vary' types
+; that are of type byte but they list and plot properly, so I don't want to mess with them.
+; The problem here was that novary vars that go on the header of a listing were not showing (mms fpi data,
+; that are supposed to show as an index array). In LIST_mystruct, these byte arrays are turned to strings
+; and become ''.
+      dat = uint(dat)  & dtype='CDF_INT1'
+      print,'WARNING=Converting BYTE to CDF_INT1.'
+endif
 if vinfo.DATATYPE eq 'CDF_UINT2' then begin
    w = where(dat lt 0,wc) ; search for negative values
    if (wc gt 0) then begin ; convert to long
@@ -972,7 +1040,7 @@ endif
 ; If this variable is a record-varying variable, but this CDF only happens
 ; to have one record, then we must add the extra dimension onto the end
 ; for proper appending to take place when other CDF's are read
-if ((vinfo.RECVAR eq 'VARY')AND(rcount eq 1L)) then begin
+if ((vinfo.RECVAR eq 'VARY') AND (rcount eq 1L)) then begin
    ; print,'WARNING=Reforming single-record variable' ;DEBUG
    ds = size(dat) ; get dimensions of dat
    case ds[0] of
@@ -985,6 +1053,81 @@ if ((vinfo.RECVAR eq 'VARY')AND(rcount eq 1L)) then begin
 endif
 ; Return the data read from the CDF
 return,dat
+end
+
+function majority_check, CDFid=CDFid, buf=buf
+; If this is a row majority CDF and running at least IDL8.1 and have
+; at least 3.5.0 of CDF then we can check for and we will want to read
+; a row major cdf as column major. This will return the dimensions
+; in IDL that will match the dimensions defined in the cdf.
+; If buf is defined, check it 1st for the value of
+; CDAWLIB_IDL_ROW_NOTRANSPOSE.  Otherwise, have to look in the
+; currently opened CDF.
+; Return the value of set_column_major
+;
+;TJK 10/2014 - decide whether to read cdfs w/ to_column switch
+; also need to check for global attribute cdawlib_idl_row_notranspose
+; existence or equal to FALSE then set "set_column_major" to "true"
+
+set_column_major = 0
+
+; Set up an error handler
+CATCH, Error_status
+if Error_status ne 0 then begin
+   print,'Error in Majority_check ',!ERR_STRING
+   return, set_column_major
+endif
+
+
+CDF_LIB_INFO, VERSION=V, RELEASE=R, COPYRIGHT=C, INCREMENT=I
+cdfversion = string(V, R, I, FORMAT='(I0,".",I0,".",I0,A)')
+
+if ((!version.release lt '8.1' and cdfversion lt '3.5.0')) then begin
+  set_column_major = 0 ;w/o these two we can't use the to_column keyword to cdf_varget
+endif
+
+if ( cdfversion ge '3.5.0') then begin
+  set_column_major = 1 ; default
+
+   if (n_tags(buf) gt 0) then begin ;if buf defined then check it
+     ;print, 'DEBUG in majority_check, checking buffer'
+
+     atags = tag_names(buf)
+     q=spd_cdawlib_tagindex('CDAWLIB_IDL_ROW_NOTRANSPOSE',atags)
+     m=spd_cdawlib_tagindex('CDFMAJOR',atags) 
+     if (m[0] ne -1) then begin
+         if (buf.cdfmajor eq 'COL_MAJOR') then begin
+            set_column_major = 0 
+         endif else begin
+            if (buf.cdfmajor eq 'ROW_MAJOR') and (q[0] ne -1) then begin
+               notranspose = buf.CDAWLIB_IDL_ROW_NOTRANSPOSE
+               if (strupcase(notranspose) eq 'TRUE') then set_column_major = 0
+            endif
+         endelse
+      endif else begin ;majority not in the buffer yet
+            set_column_major = 0 
+      endelse
+
+     endif else begin            ; look into the cdf, if not given a buffer
+      ;print, 'DEBUG in majority_check, buffer isnt defined, checking the cdf for majority etc.'
+      if keyword_set(CDFid) then begin
+        cinfo = cdf_inquire(CDFid)
+        if (cinfo.majority eq 'ROW_MAJOR') then begin
+           if (cdf_attexists(CDFid,'CDAWLIB_IDL_ROW_NOTRANSPOSE'))then begin
+              cdf_attget,CDFid,'CDAWLIB_IDL_ROW_NOTRANSPOSE', 0, notranspose   
+              if (strupcase(notranspose) eq 'TRUE') then set_column_major = 0
+           endif
+           if (cdf_attexists(CDFid,'cdawlib_idl_row_notranspose'))then begin
+              cdf_attget,CDFid,'cdawlib_idl_row_notranspose', 0, notranspose   
+              if (strupcase(notranspose) eq 'TRUE') then set_column_major = 0
+           endif
+        endif else set_column_major = 0
+     endif
+   endelse
+  endif
+
+return, set_column_major
+
 end
 
 ;+------------------------------------------------------------------------
@@ -1025,7 +1168,7 @@ attval='' & astruct=create_struct(aname,attval) ; initialize anonymous structure
 CATCH,error_status & if error_status ne 0 then begin !ERROR=0 & return,astruct & endif
 
 
-   if (ascope eq 'GLOBAL_SCOPE')OR(ascope eq 'GLOBAL_SCOPE_ASSUMED') then begin
+   if (ascope eq 'GLOBAL_SCOPE') OR (ascope eq 'GLOBAL_SCOPE_ASSUMED') then begin
       isglobal=1
       cdf_attget,CDFid,anum,0,aval & attval = aval ; get the global attribute
       for entry=1,maxe do begin ; get remaining entrys if any
@@ -1047,8 +1190,11 @@ CATCH,error_status & if error_status ne 0 then begin !ERROR=0 & return,astruct &
       cdf_attget,CDFid,anum,vname,aval & attval = aval ; read variable attribute 
       if (amI_ISTPptr(aname) eq 1) then begin ; check for pointer-type attribute
 
-         attval = read_myVARIABLE(attval,CDFid,vary,ctype,recs)
+        ; attval = read_myVARIABLE(attval,CDFid,vary,ctype,recs)
 
+         if (n_tags(atmp) gt 0) then to_column = majority_check(CDFid=CDFid,buf=atmp) else $
+            to_column = majority_check(CDFid=CDFid)
+         attval = read_myVARIABLE(attval,CDFid,vary,ctype,recs,set_column_major=to_column)
       endif
 
       asize = size(attval) & nea = n_elements(asize)
@@ -1070,7 +1216,7 @@ CATCH,error_status & if error_status ne 0 then begin !ERROR=0 & return,astruct &
             if keyword_set(debug) then print, 'found new attribute adding to table, ',attval
 	    tfree = where(table.varname eq '',fcount)
 	    if (fcount gt 0) then begin
-	       table.varname(tfree[0]) = attval
+	       table.varname[tfree[0]] = attval
 	    endif else begin
 	       print, '1, Number of variables exceeds the current size of the table structure, please increase it, current size is ' 
 ;	       help, table.varname
@@ -1100,7 +1246,7 @@ end ;read_myattribute
 ;+------------------------------------------------------------------------
 ; NAME: READ_MYMETADATA
 ; PURPOSE: 
-;	To read all of the attribute values for the requested variable, and
+; To read all of the attribute values for the requested variable, and
 ;       to return this information as an anonymous structure.
 ; CALLING SEQUENCE:
 ;       metadata = read_mymetadata(vname,CDFid)
@@ -1117,36 +1263,115 @@ end ;read_myattribute
 ; MODIFICATION HISTORY:
 ;
 ;-------------------------------------------------------------------------
-
 FUNCTION read_myMETADATA, vname, CDFid
 
 cinfo = cdf_inquire(CDFid) ; inquire about the cdf to get #attributes
-vinfo = cdf_varinq(CDFid,vname) 
 ; Create initial data structure to hold all of the metadata information
-METADATA = create_struct('varname',vname, 'fieldnam', vname,'DIM_SIZES',vinfo.dim)
+METADATA = create_struct('varname',vname)
 ; Extract all metadata information for the all attributes
-nglobal=[0,0,0]
+nglobal=0
 for anum=0,cinfo.natts-1 do begin
    astruct = 0 ; initialize astruct
    ; Get the name and value of the next attribute for vname
    astruct = read_myATTRIBUTE(vname,anum,CDFid,isglobal=isglobal)
-   atnames = TAG_NAMES(astruct)
-   for i=0,N_TAGS(astruct)-1 do begin
-     if (atnames[i] ne 'fieldnam') and (atnames[i] ne 'DIM_SIZES') then nglobal=[nglobal,isglobal]
-     spd_cdawlib_str_element, METADATA, atnames[i], astruct.(i), /add_replace
-   endfor
+   new_attr = string(tag_names(astruct),/print) ;reform to take the value out of array
+   existing_attrs = tag_names(metadata)
+   dups = where(new_attr eq existing_attrs, nfound)
+   if (nfound eq 0) then begin
+     nglobal=[nglobal,isglobal]
+     METADATA = create_struct(temporary(METADATA),astruct)
+  endif else print, 'read_mymetadata: duplicate attribute skipped ', new_attr
 endfor ; for each attribute
+
+;4/2/2015 add the cdf's majority - needed for use in the new
+;                                  majority_check routine.
+
+mtags = tag_names(METADATA)
+maj=spd_cdawlib_tagindex('CDFMAJOR',mtags) 
+if (maj[0] eq -1) then begin
+;print, 'DEBUG adding the cdfmajor structure element for ', metadata.varname
+  METADATA= create_struct(temporary(METADATA),'cdfmajor',cinfo.majority) 
+  nglobal=[nglobal,1]
+endif
+
+
 ;11/20/2007 TJK after all attributes are read and put in metadata
 ;structure, add one more attribute that's needed for appending the 
 ;data arrays from file to file (for THEMIS especially).  Add a 
 ;dim_sizes element.
+
+status = cdf_varnum(CDFid,vname) ;check to see if this named variable exists
+
+; RCJ 01/31/2008 Need to check for the existence of dim_sizes
+; In cdfs generated by cdaweb, for example, they already exist in the structure
+q=where(tag_names(metadata) eq 'DIM_SIZES')
+
+if (status ne -1) and (q[0] eq -1) then begin
+  cdf_control, CDFid, SET_ZMODE=2 ;set zmode so that we'll always get a .dim (default for R variables
+  ;is a value for .dimvar (which is different than .dim)...
+  vinfo = cdf_varinq(CDFid,vname) ; get the dim_size info. on this var.
+  METADATA = create_struct(temporary(METADATA),'DIM_SIZES',vinfo.dim)
+  nglobal=[nglobal,0] ;add this as a variable attribute [0]
+endif
+
 ;
 ; CDAWeb's listing and write_mycdf s/w rely on the fact that 'fieldnam' is 
 ; the first of the var attrs. Occasionally (see dataset po_k0_hyd) the data cdf
 ; is such that 'fieldnam' is not the first of the var attrs. Rewritting the 
 ; structure and moving 'fieldnam' to the top seems to fix that problem.
 ; RCJ 11/05/03
-;;
+;
+cdaw_tnames=tag_names(metadata)
+
+q0=where(cdaw_tnames eq 'FIELDNAM')
+if q0[0] ne -1 then begin
+   n0=where(nglobal eq 0, var_cnt) ; variable scope
+   n1=where(nglobal eq 1, global_cnt) ; global scope
+;print, 'number of global attrs ', global_cnt
+;print, 'number of variable attrs ', var_cnt
+
+;   if q0[0] ne n0[1] then begin ; if fieldnam is not the second 'variable scope' var.
+             ; we do not compare q0[0] and n0[0] because n0[0] is 'varname's
+       ; position. 'Fieldnam' should be the next one, n0[1]
+
+   reorder = where(n1 gt q0[0], globals_after_vars) ;TJK 1/14/2016 added to further determine when to reorder
+   if (q0[0] ne n0[1] or globals_after_vars gt 0) then begin ; if fieldnam is not the second 'variable scope' var.
+             ; we do not compare q0[0] and n0[0] because n0[0] is 'varname's
+       ; position. 'Fieldnam' should be the next one, n0[1]
+             ;added test to see if there are global attributes AFTER Fieldnam, if so,
+             ;need to reorder the attributes
+
+      si=strtrim(n1[0],2)
+      comm = "tmpstr=create_struct('varname',vname," ; first global attr  
+      tmpstr=create_struct('varname', vname)
+      if (global_cnt gt 0) then begin ;TJK 11/27 check if there are global attributes
+        for ii=0,n_elements(n1)-1 do begin  ;do global attr first
+           si=strtrim(n1[ii],2)
+           ;print,si,' g ',cdaw_tnames[si]
+           comm = comm + "cdaw_tnames["+si+"],metadata.("+si+"),"           
+           spd_cdawlib_str_element, tmpstr, cdaw_tnames[si], metadata.(si), /add_replace
+        endfor 
+      endif
+      si=strtrim(q0[0],2)
+      comm=comm + "'FIELDNAM',metadata.("+si+"),"
+      spd_cdawlib_str_element, tmpstr, 'FIELDNAM', metadata.(si), /add_replace
+      for ii=0,n_elements(n0)-2 do begin  ;do variable attr now
+         si=strtrim(n0[ii],2)
+         ;print,si,' v ',cdaw_tnames[si]
+         if cdaw_tnames[si] ne 'FIELDNAM' and cdaw_tnames[si] ne 'VARNAME' then begin
+            comm = comm + "cdaw_tnames["+si+"],metadata.("+si+"),"      
+            spd_cdawlib_str_element, tmpstr, cdaw_tnames[si], metadata.(si), /add_replace
+         endif 
+      endfor
+      si=strtrim(n0[n_elements(n0)-1],2)  ; last variable attr
+      comm = comm + "cdaw_tnames["+si+"],metadata.("+si+"))"
+      spd_cdawlib_str_element, tmpstr, cdaw_tnames[si], metadata.(si), /add_replace
+      ;s=execute(comm)
+      metadata=tmpstr
+
+   endif
+endif
+;
 return,METADATA
 end
 
@@ -1189,7 +1414,7 @@ if (cinfo.natts gt 0) then begin
   i = 0
   for anum=0,cinfo.natts-1 do begin
     cdf_attinq,CDFid,anum,aname,ascope,maxe,maxze ; inquire about the attribute
-    if (((all eq 0) and (ascope eq 'VARIABLE_SCOPE')OR(ascope eq 'VARIABLE_SCOPE_ASSUMED')) or (all eq 1)) then begin
+    if (((all eq 0) and (ascope eq 'VARIABLE_SCOPE') OR (ascope eq 'VARIABLE_SCOPE_ASSUMED')) or (all eq 1)) then begin
       aname = strtrim(aname,2) ; trim any possible leading or trailing blanks
       ;call spd_cdawlib_replace_bad_chars to replace any "illegal" characters in
       ;the attribute name w/ a legal one.  This was necessary for IDL 5.3.
@@ -1227,7 +1452,7 @@ FUNCTION get_numallvars, CNAME=CNAME, CDFid=CDFid
 
 ; validate keyword combination and open cdf if needed
 if keyword_set(CNAME) AND keyword_set(CDFid) then return,0 ; invalid
-if keyword_set(CNAME) then CDFindex = CDF_OPEN(CNAME) ; open the cdf
+if keyword_set(CNAME) then CDFindex = CDF_OPEN(CNAME, /readonly) ; open the cdf
 if keyword_set(CDFid) then CDFindex = CDFid ; save the cdf file number
 
 ; determine the number of variables 
@@ -1266,7 +1491,7 @@ FUNCTION get_allvarnames, CNAME=CNAME, CDFid=CDFid, VAR_TYPE=VAR_TYPE
 
 ; validate keyword combination and open cdf if needed
 if keyword_set(CNAME) AND keyword_set(CDFid) then return,0 ; invalid
-if keyword_set(CNAME) then CDFindex = CDF_OPEN(CNAME) ; open the cdf
+if keyword_set(CNAME) then CDFindex = CDF_OPEN(CNAME, /readonly) ; open the cdf
 if keyword_set(CDFid) then CDFindex = CDFid ; save the cdf file number
 
 ; determine the number of variables 
@@ -1432,7 +1657,7 @@ function find_epochvar, CDFid
 cinfo = CDF_INQUIRE(CDFid) ; inquire about number of variables
 numvars = cinfo.nvars + cinfo.nzvars
 for j=0,numvars-1 do begin
-print, 'in find_epochvar'
+;print, 'in find_epochvar'
    vinfo = CDF_VARINQ(CDFid,j,/ZVARIABLE)
    caps = strupcase(strtrim(vinfo.name,2)); trim blanks and capitalize
    match = where(caps eq 'EPOCH',match_cnt)
@@ -1478,15 +1703,15 @@ status = 0
 ;do this merge if we have more than two cdfs specified and the 1st one is a master
 if ((n_elements(cnames) ge 2) and strpos(cnames[0],'00000000') ne -1) then begin  
 
-      data_CDFid = cdf_open(cnames[1]) 
+      data_CDFid = cdf_open(cnames[1], /readonly) 
       ; RCJ 01/14/2013   get_allvarnames needs to know the value of 'all'.
       ;data_vnames = get_allvarnames(CDFid=data_CDFid)
       if keyword_set(ALL) then begin
          if all eq 1 then data_vnames = get_allvarnames(CDFid=data_CDFid)
          if all eq 2 then data_vnames = get_allvarnames(CDFid=data_CDFid,var_type='data')
       endif else data_vnames = get_allvarnames(CDFid=data_CDFid)
-      
-      atmp = read_myMETADATA (data_vnames[0], data_CDFid)
+
+      atmp = read_myMETADATA(data_vnames[0], data_CDFid)
       dnames=tag_names(atmp)
       data_attr=where(dnames eq 'FIELDNAM') ; this is the break between global and variable attributes
 
@@ -1673,11 +1898,11 @@ if (error_status ne 0) then begin
    ;added check for -134 out of memory in IDL5.3
    ; added check for the string "unable to allocate memory", since IDL seems
    ; to change the error number associated w/ this w/ each release
-   if((strpos(!ERR_string, "Unable to allocate memory") gt -1) or error_status eq -98 or error_status eq -123 or error_status eq -124 or error_status eq -134) then begin
+   if ((strpos(!ERR_string, "Unable to allocate memory") gt -1) or error_status eq -98 or error_status eq -123 or error_status eq -124 or error_status eq -134) then begin
       val_err="ERROR=Memory Exceeded; -98 or -123 or -124 or -134 or -151"
       val_stat="STATUS=Time range selected generates array which exceeds available system resources. Re-select a smaller time range."
       ;
-      if(n_elements(mydata) ne 0) then begin
+      if (n_elements(mydata) ne 0) then begin
          atags=tag_names(mydata.(0))
          b0 = spd_cdawlib_tagindex('LOGICAL_SOURCE',atags)
          b1 = spd_cdawlib_tagindex('LOGICAL_FILE_ID',atags)
@@ -1696,7 +1921,28 @@ if (error_status ne 0) then begin
       endelse
       tmpstr=create_struct('DATASET',val_data,'ERROR',val_err,'STATUS',val_stat)
       return, tmpstr
-  endif  
+  endif 
+  ; User Error.  MESSAGE trigered an error in another part of the program. 
+  ; Uses !ERR_STRING as the text of the error message.
+  ; Ron Yurow (Nov 10, 2016)
+  IF  (error_status eq -5) THEN BEGIN
+      ; Find the name of the data set.
+      parts = STR_SEP (cnames[cx],'/')
+      piece = STRUPCASE (STR_SEP (parts[n_elements(parts)-1], '_'))
+      tempnm = piece[0] + '_' + piece [1] + '_' + piece [2]
+
+      ; Get the error message
+      msg = GET_CDF_MSG ()
+         
+      ; Set up values we will used to populate the error structure.
+      val_data= "DATASET=" + tempnm
+      val_msg = "STATUS="  + msg
+
+      ; Create an error structure to return.
+      err_struct = CREATE_STRUCT ('DATASET', val_data, 'STATUS', val_msg)
+
+      RETURN, err_struct
+  ENDIF
   return,-1 ; return failure flag
 endif
 
@@ -1766,9 +2012,9 @@ orig_names = vnames
 ;      CDFid = cdf_open(cnames[cx]) 
 ;        ;   
 ;	for nreq =0, n_elements(vnames)-1 do begin
-;	    atmp = read_myMETADATA (vnames(nreq), CDFid)
-;	    atags = tag_names (atmp)
-;	    b0 = spd_cdawlib_tagindex ('DELTA_PLUS_VAR', atags)
+;	    atmp = read_myMETADATA(vnames(nreq), CDFid)
+;	    atags = tag_names(atmp)
+;	    b0 = spd_cdawlib_tagindex('DELTA_PLUS_VAR', atags)
 ;	    if (b0(0) ne -1) then begin
 ;	       if (atmp.(b0(0)) ne '') then begin
 ;	          ; avoiding duplication:
@@ -1776,7 +2022,7 @@ orig_names = vnames
 ;	          if q(0) eq -1 then vnames=[vnames,atmp.(b0(0))]
 ;	       endif	  
 ;	    endif
-;	    b1 = spd_cdawlib_tagindex ('DELTA_MINUS_VAR', atags)
+;	    b1 = spd_cdawlib_tagindex('DELTA_MINUS_VAR', atags)
 ;	    if (b1(0) ne -1) then begin
 ;	       if (atmp.(b1(0)) ne '') then begin
 ;	          ; avoiding duplication:
@@ -1833,7 +2079,7 @@ for cx=0,n_elements(cnames)-1 do begin
    if (rcount gt 0) then begin
       ; Open the CDF and inquire about global information about file
       if (debug) then print,'Verifying variables in ',cnames[cx]
-      CDFid = cdf_open(cnames[cx]) 
+      CDFid = cdf_open(cnames[cx], /readonly) 
       cinfo = cdf_inquire(CDFid)
       ; if there is a master, look there for virtual variables that may not
       ; be defined in the actual cdfs...
@@ -1847,14 +2093,26 @@ for cx=0,n_elements(cnames)-1 do begin
          ;chkvv_dep=strarr(20)
          chkvv_dep=''
 
+         ;  RCJ 08Nov2016  Added this for loop to look for vars not initially added to the structure atmp.
+	 ;                 These are, for example, a comp0 of a VV which is the dep2 of a comp0 to the requested
+	 ;                 var which, of course, is a VV.  These are too many levels past the requested var and 
+	 ;                 not added to the vnames array by calls to add_mycomponents, add_mydepends or add_mydeltas
+	 ;                 in the main for loop a few lines below.
          for nreq =0, n_elements(vnames)-1 do begin
-	    atmp = read_myMETADATA (vnames[nreq], CDFid)
+	    atmp = read_myMETADATA(vnames[nreq], CDFid)
+	    add_mycomponents,atmp,vnames
+	    add_mydepends,atmp,vnames
 	    add_mydeltas,atmp,vnames
-	    atags = tag_names (atmp)
+	 endfor
+         ;
+         for nreq =0, n_elements(vnames)-1 do begin
+	    atmp = read_myMETADATA(vnames[nreq], CDFid)
+	    add_mydeltas,atmp,vnames
+	    atags = tag_names(atmp)
             ;TJK 09/28/2001 add code to flag whether we're looking at an ISIS mission, if so set
             ; a flag that's used lower down.  We need to check here in the master instead of in
             ; the data cdfs because lots of data cdf's don't have a mission_group global attribute.
-	    b0 = spd_cdawlib_tagindex ('MISSION_GROUP', atags)
+	    b0 = spd_cdawlib_tagindex('MISSION_GROUP', atags)
 	    if (b0[0] ne -1) then begin
 	 	if ((strupcase(atmp.mission_group[0]) eq 'ISIS') or $
 	           (strupcase(atmp.mission_group[0]) eq 'ALOUETTE')) $
@@ -1864,7 +2122,7 @@ for cx=0,n_elements(cnames)-1 do begin
 ;TJK 11/23/2005 add logic to look for virtual depend variables related
 ;to "regular" variables... for some reason we haven't needed this till
 ;now!
-            b1 = spd_cdawlib_tagindex ('DEPEND_0', atags)
+            b1 = spd_cdawlib_tagindex('DEPEND_0', atags)
             if (b1[0] ne -1 ) then begin
 	       if (atmp.depend_0 ne '') then begin
 	           num = where(chkvv_dep eq atmp.depend_0, cnt)
@@ -1874,11 +2132,11 @@ for cx=0,n_elements(cnames)-1 do begin
                    endif
 	       endif
 	    endif
-            b1 = spd_cdawlib_tagindex ('DEPEND_1', atags)
+            b1 = spd_cdawlib_tagindex('DEPEND_1', atags)
             if (b1[0] ne -1 ) then begin
 	        atmp_dep1=atmp.depend_1
 		; RCJ 05/16/2013 ok, but if alt_cdaweb_depend_1 exists, use it instead:
-	        q=spd_cdawlib_tagindex ('ALT_CDAWEB_DEPEND_1', atags)
+	        q=spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_1', atags)
 		if q[0] ne -1 then if (atmp.alt_cdaweb_depend_1 ne '') then atmp_dep1=atmp.alt_cdaweb_depend_1
                 ;if (atmp.depend_1 ne '') then begin
                 if (atmp_dep1 ne '') then begin
@@ -1889,11 +2147,11 @@ for cx=0,n_elements(cnames)-1 do begin
                     endif
                 endif
             endif
-            b1 = spd_cdawlib_tagindex ('DEPEND_2', atags)
+            b1 = spd_cdawlib_tagindex('DEPEND_2', atags)
 	    if (b1[0] ne -1 ) then begin
 	        atmp_dep2=atmp.depend_2
 		; RCJ 05/16/2013 ok, but if alt_cdaweb_depend_1 exists, use it instead:
-	        q=spd_cdawlib_tagindex ('ALT_CDAWEB_DEPEND_2', atags)
+	        q=spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_2', atags)
 	        if q[0] ne -1 then if (atmp.alt_cdaweb_depend_2 ne '') then atmp_dep2=atmp.alt_cdaweb_depend_2 
 		;if (atmp.depend_2 ne '') then begin
 		if (atmp_dep2 ne '') then begin
@@ -1904,10 +2162,24 @@ for cx=0,n_elements(cnames)-1 do begin
                     endif
 	        endif
             endif
+            b1 = spd_cdawlib_tagindex('DEPEND_3', atags)
+	    if (b1[0] ne -1 ) then begin
+	        atmp_dep3=atmp.depend_3
+;		help,atmp_dep3
+	        q=spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_3', atags)
+	        if q[0] ne -1 then if (atmp.alt_cdaweb_depend_3 ne '') then atmp_dep3=atmp.alt_cdaweb_depend_3 
+		if (atmp_dep3 ne '') then begin
+	            if q[0] ne -1 then num = where(chkvv_dep eq atmp.alt_cdaweb_depend_3, cnt) else num = where(chkvv_dep eq atmp.depend_3, cnt) 
+                    if (cnt eq 0) then begin
+ 	               if q[0] ne -1 then chkvv_dep=[chkvv_dep,atmp.alt_cdaweb_depend_3] else chkvv_dep=[chkvv_dep,atmp.depend_3]
+		       vdep_cnt=vdep_cnt+1
+                    endif
+	        endif
+            endif
 
 ;TJK 4/17/2008 adding check for deltas here otherwise those vars
 ;get thrown out below (needed this for voyager coho datasets
-            b1 = spd_cdawlib_tagindex ('DELTA_PLUS_VAR', atags)
+            b1 = spd_cdawlib_tagindex('DELTA_PLUS_VAR', atags)
 	    if (b1[0] ne -1 ) then begin
 	        if (atmp.delta_plus_var ne '') then begin
 	            num = where(chkvv_dep eq atmp.delta_plus_var, cnt)
@@ -1917,7 +2189,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	            endif
 	         endif
             endif
-            b1 = spd_cdawlib_tagindex ('DELTA_MINUS_VAR', atags)
+            b1 = spd_cdawlib_tagindex('DELTA_MINUS_VAR', atags)
 	    if (b1[0] ne -1 ) then begin
 	        if (atmp.delta_minus_var ne '') then begin
 	             num = where(chkvv_dep eq atmp.delta_minus_var, cnt)
@@ -1928,14 +2200,23 @@ for cx=0,n_elements(cnames)-1 do begin
 	        endif
 	    endif
 ;end of 4/17/2008 added check for deltas
+;TJK 2/13/2015 remove extra blank element in index 0; leaving it in
+;causes problems below w/ identifying virtual depends for virtual variables.
+         if (vdep_cnt gt 0) then begin
+            not_blank = where(chkvv_dep ne '', blank_cnt)
+            if blank_cnt gt 0 then chkvv_dep = chkvv_dep[not_blank]
+         endif
+         
+;help, chkvv_dep
+;print, 'in between read variables and virtual section chkvv_dep array = ',chkvv_dep
 
 ;if (debug) then print, 'At bottom of new section = ',chkvv_dep
 
 ;TJK 11/23/2005 - end of new section, back to original section looking
 ;                 for virtual variables w/in virtual variables
 
-	    b0 = spd_cdawlib_tagindex ('VIRTUAL', atags)
-            c0 = spd_cdawlib_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
+	    b0 = spd_cdawlib_tagindex('VIRTUAL', atags)
+            c0 = spd_cdawlib_tagindex('COMPONENT_0', atags) ;add check for component_0 value as well
             ;look through metadata and look for virtual variables...
             ; get components of the virtual variables and add them to the vnames  
             ; array...
@@ -1960,7 +2241,7 @@ for cx=0,n_elements(cnames)-1 do begin
                   ; Check VV's depends for other VV's and add to list
                   ;TJK 11/98 added logic to only add the variable if it doesn't
                   ;already exist in the chkvv_dep list.
-                  b1 = spd_cdawlib_tagindex ('DEPEND_0', atags)
+                  b1 = spd_cdawlib_tagindex('DEPEND_0', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.depend_0 ne '') then begin
 	                num = where(chkvv_dep eq atmp.depend_0, cnt)
@@ -1971,41 +2252,61 @@ for cx=0,n_elements(cnames)-1 do begin
 	                endif
 	             endif
 	          endif
-	          b1 = spd_cdawlib_tagindex ('DEPEND_1', atags)
+	          b1 = spd_cdawlib_tagindex('DEPEND_1', atags)
 	          if (b1[0] ne -1 ) then begin
 	             atmp_dep1=atmp.depend_1
 		     ; RCJ 05/16/2013 ok, but if alt_cdaweb_depend_1 exists, use it instead:
-	             q=spd_cdawlib_tagindex ('ALT_CDAWEB_DEPEND_1', atags)
+	             q=spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_1', atags)
 		     if (q[0] ne -1) then if (atmp.alt_cdaweb_depend_1 ne '') then atmp_dep1=atmp.alt_cdaweb_depend_1 
 	             ;if (atmp.depend_1 ne '') then begin
                      if (atmp_dep1 ne '') then begin
 			if (q[0] ne -1) then num = where(chkvv_dep eq atmp.alt_cdaweb_depend_1, cnt) else num = where(chkvv_dep eq atmp.depend_1, cnt)
-	                if (cnt eq 0) then begin
-		           ;chkvv_dep(vdep_cnt)=atmp.depend_1
-		           if q[0] ne -1 then chkvv_dep=[chkvv_dep,atmp.alt_cdaweb_depend_1] else chkvv_dep=[chkvv_dep,atmp.depend_1]
+	                if (cnt eq 0) then begin ;if not in the list already, add it
+		           ;chkvv_dep[vdep_cnt]=atmp.depend_1
+                           ;below still gets the value of alt_cdaweb_depehnd_1, even if it is blank, which we don't want.
+                                ;if q[0] ne -1 then
+                                ;chkvv_dep=[chkvv_dep,atmp.alt_cdaweb_depend_1]
+                                ;else
+                                ;chkvv_dep=[chkvv_dep,atmp.depend_1]
+		           chkvv_dep=[chkvv_dep,atmp_dep1]
 		           vdep_cnt=vdep_cnt+1
 	                endif
 	             endif
 	          endif
-	          b1 = spd_cdawlib_tagindex ('DEPEND_2', atags)
+	          b1 = spd_cdawlib_tagindex('DEPEND_2', atags)
 	          if (b1[0] ne -1 ) then begin
 	             atmp_dep2=atmp.depend_2
 		     ; RCJ 05/16/2013 ok, but if alt_cdaweb_depend_2 exists, use it instead:
-	             q=spd_cdawlib_tagindex ('ALT_CDAWEB_DEPEND_2', atags)
+	             q=spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_2', atags)
 		     if (q[0] ne -1) then if (atmp.alt_cdaweb_depend_2 ne '') then atmp_dep2=atmp.alt_cdaweb_depend_2 
 	             ;if (atmp.depend_2 ne '') then begin
                      if (atmp_dep2 ne '') then begin
 	                if (q[0] ne -1) then num = where(chkvv_dep eq atmp.alt_cdaweb_depend_2, cnt) else num = where(chkvv_dep eq atmp.depend_2, cnt)
                         if (cnt eq 0) then begin
 		           ;chkvv_dep(vdep_cnt)=atmp.depend_2
-		           if q[0] ne -1 then chkvv_dep=[chkvv_dep,atmp.alt_cdaweb_depend_2] else chkvv_dep=[chkvv_dep,atmp.depend_2]
+                           ;below still gets the value of alt_cdaweb_depehnd_2, even if it is blank, which we don't want.
+		           ;if q[0] ne -1 then chkvv_dep=[chkvv_dep,atmp.alt_cdaweb_depend_2] else chkvv_dep=[chkvv_dep,atmp.depend_2]
+		           chkvv_dep=[chkvv_dep,atmp_dep2]
+		           vdep_cnt=vdep_cnt+1
+	                endif
+	             endif
+	          endif
+	          b1 = spd_cdawlib_tagindex('DEPEND_3', atags)
+	          if (b1[0] ne -1 ) then begin
+	             atmp_dep3=atmp.depend_3
+	             q=spd_cdawlib_tagindex('ALT_CDAWEB_DEPEND_3', atags)
+		     if (q[0] ne -1) then if (atmp.alt_cdaweb_depend_3 ne '') then atmp_dep3=atmp.alt_cdaweb_depend_3 
+                     if (atmp_dep3 ne '') then begin
+	                if (q[0] ne -1) then num = where(chkvv_dep eq atmp.alt_cdaweb_depend_3, cnt) else num = where(chkvv_dep eq atmp.depend_3, cnt)
+                        if (cnt eq 0) then begin
+		           chkvv_dep=[chkvv_dep,atmp_dep3]
 		           vdep_cnt=vdep_cnt+1
 	                endif
 	             endif
 	          endif
                   ;TJK - 1/29/2001 add a check to see whether the component 
                   ; variables are virtual
-	          b1 = spd_cdawlib_tagindex ('COMPONENT_0', atags)
+	          b1 = spd_cdawlib_tagindex('COMPONENT_0', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.component_0 ne '') then begin
 	                num = where(chkvv_dep eq atmp.component_0, cnt)
@@ -2018,7 +2319,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	          endif
                   ;TJK - 1/27/2009 add a check to see whether the component_1
                   ; variables are virtual
-	          b1 = spd_cdawlib_tagindex ('COMPONENT_1', atags)
+	          b1 = spd_cdawlib_tagindex('COMPONENT_1', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.component_1 ne '') then begin
 	                num = where(chkvv_dep eq atmp.component_1, cnt)
@@ -2031,7 +2332,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	          endif
                   ;TJK - 1/27/2009 add a check to see whether the component_2 
                   ; variables are virtual
-	          b1 = spd_cdawlib_tagindex ('COMPONENT_2', atags)
+	          b1 = spd_cdawlib_tagindex('COMPONENT_2', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.component_2 ne '') then begin
 	                num = where(chkvv_dep eq atmp.component_2, cnt)
@@ -2042,7 +2343,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	                endif
 	             endif
 	          endif
-	          b1 = spd_cdawlib_tagindex ('DELTA_PLUS_VAR', atags)
+	          b1 = spd_cdawlib_tagindex('DELTA_PLUS_VAR', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.delta_plus_var ne '') then begin
 	                num = where(chkvv_dep eq atmp.delta_plus_var, cnt)
@@ -2052,7 +2353,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	                endif
 	             endif
 	          endif
-	          b1 = spd_cdawlib_tagindex ('DELTA_MINUS_VAR', atags)
+	          b1 = spd_cdawlib_tagindex('DELTA_MINUS_VAR', atags)
 	          if (b1[0] ne -1 ) then begin
 	             if (atmp.delta_minus_var ne '') then begin
 	                num = where(chkvv_dep eq atmp.delta_minus_var, cnt)
@@ -2067,24 +2368,24 @@ for cx=0,n_elements(cnames)-1 do begin
          endfor
          ; Now check the depend var's of the VV for VV
 
-         if(vdep_cnt gt 0) then begin
+         if (vdep_cnt gt 0) then begin
             ;cwc=where(chkvv_dep ne '',cwcn)
             ;chkvv_dep=chkvv_dep(cwc)
-            chkvv_dep=chkvv_dep[1:*]
+            ;dont need to do this, extra blank removed up above chkvv_dep=chkvv_dep[1:*]
 
             for nvvq =0, n_elements(chkvv_dep)-1 do begin
-               atmp = read_myMETADATA (chkvv_dep[nvvq], CDFid)
-               atags = tag_names (atmp)
+               atmp = read_myMETADATA(chkvv_dep[nvvq], CDFid)
+               atags = tag_names(atmp)
                add_myDELTAS, atmp, vnames ;TJK add this here because we have regular variables w/ delta
                                           ;not only virtual variables (3/20/2014)
 
-               b0 = spd_cdawlib_tagindex ('VIRTUAL', atags)
+               b0 = spd_cdawlib_tagindex('VIRTUAL', atags)
 ;TJK 11/6/2009 add check for component_0 in order to determine if virtual
 ;variable definition is for real or not.
 ;               if (b0[0] ne -1 ) then begin
 ;                  if (strlowcase(atmp.VIRTUAL) eq 'true') then begin
 
-               c0 = spd_cdawlib_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
+               c0 = spd_cdawlib_tagindex('COMPONENT_0', atags) ;add check for component_0 value as well
                if ((b0[0] ne -1) and (c0[0] ne -1)) then begin
                   if ((strlowcase(atmp.VIRTUAL) eq 'true') and (atmp.COMPONENT_0 ne '')) then begin
 
@@ -2135,7 +2436,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	    ; like the one described by TJK 8/27/2002 below.
 
 	    for nreq =0, n_elements(vnames)-1 do begin
-	       atmp = read_myMETADATA (vnames[nreq], CDFid)
+	       atmp = read_myMETADATA(vnames[nreq], CDFid)
                add_mydeltas, atmp, vnames
                add_mycomponents, atmp, vnames
             endfor
@@ -2150,7 +2451,7 @@ for cx=0,n_elements(cnames)-1 do begin
 
 ;	 if (debug) then print, 'checking the data cdf for virtual variables '
 
-	att_names = getvar_attribute_names (CDFid, /ALL) ;added all keyword, default 
+	att_names = getvar_attribute_names(CDFid, /ALL) ;added all keyword, default 
 							 ;is the variable attributes
 	;TJK if no attributes are found, a -1 is returned above - which should
 	;kick out below.
@@ -2169,7 +2470,7 @@ for cx=0,n_elements(cnames)-1 do begin
 	   ;TJK 8/27/2002 replaced call to read_myMETADATA since we found at least
 	   ; one case w/ c*_pp_whi where doing so severely hampered performance
 	   ; because some attributes had many thousands of entries.
-           ; atmp = read_myMETADATA (all_cdf_vars(nvar), CDFid) 
+           ; atmp = read_myMETADATA(all_cdf_vars(nvar), CDFid) 
 	   ; Replaced w/ call to getvar_attribute_names and where statement, then
 	   ; only get into this for loop if the VIRTUAL attribute actually exists...
            ; Now, just get the  value for the VIRTUAL attribute, not all
@@ -2177,15 +2478,15 @@ for cx=0,n_elements(cnames)-1 do begin
 	   
            atmp = read_myATTRIBUTE(all_cdf_vars[nvar],afound[0],CDFid)
            ;this section finds all virtual variables in the data cdf
-            atags = tag_names (atmp)
-	    b0 = spd_cdawlib_tagindex ('VIRTUAL', atags)
+            atags = tag_names(atmp)
+	    b0 = spd_cdawlib_tagindex('VIRTUAL', atags)
 ;TJK 3/12/2010 added the following because it was wrong before... atags only has 
 ;the virtual tag in it not all tags for the given variable (unlike way
 ;above)... so get the component_0 info. and store in btmp, btags and use t0 below
 
             btmp = read_myATTRIBUTE(all_cdf_vars[nvar],bfound[0],CDFid)
-            btags = tag_names (btmp)
-            t0 = spd_cdawlib_tagindex ('COMPONENT_0', btags);add check for component_0 value as well
+            btags = tag_names(btmp)
+            t0 = spd_cdawlib_tagindex('COMPONENT_0', btags);add check for component_0 value as well
 
 
 ;TJK 11/6/2009 add check for component_0 in order to determine if virtual
@@ -2194,7 +2495,7 @@ for cx=0,n_elements(cnames)-1 do begin
 ;               if (strlowcase(atmp.VIRTUAL) eq 'true') then begin
 ;TJK 3/12/2010 - this check was wrong since atags only had "virtual"
 ;                in it - instead use t0 and btmp defined above
-;            c0 = spd_cdawlib_tagindex ('COMPONENT_0', atags) ;add check for component_0 value as well
+;            c0 = spd_cdawlib_tagindex('COMPONENT_0', atags) ;add check for component_0 value as well
 ;            if ((b0[0] ne -1) and (c0[0] ne -1)) then begin
 ;               if ((strlowcase(atmp.VIRTUAL) eq 'true') and (atmp.COMPONENT_0 ne '')) then begin
 
@@ -2253,10 +2554,10 @@ for cx=0,n_elements(cnames)-1 do begin
             ;for requested vnames - add to the vnames array a little 
             ;lower down.
 
-            dtmp = read_myMETADATA (vnames[req_vars], CDFid)
+            dtmp = read_myMETADATA(vnames[req_vars], CDFid)
             add_myDEPENDS, dtmp, dnames
             for delts = 0, n_elements(dnames)-1 do begin
-              ctmp = read_myMETADATA (dnames[delts], CDFid)
+              ctmp = read_myMETADATA(dnames[delts], CDFid)
               add_myCOMPONENTS,ctmp, cmpnames
             endfor
 
@@ -2265,9 +2566,9 @@ for cx=0,n_elements(cnames)-1 do begin
 
             if (vcdf[0] ne -1L)  then begin
 	       ; found in data cdf (vs. Master cdf) so we need to add it
-               if(vir_vars.flag[num_virs]) then begin
+               if (vir_vars.flag[num_virs]) then begin
 	          if (debug) then print, 'Reading metadata for VV, ',vnames[req_vars]
-                  atmp = read_myMETADATA (vnames[req_vars], CDFid)
+                  atmp = read_myMETADATA(vnames[req_vars], CDFid)
 	          if (debug) then print, 'Add DELTAs for VV, ',vnames[req_vars]
 	          add_myDELTAS, atmp, vnames
 	          if (debug) then print, 'Add components for VV, ',vnames[req_vars]
@@ -2358,7 +2659,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
    mastervary=''
    for cx=0,n_elements(cnames)-1 do begin
       ; Open the CDF and inquire about global information about file
-      CDFid = cdf_open(cnames[cx]) & cinfo = cdf_inquire(CDFid)
+      CDFid = cdf_open(cnames[cx], /readonly) & cinfo = cdf_inquire(CDFid)
       if keyword_set(DEBUG) then print, 'Opening CDF ',cnames[cx]
       ;TJK had to add the following two calls to cdf_control in order
       ;to get the proper number of maxrecs down below - this was needed
@@ -2495,14 +2796,14 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                   ;entire cdf (no time limits applied. RTB
 
                   nck=where(mnames eq 'DEPEND_0',dum)
-                  if(nck[0] ne -1L) then depend0=atmp.depend_0 $
+                  if (nck[0] ne -1L) then depend0=atmp.depend_0 $
                   else begin 
                      if keyword_set(DEBUG) then print, "No depend_0 attribute, read entire cdf"
                      start_rec = 0L
                      goto, NO_VAR_ATT
                   endelse
                   nck=where(mnames eq 'VAR_TYPE',dum)
-                  if(nck[0] ne -1L) then vartype=atmp.var_type $
+                  if (nck[0] ne -1L) then vartype=atmp.var_type $
                   else begin 
                      if keyword_set(DEBUG) then print, "No variable attribute, read entire cdf"
                      start_rec = 0L 
@@ -2545,9 +2846,9 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 ;			print, '****depend0 successfully reset to ',depend0
 ;		  endif
 
-;                  if(depend0 ne '') then vinfo = cdf_varinq(CDFid,depend0) ; inquire about the variable
+;                  if (depend0 ne '') then vinfo = cdf_varinq(CDFid,depend0) ; inquire about the variable
 		
-                  if(depend0 ne '') then begin
+                  if (depend0 ne '') then begin
                      table_index = where(table.equiv eq depend0, tcount)
                      if (tcount gt 0) then begin
                         depend0 = table.varname[table_index[0]] 
@@ -2555,25 +2856,31 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                         ;in order to get the data out of the cdf
                      endif
 
-                     epoch = read_myVARIABLE(depend0,CDFid,vary,dtype,recs)
+;print, 'DEBUG, calling majority_check and read_myvariable to get depend0 epoch, line 2730' 
+                     if (n_tags(atmp) gt 0) then to_column = majority_check(CDFid=CDFid,buf=atmp) else $
+                        to_column = majority_check(CDFid=CDFid) 
+                     epoch = read_myVARIABLE(depend0,CDFid,vary,dtype,recs,set_column_major=to_column)
                      epoch_varname = depend0
 
                   endif else begin ;assumes this is the epoch variable
-                     if(vartype ne 'metadata') then begin
+                     if (vartype ne 'metadata') then begin
                         table_index = where(table.equiv eq vnames[vx], tcount)
                         if (tcount gt 0) then begin
                            depend0 = table.varname[table_index[0]]
                            ;another name needs to be used 
                            ;in order to get the data out of the cdf
 
-                           epoch = read_myVARIABLE(depend0,CDFid,vary,dtype,recs)
+                            if (n_tags(atmp) gt 0) then to_column = majority_check(CDFid=CDFid,buf=atmp) else $
+                              to_column = majority_check(CDFid=CDFid) 
+                           epoch = read_myVARIABLE(depend0,CDFid,vary,dtype,recs,set_column_major=to_column)
                            epoch_varname = depend0
 ;                           print, 'DEBUG looking for valid epoch recs'
 ;                           print, 'DEBUG ',stop_timett, start_timett, epoch[0]
 
                         endif else begin
-
-                           epoch = read_myVARIABLE(vnames[vx],CDFid,vary,dtype,recs)
+                           if (n_tags(atmp) gt 0) then to_column = majority_check(CDFid=CDFid,buf=atmp) else $
+                              to_column = majority_check(CDFid=CDFid) 
+                           epoch = read_myVARIABLE(vnames[vx],CDFid,vary,dtype,recs,set_column_major=to_column)
                            epoch_varname = vnames[vx]
                         endelse
                      endif
@@ -2717,9 +3024,13 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 ;but if its the depend_0, read it again... (because the above reads of
 ;depend_0 aren't saved into the dhids structure below)
 
+
+            if (n_tags(atmp) gt 0) then to_column = majority_check(CDFid=CDFid,buf=atmp) else $
+            to_column = majority_check(CDFid=CDFid) 
+
             data = read_myVARIABLE(vnames[vx],CDFid,$
               vary,dtype,recs,start_rec=start_rec, $
-              rec_count=rec_count, debug=debug) ; read the data
+              rec_count=rec_count, debug=debug,set_column_major=to_column) ; read the data
 
             if keyword_set(DEBUG) then begin
                print,'Read data for ',vnames[vx],'. Started at record ',start_rec,' and read ', rec_count, ' records.'
@@ -2768,17 +3079,17 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
          ;print,vnames(vx)
          ;print, sz
          ; Check if data is of 0, 1 or multi-dimension and set flag
-         ;  if(sz(0) ge 1) then szck=sz(1)/(sz(sz(0)+2)) else szck=sz(sz(0)+2)
+         ;  if (sz(0) ge 1) then szck=sz(1)/(sz(sz(0)+2)) else szck=sz(sz(0)+2)
          ; RTB 10/29/97 
-         if(sz[0] gt 1) then szck=sz[1]/(sz[sz[0]+2]) else szck=sz[sz[0]+2]
-         if(sz[0] eq 3) then  szck=sz[sz[0]]
+         if (sz[0] gt 1) then szck=sz[1]/(sz[sz[0]+2]) else szck=sz[sz[0]+2]
+         if (sz[0] eq 3) then  szck=sz[sz[0]]
          ;TJK 3/17/98, added check for read_flag, if its set then this is
          ;NOT a virtual variable, so go ahead w/ the check for a single
          ;record containing fill (indicates instrument is off).
          ;TJK 10/25/99 added further check to see if this CDF is a master, if 
          ;it is then don't check for "instrument off" since most masters 
          ;don't contain any data.
-         if(szck eq 1) and (vnames[vx] ne '') and (read_flag eq 1) and $
+         if (szck eq 1) and (vnames[vx] ne '') and (read_flag eq 1) and $
             (strpos(cnames[cx],'00000000') eq -1) then begin
             vn_sdat[vnn]=vnames[vx]
             vnn=vnn+1
@@ -2798,13 +3109,14 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
             vvarys[vx] = vary ; set value in variable variance array
             if keyword_set(DEBUG) then print,'Reading metadata for ',vnames[vx], ' and CDF #',cx
             metadata = read_myMETADATA(vnames[vx],CDFid) ; read variable metadata
+            ;if (mhids[vx] ne 0) then HANDLE_FREE, mhids[vx]
             mhids[vx] = HANDLE_CREATE() & HANDLE_VALUE, mhids[vx], metadata, /SET
             ; Check metadata for ISTP depend attr's, modify other arrays accordingly
             follow_myDEPENDS, metadata, vnames, vvarys, cdftyp, dhids, mhids
          endif
 
          ; Process the data of the current variable
-         ;if(strpos(cnames[cx],'00000000') eq -1) OR (vvarys(vx) eq 'NOVARY') then begin
+         ;if (strpos(cnames[cx],'00000000') eq -1) OR (vvarys(vx) eq 'NOVARY') then begin
          ; RCJ 09/01 Read the variable geo_coord (from satellite ISIS) even though it is 
          ; a 'novary' variable.
 	 ;TJK modified this check for mission_group (moved that check up to where we're
@@ -2822,8 +3134,7 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 	    if (dhids[vx] eq 0) then begin ; create handle to hold data
 	       dhids[vx] = HANDLE_CREATE() 
 	       if (isis_flag) then begin
-		  if (vnames[vx] eq 'FH') or $
-		     (vnames[vx] eq 'geo_coord') then begin
+		  if (vnames[vx] eq 'FH') or (vnames[vx] eq 'geo_coord') then begin
 		     ; RCJ 09/04/2003 Problem when the user only asked for
 		     ;'FH': at this point in the program valid_recs was undefined. 
 	             ; If, for example, 'freq' and 'FH' were requested, then there was
@@ -2836,17 +3147,21 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 		     ; *always* be recalculated. I did the same a few lines below,
 		     ; same case.
 	             ;if n_elements(valid_recs) eq 0 then begin 
-
-		        epoch = read_myVARIABLE('Epoch',CDFid,vary,dtype,recs)
+                     if (n_tags(atmp) gt 0) then to_column = majority_check(CDFid=CDFid,buf=atmp) else $
+                           to_column = majority_check(CDFid=CDFid) 
+		        epoch = read_myVARIABLE('Epoch',CDFid,vary,dtype,recs,set_column_major=to_column)
 		        ; Above, we know that for FH or geo_coord data time is 'Epoch'
-		        valid_recs = where((epoch le stop_time) and $
-			      (epoch ge start_time))
-                        if keyword_set(DEBUG) then print, 'Recalculated - Reading ', n_elements(valid_recs), ' records.'
+		        valid_recs_isis = where((epoch le stop_time) and $
+			      (epoch ge start_time), rec_count)
+                        if keyword_set(DEBUG) then print, 'Recalculated - Reading ', rec_count, ' records.'
 	             ;endif   
 		     tmpdata=0
-		     for i=0,(n_elements(valid_recs))-1 do tmpdata=[tmpdata,data]
-   		     data=tmpdata[1:*]
-		  endif   
+		     ;for i=0,(n_elements(valid_recs))-1 do tmpdata=[tmpdata,data]
+		     if rec_count gt 0 then begin
+		        for i=0,rec_count-1 do tmpdata=[tmpdata,data]
+   		        data=tmpdata[1:*]
+	             endif else data=tmpdata
+ 		  endif   
 	       endif	  
 	       HANDLE_VALUE, dhids[vx], data, /SET
             endif else begin ; only append record varying data
@@ -2863,8 +3178,8 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
                   ;print, "vnn=", vnn
                   ;print, vnames
                   ;print, "vn_sdat ",vn_sdat
-                  ;if(vnn eq 0) then begin 
-                  ;if(vn_sdat(vnn-1) ne vnames(vx)) then $ 
+                  ;if (vnn eq 0) then begin 
+                  ;if (vn_sdat(vnn-1) ne vnames(vx)) then $ 
                   ;data = append_myDATA(data,olddata)  ; append new data to old data
                   ;endif else begin
                   ; print, vnames(vx),vnn
@@ -2887,16 +3202,21 @@ if (rcount gt 0) then begin ; check whether there are any variables to retrieve
 			; Reason is stated a few lines above, for the same case.
 			;if n_elements(valid_recs) eq 0 then begin 
 
-		           epoch = read_myVARIABLE('Epoch',CDFid,vary,dtype,recs)
+                        if (n_tags(atmp) gt 0) then to_column = majority_check(CDFid=CDFid,buf=atmp) else $
+                           to_column = majority_check(CDFid=CDFid) 
+		           epoch = read_myVARIABLE('Epoch',CDFid,vary,dtype,recs,set_column_major=to_column)
 		           ; Above, we know that for FH or geo_coord data time is 'Epoch'
-		           valid_recs = where((epoch le stop_time) and $
-			         (epoch ge start_time))
-                           if keyword_set(DEBUG) then print, 'Recalculated - Reading ', n_elements(valid_recs), ' records.'
+		           valid_recs_isis = where((epoch le stop_time) and $
+			         (epoch ge start_time), rec_count)
+                           if keyword_set(DEBUG) then print, 'Recalculated - Reading ', rec_count, ' records.'
 			;endif   
 
 		        tmpdata=0
-		        for i=0,(n_elements(valid_recs))-1 do tmpdata=[tmpdata,data]
-   		        data=tmpdata[1:*]
+		        ;for i=0,(n_elements(valid_recs))-1 do tmpdata=[tmpdata,data]
+		        if rec_count gt 0 then begin
+		           for i=0,rec_count-1 do tmpdata=[tmpdata,data]
+   		           data=tmpdata[1:*]
+	                endif else data=tmpdata
 		     endif   
                   endif
 ;RCJ look for dict_key to help identify vector arrays
@@ -2924,11 +3244,6 @@ if (keyword_set(DEBUG)) then begin
 endif
                   data = append_myDATA(data,olddata,dict_key=dk,vector=vector)  ; append new data to old data
 
-
-;if (keyword_set(DEBUG)) then begin
-;  print, 'after append_mydata'
-;  help, data
-;endif
                   HANDLE_VALUE, dhids[vx], data ,/SET ; save back into handle
 
                endif
@@ -2955,9 +3270,11 @@ endif
       
    ; Retrieve the data and metadata from first handle, and append them
    ; together to create a data structure to be output from this function.
-      
-   HANDLE_VALUE, mhids[0], metadata, /NO_COPY  & HANDLE_FREE,mhids[0]
-   if dhids[0] ne 0 then HANDLE_VALUE,dhids[0],data else data = ''
+     
+   HEAP_GC 
+   HANDLE_VALUE, mhids[0], metadata, /NO_COPY 
+  ; if (mhids[0] ne 0) then HANDLE_FREE, mhids[0]
+   if (dhids[0] ne 0) then HANDLE_VALUE,dhids[0],data else data = ''
    ds = size(data) & if (ds[0] ne 0) then data = reform(temporary(data)) ; special case
    
    ;IDL 5.3 doesn't allow structure tag names that are not valid variable names,
@@ -2980,7 +3297,7 @@ endif
          endif else begin
             print, '2, Number of variables exceeds the current size ' + $
 	        'of the table structure, please increase it, current size is ' 
-            help, table.varname
+;            help, table.varname
             return, -1
          endelse
          table_index = where(table.varname eq vnames[t], vcount)
@@ -3004,11 +3321,12 @@ endif
       ; a data handle structure field and put the data handle id in it.
       mytype = create_struct('cdftype',cdftyp[0])  ; create .cdftype structure
       myvary = create_struct('cdfrecvary',vvarys[0]) ; create .cdfrecvary structure - TJK added 8/1/2001
-      mymajor= create_struct('cdfmajor',cinfo.majority)
+; don't need to add this here anymore, adding it as part of read_mymetadata
+;      mymajor= create_struct('cdfmajor',cinfo.majority)
       mydata = create_struct('handle',dhids[0])    ; create .handle structure
       mysize = create_struct('idlsize',size(data)) ; create .idlsize structure
       mytype = create_struct(mytype,myvary)        ; append the structures - TJK added 8/1/2001
-      mytype = create_struct(mytype,mymajor)        ; append the structures
+;      mytype = create_struct(mytype,mymajor)        ; append the structures
       mytype = create_struct(mytype,mysize)        ; append the structures
       mydata = create_struct(mytype,mydata)        ; append the structures
       mydata = create_struct(metadata,mydata)      ; append the metadata
@@ -3016,14 +3334,15 @@ endif
    endif else begin
       ; Place the actual data into the large data structure.  This requires
       ; moving data and can take a long time with large image data arrays.
-      if dhids[0] ne 0 then HANDLE_FREE,dhids[0]
+     ; if dhids[0] ne 0 then HANDLE_FREE,dhids[0]
       ds = size(data) & if (ds[0] ne 0) then data = reform(data) ; special case
       mytype = create_struct('cdftype',cdftyp[0]) ; create .cdftype structure
       myvary = create_struct('cdfrecvary',vvarys[0]) ; create .cdfrecvary structure - TJK added 8/1/2001
-      mymajor= create_struct('cdfmajor',cinfo.majority)
+; don't need to add this here anymore, adding it as part of read_mymetadata
+;      mymajor= create_struct('cdfmajor',cinfo.majority)
       mydata = create_struct('dat',data)          ; create .dat structure
       mytype = create_struct(mytype,myvary)       ; append the structures - TJK added 8/1/2001
-      mytype = create_struct(mytype,mymajor)        ; append the structures
+;      mytype = create_struct(mytype,mymajor)        ; append the structures
       mydata = create_struct(mytype,mydata)       ; append the structures
       mydata = create_struct(metadata,mydata)     ; append the metadata
       burley = create_struct(vnames[0],mydata)    ; create initial structure
@@ -3036,7 +3355,8 @@ endif
    ; and append these structures into a single anonymous struct for output.
 
    for vx = 1,n_elements(vnames)-1 do begin ; retrieve and append
-      HANDLE_VALUE, mhids[vx], metadata, /NO_COPY  & HANDLE_FREE,mhids[vx]
+      HANDLE_VALUE, mhids[vx], metadata, /NO_COPY  
+     ; if mhids[vx] ne 0 then HANDLE_FREE,mhids[vx]
       if dhids[vx] ne 0 then HANDLE_VALUE,dhids[vx],data else data = ''
       ds = size(data) & if (ds[0] ne 0) then data = reform(temporary(data)) ; special case
       if keyword_set(NODATASTRUCT) then begin
@@ -3044,24 +3364,26 @@ endif
          ; a data handle structure field and put the data handle id in it.
          mytype = create_struct('cdftype',cdftyp[vx]) ; create .cdftype structure
          myvary = create_struct('cdfrecvary',vvarys[vx]) ; create .cdfrecvary structure - TJK added 8/1/2001
-	 mymajor= create_struct('cdfmajor',cinfo.majority)
+; don't need to add this here anymore, adding it as part of read_mymetadata
+;	 mymajor= create_struct('cdfmajor',cinfo.majority)
          mysize = create_struct('idlsize',size(data)) ; create .idlsize structure
          mydata = create_struct('handle',dhids[vx])   ; create .handle structure
          mytype = create_struct(mytype,myvary)        ; append the structures - TJK added 8/1/2001
-         mytype = create_struct(mytype,mymajor)        ; append the structures
+;         mytype = create_struct(mytype,mymajor)        ; append the structures
          mytype = create_struct(mytype,mysize)        ; append the structures
          mydata = create_struct(mytype,mydata)        ; append the structures
          mydata = create_struct(metadata,mydata)      ; append the metadata
          rick   = create_struct(vnames[vx],mydata)    ; create new structure
          burley = create_struct(burley,rick)          ; create initial structure
       endif else begin
-         if (dhids[vx] ne 0) then HANDLE_FREE,dhids[vx]
+        ; if (dhids[vx] ne 0) then HANDLE_FREE,dhids[vx]
          mytype = create_struct('cdftype',cdftyp[vx]) ; create .cdftype structure
          myvary = create_struct('cdfrecvary',vvarys[vx]) ; create .cdfrecvary structure - TJK added 8/1/2001
-	 mymajor= create_struct('cdfmajor',cinfo.majority)
+; don't need to add this here anymore, adding it as part of read_mymetadata
+;	 mymajor= create_struct('cdfmajor',cinfo.majority)
          mydata = create_struct('dat',data)           ; create .dat structure
          mytype = create_struct(mytype,myvary)        ; append the structures - TJK added 8/1/2001
-         mytype = create_struct(mytype,mymajor)        ; append the structures
+;         mytype = create_struct(mytype,mymajor)        ; append the structures
          mydata = create_struct(mytype,mydata)        ; append the structures
          mydata = create_struct(metadata,mydata)      ; append the metadata
          rick   = create_struct(vnames[vx],mydata)    ; create new structure
@@ -3077,23 +3399,23 @@ endif
    ;TJK changed to ne 4/29/98  wvn=where(vn_sdat eq '',wcvn)
    ikill=0
    wvn=where(vn_sdat ne '',wcvn)
-   if(wcvn ne 0) then begin
+   if (wcvn ne 0) then begin
       for vi=0, wcvn-1 do begin
-         if(vn_sdat[vi] ne '') then begin
+         if (vn_sdat[vi] ne '') then begin
             ;TJK - get the tag index in the burley structure for this variable name -
             ;can't use the variable names since they sometimes contain wierd 
             ;characters like "%" in equator-s
             ttags = tag_names(burley)
             ; RCJ 11/28/00 added line below. vn_sdat still had bad characters in
             ; the variable names and the search for var_type was failing.
-            vn_sdat[vi] = spd_cdawlib_replace_bad_chars(vn_sdat[vi], diff)
+           vn_sdat[vi] = spd_cdawlib_replace_bad_chars(vn_sdat[vi], diff)
             tindex = strtrim(string(spd_cdawlib_tagindex(vn_sdat[vi],ttags)),2) ;convert to string
             ;comm=execute('var_type=burley.('+tindex+').var_type')
             var_type=burley.(tindex).var_type
-            if(var_type eq 'data') then begin
+            if (var_type eq 'data') then begin
                ;comm=execute('vfill=burley.('+tindex+').fillval')
                vfill=burley.(tindex).fillval
-               if(keyword_set(NODATASTRUCT)) then begin
+               if (keyword_set(NODATASTRUCT)) then begin
                   ;comm=execute('temp=burley.('+tindex+').handle')
                   temp=burley.(tindex).handle
                   handle_value,temp,vdat 
@@ -3101,7 +3423,7 @@ endif
                 ;comm=execute('vdat=burley.('+tindex+').dat')
                 vdat=burley.(tindex).dat
                endelse
-               ;if(not comm) then print, 'ERROR=execute failed '
+               ;if (not comm) then print, 'ERROR=execute failed '
                ;TJK 4/17/98, added check for the datatype before doing
                ;the abs function test. If the data_type is byte, then the
                ;abs function cannot be applied, ie. under IDL 5.02 abs(255) is 1.
@@ -3109,11 +3431,11 @@ endif
                data_type = data_size[n_elements(data_size)-2]
                ;TJK added logic to check if the data array size is still equal to
                ;just one value.  If so,then check the fill value, else get out.
-               if(data_size[0] gt 1) then $
+               if (data_size[0] gt 1) then $
                   szck=data_size[1]/(data_size[data_size[0]+2]) else $
      	          szck=data_size[data_size[0]+2]
-               if(data_size[0] eq 3) then  szck=data_size[data_size[0]]
-               if(szck eq 1) then begin  ;data array has single value in it.
+               if (data_size[0] eq 3) then  szck=data_size[data_size[0]]
+               if (szck eq 1) then begin  ;data array has single value in it.
                   if (data_type eq 1) then begin
                                 ;TJK - 3/9/2007 - comment this out, we
                                 ;      really don't want to kick out
@@ -3154,14 +3476,18 @@ endif else begin ;TJK added check for no varibles to retrieve
    ;get some metadata out of the 1st CDF or Master CDF
    v_err = 'ERROR=Variable(s) not available for specified time range.'
    v_stat='STATUS=Variable(s) not available for specified time range. Re-select a different time range.'
-   slash = rstrpos(cnames[0],'/')
-   d_set = strmid(cnames[0], slash+1, 9)
+   ; Changed method of getting the name of the data set.  The data set can be retrieved from
+   ; the logical source global attribute.
+   ; Ron Yurow  (March 18, 2016)
+   ;slash = rstrpos(cnames[0],'/')
+   ;d_set = strmid(cnames[0], slash+1, 9)
+   d_set = atmp.logical_source
    d_set = 'DATASET='+strupcase(d_set)
    tmp_str=create_struct('DATASET',d_set,'ERROR',v_err,'STATUS',v_stat)
    ikill=1
 endelse
 
-if(ikill) then return, tmp_str
+if (ikill) then return, tmp_str
 !quiet = quiet_flag ; restore
 ; Return successfull
 
@@ -3224,6 +3550,7 @@ for i = 0, num_virs do begin
       if (findex[0] ne -1) then begin ;found a virtual value w/ a function definition
          if keyword_set(DEBUG) then print,'VV function being called ',$
             strlowcase(burley.(vindex).(findex)), ' for variable ',vir_vars.name[i]
+
          case (strlowcase(burley.(vindex).(findex))) of
          'crop_image': begin
                           burley=crop_image(temporary(burley),orig_names,index=vindex)
@@ -3231,6 +3558,15 @@ for i = 0, num_virs do begin
          'alternate_view': begin
                               burley = alternate_view(temporary(burley),orig_names)
                            end
+         'clamp_to_zero': begin
+                              burley = clamp_to_zero(temporary(burley),orig_names,index=vindex)
+                           end
+         'composite_tbl': begin
+                              burley = composite_tbl(temporary(burley),orig_names,index=vindex)
+                           end
+         'arr_slice':  begin
+                          burley = arr_slice (temporary(burley), orig_names, index=vindex)
+                       end
          'conv_pos': begin
 	                ; RCJ 11/21/2003  Added 'index=vindex'. It is necessary if all=1
                         burley = conv_pos(temporary(burley),orig_names,$
@@ -3291,7 +3627,16 @@ for i = 0, num_virs do begin
          'comp_themis_epoch16': begin ;for computing THEMIS epoch
                        burley = comp_themis_epoch(temporary(burley),orig_names,index=vindex,/sixteen)
                     end
+         'apply_filter_flag': begin ; filter out values based on COMPUTE_VAL and COMPUTE_OPERATOR
+                       burley = apply_filter_flag(temporary(burley),orig_names,index=vindex)
+                    end
          'apply_esa_qflag': begin
+                       burley = apply_esa_qflag(temporary(burley),orig_names,index=vindex)
+                    end
+         'apply_fgm_qflag': begin ;use the esa function
+                       burley = apply_esa_qflag(temporary(burley),orig_names,index=vindex)
+                    end
+         'apply_gmom_qflag': begin ;use the esa function
                        burley = apply_esa_qflag(temporary(burley),orig_names,index=vindex)
                     end
          'compute_magnitude': begin
@@ -3331,6 +3676,10 @@ for i = 0, num_virs do begin
          'make_stack_array': begin
                            burley = make_stack_array(temporary(burley),orig_names,index=vindex)
                         end
+         'fix_sparse': begin
+                           burley = fix_sparse(temporary(burley),orig_names,index=vindex)
+                        end
+
          else : print, 'WARNING= No function for:', vtags[vindex]
          endcase
       endif ;if function defined for this virtual variable    
@@ -3371,6 +3720,8 @@ endif
 Return, burley
 end
 
+
 pro spd_cdawlib_read_mycdf
-;do nothing
+  compile_opt idl2
+  ;do nothing
 end

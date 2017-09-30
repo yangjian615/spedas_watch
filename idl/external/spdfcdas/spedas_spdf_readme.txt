@@ -14,9 +14,9 @@ In the following, we list the modifications we made to the original spdfcdas+cda
 
 *** 1. spdfcdas file - 25 Files *** 
 
-Release 1.7.10.7 of the CDAS Web Services IDL Library
+Release 1.7.10.29 of the CDAS Web Services IDL Library
 <http://cdaweb.gsfc.nasa.gov/WebServices/REST/CdasIdlLibrary.html> 
-that was deployed on March 27, 2014
+that was deployed on August 7, 2017.
 
 Local changes: 
 Add the following to spdfcdawebchooser.pro: 
@@ -27,7 +27,7 @@ also, commended tvimage since there is already a SPEDAS function with this name
 *** 2. spd_cdawlib file - 9 files (plus 3 files created by SPEDAS) *** 
 
 Modified version of CDAWlib
-release 2014/03/16 
+release Jul 27, 2017
 ftp://cdaweb.gsfc.nasa.gov/pub/software/cdawlib/source/
 
 
@@ -70,11 +70,4 @@ spedas_spdf_readme.txt
 spd_cdawlib_str_element.pro
 spd_cdawlib.pro
 spd_cdawlib_readme.txt
-
-
-
-
-	
-	
-	
 

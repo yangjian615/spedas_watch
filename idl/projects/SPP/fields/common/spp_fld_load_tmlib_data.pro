@@ -1,7 +1,7 @@
 ;
-;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-08-17 17:21:12 -0700 (Thu, 17 Aug 2017) $
-;  $LastChangedRevision: 23810 $
+;  $LastChangedBy: spfuser $
+;  $LastChangedDate: 2017-09-29 16:06:46 -0700 (Fri, 29 Sep 2017) $
+;  $LastChangedRevision: 24069 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
@@ -145,6 +145,11 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   ; specifications.  Each element itself is a hash, which contains the
   ; parameters from the XML file.  A 'data' field is added to each element,
   ; which will be used to contain the data obtained from TMlib.
+  ;
+  ; Some items have a 'raw' value associated with the item, which is typically
+  ; an unconverted ADC value (which TMlib converts with a polynomial function).
+  ; Some items also have a 'string' value associated with the item, which can
+  ; be a mode or a source string for the measurement.
 
   if match_count GT 0 then begin
 
@@ -156,6 +161,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     for i = 0, n_elements(match_ind) - 1 do begin
 
       (data_hash[var_names[i]])['data'] = LIST()
+      (data_hash[var_names[i]])['data_raw'] = LIST()
       (data_hash[var_names[i]])['data_string'] = LIST()
 
     endfor
@@ -290,12 +296,20 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
         var_name = var_names[i]
 
-        if data_hash[var_name].HasKey('string') and data_hash[var_name].HasKey('string_len') then begin
+        if data_hash[var_name].HasKey('string') and $
+          data_hash[var_name].HasKey('string_len') then begin
           has_string = 1
           string_length = (data_hash[var_name])['string_len']
         endif else begin
           has_string = 0
           string_length = 0
+        endelse
+
+        if data_hash[var_name].HasKey('raw') then begin
+          has_raw = 1
+          raw_var_name = (data_hash[var_name])['raw']
+        endif else begin
+          has_raw = 0
         endelse
 
         ; Check whether the request should be suppressed
@@ -326,8 +340,16 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
               returned_string + String(Replicate(32B, string_length - strlen(returned_string)))
 
             dprint, returned_string, strlen(returned_string), dlevel = 4
-            ;stop
+
           end
+
+          if has_raw then begin
+
+            err = tm_get_item_i4(sid, raw_var_name, raw_returned_item, nelem, raw_n_returned)
+
+            (data_hash[var_name])['data_raw'].Add, raw_returned_item
+
+          endif
 
           case var_type of
             'double': err = tm_get_item_r8(sid, var_name, returned_item, nelem, n_returned)

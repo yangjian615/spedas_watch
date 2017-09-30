@@ -1,8 +1,8 @@
-;$Author: nikos $
-;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
-;$Header: /home/cdaweb/dev/control/RCS/spd_cdawlib_hsave_struct.pro,v 1.2 2010/07/09 14:33:43 kovalick Exp johnson $
-;$Locker: johnson $
-;$Revision: 17856 $
+;Author: johnson $
+;Date: 2013/09/06 17:17:44 $
+;Header: /home/cdaweb/dev/control/RCS/hsave_struct.pro,v 1.3 2013/09/06 17:17:44 johnson Exp kovalick $
+;Locker: kovalick $
+;Revision: 1.3 $
 ;
 ;Copyright 1996-2013 United States Government as represented by the 
 ;Administrator of the National Aeronautics and Space Administration. 

@@ -8,7 +8,7 @@
 ; You can obtain a copy of the agreement at
 ;   docs/NASA_Open_Source_Agreement_1.3.txt
 ; or 
-;   http://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
+;   https://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
 ;
 ; See the Agreement for the specific language governing permissions
 ; and limitations under the Agreement.
@@ -22,28 +22,29 @@
 ;
 ; NOSA HEADER END
 ;
-; Copyright (c) 2010-2013 United States Government as represented by the 
-; National Aeronautics and Space Administration. No copyright is claimed 
-; in the United States under Title 17, U.S.Code. All Other Rights Reserved.
+; Copyright (c) 2010-2017 United States Government as represented by the
+; National Aeronautics and Space Administration. No copyright is claimed
+; in the United States under Title 17, U.S.Code. All Other Rights 
+; Reserved.
 ;
 ;
 
 
 ;+
 ; This program provides a GUI for choosing datasets from 
-; <a href="http://cdaweb.gsfc.nasa.gov/">CDAWeb</a>.
-;
-; @copyright Copyright (c) 2010-2013 United States Government as represented
-;     by the National Aeronautics and Space Administration. No
-;     copyright is claimed in the United States under Title 17,
+; <a href="https://cdaweb.gsfc.nasa.gov/">CDAWeb</a>.
+; 
+; @copyright Copyright (c) 2010-2017 United States Government as 
+;     represented by the National Aeronautics and Space Administration.
+;     No copyright is claimed in the United States under Title 17,
 ;     U.S.Code. All Other Rights Reserved.
 ;
 ; @author B. Harris
 ;-
 
 
-pro nwin ; stub functions that patches CDAWLib
-end
+;pro nwin ; stub functions that patches CDAWLib
+;end
 ;pro tvimage
 ;end
 pro twinscolorbar
@@ -177,7 +178,7 @@ pro spdfDatasetTreeEvent, $
     ; Note: In general, the selected item's tree index cannot be used
     ; to locate the corresponding SpdfDatasetDescription in 
     ; state.datasets because "pointer datasets" are not in the tree but
-    ; are in state.datasets.
+    ; are in state.datasets and the tree may be sorted differently.
     ;
     widget_control, event.top, get_uvalue=state
 
@@ -234,7 +235,35 @@ pro spdfViewNotes, $
 
     filename = pathComponents[componentCount - 1]
 
-    notes = obj_new('IDLnetUrl')
+    proxy_authentication = 0
+    proxy_hostname = ''
+    proxy_password = ''
+    proxy_port = ''
+    proxy_username = ''
+
+    http_proxy = getenv('HTTP_PROXY')
+
+    if strlen(http_proxy) gt 0 then begin
+
+        proxyComponents = parse_url(http_proxy)
+
+        proxy_hostname = proxyComponents.hostname
+        proxy_password = proxyComponents.password
+        proxy_port = proxyComponents.port
+        proxy_username = proxyComponents.username
+
+        if strlen(proxy_username) gt 0 then begin
+
+            proxy_authentication = 3
+        endif
+    endif
+
+    notes = obj_new('IDLnetURL', $
+                    proxy_authentication = proxy_authentication, $
+                    proxy_hostname = proxy_hostname, $
+                    proxy_port = proxy_port, $
+                    proxy_username = proxy_username, $
+                    proxy_password = proxy_password)
 
     localNotes = notes->get(filename=filename, url=notesUrl)
 
@@ -494,12 +523,19 @@ pro spdfFindDatasets, $
 
     *state.datasets = datasets
 
+    datasetIds = strarr(n_elements(datasets))
     for i = 0, n_elements(datasets) - 1 do begin
 
-        datasetId = datasets[i]->getId()
+        datasetIds[i] = datasets[i]->getId()
+    endfor
+    sortedDatasetIndexes = sort(datasetIds)
 
-        datasetLabel = datasets[i]->getLabel()
-        datasetTimeRange = datasets[i]->getTimeInterval()
+    for i = 0, n_elements(datasets) - 1 do begin
+
+        datasetId = datasets[sortedDatasetIndexes[i]]->getId()
+
+        datasetLabel = datasets[sortedDatasetIndexes[i]]->getLabel()
+        datasetTimeRange = datasets[sortedDatasetIndexes[i]]->getTimeInterval()
 
         datasetTitle = datasetId + ': ' + $
             datasetTimeRange->getCdawebStart() + ' - ' + $
@@ -859,7 +895,7 @@ pro spdfGetCdawebDataExec, $
             endfor
         endif else begin
 
-            file_delete, localCdfNames, /ALLOW_NONEXISTENT, /QUIET
+            file_delete, localCdfNames
         endelse
     endif else begin
 
@@ -1094,10 +1130,10 @@ pro spdfAbout, $
     reply = dialog_message([ $
         'NASA/Goddard Space Flight Center (GSFC)',$
         'Space Physics Data Facility (SPDF)', $
-        'http://spdf.gsfc.nasa.gov/', $
+        'https://spdf.gsfc.nasa.gov/', $
         '', $
         'Current CDAWlib version: ' + spd_cdawlib_version(), $
-        'Current SpdfCdas version: ' + state.cdas->getversion()], $
+        'Current SpdfCdas version: ' + state.cdas->getVersion()], $
         title='About', /center, /information)
 end
 
@@ -1120,8 +1156,8 @@ function spdfGetDataviews, $
 
         reply = dialog_message([ $
             'Current CDAWlib version: ' + spd_cdawlib_version(), $
-            'Current SpdfCdas version: ' + cdas->getversion(), $
-            'Available SpdfCdas version: ' + cdas->getCurrentversion(), $
+            'Current SpdfCdas version: ' + cdas->getVersion(), $
+            'Available SpdfCdas version: ' + cdas->getCurrentVersion(), $
             'There is a newer version of the SpdfCdas library available.'], $
             title='Version Warning', /center, /information)
     endif
@@ -1193,10 +1229,16 @@ end
 
 ;+
 ; Provides a GUI for choosing and retrieving data from 
-; <a href="http://cdaweb.gsfc.nasa.gov/">CDAWeb</a>.
+; <a href="https://cdaweb.gsfc.nasa.gov/">CDAWeb</a>.
+; 
+; If access to the Internet is through an HTTP proxy, the caller 
+; should ensure that the HTTP_PROXY environment is correctly set 
+; before this procedure is called.  The HTTP_PROXY value should be of 
+; the form 
+; http://username:password@hostname:port/.
 ;
 ; @keyword endpoint {in} {optional} {type=string}
-;              {default=http://cdaweb.gsfc.nasa.gov/WS/cdasr/1}
+;              {default=SpdfCdas->getDefaultEndpoint()}
 ;              URL of CDAS web service.
 ; @keyword GROUP_LEADER {in} {optional} {type=int}
 ;              The widget ID of the group leader for this window.  If
@@ -1208,8 +1250,9 @@ pro spdfCdawebChooser, $
     GROUP_LEADER = groupLeaderWidgetId
     compile_opt idl2
 
-	 RESOLVE_ROUTINE, 'spd_cdawlib_virtual_funcs', /COMPILE_FULL_FILE
-    cd, current=cwd
+
+	RESOLVE_ROUTINE, 'spd_cdawlib_virtual_funcs', /COMPILE_FULL_FILE    
+	cd, current=cwd
     if ~file_test(cwd, /write) then begin
 
         print, 'Error: The current working directory (', $
@@ -1220,15 +1263,12 @@ pro spdfCdawebChooser, $
         print, 'SpdfCdawebChooser.'
         return
     endif
+
 ; This is suppose to help with getting windows placed better in a
 ; multi-monitor environment but it doesn't seem to for an 
 ; "extended desktop".
 ;    monitorInfo = obj_new('IDLsysMonitorInfo')
 
-    if ~keyword_set(endpoint) then begin
-
-        endpoint = 'http://cdaweb.gsfc.nasa.gov/WS/cdasr/1'
-    endif
 
     if keyword_set(groupLeaderWidgetId) then begin
 
@@ -1244,7 +1284,7 @@ pro spdfCdawebChooser, $
     cdas = $
         obj_new('SpdfCdas', $
         endpoint=endpoint, $
-        userAgent='CdawebChooser/1.0')
+        userAgent='CdawebChooser')
 
     dataviews = spdfGetDataviews(cdas)
 
@@ -1253,7 +1293,7 @@ pro spdfCdawebChooser, $
         reply = dialog_message( $
                     ['Could not connect to CDAWeb.', $
                      'Please check Internet connectivity to ', $
-                     'http://cdaweb.gsfc.nasa.gov/.'], $
+                     'https://cdaweb.gsfc.nasa.gov/.'], $
                     title='Network Error', /center, /error)
         return
     endif

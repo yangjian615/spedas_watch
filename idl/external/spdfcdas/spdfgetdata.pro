@@ -8,7 +8,7 @@
 ; You can obtain a copy of the agreement at
 ;   docs/NASA_Open_Source_Agreement_1.3.txt
 ; or
-;   http://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
+;   https://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
 ;
 ; See the Agreement for the specific language governing permissions
 ; and limitations under the Agreement.
@@ -22,7 +22,7 @@
 ;
 ; NOSA HEADER END
 ;
-; Copyright (c) 2010-2014 United States Government as represented by the
+; Copyright (c) 2010-2017 United States Government as represented by the
 ; National Aeronautics and Space Administration. No copyright is claimed
 ; in the United States under Title 17, U.S.Code. All Other Rights Reserved.
 ;
@@ -32,13 +32,13 @@
 ;+
 ; This file contains a procedure-oriented wrapper that integrates
 ; functionality from the SpdfCdas class (IDL client interface to
-; <a href="http://cdaweb.gsfc.nasa.gov/WebServices">
+; <a href="https://cdaweb.gsfc.nasa.gov/WebServices">
 ; Coordinated Data Analysis System Web Services</a> (CDAS WSs))
 ; and the 
-; <a href="http://spdf.gsfc.nasa.gov/CDAWlib.html">CDAWlib</a>
+; <a href="https://spdf.gsfc.nasa.gov/CDAWlib.html">CDAWlib</a>
 ; library.
 ;
-; @copyright Copyright (c) 2010-2014 United States Government as 
+; @copyright Copyright (c) 2010-2017 United States Government as 
 ;     represented by the National Aeronautics and Space 
 ;     Administration. No copyright is claimed in the United States 
 ;     under Title 17, U.S.Code. All Other Rights Reserved.
@@ -78,23 +78,27 @@ end
 
 
 ;+
-; This function gets data from <a href="http://www.nasa.gov/">NASA</a>'s
-; <a href="http://spdf.gsfc.nasa.gov/">Space Physics Data Facility</a>
-; <a href="http://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis 
+; This function gets data from <a href="https://www.nasa.gov/">NASA</a>'s
+; <a href="https://spdf.gsfc.nasa.gov/">Space Physics Data Facility</a>
+; <a href="https://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis 
 ; System</a>.
 ;
 ; @param dataset {in} {type=string}
 ;            name of dataset to get data from.
 ; @param variables {in} {out} {type=strarr}
 ;            On entry, names of variables whose values are to be gotten.
+;            If the first (only) name is "ALL-VARIABLES", then the 
+;            resulting CDF will contain all variables.
 ;            On exit, names of variables actually read (may be more 
-;            than requested).  Note that this parameter is ignored when
-;            the ALL keyword value is greater than 0.
+;            than requested).
 ; @param timeSpan {in} {type=strarr(2)}
 ;            ISO 8601 format strings of the start and stop times of the
 ;            data to get.
 ; @keyword dataview {in} {optional} {type=string} {default='sp_phys'}
 ;            name of dataview containing the dataset.
+; @keyword endpoint {in} {optional} {type=string}
+;              {default='https://cdaweb.gsfc.nasa.gov/WS/cdasr/1'}
+;              URL of CDAS web service.
 ; @keyword keepfiles {in} {optional} {type=boolean} {default=false}
 ;            The KEEPFILES keyword causes SpdfGetData to retain the
 ;            downloaded data files.  Normally these files are deleted
@@ -122,7 +126,13 @@ end
 ;            as a parameter in the callback function. If this keyword
 ;            is not set, the corresponding callback parameter's value
 ;            is undefined.
-; @returns structure containing requested data.
+; @returns structure containing requested data.  Note that a few 
+;     datasets in CDAS contain variables with names that cannot
+;     be used as tag names an IDL structure.  In those cases, the
+;     tag name in this structure will be a modification of the
+;     actual CDF variable name.  For example, if you requested the
+;     'H+' variable from the 'FA_K0_TMS' dataset, the 'H+' values
+;     will be returned in a structure under the tag name 'H$'.
 ; @examples
 ;   <pre>
 ;     d = spdfgetdata('AC_K2_MFI', ['Magnitude', 'BGSEc'], $
@@ -141,10 +151,12 @@ end
 ;-
 function SpdfGetData, $
     dataset, variables, timeSpan, dataview = dataview, $
-    keepfiles = keepfiles, quiet = quiet, $
+    endpoint = endpoint, keepfiles = keepfiles, quiet = quiet, $
     verbose = verbose, callback_function = callback_function, $
     callback_data = callback_data
     compile_opt idl2
+
+    spd_cdawlib
 
     if ~keyword_set(dataview) then begin
 
@@ -153,8 +165,8 @@ function SpdfGetData, $
 
     cdas = $
         obj_new('SpdfCdas', $
-            endpoint = 'http://cdaweb.gsfc.nasa.gov/WS/cdasr/1', $
-            userAgent = 'SpdfGetData/1.0', $
+            endpoint = endpoint, $
+            userAgent = 'SpdfGetData', $
             defaultDataview = dataview)
 
     timeInterval = $
@@ -251,8 +263,7 @@ function SpdfGetData, $
         localCdfNames2 = localCdfNames
         allVars = ''
         ; reads data into handles (memory) should be fastest
-        data = spd_cdawlib_read_mycdf(allVars, localCdfNames2, all = 1, $
-                          /nodata) 
+        data = spd_cdawlib_read_mycdf(allVars, localCdfNames2, all = 1, /nodata) 
 
         ; reads data into .dat structure tags
         ; data = spd_cdawlib_read_mycdf(variables, localCdfNames) 

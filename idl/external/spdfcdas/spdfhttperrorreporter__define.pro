@@ -28,12 +28,8 @@
 ;
 ;
 
-
 ;+
-; This class is an IDL representation of the InstrumentTypeDescription
-; element from the
-; <a href="https://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis System</a>
-; (CDAS) XML schema.
+; This class represents an object that is used to report HTTP errors.
 ;
 ; @copyright Copyright (c) 2010-2017 United States Government as represented
 ;     by the National Aeronautics and Space Administration. No
@@ -45,17 +41,12 @@
 
 
 ;+
-; Creates an SpdfInstrumentTypeDescription object.
+; Creates an SpdfHttpErrorReporter object.
 ;
-; @param name {in} {type=string}
-;            instrument-type name.
-; @returns reference to an SpdfInstrumentTypeDescription object.
+; @returns reference to an SpdfHttpErrorReporter object.
 ;-
-function SpdfInstrumentTypeDescription::init, $
-    name
+function SpdfHttpErrorReporter::init
     compile_opt idl2
-
-    self.name = name
 
     return, self
 end
@@ -64,42 +55,46 @@ end
 ;+
 ; Performs cleanup operations when this object is destroyed.
 ;-
-pro SpdfInstrumentTypeDescription::cleanup
+pro SpdfHttpErrorReporter::cleanup
     compile_opt idl2
 
 end
 
 
 ;+
-; Gets the name.
+; This procedure is called when an HTTP error occurs.  This default
+; implementation merely prints some diagnostic information.
 ;
-; @returns name value.
+; @param responseCode {in} {type=int}
+;            the HTTP response code of the request causing the error.
+; @param responseHeader {in} {type=string}
+;            the HTTP response header of the request causing the error.
+; @param responseFilename {in} {type=string}
+;            the name of an error response file sent when the error
+;            occurred.
 ;-
-function SpdfInstrumentTypeDescription::getName
+pro SpdfHttpErrorReporter::reportError, $
+    responseCode, responseHeader, responseFilename
     compile_opt idl2
 
-    return, self.name
+    print, "An HTTP Error has occurred."
+    print, !error_state.msg
+    print, 'HTTP response code = ', responseCode
+    print, 'HTTP response header = ', responseHeader
+    if n_elements(responseFilename) ne 0 then begin
+
+        print, 'HTTP response filename = ', responseFilename
+    endif
 end
 
 
 ;+
-; Prints a textual representation of this object.
-;-
-pro SpdfInstrumentTypeDescription::print
-    compile_opt idl2
-
-    print, 'name: ', self.name
-end
-
-
-;+
-; Defines the SpdfInstrumentTypeDescription class.
+; Defines the SpdfHttpErrorReporter class.
 ;
-; @field name instrument-type name.
 ;-
-pro SpdfInstrumentTypeDescription__define
+pro SpdfHttpErrorReporter__define
     compile_opt idl2
-    struct = { SpdfInstrumentTypeDescription, $
-        name:'' $
+    struct = { SpdfHttpErrorReporter, $
+        notused:'' $ ; not used but makes idldoc happy
     }
 end

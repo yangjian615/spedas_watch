@@ -8,7 +8,7 @@
 ; You can obtain a copy of the agreement at
 ;   docs/NASA_Open_Source_Agreement_1.3.txt
 ; or 
-;   http://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
+;   https://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
 ;
 ; See the Agreement for the specific language governing permissions
 ; and limitations under the Agreement.
@@ -22,7 +22,7 @@
 ;
 ; NOSA HEADER END
 ;
-; Copyright (c) 2010-2013 United States Government as represented by the 
+; Copyright (c) 2010-2017 United States Government as represented by the 
 ; National Aeronautics and Space Administration. No copyright is claimed 
 ; in the United States under Title 17, U.S.Code. All Other Rights Reserved.
 ;
@@ -33,10 +33,10 @@
 ;+
 ; This class is an IDL representation of the ObservatoryGroupDescription
 ; element from the
-; <a href="http://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis System</a>
+; <a href="https://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis System</a>
 ; (CDAS) XML schema.
 ;
-; @copyright Copyright (c) 2010-2013 United States Government as represented
+; @copyright Copyright (c) 2010-2017 United States Government as represented
 ;     by the National Aeronautics and Space Administration. No
 ;     copyright is claimed in the United States under Title 17,
 ;     U.S.Code. All Other Rights Reserved.

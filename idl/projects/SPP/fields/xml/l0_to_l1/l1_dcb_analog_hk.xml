@@ -26,7 +26,8 @@
 
   <cdf_var
       name = "DCBFPGAT"
-      type = "double">
+      type = "double"
+      raw = "DCBFPGAT_raw">
     <cdf_att
         FIELDNAM = "DCBFPGAT"
         FORMAT = "F15.3"
@@ -47,7 +48,8 @@
 
   <cdf_var
       name = "DCBTEMP"
-      type = "double">
+      type = "double"
+      raw = "DCBTEMP_raw">
     <cdf_att
         FIELDNAM = "DCBTEMP"
         FORMAT = "F15.3"
@@ -88,12 +90,12 @@
   </cdf_var>
 
   <cdf_var
-      name = "LVDSZNR"
+      name = "DCBGND"
       type = "double">
     <cdf_att
-    	FIELDNAM = "LVDSZNR"
+    	FIELDNAM = "DCBGND"
         FORMAT = "F15.3"
-        LABLAXIS = "LVDSZNR"
+        LABLAXIS = "DCBGND"
         DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
@@ -103,18 +105,18 @@
         SCALEMIN = "-2.0"
         SCALEMAX = "2.0"
         UNITS = "V"
-        CATDESC = "DCB ZNR Voltage"
+        CATDESC = "DCB Ground"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
-      name = "LVDSVD"
+      name = "DCB33V"
       type = "double">
     <cdf_att
-    	FIELDNAM = "LVDSVD"
+    	FIELDNAM = "DCB33V"
         FORMAT = "F15.3"
-        LABLAXIS = "LVDSVD"
+        LABLAXIS = "DCB33V"
         DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
@@ -124,18 +126,18 @@
         SCALEMIN = "0"
         SCALEMAX = "4.0"
         UNITS = "V"
-        CATDESC = "DCB LVDS Voltage"
+        CATDESC = "DCB 3.3V"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
-      name = "DCB15VD"
+      name = "DCB15V"
       type = "double">
     <cdf_att
-        FIELDNAM = "DCB15VD"
+        FIELDNAM = "DCB15V"
         FORMAT = "F15.3"
-        LABLAXIS = "DCB15VD"
+        LABLAXIS = "DCB15V"
         DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
@@ -382,12 +384,12 @@
   </cdf_var>
 
   <cdf_var
-      name = "LNPS1_A33V"
+      name = "LNPS1_33V"
       type = "double">
     <cdf_att
-        FIELDNAM = "LNPS1_A33V"
+        FIELDNAM = "LNPS1_33V"
         FORMAT = "F15.3"
-        LABLAXIS = "LNPS1_A33V"
+        LABLAXIS = "LNPS1_33V"
         DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
@@ -403,12 +405,12 @@
   </cdf_var>
 
   <cdf_var
-      name = "LNPS1_B33V"
+      name = "LNPS1_A4V"
       type = "double">
     <cdf_att
-        FIELDNAM = "LNPS1_B33V"
+        FIELDNAM = "LNPS1_A4V"
         FORMAT = "F15.3"
-        LABLAXIS = "LNPS1_B33V"
+        LABLAXIS = "LNPS1_A4V"
         DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
@@ -418,18 +420,18 @@
         SCALEMIN = "0"
         SCALEMAX = "3.6"
         UNITS = "V"
-        CATDESC = "LNPS1 B33V: 3.3V AEB/DFB Monitor"
+        CATDESC = "LNPS1 A4V: 4V AEB/DFB Monitor A"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
-      name = "LNPS1_4V"
+      name = "LNPS1_B4V"
       type = "double">
     <cdf_att
-        FIELDNAM = "LNPS1_4V"
+        FIELDNAM = "LNPS1_B4V"
         FORMAT = "F15.3"
-        LABLAXIS = "LNPS1_4V"
+        LABLAXIS = "LNPS1_B4V"
         DATA_TYPE = "CDF_DOUBLE"
         VAR_TYPE = "data"
         FILLVAL = "-1.0E31"
@@ -439,7 +441,7 @@
         SCALEMIN = "0"
         SCALEMAX = "4.4"
         UNITS = "V"
-        CATDESC = "LNPS1: 4V DCB/DFB Monitor"
+        CATDESC = "LNPS1 B4V: 4V DCB/DFB Monitor B"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>

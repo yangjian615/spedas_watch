@@ -1,8 +1,8 @@
-;$Author: nikos $
-;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
-;$Header: /home/cdaweb/dev/control/RCS/spd_cdawlib_tagindex.pro,v 1.4 2012/05/02 21:29:57 johnson Exp johnson $
-;$Locker: johnson $
-;$Revision: 17856 $
+;Author: johnson $
+;Date: 2012/05/02 21:29:57 $
+;Header: /home/cdaweb/dev/control/RCS/TAGindex.pro,v 1.4 2012/05/02 21:29:57 johnson Exp johnson $
+;Locker: johnson $
+;Revision: 1.4 $
 ; Search the tnames array for the instring, returning the index in tnames
 ; if it is present, or -1 if it is not.
 ;

@@ -8,7 +8,7 @@
 ; You can obtain a copy of the agreement at
 ;   docs/NASA_Open_Source_Agreement_1.3.txt
 ; or 
-;   http://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
+;   https://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
 ;
 ; See the Agreement for the specific language governing permissions
 ; and limitations under the Agreement.
@@ -22,32 +22,42 @@
 ;
 ; NOSA HEADER END
 ;
-; Copyright (c) 2010-2013 United States Government as represented by the 
-; National Aeronautics and Space Administration. No copyright is claimed 
-; in the United States under Title 17, U.S.Code. All Other Rights Reserved.
+; Copyright (c) 2010-2017 United States Government as represented by the
+; National Aeronautics and Space Administration. No copyright is claimed
+; in the United States under Title 17, U.S.Code. All Other Rights 
+; Reserved.
 ;
 ;
 
+
 ;+
 ; This class represents the remotely callable interface to 
-; <a href="http://www.nasa.gov/">NASA</a>'s
-; <a href="http://spdf.gsfc.nasa.gov/">Space Physics Data Facility</a> (SPDF)
-; <a href="http://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis System</a>
-; (CDAS).
+; <a href="https://www.nasa.gov/">NASA</a>'s
+; <a href="https://spdf.gsfc.nasa.gov/">Space Physics Data Facility</a> 
+; (SPDF)
+; <a href="https://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis 
+; System</a> (CDAS).
 ;
-; @copyright Copyright (c) 2010-2013 United States Government as represented
-;     by the National Aeronautics and Space Administration. No 
-;     copyright is claimed in the United States under Title 17, 
+; @copyright Copyright (c) 2010-2017 United States Government as 
+;     represented by the National Aeronautics and Space Administration.
+;     No copyright is claimed in the United States under Title 17, 
 ;     U.S.Code. All Other Rights Reserved.
 ;
 ; @author B. Harris
 ;-
 
+
 ;+
-; Creates an object representing CDAS.
+; Creates an object representing CDAS.  
+; 
+; If access to the Internet is through an HTTP proxy, the caller 
+; should ensure that the HTTP_PROXY environment is correctly set 
+; before this method is called.  The HTTP_PROXY value should be of 
+; the form 
+; http://username:password@hostname:port/.
 ;
 ; @keyword endpoint {in} {optional} {type=string}
-;              {default=http://cdaweb.gsfc.nasa.gov/WS/cdasr/1}
+;              {default=self->getDefaultEndpoint()}
 ;              URL of CDAS web service.
 ; @keyword userAgent {in} {optional} {type=string} {default=WsExample}
 ;              HTTP user-agent value used in communications with CDAS.
@@ -63,23 +73,41 @@ function SpdfCdas::init, $
     defaultDataview = defaultDataview
     compile_opt idl2
 
-    self.endpoint = 'http://cdaweb.gsfc.nasa.gov/WS/cdasr/1'
+    self.endpoint = self->getDefaultEndpoint()
     self.version = '%VERSION*'
     self.currentVersionUrl = $
-        'http://cdaweb.gsfc.nasa.gov/WebServices/REST/spdfCdasVersion.txt'
+        'https://cdaweb.gsfc.nasa.gov/WebServices/REST/spdfCdasVersion.txt'
 
     if keyword_set(endpoint) then self.endpoint = endpoint
 
     if ~keyword_set(userAgent) then userAgent = 'WsExample'
 
-    self.userAgent = 'User-Agent: ' + userAgent + ' (' + $
-        !version.os + ' ' + !version.arch + ') IDL/' + !version.release
+    self.userAgent = 'User-Agent: ' + userAgent + '/' + $
+        self.version + ' (' + !version.os + ' ' + !version.arch + $
+        ') IDL/' + !version.release
 
     self.defaultDataview = 'sp_phys'
 
     if keyword_set(defaultDataview) then begin
 
         self.defaultDataview = defaultDataview
+    endif
+
+    http_proxy = getenv('HTTP_PROXY')
+
+    if strlen(http_proxy) gt 0 then begin
+
+        proxyComponents = parse_url(http_proxy)
+
+        self.proxy_hostname = proxyComponents.host
+        self.proxy_password = proxyComponents.password
+        self.proxy_port = proxyComponents.port
+        self.proxy_username = proxyComponents.username
+
+        if strlen(proxy_username) gt 0 then begin
+
+            self.proxy_authentication = 3
+        endif
     endif
 
     return, self
@@ -92,6 +120,32 @@ end
 pro SpdfCdas::cleanup
     compile_opt idl2
 
+end
+
+
+;+
+; Gets the default endpoint value.
+;
+; @returns default endpoint string value.
+;-
+function SpdfCdas::getDefaultEndpoint
+    compile_opt idl2
+
+    endpoint = 'http'
+
+    releaseComponents = strsplit(!version.release, '.', /extract)
+
+    if releaseComponents[0] ge '8' and $
+       releaseComponents[1] ge '4' then begin
+
+        ; Even though earlier versions of IDL are suppose to support
+        ; https, they do not (at least they do not support https to
+        ; cdaweb).
+
+        endpoint = endpoint + 's'
+    endif
+
+    return, endpoint + '://cdaweb.gsfc.nasa.gov/WS/cdasr/1'
 end
 
 
@@ -160,25 +214,30 @@ function SpdfCdas::getCurrentVersion
         return, ''
     endif
 
-    url = obj_new('IDLnetURL')
+    url = obj_new('IDLnetURL', $
+                  proxy_authentication = self.proxy_authentication, $
+                  proxy_hostname = self.proxy_hostname, $
+                  proxy_port = self.proxy_port, $
+                  proxy_username = self.proxy_username, $
+                  proxy_password = self.proxy_password)
 
     return, url->get(/string_array, url=self.currentVersionUrl)
 end
 
 
 ;+
-; Compares getversion() and getCurrentversion() to determine if this
+; Compares getVersion() and getCurrentVersion() to determine if this
 ; class is up to date.
 ;
-; @returns true if getversion() >= getCurrentversion().  Otherwise 
+; @returns true if getVersion() >= getCurrentVersion().  Otherwise 
 ;     false.
 ;-
 function SpdfCdas::isUpToDate
     compile_opt idl2
 
-    version = strsplit(self->getversion(), '.', /extract)
+    version = strsplit(self->getVersion(), '.', /extract)
     versionElements = n_elements(version)
-    currentVersion = strsplit(self->getCurrentversion(), '.', /extract)
+    currentVersion = strsplit(self->getCurrentVersion(), '.', /extract)
     currentVersionElements = n_elements(currentVersion)
 
     if versionElements eq 1 or currentVersionElements eq 1 then begin
@@ -503,12 +562,12 @@ end
 ;              those that contain data before this date.
 ; @keyword idPattern {in} {optional} {type=string}
 ;              a java.util.regex compatible 
-;              <a href="http://en.wikipedia.org/wiki/Regex">regular 
+;              <a href="https://en.wikipedia.org/wiki/Regex">regular 
 ;              expression</a> that must match the dataset's identifier 
 ;              value.  Omitting this parameter is equivalent to ".*".
 ; @keyword labelPattern {in} {optional} {type=string}
 ;              a java.util.regex compatible 
-;              <a href="http://en.wikipedia.org/wiki/Regex">regular 
+;              <a href="https://en.wikipedia.org/wiki/Regex">regular 
 ;              expression</a> that must match the dataset's label 
 ;              text.  Omitting this parameter is equivalent to ".*".
 ;              Embedded matching flag expressions (e.g., (?i) for 
@@ -516,7 +575,7 @@ end
 ;              to be useful in this case.
 ; @keyword notesPattern {in} {optional} {type=string}
 ;              a java.util.regex compatible 
-;              <a href="http://en.wikipedia.org/wiki/Regex">regular 
+;              <a href="https://en.wikipedia.org/wiki/Regex">regular 
 ;              expression</a> that must match the dataset's notes 
 ;              text.  Omitting this parameter is equivalent to ".*".
 ;              Embedded matching flag expressions (e.g., (?i) for 
@@ -841,7 +900,7 @@ end
     
 
 ;+
-; Gets <a href="http://cdf.gsfc.nasa.gov/">Common Data Format</a>
+; Gets <a href="https://cdf.gsfc.nasa.gov/">Common Data Format</a>
 ; data from the specified dataset.
 ;
 ; @keyword dataview {in} {optional} {type=string}
@@ -853,8 +912,8 @@ end
 ;              requested.
 ; @param variables {in} {type=strarr}
 ;              names of variable's whose data is being requested.
-;              If no names are specified, the data of all variables
-;              is returned.
+;              If the first (only) name is "ALL-VARIABLES", then the 
+;              resulting CDF will contain all variables.
 ; @keyword cdfVersion {in} {optional} {type=int}
 ;              is the CDF file version that any created CDF files 
 ;              should be (2 or 3). 
@@ -1588,7 +1647,7 @@ end
 
 
 ;+
-; Create an IDLnetUrl object from the given URL with any supplied
+; Create an IDLnetURL object from the given URL with any supplied
 ; authentication values set.
 ;
 ; @private
@@ -1599,14 +1658,20 @@ end
 ;            username.
 ; @param password {in} {type=string}
 ;            password.
-; @returns reference to a IDLnetUrl with any supplied authentication
+; @returns reference to a IDLnetURL with any supplied authentication
 ;     values set.
 ;-
 function SpdfCdas::getRequestUrl, $
     url, username, password
     compile_opt idl2
 
-    requestUrl = obj_new('IDLnetUrl')
+    requestUrl = $
+        obj_new('IDLnetURL', $
+                proxy_authentication = self.proxy_authentication, $
+                proxy_hostname = self.proxy_hostname, $
+                proxy_port = self.proxy_port, $
+                proxy_username = self.proxy_username, $
+                proxy_password = self.proxy_password)
 
     urlComponents = parse_url(url)
 
@@ -1637,11 +1702,17 @@ end
 ; @field defaultDataview CDAS dataview to access when the dataview is
 ;               not specified.
 ; @field userAgent HTTP 
-;            <a href="http://tools.ietf.org/html/rfc2616#section-14.43">
+;            <a href="https://tools.ietf.org/html/rfc2616#section-14.43">
 ;               user-agent value</a> to use in communications with CDAS.
 ; @field version identifies the version of this class.
 ; @field currentVersionUrl URL to the file identifying the most up to 
 ;            date version of this class.
+; @field proxy_authentication IDLnetURL PROXY_AUTHENTICATION property
+;            value.
+; @field proxy_hostname IDLnetURL PROXY_HOSTNAME property value.
+; @field proxy_password IDLnetURL PROXY_PASSWORD property value.
+; @field proxy_port IDLnetURL PROXY_PORT property value.
+; @field proxy_username IDLnetURL PROXY_USERNAME property value.
 ;-
 pro SpdfCdas__define
     compile_opt idl2
@@ -1650,6 +1721,11 @@ pro SpdfCdas__define
         userAgent:'', $
         defaultDataview:'', $
         version:'', $
-        currentVersionUrl:'' $
+        currentVersionUrl:'', $
+        proxy_authentication:0, $
+        proxy_hostname:'', $
+        proxy_password:'', $
+        proxy_port:'', $
+        proxy_username:'' $
     }
 end

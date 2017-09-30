@@ -2,7 +2,7 @@
 ;PROCEDURE:  spd_cdawlib_str_element, struct,  tagname, value
 ;PURPOSE:
 ; Find (or add) an element of a structure.
-; This procedure will not
+; 
 ; Input:
 ;   struct,  generic structure
 ;   tagname,    string  (tag name)
@@ -49,8 +49,8 @@
 ;LAST MODIFICATION: 01/10/08
 ; CREATED BY: Davin Larson
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
-; $LastChangedRevision: 17856 $
+; $LastChangedDate: 2017-09-29 11:11:07 -0700 (Fri, 29 Sep 2017) $
+; $LastChangedRevision: 24062 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/spdfcdas/spd_cdawlib/spd_cdawlib_str_element.pro $
 
 ;-
