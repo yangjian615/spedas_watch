@@ -47,8 +47,8 @@
 ;  Fixed eflux calculation 2017-05-12
 ;  
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-09-23 21:52:13 -0700 (Sat, 23 Sep 2017) $
-;$LastChangedRevision: 24022 $
+;$LastChangedDate: 2017-09-30 11:03:14 -0700 (Sat, 30 Sep 2017) $
+;$LastChangedRevision: 24073 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
 ;-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
@@ -81,13 +81,17 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   endif
   
   if size(tname,/type) eq 7 then begin; if 'tname' is string...
-    distime = mms_get_dist(tname,/time)
+    distime = mms_get_dist(tname,/time); start time
     if (time_double(trange[1]) lt distime[0]) or (max(distime) lt time_double(trange[0])) then begin
-      message,'trange is out of '+tname+' time range.'
+      print, 'trange=',time_string(trange,prec=4)
+      print, 'distime=',time_string([distime[0], max(distime)],prec=4)
+      print,'trange is out of '+tname+' time range.'
+      return, -1
     endif
     dist    = mms_get_dist(tname,index,trange=trange,/structure)
     if (n_tags(dist) eq 0) then begin
-      message,'FPI data could not be extracted from the specified time period.'
+      print,'FPI data could not be extracted from the specified time period.'
+      return, -1
     endif
     spc = strmid(tname,6,1)
   endif else stop
