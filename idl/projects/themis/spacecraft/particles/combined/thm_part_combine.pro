@@ -106,8 +106,8 @@
 ;     
 ;
 ;$LastChangedBy: jimm $
-;$LastChangedDate: 2017-05-08 10:50:12 -0700 (Mon, 08 May 2017) $
-;$LastChangedRevision: 23276 $
+;$LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+;$LastChangedRevision: 24078 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_combine.pro $
 ;
 ;-
@@ -136,6 +136,7 @@ function thm_part_combine, probe=probe, $
                       remove_one_count=remove_one_count,$
                       remove_counts=remove_counts, $
                       sst_data_mask=sst_data_mask,$
+                      get_error=get_error,$ ;propagate errors, jmm, 2017-09-29
                       _extra=_extra
 
     compile_opt idl2
@@ -255,7 +256,7 @@ function thm_part_combine, probe=probe, $
   ;(energy interpolation should be perfomed in flux)
   thm_cmb_clean_sst, sst, units='flux', sst_sun_bins=sst_sun_bins,sst_min_energy=sst_min_energy,sst_data_mask=sst_data_mask, remove_counts=remove_counts
   thm_cmb_clean_esa, esa, units='flux', esa_max_energy=esa_max_energy, esa_bgnd_advanced=esa_bgnd_advanced, remove_counts=remove_counts
-  
+
   ;-------------------------------------------------------------------------------------------
   ;Time interpolation
   ;-------------------------------------------------------------------------------------------
@@ -288,9 +289,9 @@ function thm_part_combine, probe=probe, $
 
   ;interpolate both ESA and SST angles on to the same grid
   ;  TODO: allow interpolate to one instruments angles? (interpolating to ESA could be awful)
-  thm_part_sphere_interp,esa,sst,regrid=regrid,error=esa_sphere_interp_error
-  thm_part_sphere_interp,sst,esa,regrid=regrid,error=sst_sphere_interp_error
-  
+  thm_part_sphere_interp,esa,sst,regrid=regrid,error=esa_sphere_interp_error,get_error=get_error
+  thm_part_sphere_interp,sst,esa,regrid=regrid,error=sst_sphere_interp_error,get_error=get_error
+
   if keyword_set(esa_sphere_interp_error) then message, 'ESA sphere interp error'
   if keyword_set(sst_sphere_interp_error) then message, 'SST sphere interp error'
   
@@ -300,7 +301,7 @@ function thm_part_combine, probe=probe, $
   ;-------------------------------------------------------------------------------------------
   
   ;do this as normal for now
-  thm_part_energy_interp,sst,esa,energies,error=energy_interp_error,extrapolate_esa=extrapolate_esa
+  thm_part_energy_interp,sst,esa,energies,error=energy_interp_error,extrapolate_esa=extrapolate_esa,get_error=get_error
   
   if keyword_set(energy_interp_error) then message, 'energy interp error'
 
@@ -320,8 +321,10 @@ function thm_part_combine, probe=probe, $
 ;are counts-based, jmm, 2017-05-05
   ndist = n_elements(out_dist)
   For j = 0, ndist-1 Do Begin
-     If(ptr_valid(out_dist[j]) && is_struct(*out_dist[j])) Then $
+     If(ptr_valid(out_dist[j]) && is_struct(*out_dist[j])) Then Begin
         (*out_dist[j]).data = (*out_dist[j]).data > 0
+        (*out_dist[j]).scaling = (*out_dist[j]).scaling > 0
+     Endif
   Endfor
 
   ;if original data is being passed out ensure the units are identical to primary output

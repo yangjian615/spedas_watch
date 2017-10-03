@@ -114,9 +114,13 @@
 ;
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
+;       PDS:      Plot vertical dashed lines separating the PDS release dates.
+;
+;       VERBOSE:  Verbosity level passed to mvn_pfp_file_retrieve.  Default = 0.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-07 17:08:04 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23921 $
+; $LastChangedDate: 2017-10-02 17:57:54 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24099 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -125,7 +129,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
                        colors=colors, reset_trange=reset_trange, nocrop=nocrop, spk=spk, $
-                       segments=segments, shadow=shadow, datum=datum, noload=noload
+                       segments=segments, shadow=shadow, datum=datum, noload=noload, $
+                       pds=pds, verbose=verbose
 
   @maven_orbit_common
 
@@ -135,6 +140,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     eph = state
     return
   endif
+
+  if (size(verbose,/type) eq 0) then verbose = 0
 
 ; Geodetic parameters for Mars (from the 2009 IAU Report)
 ;   Archinal et al., Celest Mech Dyn Astr 109, Issue 2, 101-135, 2011
@@ -289,7 +296,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     eph = {time:time, mso_x:mso_x, mso_v:mso_v, geo_x:geo_x, geo_v:geo_v}
 
   endif else begin
-    file = mvn_pfp_file_retrieve(rootdir+mname,last_version=0,source=ssrc)
+    file = mvn_pfp_file_retrieve(rootdir+mname,last_version=0,source=ssrc,verbose=verbose)
     nfiles = n_elements(file)
     
     if (docrop) then begin
@@ -325,7 +332,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     r = sqrt(x*x + y*y + z*z)
     s = sqrt(y*y + z*z)
-    if (sflg) then shadow = 1D + (150D/R_m) else shadow = 1D  ; EUV shadow
+    if (sflg) then shadow = 1D + (150D/R_m) else shadow = 1D
     sza = atan(s,x)
 
     mso_x = fltarr(n_elements(maven.x),3)
@@ -340,7 +347,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     
     maven = 0
 
-    file = mvn_pfp_file_retrieve(rootdir+gname,last_version=0,source=ssrc)
+    file = mvn_pfp_file_retrieve(rootdir+gname,last_version=0,source=ssrc,verbose=verbose)
     nfiles = n_elements(file)
     
     if (docrop) then begin
@@ -374,6 +381,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     geo_v[*,1] = maven_g.vy
     geo_v[*,2] = maven_g.vz
 
+    if (sflg) then print,"Using EUV shadow" else print,"Using optical shadow"
     print,"Reference surface for calculating altitude: ",strlowcase(datum)
     mvn_altitude, cart=transpose(geo_x), datum=datum, result=adat
     hgt = adat.alt
@@ -594,6 +602,14 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   if keyword_set(segments) then options,'alt2','constant',[500,1200,4970,5270] $
                            else options,'alt2','constant',-1
 
+  if keyword_set(pds) then begin
+    nmon = 20
+    pds_rel = replicate(time_struct('2015-05-15'),nmon)
+    pds_rel.month += 3*indgen(nmon)
+    pds_rel = time_double(pds_rel)
+    pflg = 1
+  endif else pflg = 0
+
   mvn_sun_bar
 
 ; Calculate statistics (orbit by orbit)
@@ -787,6 +803,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     if (treset) then timespan,[tmin,tmax],/sec
     tplot,tvars
     if (donow) then timebar,systime(/utc,/sec),line=1
+    if (pflg) then timebar,pds_rel,line=2
   endif
 
   return

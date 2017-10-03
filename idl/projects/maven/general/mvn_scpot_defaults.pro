@@ -55,6 +55,8 @@
 ;
 ;   MIN_LPW_POT : Minumum valid LPW potential.
 ;
+;   MIN_STA_POT : Minumum valid STA potential.
+;
 ;   MAXALT:    Maximum altitude for replacing SWE/LPW and SWE+ potentials
 ;              with SWE- or STA- potentials.
 ;
@@ -65,8 +67,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-07 17:09:40 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23923 $
+; $LastChangedDate: 2017-10-02 17:55:41 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24096 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot_defaults.pro $
 ;
 ;-
@@ -74,7 +76,8 @@
 pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
                abins=abins, dbins=dbins, obins=obins2, mask_sc=mask_sc, $
                badval=badval2, minflux=minflux2, maxdt=maxdt2, $
-               maxalt=maxalt2, min_lpw_pot=min_lpw_pot2, list=list
+               maxalt=maxalt2, min_lpw_pot=min_lpw_pot2, list=list, $
+               min_sta_pot=min_sta_pot2
 
   @mvn_swe_com
   @mvn_scpot_com
@@ -85,18 +88,35 @@ pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
     print, ""
     if (size(Espan,/type) ne 0) then begin
       print, "mvn_scpot_com"
-      print, "  erange: ", Espan
-      print, "  thresh: ", thresh
-      print, "  dEmax:  ", dEmax
-      print, "  minflux: ", minflux
-      print, "  badval:  ", badval
-      print, "  maxalt:  ", maxalt
-      print, "  min_lpw_pot: ", min_lpw_pot
+      print, "  erange:       ", Espan
+      print, "  thresh:       ", thresh
+      print, "  dEmax:        ", dEmax
+      print, "  minflux:      ", minflux
+      print, "  badval:       ", badval
+      print, "  maxalt:       ", maxalt
+      print, "  min_lpw_pot:  ", min_lpw_pot
+      print, "  min_sta_pot:  ", min_sta_pot
+      print, "  maxdt:        ", maxdt
     endif else print, "mvn_scpot_com: defaults not set"
     print, ""
 
     return
   endif
+
+; Define spacecraft potential data structure
+;   There are 6 methods used to estimate the potential:
+;     -1 : Invalid : No method works or has been attempted
+;      0 : Manual  : No algorithm at all, set by a human
+;      1 : SWE/LPW : I/V curves calibrated by SWE+ and SWE- methods
+;      2 : SWE+    : Sharp break in solar wind/sheath electron energy spectrum
+;      3 : SWE-    : Position of He-II photoelectron feature in SPEC data
+;      4 : STA     : Low-energy cutoff of H+ distribution (away from periapsis)
+;                  : or shift of O2+ and O+ energy w.r.t ram energy (near periapsis)
+;      5 : SWE/SHD : Position of He-II photoelectron feature in PAD data
+
+  mvn_pot_struct = {time           : 0D   , $  ; unix time
+                    potential      : 0.   , $  ; spacecraft potential (V)
+                    method         : -1      } ; method used (see above)
 
 ; Defaults for the SWE+ method
 
@@ -111,6 +131,8 @@ pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
   badval = !values.f_nan  ; fill value for potential when no method works
   maxalt = 1000.          ; maximum altitude for replacing SWE/LPW and SWE+ potentials
   min_lpw_pot = -14.      ; minimum valid LPW potential
+  min_sta_pot = -6.       ; minimum STA potential near periapsis
+  max_sta_alt = 200.      ; maximum altitude for limiting STA potential range
   maxdt = 64D             ; maximum time gap to interpolate over
 
 ; Override defaults by keyword.  Affects all routines that use mvn_scpot_com.
@@ -122,6 +144,7 @@ pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
   if (size(badval2,/type)  gt 0) then badval = float(badval2)
   if (size(maxalt2,/type)  gt 0) then maxalt = float(maxalt2)
   if (size(min_lpw_pot2,/type) gt 0) then min_lpw_pot = float(min_lpw_pot2)
+  if (size(min_sta_pot2,/type) gt 0) then min_sta_pot = float(min_sta_pot2)
 
   if ((size(obins,/type) eq 0) or keyword_set(abins) or keyword_set(dbins) or $
       keyword_set(obins2) or (size(mask_sc,/type) ne 0)) then begin

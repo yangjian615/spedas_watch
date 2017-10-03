@@ -78,8 +78,8 @@
 ;          keyword, and stored as a TPLOT variable.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-14 11:17:15 -0700 (Mon, 14 Aug 2017) $
-; $LastChangedRevision: 23784 $
+; $LastChangedDate: 2017-10-02 16:47:03 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24091 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_pot.pro $
 ;
 ;-
@@ -139,7 +139,7 @@ pro mvn_swe_sc_pot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2,
   badphi = !values.f_nan  ; bad value guaranteed to be a NaN
 
   npts = n_elements(mvn_swe_engy)
-  pot = replicate(swe_pot_struct, npts)
+  pot = replicate(mvn_pot_struct, npts)
   pot.time = mvn_swe_engy.time
   pot.potential = badphi
   pot.method = -1
@@ -288,7 +288,7 @@ pro mvn_swe_sc_pot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2,
 ; Update the common block
 
   if (reset) then begin
-    swe_sc_pot = replicate(swe_pot_struct, npts)
+    swe_sc_pot = replicate(mvn_pot_struct, npts)
     swe_sc_pot.potential = badphi
     swe_sc_pot.method = -1
     mvn_swe_engy.sc_pot = badphi

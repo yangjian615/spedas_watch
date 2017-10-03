@@ -92,9 +92,11 @@
 ;
 ;       MAGNIFY:  Change size of plot windows.
 ;
+;       PSNAME:   Name of a postscript plot.  Works only for orbit plots.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-04-22 13:25:23 -0700 (Sat, 22 Apr 2017) $
-; $LastChangedRevision: 23208 $
+; $LastChangedDate: 2017-10-02 17:58:29 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24100 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_snap.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -102,7 +104,7 @@
 pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, mars=mars, $
     npole=npole, noerase=noerase, keep=keep, color=color, reset=reset, cyl=cyl, times=times, $
     nodot=nodot, terminator=terminator, thick=thick, Bdir=Bdir, scale=scale, scsym=scsym, $
-    magnify=magnify, Bclip=Bclip, alt=doalt
+    magnify=magnify, Bclip=Bclip, alt=doalt, psname=psname
 
   @maven_orbit_common
   @swe_snap_common
@@ -209,27 +211,32 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
 ; Create snapshot windows
 
-  if (xzflg) then begin
-    window,26,xsize=round(600.*mag),ysize=round(538.*mag)
-    Owin = !d.window
+  if (size(psname,/type) eq 7) then begin
+    psflg = 1
   endif else begin
-    device, get_screen_size=scr
-    oscale = 0.965*(scr[1]/943.) < 1.06
+    psflg = 0
+    if (xzflg) then begin
+      window,26,xsize=round(600.*mag),ysize=round(538.*mag)
+      Owin = !d.window
+    endif else begin
+      device, get_screen_size=scr
+      oscale = 0.965*(scr[1]/943.) < 1.06
 
-    xsize = round(350.*oscale*mag)
-    ysize = round(943.*oscale*mag)
-    xpos = 0
-    ypos = 0
+      xsize = round(350.*oscale*mag)
+      ysize = round(943.*oscale*mag)
+      xpos = 0
+      ypos = 0
 
-    if (snap_index gt 0) then begin
-      xsize = round(Oopt.xsize*mag)
-      ysize = round(Oopt.ysize*mag)
-      xpos = Oopt.xpos
-      ypos = Oopt.ypos
-    endif
+      if (snap_index gt 0) then begin
+        xsize = round(Oopt.xsize*mag)
+        ysize = round(Oopt.ysize*mag)
+        xpos = Oopt.xpos
+        ypos = Oopt.ypos
+      endif
 
-    window,26,xsize=xsize,ysize=ysize,xpos=xpos,ypos=ypos
-    Owin = !d.window
+      window,26,xsize=xsize,ysize=ysize,xpos=xpos,ypos=ypos
+      Owin = !d.window
+    endelse
   endelse
 
   if (gflg) then begin
@@ -302,13 +309,17 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
   
   ok = 1
   first = 1
+  
+  if (psflg) then popen, psname
 
   while (ok) do begin
     title = string(time_string(tref),oref,format='(a19,2x,"(Orbit ",i4,")")')
     if (noerase) then title = ''
 
-    wset, Owin
-    if (first) then erase
+    if (~psflg) then begin
+      wset, Owin
+      if (first) then erase
+    endif
 
     npts = n_elements(ss[*,0])
 
@@ -340,15 +351,15 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
 
 ; Orbit plots with three orthogonal views
 
-    phi = findgen(361)*!dtor
-    xm = cos(phi)
-    ym = sin(phi)
-
     rmin = min(ro, imin)
     imin = imin[0]
     rmax = ceil(max(ro) + 1D)
 
     if (first) then begin
+      phi = findgen(361)*!dtor
+      xm = cos(phi)
+      ym = sin(phi)
+
       xrange = [-rmax,rmax]
       yrange = xrange
     endif
@@ -860,6 +871,8 @@ pro maven_orbit_snap, prec=prec, mhd=mhd, hybrid=hybrid, latlon=latlon, xz=xz, m
     endif
 
 ; Get the next button press
+
+    if (psflg) then pclose
 
     if (tflg) then begin
       k++

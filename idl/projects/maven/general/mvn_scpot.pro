@@ -18,7 +18,7 @@
 ;                 for the ionosphere.
 ;                 (Author: S. Xu)
 ;
-;       SWE/LPW : Use LPW I/V curves, empirically calibrated by the
+;       SWE/LPW : Use LPW I-V curves, empirically calibrated by the
 ;                 SWE+ and SWE- methods.  Works almost everywhere, 
 ;                 except in the EUV shadow or when the spacecraft 
 ;                 charges to large negative potentials.
@@ -154,8 +154,8 @@
 ;          one showing the five unmerged methods in one panel.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-13 18:16:46 -0700 (Wed, 13 Sep 2017) $
-; $LastChangedRevision: 23967 $
+; $LastChangedDate: 2017-10-02 17:57:06 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24098 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot.pro $
 ;
 ;-
@@ -172,7 +172,7 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
   
   @mvn_swe_com
   @mvn_scpot_com
-  
+
   if (size(Espan,/type) eq 0) then mvn_scpot_defaults
 
 ; Override defaults by keyword.  Affects all routines that use mvn_scpot_com.
@@ -227,16 +227,17 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
 
   if (size(setval,/type) ne 0) then begin
     print,"Setting the s/c potential to: ",setval
-    swe_sc_pot = replicate(swe_pot_struct, npts)
-    swe_sc_pot.time = mvn_swe_engy.time
-    swe_sc_pot.potential = setval
-    swe_sc_pot.method = 0  ; potential set manually
-    pot = swe_sc_pot
+    mvn_sc_pot = replicate(mvn_pot_struct, npts)
+    mvn_sc_pot.time = mvn_swe_engy.time
+    mvn_sc_pot.potential = setval
+    mvn_sc_pot.method = 0  ; potential set manually
 
-    mvn_swe_engy.sc_pot = setval
+    pot = mvn_sc_pot              ; set return keyword value
+    mvn_swe_engy.sc_pot = setval  ; fill in SWEA SPEC potentials
+    swe_sc_pot = mvn_sc_pot       ; fill in SWEA potential common block
 
-    phi = {x:swe_sc_pot.time, y:swe_sc_pot.potential}
-    store_data,'mvn_swe_sc_pot',data=phi
+    phi = {x:mvn_sc_pot.time, y:mvn_sc_pot.potential}
+    store_data,'mvn_sc_pot',data=phi
 
     str_element,phi,'thick',2,/add
     str_element,phi,'color',0,/add
@@ -252,10 +253,10 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
   tmin = min(timerange(), max=tmax)
   badphi = !values.f_nan  ; bad value that's guaranteed to be a NaN
 
-  swe_sc_pot = replicate(swe_pot_struct, npts)
-  swe_sc_pot.time = mvn_swe_engy.time
-  swe_sc_pot.potential = badphi
-  swe_sc_pot.method = -1
+  mvn_sc_pot = replicate(mvn_pot_struct, npts)
+  mvn_sc_pot.time = mvn_swe_engy.time
+  mvn_sc_pot.potential = badphi
+  mvn_sc_pot.method = -1
 
   mvn_swe_engy.sc_pot = badphi
 
@@ -268,17 +269,17 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
       indx = where(comp.method eq -1, count)
       if (count gt 0L) then comp[indx].potential = badphi
 
-      phi = interpol(comp.potential, comp.time, swe_sc_pot.time)
-      indx = nn(comp.time, swe_sc_pot.time)
+      phi = interpol(comp.potential, comp.time, mvn_sc_pot.time)
+      indx = nn(comp.time, mvn_sc_pot.time)
       method = comp[indx].method
-      gap = where(abs(comp[indx].time - swe_sc_pot.time) gt maxdt, count)
+      gap = where(abs(comp[indx].time - mvn_sc_pot.time) gt maxdt, count)
       if (count gt 0L) then begin
         phi[gap] = badphi
         method[gap] = -1
       endif
 
-      swe_sc_pot.potential = phi
-      swe_sc_pot.method = method  ; various methods
+      mvn_sc_pot.potential = phi
+      mvn_sc_pot.method = method  ; various methods
 
       lpwpot = 0
       pospot = 0
@@ -300,23 +301,28 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
     print,"Cannot get orbit information!  Problem with maven_orbit_tplot."
     return
   endif
-  str_element, wake, 'shadow', value=shadow
-  if (strupcase(shadow[0]) ne 'EUV') then begin
+  str_element, wake, 'shadow', value=shadow, success=ok
+  if (ok) then shadow = shadow[0] else shadow = ''
+  if (strupcase(shadow) ne 'EUV') then begin
     maven_orbit_tplot, /load, /shadow
-    get_data, 'wake', data=wake
+    get_data, 'wake', data=wake, index=i
   endif
-  wake = interpol(wake.y, wake.x, swe_sc_pot.time)
+  if (i eq 0) then begin
+    print,"Cannot get orbit information!  Problem with maven_orbit_tplot."
+    return
+  endif
+  wake = interpol(wake.y, wake.x, mvn_sc_pot.time)
   indx = where(finite(wake), count)
-  wake = replicate(0B, n_elements(swe_sc_pot.time))
+  wake = replicate(0B, n_elements(mvn_sc_pot.time))
   if (count gt 0L) then wake[indx] = 1B
 
 ; Get the altitude
 
   get_data, 'alt', data=alt
-  alt = spline(alt.x, alt.y, swe_sc_pot.time)
+  alt = spline(alt.x, alt.y, mvn_sc_pot.time)
 
-; First priority: Get pre-calculated potentials from combined SWEA-LPW analysis
- 
+; First priority: Get pre-calculated potentials from SWEA-LPW analysis.
+
   if (lpwpot) then begin
      get_data, 'mvn_swe_lpw_scpot_pol', index=i
      if (i gt 0) then store_data, 'mvn_swe_lpw_scpot_pol', /delete
@@ -328,22 +334,24 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
         options,'mvn_swe_lpw_scpot_pol','psym',3
         options,'mvn_swe_lpw_scpot_pol','color',!p.color
 
+;       Don't use potentials more negative than min_lpw_pot
+
         igud = where(lpwphi.y gt min_lpw_pot, ngud, complement=ibad, ncomplement=nbad)
-        if (nbad gt 0L) then lpwphi.y[ibad] = badphi           ; invalid LPW potentials
+        if (nbad gt 0L) then lpwphi.y[ibad] = badphi
 
         if (ngud gt 0L) then begin
           xgud = lpwphi.x[igud]
 
-          phi = interpol(lpwphi.y, lpwphi.x, swe_sc_pot.time)  ; interpolate with NaNs
+          phi = interpol(lpwphi.y, lpwphi.x, mvn_sc_pot.time)  ; interpolate with NaNs
 
-          indx = nn(xgud, swe_sc_pot.time)
-          gap = where(abs(xgud[indx] - swe_sc_pot.time) gt maxdt, count)
+          indx = nn(xgud, mvn_sc_pot.time)
+          gap = where(abs(xgud[indx] - mvn_sc_pot.time) gt maxdt, count)
           if (count gt 0L) then phi[gap] = badphi   ; valid estimates too far away
 
-          indx = where(finite(phi) and (swe_sc_pot.method lt 1), count)
+          indx = where(finite(phi) and (mvn_sc_pot.method lt 1), count)
           if (count gt 0L) then begin
-            swe_sc_pot[indx].potential = phi[indx]
-            swe_sc_pot[indx].method = 1  ; swe/lpw method
+            mvn_sc_pot[indx].potential = phi[indx]
+            mvn_sc_pot[indx].method = 1  ; swe/lpw method
           endif
 
         endif else print, "No valid SWE/LPW potentials."
@@ -355,23 +363,24 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
   
   if (pospot) then begin
     mvn_swe_sc_pot, potential=phi
-    indx = where((swe_sc_pot.method lt 1) and (phi.method eq 2), count)
-    if (count gt 0) then swe_sc_pot[indx] = phi[indx]
+    indx = where((mvn_sc_pot.method lt 1) and (phi.method eq 2), count)
+    if (count gt 0) then mvn_sc_pot[indx] = phi[indx]
   endif
 
 ; Third priority: Estimate negative potentials from SWEA (He-II feature)
+;   This fills in missing negative LPW-derived potentials.
 
   if (negpot) then begin    
     mvn_swe_sc_negpot, potential=phi
-    indx = where((swe_sc_pot.method lt 1) and (phi.method eq 3), count)
-    if (count gt 0) then swe_sc_pot[indx] = phi[indx]
-    indx = where((alt le maxalt) and (phi.method eq 3) and (swe_sc_pot.potential gt 0.), count)
-    if (count gt 0) then swe_sc_pot[indx] = phi[indx]
+    indx = where((mvn_sc_pot.method lt 1) and (phi.method eq 3), count)
+    if (count gt 0) then mvn_sc_pot[indx] = phi[indx]
+;   indx = where((alt le maxalt) and (phi.method eq 3) and (mvn_sc_pot.potential gt 0.), count)
+;   if (count gt 0) then mvn_sc_pot[indx] = phi[indx]
 
     options,'neg_pot','color',6
   endif        
 
-; Fourth priority: Use STATIC-derived negative potential in the EUV shadow.
+; Fourth priority: Use STATIC-derived negative potentials.
 
   if (stapot) then begin
     print,"Getting negative potentials from STATIC."
@@ -392,29 +401,39 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
     if (i gt 0) then begin
       options,'mvn_sta_c6_scpot','color',4
 
-      igud = where(stapot.y lt 0., ngud, complement=ibad, ncomplement=nbad)
-      if (nbad gt 0L) then stapot.y[ibad] = badphi    ; invalid STATIC potentials
+;     Only use STA potentials between min_sta_pot and zero.
+
+      igud = where((stapot.y lt 0.) and (stapot.y gt min_sta_pot), ngud, comp=ibad, ncomp=nbad)
+      if (nbad gt 0L) then stapot.y[ibad] = badphi
       msg = string("STA- : ",ngud," valid potentials from ",ngud+nbad," spectra",format='(a,i8,a,i8,a)')
       print, strcompress(strtrim(msg,2))
 
       if (ngud gt 0L) then begin
         xgud = stapot.x[igud]
 
-        phi = interpol(stapot.y, stapot.x, swe_sc_pot.time)  ; interpolate with NaNs
-        indx = nn(xgud, swe_sc_pot.time)
-        gap = where(abs(xgud[indx] - swe_sc_pot.time) gt maxdt, count)
+        phi = interpol(stapot.y, stapot.x, mvn_sc_pot.time)  ; interpolate with NaNs
+        indx = nn(xgud, mvn_sc_pot.time)
+        gap = where(abs(xgud[indx] - mvn_sc_pot.time) gt maxdt, count)
         if (count gt 0L) then phi[gap] = badphi   ; valid estimates too far away
 
-        indx = where((phi lt -12.) and (alt lt 200.), count)
-        if (count gt 0L) then phi[indx] = badphi  ; don't trust large negative values
-                                                  ; at periapsis because of saturation
-        
-        indx = where((wake and finite(phi)) or $  ; trust values within EUV shadow
-                     ((swe_sc_pot.method lt 1) and finite(phi)), count)
+;       Trust all negative values within the EUV shadow and above max_sta_alt
+
+        indx = where(finite(phi) and wake and (alt gt max_sta_alt), count)
         if (count gt 0L) then begin
-          swe_sc_pot[indx].potential = phi[indx]
-          swe_sc_pot[indx].method = 4  ; sta_pot method
+          mvn_sc_pot[indx].potential = phi[indx]
+          mvn_sc_pot[indx].method = 4  ; sta_pot method
         endif
+
+;       Fill in missing values.  If more than one method [LPW, SWE, STA] provides a
+;       value, choose one that closer to zero or positive.
+
+        indx = where((phi gt min_sta_pot) and $
+                     ((phi gt mvn_sc_pot.potential) or (mvn_sc_pot.method lt 1)), count)
+        if (count gt 0L) then begin
+          mvn_sc_pot[indx].potential = phi[indx]
+          mvn_sc_pot[indx].method = 4  ; sta_pot method
+        endif
+
       endif else print, "No valid STATIC potentials."
     endif else print, "STATIC potential not available."
   endif
@@ -426,9 +445,9 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
 
     mvn_swe_sc_negpot_twodir_burst, potential=phi, /shadow
 
-    indx = where((phi.method eq 5) and (swe_sc_pot.method lt 1), count)
+    indx = where((phi.method eq 5) and (mvn_sc_pot.method lt 1), count)
     if (count gt 0L) then begin
-      swe_sc_pot[indx] = phi[indx]
+      mvn_sc_pot[indx] = phi[indx]
       mvn_swe_engy[indx].sc_pot = phi[indx].potential
     endif             
 
@@ -439,19 +458,20 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
 ; Finish up
 
   if (finite(badval)) then begin
-    indx = where(swe_sc_pot.method lt 1, count)
+    indx = where(mvn_sc_pot.method lt 1, count)
     if (count gt 0L) then begin
-      swe_sc_pot[indx].potential = badval
-      swe_sc_pot[indx].method = 0
+      mvn_sc_pot[indx].potential = badval
+      mvn_sc_pot[indx].method = 0
     endif
   endif
 
-  pot = swe_sc_pot
-  mvn_swe_engy.sc_pot = swe_sc_pot.potential
+  pot = mvn_sc_pot
+  mvn_swe_engy.sc_pot = mvn_sc_pot.potential
+  swe_sc_pot = mvn_sc_pot
 
 ; Create the electron energy spectra overlay
 
-  phi = {x:swe_sc_pot.time, y:swe_sc_pot.potential}
+  phi = {x:mvn_sc_pot.time, y:mvn_sc_pot.potential}
   str_element,phi,'thick',2,/add
   str_element,phi,'color',0,/add
   str_element,phi,'psym',3,/add
@@ -475,7 +495,7 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
   potlabs = ['swe/lpw', 'swe+', 'swe-', 'sta', 'swe-(sh)']
   potcols = [!p.color, 2, 6, 4, 1]
 
-  store_data,'swe_pot_lab',data={x:minmax(swe_sc_pot.time), y:replicate(!values.f_nan,2,5)}
+  store_data,'swe_pot_lab',data={x:minmax(mvn_sc_pot.time), y:replicate(!values.f_nan,2,5)}
   options,'swe_pot_lab','labels',reverse(potlabs)
   options,'swe_pot_lab','colors',reverse(potcols)
   options,'swe_pot_lab','labflag',1
@@ -495,14 +515,14 @@ pro mvn_scpot, potential=pot, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
   nv = n_elements(vname)
 
   for i=0,nv-1 do begin
-     x=swe_sc_pot.time
+     x=mvn_sc_pot.time
      y=replicate(!values.f_nan,n_elements(x))
-     inx=where(swe_sc_pot.method eq i+1,cts)
+     inx=where(mvn_sc_pot.method eq i+1,cts)
      if cts gt 0L then begin
-        y[inx]=swe_sc_pot[inx].potential
+        y[inx]=mvn_sc_pot[inx].potential
         store_data,vname[i],data={x:x,y:y}
      endif else begin
-        store_data,vname[i],data={x:minmax(swe_sc_pot.time), y:replicate(!values.f_nan,2)}
+        store_data,vname[i],data={x:minmax(mvn_sc_pot.time), y:replicate(!values.f_nan,2)}
      endelse
      options,vname[i],'color',potcols[i]
   endfor

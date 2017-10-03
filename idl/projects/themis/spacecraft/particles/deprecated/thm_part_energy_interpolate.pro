@@ -19,10 +19,10 @@
 ; SEE ALSO:
 ;   thm_part_dist_array, thm_part_smooth, thm_part_subtract,thm_part_omni_convert,thm_part_time_interpolate.pro,thm_part_sphere_interpolate.pro
 ;
-;  $LastChangedBy: aaflores $
-;  $LastChangedDate: 2016-03-04 18:12:33 -0800 (Fri, 04 Mar 2016) $
-;  $LastChangedRevision: 20333 $
-;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_energy_interpolate.pro $
+;  $LastChangedBy: jimm $
+;  $LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+;  $LastChangedRevision: 24078 $
+;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/deprecated/thm_part_energy_interpolate.pro $
 ;-
 
 pro thm_part_energy_interpolate,dist_sst,dist_esa,energies,error=error;,dist_sst_counts=dist_sst_counts,dist_esa_counts=dist_esa_counts,emin=emin

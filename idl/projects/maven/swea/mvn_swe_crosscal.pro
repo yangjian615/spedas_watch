@@ -49,8 +49,8 @@
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-15 17:53:53 -0700 (Tue, 15 Aug 2017) $
-; $LastChangedRevision: 23800 $
+; $LastChangedDate: 2017-10-02 16:44:32 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24085 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crosscal.pro $
 ;
 ;CREATED BY:    David L. Mitchell  05-04-16
@@ -62,12 +62,13 @@ function mvn_swe_crosscal, time, on=on, off=off, refresh=refresh, extrap=extrap,
   common swe_cc_com, tc, ac, eflg
   
   if ((size(tc,/type) eq 0) or keyword_set(refresh)) then begin
-    tc = time_double(['2014-03-22','2014-11-12', '2015-12-20', '2016-10-25'])
+    tc = time_double(['2014-03-22','2014-11-12', '2015-12-20', '2016-10-25', '2017-08-12'])
     ac = dblarr(3, n_elements(tc))
     ac[*,0] = [2.6D   ,  0.0D     ,  0.0D     ]  ; MCPHV = 2500 V
     ac[*,1] = [2.3368D, -9.9426d-4,  2.6014d-5]  ; MCPHV = 2600 V
     ac[*,2] = [2.2143D,  7.9280d-4,  1.4300d-5]  ; MCPHV = 2700 V
-    ac[*,3] = [1.9231D,  8.7191d-3, -1.5274d-5]  ; MCPHV = 2750 V
+    ac[*,3] = [2.0027D,  7.2892d-3, -1.1918d-5]  ; MCPHV = 2750 V
+    ac[*,4] = [2.41D  ,  0.0D     ,  0.0D     ]  ; MCPHV = 2800 V (prelim)
     eflg = 1
   endif
 
@@ -138,26 +139,26 @@ function mvn_swe_crosscal, time, on=on, off=off, refresh=refresh, extrap=extrap,
     cc[indx] = (ac[0,i] + day*(ac[1,i] + day*ac[2,i])) > 2.25D
   endif
 
-  indx = where(t ge t_mcp[7], count)  ; MCPHV = 2800 V
+  indx = where((t ge t_mcp[7]) and (t lt t_mcp[8]), count)  ; MCPHV = 2800 V
   if (count gt 0L) then begin
-    cc[indx] = 2.29D  ; from matching e- density before and after bump (ratio = 1.38 +- 0.18)
-    if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
-                           time_string(t_mcp[7])
+    i = 4
+    day = (t[indx] - tc[i])/86400D
+    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
   endif
 
-  indx = where(t ge time_double('3000-01-01'), count)  ; disable for now
+  indx = where(t ge t_mcp[8], count)
   if (count gt 0L) then begin
-    i = 3
+    i = 4
     if (eflg) then begin
       day = (t[indx] - tc[i])/86400D
       if (domsg) then print,"Warning: SWE-SWI cross calibration factor extrapolated after ", $
-                             time_string(t_mcp[7],prec=-3)
+                             time_string(t_mcp[8],prec=-3)
     endif else begin
-      day = (t_mcp[7] - tc[i])/86400D
+      day = (t_mcp[8] - tc[i])/86400D
       if (domsg) then print,"Warning: SWE-SWI cross calibration factor fixed after ", $
-                             time_string(t_mcp[7],prec=-3)
+                             time_string(t_mcp[8],prec=-3)
     endelse
-    cc[indx] = (ac[0,i] + day*(ac[1,i] + day*ac[2,i])) > 2.25D
+    cc[indx] = ac[0,i] + day*(ac[1,i] + day*ac[2,i])
   endif
 
   return, cc

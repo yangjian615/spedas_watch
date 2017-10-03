@@ -37,9 +37,9 @@
 ;                 data without affecting the cron job)
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen, 17-Apr-2014, jmm
-; $LastChangedBy: jimmpc1 $
-; $LastChangedDate: 2017-09-05 11:35:05 -0700 (Tue, 05 Sep 2017) $
-; $LastChangedRevision: 23885 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-10-02 17:30:23 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24095 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/l2gen/mvn_call_swe_l2gen.pro $
 ;-
 Pro mvn_call_swe_l2gen, time_in = time_in, $
@@ -55,6 +55,12 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
   common temp_call_swe_l2gen, load_position
   set_plot, 'z'
   load_position = 'init'
+
+  uinfo = get_login_info()
+  case uinfo.user_name of
+    'mitchell' : mailto = 'mitchell@ssl.berkeley.edu'
+    else       : mailto = 'jimm@ssl.berkeley.edu'
+  endcase
   
   einit = 0
   catch, error_status
@@ -67,7 +73,7 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
 ;Open a file print out the error message, only once
      If(einit Eq 0) Then Begin
         einit = 1
-        efile = '/mydisks/home/maven/muser/swe_l2_err_msg.txt'+ff_ext
+        efile = '/mydisks/home/maven/' + uinfo.user_name + '/swe_l2_err_msg.txt'+ff_ext
         openw, eunit, efile, /get_lun
         For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
         If(keyword_set(timei)) Then Begin
@@ -76,7 +82,7 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
         free_lun, eunit
         file_chmod, efile, '664'o
 ;mail it to jimm@ssl.berkeley.edu, and delete
-        cmd_rq = 'mailx -s "Problem with SWE L2 process" jimm@ssl.berkeley.edu < '+efile
+        cmd_rq = 'mailx -s "Problem with SWE L2 process" ' + mailto + ' < '+efile
         spawn, cmd_rq
         file_delete, efile
      Endif
@@ -192,13 +198,13 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
      Endif Else Begin
         nproc = n_elements(timep_do)
 ;Send a message that processing is starting
-        ofile0 = '/mydisks/home/maven/muser/swe_l2_msg0.txt'+ff_ext
+        ofile0 = '/mydisks/home/maven/' + uinfo.user_name + '/swe_l2_msg0.txt'+ff_ext
         openw, tunit, ofile0, /get_lun
         printf, tunit, 'Processing: '+instrk
         For i = 0, nproc-1 Do printf, tunit, timep_do[i]
         free_lun, tunit
         file_chmod, ofile0, '664'o
-        cmd0 = 'mailx -s "SWEA L2 process start" jimm@ssl.berkeley.edu < '+ofile0
+        cmd0 = 'mailx -s "SWEA L2 process start" ' + mailto + ' < '+ofile0
         spawn, cmd0
         file_delete, ofile0
 ;extract the date from the filename
@@ -234,12 +240,12 @@ Pro mvn_call_swe_l2gen, time_in = time_in, $
         Endfor
         SKIP_INSTR: load_position = 'instrument'
 ;Send a message that processing is done
-        ofile1 = '/mydisks/home/maven/muser/swe_l2_msg1.txt'+ff_ext
+        ofile1 = '/mydisks/home/maven/' + uinfo.user_name + '/swe_l2_msg1.txt'+ff_ext
         openw, tunit, ofile1, /get_lun
         printf, tunit, 'Finished Processing: '+instrk
         free_lun, tunit
         file_chmod, ofile1, '664'o
-        cmd1 = 'mailx -s "SWEA L2 process end" jimm@ssl.berkeley.edu < '+ofile1
+        cmd1 = 'mailx -s "SWEA L2 process end" ' + mailto + ' < '+ofile1
         spawn, cmd1
         file_delete, ofile1
      Endelse

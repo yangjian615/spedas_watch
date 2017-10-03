@@ -37,7 +37,7 @@
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/thmsoc/trunk/idl/themis/spacecraft/particles/thm_part_energy_interpolate.pro $
 ;-
 
-pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_esa=extrapolate_esa;,dist_sst_counts=dist_sst_counts,dist_esa_counts=dist_esa_counts,emin=emin
+pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_esa=extrapolate_esa,get_error=get_error;,dist_sst_counts=dist_sst_counts,dist_esa_counts=dist_esa_counts,emin=emin
 
    compile_opt idl2
    
@@ -68,6 +68,7 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_es
      sst_energy_out = energies # (fltarr(sst_dim[1])+1)
      sst_denergy_out = blankarr # (fltarr(sst_dim[1]))
      sst_data_out = blankarr # (fltarr(sst_dim[1]))
+     sst_scaling_out = blankarr # (fltarr(sst_dim[1]))
      sst_bins_out =  blankarr # (*dist_sst[i])[0].bins[0,*]
      sst_phi_out = blankarr # sst_template_out.phi[0,*]
      sst_theta_out = blankarr # sst_template_out.theta[0,*]
@@ -78,6 +79,7 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_es
      str_element,sst_template_out,'energy',sst_energy_out,/add_replace
      str_element,sst_template_out,'denergy',sst_denergy_out,/add_replace
      str_element,sst_template_out,'data',sst_data_out,/add_replace
+     str_element,sst_template_out,'scaling',sst_scaling_out,/add_replace ;jmm, 2017-09-28
      str_element,sst_template_out,'bins',sst_bins_out,/add_replace
      str_element,sst_template_out,'phi',sst_phi_out,/add_replace
      str_element,sst_template_out,'theta',sst_theta_out,/add_replace
@@ -96,6 +98,7 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_es
        ;combined, pre-interpolated data
        combined_energy = [sample_esa.energy,sample_sst.energy]
        combined_data = [sample_esa.data,sample_sst.data]
+       combined_scaling = [sample_esa.scaling,sample_sst.scaling]
        combined_bins = [sample_esa.bins,sample_sst.bins]
        combined_dim = dimen(combined_energy)
        
@@ -152,8 +155,9 @@ pro thm_part_energy_interp,dist_sst,dist_esa,energies,error=error,extrapolate_es
            return
          endif
 
-         ;The +min_flux -min_flux, turns alog(0) to alog(min_flux) preventing lots of -infinities in our interpolation 
+         ;The +min_flux -min_flux, turns alog(0) to alog(min_flux) preventing lots of -infinities in our interpolation, should work for scaling too 
          sst_mode_out[j].data[*,l] = exp(interpol(alog(combined_data[combined_idx,l]+min_flux),alog(combined_energy[combined_idx,l]),alog(energies)))-min_flux 
+         if keyword_set(get_error) then sst_mode_out[j].scaling[*,l] = exp(interpol(alog(combined_scaling[combined_idx,l]+min_flux),alog(combined_energy[combined_idx,l]),alog(energies)))-min_flux 
 ;         sst_mode_out[j].data[*,l] = interpol(combined_data[combined_idx,l],combined_energy[combined_idx,l],energies) 
        
        endfor

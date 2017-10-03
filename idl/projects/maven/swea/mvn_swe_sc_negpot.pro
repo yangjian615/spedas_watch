@@ -35,8 +35,8 @@
 ;          mvn_swe_engy, and as the TPLOT variable 'neg_pot'.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 15:24:02 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23737 $
+; $LastChangedDate: 2017-10-02 16:46:41 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24089 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_negpot.pro $
 ;
 ;-
@@ -61,7 +61,7 @@ pro mvn_swe_sc_negpot, potential=pot, fill=fill, reset=reset
     endif
 
     npts = n_elements(mvn_swe_engy)
-    pot = replicate(swe_pot_struct, npts)
+    pot = replicate(mvn_pot_struct, npts)
     pot.time = mvn_swe_engy.time
     pot.potential = badval
     pot.method = -1
@@ -211,7 +211,7 @@ pro mvn_swe_sc_negpot, potential=pot, fill=fill, reset=reset
 ; Update the common block
 
   if (reset) then begin
-    swe_sc_pot = replicate(swe_pot_struct, npts)
+    swe_sc_pot = replicate(mvn_pot_struct, npts)
     swe_sc_pot.potential = badphi
     swe_sc_pot.method = -1  ; invalid
     mvn_swe_engy.sc_pot = badphi

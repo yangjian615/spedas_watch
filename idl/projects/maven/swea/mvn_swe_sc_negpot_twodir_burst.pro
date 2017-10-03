@@ -29,8 +29,8 @@
 ;          Four additional TPLOT variables are created for diagnostics. 
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 15:24:02 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23737 $
+; $LastChangedDate: 2017-10-02 16:46:52 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24090 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_negpot_twodir_burst.pro $
 ;
 ;CREATED BY:    Shaosui Xu  01-03-2017
@@ -63,7 +63,7 @@ pro mvn_swe_sc_negpot_twodir_burst, potential=phi, shadow=shadow, swidth=swidth,
 
     npts = n_elements(mvn_swe_engy)
     badphi = !values.f_nan  ; bad value guaranteed to be a NaN
-    phi = replicate(swe_pot_struct, npts)
+    phi = replicate(mvn_pot_struct, npts)
     phi.time = mvn_swe_engy.time
     phi.potential = badphi
     phi.method = -1

@@ -30,18 +30,31 @@ pro spp_swp_spane_tplot,name,ADD=ADD,setlim=setlim
 
     plot_name = strupcase(strtrim(name,2))
     case plot_name of
-      'SE':   tplot,'*sp?_AF0_ANODE_SPEC *sp?_AF1_*_SPEC spp_sp?_hkp_MRAM_*',ADD=ADD
-      'SE_HV': tplot,'*sp?_hkp_ADC_VMON_* *sp?_hkp_ADC_IMON_*',ADD=ADD
-      'SE_LV': tplot,'*sp?_hkp_RIO*',ADD=ADD
-      'SA_SPEC': tplot, '*spa_*ADC_VMON_HEM *spa_AF0_CNTS *spa_*AF1_ANODE_SPEC spp_spa_AF1_NRG_SPEC spp_spa_AT0_CNTS spp_spa_AT1_ANODE_SPEC spp_spa_AT1_NRG_SPEC spp_spa_AT1_PEAK_BIN', ADD=ADD
-      'SB_SPEC': tplot, 'spp_spb_hkp_ADC_VMON_HEM spp_spb_AF0_CNTS spp_spb_AF1_ANODE_SPEC spp_spb_AF1_NRG_SPEC spp_spb_AT0_CNTS spp_spb_AT1_ANODE_SPEC spp_spb_AT1_NRG_SPEC spp_spb_AT1_PEAK_BIN', ADD=ADD
-      'MANIP':tplot,'manip*_POS',add=add
-      'SA_COVER': tplot, '*spa_*ACT*CVR* *spa_*ACTSTAT*FLAG* *spa_*ANAL*TEMP* *spa*ATO* *spa*ATI*', add = add
-      'SB_COVER': tplot, '*spb_*ACT*CVR* *spb_*ACTSTAT*FLAG* *spb_*ANAL*TEMP* *spb*ATO* *spb*ATI*', add = add
-      'SB_COVER_Greg': tplot, '*spb_*hkp*CMD*REC TEMP *spb*hkp*ACT*CVR*T *spb*hkp*ACTSTAT*FLAG', add = add
-      'SA_COVER_Greg': tplot, '*spa_*hkp*CMD*REC TEMP *spa_*hkp*ACT*CVR*T *spa_*hkp*ACTSTAT*FLAG', add = add
-
-      else:
+     'SE':   tplot,'*sp?_AF0_ANODE_SPEC *sp?_AF1_*_SPEC spp_sp?_hkp_MRAM_*',ADD=ADD
+     'SE_HV': tplot,'*sp?_hkp_ADC_VMON_* *sp?_hkp_ADC_IMON_*',ADD=ADD
+     'SE_LV': tplot,'*sp?_hkp_RIO*',ADD=ADD
+     'SA_SPEC': tplot, '*spa_*ADC_VMON_HEM *spa_AF0_CNTS *spa_*AF1_ANODE_SPEC spp_spa_AF1_NRG_SPEC spp_spa_AT0_CNTS spp_spa_AT1_ANODE_SPEC spp_spa_AT1_NRG_SPEC spp_spa_AT1_PEAK_BIN', ADD=ADD
+     'SB_SPEC': tplot, 'spp_spb_hkp_ADC_VMON_HEM spp_spb_AF0_CNTS spp_spb_AF1_ANODE_SPEC spp_spb_AF1_NRG_SPEC spp_spb_AT0_CNTS spp_spb_AT1_ANODE_SPEC spp_spb_AT1_NRG_SPEC spp_spb_AT1_PEAK_BIN', ADD=ADD
+     'SI_RATE': tplot,'*rate*CNTS',ADD=ADD
+     'SI_RATE1': tplot,'*rates_'+strsplit(/extract,'VALID_* MULTI_* STARTS_* STOPS_*'),add=add
+     'SI_AF0?_1': tplot,'*spani_ar_full_p0_m?_*_SPEC1',add=add
+     'SI_MON' : tplot,'*spi_*hkp_MON*',add=add
+     'SI_HV' : tplot,'*spi_*' + strsplit(/extract,'RAW_? MCP_? ACC_?'),add=add
+     'MANIP':tplot,'manip*_POS',add=add
+     'SI_GSE': tplot,add=add,'Igun_* APS3_*'
+     'SI': tplot,add=add,'Igun_* manip_*POS *rates_VAL*CNTS *rates_*NO*CNTS '
+     'SI_SCAN':tplot,add=add,'*MCP_V *MRAM* *spi_AF0?_NRG_SPEC'
+     'SC':  tplot,'spp_*spc*',ADD=ADD
+     'SI_COVER': tplot, '*spi_*ACT*CVR* *spi_*ACTSTAT*FLAGS *spi*CMD*UKN* *spi*CLK*NYS', add = add
+     'SB_COVER': tplot, '*spb_*ACT*CVR* *spb_*ACTSTAT*FLAG* *spb*CMD*UKN* *spb*CLK*NYS', add = add
+     'SA_COVER': tplot, '*spa_*ACT*CVR* *spa_*ACTSTAT*FLAG* *spa*CMD*UKN* *spa*CLK*NYS', add = add
+     'SWEM': tplot,'APID PTP_DATA_RATE',add=add
+     'SWEM_START': tplot, 'spp_swem_ahkp_SPB_22_TEMP spp_swem_ahkp_SPA_22_TEMP spp_swem_ahkp_SPI_22_TEMP spp_swem_crit_SEQN', add = add
+     'TIMING': tplot,'spp_swem_timing_'+['DRIFT_DELTA','CLKS_PER_PPS_DELTA','SCSUBSECSATPPS']      
+     'DEF_SPEC': tplot, '*sp?_*AF0*ANODE*SPEC *sp?_*AF1*ANODE*SPEC* *sp?_*AF1*NRG*SPEC *sp?_*AF1*DEF*SPEC', add = add
+     'MRAM': tplot, '*spa*MRAM* *spb*MRAM*', add = add
+     'GUNS': tplot, '*gun*', add = add
+     else:
     endcase
   endif
 

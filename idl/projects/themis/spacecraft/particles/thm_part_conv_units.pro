@@ -23,7 +23,8 @@
 ;      error==0 means no error
 ;      error!=0 means error
 ;      
-;   fractional_counts: ESA does some rounding when it converts back to counts. You should probably set this keyword to stop the rounding.
+;   remove_negative_values: If set set negative values for the data
+;                           tag of the input structures to zero
 ;
 ;Notes:
 ;  
@@ -31,9 +32,9 @@
 ;
 ;See also: thm_part_dist_array.pro,thm_crib_part_extrapolate.pro
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2013-03-07 09:47:09 -0800 (Thu, 07 Mar 2013) $
-; $LastChangedRevision: 11743 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-10-02 11:24:39 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24079 $
 ; $URL $
 ;-
 

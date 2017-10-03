@@ -26,8 +26,8 @@
 ;HISTORY:
 ; 31-may-2015, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2016-01-29 11:46:08 -0800 (Fri, 29 Jan 2016) $
-; $LastChangedRevision: 19842 $
+; $LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24078 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_est_dist2scpot.pro $
 ;-
 
@@ -35,7 +35,7 @@ Pro thm_esa_est_dist2scpot, date, probe, trange=trange, $
                             no_init = no_init, random_dp = random_dp, $
                             plot = plot, esa_datatype = esa_datatype, $
                             load_all_esa = load_all_esa, _extra=_extra
-
+  
 ;The default is to Use peer data for this
   If(is_string(esa_datatype)) Then Begin
      dtyp = strlowcase(strcompress(/remove_all, esa_datatype[0])) 

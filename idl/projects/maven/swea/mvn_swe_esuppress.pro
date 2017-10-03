@@ -57,8 +57,8 @@
 ;       SILENT:       Don't print any warnings or messages.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-08 17:29:12 -0700 (Mon, 08 May 2017) $
-; $LastChangedRevision: 23282 $
+; $LastChangedDate: 2017-10-02 16:44:57 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24086 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_esuppress.pro $
 ;
 ;CREATED BY:    David L. Mitchell  2016-09-13
@@ -74,9 +74,9 @@ function mvn_swe_esuppress, time, on=on, off=off, set=set, silent=silent
 
   if (size(setflg,/type) eq 0) then begin
     setflg = 1
-    setval = 2.79  ; default is a constant value
+    setval = 2.77  ; default is a constant value
     domsg = 1
-    a = [2.8388D, -1.5700d-4]
+    a = [2.8441D, -1.8395d-4]
   endif
 
 ; Process keywords to determine configuration

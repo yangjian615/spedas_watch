@@ -13,9 +13,9 @@
 ;  
 ;  Set timespan by calling timespan outside of this routine.(e.g. time/duration is not an argument)
 ;  
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2017-01-20 15:17:51 -0800 (Fri, 20 Jan 2017) $
-; $LastChangedRevision: 22641 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24078 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/thm_sst_quality_flags.pro $
 ;-
 
@@ -68,5 +68,5 @@
     flags = bit0 or ishft(bit1,1) or ishft(bit2,2) or ishft(bit3,3) or ishft(bit4,4)
     
     store_data,'th'+probe+'_'+datatype+'_data_quality',data={x:d.x,y:flags},dlimits={tplot_routine:'bitplot'}
-   
+  
   end

@@ -20,9 +20,9 @@
 ; SEE ALSO:
 ;   thm_part_dist_array, thm_part_smooth, thm_part_subtract,thm_part_omni_convert
 ;
-;  $LastChangedBy: aaflores $
-;  $LastChangedDate: 2016-03-04 18:12:33 -0800 (Fri, 04 Mar 2016) $
-;  $LastChangedRevision: 20333 $
+;  $LastChangedBy: jimm $
+;  $LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+;  $LastChangedRevision: 24078 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_time_interpolate.pro $
 ;-
 
@@ -85,7 +85,6 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
           endif 
         endfor
       endif
-      
       ;guarantees that final times match target exactly
       out_data.time = target_mid_times[idx]-target_delta_times[idx]/2d 
       out_data.end_time = target_mid_times[idx]+target_delta_times[idx]/2d 

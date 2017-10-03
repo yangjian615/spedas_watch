@@ -36,9 +36,9 @@
 ;SEE ALSO:    "GET_DATA", "TPLOT_NAMES",  "TPLOT", "OPTIONS"
 ;
 ;CREATED BY:    Davin Larson
-; $LastChangedBy: jimmpc1 $
-; $LastChangedDate: 2017-09-11 12:30:20 -0700 (Mon, 11 Sep 2017) $
-; $LastChangedRevision: 23946 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-10-02 12:55:37 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24080 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/tplot/store_data.pro $
 ;-
 pro store_data,name, time,ydata,values, $
@@ -256,11 +256,7 @@ endif
 if n_elements(limits) ne 0 then *dq.lh = limits
 if n_elements(dlimits) ne 0 then *dq.dl = dlimits
 if n_elements(data) ne 0 then begin
-    save_ptrs = ptr_extract(except_ptrs)
-    save_ptrs = [save_ptrs, ptr_extract(limits) ]
-    save_ptrs = [save_ptrs, ptr_extract(dlimits)]
-    save_ptrs = [save_ptrs, ptr_extract(data)]
-    save_ptrs = [save_ptrs, ptr_extract( data_quants[where(data_quants.name ne dq.name)])]
+    undefine, save_ptrs          ;save_ptrs test later, jmm, 2017-09-25
     dprint,verbose=verbose,dlevel=1,verb+' tplot variable: ',strtrim(index,2),' ',dq.name
     dq.create_time = systime(1)
     if size(/type,data) eq 8 then begin  ; structures
@@ -271,14 +267,23 @@ if n_elements(data) ne 0 then begin
             dim_newv = size(/dimension,newv)
             oldp = ptr_new()   ; this line is not necessary
             str_element,*dq.dh,mytags[i],oldp
+            if ptr_valid(oldp) then begin ;test for existing pointers if oldp exists, jmm, 2017-09-25
+               if undefined(save_ptrs) then begin ;get save_ptrs once for a given variable
+                  save_ptrs = ptr_extract(except_ptrs)
+                  save_ptrs = [save_ptrs, ptr_extract(limits)]
+                  save_ptrs = [save_ptrs, ptr_extract(dlimits)]
+                  save_ptrs = [save_ptrs, ptr_extract(data)]
+                  save_ptrs = [save_ptrs, ptr_extract(data_quants[where(data_quants.name ne dq.name)])]
+               endif
+            endif
             if size(/type,newv) ne 10 then begin       ; newv is not a pointer
-                ptr_free,ptr_extract(oldp,except=save_ptrs)       ;  free old stuff (if any exist)
+                if(ptr_valid(oldp)) then ptr_free,ptr_extract(oldp,except=save_ptrs) ;free old stuff (if any exist)
                 newv = ptr_new([newv],/no_copy)
-            endif else begin                           ; newv is a pointer
-                if oldp ne newv then  ptr_free,ptr_extract(oldp,except=save_ptrs)
+            endif else begin ; newv is a pointer
+                if ptr_valid(oldp) && oldp ne newv then ptr_free,ptr_extract(oldp,except=save_ptrs)
             endelse
             str_element,/add_replace,myptrstr,mytags[i],newv
-            if strpos(mytags[i],'_IND') lt 0 then    str_element,/add_replace,myptrstr,mytags[i]+'_ind',dim_newv[0] > 1
+            if strpos(mytags[i],'_IND') lt 0 then str_element,/add_replace,myptrstr,mytags[i]+'_ind',dim_newv[0] > 1
         endfor
         *dq.dh = myptrstr
     endif else *dq.dh = data

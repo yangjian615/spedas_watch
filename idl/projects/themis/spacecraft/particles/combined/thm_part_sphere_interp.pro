@@ -31,7 +31,7 @@
 ;-
 
 
-pro thm_part_sphere_interp,source,target,regrid=regrid,error=error,_extra=ex
+pro thm_part_sphere_interp,source,target,regrid=regrid,error=error,get_error=get_error,_extra=ex
 
   compile_opt idl2
 
@@ -80,6 +80,7 @@ pro thm_part_sphere_interp,source,target,regrid=regrid,error=error,_extra=ex
     output_dtheta = (fltarr(source_dim[0])+1) # (blankarr + dtheta) 
     output_dphi = (fltarr(source_dim[0])+1) # (blankarr + dphi)
     output_data = (fltarr(source_dim[0])) # blankarr
+    output_scaling = (fltarr(source_dim[0])) # blankarr ;jmm, 2017-09-28
     output_energy = (fltarr(source_dim[0])) # blankarr
     output_denergy =  (fltarr(source_dim[0])) # blankarr
     output_bins = (fltarr(source_dim[0])) # blankarr
@@ -90,6 +91,7 @@ pro thm_part_sphere_interp,source,target,regrid=regrid,error=error,_extra=ex
     str_element,output_template,'dtheta',output_dtheta,/add_replace
     str_element,output_template,'dphi',output_dphi,/add_replace
     str_element,output_template,'data',output_data,/add_replace
+    str_element,output_template,'scaling',output_scaling,/add_replace
     str_element,output_template,'energy',output_energy,/add_replace
     str_element,output_template,'denergy',output_denergy,/add_replace  
     str_element,output_template,'bins',output_bins,/add_replace
@@ -154,14 +156,15 @@ pro thm_part_sphere_interp,source,target,regrid=regrid,error=error,_extra=ex
 
         if n_elements(source_dists[k].phi[0,*]) gt 1 then begin
           output_dists[k].data[l,*] = griddata(source_dists[k].phi[l,*],source_dists[k].theta[l,*],source_dists[k].data[l,*],/sphere,xout=output_phi[l,*],yout=output_theta[l,*],/degrees,method=method,triangles=triangles) ;the actual spherical interpolation occurs here
+          if keyword_set(get_error) then output_dists[k].scaling[l,*] = griddata(source_dists[k].phi[l,*],source_dists[k].theta[l,*],source_dists[k].scaling[l,*],/sphere,xout=output_phi[l,*],yout=output_theta[l,*],/degrees,method=method,triangles=triangles) ;the actual spherical interpolation occurs here
           output_dists[k].bins[l,*] = round(griddata(source_dists[k].phi[l,*],source_dists[k].theta[l,*],source_dists[k].bins[l,*],/sphere,xout=output_phi[l,*],yout=output_theta[l,*],/degrees,method=method,triangles=triangles)) >0<1 ;the actual spherical interpolation occurs here
         endif else begin
           output_dists[k].data[l,*] = source_dists[k].data[l]
+          if keyword_set(get_error) then output_dists[k].scaling[l,*] = source_dists[k].scaling[l]
           output_dists[k].bins[l,*] = source_dists[k].bins[l]
         endelse
         
       endfor
-      
       
       ;Populate energy and denergy fields.
       ;This can be done outside the for loop so long as neither field changes 
@@ -172,7 +175,6 @@ pro thm_part_sphere_interp,source,target,regrid=regrid,error=error,_extra=ex
       output_dists[k].denergy = source_dists[k].denergy[*,0] # (blankarr+1)
       
     endfor
-
 
     ;temporary routine bombs on some machines if out_dist is undefined, but not others
     if ~undefined(output) then begin
