@@ -7,8 +7,8 @@
 ;-
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-06 17:25:10 -0700 (Tue, 06 May 2014) $
-;$LastChangedRevision: 15058 $
+;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+;$LastChangedRevision: 24103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_variable_options.pro $
 ;-
 
@@ -206,8 +206,8 @@ end
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2014-05-06 17:25:10 -0700 (Tue, 06 May 2014) $
-;$LastChangedRevision: 15058 $
+;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+;$LastChangedRevision: 24103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_variable_options.pro $
 ;---------------------------------------------------------------------------------
 
@@ -473,11 +473,15 @@ end
     currentpanel=state.currentpanel
   if fail eq 0 then begin
     state.template->setProperty,variable=(variables->get(position=varselect))->copy()
-    state.statusbar->update,'Saved current variable settings to template'
-    state.historywin->update,'Saved current variable settings to template'
+    state.statusbar->update,'Current variable options stored for use in a Template'
+    state.historywin->update,'Current variable options stored for use in a Template'
+
+    messageString = 'These values have now been stored!' +  string(10B) + string(10B) + 'To save them in a template, click File->Graph Options Template->Save Template'
+    response=dialog_message(messageString,/CENTER, /information)
+
   endif else begin
-    state.statusbar->update,'Cannot save template. Needs a valid variable to save variable template.'
-    state.historywin->update,'Cannot save template. Needs a valid variable to save variable template.'
+    state.statusbar->update,'Cannot store options. Needs a valid variable object to store options for a template.'
+    state.historywin->update,'Cannot store options. Needs a valid variable object to store options for a template.'
   endelse
   
 end
@@ -1018,7 +1022,7 @@ Pro spd_ui_variable_options, gui_id, loadeddata, windowstorage, drawobject, hist
     ToolTip='Applies the changes to the layout, leaves window open')
   cancelButton = Widget_Button(buttonBase, Value=' Cancel ', UValue='CANC', XSize=80, $
     ToolTip='Cancels the operation and closes the window')
-  templateButton = Widget_Button(buttonBase,Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template")
+  templateButton = Widget_Button(buttonBase,Value='Store for a Template', UValue='TEMP',xsize=125,tooltip='Use these settings when saving a Graph Options Template')
   
   ; Create Status Bar Object
   statusBar = Obj_New('SPD_UI_MESSAGE_BAR', $

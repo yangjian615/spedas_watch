@@ -7,13 +7,27 @@
 ;  Inputs: The info structure from the main gui
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2014-08-18 16:40:46 -0700 (Mon, 18 Aug 2014) $
-;$LastChangedRevision: 15684 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+;$LastChangedRevision: 24103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/utilities/spd_ui_main_funcs/spd_ui_saveas_template.pro $
 ;-
 
 pro spd_ui_saveas_template,info
+
+  compile_opt idl2
+  
+  messageString = 'Saving a Graph Options Template is a two step process: 1. Store some Graph Options, 2. Save them in a template.' +  string(10B)+  string(10B) $
+    + 'For example, click Graph->Page Options, change some settings, and then click "Store for a Template".' + string(10B) + string(10B) $
+    + 'If you have already done this, click "OK" below to save the template.' +  string(10B) $
+    + 'Otherwise, click Cancel.' +  string(10B)
+  
+  response=dialog_message(messageString,/CENTER, /CANCEL, /information)
+  
+  if (response eq 'Cancel') then begin
+    dprint, 'User canceled saving the template.'
+    return
+  endif
 
   if info.marking ne 0 || info.rubberbanding ne 0 then begin
     return
@@ -33,7 +47,7 @@ pro spd_ui_saveas_template,info
   
   ;fileName = dialog_pickfile(Title='Save As:', $
   ;     Filter='*.tgt', File = fileString,path=path, /Write, Dialog_Parent=info.master)
-  fileName = spd_ui_dialog_pickfile_save_wrapper(Title='Save As:', $
+  fileName = spd_ui_dialog_pickfile_save_wrapper(Title='Save As SPEDAS Graph Options Template:', $
        Filter='*.tgt', File = fileString,path=path, /Write, Dialog_Parent=info.master)
   IF(Is_String(fileName)) THEN BEGIN
      ;For Windows, test filename for '.tgd' extension and add if not present

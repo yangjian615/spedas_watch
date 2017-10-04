@@ -46,8 +46,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-04 12:17:22 -0700 (Fri, 04 Aug 2017) $
-; $LastChangedRevision: 23760 $
+; $LastChangedDate: 2017-10-02 18:15:20 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24101 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_kp.pro $
 ;
 ;-
@@ -115,7 +115,7 @@ pro mvn_swe_kp, pans=pans, ddd=ddd, abins=abins, dbins=dbins, obins=obins, $
 
 ; Load spacecraft ephemeris (used for filtering data)
 
-  maven_orbit_tplot, /loadonly
+  maven_orbit_tplot, /loadonly, /shadow
 
 ; Calculate the energy shape parameter
 

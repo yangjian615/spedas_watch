@@ -15,9 +15,9 @@
 ;(lphilpott 06/2011) Delayed the handling of spinner events until user clicks OK/APPLY/SET ALL or changes panel. Dialog messages
 ;are issued for invalid entries. This avoids the issue of the text overwriting in spinners as the user types if values aren't valid.
 ;
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-09-30 08:58:51 -0700 (Tue, 30 Sep 2014) $
-;$LastChangedRevision: 15880 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+;$LastChangedRevision: 24103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_panel_options.pro $
 ;
 ;--------------------------------------------------------------------------------
@@ -552,11 +552,15 @@ PRO spd_ui_panel_options_event, event
           ;Update spinner widget values
           spd_ui_panel_spinner_update,state.tlb,panelsettings
           state.template->setProperty,panel=panelSettings->copy()
-          state.historywin->update,'Current Panel Settings Saved to Template'
-          state.statusBar->update,'Current Panel Settings Saved to Template'
+          state.historywin->update,'Current panel options stored for use in a Template'
+          state.statusBar->update,'Current panel options stored for use in a Template'
+          
+          messageString = 'These values have now been stored!' +  string(10B) + string(10B) + 'To save them in a template, click File->Graph Options Template->Save Template'
+          response=dialog_message(messageString,/CENTER, /information)
+          
         endif else begin
-          state.historywin->update,'Cannot save template. Needs a valid panel to save panel template.'
-          state.statusBar->update,'Cannot save template. Needs a valid panel to save panel template.'
+          state.historywin->update,'Cannot store options. Needs a valid panel to store options for a template.'
+          state.statusBar->update,'Cannot store options. Needs a valid panel to store options for a template.'
         endelse
         
       end
@@ -948,7 +952,7 @@ PRO spd_ui_panel_options, gui_id, windowStorage, loadedData, historyWin, $
   applyButton = Widget_Button(mainButtonBase, Value='Apply', Uvalue='APPLY', XSize=75)
   applyToAllButton = Widget_Button(mainButtonBase, Value='Apply to All Panels', Uvalue='APPLYTOALL', XSize=125)
   cancelButton = Widget_Button(mainButtonBase, Value='Cancel', UValue='CANC', XSize=75)
-  templateButton = Widget_Button(mainButtonBase,Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template") 
+  templateButton = Widget_Button(mainButtonBase,Value='Store for a Template', UValue='TEMP',xsize=125,tooltip='Use these settings when saving a Graph Options Template') 
   
   statusBar = obj_new('spd_ui_message_bar',tlb)
   

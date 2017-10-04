@@ -14,9 +14,9 @@
 ; KEYWORDS:
 ;  panel_select:     pointer to current panel
 ; 
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2014-07-24 12:15:09 -0700 (Thu, 24 Jul 2014) $
-;$LastChangedRevision: 15601 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+;$LastChangedRevision: 24103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_legend_options.pro $
 ;-
 
@@ -474,15 +474,19 @@ pro spd_ui_legend_options_event, event
                     ; save the new legend to the global template
                     state.template->setProperty, legend=new_legend_template
                 
-                    state.historywin->update,'Current Legend Settings Saved to Template'
-                    state.statusBar->update,'Current Legend Settings Saved to Template'
+                    state.historywin->update,'Current legend options stored for use in a Template'
+                    state.statusBar->update,'Current legend options stored for use in a Template'                    
+
+                    messageString = 'These values have now been stored!' +  string(10B) + string(10B) + 'To save them in a template, click File->Graph Options Template->Save Template'
+                    response=dialog_message(messageString,/CENTER, /information)
+                    
                 endif else begin
-                    state.historywin->update, 'Problem copying legend settings to template.'
-                    state.statusBar->update, 'Problem copying legend settings to template.'
+                    state.historywin->update, 'Problem copying legend options.'
+                    state.statusBar->update, 'Problem copying legend options.'
                 endelse
             endif else begin
-               state.historywin->update,'Cannot save template. Needs a valid legend to save legend template.'
-               state.statusBar->update,'Cannot save template. Needs a valid legend to save legend template.'
+               state.historywin->update,'Cannot store options. Needs a valid legend to store options for a template.'
+               state.statusBar->update,'Cannot store options. Needs a valid legend to store options for a template.'
             endelse
         END
         'PANELSELECTED': BEGIN ; user clicked panel dropdown
@@ -948,7 +952,7 @@ pro spd_ui_legend_options, info, panel_select=panel_select, tlb_statusbar=tlb_st
    applyButton = Widget_Button(mainButtonBase, Value='Apply', Uvalue='APPLY', SCR_XSIZE=75)
    applytoallButton = Widget_Button(mainButtonBase, Value='Apply to All Panels', Tooltip='Apply settings to the legends of all panels.', UValue='APPALL', SCR_XSIZE=125)
    cancelButton = Widget_Button(mainButtonBase, Value='Cancel', UValue='CANC', SCR_XSIZE=75)
-   templateButton = Widget_Button(mainButtonBase, Value='Save as Default', UValue='TEMP',scr_xsize=125,tooltip="Save current settings as default template")
+   templateButton = Widget_Button(mainButtonBase, Value='Store for a Template', UValue='TEMP',scr_xsize=125,tooltip='Use these settings when saving a Graph Options Template')
    
    statusBase = Widget_Base(tlb, /Row, /align_center)
    statusBar = Obj_New('SPD_UI_MESSAGE_BAR', statusBase, XSize=79, YSize=1) 

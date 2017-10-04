@@ -1,13 +1,14 @@
 ;+
 ; Helper function -- split out of mvn_ql_pfp_tplot. Generates ytickformat
 ;
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-02-17 11:57:18 -0800 (Fri, 17 Feb 2017) $
-; $LastChangedRevision: 22819 $
+; $LastChangedBy: muser $
+; $LastChangedDate: 2017-10-03 12:16:45 -0700 (Tue, 03 Oct 2017) $
+; $LastChangedRevision: 24102 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_ql_pfp_tplot_ytickname_plus_log.pro $
 ;
 ;-
-FUNCTION mvn_ql_pfp_tplot_ytickname_plus_log, axis, index, number
+FUNCTION mvn_ql_pfp_tplot_ytickname_plus_log, axis, index, number, aaa ;aaa is an extra argument that allows SEP data to be plotted
+
   times = 'x'
   ; A special case.
   IF number EQ 0 THEN RETURN, '0'
