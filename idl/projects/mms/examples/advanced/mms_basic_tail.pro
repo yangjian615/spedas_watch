@@ -21,16 +21,16 @@
 ;   17. DSP BPSD
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-27 13:57:47 -0700 (Wed, 27 Sep 2017) $
-; $LastChangedRevision: 24040 $
+; $LastChangedDate: 2017-10-04 09:18:24 -0700 (Wed, 04 Oct 2017) $
+; $LastChangedRevision: 24105 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_basic_tail.pro $
 ;-
 
 start_time = systime(/sec)
 
-date = '2017-06-01/00:00:00
+date = '2015-10-16/00:00:00
 timespan, date, 1, /day
-probe = '2'
+probe = '1'
 ; AE options include: 'thm' for THEMIS pseudo AE, 'kyoto' for AE from the WDC at Kyoto
 ae_type = 'kyoto'
 

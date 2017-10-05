@@ -23,11 +23,12 @@
 ;    INFO:          Returns an array of structures providing detailed information
 ;                   about each kernel, including coverage in time.
 ;
-;    VERBOSE:       Control level of messages.
+;    VERBOSE:       Control level of messages.  (0 = suppress most messages)
+;                   Default is current value of swe_verbose.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-10-02 16:47:28 -0700 (Mon, 02 Oct 2017) $
-; $LastChangedRevision: 24092 $
+; $LastChangedDate: 2017-10-04 10:36:52 -0700 (Wed, 04 Oct 2017) $
+; $LastChangedRevision: 24108 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_spice_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  09/18/13
@@ -81,9 +82,16 @@ pro mvn_swe_spice_init, trange=trange, list=list, force=force, status=status, in
   endif
   
   srange = minmax(time_double(trange)) + [-oneday, oneday]
-  
-  if (verbose lt 1) then dprint, "Initializing SPICE ...", getdebug=old_dbug, setdebug=0 $
-                    else dprint, "Initializing SPICE ...", getdebug=old_dbug
+
+; Shush dprint
+
+  dprint,' ', getdebug=bug, dlevel=4
+  if (verbose lt 1) then dprint,' ', setdebug=0, dlevel=4
+
+; Get latest SPICE kernels
+
+  print, "Initializing SPICE ... ", format='(a,$)'
+  if (verbose gt 0) then print,' '
 
   if (noguff) then cspice_kclear ; remove any previously loaded kernels
   swe_kernels = mvn_spice_kernels(/all,/load,trange=srange,verbose=(verbose-1))
@@ -116,7 +124,11 @@ pro mvn_swe_spice_init, trange=trange, list=list, force=force, status=status, in
   info = spice_kernel_info()
   ker_info = info
 
-  dprint, msg, setdebug=old_debug
+  print, msg
+
+; Restore debug state
+
+  dprint,' ', setdebug=bug, dlevel=4
 
   return
 

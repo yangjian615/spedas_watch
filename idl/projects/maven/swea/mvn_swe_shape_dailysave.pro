@@ -21,8 +21,8 @@
 ;       saveflux:      If set to 1, will save eflux for 3 PA ranges to
 ;                      a provided directory. 
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-09-15 12:09:24 -0700 (Fri, 15 Sep 2017) $
-; $LastChangedRevision: 23984 $
+; $LastChangedDate: 2017-10-04 17:41:01 -0700 (Wed, 04 Oct 2017) $
+; $LastChangedRevision: 24114 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_dailysave.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 08/01/2017
@@ -144,16 +144,16 @@ Pro mvn_swe_shape_dailysave,start_day=start_day,end_day=end_day,ndays=ndays,$
                 mag_level = swe_mag1[bdx].level
             endif
 
-            xi=cos(azim_ori)
-            yi=sin(azim_ori)
+            xi=cos(azim_ori*!dtor)
+            yi=sin(azim_ori*!dtor)
             xx=interpol(xi,tmag,tsh,/spline)
             yy=interpol(yi,tmag,tsh,/spline)
             azim=atan(yy,xx)*!radeg
             indx=where(azim lt 0)
             azim[indx]=360.+azim[indx]
 
-            xi=cos(clk_ori)
-            yi=sin(clk_ori)
+            xi=cos(clk_ori*!dtor)
+            yi=sin(clk_ori*!dtor)
             xx=interpol(xi,tmag,tsh,/spline)
             yy=interpol(yi,tmag,tsh,/spline)
             clk=atan(yy,xx)*!radeg

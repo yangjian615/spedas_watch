@@ -119,8 +119,8 @@
 ;       VERBOSE:  Verbosity level passed to mvn_pfp_file_retrieve.  Default = 0.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-10-02 17:57:54 -0700 (Mon, 02 Oct 2017) $
-; $LastChangedRevision: 24099 $
+; $LastChangedDate: 2017-10-04 08:12:02 -0700 (Wed, 04 Oct 2017) $
+; $LastChangedRevision: 24104 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -237,10 +237,11 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   if (docrop) then tspan += [-86400D, 86400D]
 
+  if (sflg) then wake_col = 1 else wake_col = 2
   case n_elements(colors) of
-    0 : rcols = [4, 5, 2]
-    1 : rcols = [round(colors), 5, 2]
-    2 : rcols = [round(colors), 2]
+    0 : rcols = [4, 5, wake_col]
+    1 : rcols = [round(colors), 5, wake_col]
+    2 : rcols = [round(colors), wake_col]
     3 : rcols = round(colors)
     else : rcols = round(colors[0:2])
   endcase
@@ -591,7 +592,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   options,'iono','thick',2
   
   store_data,'alt_lab',data={x:minmax(time), y:replicate(-1.,2,4), v:indgen(4)}
-  options,'alt_lab','labels',['SHADOW','PILEUP','SHEATH','WIND']
+  options,'alt_lab','labels',[stype+' SHD','PILEUP','SHEATH','WIND']
   options,'alt_lab','colors',[reverse(rcols),!p.color]
   options,'alt_lab','labflag',1
 

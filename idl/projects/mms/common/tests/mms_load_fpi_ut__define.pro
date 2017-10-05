@@ -10,10 +10,22 @@
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-09-28 15:18:18 -0700 (Thu, 28 Sep 2017) $
-; $LastChangedRevision: 24059 $
+; $LastChangedDate: 2017-10-04 12:49:58 -0700 (Wed, 04 Oct 2017) $
+; $LastChangedRevision: 24111 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
+
+function mms_load_fpi_ut::test_subtract_disterr
+  mms_load_fpi, trange=['2015-10-16/13:06', '2015-10-16/13:07'], data_rate='brst', datatype='des-dist', probe=1, /time_clip
+  dist = mms_get_fpi_dist('mms1_des_dist_brst')
+  dist_data = *dist
+  disterr = mms_get_fpi_dist('mms1_des_disterr_brst')
+  disterr_data = *disterr
+  distSub = mms_get_fpi_dist('mms1_des_dist_brst', error='mms1_des_disterr_brst', /subtract_error)
+  distsub_data = *distSub
+  assert, array_equal(dist_data.data-disterr_data.data, distsub_data.data), 'Problem with disterr subtraction in mms_get_fpi_dist'
+  return, 1
+end
 
 ; regression tests ---------->
 ; problem / crash with compressionloss variable for fast survey data

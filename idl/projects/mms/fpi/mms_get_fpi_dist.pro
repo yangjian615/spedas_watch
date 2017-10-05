@@ -20,7 +20,12 @@
 ;
 ;  probe: specify probe if not present or correct in input_name 
 ;  species:  specify species if not present or correct in input_name
-;
+;  subtract_error: subtract the distErr (variable specified by the keyword: error) data before returning
+;  error: variable name of the disterr variable, e.g.:
+;        'mms#_des_disterr_fast'
+;         
+;        for fast survey electron data
+;         
 ;Output:
 ;  return value: pointer to array of 3D particle distribution structures
 ;                or 0 in case of error
@@ -33,14 +38,15 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-09-22 14:13:01 -0700 (Fri, 22 Sep 2017) $
-;$LastChangedRevision: 24018 $
+;$LastChangedDate: 2017-10-04 12:23:26 -0700 (Wed, 04 Oct 2017) $
+;$LastChangedRevision: 24110 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
 function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure, $
                            species = species, probe = probe, single_time = single_time, $
-                           data_rate = data_rate, level = level
+                           data_rate = data_rate, level = level, subtract_error=subtract_error, $
+                           error=error
 
     compile_opt idl2, hidden
 
@@ -85,6 +91,23 @@ endif
 ;calling code could use get_data but this allows for consistency with other code
 if keyword_set(times) then begin
   return, *p.x
+endif
+
+if keyword_set(subtract_error) && ~keyword_set(error) then begin
+  dprint, dlevel = 0, 'Error, no error variable provided; be sure to specify the name of the tplot variable containing the error via the keyword: error'
+  return, -1
+endif
+
+if ~keyword_set(subtract_error) && keyword_set(error) then begin
+  dprint, dlevel = 0, 'Warning: error data provided, but error subtraction not requested (no error will be subtracted)'
+endif
+
+if keyword_set(subtract_error) && keyword_set(error) then begin
+  get_data, error, ptr=errdata
+  if ~is_struct(errdata) then begin
+    dprint, dlevel = 0, 'Error, no error variable found.'
+    return, -1
+  endif
 endif
 
 ; Allow calling code to request a time range and/or specify index
@@ -249,6 +272,10 @@ dist.end_time = (*p.x)[index] + integ_time
 
 ;shuffle data to be energy-azimuth-elevation-time
 dist.data = transpose((*p.y)[index,*,*,*],[3,1,2,0])
+
+if keyword_set(subtract_error) && ~undefined(errdata) then begin
+  dist.data = dist.data-transpose((*errdata.y)[index,*,*,*],[3,1,2,0])
+endif 
 
 if size(/n_dim, *p.v3) eq 1 then begin
   e0 = *p.v3 ;fast data uses constant table

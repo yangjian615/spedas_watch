@@ -24,20 +24,20 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-09-07 11:38:06 -0700 (Thu, 07 Sep 2017) $
-; $LastChangedRevision: 23908 $
+; $LastChangedDate: 2017-10-04 10:35:24 -0700 (Wed, 04 Oct 2017) $
+; $LastChangedRevision: 24106 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_get_scpot.pro $
 ;
 ;-
 
 function mvn_get_scpot, time, maxdt=maxdt
 
-  @mvn_swe_com
+  @mvn_scpot_com
 
   if not keyword_set(maxdt) then maxdt = 32D
   if (size(badval,/type) eq 0) then badval = !values.f_nan
 
-  npot = n_elements(swe_sc_pot)
+  npot = n_elements(mvn_sc_pot)
   ntime = n_elements(time)
 
   case (ntime) of
@@ -50,26 +50,31 @@ function mvn_get_scpot, time, maxdt=maxdt
   endcase
 
   if (npot lt 2) then begin
-    print,'MVN_GET_SCPOT: Potential not determined!  Use mvn_scpot first.'
-    return, pot
+    mvn_scpot
+    npot = n_elements(mvn_sc_pot)
+    if (npot lt 2) then begin
+      print,'MVN_GET_SCPOT: Error!  Cannot get the potential.'
+      return, pot
+    endif
   endif
 
   t = time_double(time)
-  tmin = min(swe_sc_pot.time, max=tmax)
+  tmin = min(mvn_sc_pot.time, max=tmax)
   indx = where((t ge tmin) and (t le tmax), ngud, ncomplement=nbad)
   if (nbad gt 0L) then begin
     pct = 100.*float(nbad)/float(ntime)
     if (pct gt 5.) then begin
       msg = strtrim(round(pct),2)
       print,'MVN_GET_SCPOT: ',msg,'% of input times are out of range.'
+      print,'MVN_GET_SCPOT: Try rerunning mvn_scpot with a wider time range.'
     endif
   endif
 
   if (ngud gt 0L) then begin
-    pot[indx] = interp(swe_sc_pot.potential, swe_sc_pot.time, t[indx])
+    pot[indx] = interp(mvn_sc_pot.potential, mvn_sc_pot.time, t[indx])
 
-    nndx = nn(swe_sc_pot.time, t[indx])
-    gap = where(abs(t[indx] - swe_sc_pot[nndx].time) gt maxdt, count)
+    nndx = nn(mvn_sc_pot.time, t[indx])
+    gap = where(abs(t[indx] - mvn_sc_pot[nndx].time) gt maxdt, count)
     if (count gt 0L) then begin
       pot[indx[gap]] = badval
       print,'MVN_GET_SCPOT: Some gaps exist.'
