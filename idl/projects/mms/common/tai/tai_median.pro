@@ -1,4 +1,4 @@
-pro median, x, n, xmed
+pro tai_median, x, n, xmed
 
 sort_x= x(sort(x))
 
