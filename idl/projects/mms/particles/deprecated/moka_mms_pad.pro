@@ -1,4 +1,8 @@
 ;+
+;#############################################
+;  DEPRECATED --> Please use moka_mms_pad_fpi
+;#############################################
+;
 ;Procedure:
 ;  moka_mms_pad
 ;
@@ -45,16 +49,18 @@
 ;  Fixed energy bin mistake 2017-01-28 
 ;  Fixed para and anti-para mistake (thanks to R. Mistry) 2017-03-14
 ;  Fixed eflux calculation 2017-05-12
+;  Added SUBTRACT_ERROR keyword 2017-10-17
+;  Removed unnecessary vname check 2017-10-19
 ;  
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-09-30 11:03:14 -0700 (Sat, 30 Sep 2017) $
-;$LastChangedRevision: 24073 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad.pro $
+;$LastChangedDate: 2017-10-19 12:42:09 -0700 (Thu, 19 Oct 2017) $
+;$LastChangedRevision: 24186 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/deprecated/moka_mms_pad.pro $
 ;-
 FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname, $
   norm=norm, ename=ename, pr___0 = pr___0, pr__90 = pr__90, pr_180=pr_180,$
   daPara=da,daPerp=da2,oclreal=oclreal, single_time=single_time, $
-  subtract_bulk = subtract_bulk, $
+  subtract_bulk = subtract_bulk, subtract_error=subtract_error, $
   vlm=vlm; An additional frametransformation
   compile_opt idl2
 
@@ -88,7 +94,7 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
       print,'trange is out of '+tname+' time range.'
       return, -1
     endif
-    dist    = mms_get_dist(tname,index,trange=trange,/structure)
+    dist    = mms_get_dist(tname,index,trange=trange,/structure,subtract_error=subtract_error,error=ename)
     if (n_tags(dist) eq 0) then begin
       print,'FPI data could not be extracted from the specified time period.'
       return, -1
@@ -115,13 +121,7 @@ FUNCTION moka_mms_pad, bname, tname, trange, units=units, nbin=nbin, vname=vname
   dr = !dpi/180.d0
   rd = 1.d0/dr
 
-  ;if keyword_set(subtract_bulk) then begin
   if strmatch(units_lc,'eflux') then begin
-    if undefined(vname) then begin
-      msg = "Please specify vname"
-      result = dialog_message(msg,/center)
-      return, -1
-    endif
     species_lc = strlowcase(dist[0].species)
     ;get mass of species
     case species_lc of

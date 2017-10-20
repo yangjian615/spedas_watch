@@ -9,9 +9,9 @@
 ;  Created by Mitsuo Oka on 2017-01-05
 ;
 ;$LastChangedBy: moka $
-;$LastChangedDate: 2017-05-18 15:27:16 -0700 (Thu, 18 May 2017) $
-;$LastChangedRevision: 23332 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/moka/moka_mms_pad_crib.pro $
+;$LastChangedDate: 2017-10-19 12:43:56 -0700 (Thu, 19 Oct 2017) $
+;$LastChangedRevision: 24187 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/deprecated/moka_mms_pad_crib.pro $
 ;-
 PRO moka_mms_pad_crib
   compile_opt idl2
