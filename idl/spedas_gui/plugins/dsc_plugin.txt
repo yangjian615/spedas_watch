@@ -1,0 +1,3 @@
+project: DSCOVR
+load_data: dsc_ui_load_data
+config: spd_ui_dsc_fileconfig

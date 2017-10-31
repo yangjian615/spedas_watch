@@ -1,11 +1,16 @@
 ;+
 ; VERSION:
 ;   $LastChangedBy: adrozdov $
-;   $LastChangedDate: 2017-10-25 12:57:57 -0700 (Wed, 25 Oct 2017) $
-;   $LastChangedRevision: 24214 $
-;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/spedas_plugin/eics_ui_overlay_plots.pro $
+;   $LastChangedDate: 2017-10-30 16:18:36 -0700 (Mon, 30 Oct 2017) $
+;   $LastChangedRevision: 24238 $
+;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/eics_overlay_plots.pro $
 ;-
-pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, showmag=showmag
+pro eics_overlay_plots, $
+  trange=trange, $ ; time range
+  createpng=createpng, $ ; generate png from the figure 
+  showgeo=showgeo, $ ; show geographic grid
+  showmag=showmag, $ ; show geomagnetic grid
+  dynscale=dynscale ; use dynamic scaling
 
   ; initialize variables
   defsysv,'!secs',exists=exists
@@ -44,16 +49,27 @@ pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   if ~is_struct(stations) then begin
     dprint, 'There is no Station data for date: '+time_string(tr[0])
   endif
-  scale_factor=max(sqrt(jx^2+jy^2))
-  if scale_factor GT 800. then scale=0.01 else scale=0.02
+  
+  scale = 0.0002
+  leg_vector = 200.
+  ; This settings are for dynamic scaling
+  scale_factor=max(sqrt(jx^2+jy^2)); Some dynamic scale 
+  if keyword_set(dynscale) then begin
+    max_factor = [1600., 800., 400., 200., 40., 4., 0.] ; GT limits 
+    scaling    = max_factor / 2 ; scaling 200 correspong to gt 800, scale by factor of 4
+    scaling[-1]= 1.  ; the last element
+    idx = where(scale_factor gt max_factor)
+    leg_vector = scaling(idx[0])
+    scale = 0.04 / leg_vector
+  endif
 
   ; -----------------
   ; Make the mosaic
   ; -----------------
   thm_asi_create_mosaic,time_string(tr[0]),/verbose,$            ; removed /thumb
       central_lon=264.0,central_lat=61.,scale=4.5e7,$         ; set lat to 64.5;set area scale=3.5or2.8e7 or scale=5.5e7,
-      no_grid='no_grid', /no_midnight,  $     
-      show  =['atha','fsmi','fykn','gako','gbay','gill','inuv','kapu','kian','kuuj','mcgr','nrsq','pgeo','pina','tpas','rank','snkq','talo','tpas','whit'] ,$
+      no_grid='no_grid', /no_midnight,  $
+      show  =['atha','fsmi','fykn','gako','gbay','gill','inuv','kapu','kian','kuuj','mcgr','nrsq','pgeo','pina','tpas','rank','snkq','talo','tpas','whit'] ,$            
       minval=[0l, 01, 01, 01, 0l, 0l, 01, 01, 01, 0l, 0l, 01, 01, 01, 0l, 0l, 01, 01, 01, 01],$
       maxval=[inten, 12000, inten, inten, inten, inten, inten, 8000, inten, inten, inten, inten, inten, 8000, inten, 5000,  8000,  inten,  8000, inten  ];
  
@@ -191,10 +207,32 @@ pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   ; ------------------
   ; Plot EICS data
   ; ------------------
-  plotxyvec,[[lon],[lat]],[[jy],[jx]],/overplot,color='y', thick=1.475,hsize=0.5, $
-    uArrowTextPrecision=3, uarrowside='bottom', uarrowdatasize=200, arrowscale=scale, $
-    uArrowRotation=270.,uarrowtext='mA/m', uarrowoffset=2.2, /noisotropic
-  oplot,lon,lat,color=5,psym=2,symsize=0.25,thick=3
+  ; Process EICS data
+  
+   ; grid conversion testing set  
+   ;lon = [-154.44911, -65.179733,-154.44911, -65.179733]
+   ;lat = [63.563763, 42.226425,63.563763, 42.226425]
+   ;jy = [800,800,0,0]
+   ;jx = [0,0,800,800]
+   
+   ; determine the device scaling 
+   max_dx = !d.X_VSIZE
+   scale *= max_dx 
+   
+   mag = {x:jy,y:jx}
+   pos = {x:lon,y:lat}
+   nmag ={x:mag.x*scale,y:mag.y*scale}; scale original data, otherwise there is a change of the wrong coord_conversion
+   xyz = convert_coord(pos.x,pos.y, /DATA, /TO_DEVICE, /DOUBLE) ; vector start position on normal grid
+   pos_screen = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}   
+   xyz = convert_coord(pos_screen.x + nmag.x, pos_screen.y + nmag.y, /DEVICE, /TO_DATA, /DOUBLE); vector end position on data grid
+   mag_vec = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}
+   cmag = {x: mag_vec.x - pos.x, y: mag_vec.y - pos.y}
+   
+
+   plotxyvec,[[pos.x],[pos.y]],[[cmag.x],[cmag.y]],/overplot,color='y', thick=1.475,hsize=0.5
+  oplot,pos.x,pos.y,color=5,psym=2,symsize=0.25,thick=3
+    ; plotxyvec,[[pos.x],[pos.y]],[[mag.x],[mag.y]],/overplot,color='r', thick=1.475,hsize=0.5,arrowscale=0.02 ; unconverted
+  ; oplot,mag_vec.x,mag_vec.y,color=6,psym=2,symsize=0.25,thick=3 ; this line is to check the end point of the vectors
   
   ; --------------------
   ; Display annotations
@@ -211,21 +249,24 @@ pro eics_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   xyouts, 0.005,0.102, 'SECS - EICS', /NORMAL, color=0, charsize=1.5
   
   ; First legend record, 
-  xyouts, legx(legidx), legy(legidx), /NORMAL, '100 mA/m',charsize=1.125, charthick=1.25,color=5
+  xyouts, legx(legidx), legy(legidx), /NORMAL, string(leg_vector, FORMAT='(%"%d ma/V")'),charsize=1.125, charthick=1.25,color=5
   ; and the arrow
   ; move the point to the left
-  xyz_norm = [legx(legidx)-0.01, legy(legidx)]
-  xyz_arr  = convert_coord(xyz_norm[0], xyz_norm[1], /NORMAL, /TO_DATA) ; where the point in /data coords
-  xyv_dxy = [0., 100., 0.]*scale ; vector original size. scale applied to limit the vector size
-  xyv_arr = xyz_arr + xyv_dxy ; vector end point
-  xyv_norm = convert_coord(xyv_arr(0), xyv_arr(1), /DATA, /TO_NORMAL) ; vector end point in /normal coords
-  xyv_norm_len = sqrt((xyv_norm(0) - xyz_norm(0))^2 + (xyv_norm(1) - xyz_norm(1))^2) ; vector lenght
-  xyv_arr  = convert_coord(xyz_norm(0), xyz_norm(1)+xyv_norm_len, /NORMAL, /TO_DATA) ; add lenght of the vector in trasform in /data coord.
-  xyv_dxy = xyv_arr - xyz_arr ; plotxyvec asks for dx and dy for the vector.
-  ; manually draw a point and an arrow
-  ; scale was already applied. we don't scale again
-  plotxyvec,[[xyz_arr(0)],[xyz_arr(1)]],[[xyv_dxy(0)],[xyv_dxy(1)]],/overplot,color='y', thick=1.475,hsize=0.5, arrowscale=1.0,/noisotropic
-  oplot,[xyz_arr(0)],[xyz_arr(1)],color=5,psym=2,symsize=0.25,thick=3
+  pos_norm = {x:legx(legidx)-0.01,y:legy(legidx)}
+  mag = {x:0.,y:leg_vector}  
+  mag.x *= scale ; not nessesary, only if we need to change the arrow direction
+  mag.y *= scale
+  xyz = convert_coord(pos_norm.x, pos_norm.y, /NORMAL, /TO_DATA, /DOUBLE)
+  pos = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}    
+  xyz = convert_coord(pos_norm.x, pos_norm.y, /NORMAL, /TO_DEVICE, /DOUBLE)
+  pos_dev = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}  
+  xyz = convert_coord(pos_dev.x + mag.x, pos_dev.y + mag.y, /DEVICE, /TO_DATA, /DOUBLE); vector end position on data grid
+  mag_vec = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}
+  mag.x = mag_vec.x - pos.x
+  mag.y = mag_vec.y - pos.y
+  plotxyvec,[[pos.x],[pos.y]],[[mag.x],[mag.y]],/overplot,color='y', thick=1.475,hsize=0.5
+  oplot,[pos.x],[pos.y],color=5,psym=2,symsize=0.25,thick=3
+  ;oplot,[mag_vec.x],[mag_vec.y],color=6,psym=2,symsize=0.25,thick=3 ; check the end point
   
   ; Draw other legenr entries
   legidx += 1

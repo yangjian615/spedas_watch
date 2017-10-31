@@ -1,11 +1,16 @@
 ;+
 ; VERSION:
 ;   $LastChangedBy: adrozdov $
-;   $LastChangedDate: 2017-10-27 12:14:24 -0700 (Fri, 27 Oct 2017) $
-;   $LastChangedRevision: 24229 $
-;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/spedas_plugin/seca_ui_overlay_plots.pro $
+;   $LastChangedDate: 2017-10-30 16:18:36 -0700 (Mon, 30 Oct 2017) $
+;   $LastChangedRevision: 24238 $
+;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/seca_overlay_plots.pro $
 ;-
-pro seca_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, showmag=showmag
+pro seca_overlay_plots, $ 
+    trange=trange, $ ; time range
+    createpng=createpng, $ ; generate png from the figure
+    showgeo=showgeo, $ ; show geographic grid
+    showmag=showmag, $ ; show geomagnetic grid
+    dynscale=dynscale ; use dynamic scaling
 
   ; initialize variables
   defsysv,'!secs',exists=exists
@@ -67,11 +72,23 @@ pro seca_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   ;if ncnt GT 0 then oplot, lon[nidx], lat[nidx], psym=6, color=50
   ;if pcnt GT 0 then oplot, lon[pidx], lat[pidx], psym=1, color=250
   ; To specity the size of the marker we need to plot each point individually
+  
+  scale = 1
+  leg_sz = 20000.
+  
+  ; This settings are for dynamic scaling
+  scale_factor=max(abs(amp.y))
+  if keyword_set(dynscale) then begin
+    max_factor = [50000., 40000., 30000., 20000., 10000.] ; GT limits
+    idx = where(scale_factor gt 3*max_factor)
+    leg_sz = max_factor(idx[0])
+  endif  
+  
   datan = size(amp.y,/N_ELEMENTS)
   if datan gt 0 then begin 
     for idx=0,datan-1 do begin
-      ; todo: find out how the size of the markers is determined
-      sz = amp.y[idx]/20000
+      ; todo: find out how the size of the markers is determined in the original figure
+      sz = scale*amp.y[idx]/leg_sz
       if sz ge 0 then begin
         clr = 250
         psm = 1
@@ -178,11 +195,12 @@ pro seca_ui_overlay_plots, trange=trange, createpng=createpng, showgeo=showgeo, 
   xyouts, 0.005,0.102, 'SECS - EICS', /NORMAL, color=0, charsize=1.5
   
     ; First legend record
-  xyouts, legx(legidx)+0.02, legy(legidx), /NORMAL, '+/- 20000 A',charsize=1.125, charthick=1.25,color=0
+  xyouts, legx(legidx)+0.02, legy(legidx), /NORMAL, string(leg_sz,FORMAT='("+/- ",I5," A")'),charsize=1.125, charthick=1.25,color=0
   ; Note, this solution of the markers location is not ideal, because it may look different in various os
-  xyouts, legx(legidx)+0.02, legy(legidx)+0.02, /NORMAL, '+',charsize=1.4, charthick=2,color=250
+  xyz_arr  = convert_coord(legx(legidx)+0.025, legy(legidx)+0.025, /NORMAL, /TO_DATA) ; where the point in /data coords
+  oplot, [xyz_arr[0]], [xyz_arr[1]], psym=1, color=250, SYMSIZE=scale  
   xyz_arr  = convert_coord(legx(legidx)+0.055, legy(legidx)+0.025, /NORMAL, /TO_DATA) ; where the point in /data coords 
-  oplot, [xyz_arr[0]], [xyz_arr[1]], psym=6, color=50
+  oplot, [xyz_arr[0]], [xyz_arr[1]], psym=6, color=50, SYMSIZE=scale
   
   ; Draw other legenr entries
   legidx += 1
