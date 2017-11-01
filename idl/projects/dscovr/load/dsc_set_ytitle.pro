@@ -2,21 +2,21 @@
 ;NAME: DSC_SET_YTITLE
 ;
 ;DESCRIPTION:
-;  Sets sensible default ytitle for DSCOVR tplot variables
+; Sets sensible default ytitle for DSCOVR tplot variables
 ;
 ;INPUT:
-;		TVAR:	TPLOT variable - either string or TPLOT variable number
+; TVAR: TPLOT variable - either string or TPLOT variable number
 ;
 ;KEYWORDS: (Optional)
-;		METADATA=:	Metadata structure to mine for sensible title information.
-;								If omitted, use the dlimits structure returned for TVAR
-;   VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; METADATA=: Metadata structure to mine for sensible title information.
+;	             If omitted, use the dlimits structure returned for TVAR
+; VERBOSE=:  Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ;
 ;OUTPUTS: 
-;	TITLE=:	A named variable that will hold the ytitle string that has been set 
+; TITLE=: A named variable that will hold the ytitle string that has been set 
 ;
 ;EXAMPLE:
-;   dsc_set_ytitle,'dsc_h1_fc_V_GSE',title=vtitle
+;		dsc_set_ytitle,'dsc_h1_fc_V_GSE',title=vtitle
 ;
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
@@ -26,7 +26,6 @@
 ; $URL: $
 ;-
 
-;TODO - handle bad tvar input
 PRO DSC_SET_YTITLE,TVAR,METADATA=md,TITLE=title,VERBOSE=verbose
 
 COMPILE_OPT IDL2, HIDDEN
@@ -54,16 +53,16 @@ if ~isa(md,'STRUCT') then begin
 endif
 
 case tvar of
-	'dsc_orbit_J2000_POS':		title = 'S/C Position (J2000)'
-	'dsc_orbit_J2000_VEL':		title = 'S/C Velocity (J2000)'
-	'dsc_orbit_GSE_POS':			title = 'S/C Position (GSE)'
-	'dsc_orbit_MOON_GSE_POS':	title = 'Moon Position (GSE)'
-	'dsc_h0_mag_B1GSE':				title = 'B (GSE)'
-	'dsc_h0_mag_B1SDGSE':			title = 'B_SIGMA (GSE)'
-	'dsc_h0_mag_B1RTN':				title = 'B (RTN)'
-	'dsc_h0_mag_B1SDRTN':			title = 'B_SIGMA (RTN)'
-	'dsc_h1_fc_V':						title = 'V Magnitude'
-	'dsc_h1_fc_V_GSE':				title = 'V (GSE)'
+	'dsc_orbit_J2000_POS':    title = 'S/C Position (J2000)'
+	'dsc_orbit_J2000_VEL':    title = 'S/C Velocity (J2000)'
+	'dsc_orbit_GSE_POS':      title = 'S/C Position (GSE)'
+	'dsc_orbit_MOON_GSE_POS': title = 'Moon Position (GSE)'
+	'dsc_h0_mag_B1GSE':       title = 'B (GSE)'
+	'dsc_h0_mag_B1SDGSE':     title = 'B_SIGMA (GSE)'
+	'dsc_h0_mag_B1RTN':       title = 'B (RTN)'
+	'dsc_h0_mag_B1SDRTN':     title = 'B_SIGMA (RTN)'
+	'dsc_h1_fc_V':            title = 'V Magnitude'
+	'dsc_h1_fc_V_GSE':        title = 'V (GSE)'
 	else: begin
 			haslabel = 0
 			if tag_exist(md,'labels') then begin
@@ -81,8 +80,6 @@ case tvar of
 					else dprint,dlevel=2,verbose=verbose,rname+": No ytitle information for '"+title+"'. Using variable name." $
 				else dprint,dlevel=2,verbose=verbose,rname+": No ytitle information for '"+title+"'. Using variable name."
 			endelse
-				
-			
 		end	
 endcase
 

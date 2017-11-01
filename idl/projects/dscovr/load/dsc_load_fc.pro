@@ -5,25 +5,25 @@
 ; Loads DSCOVR Faraday Cup data
 ;
 ;KEYWORDS: (Optional)			
-; DOWNLOADONLY:	Set to download files but *not* store data in TPLOT. 
-; KEEP_BAD:			Set to keep quality flag variable and flagged data in the data arrays
-; NO_DOWNLOAD:	Set to use only locally available files. Default is !dsc config.
-; NO_UPDATE:		Set to only download new filenames. Default is !dsc config.
-; TRANGE=:		Time range of interest stored as a 2 element array of
-;   					doubles (as output by timerange()) or strings (as accepted by timerange()).
-;   					Defaults to the range set in tplot or prompts for date if not yet set.
-; TYPE=:			Data type (string)
-;   					Valid options:
-;   						'h1': 1-minute Isotropic Maxwellian parameters for solar wind protons (default)
-; VARFORMAT=:	Specify a subset of variables to store
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; DOWNLOADONLY: Set to download files but *not* store data in TPLOT. 
+; KEEP_BAD:     Set to keep quality flag variable and flagged data in the data arrays
+; NO_DOWNLOAD:  Set to use only locally available files. Default is !dsc config.
+; NO_UPDATE:    Set to only download new filenames. Default is !dsc config.
+; TRANGE=:      Time range of interest stored as a 2 element array of
+;                 doubles (as output by timerange()) or strings (as accepted by timerange()).
+;                 Defaults to the range set in tplot or prompts for date if not yet set.
+; TYPE=:        Data type (string)
+;                 Valid options:
+;                 'h1': 1-minute Isotropic Maxwellian parameters for solar wind protons (default)
+; VARFORMAT=:   Specify a subset of variables to store
+; VERBOSE=:     Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ;
 ;KEYWORD OUTPUTS:
-;	TPLOTNAMES=: Named variable to hold array of TPLOT variable names loaded
+; TPLOTNAMES=: Named variable to hold array of TPLOT variable names loaded
 ;
 ;EXAMPLE:
-;   dsc_load_fc
-;   dsc_load_fc,varformat='*THERMAL*',/keep
+;		dsc_load_fc
+;		dsc_load_fc,varformat='*THERMAL*',/keep
 ;		dsc_load_fc,trange=['2016-08-15','2016-08-17'],/downloadonly
 ;		
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
@@ -79,14 +79,14 @@ endcase
 relpathnames = file_dailynames(file_format=pathformat,trange=trange)
 files = spd_download( $
 	remote_file=relpathnames, remote_path=!dsc.remote_data_dir, local_path = !dsc.local_data_dir, $
-  no_download = no_download, no_update = no_update, /last_version, /valid_only, $
-  file_mode = '666'o, dir_mode = '777'o)
+	no_download = no_download, no_update = no_update, /last_version, /valid_only, $
+	file_mode = '666'o, dir_mode = '777'o)
 
-  if files[0] eq '' then begin
-  	dprint,dlevel=2,verbose=verbose,rname+': No DSCOVR files found'
-  	return
-  endif
-  if keyword_set(downloadonly) then return
+	if files[0] eq '' then begin
+		dprint,dlevel=2,verbose=verbose,rname+': No DSCOVR files found'
+		return
+	endif
+	if keyword_set(downloadonly) then return
 
 prefix = 'dsc_'+type+'_fc_'
 cdf2tplot,file=files,varformat=varformat,verbose=verbose,prefix=prefix ,tplotnames=tn,/load_labels    ; load data into tplot variables

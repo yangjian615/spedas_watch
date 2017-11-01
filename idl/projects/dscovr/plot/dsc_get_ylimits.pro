@@ -6,17 +6,17 @@
 ; to be plotted in the same panel.
 ; 
 ;INPUT:  
-; DATASTR:	String array of TPLOT variables
-;	LIMITS:		Limits structure to be modified (usually the limits
-;						structure of the TPLOT variable whose data
-;						field is a string array of TPLOT variables)
-;	TRG:			Time range over which to calculate the limits (double[2])
+; DATASTR: String array of TPLOT variables
+; LIMITS:  Limits structure to be modified (usually the limits
+;            structure of the TPLOT variable whose data
+;            field is a string array of TPLOT variables)
+; TRG:     Time range over which to calculate the limits (double[2])
 ;
 ;KEYWORDS: (Optional)
-; BUFF: Set to add a 10% buffer to yrange.  Default is exact to data min/max.
-; COMP=: Indicate with vector component to range over.  (int) Ignored for scalar variables.
+; BUFF:          Set to add a 10% buffer to yrange.  Default is exact to data min/max.
+; COMP=:         Indicate with vector component to range over.  (int) Ignored for scalar variables.
 ; INCLUDE_ERROR: Set to include the data.dy in the range calculation
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; VERBOSE=:      Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ;
 ;OUTPUTS:
 ; LIMITS.yrange is created or modified.
@@ -29,10 +29,10 @@
 ;		dsc_get_ylimits,tn,limstr,trg,/buff	 ;All variables set to the same yrange
 ;
 ;NOTES:
-;	Adapted from TPLOT 'get_ylimits' procedure. 
-;		-Added support for limit based on single component of a vector
-;		-Added /BUFF flag for 10% buffer in y-range
-;		-Added /INCLUDE_ERROR flag to include any 'dy' in the min/max calculations
+; Adapted from TPLOT 'get_ylimits' procedure. 
+;   -Added support for limit based on single component of a vector
+;   -Added /BUFF flag for 10% buffer in y-range
+;   -Added /INCLUDE_ERROR flag to include any 'dy' in the min/max calculations
 ;	
 ;ADAPTED BY: Ayris Narock (ADNET/GSFC) 2017
 ;

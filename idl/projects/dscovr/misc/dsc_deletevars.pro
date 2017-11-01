@@ -5,10 +5,10 @@
 ; Deletes all DSCOVR data variables from TPLOT
 ;
 ;KEYWORDS: (Optional)
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; VERBOSE=: Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ;
 ;EXAMPLE:
-;   dsc_deletevars
+;		dsc_deletevars
 ;
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;

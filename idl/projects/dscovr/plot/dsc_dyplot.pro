@@ -4,31 +4,29 @@
 ;DESCRIPTION:
 ; Plot a shaded area showing confidence range where avaialable.
 ; Will look for tplot variable options tags 
-; 	dsc_dy: 0 - do not show dy interval
-; 					1 - show dy interval if available
-; 	dsc_dycolor: (int) Colortable reference for dy fill color
+;   dsc_dy: 0 - do not show dy interval
+;           1 - show dy interval if available
+;   dsc_dycolor: (int) Colortable reference for dy fill color
 ;
 ;INPUT:
 ;
 ;KEYWORDS: (Optional)   
-;	COLOR=: Set to desired fill color. (int or int array)  Will override any options set in the dlimits/limits
-;					structures.  If not set will reference the 'dsc_dycolor' variable option or
-;					choose a reasonable default.
-; FORCE:	Set to ignore the 'dsc_dy' tag setting and show the DY for all requested panels if DY available				 
-;	PANEL=: Array of indices describing which panels for which to draw confidence. (1 indexed like TPLOT)
-;					If this is not set the routine will attempt to draw confidence for all panels.
-; POS=:		4xn array describing the positions of each of the n panels in the plot of interest.
-; 				Defaults to the positions found in the 'tplot_vars' structure.										
-; TVINFO=: Structure containing TPLOT variables information - as returned
-; 				from the 'new_tvar' keyword to tplot. 
-; 				If not set uses that found in common 'tplot_vars'
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
-; WINDOW=: Which direct graphics window to target for this polyfill. (int)
-; 				 This is gererally not needed if plotting on an existing tplot window. Will default
-; 				 to whatever is set by the TVINFO structure being used.
+; COLOR=:   Set to desired fill color. (int or int array)  Will override any options set in the dlimits/limits
+;             structures.  If not set will reference the 'dsc_dycolor' variable option or
+;             choose a reasonable default.
+; FORCE:    Set to ignore the 'dsc_dy' tag setting and show the DY for all requested panels if DY available				 
+; PANEL=:   Array of indices describing which panels for which to draw confidence. (1 indexed like TPLOT)
+;             If this is not set the routine will attempt to draw confidence for all panels.
+; POS=:     4xn array describing the positions of each of the n panels in the plot of interest.
+;             Defaults to the positions found in the 'tplot_vars' structure.										
+; TVINFO=:  Structure containing TPLOT variables information - as returned
+;             from the 'new_tvar' keyword to tplot. 
+;             If not set uses that found in common 'tplot_vars'
+; VERBOSE=: Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; WINDOW=:  Which direct graphics window to target for this polyfill. (int)
+;             This is gererally not needed if plotting on an existing tplot window. Will default
+;             to whatever is set by the TVINFO structure being used.
 ;					
-;EXAMPLES:
-;		
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
 ; $LastChangedBy: $
@@ -73,8 +71,8 @@ PRO DSC_DYPLOT,TVINFO=tvinfo,POS=pos,PANEL=panel,WINDOW=w,COLOR=cf,FORCE=force,V
 
 	if (panel eq !null) then panel=indgen(np) else panel = panel-1
 	if max(panel) ge np then begin
-		 dprint,dlevel=1,verbose=verbose,rname+': bad panel number'
-		 return
+		dprint,dlevel=1,verbose=verbose,rname+': bad panel number'
+		return
 	endif
 
 	if (cf ne !null) then begin

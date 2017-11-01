@@ -6,22 +6,22 @@
 ; components are shown in GSE coordinates.   
 ;
 ;INPUTS:
-;	DATE:	Date of interest. String, in the form 'YYYY-MM-DD/HH:MM:SS' (as accepted by 'timespan')  
-;				Will plot 1 full day.  
-;				If this argument is not passed it will look for the TRANGE keyword.
+; DATE: Date of interest. String, in the form 'YYYY-MM-DD/HH:MM:SS' (as accepted by 'timespan')  
+;         Will plot 1 full day.  
+;         If this argument is not passed it will look for the TRANGE keyword.
 ;
 ;KEYWORDS: (Optional)
-; SAVE:		Set to save a .png copy of the generated plot(s) in the !dsc.save_plots_dir/fc/ directory
-; SPLITS:	Set to split the time range into quarters and create 4 consecutive
-; 				plots in addition to the overview of the whole time range.
-; TRANGE=:	Set this to the time range of interest.  This keyword will be ignored if
-; 					DATE argument is passed.  The routine will return without plotting if neither
-; 					DATE nor TRANGE is set. (2-element array of	doubles (as output by timerange()) 
-; 					or strings (as accepted by timerange()))
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; SAVE:     Set to save a .png copy of the generated plot(s) in the !dsc.save_plots_dir/fc/ directory
+; SPLITS:   Set to split the time range into quarters and create 4 consecutive
+;             plots in addition to the overview of the whole time range.
+; TRANGE=:  Set this to the time range of interest.  This keyword will be ignored if
+;             DATE argument is passed.  The routine will return without plotting if neither
+;             DATE nor TRANGE is set. (2-element array of	doubles (as output by timerange()) 
+;             or strings (as accepted by timerange()))
+; VERBOSE=: Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ; 
 ;KEYWORD OUTPUTS:
-; WREF=:	Array of integer id(s) of direct graphics window(s) created with this call. (long) 
+; WREF=: Array of integer id(s) of direct graphics window(s) created with this call. (long) 
 ; 
 ;EXAMPLES:
 ;		dsc_overview_fc,'2017-02-13',/splits,wref=wr

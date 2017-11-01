@@ -5,7 +5,7 @@
 ;	Closes all open direct graphics windows
 ;	
 ;KEYWORDS: (Optional)
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; VERBOSE=: Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ;
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;

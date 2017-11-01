@@ -5,21 +5,21 @@
 ; Loads all DSCOVR data products
 ;
 ;KEYWORDS: (Optional)			
-; DOWNLOADONLY:	Set to download files but *not* store data in TPLOT. 
-; KEEP_BAD:			Set to keep quality flag variable and flagged data in the data arrays
-; NO_DOWNLOAD:	Set to use only locally available files. Default is !dsc config.
-; NO_UPDATE:		Set to only download new filenames. Default is !dsc config.
-; TRANGE=:		Time range of interest stored as a 2 element array of
-;   					doubles (as output by timerange()) or strings (as accepted by timerange()).
-;   					Defaults to the range set in tplot or prompts for date if not yet set.
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; DOWNLOADONLY: Set to download files but *not* store data in TPLOT. 
+; KEEP_BAD:     Set to keep quality flag variable and flagged data in the data arrays
+; NO_DOWNLOAD:  Set to use only locally available files. Default is !dsc config.
+; NO_UPDATE:    Set to only download new filenames. Default is !dsc config.
+; TRANGE=:      Time range of interest stored as a 2 element array of
+;                 doubles (as output by timerange()) or strings (as accepted by timerange()).
+;                 Defaults to the range set in tplot or prompts for date if not yet set.
+; VERBOSE=:     Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ; 
 ;KEYWORD OUTPUTS:
-;	TPLOTNAMES=: Named variable to hold array of TPLOT variable names loaded 
+; TPLOTNAMES=: Named variable to hold array of TPLOT variable names loaded 
 ;   
 ;EXAMPLE:
 ;		dsc_load_all
-;   dsc_load_all,trange=['2017-01-02/00:00:00','2017-01-03/12:00:00'],tplotnames=tn
+;		dsc_load_all,trange=['2017-01-02/00:00:00','2017-01-03/12:00:00'],tplotnames=tn
 ;
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
@@ -34,9 +34,9 @@ PRO DSC_LOAD_ALL,TRANGE=trange,DOWNLOADONLY=downloadonly,NO_DOWNLOAD=no_download
 
 COMPILE_OPT IDL2
 tn_att	= []
-tn_or		= []
+tn_or	= []
 tn_mag	= []
-tn_fc		= []
+tn_fc	= []
 dsc_load_att,trange=trange,downloadonly=downloadonly,no_download=no_download, $
 	no_update=no_update,tplotnames=tn_att,verbose=verbose
 dsc_load_or,trange=trange,downloadonly=downloadonly,no_download=no_download, $

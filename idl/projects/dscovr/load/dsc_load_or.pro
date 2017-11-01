@@ -2,24 +2,24 @@
 ;NAME: DSC_LOAD_OR
 ;
 ;DESCRIPTION:
-;  Loads DSCOVR Ephemeris data
+; Loads DSCOVR Ephemeris data
 ;
 ;KEYWORDS: (Optional)			
-;  	DOWNLOADONLY:	Set to download files but *not* store data in TPLOT. 
-;  	NO_DOWNLOAD:	Set to use only locally available files. Default is !dsc config.
-;  	NO_UPDATE:		Set to only download new filenames. Default is !dsc config.
-;   TRANGE=:	Time range of interest stored as a 2 element array of 
-;   					doubles (as output by timerange()) or strings (as accepted by timerange()).
-;   					Defaults to the range set in tplot or prompts for date if not yet set. 
-;  	VARFORMAT=:	Specify a subset of variables to store
-;   VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; DOWNLOADONLY: Set to download files but *not* store data in TPLOT. 
+; NO_DOWNLOAD:  Set to use only locally available files. Default is !dsc config.
+; NO_UPDATE:    Set to only download new filenames. Default is !dsc config.
+; TRANGE=:      Time range of interest stored as a 2 element array of 
+;                 doubles (as output by timerange()) or strings (as accepted by timerange()).
+;                 Defaults to the range set in tplot or prompts for date if not yet set. 
+; VARFORMAT=:   Specify a subset of variables to store
+; VERBOSE=:     Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ; 
 ;KEYWORD OUTPUTS:
-;	TPLOTNAMES=: Named variable to hold array of TPLOT variable names loaded 
+; TPLOTNAMES=: Named variable to hold array of TPLOT variable names loaded 
 ;   
 ;EXAMPLE:
-;   dsc_load_or
-;   dsc_load_or,trange=['2017-01-01','2017-01-02'])
+;		dsc_load_or
+;		dsc_load_or,trange=['2017-01-01','2017-01-02'])
 ;
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
@@ -46,8 +46,8 @@ pathformat = 'dscovr/orbit/pre_or/YYYY/dscovr_orbit_pre_YYYYMMDD_v??.cdf'
 relpathnames = file_dailynames(file_format=pathformat,trange=trange)
 files = spd_download( $
 	remote_file=relpathnames, remote_path=!dsc.remote_data_dir, local_path = !dsc.local_data_dir, $
-  no_download = no_download, no_update = no_update, /last_version, /valid_only, $
-  file_mode = '666'o, dir_mode = '777'o)
+	no_download = no_download, no_update = no_update, /last_version, /valid_only, $
+	file_mode = '666'o, dir_mode = '777'o)
 
 if files[0] eq '' then begin
 	dprint,dlevel=2,verbose=verbose,rname+': No DSCOVR files found'

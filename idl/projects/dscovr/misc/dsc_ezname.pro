@@ -6,28 +6,29 @@
 ; Using shortcut strings implies GSE coordinate system.
 ;
 ;INPUTS:
-;	VARIN:  Scalar or array of one of the shortcut strings recognized for DSCOVR.  Vector values are in GSE.
-;					'bx','by','bz','bgse','b','bphi','btheta',
-;					'vx','vy','vz','vgse','v','np,','temp','vth',
-;					'posx','posy','posz','pos'
-;					Case is ignored.
+; VARIN: Scalar or array of one of the shortcut strings recognized for DSCOVR.  
+;          'bx','by','bz','bgse','b','bphi','btheta',
+;          'vx','vy','vz','vgse','v','np,','temp','vth',
+;          'posx','posy','posz','pos'
+;          Case is ignored.
+;          Vector values are in GSE.
 ;
 ;KEYWORDS:
-; CONF:		Set to return the compound variables containing the +-dy lines
-; 				if they are available.  
-; 				ie: dsc_ezname('np') -->   			'dsc_h1_fc_Np'
-; 						dsc_ezname('np',/conf) -->	'dsc_h1_fc_Np_wCONF'
-; 						17 dsc_h1_fc_Np_wCONF
-;            15   dsc_h1_fc_Np+DY
-;             3   dsc_h1_fc_Np
-;            16   dsc_h1_fc_Np-DY
-; HELP:	Set to return an array of the supported shortcut strings
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
-;  
+; CONF:     Set to return the compound variables containing the +-dy lines
+;             if they are available.  
+;             ie: dsc_ezname('np') --> 'dsc_h1_fc_Np'
+;                 dsc_ezname('np',/conf) --> 'dsc_h1_fc_Np_wCONF'
+;             where 'dsc_h1_fc_Np_wCONF' looks like:
+;               17 dsc_h1_fc_Np_wCONF
+;                 15   dsc_h1_fc_Np+DY
+;                  3   dsc_h1_fc_Np
+;                 16   dsc_h1_fc_Np-DY
+; HELP:     Set to return an array of the supported shortcut strings
+; VERBOSE=: Integer indicating the desired verbosity level.  Defaults to !dsc.verbose 
 ; 						
 ;OUTPUT:
-;	String or string array containing the full TPLOT varible name(s). Will return '' if passed
-;	unsupported fields.
+; String or string array containing the full TPLOT varible name(s). Will return '' if passed
+; unsupported fields.
 ;
 ;EXAMPLES:
 ;		fn = dsc_ezname('vx')
@@ -48,9 +49,10 @@ dsc_init
 rname = dsc_getrname()
 if not isa(verbose,/int) then verbose=!dsc.verbose
 
-supported = ['bx','by','bz','bgse','b','bphi','btheta',$
-							'vx','vy','vz','vgse','v', 'np','temp','vth', $
-							'posx','posy','posz','pos']
+supported = [ $
+	'bx','by','bz','bgse','b','bphi','btheta',$
+	'vx','vy','vz','vgse','v', 'np','temp','vth', $
+	'posx','posy','posz','pos']
 if keyword_set(help) then begin
 	dprint,dlevel=2,verbose=verbose,rname+": Returning the supported Shortcut Strings."
 	return,supported

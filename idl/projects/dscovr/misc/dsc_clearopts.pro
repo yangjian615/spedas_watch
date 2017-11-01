@@ -2,16 +2,16 @@
 ;NAME: DSC_CLEAROPTS
 ;
 ;DESCRIPTION:
-;	Clears non-default options from DSCOVR tplot variables.  
+; Clears non-default options from DSCOVR tplot variables.  
 ;	
 ;INPUTS:
-;	TN: Names or numbers of TPLOT variables to clear.  Will clear any valid variable, is
-;			not limited to DSCOVR.  (INT/STRING) Scalar or Array.
+; TN: Names or numbers of TPLOT variables to clear.  Will clear any valid variable, is
+;       not limited to DSCOVR.  (INT/STRING) Scalar or Array.
 ;
 ;KEYWORDS: (Optional)
-; ALL:	Set to clear options from all loaded DSCOVR variables.  Will override any arguments
-; 			passed in TN
-; VERBOSE=:		Integer indicating the desired verbosity level.  Defaults to !dsc.verbose 
+; ALL:      Set to clear options from all loaded DSCOVR variables.  Will override any arguments
+;             passed in TN
+; VERBOSE=: Integer indicating the desired verbosity level.  Defaults to !dsc.verbose 
 ;
 ;EXAMPLES:
 ;		dsc_clearopts,/all
@@ -49,6 +49,4 @@ PRO DSC_CLEAROPTS,tn,ALL=all,VERBOSE=verbose
 		dprint,dlevel=2,verbose=verbose,rname+': No variables selected.'
 		dprint,dlevel=2,verbose=verbose,rname+": Use 'dsc_clearopts,tn' OR 'dsc_clearopts,/all'"
 	endelse
-		
-		
 END
