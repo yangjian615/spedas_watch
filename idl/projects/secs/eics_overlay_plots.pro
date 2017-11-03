@@ -1,8 +1,41 @@
 ;+
+; NAME:
+;  eics_overlay_plots
+;
+; PURPOSE:
+;  This routine will create a plot of EICS and THEMIS ASI data which is overlaid onto a map of 
+;  the northern hemisphere. See the SECS ASI mosaic overlay plot crib sheet for an explanation of the 
+;  data and how to use this routine. You can find the crib sheet in spedas/projects/secs/examples/
+;  
+; KEYWORDS: 
+;  trange:        time range of interest
+;  createpng:     set this flag to create a PNG file of the plot
+;  showgeo:       set this flag to display geographic latitude and longitude lines
+;  showmag:       set this flag to display magnetic latitude and longitude lines
+;  dynscale:      set this flag to use dynamic scaling  
+;  
+; OUTPUT:
+;  none
+;
+; CALLING SEQUENCE:
+;  eics_overlay_plots, trange=['2017-02-28/00:01:00','2017-02-28/00:02:00'],
+;      /showgeo, /showmag, /makepng, /dynscale
+;  See example crib sheets for additional examples 
+;                                
+; NOTE: If no time range is specified the routine will use whatever was set previously by timespan or
+;   timerange.
+;   If no time has not been set the user will be queried for the time.  
+;
+;$LastChangedBy: crussell $
+;$LastChangedDate: 2017-11-02 08:14:23 -0700 (Thu, 02 Nov 2017) $
+;$LastChangedRevision: 24249 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/eics_overlay_plots.pro $
+;-
+
 ; VERSION:
-;   $LastChangedBy: adrozdov $
-;   $LastChangedDate: 2017-10-30 16:18:36 -0700 (Mon, 30 Oct 2017) $
-;   $LastChangedRevision: 24238 $
+;   $LastChangedBy: crussell $
+;   $LastChangedDate: 2017-11-02 08:14:23 -0700 (Thu, 02 Nov 2017) $
+;   $LastChangedRevision: 24249 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/eics_overlay_plots.pro $
 ;-
 pro eics_overlay_plots, $
