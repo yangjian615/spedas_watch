@@ -26,18 +26,65 @@
 ;   timerange.
 ;   If no time has not been set the user will be queried for the time.  
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2017-11-02 08:14:23 -0700 (Thu, 02 Nov 2017) $
-;$LastChangedRevision: 24249 $
+;$LastChangedBy: adrozdov $
+;$LastChangedDate: 2017-11-03 16:31:55 -0700 (Fri, 03 Nov 2017) $
+;$LastChangedRevision: 24261 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/eics_overlay_plots.pro $
 ;-
 
 ; VERSION:
-;   $LastChangedBy: crussell $
-;   $LastChangedDate: 2017-11-02 08:14:23 -0700 (Thu, 02 Nov 2017) $
-;   $LastChangedRevision: 24249 $
+;   $LastChangedBy: adrozdov $
+;   $LastChangedDate: 2017-11-03 16:31:55 -0700 (Fri, 03 Nov 2017) $
+;   $LastChangedRevision: 24261 $
 ;   $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/secs/eics_overlay_plots.pro $
 ;-
+function eics_coordtinate_convert, st, device=device, data=data
+  if keyword_set(device) then begin
+    to_device = 1
+    from_device = 0    
+    to_data = 0
+    from_data = 1    
+  endif
+  if keyword_set(data) then begin
+    to_device = 0
+    from_device = 1    
+    to_data = 1
+    from_data = 0
+  endif
+  
+  if size(st,/type) eq 8 then begin
+    xyz = convert_coord(st.x, st.y, DATA=from_data, TO_DATA=to_data, DEVICE=from_device, TO_DEVICE=to_device, /DOUBLE) ; vector start position on normal grid
+    tmp = {x:reform(xyz[0,*]), y:reform(xyz[1,*])}
+  endif else begin
+    if size(st,/N_ELEMENTS) gt 2 then begin
+      xyz = convert_coord(st[*,0], st[*,1], DATA=from_data, TO_DATA=to_data, DEVICE=from_device, TO_DEVICE=to_device, /DOUBLE) ; vector start position on normal grid
+      tmp = TRANSPOSE(xyz[0:1,*],[1,0])
+    endif else begin
+      xyz = convert_coord(st[0], st[1], DATA=from_data, TO_DATA=to_data, DEVICE=from_device, TO_DEVICE=to_device, /DOUBLE) ; vector start position on normal grid
+      tmp = rotate(xyz[0:1],1)
+    endelse  
+  endelse
+  
+  return, tmp
+end 
+
+pro eics_coordtinate_processing, lonlat=ge_s, mag=ge_d, scale=scale_factor, leg_vector=leg_vector, new_mag=ge_vd 
+  ; conversion  
+  ge_e = ge_s + ge_d / scale_factor
+  ge_m = sqrt(total(ge_d^2,2))
+  ge_m = [[ge_m], [ge_m]]
+  xy_s = eics_coordtinate_convert(ge_s, /DEVICE)
+  xy_e = eics_coordtinate_convert(ge_e, /DEVICE)
+  xy_d = xy_e - xy_s
+  xy_m = sqrt(total(xy_d^2,2))
+  xy_m = [[xy_m],[xy_m]]
+  xy_i = xy_d / xy_m
+  xy_v = xy_i * ge_m * 0.02 * !d.X_VSIZE / leg_vector
+  xy_ve = xy_v + xy_s
+  ge_ve = eics_coordtinate_convert(xy_ve, /DATA)
+  ge_vd = ge_ve-ge_s
+end
+
 pro eics_overlay_plots, $
   trange=trange, $ ; time range
   createpng=createpng, $ ; generate png from the figure 
@@ -45,6 +92,7 @@ pro eics_overlay_plots, $
   showmag=showmag, $ ; show geomagnetic grid
   dynscale=dynscale ; use dynamic scaling
 
+   
   ; initialize variables
   defsysv,'!secs',exists=exists
   if not(exists) then secs_init
@@ -67,39 +115,33 @@ pro eics_overlay_plots, $
   if ~is_struct(latlon) then begin
       dprint, 'There is no EICS data for date: '+time_string(tr[0])
       return
-  endif
-  lon=latlon.y[*,1]+360.
-  lat=latlon.y[*,0]
+  endif  
   get_data, 'secs_eics_jxy', data=jxy
   if ~is_struct(jxy) then begin
     dprint, 'There is no EICS data for date: '+time_string(tr[0])
     return
   endif
-  scale_factor=max(sqrt(jxy.y[*,0]^2+jxy.y[*,1]^2))
-  jy=jxy.y[*,1]   ;/scale_factor
-  jx=jxy.y[*,0]   ;/scale_factor
   get_data, 'secs_stations', data=stations
   if ~is_struct(stations) then begin
     dprint, 'There is no Station data for date: '+time_string(tr[0])
   endif
   
-  scale = 0.0002
-  leg_vector = 200.
-  ; This settings are for dynamic scaling
-  scale_factor=max(sqrt(jx^2+jy^2)); Some dynamic scale 
-  if keyword_set(dynscale) then begin
-    max_factor = [1600., 800., 400., 200., 40., 4., 0.] ; GT limits 
-    scaling    = max_factor / 2 ; scaling 200 correspong to gt 800, scale by factor of 4
-    scaling[-1]= 1.  ; the last element
-    idx = where(scale_factor gt max_factor)
-    leg_vector = scaling(idx[0])
-    scale = 0.04 / leg_vector
-  endif
+  eics_pos = [[latlon.y[*,1]+360.], [latlon.y[*,0]]]
+  eics_mag = [[jxy.y[*,1]], [jxy.y[*,0]]]
+  
+  ; grid conversion testing set
+  ;ge_s1 = [[-154.44911],[63.563763]]
+  ;ge_s2 = [[-65.179733],[42.226425]]
+  ;ge_s3 = [[-96.],[51.]]   
+  ;eics_pos = [ge_s1, ge_s1, ge_s1, ge_s1,ge_s2, ge_s2, ge_s2, ge_s2,ge_s3,ge_s3,ge_s3,ge_s3]
+  ;eics_mag = [[800.,0.,-800.,0.,800.,0.,-800.,0.,800.,0.,-800.,0.], [0.,800.,0.,-800.,0.,800.,0.,-800.,0.,800.,0.,-800.]]
+
 
   ; -----------------
   ; Make the mosaic
   ; -----------------
-  thm_asi_create_mosaic,time_string(tr[0]),/verbose,$            ; removed /thumb
+    thm_asi_create_mosaic,time_string(tr[0]),/verbose,$            ; removed /thumb
+    ;thm_asi_create_mosaic,'0000-00-00',/force_map,/verbose,$            ; removed /thumb
       central_lon=264.0,central_lat=61.,scale=4.5e7,$         ; set lat to 64.5;set area scale=3.5or2.8e7 or scale=5.5e7,
       no_grid='no_grid', /no_midnight,  $
       show  =['atha','fsmi','fykn','gako','gbay','gill','inuv','kapu','kian','kuuj','mcgr','nrsq','pgeo','pina','tpas','rank','snkq','talo','tpas','whit'] ,$            
@@ -229,43 +271,29 @@ pro eics_overlay_plots, $
     !tplotxy.plotvec=plotvec
   endelse
   
-  ; kluge: append unit vector to end of array for displaying legend
-  ; todo: this should be working in plotxyvec but it isn't right now. need to debug
-  ; Solution for this todo is below in 'Display annotations' section:
-  ; lon=[lon,296.5]
-  ; lat=[lat,26]
-  ; jy=[jy,0.]
-  ; jx=[jx,200.]
-
   ; ------------------
   ; Plot EICS data
   ; ------------------
-  ; Process EICS data
+  eics_tmag = sqrt(total(eics_mag^2,2))
+  scale_factor=max(eics_tmag)
   
-   ; grid conversion testing set  
-   ;lon = [-154.44911, -65.179733,-154.44911, -65.179733]
-   ;lat = [63.563763, 42.226425,63.563763, 42.226425]
-   ;jy = [800,800,0,0]
-   ;jx = [0,0,800,800]
-   
-   ; determine the device scaling 
-   max_dx = !d.X_VSIZE
-   scale *= max_dx 
-   
-   mag = {x:jy,y:jx}
-   pos = {x:lon,y:lat}
-   nmag ={x:mag.x*scale,y:mag.y*scale}; scale original data, otherwise there is a change of the wrong coord_conversion
-   xyz = convert_coord(pos.x,pos.y, /DATA, /TO_DEVICE, /DOUBLE) ; vector start position on normal grid
-   pos_screen = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}   
-   xyz = convert_coord(pos_screen.x + nmag.x, pos_screen.y + nmag.y, /DEVICE, /TO_DATA, /DOUBLE); vector end position on data grid
-   mag_vec = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}
-   cmag = {x: mag_vec.x - pos.x, y: mag_vec.y - pos.y}
-   
+  
+  ; -----------------
+  ; Scaling
+  ; -----------------
+  leg_vector = 200. ; legend default vector
+  if keyword_set(dynscale) then begin ; dynamic scaling
+    max_factor = [1600., 800., 400., 200., 40., 4., 0.] ; GT limits
+    idx = where(scale_factor gt max_factor)
+    max_factor[-1]= 1.  ; the last element
+    leg_vector = max_factor(idx[0]) / 4
+  endif
+     
+   eics_coordtinate_processing, lonlat=eics_pos, mag=eics_mag, scale=scale_factor, new_mag=eics_nmag, leg_vector=leg_vector
 
-   plotxyvec,[[pos.x],[pos.y]],[[cmag.x],[cmag.y]],/overplot,color='y', thick=1.475,hsize=0.5
-  oplot,pos.x,pos.y,color=5,psym=2,symsize=0.25,thick=3
-    ; plotxyvec,[[pos.x],[pos.y]],[[mag.x],[mag.y]],/overplot,color='r', thick=1.475,hsize=0.5,arrowscale=0.02 ; unconverted
-  ; oplot,mag_vec.x,mag_vec.y,color=6,psym=2,symsize=0.25,thick=3 ; this line is to check the end point of the vectors
+   ;plotxyvec,eics_pos,eics_mag,/overplot,color='r', thick=1.475,hsize=0.5,arrowscale=0.02 ; unconverted
+   plotxyvec,eics_pos,eics_nmag,/overplot,color='y', thick=1.475,hsize=0.5,uarrowside='none'
+   oplot,eics_pos[*,0],eics_pos[*,1],color=5,psym=2,symsize=0.25,thick=3   
   
   ; --------------------
   ; Display annotations
@@ -286,20 +314,16 @@ pro eics_overlay_plots, $
   ; and the arrow
   ; move the point to the left
   pos_norm = {x:legx(legidx)-0.01,y:legy(legidx)}
-  mag = {x:0.,y:leg_vector}  
-  mag.x *= scale ; not nessesary, only if we need to change the arrow direction
-  mag.y *= scale
-  xyz = convert_coord(pos_norm.x, pos_norm.y, /NORMAL, /TO_DATA, /DOUBLE)
-  pos = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}    
+  ; Convert to the view 
+  xyz = convert_coord(pos_norm.x, pos_norm.y, /NORMAL, /TO_DATA, /DOUBLE)  
+  pos = rotate(xyz[0:1],1)
   xyz = convert_coord(pos_norm.x, pos_norm.y, /NORMAL, /TO_DEVICE, /DOUBLE)
-  pos_dev = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}  
-  xyz = convert_coord(pos_dev.x + mag.x, pos_dev.y + mag.y, /DEVICE, /TO_DATA, /DOUBLE); vector end position on data grid
-  mag_vec = {x:reform(xyz[0,*]),y:reform(xyz[1,*])}
-  mag.x = mag_vec.x - pos.x
-  mag.y = mag_vec.y - pos.y
-  plotxyvec,[[pos.x],[pos.y]],[[mag.x],[mag.y]],/overplot,color='y', thick=1.475,hsize=0.5
-  oplot,[pos.x],[pos.y],color=5,psym=2,symsize=0.25,thick=3
-  ;oplot,[mag_vec.x],[mag_vec.y],color=6,psym=2,symsize=0.25,thick=3 ; check the end point
+  pos_dev = rotate(xyz[0:1],1)  
+  xy_v = [0., 1.] * 0.02 * !d.X_VSIZE
+  xy_ve = xy_v + pos_dev
+  nmag = eics_coordtinate_convert(xy_ve, /DATA)-pos
+  plotxyvec,pos,nmag,/overplot,color='y', thick=1.475,hsize=0.5,uarrowside='none'
+  oplot,pos[*,0],pos[*,1],color=5,psym=2,symsize=0.25,thick=3
   
   ; Draw other legenr entries
   legidx += 1
@@ -315,29 +339,7 @@ pro eics_overlay_plots, $
     xyouts, legx(legidx), legy(legidx), /NORMAL, 'GMAG green star', color=150, charthick=1.2, charsize=1.125
     legidx += 1 ; this is done so we can move the blocks around
   endif     
-  
-  ; OLD VERSION OF LEGEND
-  ;if keyword_set(showgeo) && keyword_set(showmag) then begin
-  ;   xyouts, 297.7, 29.25, 'Geo Black dot line', color=0, charthick=1.25, charsize=1.13
-  ;   xyouts, 299.2, 31, 'Mag Red dot line', color=250, charthick=1.2, charsize=1.125
-  ;   if is_struct(stations) then xyouts, 300.85, 32.65, 'GMAG green star', color=150, $
-  ;     charthick=1.2, charsize=1.125
-  ;endif 
-  ;if keyword_set(showgeo) && ~keyword_set(showmag) then begin
-  ;   xyouts, 297.7, 29.25, 'Geo Black dot line', color=0, charthick=1.25, charsize=1.13
-  ;   if is_struct(stations) then xyouts, 299.2, 31, 'GMAG green star', color=150, $
-  ;     charthick=1.2, charsize=1.125
-  ;endif
-  ;if ~keyword_set(showgeo) && keyword_set(showmag) then begin
-  ;   xyouts, 297.7, 29.25, 'Mag Red dot line', color=250, charthick=1.2, charsize=1.125   
-  ;   if is_struct(stations) then xyouts, 299.2, 31, 'GMAG green star', color=150, $
-  ;     charthick=1.2, charsize=1.125
-  ;endif
-  ;if ~keyword_set(showgeo) && ~keyword_set(showmag) then begin
-  ;  if is_struct(stations) then xyouts, 297.7, 29.25, 'GMAG green star', color=150, $
-  ;    charthick=1.2, charsize=1.125
-  ;endif
- 
+
   ; ------------------
   ; Create PNG file
   ; ------------------
