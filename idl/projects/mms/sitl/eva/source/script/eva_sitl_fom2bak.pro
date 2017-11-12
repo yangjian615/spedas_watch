@@ -33,21 +33,23 @@ PRO eva_sitl_fom2bak
   dtlast = unix_fomstr.TIMESTAMPS[unix_fomstr.NUMCYCLES-1]-unix_fomstr.TIMESTAMPS[unix_fomstr.NUMCYCLES-2]
   
   ;----------------------------------------------------------
-  ; DELETE EXISTING SEGMENTS WITHIN THE FOMstr TIMERANGE
+  ; CHECK THE BACK_STRUCTURE
   ;----------------------------------------------------------
   BAK = 1L
-  get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
-  s = lim.UNIX_BAKSTR_MOD
-  nmax = n_elements(s.FOM)
-  for n=0,nmax-1 do begin
-    if (tfom[0] le s.START[n]) and (s.STOP[n] le tfom[1]-dtlast) then begin
-      segSelect = {ts:s.START[n],te:s.STOP[n]+dtlast,fom:0.,BAK:BAK,discussion:'', var:''}
-      eva_sitl_strct_update, segSelect, BAK=BAK
-    endif
-  endfor
+  VALID = 0
+  tn = tnames('mms_stlm_bakstr',n)
+  if (n eq 1) then begin 
+    get_data,'mms_stlm_bakstr',data=D,lim=lim,dl=dl
+    if n_tags(lim) gt 0 then VALID = 1
+  endif
+  
+  if VALID eq 0 then begin
+    result = dialog_message('The original back-structure from SDC is not loaded yet.',/center)
+    return
+  endif
   
   ;--------------------
-  ; ADD NEW SEGMENTS
+  ; MAIN LOOP
   ;--------------------
   nmax = unix_fomstr.NSEGS
   for n=0,nmax-1 do begin
