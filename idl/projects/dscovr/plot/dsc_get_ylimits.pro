@@ -50,6 +50,7 @@ dsc_init
 rname = dsc_getrname()
 if not isa(verbose,/int) then verbose=!dsc.verbose
 
+limits = []
 miny = 0.
 maxy = 0.
 str_element,limits,'min_value',min_value
@@ -58,7 +59,16 @@ str_element,limits,'ylog',ytype
 
 for i=0,n_elements(datastr)-1 do begin
 	get_data,datastr[i],data=data,dtype=dtype
-	if (dtype eq 1) and keyword_set(data) then begin
+	if (dtype eq 3) and keyword_set(data) then begin
+		dsc_get_ylimits,data,limstr,trg,comp=comp,include_err=inc_err,verbose=verbose ;don't add buffer repeatedly
+		if miny ne maxy then begin
+			if limstr.yrange[0] lt miny then miny = limstr.yrange[0]
+			if limstr.yrange[1] gt maxy then maxy = limstr.yrange[1]
+		endif else begin
+			miny = limstr.yrange[0]
+			maxy = limstr.yrange[1]
+		endelse
+	endif else if (dtype eq 1) and keyword_set(data) then begin
 		good = where(finite(data.x),count)
 		if count eq 0 then message,'No valid X data'
 	

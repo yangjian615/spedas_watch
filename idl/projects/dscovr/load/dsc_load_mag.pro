@@ -135,5 +135,6 @@ if ~((tn.length eq 1) and (tn[0] eq '')) then begin
 	options,/def,strfilter(tn,'*B*GSE *B*RTN',delim=' '), colors='bgr'
 	options,/def,strfilter(tn,'*NUM*_PTS'),ysubtitle='[#]'
 	options,/def,strfilter(tn,'*RANGE*'),'ysubtitle'
+	options,/def,tn,datagap=-1
 endif
 end

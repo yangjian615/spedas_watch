@@ -11,16 +11,20 @@
 ;         If this argument is not passed it will look for the TRANGE keyword.
 ;
 ;KEYWORDS: (Optional)
-; SAVE:    Set to save a .png copy of the generated plot(s) in the !dsc.save_plots_dir/gen/ directory
-; SPLITS:  Set to split the time range into quarters and create 4 consecutive
-;            plots in addition to the overview of the whole time range.
-; TRANGE=: Set this to the time range of interest.  This keyword will be ignored if
-;            DATE argument is passed.  The routine will return without plotting if neither
-;            DATE nor TRANGE is set. (2-element array of	doubles (as output by timerange()) 
-;            or strings (as accepted by timerange()))
-; VERBOSE=: Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
+; IMPORT_ONLY: Set when replaying GUI overviews. We only want it to import data since the window/panel
+;                structure is already a serialized xml tgd document
+; GUI:         Set to create the plot inside the SPD_GUI (uses TPLOT_GUI calls)
+; SAVE:        Set to save a .png copy of the generated plot(s) in the !dsc.save_plots_dir/gen/ directory
+; SPLITS:      Set to split the time range into quarters and create 4 consecutive
+;                plots in addition to the overview of the whole time range.
+; TRANGE=:     Set this to the time range of interest.  This keyword will be ignored if
+;                DATE argument is passed.  The routine will return without plotting if neither
+;                DATE nor TRANGE is set. (2-element array of	doubles (as output by timerange()) 
+;                or strings (as accepted by timerange()))
+; VERBOSE=:    Integer indicating the desired verbosity level.  Defaults to !dsc.verbose
 ; 					
 ;KEYWORD OUTPUTS:
+; ERROR=: Returns 1 on error
 ; WREF=:	Array of integer id(s) of direct graphics window(s) created with this call. (long)
 ; 
 ;EXAMPLES:
@@ -38,17 +42,21 @@
 ; $LastChangedRevision: $
 ; $URL: $
 ;-
-PRO DSC_OVERVIEW,DATE,TRANGE=trg,SPLITS=splits,SAVE=save,VERBOSE=verbose,WREF=wr
+PRO DSC_OVERVIEW,DATE,TRANGE=trg,SPLITS=splits,SAVE=save,VERBOSE=verbose,WREF=wr, $
+	ERROR=error,GUI=gui,IMPORT_ONLY=import_only
 
 COMPILE_OPT IDL2
 
 dsc_init
 rname = dsc_getrname()
 if not isa(verbose,/int) then verbose=!dsc.verbose
+error = 0
+tn_before = [tnames('*',create_time=cn_before)]
 
 catch,err
 if err ne 0 then begin
 	dprint,dlevel=1,verbose=verbose,rname+': You must supply a date or timerange: ('+rname.toLower()+',''YYYY-MM-DD'') or ('+rname.toLower()+',trange=[t1,t2])'
+	error = 1
 	return
 endif
 
@@ -67,6 +75,7 @@ mindate = timerange('2015-02-11')
 foreach time,trg do begin
 	if time lt mindate[0] then begin
 		dprint,dlevel=1,verbose=verbose,rname+': Please supply a date after launch (2015-02-11)'
+		error = 1
 		return
 	endif
 endforeach
@@ -76,100 +85,176 @@ dsc_load_mag,trange=trg
 dsc_load_fc,trange=trg
 
 var = ['b','btheta','bphi','v','np','vth']
-tn = dsc_ezname(var)
+tn = (isa(gui,'undefined')) ? dsc_ezname(var) : dsc_ezname(var,/conf)
 
-dsc_clearopts,tn
-options,tn,title=''
-options,tn[0],colors=250
-options,tn[1:2],colors=208
-options,tn[3],colors='b'
-options,tn[4:5],colors=40,dsc_dycolor=3
+; make sure the data was loaded
+dsc_data_loaded = tnames(tn)
 
-dm = GET_SCREEN_SIZE()
-xsize=0.7*dm[0]
-ysize=0.8*dm[1]
-
-spd_graphics_config
-tstr = time_string(trg)
-
-wtitle = 'DSCOVR: ('+tstr[0]+' - '+tstr[1]+')'
-window,/free,title=wtitle,xsize=xsize,ysize=ysize
-w = !d.window
-foreach n,tn do begin
-	dsc_get_ylimits,n,limstr,trg,/include_err,/buff
-	options,n,yrange=limstr.yrange,ystyle=1
-endforeach
-tplot,tn,trange=trg,title='DSCOVR Overview',window=w 
-dsc_dyplot
-
-if keyword_set(splits) then begin
-	trgs = dindgen(5,start=trg[0],increment=.25*(trg[1]-trg[0]))
-	tstrs = time_string(trgs)
-
-	wtitle = 'DSCOVR 1/4: ('+tstrs[0]+' - '+tstrs[1]+')'
-	window,/free,title=wtitle,xsize=xsize,ysize=ysize
-	w1 = !d.window
-
-	wtitle = 'DSCOVR 2/4: ('+tstrs[1]+' - '+tstrs[2]+')'
-	window,/free,title=wtitle,xsize=xsize,ysize=ysize
-	w2 = !d.window
-
-	wtitle = 'DSCOVR 3/4: ('+tstrs[2]+' - '+tstrs[3]+')'
-	window,/free,title=wtitle,xsize=xsize,ysize=ysize
-	w3 = !d.window
-
-	wtitle = 'DSCOVR 4/4: ('+tstrs[3]+' - '+tstrs[4]+')'
-	window,/free,title=wtitle,xsize=xsize,ysize=ysize
-	w4 = !d.window
-
+if n_elements(dsc_data_loaded) ge 1 then begin
+	dsc_clearopts,tn
+	options,tn,title=''
+	options,tn[0],colors=250
+	options,tn[1:2],colors=208
+	options,tn[3],colors='b'
+	
 	foreach n,tn do begin
-		dsc_get_ylimits,n,limstr,trgs[0:1],/include_err,/buff
+		dsc_get_ylimits,n,limstr,trg,/include_err,/buff
 		options,n,yrange=limstr.yrange,ystyle=1
 	endforeach
-	tplot,tn,trange=trgs[0:1],title='DSCOVR Overview - Split 1 of 4',window=w1 
-	dsc_dyplot
-
-	foreach n,tn do begin
-		dsc_get_ylimits,n,limstr,trgs[1:2],/include_err,/buff
-		options,n,yrange=limstr.yrange,ystyle=1
-	endforeach	
-	tplot,tn,trange=trgs[1:2],title='DSCOVR Overview - Split 2 of 4',window=w2 
-	dsc_dyplot
+	tstr = time_string(trg)
 	
-	foreach n,tn do begin
-		dsc_get_ylimits,n,limstr,trgs[2:3],/include_err,/buff
-		options,n,yrange=limstr.yrange,ystyle=1
-	endforeach
-	tplot,tn,trange=trgs[2:3],title='DSCOVR Overview - Split 3 of 4',window=w3 
-	dsc_dyplot
-	
-	foreach n,tn do begin
-		dsc_get_ylimits,n,limstr,trgs[3:4],/include_err,/buff
-		options,n,yrange=limstr.yrange,ystyle=1
-	endforeach
-	tplot,tn,trange=trgs[3:4],title='DSCOVR Overview - Split 4 of 4',window=w4 
-	dsc_dyplot
-	wr = [w1,w2,w3,w4]
-endif
+	; Command line plotting		
+	if isa(gui,'undefined') then begin	
+		options,tn[4:5],colors=40,dsc_dycolor=3
+				
+		dm = GET_SCREEN_SIZE()
+		xsize=0.7*dm[0]
+		ysize=0.8*dm[1]
+		
+		spd_graphics_config
+		
+		wtitle = 'DSCOVR: ('+tstr[0]+' - '+tstr[1]+')'
+		window,/free,title=wtitle,xsize=xsize,ysize=ysize
+		w = !d.window
 
-if keyword_set(save) then begin
-	dprint,dlevel=2,verbose=verbose,rname+': Saving DSCOVR Overview Plots'
-	
-	; full overview
-	tstr = time_string(trg,format=6)
-	dir = !dsc.save_plots_dir+'gen/'
-	prefix = 'dsc_tplotoverview_'
-	makepng,dir+prefix+tstr[0]+'_'+tstr[1],/mkdir,window=w
-	
-	; 1/4 time splits
-	if keyword_set(splits) then begin
-		tstr = time_string(trgs,format=6)
-		foreach wndw,wr,i do makepng,dir+prefix+tstr[i]+'_'+tstr[i+1]
-	endif
-endif
+		tplot,tn,trange=trg,title='DSCOVR Overview',window=w 
+		dsc_dyplot
+		
+		if keyword_set(splits) then begin
+			trgs = dindgen(5,start=trg[0],increment=.25*(trg[1]-trg[0]))
+			tstrs = time_string(trgs)
+		
+			wtitle = 'DSCOVR 1/4: ('+tstrs[0]+' - '+tstrs[1]+')'
+			window,/free,title=wtitle,xsize=xsize,ysize=ysize
+			w1 = !d.window
+		
+			wtitle = 'DSCOVR 2/4: ('+tstrs[1]+' - '+tstrs[2]+')'
+			window,/free,title=wtitle,xsize=xsize,ysize=ysize
+			w2 = !d.window
+		
+			wtitle = 'DSCOVR 3/4: ('+tstrs[2]+' - '+tstrs[3]+')'
+			window,/free,title=wtitle,xsize=xsize,ysize=ysize
+			w3 = !d.window
+		
+			wtitle = 'DSCOVR 4/4: ('+tstrs[3]+' - '+tstrs[4]+')'
+			window,/free,title=wtitle,xsize=xsize,ysize=ysize
+			w4 = !d.window
+		
+			foreach n,tn do begin
+				dsc_get_ylimits,n,limstr,trgs[0:1],/include_err,/buff
+				options,n,yrange=limstr.yrange,ystyle=1
+			endforeach
+			tplot,tn,trange=trgs[0:1],title='DSCOVR Overview - Split 1 of 4',window=w1 
+			dsc_dyplot
+		
+			foreach n,tn do begin
+				dsc_get_ylimits,n,limstr,trgs[1:2],/include_err,/buff
+				options,n,yrange=limstr.yrange,ystyle=1
+			endforeach	
+			tplot,tn,trange=trgs[1:2],title='DSCOVR Overview - Split 2 of 4',window=w2 
+			dsc_dyplot
+			
+			foreach n,tn do begin
+				dsc_get_ylimits,n,limstr,trgs[2:3],/include_err,/buff
+				options,n,yrange=limstr.yrange,ystyle=1
+			endforeach
+			tplot,tn,trange=trgs[2:3],title='DSCOVR Overview - Split 3 of 4',window=w3 
+			dsc_dyplot
+			
+			foreach n,tn do begin
+				dsc_get_ylimits,n,limstr,trgs[3:4],/include_err,/buff
+				options,n,yrange=limstr.yrange,ystyle=1
+			endforeach
+			tplot,tn,trange=trgs[3:4],title='DSCOVR Overview - Split 4 of 4',window=w4 
+			dsc_dyplot
+			wr = [w1,w2,w3,w4]
+		endif
+		
+		if keyword_set(save) then begin
+			dprint,dlevel=2,verbose=verbose,rname+': Saving DSCOVR Overview Plots'
+			
+			; full overview
+			tstr = time_string(trg,format=6)
+			dir = !dsc.save_plots_dir+'gen/'
+			prefix = 'dsc_tplotoverview_'
+			makepng,dir+prefix+tstr[0]+'_'+tstr[1],/mkdir,window=w
+			
+			; 1/4 time splits
+			if keyword_set(splits) then begin
+				tstr = time_string(trgs,format=6)
+				foreach wndw,wr,i do makepng,dir+prefix+tstr[i]+'_'+tstr[i+1]
+			endif
+		endif
+		wr = [w,wr]
+		dsc_clearopts,tn
+		
+	; Plotting in the GUI
+	endif else begin
+		tplot_options, title='DSCOVR Overview ('+tstr[0]+' - '+tstr[1]+')'
+		fsize=8
+		tn_full = []
+		foreach name,tn do store_data,name,newname='GUIOV_'+name
+		tn = 'GUIOV_'+tn
+		foreach name,tn[4:5] do begin
+			get_data,name,data=d
+			store_data,name,data='GUIOV_'+d
+			tn_full = [tn_full,d]
+		endforeach
+		foreach name,tn_full do store_data,name,newname='GUIOV_'+name
+		tn_full = 'GUIOV_'+tn_full
+		
+		dsc_clearopts,tn_full
+		idx = tn_full.Matches('(\+DY|\-DY)')
+		options,tn_full[where(idx)],colors=3
+		options,tn_full[where(~idx)],colors=40
+		spd_ui_cleanup_tplot,tn_before,create_time_before=cn_before,del_vars=to_delete,new_vars=new_vars
+		
+		tplot_gui, trange=trg, /no_verify, /add_panel, tn, import_only=import_only
 
-; clear options
-dsc_clearopts,tn
+		activeWindow = !spedas.windowStorage->GetActive()
+		activeWindow->GetProperty, panels = panelsObj
+		panels = panelsObj->get(/all)
+		
+    for i = 0,n_elements(panels)-1 do begin
+    	panels[i].getProperty,yaxis=yobj,tracesettings=trobj
+    	if tn[i].Matches('PHI') then begin
+        yobj.setProperty,majortickauto=0,firsttickat=0,majortickevery=90,nummajorticks=5,majortickunits=0
+			endif else if tn[i].Matches('THETA') then begin
+				yobj.setProperty,majortickauto=0,firsttickat=-90,majortickevery=45,nummajorticks=5,majortickunits=0				
+			endif
+			yobj.setProperty,lineatzero=0
+			yobj.getproperty,titleobj=ytitleObj
+			yobj.getproperty,subtitleobj=ysubtitleObj
+			yobj.getproperty,annotatetextobj=atextObj
+			ytitleObj.setProperty,size=fsize+1
+			ysubtitleObj.setProperty,size=fsize
+			atextObj.setProperty,size=fsize
+			ytitleObj.getProperty,value=ytitle
+			
+			; Don't connect gaps
+			lines = trobj.get(/all)
+			foreach line,lines do begin
+				line.setProperty,drawbetweenpts=1,separatedby=5.0,separatedunits=1
+			endforeach
 
-wr = [w,wr]
+			; Nicer legend names
+			newlgd = (tn[i].Matches('_wCONF$')) ? $
+				{panel: i+1, numtraces: 3 , tracenames: ['+DY','-DY',ytitle]} : $
+				{panel: i+1, numtraces: 1 , tracenames: [ytitle]}
+			
+			panels[i].getProperty,legendsettings=lgd
+			lgd.UpdateTraces,newlgd
+    endfor
+		panels[-1].getProperty,xaxis=xobj
+		xobj.getproperty,annotatetextobj=atext
+		atext.setProperty,size=fsize
+		
+		if n_elements(to_delete) gt 0 && is_string(to_delete) then begin
+			store_data,to_delete,/delete
+		endif
+	endelse
+endif else begin
+	dprint, dlevel = 1, 'Error creating DSCOVR overview plot - no data loaded for ' + time_string(trg)
+	error = 1
+endelse
 END

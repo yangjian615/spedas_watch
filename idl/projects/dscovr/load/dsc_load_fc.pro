@@ -134,7 +134,7 @@ if ~((tn.length eq 1) and (tn[0] eq '')) then begin
 		;store DY as separate variables for use by gui and dsc_dyplot
 		add_data,tn[i],dvar,newname=tn[i]+'+DY',copy=2
 		dif_data,tn[i],dvar,newname=tn[i]+'-DY',copy=2
-		store_data,tn[i]+'_wCONF',data=[tn[i]+'+DY',tn[i],tn[i]+'-DY']
+		store_data,tn[i]+'_wCONF',data=[tn[i]+'+DY',tn[i]+'-DY',tn[i]]
 		options,/def,tn[i]+'*DY','labels'
 		options,/def,tn[i]+'+DY',ytitle=ytitle+' +DY',ysubtitle=md.ysubtitle
 		options,/def,tn[i]+'-DY',ytitle=ytitle+' -DY',ysubtitle=md.ysubtitle
@@ -160,12 +160,13 @@ if ~((tn.length eq 1) and (tn[0] eq '')) then begin
 	options,/def,strfilter(tn,'*_V_GSE_* *GSE',delim=' ',/negate),colors=252,dsc_dycolor=5
 	
 	options,/def,strfilter(tndy,'*GSE_wCONF'),dsc_dy=0
-	options,/def,strfilter(tndy,'*_V_*DY'),colors=3
+	options,/def,strfilter(tndy,'*_V_*DY'),colors=[3,3,3]
 	options,/def,strfilter(tndy,'*_V_*CONF'),dsc_dycolor=3
-	options,/def,strfilter(tndy,'*_V_*DY *CONF',delim=' ',/negate),colors=5
+	options,/def,strfilter(tndy,'*_V_*DY *CONF',delim=' ',/negate),colors=[5,5,5]
 	options,/def,strfilter(strfilter(tndy,'*CONF'),'*_V_*',/negate),dsc_dycolor=5
 endif
 
 store_data,delete=del_str
 tn = tnfull
+options,/def,tn,datagap=-1
 END

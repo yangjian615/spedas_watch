@@ -71,4 +71,6 @@ if ~((tn.length eq 1) and (tn[0] eq '')) then begin
 		dsc_set_ytitle,tn[i],metadata=md,verbose=verbose
 	endfor
 endif
+options,/def,tn,datagap=-1
+
 end

@@ -86,5 +86,6 @@ if ~((tn.length eq 1) and (tn[0] eq '')) then begin
 	endfor
 	
 	options,/def,strfilter(tn,'*GSE* *GCI*',delim=' '), colors='bgr'
+	options,/def,tn,datagap=-1
 endif
 end

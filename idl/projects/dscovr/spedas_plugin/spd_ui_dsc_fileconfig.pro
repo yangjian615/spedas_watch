@@ -38,8 +38,9 @@ pro spd_ui_dsc_init_struct,state,struct
 		widget_control,state.nu_on_button,set_button=1
 	endelse
 	
-	widget_control,state.v_droplist,set_combobox_select=struct.verbose
-
+	v_idx = where(['0','1','2','4'] eq struct.verbose.toString(),count)
+	v_idx = (count gt 0) ? v_idx[0] : 2
+	widget_control,state.v_droplist,set_combobox_select=v_idx
 end
 
 PRO spd_ui_dsc_fileconfig_event, event
@@ -124,6 +125,30 @@ PRO spd_ui_dsc_fileconfig_event, event
 
 		END
 		
+		'NDON': BEGIN
+
+			IF event.select EQ 1 then !dsc.no_download=0 else !dsc.no_download=1
+
+		END
+
+		'NDOFF': BEGIN
+
+			IF event.select EQ 1 then !dsc.no_download=1 else !dsc.no_download=0
+
+		END
+
+		'NUON': BEGIN
+
+			IF event.select EQ 1 then !dsc.no_update=0 else !dsc.no_update=1
+
+		END
+
+		'NUOFF': BEGIN
+
+			IF event.select EQ 1 then !dsc.no_update=1 else !dsc.no_update=0
+
+		END
+		
 		'VERBOSE': BEGIN
 
 			!dsc.verbose = long(widget_info(state.v_droplist,/combobox_gettext))
@@ -149,7 +174,9 @@ PRO spd_ui_dsc_fileconfig_event, event
 			endif else begin
 				widget_control,state.nu_on_button,set_button=1
 			endelse  
-			widget_control,state.v_droplist,set_combobox_select=!dsc.verbose
+			v_idx = where(['0','1','2','4'] eq struct.verbose.toString(),count)
+			v_idx = (count gt 0) ? v_idx[0] : 2
+			widget_control,state.v_droplist,set_combobox_select=v_idx
 			state.historywin->update,'Resetting controls to saved values.'
 			state.statusbar->update,'Resetting controls to saved values.'           
 
@@ -208,7 +235,7 @@ PRO spd_ui_dsc_fileconfig, tab_id, historyWin, statusBar
 	compile_opt idl2
 	
 	;check whether the !dsc system variable has been initialized
-	defsysv, 'dsc', exists=exists
+	defsysv, '!dsc', exists=exists
 	if not keyword_set(exists) then dsc_init
 	dsc_cfg_save = !dsc
 	

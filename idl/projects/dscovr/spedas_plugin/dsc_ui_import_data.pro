@@ -64,7 +64,10 @@ pro dsc_ui_import_data,$
 			end
 		'fc':		begin
 			dsc_load_fc,trange=timeRange
-			par_names = 'dsc_'+datatype+'_fc_'+parameters
+			par_names = $
+				['dsc_'+datatype+'_fc_'+parameters, $
+				 'dsc_'+datatype+'_fc_'+parameters+'+DY', $
+				 'dsc_'+datatype+'_fc_'+parameters+'-DY']
 			end
 		else:  dprint,dlevel=1,verbose=!dsc.verbose,rname+': Error loading instrument: ',instrument
 	endcase
@@ -74,6 +77,7 @@ pro dsc_ui_import_data,$
 	if new_vars[0] ne '' then begin
 		;only add the requested new parameters
 		new_vars = ssl_set_intersection([par_names],[new_vars])
+		if instrument eq 'fc' then new_vars = reverse(new_vars) ;For easier select and plot value with +-DY
 		loaded = 1
 		;loop over loaded data
 		for i = 0,n_elements(new_vars)-1 do begin
@@ -98,49 +102,49 @@ pro dsc_ui_import_data,$
 			result = loadedData->add(new_vars[i],mission='DSCOVR',observatory='DSCOVR',instrument=instrument,coordSys=coordSys,added_name=added_name,component_names=component_names)
 
 			; Add deltas where available
-			iplus = where(to_delete eq new_vars[i]+'+DY',countplus)
-			iminus = where(to_delete eq new_vars[i]+'-DY',countminus)
-			if (countplus eq 1) and (countminus eq 1) then begin
-				deltaname = [to_delete[iplus],to_delete[iminus]]
-				dprint,dlevel=2, verbose=!dsc.verbose, format='((A),": Adding ", (A), " and ", (A), " to data group")',rname,deltaname[0],deltaname[1]
-				if (n_elements(component_names) gt 1) then begin		;Vector quantity loaded - load as separate group for clarity
-					foreach delname,deltaname do begin
-						res = loadedData->add(delname,mission='DSCOVR',observatory='DSCOVR',instrument=instrument,coordSys=coordSys)
-					endforeach
-				endif else begin		; Scalar quantity loaded
-					group = loadedData.getGroup(added_name)
-					referenceObj = loadedData.getObjects(name=added_name+'_data')
-					referenceObj->getProperty,yaxisName = yaxisName
-					referenceObj->getProperty,timeName = timeName
-					referenceObj->getProperty,yaxisUnits = yaxisUnits
-
-					foreach delname,deltaname do begin
-						get_data, delname, data=d,limits=l,dlimits=dl
-						deltaObj = obj_new('spd_ui_data',delname) ;;?does this get a dataID in loadedData?
-						dsettings = obj_new('spd_ui_data_settings',delname,0)
-						dsettings->fromLimits,l,dl
-
-						dataPtr = ptr_new(d.y)
-						limitPtr = ptr_new(l)
-						dlimitPtr = ptr_new(dl)
-
-						deltaObj->setProperty, $
-							dataPtr=dataPtr, $
-							dlimitPtr=dlimitPtr, $
-							limitPtr=limitPtr,$
-							yaxisName = yaxisName, $ ;added_name+'_yaxis', $
-							mission='DSCOVR',$
-							observatory='DSCOVR',$
-							coordSys=coordSys,$
-							instrument=instrument,$
-							timeName=timeName, $
-							yaxisUnits=yaxisUnits,$
-							settings=dsettings
-
-						group->add,delname,deltaObj
-					endforeach
-				endelse
-			endif   
+;			iplus = where(to_delete eq new_vars[i]+'+DY',countplus)
+;			iminus = where(to_delete eq new_vars[i]+'-DY',countminus)
+;			if (countplus eq 1) and (countminus eq 1) then begin
+;				deltaname = [to_delete[iplus],to_delete[iminus]]
+;				dprint,dlevel=2, verbose=!dsc.verbose, format='((A),": Adding ", (A), " and ", (A), " to data group")',rname,deltaname[0],deltaname[1]
+;				if (n_elements(component_names) gt 1) then begin		;Vector quantity loaded - load as separate group for clarity
+;					foreach delname,deltaname do begin
+;						res = loadedData->add(delname,mission='DSCOVR',observatory='DSCOVR',instrument=instrument,coordSys=coordSys)
+;					endforeach
+;				endif else begin		; Scalar quantity loaded
+;					group = loadedData.getGroup(added_name)
+;					referenceObj = loadedData.getObjects(name=added_name+'_data')
+;					referenceObj->getProperty,yaxisName = yaxisName
+;					referenceObj->getProperty,timeName = timeName
+;					referenceObj->getProperty,yaxisUnits = yaxisUnits
+;
+;					foreach delname,deltaname do begin
+;						get_data, delname, data=d,limits=l,dlimits=dl
+;						deltaObj = obj_new('spd_ui_data',delname) ;;?does this get a dataID in loadedData?
+;						dsettings = obj_new('spd_ui_data_settings',delname,0)
+;						dsettings->fromLimits,l,dl
+;
+;						dataPtr = ptr_new(d.y)
+;						limitPtr = ptr_new(l)
+;						dlimitPtr = ptr_new(dl)
+;
+;						deltaObj->setProperty, $
+;							dataPtr=dataPtr, $
+;							dlimitPtr=dlimitPtr, $
+;							limitPtr=limitPtr,$
+;							yaxisName = yaxisName, $ ;added_name+'_yaxis', $
+;							mission='DSCOVR',$
+;							observatory='DSCOVR',$
+;							coordSys=coordSys,$
+;							instrument=instrument,$
+;							timeName=timeName, $
+;							yaxisUnits=yaxisUnits,$
+;							settings=dsettings
+;
+;						group->add,delname,deltaObj
+;					endforeach
+;				endelse
+;			endif   
 			
 			if ~result then begin
 				statusBar->update,'Error loading: ' + new_vars[i]

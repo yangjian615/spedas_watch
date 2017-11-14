@@ -49,7 +49,7 @@ PRO DSC_DYPLOT,TVINFO=tvinfo,POS=pos,PANEL=panel,WINDOW=w,COLOR=cf,FORCE=force,V
 	if err ne 0 then begin
 		if err eq -539 then begin
 			dprint,dlevel=1,verbose=verbose,rname+': Invalid TPLOT Window reference. A TPLOT window must be open before calling this procedure.'
-		endif else dprint,dlevel=1,verbose=verbose,rname+': Error. Exiting.'
+		endif else dprint,dlevel=1,verbose=verbose,rname+': Error in dsc_dyplot. Exiting.'
 		catch,/cancel
 		return
 	endif
@@ -83,8 +83,8 @@ PRO DSC_DYPLOT,TVINFO=tvinfo,POS=pos,PANEL=panel,WINDOW=w,COLOR=cf,FORCE=force,V
 	for i=0,n_elements(panel)-1 do begin
 		meta = {init: 0} 
 		get_data,tvinfo.options.varnames[panel[i]],data=d,limit=limit0,dlimit=dlim
-		extract_tags,meta,dlim,tags=['dsc_dy','dsc_dycolor']
-		extract_tags,meta,limit0,tags=['dsc_dy','dsc_dycolor']
+		extract_tags,meta,dlim,tags=['dsc_dy','dsc_dycolor','datagap']
+		extract_tags,meta,limit0,tags=['dsc_dy','dsc_dycolor','datagap']
 
 		; TODO - Ability to delete the dy fill: consider polyfill in the background color for no-draw.. to allow "delete-ing 
 		; without needing to call tplot again first.  how would this play with multi-calls for diff colored panels?
@@ -94,48 +94,95 @@ PRO DSC_DYPLOT,TVINFO=tvinfo,POS=pos,PANEL=panel,WINDOW=w,COLOR=cf,FORCE=force,V
 			if ~cf then color = (tag_exist(meta,'dsc_dycolor')) ? meta.dsc_dycolor : 3
 			if size(d,/type) eq 7 then begin	; string => DY combo variable of 2 or 3 elements
 				if d[0].Matches('\+DY') then begin
-					get_data,d[0],data=d1
-					get_data,d[-1],data=d2
-					xrange = tvinfo.settings.x.crange + tvinfo.settings.time_offset
-					idx = where(d1.x ge xrange[0] and d1.x le xrange[1], count)
-					if count gt 1 then begin
-						dims = size(d1.y,/dim)
-						t_scale = ([d1.x[idx],reverse(d2.x[idx])]-tvinfo.settings.time_offset)/tvinfo.settings.time_scale
-						nx = data_to_normal(t_scale,tvinfo.settings.x)
-						ny = data_to_normal([d1.y[idx,0],reverse(d2.y[idx,0])],tvinfo.settings.y[panel[i]])
-						polyfill,nx,ny,color=color[0],/normal,clip=pos[*,panel[i]],noclip=0
-						
-						if (dims.length gt 1) then begin
-							ncolors = color.length
-							for j=1,dims[1]-1 do begin
-								ny = data_to_normal([d1.y[idx,j],reverse(d2.y[idx,j])],tvinfo.settings.y[panel[i]])
-								polyfill,nx,ny,color=color[(j mod ncolors)],/normal,clip=pos[*,panel[i]],noclip=0
-
-							endfor
+					
+					get_data,d[0],data=d1_all
+					get_data,d[1],data=d2_all
+					if tag_exist(meta,'datagap') then begin
+						x1 = d1_all.x
+						y1 = d1_all.y
+						x2 = d2_all.x
+						y2 = d2_all.y
+						makegap,meta.datagap,x1,y1
+						makegap,meta.datagap,x2,y2
+						dg = where(~finite(y1[*,0]),dgcount)
+						if dgcount gt 0 then begin
+							d1_all = {x:x1, y:y1}
+							d2_all = {x:x2, y:y2}
 						endif
-					endif
+					endif else dgcount = 0
+
+					for pc = 0,dgcount do begin
+						if dgcount eq 0 then begin
+							d1 = d1_all
+							d2 = d2_all
+						endif else begin
+							ix0 = (pc eq 0) ? 0 : dg[pc-1]+1
+							ix1 = (pc eq dgcount) ? n_elements(x)-1 : dg[pc]-1
+							d1 = {x:d1_all.x[ix0:ix1], y:d1_all.y[ix0:ix1,*]}
+							d2 = {x:d2_all.x[ix0:ix1], y:d2_all.y[ix0:ix1,*]}
+						endelse
+
+
+						xrange = tvinfo.settings.x.crange + tvinfo.settings.time_offset
+						idx = where(d1.x ge xrange[0] and d1.x le xrange[1], count)
+						if count gt 1 then begin
+							dims = size(d1.y,/dim)
+							t_scale = ([d1.x[idx],reverse(d2.x[idx])]-tvinfo.settings.time_offset)/tvinfo.settings.time_scale
+							nx = data_to_normal(t_scale,tvinfo.settings.x)
+							ny = data_to_normal([d1.y[idx,0],reverse(d2.y[idx,0])],tvinfo.settings.y[panel[i]])
+							polyfill,nx,ny,color=color[0],/normal,clip=pos[*,panel[i]],noclip=0
+							
+							if (dims.length gt 1) then begin
+								ncolors = color.length
+								for j=1,dims[1]-1 do begin
+									ny = data_to_normal([d1.y[idx,j],reverse(d2.y[idx,j])],tvinfo.settings.y[panel[i]])
+									polyfill,nx,ny,color=color[(j mod ncolors)],/normal,clip=pos[*,panel[i]],noclip=0
+	
+								endfor
+							endif
+						endif
+					endfor
 				endif
 	
 			endif else if size(d,/type) eq 8 then begin
 				if tag_exist(d,'dy') then begin
-					xrange = tvinfo.settings.x.crange + tvinfo.settings.time_offset
-					idx = where(d.x ge xrange[0] and d.x le xrange[1], count)
-					if count gt 1 then begin
-						dims = size(d.y,/dim)
-						t_scale = ([d.x[idx],reverse(d.x[idx])]-tvinfo.settings.time_offset)/tvinfo.settings.time_scale
-						nx = data_to_normal(t_scale,tvinfo.settings.x)
-						ny = data_to_normal([d.y[idx,0]+d.dy[idx,0],reverse(d.y[idx,0]-d.dy[idx,0])],tvinfo.settings.y[panel[i]])
-						polyfill,nx,ny,color=color[0],/normal,clip=pos[*,panel[i]],noclip=0
-						
-						if (dims.length gt 1) then begin
-							ncolors = color.length
-							for j=1,dims[1]-1 do begin
-								ny = data_to_normal([d.y[idx,j]+d.dy[idx,j],reverse(d.y[idx,j]-d.dy[idx,j])],tvinfo.settings.y[panel[i]])
-								polyfill,nx,ny,color=color[(j mod ncolors)],/normal,clip=pos[*,panel[i]],noclip=0
-							endfor
+					if tag_exist(meta,'datagap') then begin
+						x = d.x
+						y = d.y
+						dy = (tag_exist(d,'dy')) ? d.dy : []
+						makegap,meta.datagap,x,y,dy=dy
+						dg = where(~finite(y[*,0]),dgcount)
+						if dgcount gt 0 then d = isa(dy,/null) ? {x:x, y:y} : {x:x, y:y, dy:dy}
+					endif else dgcount = 0
+					
+					for pc = 0,dgcount do begin
+						if dgcount eq 0 then begin
+							dpc = d
+						endif else begin
+							ix0 = (pc eq 0) ? 0 : dg[pc-1]+1
+							ix1 = (pc eq dgcount) ? n_elements(d.x)-1 : dg[pc]-1
+							dpc = {x:d.x[ix0:ix1], y:d.y[ix0:ix1,*], dy:d.dy[ix0:ix1,*]}
+						endelse
+				
+						xrange = tvinfo.settings.x.crange + tvinfo.settings.time_offset
+						idx = where(dpc.x ge xrange[0] and dpc.x le xrange[1], count)
+						if count gt 1 then begin
+							dims = size(dpc.y,/dim)
+							t_scale = ([dpc.x[idx],reverse(dpc.x[idx])]-tvinfo.settings.time_offset)/tvinfo.settings.time_scale
+							nx = data_to_normal(t_scale,tvinfo.settings.x)
+							ny = data_to_normal([dpc.y[idx,0]+dpc.dy[idx,0],reverse(dpc.y[idx,0]-dpc.dy[idx,0])],tvinfo.settings.y[panel[i]])
+							polyfill,nx,ny,color=color[0],/normal,clip=pos[*,panel[i]],noclip=0
+							
+							if (dims.length gt 1) then begin
+								ncolors = color.length
+								for j=1,dims[1]-1 do begin
+									ny = data_to_normal([dpc.y[idx,j]+dpc.dy[idx,j],reverse(dpc.y[idx,j]-dpc.dy[idx,j])],tvinfo.settings.y[panel[i]])
+									polyfill,nx,ny,color=color[(j mod ncolors)],/normal,clip=pos[*,panel[i]],noclip=0
+								endfor
+							endif
+	
 						endif
-
-					endif
+					endfor
 				endif
 			endif
 		endif else dprint, dlevel=2, verbose=verbose, format='((A),": Not drawing panel:",(I3),". Check the ''dsc_dy'' option flag.")',rname,panel[i]+1
@@ -143,3 +190,4 @@ PRO DSC_DYPLOT,TVINFO=tvinfo,POS=pos,PANEL=panel,WINDOW=w,COLOR=cf,FORCE=force,V
 	endfor
 	tplot,/oplot,old_tvars=tvinfo
 END
+
