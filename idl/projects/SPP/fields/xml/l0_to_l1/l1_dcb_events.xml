@@ -1,0 +1,154 @@
+<?xml version ="1.0" encoding ="UTF-8"?>
+
+<items>
+
+  <tmlib
+  	tmlib_event = 'dcb_events'
+  	>
+  </tmlib>
+
+  <cdf_global
+      Title = "SPP FIELDS DCB Events"
+      Descriptor = "DCB>Data Control Board"
+      Data_type = "Digital housekeeping data"
+      Data_version = "0"
+      TEXT = "SPP FIELDS DCB Digital Housekeeping Data"
+      Mods = "Revision 0"
+      Logical_source = "SPP_FLD_DCB_EVENTS"
+      Logical_source_description = "SPP FIELDS DCB Events"
+      Dependencies = "None"
+      >
+  </cdf_global>
+
+  <idl_att
+      convert_routine = 'spp_fld_dcb_events_convert'>
+  </idl_att>
+
+  <cdf_var
+      name = "EVNTCODE"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "EVNTCODE"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "EVNTCODE"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "2147483647"
+        VALIDMAX = "-2147483647"
+        SCALEMIN = "2147483647"
+        SCALEMAX = "-2147483647"
+        UNITS = "None"
+        CATDESC = "DCB Event Code"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "EVNTTIME"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "EVNTTIME"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "EVNTTIME"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "2147483647"
+        VALIDMAX = "-2147483647"
+        SCALEMIN = "2147483647"
+        SCALEMAX = "-2147483647"
+        UNITS = "None"
+        CATDESC = "DCB Event Time MET"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "TDS_BURST_TIME_MET"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "TDS_BURST_TIME_MET"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "TDS_BURST_TIME_MET"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "2147483647"
+        VALIDMAX = "-2147483647"
+        SCALEMIN = "2147483647"
+        SCALEMAX = "-2147483647"
+        UNITS = "None"
+        CATDESC = "TDS Burst Time (MET)"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "TDS_BURST_TIME_UR8"
+      type = "double">
+    <cdf_att
+        FIELDNAM = "TDS_BURST_TIME_UR8"
+        FORMAT = "F15.3"
+        LABLAXIS = "TDS_BURST_TIME_UR8"
+        DATA_TYPE = "CDF_DOUBLE"
+        VAR_TYPE = "data"
+        FILLVAL = "-1.0E31"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-1.0E31"
+        VALIDMAX = "1.0E31"
+        SCALEMIN = "-1.0E31"
+        SCALEMAX = "1.0E31"
+        UNITS = "UR8 Time"
+        CATDESC = "TDS Burst Time (UR8)"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "DFB_BURST_TIME_MET"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "DFB_BURST_TIME_MET"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "DFB_BURST_TIME_MET"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "2147483647"
+        VALIDMAX = "-2147483647"
+        SCALEMIN = "2147483647"
+        SCALEMAX = "-2147483647"
+        UNITS = "None"
+        CATDESC = "DFB Burst Time (MET)"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "DFB_BURST_TIME_UR8"
+      type = "double">
+    <cdf_att
+        FIELDNAM = "DFB_BURST_TIME_UR8"
+        FORMAT = "F15.3"
+        LABLAXIS = "DFB_BURST_TIME_UR8"
+        DATA_TYPE = "CDF_DOUBLE"
+        VAR_TYPE = "data"
+        FILLVAL = "-1.0E31"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-1.0E31"
+        VALIDMAX = "1.0E31"
+        SCALEMIN = "-1.0E31"
+        SCALEMAX = "1.0E31"
+        UNITS = "UR8 Time"
+        CATDESC = "DFB Burst Time (UR8)"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+
+</items>

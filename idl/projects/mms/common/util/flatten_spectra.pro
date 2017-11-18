@@ -18,14 +18,14 @@
 ; NOTES:
 ;     work in progress; suggestions, comments, complaints, etc: egrimes@igpp.ucla.edu
 ;     
-;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-10-20 13:02:00 -0700 (Fri, 20 Oct 2017) $
-;$LastChangedRevision: 24201 $
+;$LastChangedBy: adrozdov $
+;$LastChangedDate: 2017-11-16 20:45:18 -0800 (Thu, 16 Nov 2017) $
+;$LastChangedRevision: 24294 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/util/flatten_spectra.pro $
 ;-
 
 
-pro flatten_spectra, xlog=xlog, ylog=ylog
+pro flatten_spectra, xlog=xlog, ylog=ylog, xrange=xrange, yrange=yrange
   @tplot_com.pro
   
   ctime,t,npoints=1,prompt="Use cursor to select a time to plot the spectra",$
@@ -36,9 +36,22 @@ pro flatten_spectra, xlog=xlog, ylog=ylog
   window, 1
   !P.MULTI = [0, 1, 1]
   
+  ; determine max and min
+  if N_ELEMENTS(xrange) ne 2 or N_ELEMENTS(yrange) ne 2 then begin
+    for v_idx=0, n_elements(vars_to_plot)-1 do begin
+      get_data, vars_to_plot[v_idx], data=vardata
+      tmp = min(vardata.X - t, /ABSOLUTE, idx_to_plot) ; get the time index
+      append_array,yr,reform(vardata.Y[idx_to_plot, *])
+      if dimen2(vardata.v) eq 1 then  append_array,xr,reform(vardata.v) else append_array,xr,reform(vardata.v[idx_to_plot, *])     
+    endfor
+  endif
+  if N_ELEMENTS(xrange) ne 2 then xrange = KEYWORD_SET(xlog) ? [min(xr(where(xr>0))), max(xr(where(xr>0)))] : [min(xr), max(xr)]
+  if N_ELEMENTS(yrange) ne 2 then yrange = KEYWORD_SET(ylog) ? [min(yr(where(yr>0))), max(yr(where(yr>0)))] : [min(yr), max(yr)]
+  
   for v_idx=0, n_elements(vars_to_plot)-1 do begin
 
-      get_data, vars_to_plot[v_idx], data=vardata
+      get_data, vars_to_plot[v_idx], data=vardata, limits=tplot_lims
+      ; append_array,lims,tplot_lims
 
       time_to_plot = find_nearest_neighbor(vardata.X, t)
       idx_to_plot = where(vardata.X eq time_to_plot)
@@ -47,7 +60,9 @@ pro flatten_spectra, xlog=xlog, ylog=ylog
       if dimen2(vardata.v) eq 1 then x_data = vardata.v else x_data = vardata.v[idx_to_plot, *]
 
       if v_idx eq 0 then begin
-        plot, x_data, xlog=xlog, ylog=ylog, data_to_plot[0, *], charsize=2.0, title=time_string(t, tformat='YYYY-MM-DD/hh:mm:ss.fff')
+        plot, x_data, data_to_plot[0, *], $
+          xlog=xlog, ylog=ylog, xrange=xrange, yrange=yrange, $
+          charsize=2.0, title=time_string(t, tformat='YYYY-MM-DD/hh:mm:ss.fff')
       endif else begin
         oplot, x_data, data_to_plot[0, *], color=v_idx*2
       endelse

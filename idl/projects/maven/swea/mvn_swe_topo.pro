@@ -51,9 +51,14 @@
 ;                    parameters. 1: 0-30 deg, 2: 0-45 deg, 3: 0-60 deg.
 ;                    The default is 0-30 deg.
 ;
+;       filter_reg:  Using SWIA data to identify solar wind/sheath regions,
+;                    by restoring save files created with 'mvn_swia_regid'. 
+;                    ID=1, solar wind; ID=2, sheath. The topology for these 
+;                    two regions will be overwritten with draped.
+;
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-11-03 13:15:58 -0700 (Fri, 03 Nov 2017) $
-; $LastChangedRevision: 24257 $
+; $LastChangedDate: 2017-11-17 15:15:58 -0800 (Fri, 17 Nov 2017) $
+; $LastChangedRevision: 24306 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_topo.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 11/03/2017
@@ -61,7 +66,7 @@
 
 Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
                     tbl = tbl, orbit = orbit, thrd_shp=thrd_shp,fthrd=fthrd, $
-                    lcThreshold = lcThreshold, parng=parng
+                    lcThreshold = lcThreshold, parng=parng, filter_reg=filter_reg
 
     if keyword_set(orbit) then begin
         imin = min(orbit, max=imax)
@@ -169,6 +174,19 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     toponame=['0-unknown','1-dayside close','2-X-terminator closed',$
               '3-nightside closed','4-void (closed)',$
             '5-open to dayside','6-open to nightside','7-draped']
+
+    if keyword_set(filter_reg) then begin
+       mvn_swe_regid_restore,res=regid,/tplot
+       if (size(regid,/type) eq 8) then begin
+          inid=nn(regid.time,data.t)
+          id=regid[inid].id
+          gap=where(abs(data.t-regid[inid].time) ge 60,count) ;> 60s
+          if (count gt 0L) then id[gap]=0
+          infilter = where(id eq 1 or id eq 2,count) ; 1--solar wind, 2--sheath
+          if (count gt 0L) then topo[infilter] = 7 ; overwrite these regions to draped
+       endif
+    endif
+
     result = {time:data.t, topo:topo, toponame:toponame}
 
     if keyword_set(storeTplot) then begin
