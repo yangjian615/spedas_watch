@@ -29,10 +29,10 @@
 ;					
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-11-20 12:45:47 -0800 (Mon, 20 Nov 2017) $
+; $LastChangedRevision: 24321 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/dscovr/plot/dsc_dyplot.pro $
 ;-
 
 PRO DSC_DYPLOT,TVINFO=tvinfo,POS=pos,PANEL=panel,WINDOW=w,COLOR=cf,FORCE=force,VERBOSE=verbose
@@ -95,8 +95,9 @@ PRO DSC_DYPLOT,TVINFO=tvinfo,POS=pos,PANEL=panel,WINDOW=w,COLOR=cf,FORCE=force,V
 			if size(d,/type) eq 7 then begin	; string => DY combo variable of 2 or 3 elements
 				if d[0].Matches('\+DY') then begin
 					
-					get_data,d[0],data=d1_all
-					get_data,d[1],data=d2_all
+					get_data,d[0],data=d1_all  ;+DY
+					get_data,d[-1],data=d2_all ;-DY
+
 					if tag_exist(meta,'datagap') then begin
 						x1 = d1_all.x
 						y1 = d1_all.y

@@ -20,10 +20,10 @@
 ;
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-11-20 12:45:47 -0800 (Mon, 20 Nov 2017) $
+; $LastChangedRevision: 24321 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/dscovr/load/dsc_set_ytitle.pro $
 ;-
 
 PRO DSC_SET_YTITLE,TVAR,METADATA=md,TITLE=title,VERBOSE=verbose

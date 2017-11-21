@@ -37,10 +37,10 @@
 ;
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-11-20 12:45:47 -0800 (Mon, 20 Nov 2017) $
+; $LastChangedRevision: 24321 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/dscovr/plot/dsc_overview_mag.pro $
 ;-
 PRO DSC_OVERVIEW_MAG,DATE,TRANGE=trg,SPLITS=splits,SAVE=save,VERBOSE=verbose,WREF=wr, $
 	ERROR=error,GUI=gui,IMPORT_ONLY=import_only
@@ -89,7 +89,7 @@ tn = dsc_ezname(var)
 ; make sure the data was loaded
 dsc_data_loaded = tnames(tn)
 
-if n_elements(dsc_data_loaded) ge 1 then begin
+if n_elements(dsc_data_loaded) eq n_elements(tn) then begin
 	dsc_clearopts,tn
 	options,tn,title='',labels=''
 
@@ -203,6 +203,20 @@ if n_elements(dsc_data_loaded) ge 1 then begin
 			endif else if tn[i].Matches('THETA') then begin
 				yobj.setProperty,majortickauto=0,firsttickat=-90,majortickevery=45,nummajorticks=5,majortickunits=0
 			endif
+
+			; Don't connect gaps
+			numtraces = trobj.count()
+			if numtraces gt 0 then begin
+				lines = trobj.get(/all)
+				foreach line,lines do begin
+					line.setProperty,drawbetweenpts=1,separatedby=5.0,separatedunits=1
+				endforeach
+			endif	else begin
+				dprint,dlevel=1,verbose=verbose,rname+': No data in panel '+(i+1).toString()
+				error = 1
+				return
+			endelse
+
 			yobj.setProperty,lineatzero=0
 			yobj.getproperty,titleobj=ytitleObj
 			yobj.getproperty,subtitleobj=ysubtitleObj
@@ -212,14 +226,15 @@ if n_elements(dsc_data_loaded) ge 1 then begin
 			atextObj.setProperty,size=fsize
 			ytitleObj.getProperty,value=ytitle
 
-			; Don't connect gaps
-			lines = trobj.get(/all)
-			foreach line,lines do begin
-				line.setProperty,drawbetweenpts=1,separatedby=5.0,separatedunits=1
-			endforeach
-
 			; Nicer legend names
-			newlgd = {panel: i+1, numtraces: 1 , tracenames: [ytitle]}
+			if numtraces eq 1 then begin
+				newlgd = {panel: i+1, numtraces: 1 , tracenames: [ytitle]}
+			endif else begin
+				dprint,dlevel=1,verbose=verbose,rname+': Unexpected number of traces in panel '+(i+1).toString()
+				error = 1
+				return
+			endelse
+
 			panels[i].getProperty,legendsettings=lgd
 			lgd.UpdateTraces,newlgd
 		endfor

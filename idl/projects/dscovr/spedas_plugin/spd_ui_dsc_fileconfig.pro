@@ -9,10 +9,10 @@
 ; 
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-11-20 12:45:47 -0800 (Mon, 20 Nov 2017) $
+; $LastChangedRevision: 24321 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/dscovr/spedas_plugin/spd_ui_dsc_fileconfig.pro $
 ;--------------------------------------------------------------------------------
 
 pro spd_ui_dsc_init_struct,state,struct

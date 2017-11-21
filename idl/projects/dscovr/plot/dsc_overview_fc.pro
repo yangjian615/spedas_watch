@@ -37,10 +37,10 @@
 ;
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-11-20 12:45:47 -0800 (Mon, 20 Nov 2017) $
+; $LastChangedRevision: 24321 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/dscovr/plot/dsc_overview_fc.pro $
 ;-
 PRO DSC_OVERVIEW_FC,DATE,TRANGE=trg,SPLITS=splits,SAVE=save,VERBOSE=verbose,WREF=wr, $
 	ERROR=error,GUI=gui,IMPORT_ONLY=import_only
@@ -90,7 +90,7 @@ tn = (isa(gui,'undefined')) ? dsc_ezname(var) : dsc_ezname(var,/conf)
 ; make sure the data was loaded
 dsc_data_loaded = tnames(tn)
 
-if n_elements(dsc_data_loaded) ge 1 then begin
+if n_elements(dsc_data_loaded) eq n_elements(tn) then begin
 	dsc_clearopts,tn
 	options,tn,title='',labels=''
 
@@ -205,8 +205,6 @@ if n_elements(dsc_data_loaded) ge 1 then begin
 		options,tn[0],colors='b'
 		idx_dy = tn_full.Matches('(\+DY|\-DY)')
 		idx_v = tn_full.Matches('_V_')
-		options,tn_full[where(idx_dy and idx_v)],colors=3
-		options,tn_full[where(idx_dy and ~idx_v)],colors=186
 		options,tn_full[where(~idx_dy and idx_v)],colors=40
 		options,tn_full[where(~idx_dy and ~idx_v)],colors=252
 		spd_ui_cleanup_tplot,tn_before,create_time_before=cn_before,del_vars=to_delete,new_vars=new_vars
@@ -218,7 +216,21 @@ if n_elements(dsc_data_loaded) ge 1 then begin
 		panels = panelsObj->get(/all)
 		
     for i = 0,n_elements(panels)-1 do begin
-    	panels[i].getProperty,yaxis=yobj,tracesettings=trobj
+    	panels[i].getProperty,yaxis=yobj,tracesettings=trobj,tracefillsettings=tfobj
+
+    	; Don't connect gaps
+    	numtraces = trobj.count()
+    	if numtraces gt 0 then begin
+    		lines = trobj.get(/all)
+    		foreach line,lines do begin
+    			line.setProperty,drawbetweenpts=1,separatedby=5.0,separatedunits=1
+    		endforeach
+    	endif	else begin
+    		dprint,dlevel=1,verbose=verbose,rname+': No data in panel '+(i+1).toString()
+    		error = 1
+    		return
+    	endelse
+
 			yobj.setProperty,lineatzero=0
 			yobj.getproperty,titleobj=ytitleObj
 			yobj.getproperty,subtitleobj=ysubtitleObj
@@ -228,17 +240,29 @@ if n_elements(dsc_data_loaded) ge 1 then begin
 			ysubtitleObj.setProperty,size=fsize
 			atextObj.setProperty,size=fsize
 
-			; Don't connect gaps
-			lines = trobj.get(/all)
-			foreach line,lines do begin
-				line.setProperty,drawbetweenpts=1,separatedby=5.0,separatedunits=1
-			endforeach
-			
-			; Nicer legend names
-			newlgd = (tn[i].Matches('_wCONF$')) ? $
-				{panel: i+1, numtraces: 3 , tracenames: ['+DY','-DY',ytitle]} : $
-				{panel: i+1, numtraces: 1 , tracenames: [ytitle]}
-			
+			if tn[i].Matches('_wCONF$')&& (numtraces eq 3) then begin
+				;Fill area between the +-DY traces
+				lines[0].getproperty,datax=x1,datay=y1,linestyle=lnst1
+				lines[-1].getproperty,datax=x2,datay=y2,linestyle=lnst2
+				lnst1.setProperty,show=0,color=[100,100,100]  ;Change color so it's reflected in legend
+				lnst2.setProperty,show=0,color=[100,100,100]
+				linefill = obj_new('spd_ui_linefill_settings', $
+					datax1=x1,datay1=y1, $
+					datax2=x2,datay2=y2, $
+					fillcolor = [100,100,100], $
+					opacity = .4)
+				tfobj.add,linefill
+
+				;Nicer legend names
+				newlgd = {panel: i+1, numtraces: 3 , tracenames: ['+DY',ytitle,'-DY']}
+			endif else if numtraces eq 1 then begin
+				newlgd = {panel: i+1, numtraces: 1 , tracenames: [ytitle]}
+			endif else begin
+				dprint,dlevel=1,verbose=verbose,rname+': Unexpected number of traces in panel '+(i+1).toString()
+				error = 1
+				return
+			endelse
+				
 			panels[i].getProperty,legendsettings=lgd
 			lgd.UpdateTraces,newlgd
     endfor

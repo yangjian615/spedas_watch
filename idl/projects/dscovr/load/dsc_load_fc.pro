@@ -28,10 +28,10 @@
 ;		
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
-; $LastChangedBy: $
-; $LastChangedDate: $
-; $LastChangedRevision: $
-; $URL: $
+; $LastChangedBy: nikos $
+; $LastChangedDate: 2017-11-20 12:45:47 -0800 (Mon, 20 Nov 2017) $
+; $LastChangedRevision: 24321 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/dscovr/load/dsc_load_fc.pro $
 ;-
 
 PRO DSC_LOAD_FC,TYPE=type,TRANGE=trange,DOWNLOADONLY=downloadonly,VARFORMAT=varformat, $
@@ -134,7 +134,7 @@ if ~((tn.length eq 1) and (tn[0] eq '')) then begin
 		;store DY as separate variables for use by gui and dsc_dyplot
 		add_data,tn[i],dvar,newname=tn[i]+'+DY',copy=2
 		dif_data,tn[i],dvar,newname=tn[i]+'-DY',copy=2
-		store_data,tn[i]+'_wCONF',data=[tn[i]+'+DY',tn[i]+'-DY',tn[i]]
+		store_data,tn[i]+'_wCONF',data=[tn[i]+'+DY',tn[i],tn[i]+'-DY']
 		options,/def,tn[i]+'*DY','labels'
 		options,/def,tn[i]+'+DY',ytitle=ytitle+' +DY',ysubtitle=md.ysubtitle
 		options,/def,tn[i]+'-DY',ytitle=ytitle+' -DY',ysubtitle=md.ysubtitle
@@ -157,13 +157,15 @@ if ~((tn.length eq 1) and (tn[0] eq '')) then begin
 	; Set variable specific plot options
 	options,/def,strfilter(tn,'*GSE'), colors='bgr',dsc_dy=0
 	options,/def,strfilter(tn,'*V_GSE_*'),colors=40,dsc_dycolor=3
-	options,/def,strfilter(tn,'*_V_GSE_* *GSE',delim=' ',/negate),colors=252,dsc_dycolor=5
+	options,/def,strfilter(tn,'*_V_GSE_* *GSE',delim=' ',/negate),colors=252,dsc_dycolor=186
 	
 	options,/def,strfilter(tndy,'*GSE_wCONF'),dsc_dy=0
 	options,/def,strfilter(tndy,'*_V_*DY'),colors=[3,3,3]
 	options,/def,strfilter(tndy,'*_V_*CONF'),dsc_dycolor=3
-	options,/def,strfilter(tndy,'*_V_*DY *CONF',delim=' ',/negate),colors=[5,5,5]
-	options,/def,strfilter(strfilter(tndy,'*CONF'),'*_V_*',/negate),dsc_dycolor=5
+
+	options,/def,strfilter(tndy,'*_V_*DY *CONF',delim=' ',/negate),colors=186
+	options,/def,strfilter(strfilter(tndy,'*CONF'),'*_V_*',/negate),dsc_dycolor=186
+
 endif
 
 store_data,delete=del_str
