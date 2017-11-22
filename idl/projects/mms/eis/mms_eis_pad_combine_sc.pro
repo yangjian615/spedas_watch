@@ -16,8 +16,8 @@
 ;         datatype:     extof (default), phxtof, electronenergy
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-11-20 12:00:22 -0800 (Mon, 20 Nov 2017) $
-; $LastChangedRevision: 24319 $
+; $LastChangedDate: 2017-11-21 14:31:32 -0800 (Tue, 21 Nov 2017) $
+; $LastChangedRevision: 24335 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/eis/mms_eis_pad_combine_sc.pro $
 ; 
 ; CREATED BY: I. Cohen, 2017-08-14
@@ -31,7 +31,8 @@
 ;                                   of mms_eis_pad.pro and mms_eis_pad_combine_proton_pad.pro;
 ;                                   replaced species keyword definition with species and removed
 ;                                   species
-;       + 2017-11-20, E. Grimes   : implemented suffix keyword, fixed issues with data_rate != brst
+;       + 2017-11-20, E. Grimes   : implemented suffix keyword, fixed issues with data_rate != brst, 
+;                                   updated to allow different data_units values
 ;
 ;-
 pro mms_eis_pad_combine_sc, probes = probes, trange = trange, species = species, level = level, data_rate = data_rate, $
@@ -90,8 +91,8 @@ pro mms_eis_pad_combine_sc, probes = probes, trange = trange, species = species,
   allmms_pad_avg = dblarr(n_elements(temp_refprobe.x),n_elements(temp_refprobe.v1))                                                                           ; time x bins
   ;
   for pp=0,n_elements(probes)-1 do begin                                                                                                                      ; loop through telescopes
-    if data_rate eq 'brst' then thissc_pad_vars = tnames('mms'+probes[pp]+'_epd_eis_brst_'+datatype+'*'+species+'_flux_omni'+suffix+'_pad') else $
-      thissc_pad_vars = tnames('mms'+probes[pp]+'_epd_eis_'+datatype+'*'+species+'_flux_omni'+suffix+'_pad')
+    if data_rate eq 'brst' then thissc_pad_vars = tnames('mms'+probes[pp]+'_epd_eis_brst_'+datatype+'*'+species+'_'+data_units+'_omni'+suffix+'_pad') else $
+      thissc_pad_vars = tnames('mms'+probes[pp]+'_epd_eis_'+datatype+'*'+species+'_'+data_units+'_omni'+suffix+'_pad')
     ;
     for ee=0,n_elements(common_energy)-1 do begin
        get_data,thissc_pad_vars[ee],data=temp_data_pad
@@ -105,17 +106,17 @@ pro mms_eis_pad_combine_sc, probes = probes, trange = trange, species = species,
     for tt=0,n_elements(temp_refprobe.x)-1 do for bb=0,n_elements(temp_refprobe.v1)-1 do allmms_pad_energy_avg[tt,bb,ee] = average(allmms_pad_thisenergy[tt,bb,ee,*],/NAN)
     ;
     allmms_pad_energy_avg[where(allmms_pad_energy_avg eq 0)] = !Values.d_NAN
-    store_data, allmms_prefix+datatype+'_'+strtrim(string(fix(common_energy[ee])),2)+'keV_'+species+'_flux_omni'+suffix+'_pad', data={x:temp_refprobe.x,y:reform(allmms_pad_energy_avg[*,*,ee]),v:pa_label}
+    store_data, allmms_prefix+datatype+'_'+strtrim(string(fix(common_energy[ee])),2)+'keV_'+species+'_'+data_units+'_omni'+suffix+'_pad', data={x:temp_refprobe.x,y:reform(allmms_pad_energy_avg[*,*,ee]),v:pa_label}
     options, allmms_prefix+datatype+'_'+strtrim(string(fix(common_energy[ee])),2)+'keV_'+species+'_flux_omni'+suffix+'_pad', yrange = [0,180], ystyle=1, spec = 1, no_interp=1, $
       ysubtitle=strtrim(string(fix(common_energy[ee])),2)+'keV!CPA [Deg]',ztitle='Intensity!C[1/cm!U-2!N-sr-s-keV]',minzlog=.001
     zlim, allmms_prefix+datatype+'_'+strtrim(string(fix(common_energy[ee])),2)+'keV_'+species+'_flux_omni'+suffix+'_pad', 5e2, 1e4, 1
   endfor
   ;
-  store_data,allmms_prefix+datatype+'_'+species+'_flux_omni'+suffix+'_pads',data={x:temp_refprobe.x,y:allmms_pad_energy_avg,v1:pa_label,v2:common_energy}
+  store_data,allmms_prefix+datatype+'_'+species+'_'+data_units+'_omni'+suffix+'_pads',data={x:temp_refprobe.x,y:allmms_pad_energy_avg,v1:pa_label,v2:common_energy}
   ;
   allmms_pad_energy_avg[where(allmms_pad_energy_avg eq 0)] = !Values.d_NAN
   for tt=0,n_elements(temp_refprobe.x)-1 do for bb=0,n_elements(temp_refprobe.v1)-1 do allmms_pad_avg[tt,bb] = average(allmms_pad_energy_avg[tt,bb,*],/NAN)
-  store_data, allmms_prefix+datatype+'_'+strtrim(string(fix(common_energy[0])),2)+'-'+strtrim(string(fix(common_energy[-1])),2)+'keV_'+species+'_flux_omni'+suffix+'_pad', data={x:temp_refprobe.x,y:allmms_pad_avg,v:pa_label}
+  store_data, allmms_prefix+datatype+'_'+strtrim(string(fix(common_energy[0])),2)+'-'+strtrim(string(fix(common_energy[-1])),2)+'keV_'+species+'_'+data_units+'_omni'+suffix+'_pad', data={x:temp_refprobe.x,y:allmms_pad_avg,v:pa_label}
   options, allmms_prefix+datatype+'_'+strtrim(string(fix(common_energy[0])),2)+'-'+strtrim(string(fix(common_energy[-1])),2)+'keV_'+species+'_flux_omni'+suffix+'_pad', yrange = [0,180], ystyle=1, spec = 1, no_interp=1, $
     ysubtitle=strtrim(string(fix(common_energy[0])),2)+'-'+strtrim(string(fix(common_energy[-1])),2)+'keV!CPA [Deg]',ztitle='Intensity!C[1/cm!U-2!N-sr-s-keV]',minzlog=.001, /extend_y_edges
   zlim, allmms_prefix+datatype+'_'+strtrim(string(fix(common_energy[0])),2)+'-'+strtrim(string(fix(common_energy[-1])),2)+'keV_'+species+'_flux_omni'+suffix+'_pad', 5e2, 1e4, 1
