@@ -23,10 +23,13 @@
 ;       Based on SDC routine that produces historical orbit plots for MMS originally 
 ;       by Kris Larsen, Kim Kokkonen, Chris Lindholm; egrimes heisted the important parts
 ;       and turned this into a SPEDAS routine on November 27, 2017
+; 
+; NOTES: 
+;       terminator line on Earth is probably going to be incorrect when plane is specified to be YZ
 ;       
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-11-27 14:48:57 -0800 (Mon, 27 Nov 2017) $
-; $LastChangedRevision: 24350 $
+; $LastChangedDate: 2017-11-29 12:18:56 -0800 (Wed, 29 Nov 2017) $
+; $LastChangedRevision: 24357 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_orbit_plot.pro $
 ;-
 
