@@ -38,8 +38,8 @@
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-11-20 12:45:47 -0800 (Mon, 20 Nov 2017) $
-; $LastChangedRevision: 24321 $
+; $LastChangedDate: 2017-12-07 11:07:29 -0800 (Thu, 07 Dec 2017) $
+; $LastChangedRevision: 24410 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/dscovr/plot/dsc_overview.pro $
 ;-
 PRO DSC_OVERVIEW,DATE,TRANGE=trg,SPLITS=splits,SAVE=save,VERBOSE=verbose,WREF=wr, $
@@ -62,10 +62,10 @@ endif
 
 date_err_msg = 'Date Input Error'
 if isa(date,'undefined') then begin
-	if (~isa(trg,/float,/array) and ~isa(trg,/string,/array))  then mesage,date_err_msg 
+	if (~isa(trg,/float,/array) and ~isa(trg,/string,/array))  then message,date_err_msg 
 	trg = timerange(trg)
 endif else begin
-	if (~isa(date,/string,/scalar)) then mesage,date_err_msg
+	if (~isa(date,/string,/scalar)) then message,date_err_msg
 	timespan,date,1,/day
 	trg = timerange()
 endelse
