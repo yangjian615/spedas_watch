@@ -37,11 +37,12 @@
 ; MODIFICATION HISTORY:
 ;       Written by Pascal Saint-Hilaire (Saint-Hilaire@astro.phys.ethz.ch), 
 ;            May 2002
-;               
+;       Changed the name to avoid conflicts, jmm, 2017-12-13, no other
+;       changes from the SSW version               
 ;-
 
 ;====================================================================================
-FUNCTION geo2mag,incoord
+FUNCTION barrel_geo2mag,incoord
 
         ; SOME 'constants'...
         Dlong=288.59D   ; longitude (in degrees) of Earth's magnetic south pole
