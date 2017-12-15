@@ -28,8 +28,8 @@
 ;       terminator line on Earth is probably going to be incorrect when plane is specified to be YZ
 ;       
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-11-29 12:18:56 -0800 (Wed, 29 Nov 2017) $
-; $LastChangedRevision: 24357 $
+; $LastChangedDate: 2017-12-14 13:23:43 -0800 (Thu, 14 Dec 2017) $
+; $LastChangedRevision: 24420 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/mec/mms_orbit_plot.pro $
 ;-
 
@@ -38,8 +38,6 @@ pro mms_orbit_plot, trange=trange, probes=probes, xrange=xrange, yrange=yrange, 
   if undefined(plane) then plane = 'xy' else plane = strlowcase(plane)
   if undefined(coord) then coord='gse' else coord=strlowcase(coord)
   if undefined(probes) then probes = [1, 2, 3, 4]
-  if undefined(xrange) then xrange = [10,-10]
-  if undefined(yrange) then yrange = [3,-17]
   
   for probe_idx=0, n_elements(probes)-1 do append_array, spacecraft_names, 'MMS'+strcompress(string(probes[probe_idx]), /rem)
   spacecraft_colors = [[0,0,0],[213,94,0],[0,158,115],[86,180,233]]
