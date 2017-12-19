@@ -30,8 +30,8 @@
 ;       None
 ;                      
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-11-03 13:10:50 -0700 (Fri, 03 Nov 2017) $
-; $LastChangedRevision: 24256 $
+; $LastChangedDate: 2017-12-18 15:07:51 -0800 (Mon, 18 Dec 2017) $
+; $LastChangedRevision: 24442 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/topomtrx.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 11/03/2017
@@ -41,14 +41,16 @@
 Function topomtrx;, tbl=tbl
     ;if (size(tbl,/type) eq 0) then $
     tbl=[0,1,2,3,4,5,6,7]
-    mtrx = fltarr(3,3,3,3,3,2) ;total 81*3=243, ignoring last dimension
+    mtrx = fltarr(3,3,3,3,3,3) ;total 81*3=243, ignoring last dimension
     ; mtrx has 6 dimensions
     ; 0 - upward shape: 0: phe, 1: swe, 2:nan
     ; 1 - downward shape: 0: phe, 1: swe, 2:nan
     ; 2 - void: 0: yes, 1: no, 2:nan 
     ; 3 - upward PAD: 0: not loss cone, 1: loss cone, 2:nan 
     ; 4 - downward PAD: 0: not loss cone, 1: loss cone, 2:nan 
-    ; 5 - day/night: currently not used
+    ; 5 - flux ratio of away/toward: 0: <0.75, loss cone, 1: not loss cone
+    ;                                2: nan
+    ;;;; "5 - day/night: currently not used" replaced
 
     ;1 Dayside Closed
     ;2 Day-Night Closed
@@ -98,15 +100,22 @@ Function topomtrx;, tbl=tbl
     ;up swe + dn swe + isotropic
     mtrx[1,1,1,0,0,*]=tbl[7] ;1
 
-    ;now we need to consider if shape or pad 
-    ;unavailable but the other is
-    ;open to day, up phe + dn swe-
-    mtrx[0,1,1,2,0,*]=tbl[5]
-    mtrx[0,1,1,*,2,*]=tbl[5]
-
     ;closed loops on nightside
     ;1. double-sided loss cone
     mtrx[*,*,1,1,1,*]=tbl[3] ;9/4
+
+    ;now we need to consider if pad 
+    ;unavailable but shape is
+    ;open to day, up phe + dn swe-
+    mtrx[0,1,1,2,0,*]=tbl[5];only one-side PAD score available
+    mtrx[0,1,1,*,2,*]=tbl[5]
+    ;up swe- + dn swe-
+    ;flux ratio > thrd(0.75): draped
+    mtrx[1,1,1,2,2,1]=tbl[7]
+    ;flux ratio < thrd(0.75): open to night
+    mtrx[1,1,1,2,2,0]=tbl[6]
+    ;up swe- + dn phe + flux ratio < thrd(0.75); x-term closed
+    mtrx[1,0,1,2,2,0]=tbl[2]
 
     ;phe in both direction, dayside closed loops
     mtrx[0,0,1,*,*,*]=tbl[1] ;9/4-1
