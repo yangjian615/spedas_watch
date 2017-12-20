@@ -25,6 +25,27 @@
   </idl_att>
 
   <cdf_var
+      name = "RATE"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "RATE"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "RATE"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 100bps RATE"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
       name = "DCB_ARCWRPTR"
       type = "Integer"> 
     <cdf_att
@@ -41,6 +62,111 @@
         SCALEMAX = "2147483647"
         UNITS = "None"
         CATDESC = "DCB SSR Archive Write Pointer"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "FLAGS"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "FLAGS"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "FLAGS"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 FLAGS (SPRTMR, SCMCAL, AEBHSK, THRUST)"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "SPRTMR"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "SPRTMR"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "SPRTMR"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 SPRTMR Indicator"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "SCMCAL"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "SCMCAL"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "SCMCAL"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 SCMCAL Indicator"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "AEBHSK"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "AEBHSK"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "AEBHSK"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 AEBHSK Indicator"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "THRUST"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "THRUST"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "THRUST"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 THRUST Indicator"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
@@ -571,14 +697,14 @@
   </cdf_var>
 
   <cdf_var
-      name = "DFB_V12AC_PEAK"
+      name = "DFB_V34AC_PEAK"
       type = "Integer"
       nelem = "7"> 
     <cdf_att
-        FIELDNAM = "DFB_V12AC_PEAK"
+        FIELDNAM = "DFB_V34AC_PEAK"
         FORMAT = "I016"
         DATA_TYPE = "CDF_INT4"
-        LABLAXIS = "DFB_V12AC_PEAK"
+        LABLAXIS = "DFB_V34AC_PEAK"
         VAR_TYPE = "data"
         FILLVAL = "-2147483647"
         DISPLAY_TYPE = "time_series"
@@ -587,20 +713,20 @@
         SCALEMIN = "-2147483647"
         SCALEMAX = "2147483647"
         UNITS = "None"
-        CATDESC = "DFB_V12AC_PEAK"
+        CATDESC = "DFB_V34AC_PEAK"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
 
   <cdf_var
-      name = "DFB_V12AC_AVG"
+      name = "DFB_V34AC_AVG"
       type = "Integer"
       nelem = "7"> 
     <cdf_att
-        FIELDNAM = "DFB_V12AC_AVG"
+        FIELDNAM = "DFB_V34AC_AVG"
         FORMAT = "I016"
         DATA_TYPE = "CDF_INT4"
-        LABLAXIS = "DFB_V12AC_AVG"
+        LABLAXIS = "DFB_V34AC_AVG"
         VAR_TYPE = "data"
         FILLVAL = "-2147483647"
         DISPLAY_TYPE = "time_series"
@@ -609,7 +735,7 @@
         SCALEMIN = "-2147483647"
         SCALEMAX = "2147483647"
         UNITS = "None"
-        CATDESC = "DFB_V12AC_AVG"
+        CATDESC = "DFB_V34AC_AVG"
         DEPEND_0 = "epoch">
     </cdf_att>
   </cdf_var>
