@@ -2,11 +2,12 @@
 ;PROCEDURE:   maven_orbit_tplot
 ;PURPOSE:
 ;  Loads MAVEN ephemeris information, currently in the form of IDL save files produced
-;  with maven_spice_eph.pro using spk predict kernels, and plots the spacecraft 
-;  trajectory as a function of time (using tplot).  The plots are color-coded 
-;  according to the nominal plasma regime, based on conic fits to the bow shock and 
-;  MPB from Trotignon et al. (PSS 54, 357-369, 2006).  The wake region is simply the 
-;  optical shadow in MSO coordinates (sqrt(y*y + z*z) < Rm ; x < 0).
+;  with maven_spice_eph.pro, and plots the spacecraft trajectory as a function of time
+;  (using tplot).  The plots are color-coded according to the nominal plasma regime, 
+;  based on conic fits to the bow shock and MPB from Trotignon et al. (PSS 54, 357-369, 
+;  2006).  The wake region is either the EUV or optical shadow in MSO coordinates:
+;  (sqrt(y*y + z*z) < Rm ; x < 0), where Rm is the Mars radius appropriate for optical
+;  or EUV wavelengths.
 ;
 ;  The available coordinate frames are:
 ;
@@ -33,7 +34,7 @@
 ;KEYWORDS:
 ;       STAT:     Named variable to hold the plasma regime statistics.
 ;
-;       DOMEX:    Use a MEX predict ephemeris, instead of one for MAVEN.
+;       DOMEX:    Use a MEX ephemeris, instead of one for MAVEN.
 ;
 ;       SWIA:     Calculate viewing geometry for SWIA, based on nominal s/c
 ;                 pointing.
@@ -103,20 +104,26 @@
 ;                 The solar wind is always plotted in the default foreground color,
 ;                 typically white or black.  For other regimes, the defaults are:
 ;
-;                   regime       index       color (table 34)
+;                   regime       index       color (table 43)
 ;                   -----------------------------------------
 ;                   sheath         4         green
 ;                   pileup         5         yellow
-;                   wake           2         blue
+;                   opt wake       2         blue
+;                   euv wake       1         violet
 ;                   -----------------------------------------
 ;
 ;       VARS:     Array of TPLOT variables created.
 ;
 ;       NOW:      Plot a vertical dotted line at the current time.
 ;
+;       PDS:      Plot vertical dashed lines separating the PDS release dates.
+;
+;       VERBOSE:  Verbosity level passed to mvn_pfp_file_retrieve.  Default = 0
+;                 (suppress most messages).
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-06-12 16:58:52 -0700 (Mon, 12 Jun 2017) $
-; $LastChangedRevision: 23459 $
+; $LastChangedDate: 2017-11-30 21:15:14 -0800 (Thu, 30 Nov 2017) $
+; $LastChangedRevision: 24369 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/maven_orbit_tplot/maven_orbit_tplot.pro $
 ;
 ;CREATED BY:	David L. Mitchell  10-28-11
@@ -125,7 +132,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
                        extended=extended, eph=eph, current=current, loadonly=loadonly, $
                        vars=vars, ellip=ellip, hires=hires, timecrop=timecrop, now=now, $
                        colors=colors, reset_trange=reset_trange, nocrop=nocrop, spk=spk, $
-                       segments=segments, shadow=shadow, datum=datum, noload=noload
+                       segments=segments, shadow=shadow, datum=datum, noload=noload, $
+                       pds=pds, verbose=verbose
 
   @maven_orbit_common
 
@@ -135,6 +143,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     eph = state
     return
   endif
+
+  if (size(verbose,/type) eq 0) then verbose = 0
 
 ; Geodetic parameters for Mars (from the 2009 IAU Report)
 ;   Archinal et al., Celest Mech Dyn Astr 109, Issue 2, 101-135, 2011
@@ -230,10 +240,11 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   if (docrop) then tspan += [-86400D, 86400D]
 
+  if (sflg) then wake_col = 1 else wake_col = 2
   case n_elements(colors) of
-    0 : rcols = [4, 5, 2]
-    1 : rcols = [round(colors), 5, 2]
-    2 : rcols = [round(colors), 2]
+    0 : rcols = [4, 5, wake_col]
+    1 : rcols = [round(colors), 5, wake_col]
+    2 : rcols = [round(colors), wake_col]
     3 : rcols = round(colors)
     else : rcols = round(colors[0:2])
   endcase
@@ -289,7 +300,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     eph = {time:time, mso_x:mso_x, mso_v:mso_v, geo_x:geo_x, geo_v:geo_v}
 
   endif else begin
-    file = mvn_pfp_file_retrieve(rootdir+mname,last_version=0,source=ssrc)
+    file = mvn_pfp_file_retrieve(rootdir+mname,last_version=0,source=ssrc,verbose=verbose)
     nfiles = n_elements(file)
     
     if (docrop) then begin
@@ -325,7 +336,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
     r = sqrt(x*x + y*y + z*z)
     s = sqrt(y*y + z*z)
-    if (sflg) then shadow = 1D + (150D/R_m) else shadow = 1D  ; EUV shadow
+    if (sflg) then shadow = 1D + (150D/R_m) else shadow = 1D
     sza = atan(s,x)
 
     mso_x = fltarr(n_elements(maven.x),3)
@@ -340,7 +351,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     
     maven = 0
 
-    file = mvn_pfp_file_retrieve(rootdir+gname,last_version=0,source=ssrc)
+    file = mvn_pfp_file_retrieve(rootdir+gname,last_version=0,source=ssrc,verbose=verbose)
     nfiles = n_elements(file)
     
     if (docrop) then begin
@@ -374,6 +385,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     geo_v[*,1] = maven_g.vy
     geo_v[*,2] = maven_g.vz
 
+    if (sflg) then print,"Using EUV shadow" else print,"Using optical shadow"
     print,"Reference surface for calculating altitude: ",strlowcase(datum)
     mvn_altitude, cart=transpose(geo_x), datum=datum, result=adat
     hgt = adat.alt
@@ -571,7 +583,8 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   store_data,'pileup',data={x:time, y:pileup[*,4]}
   options,'pileup','color',rcols[1]
 
-  store_data,'wake',data={x:time, y:wake[*,4]}
+  if (sflg) then stype = 'EUV' else stype = 'OPT'
+  store_data,'wake',data={x:time, y:wake[*,4], shadow:stype}
   options,'wake','color',rcols[2]
 
   store_data,'wind',data={x:time, y:wind[*,4]}
@@ -582,7 +595,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   options,'iono','thick',2
   
   store_data,'alt_lab',data={x:minmax(time), y:replicate(-1.,2,4), v:indgen(4)}
-  options,'alt_lab','labels',['SHADOW','PILEUP','SHEATH','WIND']
+  options,'alt_lab','labels',[stype+' SHD','PILEUP','SHEATH','WIND']
   options,'alt_lab','colors',[reverse(rcols),!p.color]
   options,'alt_lab','labflag',1
 
@@ -592,6 +605,14 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
 
   if keyword_set(segments) then options,'alt2','constant',[500,1200,4970,5270] $
                            else options,'alt2','constant',-1
+
+  if keyword_set(pds) then begin
+    nmon = 20
+    pds_rel = replicate(time_struct('2015-05-15'),nmon)
+    pds_rel.month += 3*indgen(nmon)
+    pds_rel = time_double(pds_rel)
+    pflg = 1
+  endif else pflg = 0
 
   mvn_sun_bar
 
@@ -735,7 +756,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
   store_data, 'twind'  , data = {x:torb, y:twind}
   store_data, 'tsheath', data = {x:torb, y:tsheath}
   store_data, 'tpileup', data = {x:torb, y:tpileup}
-  store_data, 'twake'  , data = {x:torb, y:twake}
+  store_data, 'twake'  , data = {x:torb, y:twake, shadow:stype}
 
   options, 'tsheath', 'color', rcols[0]
   options, 'tpileup', 'color', rcols[1]
@@ -786,6 +807,7 @@ pro maven_orbit_tplot, stat=stat, domex=domex, swia=swia, ialt=ialt, result=resu
     if (treset) then timespan,[tmin,tmax],/sec
     tplot,tvars
     if (donow) then timebar,systime(/utc,/sec),line=1
+    if (pflg) then timebar,pds_rel,line=2
   endif
 
   return

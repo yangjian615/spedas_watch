@@ -19,10 +19,10 @@
 ;                      end_day and ndays are not specified, ndays=7
 ;
 ;
-; $LastChangedBy:  $
-; $LastChangedDate:  $
-; $LastChangedRevision:  $
-; $URL:  $
+; $LastChangedBy: xussui $
+; $LastChangedDate: 2018-01-02 13:25:51 -0800 (Tue, 02 Jan 2018) $
+; $LastChangedRevision: 24472 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot_comp_dailysave.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 08/01/2017
 ;FILE: mvn_scpot_comp_dailysave.pro
@@ -31,6 +31,7 @@
 Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
 
     @mvn_swe_com
+    @mvn_scpot_com
 
     dpath=root_data_dir()+'maven/data/sci/swe/l3/scpot/'
     froot='mvn_swe_l3_scpot_'
@@ -54,7 +55,7 @@ Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
     dt = end_day2 - start_day2
     nday = floor(dt/oneday)
 
-    print,start_day,end_day,nday
+    print,start_day2,end_day2,nday
 
     for j=0L,nday-1L do begin
         tst = start_day2+j*oneday
@@ -67,21 +68,23 @@ Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
         timespan,tst,1
         mvn_swe_spice_init,/force
         mvn_swe_clear
-        mvn_swe_load_l2
+        mvn_swe_load_l2, /spec
         mvn_swe_stat, /silent, npkt=npkt
         if max(npkt) gt 0 then begin
-            ;mvn_swe_sciplot,/sta,/loadonly,/sc_pot
-            ;mvn_swe_addsta
-            mvn_scpot
+            maven_orbit_tplot,/load,/shadow
+            mvn_scpot, comp=0, shapot=1
+            ; don't restore composite -> force a new calculation
+            ; calculating potentials in the shadow
             pot_name=['-1: Invalid', '0: Manual', $
                       '1: pot_swelpw','2: pot_swepos','3: pot_sweneg',$
                       '4: pot_sta','5: pot_sweshdw']
             str1={time:0.d,potential:0.,method:-1,$
                   units_name:'V',pot_name:pot_name}
-            pot_comp=replicate(str1,n_elements(swe_sc_pot.time))
-            pot_comp.time=swe_sc_pot.time
-            pot_comp.potential=swe_sc_pot.potential
-            pot_comp.method=swe_sc_pot.method
+            
+            pot_comp=replicate(str1,n_elements(mvn_sc_pot.time))
+            pot_comp.time=mvn_sc_pot.time
+            pot_comp.potential=mvn_sc_pot.potential
+            pot_comp.method=mvn_sc_pot.method
 
             get_data,'mvn_swe_lpw_scpot_pol',data=pot,index=i
             str2={time:0d,potential:0.}
@@ -91,7 +94,7 @@ Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
                pot_swelpw.potential=pot.y
             endif else begin
                pot_swelpw=replicate(str2,2)
-               pot_swelpw.time=minmax(swe_sc_pot.time)
+               pot_swelpw.time=minmax(mvn_sc_pot.time)
                pot_swelpw.potential=[!values.f_nan,!values.f_nan]
             endelse
 
@@ -102,7 +105,7 @@ Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
                pot_swepos.potential=pot.y
             endif else begin
                pot_swepos=replicate(str2,2)
-               pot_swepos.time=minmax(swe_sc_pot.time)
+               pot_swepos.time=minmax(mvn_sc_pot.time)
                pot_swepos.potential=[!values.f_nan,!values.f_nan]
             endelse
 
@@ -114,7 +117,7 @@ Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
                pot_sweneg.potential=pot.y
             endif else begin
                pot_sweneg=replicate(str2,2)
-               pot_sweneg.time=minmax(swe_sc_pot.time)
+               pot_sweneg.time=minmax(mvn_sc_pot.time)
                pot_sweneg.potential=[!values.f_nan,!values.f_nan]
             endelse   
 
@@ -126,7 +129,7 @@ Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
                pot_sta.potential=pot.y
             endif else begin
                pot_sta=replicate(str2,2)
-               pot_sta.time=minmax(swe_sc_pot.time)
+               pot_sta.time=minmax(mvn_sc_pot.time)
                pot_sta.potential=[!values.f_nan,!values.f_nan]
             endelse  
 
@@ -138,7 +141,7 @@ Pro mvn_scpot_comp_dailysave,start_day=start_day,end_day=end_day,ndays=ndays
                pot_sweshdw.potential=pot.y
             endif else begin
                pot_sweshdw=replicate(str2,2)
-               pot_sweshdw.time=minmax(swe_sc_pot.time)
+               pot_sweshdw.time=minmax(mvn_sc_pot.time)
                pot_sweshdw.potential=[!values.f_nan,!values.f_nan]
             endelse
 

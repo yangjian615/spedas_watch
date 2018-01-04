@@ -29,6 +29,7 @@ generate_checksums,root_data_dir()+'maven/data/sci/sep/',dir_pattern='*.{sav,cdf
 
 ;mvn_sta_tplot_restore,trange=[time_double('2014-9-30'),systime(1)],/create    ;  Since MOI
 ;mvn_sta_tplot_restore,trange=systime(1) + [-130,0] * 86400L ,/create            ; Last 30 days only
+mvn_euv_l0_load,/gen
 
 t1=systime(1)
 dprint,'Finished SEP batch job at: '+time_string(systime(1),/local), ' in ',(t1-t0), ' seconds.'

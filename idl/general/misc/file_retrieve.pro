@@ -84,9 +84,9 @@
 ;    2012-6-25:  local_data_dir and remote_data_dir accept array inputs 
 ;                with the same # of elements as pathnames/newpathnames   -DO NOT USE this option!
 ;
-;$LastChangedBy: haraday $
-;$LastChangedDate: 2016-06-03 17:00:09 -0700 (Fri, 03 Jun 2016) $
-;$LastChangedRevision: 21262 $
+;$LastChangedBy: jwl $
+;$LastChangedDate: 2017-09-15 14:55:17 -0700 (Fri, 15 Sep 2017) $
+;$LastChangedRevision: 23986 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/file_retrieve.pro $
 ;-
 
@@ -149,11 +149,11 @@ if ~keyword_set(wait_time) then wait_time = 180
 if ~keyword_set(no_internet_until) then no_internet_until = systime(1)-1.
 
 
-dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 21262 2016-06-04 00:00:09Z haraday $'
+dprint,dlevel=4,verbose=verbose,'Start; $Id: file_retrieve.pro 23986 2017-09-15 21:55:17Z jwl $'
 if size(/type, local_data_dir)  ne 7 then local_data_dir = root_data_dir()
 
 if keyword_set(structure_format)  && structure_format eq 1 then begin    ; Old version maintained for legacy code   - don't use this any more.
-;   swver = strsplit('$Id: file_retrieve.pro 21262 2016-06-04 00:00:09Z haraday $',/extract)
+;   swver = strsplit('$Id: file_retrieve.pro 23986 2017-09-15 21:55:17Z jwl $',/extract)
 ;   user_agent =  strjoin(swver[1:3],' ')+' IDL'+!version.release + ' ' + !VERSION.OS + '/' + !VERSION.ARCH+ ' (' + (getenv('USER') ? getenv('USER') : getenv('USERNAME'))+')'
    if n_elements(user_agent) eq 0 then user_agent=''
    str= {   $
@@ -177,7 +177,7 @@ if keyword_set(structure_format)  && structure_format eq 1 then begin    ; Old v
       ignore_filesize:0 ,    $    ; Set to 1 to ignore the remote/local file sizes when determining if updates are needed.
       ignore_filedate:0 ,    $    ; Not yet operational.
       downloadonly:0  ,      $    ; Set to 1 to only download files but not load files into memory.
-      use_wget:0          ,   $   ; Experimental option (uses the routine WGET instead of file_http_copy)
+      use_wget:0          ,   $   ; Experimental option (uses the routine SSL_WGET instead of file_http_copy)
       nowait:0        ,      $    ; Used with wget to download files in the background.
       verbose:2 ,             $
       force_download: 0       $   ;Allows download to be forced no matter modification time.  Useful when moving between different repositories(e.g. QA and production data)
@@ -260,7 +260,7 @@ if keyword_set(remote_data_dir) &&  ~(keyword_set(no_server) || keyword_set(no_d
   if systime(1) gt no_internet_until then begin
 
     if keyword_set(use_wget) then $
-      wget,serverdir=remote_data_dir,localdir=local_data_dir,pathname=pathnames,verbose=verbose ,nowait=nowait $
+      ssl_wget,serverdir=remote_data_dir,localdir=local_data_dir,pathname=pathnames,verbose=verbose ,nowait=nowait $
     else begin
       ;Set some defaults that are really essential for proper working of the system: 
       if ~keyword_set(dir_mode) then dir_mode ='777'o

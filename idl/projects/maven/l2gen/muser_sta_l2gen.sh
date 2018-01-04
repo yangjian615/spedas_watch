@@ -25,7 +25,7 @@ setenv datestr `date +%Y%m%d%H%M%S`
 set suffix="$datestr"
 
 #check for lock file(s) here
-if (! -e /tmp/STAL2lock.txt && ! -e /tmp/STAL2Rlock.txt) then
+if (! -e /mydisks/home/maven/muser/STAL2lock.txt && ! -e /mydisks/home/maven/muser/STAL2Rlock.txt) then
     cd /mydisks/home/maven
     rm -f run_sta_l2gen.bm
     rm -f /mydisks/home/maven/stalog/run_sta_l2gen.txt$suffix

@@ -2,12 +2,12 @@
 ;
 ; Unit tests for various tplot utilities
 ;
-; Requires both the SPEDAS QA folder (not distributed with SPEDAS) and mgunit
-; in the local path
+; To run:
+;     IDL> mgunit, 'tplot_stuff_ut'
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-08-10 10:18:22 -0700 (Thu, 10 Aug 2017) $
-; $LastChangedRevision: 23773 $
+; $LastChangedDate: 2017-11-20 16:07:57 -0800 (Mon, 20 Nov 2017) $
+; $LastChangedRevision: 24328 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/tplot_stuff_ut__define.pro $
 ;-
 
@@ -217,6 +217,16 @@ function tplot_stuff_ut::test_join_vec
   assert, array_equal(d.Y[*, 0], indgen(15)), 'Problem with join_vec!'
   assert, array_equal(d.Y[*, 1], indgen(15)+16), 'Problem with join_vec!'
   assert, array_equal(d.Y[*, 2], indgen(15)*13), 'Problem with join_vec!'
+  return, 1
+end
+
+function tplot_stuff_ut::test_array_contains_wildcards
+  assert, array_contains(['[hello'], '[hello') eq 1, 'Problem with array_contains / wild cards'
+  assert, array_contains(['[hello]'], '[hello]') eq 1, 'Problem with array_contains / wild cards'
+  assert, array_contains(['*hello]'], '*hello]') eq 1, 'Problem with array_contains / wild cards'
+  assert, array_contains(['*hello?'], '*hello?') eq 1, 'Problem with array_contains / wild cards'
+  assert, array_contains(['AAhello'], '*hello', /allow) eq 1, 'Problem with array_contains / wild cards'
+  assert, array_contains(['AAhello'], '??hello', /allow) eq 1, 'Problem with array_contains / wild cards'
   return, 1
 end
 

@@ -8,7 +8,7 @@
 ; You can obtain a copy of the agreement at
 ;   docs/NASA_Open_Source_Agreement_1.3.txt
 ; or 
-;   http://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
+;   https://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
 ;
 ; See the Agreement for the specific language governing permissions
 ; and limitations under the Agreement.
@@ -22,7 +22,7 @@
 ;
 ; NOSA HEADER END
 ;
-; Copyright (c) 2010-2013 United States Government as represented by the 
+; Copyright (c) 2010-2017 United States Government as represented by the 
 ; National Aeronautics and Space Administration. No copyright is claimed 
 ; in the United States under Title 17, U.S.Code. All Other Rights Reserved.
 ;
@@ -31,11 +31,12 @@
 
 ;+
 ; This program is an example to demonstrate calling the
-; <a href="http://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis
+; <a href="https://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis
 ; System</a>'s 
-; <a href="http://cdaweb.gsfc.nasa.gov/WebServices/REST/">
+; <a href="https://cdaweb.gsfc.nasa.gov/WebServices/REST/">
 ; REST Web Services</a> from an 
-; <a href="http://www.exelisvis.com/">Exelis Visual Information Solutions</a>
+; <a href="http://www.harrisgeospatial.com/">Exelis Visual Information 
+; Solutions</a>
 ; (VIS) Interactive Data Language (IDL) program.  It demonstrates the 
 ; following:
 ;   <ul>
@@ -52,7 +53,7 @@
 ;     <li>Some basic HTTP error handling.</li>
 ;   </ul>
 ;
-; @copyright Copyright (c) 2010-2013 United States Government as represented
+; @copyright Copyright (c) 2010-2017 United States Government as represented
 ;     by the National Aeronautics and Space Administration. No
 ;     copyright is claimed in the United States under Title 17,
 ;     U.S.Code. All Other Rights Reserved.
@@ -206,8 +207,7 @@ pro SpdfCdasWsExample
 
     cdas = $
         obj_new('SpdfCdas', $
-            endpoint = 'http://cdaweb.gsfc.nasa.gov/WS/cdasr/1', $
-            userAgent = 'WsExample/1.0', $
+            userAgent = 'WsExample', $
             defaultDataview = 'sp_phys')
 
     errReporter = obj_new('SpdfHttpErrorReporter');

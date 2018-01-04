@@ -28,9 +28,9 @@
 ;                     time. 
 ;HISTORY:
 ;Hacked from mvn_call_sta_l2gen.pro 2015-06-02, jmm
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-01-13 12:08:36 -0800 (Fri, 13 Jan 2017) $
-; $LastChangedRevision: 22596 $
+; $LastChangedBy: jimmpc1 $
+; $LastChangedDate: 2017-09-05 11:35:05 -0700 (Tue, 05 Sep 2017) $
+; $LastChangedRevision: 23885 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/quicklook/mvn_call_pfpl2plot.pro $
 ;-
 Pro mvn_call_pfpl2plot, time_in = time_in, $
@@ -57,7 +57,7 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
 ;Open a file print out the error message, only once
      If(einit Eq 0) Then Begin
         einit = 1
-        efile = '/tmp/pfpl2_err_msg.txt'+ff_ext
+        efile = '/mydisks/home/maven/muser/pfpl2_err_msg.txt'+ff_ext
         openw, eunit, efile, /get_lun
         For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
         If(keyword_set(timei)) Then Begin
@@ -174,7 +174,7 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
      Endif Else Begin
         nproc = n_elements(timep_do)
 ;Send a message that processing is starting
-        ofile0 = '/tmp/pfpl2_msg0.txt'+ff_ext
+        ofile0 = '/mydisks/home/maven/muser/pfpl2_msg0.txt'+ff_ext
         openw, tunit, ofile0, /get_lun
         printf, tunit, 'Processing: '+instrk
         For i = 0, nproc-1 Do printf, tunit, timep_do[i]
@@ -215,7 +215,7 @@ Pro mvn_call_pfpl2plot, time_in = time_in, $
         Endfor
         SKIP_INSTR: load_position = 'instrument'
 ;Send a message that processing is done
-        ofile1 = '/tmp/pfpl2_msg1.txt'+ff_ext
+        ofile1 = '/mydisks/home/maven/muser/pfpl2_msg1.txt'+ff_ext
         openw, tunit, ofile1, /get_lun
         printf, tunit, 'Finished Processing: '+instrk
         free_lun, tunit

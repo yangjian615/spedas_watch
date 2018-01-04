@@ -1,6 +1,5 @@
-pro spp_fld_tmlib_select_server, server
-
-  ; TODO: Replace spp_fld_select_server with this program
+pro spp_fld_tmlib_select_server, server, server_string = server_string, $
+  server_dir = server_dir
 
   if not keyword_set(server) then begin
 
@@ -23,6 +22,22 @@ pro spp_fld_tmlib_select_server, server
       2:server = '192.168.0.202'
       3:server = '192.168.0.203'
       4:server = '128.244.182.117'
+    endcase
+
+    case server_form_str.server_select of
+      0:server_string = 'rflab.ssl.berkeley.edu (EM server)'
+      1:server_string = 'spffmdb.ssl.berkeley.edu (FM server)'
+      2:server_string = '192.168.0.202 (EM server/LAN)'
+      3:server_string = '192.168.0.203 (FM server/LAN)'
+      4:server_string = '128.244.182.117 (IT server/LAN)'
+    endcase
+
+    case server_form_str.server_select of
+      0:server_dir = 'EM_ucb'
+      1:server_dir = 'FM_ucb'
+      2:server_dir = 'EM_ucb'
+      3:server_dir = 'FM_ucb'
+      4:server_dir = 'FM_apl'
     endcase
 
   endif

@@ -63,6 +63,8 @@
 ;     for usage examples
 ;
 ; NOTES:
+;     The MMS plug-in in SPEDAS requires IDL 8.4 to access data at the LASP SDC
+;    
 ;     Please see the notes at:
 ;        https://lasp.colorado.edu/galaxy/display/mms/FPI+Release+Notes
 ;        
@@ -70,8 +72,8 @@
 ;          https://groups.google.com/forum/#!forum/spedas
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-05-30 09:49:38 -0700 (Tue, 30 May 2017) $
-;$LastChangedRevision: 23369 $
+;$LastChangedDate: 2017-10-19 12:54:21 -0700 (Thu, 19 Oct 2017) $
+;$LastChangedRevision: 24188 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_load_fpi.pro $
 ;-
 
@@ -262,6 +264,25 @@ pro mms_load_fpi, trange = trange_in, probes = probes, datatype = datatype, $
               mms_fpi_make_compressionlossbars,'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms'
               mms_fpi_make_compressionlossbars,'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist'
               mms_fpi_make_compressionlossbars,'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms'
+            endif else if data_rate eq 'fast' then begin
+              ; compressionloss variables are always 1 for fast survey data, so the variables are always set to NRV
+              ; in the file; we have to correct that below
+              get_data, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_dist', data=compress
+              if is_struct(compress) && n_elements(compress.Y) eq 1 then store_data, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_dist', data={x: compress.X, y: replicate(compress.Y, n_elements(compress.X))}
+              if is_struct(compress) && n_elements(compress.Y) eq 1 then options, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_dist',colors=2,labels='DES '+data_rate+'!C  Lossy',xstyle=4,ystyle=4,ticklen=0,thick=4,panel_size=0.2,labflag=-1,psym=-6,symsize=0.2
+
+              get_data, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms', data=compress
+              if is_struct(compress) && n_elements(compress.Y) eq 1 then store_data, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms', data={x: compress.X, y: replicate(compress.Y, n_elements(compress.X))}
+              if is_struct(compress) && n_elements(compress.Y) eq 1 then options, 'mms'+this_probe+'_des_compressionloss_'+data_rate+suffix+'_moms',colors=2,labels='DES '+data_rate+'!C  Lossy',xstyle=4,ystyle=4,ticklen=0,thick=4,panel_size=0.2,labflag=-1,psym=-6,symsize=0.2
+
+              get_data, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist', data=compress
+              if is_struct(compress) && n_elements(compress.Y) eq 1 then store_data, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist', data={x: compress.X, y: replicate(compress.Y, n_elements(compress.X))}
+              if is_struct(compress) && n_elements(compress.Y) eq 1 then options, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_dist',colors=2,labels='DIS '+data_rate+'!C  Lossy',xstyle=4,ystyle=4,ticklen=0,thick=4,panel_size=0.2,labflag=-1,psym=-6,symsize=0.2
+
+              get_data, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms', data=compress
+              if is_struct(compress) && n_elements(compress.Y) eq 1 then store_data, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms', data={x: compress.X, y: replicate(compress.Y, n_elements(compress.X))}
+              if is_struct(compress) && n_elements(compress.Y) eq 1 then options, 'mms'+this_probe+'_dis_compressionloss_'+data_rate+suffix+'_moms',colors=2,labels='DIS '+data_rate+'!C  Lossy',xstyle=4,ystyle=4,ticklen=0,thick=4,panel_size=0.2,labflag=-1,psym=-6,symsize=0.2
+
             endif
         endfor
     endif

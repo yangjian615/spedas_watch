@@ -423,7 +423,7 @@ for i=1l,npts2-2 do begin
 				or ( ((dat1c ge 1.) or (data1 ge 2.)) and ((dat2c ge 1.) or (data2 ge 2.)) and ((dat1c+dat2c) ge 2.) and ((data1+data2) ge 3.) and ((dat1c+dat2c+dat5c) ge 4.)	) $
 				or ( (dat3c ge 1.) and ((dat3c+dat4c) ge 3.) and  ((dat3c+dat4c+dat6c) ge 4.) ) $
 				or ( (dat3c ge 1.) and ((dat3c+dat4c) ge 2.) and  ((dat3c+dat4c+dat6c) ge 5.) )		   ,count)
-		if count gt 0 then mind0=max(ind0) 
+		if count gt 0 then mind0=max(ind0) else mind0 = 0  
 		mind0 = mind0 > 1
 
 ; interpolate if more than 10 counts

@@ -16,8 +16,8 @@
  ;
  ;HISTORY:
  ;$LastChangedBy: nikos $
- ;$LastChangedDate: 2015-01-28 16:44:01 -0800 (Wed, 28 Jan 2015) $
- ;$LastChangedRevision: 16774 $
+ ;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+ ;$LastChangedRevision: 24103 $
  ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_line_options.pro $
  ;
  ;---------------------------------------------------------------------------------
@@ -859,11 +859,15 @@
            lsettings = (*state.ctrace)->copy()
            lsettings->setProperty,dataX='',dataY=''
            state.template->setProperty,line=lsettings
-           state.historywin->update,'Current Line Settings Saved to Template'
-           state.statusBar->update,'Current Line Settings Saved to Template'
+           state.historywin->update,'Current line options stored for use in a Template'
+           state.statusBar->update,'Current line options stored for use in a Template'
+          
+           messageString = 'These values have now been stored!' +  string(10B) + string(10B) + 'To save them in a template, click File->Graph Options Template->Save Template'
+           response=dialog_message(messageString,/CENTER, /information)
+          
          endif else begin
-           state.historywin->update,'No Traces Available, Could Not be Saved to Template'
-           state.statusBar->update,'No Traces Available, Could Not be Saved to Template'
+           state.historywin->update,'Cannot store options. Needs a valid trace object to store options for a template.'
+           state.statusBar->update,'Cannot store options. Needs a valid trace object to store options for a template.'
          endelse
        end
        'PANELLIST': BEGIN
@@ -1295,7 +1299,7 @@
  applyButton = Widget_Button(buttonsBase, Value='Apply', UValue='APPLY', XSize=75)
  applyButton = Widget_Button(buttonsBase, Value='Apply to All Lines', UValue='APPLYTOALL', tooltip="Apply changes to all lines of this panel (except color and style)", XSize=125)
  cancelButton = Widget_Button(buttonsBase, Value='Cancel', UValue='CANC', XSize=75)
- templateButton = Widget_Button(buttonsBase,  Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template")
+ templateButton = Widget_Button(buttonsBase,  Value='Store for a Template', UValue='TEMP',xsize=125,tooltip='Use these settings when saving a Graph Options Template')
  
  statusBase = Widget_Base(buttonStatusBase, /row)
  statusBar = Obj_New('SPD_UI_MESSAGE_BAR', statusBase, XSize=75, YSize=1)

@@ -12,8 +12,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-05-10 19:20:36 -0700 (Wed, 10 May 2017) $
-; $LastChangedRevision: 23298 $
+; $LastChangedDate: 2017-10-02 16:45:21 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24087 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_init.pro $
 ;
 ;CREATED BY:    David L. Mitchell  02-01-15
@@ -149,6 +149,10 @@ pro mvn_swe_init
 ; Define times of configuration changes
 
   mvn_swe_config
+
+; Set verbosity
+
+  if (size(swe_verbose,/type) eq 0) then swe_verbose = 0
 
   return
 

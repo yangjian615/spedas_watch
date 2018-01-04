@@ -5,12 +5,56 @@
 ; displayed using doc_library.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2015-05-26 17:21:07 -0700 (Tue, 26 May 2015) $
-; $LastChangedRevision: 17734 $
+; $LastChangedDate: 2017-09-13 16:15:33 -0700 (Wed, 13 Sep 2017) $
+; $LastChangedRevision: 23961 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_crib.pro $
 ;--------------------------------------------------------------------
 ;
 
+; BASIC OUTLINE FOR WORKING WITH PFP DATA.
+;
+; There is a basic approach you should follow when working with any 
+; of the PFP data products.
+;
+;   Step 1: Set the time span.  Different syntaxes (syntaxi? syntaxae?)
+;           are possible.  Two common ones are:
+
+timespan, 'yyyy-mm-dd/hh:mm:ss', number_of_days
+timespan, ['yyyy-mm-dd/hh:mm:ss', 'yyyy-mm-dd/hh:mm:ss']
+
+;           Typically, one omits the '/hh:mm:ss' part.
+
+;   Step 2: Initialize SPICE.  This uses the time span from Step 1.
+
+mvn_spice_load, /download
+
+;   Step 3: Load data.  This uses the time span from Step 1.  You can
+;           and should load data from multiple instruments without 
+;           repeating the first two steps.  For example:
+
+mvn_swe_load_l2, /spec, /pad
+mvn_sta_l2_load, sta_apid=['c0','c6','ca','d0']
+
+;           Note that you don't have to know anything about file names,
+;           how to download the data, or where to put the data once you
+;           have it.  All of this is done automatically based on the
+;           time span and data type.  Same goes for SPICE.
+
+;   Step 4: Get the spacecraft potential.  Potentials are mostly in
+;           the range -20 to +10 Volts, but there are exceptions, such
+;           as the very low density solar wind (potential > +10) and
+;           the EUV shadow with high fluxes of energetic electrons 
+;           (potential < -20).  If you are working with energies
+;           anywhere near the spacecraft potential, this step is
+;           critical -- ignoring it can give incorrect results!
+
+mvn_scpot
+
+;   Step 5+: Work with the data as you wish.  When you want to go to
+;            a different time span, you must repeat steps 1-4.
+
+; SWEA-SPECIFIC INFORMATION:
+;
 ; General note: All SWEA procedures have their own documentation, 
 ; describing how to call them and what the options are.  There are
 ; many more options than are listed in this help file.  To list the
@@ -18,31 +62,11 @@
 
 doc_library, 'routine_name'
 
-; Before loading SWEA data, set the time range.  You only need to do 
-; this once.  If you have already done this to load the data from another
-; instrument, you don't need to do it again.
-
-timespan, ['2014-12-10','2014-12-11']
-
 ; Load SWEA L0 data into a common block
 
 mvn_swe_load_l0
 
-; You can override the time range set by timespan by explicitly providing
-; a time range to the loader.  You might want to do this if you're only
-; interested in a shorter time interval of SWEA data.
-
-mvn_swe_load_l0, ['2014-12-10/08','2014-12-10/12']
-
-; You can also request data by orbit number using the ORBIT keyword.
-;   SWEA software uses the NAIF orbit numbering convention, where
-;   the orbit number increments at geometric periapsis.  When you
-;   request data for orbit X, you get data from apoapsis X-1 through 
-;   periapsis X, extending to apoapsis X.
-
-mvn_swe_load_l0, orbit=[357,360]
-
-; Load L2 data by unix time range or orbit number into a common block
+; Load SWEA L2 data into a common block
 ;   Data loaded from L2 are identical to data loaded from L0 (by design).
 ;   L2 data load quickly but consume about 6 times more RAM.  A full day
 ;   of L2 survey data can consume ~4 GB of RAM.  Add burst data to this
@@ -53,8 +77,6 @@ mvn_swe_load_l0, orbit=[357,360]
 ;   and work the same.  L2 data are loaded using the same methods as L0:
 
 mvn_swe_load_l2
-
-mvn_swe_load_l2, orbit=[357,360]
 
 ; To conserve RAM, you can load individual data products over different
 ; time ranges.  Make sure to use the NOERASE option, so that you don't 
@@ -68,48 +90,14 @@ smaller_trange = ['2014-12-10/10','2014-12-10/12']
 mvn_swe_load_l2, smaller_trange, /pad, /noerase          ; PAD survey data
 mvn_swe_load_l2, smaller_trange, /pad, /burst, /noerase  ; PAD burst data
 
-; Summary plot.  Loads ephemeris data and includes a panel for 
-; spacecraft altitude (aerocentric).  Orbit numbers appear along
-; the time axis.
+; Summary plot.  Loads ephemeris data and includes a panel for spacecraft
+; altitude (default is aerodetic).  Orbit numbers appear along the time
+; axis.
 ;
 ;   Many optional keywords for plotting additional panels.
 ;   Use doc_library for details.
 
-mvn_swe_sumplot, /eph, /orb
-
-; Load MAG data, rotate to SWEA coordinates, and smooth to SWEA PAD 
-; resolution (1-sec averages over second half of sweep).  These data 
-; are stored in a common block for quick access by mvn_swe_getpad and 
-; mvn_swe_get3d.  This procedure loads the highest level MAG data
-; available:
-;
-;   L0 --> unit vector in direction of B (calculated onboard)
-;   L1 --> MAG "quicklook" with only gains and offsets applied
-;   L2 --> MAG Level 2 data with all corrections
-;
-; See the MAGLEV tag in the SWEA PAD and 3D structures to see which
-; MAG level you have.  Pitch angle mapping is performed with the 
-; level shown in the structure.
-
-mvn_swe_addmag
-
-; Calculate the electron distribution symmetry direction.  Return new
-; tplot variables in keyword pans.
-
-swe_3d_strahl_dir, pans=pans
-
-; Calculate the spacecraft potential from SPEC data
-;   This is a semi-empirical method with a fudge factor based on 
-;   experience in previous missions.  This will be refined as we
-;   get cross calibrations with LPW, SWIA, and STATIC.
-
-mvn_swe_sc_pot, /overlay
-
-; Calculate the spacecraft potential from 3D data
-;   Allows bin masking, but has a lower cadence and can be less 
-;   accurate because of energy bin summing.
-
-mvn_swe_sc_pot, /overlay, /ddd, /mask_sc
+mvn_swe_sciplot, /sun, /sc_pot
 
 ; Determine the direction of the Sun in SWEA coordinates
 ;   Requires SPICE.  There are several instances when the S/C
@@ -120,7 +108,7 @@ mvn_swe_sc_pot, /overlay, /ddd, /mask_sc
 ;   coordinates -- useful to identify pointing modes and times
 ;   when the spacecraft is communicating with Earth.
 
-mvn_swe_sundir, pans=pans
+mvn_sundir, frame='swea', /polar, pans=pans
 
 ; Determine the RAM direction in spacecraft coordinates
 ;   Requires SPICE.  The RAM direction is calculated with respect to
@@ -130,15 +118,7 @@ mvn_swe_sundir, pans=pans
 ;   frame recognized by SPICE.  (Keyword APP is shorthand for 
 ;   FRAME='MAVEN_APP'.)
 
-mvn_sc_ramdir, pans=pans
-
-; Estimate electron density from 3D moment (allows bin masking).
-; This method does not account for spacecraft photoelectron scattering
-; into the SWEA aperture, or for photoelectrons created inside the 
-; aperture (primarily from the top cap).  This overestimates the
-; density.
-
-mvn_swe_n3d, /mask_sc
+mvn_ramdir, pans=pans
 
 ; Estimate electron density and temperature from fitting the core to
 ; a Maxwell-Boltzmann distribution and taking a moment over energies
@@ -194,6 +174,32 @@ swe_3d_snap,/spec,/symdir,energy=130,ddd=ddd,smo=[5,1,1]
 ddd = mvn_swe_get3d(time, units='eflux')
 pad = mvn_swe_getpad(time)
 spec = mvn_swe_getspec(time)
+
+; Data can be converted to several different units:
+;
+;   'counts' : raw counts
+;   'rate'   : raw count rate
+;   'crate'  : count rate, corrected for dead time
+;   'flux'   : 1/(cm2-sec-ster-eV)
+;   'eflux'  ; eV/(cm2-sec-ster-eV)
+;   'df'     ; distribution function: cm-3 (km/s)-3
+;
+; In most cases, the default is 'eflux'.  You can set units as
+; in the example above, or you can change units at any time by:
+
+mvn_swe_convert_units, data, units
+
+; If you have loaded spacecraft potentials, then you can get 
+; and/or plot corrected data (in the plasma frame, far from the
+; spacecraft) like this:
+
+ddd = mvn_swe_get3d(time, units='eflux', /shiftpot)
+pad = mvn_swe_getpad(time, /shiftpot)
+spec = mvn_swe_getspec(time, /shiftpot)
+
+swe_engy_snap,/mom,/fixy,spec=spec,/shiftpot
+swe_pad_snap,energy=130,pad=pad,/shiftpot
+swe_3d_snap,/spec,/symdir,energy=130,ddd=ddd,smo=[5,1,1],/shiftpot
 
 ;
 ; Visualizing the orbit and spacecraft location

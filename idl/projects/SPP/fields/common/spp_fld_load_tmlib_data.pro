@@ -1,13 +1,13 @@
 ;
-;  $LastChangedBy: pulupa $
-;  $LastChangedDate: 2017-08-17 17:21:12 -0700 (Thu, 17 Aug 2017) $
-;  $LastChangedRevision: 23810 $
+;  $LastChangedBy: pulupalap $
+;  $LastChangedDate: 2017-11-22 20:43:40 -0800 (Wed, 22 Nov 2017) $
+;  $LastChangedRevision: 24338 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_load_tmlib_data.pro $
 ;
 
 function spp_fld_load_tmlib_data, l1_data_type,  $
-  varformat = varformat, cdf_att = cdf_att, times = times, idl_att = idl_att, $
-  success = success
+  varformat = varformat, cdf_att = cdf_att, times = times, packets = packets, $
+  idl_att = idl_att, success = success
 
   success = 0
 
@@ -145,6 +145,11 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
   ; specifications.  Each element itself is a hash, which contains the
   ; parameters from the XML file.  A 'data' field is added to each element,
   ; which will be used to contain the data obtained from TMlib.
+  ;
+  ; Some items have a 'raw' value associated with the item, which is typically
+  ; an unconverted ADC value (which TMlib converts with a polynomial function).
+  ; Some items also have a 'string' value associated with the item, which can
+  ; be a mode or a source string for the measurement.
 
   if match_count GT 0 then begin
 
@@ -156,6 +161,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     for i = 0, n_elements(match_ind) - 1 do begin
 
       (data_hash[var_names[i]])['data'] = LIST()
+      (data_hash[var_names[i]])['data_raw'] = LIST()
       (data_hash[var_names[i]])['data_string'] = LIST()
 
     endfor
@@ -227,6 +233,8 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
   times = LIST()
 
+  packets = LIST()
+
   tprint = 0.
 
   while (serr GE 0) do begin
@@ -242,11 +250,20 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
     endelse
 
-    err = tm_get_position(sid, ur8)
-    err = tm_get_item_r8(sid, "ccsds_scet_ur8", ur8_ccsds, 1, size)
+    packet = []
 
-    err = tm_get_item_i4(sid, "ccsds_total_packet_length", $
-      ccsds_pkt_len, 1, size)
+    err_pos = tm_get_position(sid, ur8)
+
+    err_scet = tm_get_item_r8(sid, "ccsds_scet_ur8", ur8_ccsds, 1, scet_size)
+
+    err_pkt_len = tm_get_item_i4(sid, "ccsds_total_packet_length", $
+      ccsds_pkt_len, 1, pkt_len_size)
+
+    err = tm_get_item_i4(sid, "ccsds_entire_packet", $
+      packet, ccsds_pkt_len, pkt_size)
+
+    err = tm_get_item_i4(sid, "ccsds_meat_length", $
+      ccsds_meat_len, 1, meat_size)
 
     ;print, 'CCSDS Packet length: ', ccsds_pkt_len
 
@@ -273,6 +290,7 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
     if serr EQ 0 then begin
 
       times.Add, time
+      packets.Add, packet
 
       ; For certain APIDs, some data items only exist in some packets
       ; but not others.  Requesting the items when they do not exist can cause
@@ -290,13 +308,24 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
         var_name = var_names[i]
 
-        if data_hash[var_name].HasKey('string') and data_hash[var_name].HasKey('string_len') then begin
+        if data_hash[var_name].HasKey('string') and $
+          data_hash[var_name].HasKey('string_len') then begin
           has_string = 1
           string_length = (data_hash[var_name])['string_len']
         endif else begin
           has_string = 0
           string_length = 0
         endelse
+
+        if data_hash[var_name].HasKey('raw') then begin
+          has_raw = 1
+          raw_var_name = (data_hash[var_name])['raw']
+        endif else begin
+          has_raw = 0
+        endelse
+
+        if data_hash[var_name].HasKey('cdf_att') then $
+          cdf_var_att = (data_hash[var_name])["cdf_att"]
 
         ; Check whether the request should be suppressed
 
@@ -310,7 +339,21 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
 
           returned_item = !NULL
 
-          var_type = strlowcase((data_hash[var_name])['type'])
+          data_var_type = strlowcase((data_hash[var_name])['type'])
+
+          if n_elements(cdf_var_att) GT 0 then begin
+            case data_var_type of
+              'double': fill_val = double(cdf_var_att['FILLVAL'])
+              'integer': fill_val = long(cdf_var_att['FILLVAL'])
+              ELSE: fill_val = cdf_var_att['FILLVAL']
+            endcase
+          endif else begin
+            case data_var_type of
+              'double': fill_val = !values.d_nan
+              'integer': fill_val = -32768
+              ELSE: fill_val = -32768
+            endcase
+          endelse
 
           if has_string then begin
 
@@ -326,14 +369,26 @@ function spp_fld_load_tmlib_data, l1_data_type,  $
               returned_string + String(Replicate(32B, string_length - strlen(returned_string)))
 
             dprint, returned_string, strlen(returned_string), dlevel = 4
-            ;stop
+
           end
 
-          case var_type of
+          if has_raw then begin
+
+            err = tm_get_item_i4(sid, raw_var_name, raw_returned_item, nelem, raw_n_returned)
+
+            (data_hash[var_name])['data_raw'].Add, raw_returned_item
+
+          endif
+
+          case data_var_type of
             'double': err = tm_get_item_r8(sid, var_name, returned_item, nelem, n_returned)
             'integer': err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
             ELSE: err = tm_get_item_i4(sid, var_name, returned_item, nelem, n_returned)
           endcase
+
+          ; Fill val if invalid item
+
+          if err EQ -7 then returned_item = fill_val
 
         endif else begin
 

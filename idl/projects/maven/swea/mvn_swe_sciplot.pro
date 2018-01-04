@@ -71,8 +71,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-04 11:27:10 -0700 (Fri, 04 Aug 2017) $
-; $LastChangedRevision: 23755 $
+; $LastChangedDate: 2017-11-30 21:21:50 -0800 (Thu, 30 Nov 2017) $
+; $LastChangedRevision: 24374 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sciplot.pro $
 ;
 ;-
@@ -116,31 +116,32 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   endif
 
   get_data,'alt2',data=alt2,index=i
-  if (i eq 0) then maven_orbit_tplot, /loadonly, datum=datum
+  if (i eq 0) then maven_orbit_tplot, /loadonly, /shadow, datum=datum
 
   mvn_swe_sumplot,/loadonly
 
 ; Try to load resampled PAD data - mask noisy data
 
   mvn_swe_pad_restore
-  tname = 'mvn_swe_pad_resample'
-  get_data, tname, data=pad, index=i, alim=dl
+  pad_pan = 'mvn_swe_pad_resample'
+  get_data, pad_pan, data=pad, index=i, alim=dl
   if (i gt 0) then begin
-    pad_pan = tname
     nf = rebin(dl.nfactor, n_elements(pad.x), n_elements(pad.y[0,*]))
     indx = where(average(pad.y*nf,2,/nan) lt min_pad_eflux, count)
     if (count gt 0L) then begin
       pad.y[indx,*] = !values.f_nan
-      store_data, tname, data=pad, dl=dl
+      store_data, pad_pan, data=pad, dl=dl
     endif
     if (size(padsmo,/type) ne 0) then begin
       dx = median(pad.x - shift(pad.x,1))
       dt = double(padsmo[0])
       if (dt gt 1.5D*dx) then begin
-        tsmooth_in_time, tname, padsmo
-        pad_pan = pad_pan + '_smoothed'
+        tsmooth_in_time, pad_pan, padsmo
+        pad_pan += '_smoothed'
       endif
     endif
+    zlim,pad_pan,0,2,0
+    options,pad_pan,'zticks',2
   endif else pad_pan = 'swe_a2_280'
 
 ; Spacecraft orientation
@@ -180,8 +181,9 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
 
   shape_pan = ''
   if keyword_set(shape) then begin
-    mvn_swe_shape_par_pad_restore
-    get_data,'Shape_PAD',index=i
+    ;mvn_swe_shape_par_pad_restore
+     mvn_swe_shape_restore,/tplot
+     get_data,'Shape_PAD',index=i
     if (i eq 0) then begin
       mvn_swe_shape_par_pad_l2, spec=45, /pot, tsmo=16
       get_data,'Shape_PAD',index=i
@@ -222,7 +224,7 @@ pro mvn_swe_sciplot, sun=sun, ram=ram, sep=sep, swia=swia, static=static, lpw=lp
   engy_pan = 'swe_a4'
   pot_pan = ''
   if keyword_set(sc_pot) then begin
-    mvn_scpot
+    mvn_swe_addpot
     engy_pan = 'swe_a4_pot'
     options,engy_pan,'ytitle','SWEA elec!ceV'
     pot_pan = 'scpot_comp'

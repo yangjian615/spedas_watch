@@ -36,8 +36,8 @@
 ;                      environments.  Use with caution!
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-06 14:43:41 -0700 (Thu, 06 Jul 2017) $
-; $LastChangedRevision: 23559 $
+; $LastChangedDate: 2017-10-04 10:36:01 -0700 (Wed, 04 Oct 2017) $
+; $LastChangedRevision: 24107 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_catalog.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -58,7 +58,9 @@ pro mvn_swe_catalog, version=version, revision=revision, ctime=ctime, result=dat
     if (ctime eq 0D) then begin
       print,'TOUCH is set, but CTIME is not set!'
       print,'This could trigger a massive file transfer to the SDC!'
-    endif
+    endif else begin
+      print,'TOUCH all SWEA L2 files created after ',time_string(ctime[0])
+    endelse
     yn = 'N'
     read, yn, prompt='Are you sure (y|n)? ', format='(a1)'
     if (strupcase(yn) ne 'Y') then tflg = 0

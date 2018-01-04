@@ -16,9 +16,9 @@
 ;  Old version in particles/deprecated
 ;  
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-07-09 16:27:16 -0700 (Thu, 09 Jul 2015) $
-;$LastChangedRevision: 18059 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+;$LastChangedRevision: 24078 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/moments/thm_part_moments.pro $
 ;-
 pro thm_part_moments, probes = probes, $ ;string specifying probe(s)
@@ -265,7 +265,6 @@ pro thm_part_moments, probes = probes, $ ;string specifying probe(s)
                          
                          _extra=ex
     
-      
       ;Collect names of new tplot variables
       ;------------------------------------
       if ~undefined(tplotnames_tmp) then begin
@@ -283,7 +282,6 @@ pro thm_part_moments, probes = probes, $ ;string specifying probe(s)
           thm_pgs_expand_yaxis, newname
           
         endif
-    
         ;concatenate tplot names as the variable will be cleared each time in the above call
         tplotnames = array_concat(tplotnames_tmp,tplotnames)        
 

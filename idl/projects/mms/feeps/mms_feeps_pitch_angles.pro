@@ -8,16 +8,18 @@
 ;
 ;
 ; NOTES:
+;         Updated to find active telescopes via mms_feeps_active_eyes, 9/8/2017, egrimes
+;         
 ;         Most of this routine was copy+pasted from routines provided by Drew Turner
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-09-01 07:50:30 -0700 (Fri, 01 Sep 2017) $
-;$LastChangedRevision: 23874 $
+;$LastChangedDate: 2017-09-08 16:20:52 -0700 (Fri, 08 Sep 2017) $
+;$LastChangedRevision: 23943 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pitch_angles.pro $
 ;-
 
-pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=data_rate, datatype=datatype, suffix=suffix
+pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=data_rate, datatype=datatype, suffix=suffix, idx_maps=idx_maps
   if undefined(suffix) then suffix = ''
   if undefined(datatype) then datatype = 'electron' else datatype = strlowcase(datatype)
   if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
@@ -34,6 +36,8 @@ pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=d
   
   if undefined(trange) then trange=timerange(minmax(pad_data.X))
 
+  eyes = mms_feeps_active_eyes(trange, probe, data_rate, datatype, level)
+  
   ; load the B-field data if not already loaded
   if ~spd_data_exists('mms'+probe+'_fgm_b_bcs_srvy_l2_bvec', trange[0], trange[1]) then mms_load_fgm, trange=trange, probe=probe
   get_data, 'mms'+probe+'_fgm_b_bcs_srvy_l2_bvec', data=b_field_data
@@ -196,20 +200,53 @@ pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=d
       pas[*, i] = 180.0/!dpi * acos((Vbcs[0]*Bbcs[*,0] + Vbcs[1]*Bbcs[*,1] + Vbcs[2]*Bbcs[*,2])/(sqrt(Vbcs[0]^2+Vbcs[1]^2+Vbcs[2]^2) * sqrt(Bbcs[*,0]^2+Bbcs[*,1]^2+Bbcs[*,2]^2)))
     endfor
     if data_rate eq 'srvy' then begin
-      ; srvy data only loads the sensor IDs: ['3', '4', '5', '11', '12'] 
-      new_pas = dblarr(n_elements(b_field_data.X), 10)
-      ; top first
-      new_pas[*, 0] = pas[*, 2]
-      new_pas[*, 1] = pas[*, 3]
-      new_pas[*, 2] = pas[*, 4]
-      new_pas[*, 3] = pas[*, 7]
-      new_pas[*, 4] = pas[*, 8]
-      ; now bottom
-      new_pas[*, 5] = pas[*, 11]
-      new_pas[*, 6] = pas[*, 12]
-      new_pas[*, 7] = pas[*, 13]
-      new_pas[*, 8] = pas[*, 16]
-      new_pas[*, 9] = pas[*, 17]
+      ; the following 2 hash tables map TOP/BOTTOM telescope # to index of the PA array created above
+      top_tele_idx_map = hash()
+      bot_tele_idx_map = hash()
+      top_tele_idx_map[1] = 0
+      top_tele_idx_map[2] = 1
+      top_tele_idx_map[3] = 2
+      top_tele_idx_map[4] = 3
+      top_tele_idx_map[5] = 4
+      top_tele_idx_map[9] = 5
+      top_tele_idx_map[10] = 6
+      top_tele_idx_map[11] = 7
+      top_tele_idx_map[12] = 8
+      bot_tele_idx_map[1] = 9
+      bot_tele_idx_map[2] = 10
+      bot_tele_idx_map[3] = 11
+      bot_tele_idx_map[4] = 12
+      bot_tele_idx_map[5] = 13
+      bot_tele_idx_map[9] = 14
+      bot_tele_idx_map[10] = 15
+      bot_tele_idx_map[11] = 16
+      bot_tele_idx_map[12] = 17
+      
+      new_pas = dblarr(n_elements(b_field_data.X), n_elements(eyes['top'])+n_elements(eyes['bottom']))
+      for top_idx = 0, n_elements(eyes['top'])-1 do begin
+        new_pas[*, top_idx] = pas[*, top_tele_idx_map[(eyes['top'])[top_idx]]]
+        append_array, top_idxs, top_idx
+      endfor
+      for bot_idx = 0, n_elements(eyes['bottom'])-1 do begin
+        new_pas[*, bot_idx+n_elements(eyes['top'])] = pas[*, bot_tele_idx_map[(eyes['bottom'])[bot_idx]]]
+        append_array, bot_idxs, bot_idx+n_elements(eyes['top'])
+      endfor
+      idx_maps = [hash('electron-top', top_idxs), hash('electron-bottom', bot_idxs)]
+      ; old way below, prior to updating the active telescopes, 9/8/2017, egrimes
+      ; srvy data only loads the sensor IDs: ['3', '4', '5', '11', '12']
+;      new_pas = dblarr(n_elements(b_field_data.X), 10)
+;      ; top first
+;      new_pas[*, 0] = pas[*, 2]
+;      new_pas[*, 1] = pas[*, 3]
+;      new_pas[*, 2] = pas[*, 4]
+;      new_pas[*, 3] = pas[*, 7]
+;      new_pas[*, 4] = pas[*, 8]
+;      ; now bottom
+;      new_pas[*, 5] = pas[*, 11]
+;      new_pas[*, 6] = pas[*, 12]
+;      new_pas[*, 7] = pas[*, 13]
+;      new_pas[*, 8] = pas[*, 16]
+;      new_pas[*, 9] = pas[*, 17]
     endif else new_pas = pas
   endif else if datatype eq 'ion' then begin
     pas = dblarr(n_elements(b_field_data.X), 6)   ; pitch angles at each time
@@ -258,7 +295,25 @@ pro mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=d
 
       pas[*, i] = 180.0/!dpi * acos((Vbcs[0]*Bbcs[*,0] + Vbcs[1]*Bbcs[*,1] + Vbcs[2]*Bbcs[*,2])/(sqrt(Vbcs[0]^2+Vbcs[1]^2+Vbcs[2]^2) * sqrt(Bbcs[*,0]^2+Bbcs[*,1]^2+Bbcs[*,2]^2)))
     endfor
-    new_pas = pas
+    ;new_pas = pas
+    top_tele_idx_map = hash()
+    bot_tele_idx_map = hash()
+    top_tele_idx_map[6] = 0
+    top_tele_idx_map[7] = 1
+    top_tele_idx_map[8] = 2
+    bot_tele_idx_map[6] = 3
+    bot_tele_idx_map[7] = 4
+    bot_tele_idx_map[8] = 5
+    new_pas = dblarr(n_elements(b_field_data.X), n_elements(eyes['top'])+n_elements(eyes['bottom']))
+    for top_idx = 0, n_elements(eyes['top'])-1 do begin
+      new_pas[*, top_idx] = pas[*, top_tele_idx_map[(eyes['top'])[top_idx]]]
+      append_array, top_idxs, top_idx
+    endfor
+    for bot_idx = 0, n_elements(eyes['bottom'])-1 do begin
+      new_pas[*, bot_idx+n_elements(eyes['top'])] = pas[*, bot_tele_idx_map[(eyes['bottom'])[bot_idx]]]
+      append_array, bot_idxs, bot_idx+n_elements(eyes['top'])
+    endfor
+    idx_maps = [hash('ion-top', top_idxs), hash('ion-bottom', bot_idxs)]
   endif
   outvar = 'mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pa'+suffix
   store_data, outvar, data={x: b_field_data.X, y: new_pas}, dlimits=pad_dl

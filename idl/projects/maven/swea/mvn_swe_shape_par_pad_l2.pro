@@ -54,19 +54,20 @@
 ;   Tplot variable "EFlux_ratio": store the flux ratio for two directions
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-03-13 10:29:56 -0700 (Mon, 13 Mar 2017) $
-; $LastChangedRevision: 22949 $
+; $LastChangedDate: 2017-11-30 21:19:45 -0800 (Thu, 30 Nov 2017) $
+; $LastChangedRevision: 24373 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_shape_par_pad_l2.pro $
 ;
 ;CREATED BY:    Shaosui Xu  12-08-16
 ;-
 
 Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
-    nsmo=nsmo, erange=erange, obins=obins, mask_sc=mask_sc, $
+    nsmo=nsmo, erange=erange, oobins=oobins, mask_sc=mask_sc, $
     abins=abins, dbins=dbins, mag_geo=mag_geo, pot=pot, $
     tsmo=tsmo, min_pad_eflux=min_pad_eflux
 
     @mvn_swe_com
+    @mvn_scpot_com
 
    if (size(min_pad_eflux,/type) eq 0) then min_pad_eflux = 6.e4
     
@@ -185,7 +186,7 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
         parange[n,1]=min(pad.pa[63,*])
 
         if dopot then begin
-            ipot = swe_sc_pot[nn(swe_sc_pot.time, pad.time)].potential
+            ipot = mvn_sc_pot[nn(mvn_sc_pot.time, pad.time)].potential
             pots[n] = ipot
             if ipot eq ipot and abs(ipot) le 20 then begin;and ipot le -2
                 mvn_swe_pot_conve, pad.energy[*,0], Fp, outEn, Fpc, ipot
@@ -233,7 +234,8 @@ Pro mvn_swe_shape_par_pad_l2, burst=burst, spec=spec, $
     options,'Shape_PAD','colors',[120,254]
     options,'Shape_PAD','constant',1.
 
-    store_data,'EFlux_ratio',data={x:time,y:ratio,v:pad.energy[*,0]}
+    store_data,'EFlux_ratio',data={x:time,y:ratio,v:pad.energy[*,0],$
+                                   faway:faway,ftwd:ftwd,fmid:fmid}
     ename='EFlux_ratio'
     options,ename,'spec',1
     ylim,ename,3,5000,1

@@ -8,7 +8,7 @@
 ; You can obtain a copy of the agreement at
 ;   docs/NASA_Open_Source_Agreement_1.3.txt
 ; or 
-;   http://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
+;   https://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
 ;
 ; See the Agreement for the specific language governing permissions
 ; and limitations under the Agreement.
@@ -22,21 +22,22 @@
 ;
 ; NOSA HEADER END
 ;
-; Copyright (c) 2010-2013 United States Government as represented by the 
-; National Aeronautics and Space Administration. No copyright is claimed 
-; in the United States under Title 17, U.S.Code. All Other Rights Reserved.
+; Copyright (c) 2010-2017 United States Government as represented by 
+; the National Aeronautics and Space Administration. No copyright is 
+; claimed in the United States under Title 17, U.S.Code. All Other 
+; Rights Reserved.
 ;
 ;
 
 
 ;+
 ; This class is an IDL representation of the DataResult element from the
-; <a href="http://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis System</a>
-; (CDAS) XML schema.
+; <a href="https://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis 
+; System</a> (CDAS) XML schema.
 ;
-; @copyright Copyright (c) 2010-2013 United States Government as represented
-;     by the National Aeronautics and Space Administration. No
-;     copyright is claimed in the United States under Title 17,
+; @copyright Copyright (c) 2010-2017 United States Government as 
+;     represented by the National Aeronautics and Space Administration.
+;     No copyright is claimed in the United States under Title 17,
 ;     U.S.Code. All Other Rights Reserved.
 ;
 ; @author B. Harris
@@ -125,7 +126,13 @@ end
 function SpdfCdasDataResult::getMessages
     compile_opt idl2
 
-    return, *(self.messages)
+    if ptr_valid(self.messages) then begin
+
+        return, *(self.messages)
+    endif else begin
+
+        return, ['']
+    endelse
 end
 
 
@@ -137,7 +144,13 @@ end
 function SpdfCdasDataResult::getWarnings
     compile_opt idl2
 
-    return, *(self.warnings)
+    if ptr_valid(self.warnings) then begin
+
+        return, *(self.warnings)
+    endif else begin
+
+        return, ['']
+    endelse
 end
 
 
@@ -149,7 +162,13 @@ end
 function SpdfCdasDataResult::getStatuses
     compile_opt idl2
 
-    return, *(self.statuses)
+    if ptr_valid(self.statuses) then begin
+
+        return, *(self.statuses)
+    endif else begin
+
+        return, ['']
+    endelse
 end
 
 
@@ -161,7 +180,13 @@ end
 function SpdfCdasDataResult::getErrors
     compile_opt idl2
 
-    return, *(self.errors)
+    if ptr_valid(self.errors) then begin
+
+        return, *(self.errors)
+    endif else begin
+
+        return, ['']
+    endelse
 end
 
 

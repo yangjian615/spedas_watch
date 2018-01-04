@@ -31,14 +31,14 @@
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-29 13:35:46 -0700 (Wed, 29 Mar 2017) $
-; $LastChangedRevision: 23068 $
+; $LastChangedDate: 2017-09-12 11:01:04 -0700 (Tue, 12 Sep 2017) $
+; $LastChangedRevision: 23954 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_omni.pro $
 ;-
 
 
 pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix = suffix, $
-  data_units = data_units, data_rate = data_rate, level = level
+  data_units = data_units, data_rate = data_rate, level = level, sensor_eyes=sensor_eyes
   if undefined(level) then level = 'l2'
   if undefined(probe) then probe = '1' else probe = strcompress(string(probe))
   ; default to electrons
@@ -53,15 +53,6 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   probe = strcompress(string(probe), /rem)
 
   prefix = 'mms'+probe+'_epd_feeps_'
-
-  ; the following works for srvy mode, but doesn't get all of the sensors for burst mode
-  if datatype eq 'electron' then sensors = ['3', '4', '5', '11', '12'] else sensors = ['6', '7', '8']
-  
-  ; special case for burst mode data
-  if data_rate eq 'brst' && datatype eq 'electron' then sensors = ['1','2','3','4','5','9','10','11','12']
-  if data_rate eq 'brst' && datatype eq 'ion' then sensors = ['6','7','8']
-  
-  if level eq 'sitl' && datatype eq 'electron' then sensors = ['5','11','12']
 
   if datatype eq 'electron' then begin
     energies = [33.200000d, 51.900000d, 70.600000d, 89.400000d, 107.10000d, 125.20000d, 146.50000d, 171.30000d, $
@@ -93,31 +84,37 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
   en_label = energies
   en_chk = 0.10  ; percent error around energy bin center to accept data for averaging; anything outside of energies[i] +/- en_chk*energies[i] will be changed to NAN and not averaged 
   
-  var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[0])+'_clean_sun_removed'+suffix, /rem)
+  top_sensors = sensor_eyes['top']
+  bot_sensors = sensor_eyes['bottom']
+  
+  var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(top_sensors[0])+'_clean_sun_removed'+suffix, /rem)
   get_data, var_name, data = d, dlimits=dl
+  
   if is_struct(d) then begin
     flux_omni = dblarr(n_elements(d.x), n_elements(d.v))
     if level ne 'sitl' then begin
-      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), 2*n_elements(sensors))+!values.d_nan
-      for isen = 0, 2*n_elements(sensors)-1, 2 do begin
+      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), n_elements(top_sensors)+n_elements(bot_sensors))+!values.d_nan
+      for isen = 0, n_elements(top_sensors)-1 do begin
         ; Top units:
-        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[fix(isen/2)])+'_clean_sun_removed'+suffix, /rem)
+        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(top_sensors[fix(isen)])+'_clean_sun_removed'+suffix, /rem)
         get_data, var_name, data = d, dlimits=dl
         dalleyes[*,*,isen] = reform(d.y)
         iE = where(abs(energies - d.v) gt en_chk*energies) ; Check for energies beyond en_chk [%] of the corrected energy bin center and replace with NAN
         if iE[0] ne -1 then dalleyes[*,iE,isen] = !values.d_nan
+      endfor
+      for isen = 0, n_elements(bot_sensors)-1 do begin
         ; Bottom units:
-        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_bottom_'+data_units+'_sensorid_'+string(sensors[fix(isen/2)])+'_clean_sun_removed'+suffix, /rem)
+        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_bottom_'+data_units+'_sensorid_'+string(bot_sensors[fix(isen)])+'_clean_sun_removed'+suffix, /rem)
         get_data, var_name, data = d, dlimits=dl
-        dalleyes[*,*,isen+1] = reform(d.y)     
+        dalleyes[*,*,isen+n_elements(top_sensors)] = reform(d.y)
         iE = where(abs(energies - d.v) gt en_chk*energies) ; Check for energies beyond en_chk [%] of the corrected energy bin center and replace with NAN
-        if iE[0] ne -1 then dalleyes[*,iE,isen+1] = !values.d_nan
+        if iE[0] ne -1 then dalleyes[*,iE,isen+n_elements(top_sensors)] = !values.d_nan
       endfor
     endif else begin
-      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), n_elements(sensors))+!values.d_nan
-      for isen = 0, n_elements(sensors)-1 do begin
+      dalleyes = dblarr(n_elements(d.x), n_elements(d.v), n_elements(top_sensors))+!values.d_nan
+      for isen = 0, n_elements(top_sensors)-1 do begin
         ; Only Top units in SITL product:
-        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(sensors[fix(isen)])+'_clean_sun_removed'+suffix, /rem)
+        var_name = strcompress(prefix+data_rate+'_'+level+'_'+datatype+'_top_'+data_units+'_sensorid_'+string(top_sensors[fix(isen)])+'_clean_sun_removed'+suffix, /rem)
         get_data, var_name, data = d, dlimits=dl
         dalleyes[*,*,isen] = reform(d.y)
         iE = where(abs(energies - d.v) gt en_chk*energies) ; Check for energies beyond en_chk [%] of the corrected energy bin center and replace with NAN
@@ -125,7 +122,7 @@ pro mms_feeps_omni, probe, datatype = datatype, tplotnames = tplotnames, suffix 
       endfor
     endelse
   endif
-  
+
   ; if no data found, just return
   if undefined(dalleyes) then return
   

@@ -55,8 +55,9 @@
 ;
 ;   MIN_LPW_POT : Minumum valid LPW potential.
 ;
-;   MAXALT:    Maximum altitude for replacing SWE/LPW and SWE+ potentials
-;              with SWE- or STA- potentials.
+;   MIN_STA_POT : Minumum valid STA potential.
+;
+;   MAX_STA_ALT : Maximum altitude for limiting range of STA potentials.
 ;
 ;   MAXDT:     Maximum time gap to interpolate across.  Default = 64 sec.
 ;
@@ -65,8 +66,8 @@
 ;OUTPUTS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 15:51:52 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23740 $
+; $LastChangedDate: 2017-11-30 21:10:28 -0800 (Thu, 30 Nov 2017) $
+; $LastChangedRevision: 24364 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/general/mvn_scpot_defaults.pro $
 ;
 ;-
@@ -74,7 +75,8 @@
 pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
                abins=abins, dbins=dbins, obins=obins2, mask_sc=mask_sc, $
                badval=badval2, minflux=minflux2, maxdt=maxdt2, $
-               maxalt=maxalt2, min_lpw_pot=min_lpw_pot2, list=list
+               min_lpw_pot=min_lpw_pot2, list=list, $
+               min_sta_pot=min_sta_pot2, max_sta_alt=max_sta_alt2
 
   @mvn_swe_com
   @mvn_scpot_com
@@ -85,20 +87,39 @@ pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
     print, ""
     if (size(Espan,/type) ne 0) then begin
       print, "mvn_scpot_com"
-      print, "  erange: ", Espan
-      print, "  thresh: ", thresh
-      print, "  dEmax:  ", dEmax
-      print, "  minflux: ", minflux
-      print, "  badval:  ", badval
-      print, "  maxalt:  ", maxalt
-      print, "  min_lpw_pot: ", min_lpw_pot
+      print, "  erange:       ", Espan
+      print, "  thresh:       ", thresh
+      print, "  dEmax:        ", dEmax
+      print, "  minflux:      ", minflux
+      print, "  badval:       ", badval
+      print, "  min_lpw_pot:  ", min_lpw_pot
+      print, "  min_sta_pot:  ", min_sta_pot
+      print, "  max_sta_alt:  ", max_sta_alt
+      print, "  maxdt:        ", maxdt
     endif else print, "mvn_scpot_com: defaults not set"
     print, ""
 
     return
   endif
 
+; Define spacecraft potential data structure
+;   There are 6 methods used to estimate the potential:
+;     -1 : Invalid : No method works or has been attempted
+;      0 : Manual  : No algorithm at all, set by a human
+;      1 : LPW     : I/V curves calibrated by SWE+ and STA methods
+;      2 : SWE+    : Sharp break in solar wind/sheath electron energy spectrum
+;      3 : SWE-    : Position of He-II photoelectron feature in SPEC data
+;      4 : STA     : Low-energy cutoff of H+ distribution (away from periapsis)
+;                  : or shift of O2+ and O+ energy w.r.t ram energy (near periapsis)
+;      5 : SWE/SHD : Position of He-II photoelectron feature in PAD data
+
+  mvn_pot_struct = {time           : 0D   , $  ; unix time
+                    potential      : 0.   , $  ; spacecraft potential (V)
+                    method         : -1      } ; method used (see above)
+
 ; Defaults for the SWE+ method
+
+  if (n_elements(swe_sc_mask) ne 192) then mvn_swe_calib, tab=5
 
   Espan = [3.,30.]        ; energy search range
   thresh = 0.05           ; minimum value of d(logF)/d(logE)
@@ -109,9 +130,10 @@ pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
 ; Other defaults
 
   badval = !values.f_nan  ; fill value for potential when no method works
-  maxalt = 1000.          ; maximum altitude for replacing SWE/LPW and SWE+ potentials
-  min_lpw_pot = -25.      ; minimum valid LPW potential
-  maxdt = 64D             ; maximum time gap to interpolate over
+  min_lpw_pot = -14.      ; minimum valid LPW potential
+  min_sta_pot = -20.      ; minimum valid STA potential near periapsis
+  max_sta_alt = 200.      ; maximum altitude for limiting STA potential range
+  maxdt = 64D             ; maximum time gap to interpolate across
 
 ; Override defaults by keyword.  Affects all routines that use mvn_scpot_com.
 
@@ -120,8 +142,10 @@ pro mvn_scpot_defaults, erange=erange2, thresh=thresh2, dEmax=dEmax2, $
   if (size(dEmax2,/type)   gt 0) then dEmax = float(dEmax2)
   if (size(minflux2,/type) gt 0) then minflux = float(minflux2)
   if (size(badval2,/type)  gt 0) then badval = float(badval2)
-  if (size(maxalt2,/type)  gt 0) then maxalt = float(maxalt2)
+  if (size(maxdt2,/type)   gt 0) then maxdt = float(maxdt2)
   if (size(min_lpw_pot2,/type) gt 0) then min_lpw_pot = float(min_lpw_pot2)
+  if (size(min_sta_pot2,/type) gt 0) then min_sta_pot = float(min_sta_pot2)
+  if (size(max_sta_alt2,/type) gt 0) then max_sta_alt = float(max_sta_alt2)
 
   if ((size(obins,/type) eq 0) or keyword_set(abins) or keyword_set(dbins) or $
       keyword_set(obins2) or (size(mask_sc,/type) ne 0)) then begin

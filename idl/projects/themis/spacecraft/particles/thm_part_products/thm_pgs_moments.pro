@@ -24,9 +24,9 @@
 ;Notes:
 ;
 ;
-;$LastChangedBy: aaflores $
-;$LastChangedDate: 2015-03-19 17:18:03 -0700 (Thu, 19 Mar 2015) $
-;$LastChangedRevision: 17151 $
+;$LastChangedBy: jimm $
+;$LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+;$LastChangedRevision: 24078 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/thm_part_products/thm_pgs_moments.pro $
 ;-
 
@@ -60,6 +60,7 @@ pro thm_pgs_moments, data, $
   endif else begin
     mom = moments_3d(data, /no_unit_conv, _extra=_extra)
   endelse
+
   ;concatenate moments structures  
   if undefined(moments) then begin
     moments = mom

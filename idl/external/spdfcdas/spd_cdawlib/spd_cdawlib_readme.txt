@@ -7,18 +7,20 @@ File spd_cdawlib.pro was created by SPEDAS in order to easily compile these file
 The original CDAWlib can be obtained from http://spdf.gsfc.nasa.gov/CDAWlib.html.
 
 Files (9) copied from CDAWlib:
-plotmaster    spd_cdawlib_plotmaster
-read_mycdf    spd_cdawlib_read_mycdf
+plotmaster    spd_cdawlib_plotmaster (*)
+read_mycdf    spd_cdawlib_read_mycdf (*)
 hsave_struct    spd_cdawlib_hsave_struct
 list_mystruct    spd_cdawlib_list_mystruct
 tagindex    spd_cdawlib_tagindex
 break_mystring    spd_cdawlib_break_mystring
 replace_bad_chars    spd_cdawlib_replace_bad_chars
-virtual_funcs	spd_cdawlib_virtual_funcs
-version    spd_cdawlib_version  
+virtual_funcs	spd_cdawlib_virtual_funcs (*)
+version    spd_cdawlib_version (*) 
 
 Files (3) created by SPEDAS:
 spd_cdawlib_str_element.pro
 spd_cdawlib.pro
 spd_cdawlib_readme.txt
+
+(*) Files that were updated in September, 2017.
 

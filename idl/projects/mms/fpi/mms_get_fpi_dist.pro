@@ -20,7 +20,12 @@
 ;
 ;  probe: specify probe if not present or correct in input_name 
 ;  species:  specify species if not present or correct in input_name
-;
+;  subtract_error: subtract the distErr (variable specified by the keyword: error) data before returning
+;  error: variable name of the disterr variable, e.g.:
+;        'mms#_des_disterr_fast'
+;         
+;        for fast survey electron data
+;         
 ;Output:
 ;  return value: pointer to array of 3D particle distribution structures
 ;                or 0 in case of error
@@ -29,16 +34,19 @@
 ;  -FPI angles stored in tplot describe instrument look directions, 
 ;   this converts those to presumed trajectories (swaps direction).
 ;
+;  - Updated to accept FPI error data on 22Sept2017 
+;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-07-19 15:47:25 -0700 (Wed, 19 Jul 2017) $
-;$LastChangedRevision: 23672 $
+;$LastChangedDate: 2017-12-04 12:37:24 -0800 (Mon, 04 Dec 2017) $
+;$LastChangedRevision: 24392 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_get_fpi_dist.pro $
 ;-
 
 function mms_get_fpi_dist, tname, index, trange=trange, times=times, structure=structure, $
                            species = species, probe = probe, single_time = single_time, $
-                           data_rate = data_rate, level = level
+                           data_rate = data_rate, level = level, subtract_error=subtract_error, $
+                           error=error
 
     compile_opt idl2, hidden
 
@@ -64,13 +72,13 @@ if size(*p.y,/n_dim) ne 4 then begin
 endif
 
 ;get info from tplot variable name
-var_info = stregex(tname, 'mms([1-4])_d([ei])s_dist_(brst|fast|slow).*', /subexpr, /extract)
+var_info = stregex(tname, 'mms([1-4])_d([ei])s_dist(err)?_(brst|fast|slow).*', /subexpr, /extract)
 
 ;use info from the variable name if not explicitly set
 if var_info[0] ne '' then begin
   if ~is_string(probe) then probe = var_info[1]
   if ~is_string(species) then species = var_info[2]
- ; if undefined(data_rate) then data_rate = var_info[3]
+ ; if undefined(data_rate) then data_rate = var_info[4]
 endif
 
 ;double check that required info is defined
@@ -83,6 +91,23 @@ endif
 ;calling code could use get_data but this allows for consistency with other code
 if keyword_set(times) then begin
   return, *p.x
+endif
+
+if keyword_set(subtract_error) && ~keyword_set(error) then begin
+  dprint, dlevel = 0, 'Error, no error variable provided; be sure to specify the name of the tplot variable containing the error via the keyword: error'
+  return, -1
+endif
+
+if ~keyword_set(subtract_error) && keyword_set(error) then begin
+  dprint, dlevel = 0, 'Warning: error data provided, but error subtraction not requested (no error will be subtracted)'
+endif
+
+if keyword_set(subtract_error) && keyword_set(error) then begin
+  get_data, error, ptr=errdata
+  if ~is_struct(errdata) then begin
+    dprint, dlevel = 0, 'Error, no error variable found.'
+    return, -1
+  endif
 endif
 
 ; Allow calling code to request a time range and/or specify index
@@ -169,6 +194,7 @@ dtheta = replicate(11.25, dim)
 ; Create standard 3D distribution
 ;-----------------------------------------------------------------
 
+
 ;basic template structure that is compatible with spd_slice2d
 template = {  $
   project_name: 'MMS', $
@@ -176,7 +202,7 @@ template = {  $
   data_name: data_name, $
   ;units_name: 'f (s!U3!N/cm!U6!N)', $
   units_name: 'df_cm', $
-  units_procedure: '', $ ;placeholder
+  units_procedure: 'mms_part_conv_units', $ ;placeholder
   species:species,$
   valid: 1b, $
 
@@ -190,6 +216,8 @@ template = {  $
 
   energy: base_arr, $
   denergy: base_arr, $ ;placeholder
+  nenergy: dim[0], $ ; # of energies
+  nbins: dim[1]*dim[2], $ ; # thetas * # phis
   phi: base_arr, $
   dphi: dphi, $
   theta: theta, $
@@ -247,6 +275,10 @@ dist.end_time = (*p.x)[index] + integ_time
 
 ;shuffle data to be energy-azimuth-elevation-time
 dist.data = transpose((*p.y)[index,*,*,*],[3,1,2,0])
+
+if keyword_set(subtract_error) && ~undefined(errdata) then begin
+  dist.data = dist.data-transpose((*errdata.y)[index,*,*,*],[3,1,2,0])
+endif 
 
 if size(/n_dim, *p.v3) eq 1 then begin
   e0 = *p.v3 ;fast data uses constant table

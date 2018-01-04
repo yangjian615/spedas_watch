@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2016-08-26 12:50:18 -0700 (Fri, 26 Aug 2016) $
-;$LastChangedRevision: 21743 $
+;$LastChangedDate: 2017-09-18 11:30:06 -0700 (Mon, 18 Sep 2017) $
+;$LastChangedRevision: 23993 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_fix_metadata.pro $
 ;-
 
@@ -143,6 +143,30 @@ pro mms_fpi_fix_metadata, tplotnames, prefix = prefix, instrument = instrument, 
 
 
           ; moms
+          prefix[sc_idx] + '_dis_heatq_dbcs_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', ['Qx DBCS', 'Qy DBCS', 'Qz DBCS']
+            options, /def, tplot_name, 'colors', [2, 4, 6]
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS heat-flux'
+          end
+          prefix[sc_idx] + '_dis_heatq_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', ['Qx GSE', 'Qy GSE', 'Qz GSE']
+            options, /def, tplot_name, 'colors', [2, 4, 6]
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDIS heat-flux'
+          end
+          prefix[sc_idx] + '_des_heatq_dbcs_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', ['Qx DBCS', 'Qy DBCS', 'Qz DBCS']
+            options, /def, tplot_name, 'colors', [2, 4, 6]
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES heat-flux'
+          end
+          prefix[sc_idx] + '_des_heatq_gse_'+data_rate+suffix: begin
+            options, /def, tplot_name, 'labels', ['Qx GSE', 'Qy GSE', 'Qz GSE']
+            options, /def, tplot_name, 'colors', [2, 4, 6]
+            options, /def, tplot_name, 'labflag', -1
+            options, /def, tplot_name, 'ytitle', strupcase(prefix[sc_idx]) + '!CDES heat-flux'
+          end
           prefix[sc_idx] + '_des_bulkv_dbcs_'+data_rate+suffix: begin
             options, /def, tplot_name, 'labels', ['Vx DBCS', 'Vy DBCS', 'Vz DBCS']
             options, /def, tplot_name, 'colors', [2, 4, 6]

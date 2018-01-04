@@ -2,12 +2,12 @@
 ;
 ; Unit tests for mms_load_fgm
 ;
-; Requires both the SPEDAS QA folder (not distributed with SPEDAS) and mgunit
-; in the local path
+; To run:
+;     IDL> mgunit, 'mms_load_fgm_ut'
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-05 10:47:01 -0700 (Wed, 05 Jul 2017) $
-; $LastChangedRevision: 23549 $
+; $LastChangedDate: 2017-11-29 10:22:15 -0800 (Wed, 29 Nov 2017) $
+; $LastChangedRevision: 24356 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fgm_ut__define.pro $
 ;-
 
@@ -193,6 +193,7 @@ function mms_load_fgm_ut::test_load_l2pre_afg
     'Problem loading L2pre AFG data'
   return, 1
 end
+
 pro mms_load_fgm_ut::setup
     del_data, '*'
     timespan, '2015-12-15', 1, /day

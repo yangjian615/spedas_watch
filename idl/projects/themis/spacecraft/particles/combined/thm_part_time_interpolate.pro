@@ -20,9 +20,9 @@
 ; SEE ALSO:
 ;   thm_part_dist_array, thm_part_smooth, thm_part_subtract,thm_part_omni_convert
 ;
-;  $LastChangedBy: aaflores $
-;  $LastChangedDate: 2016-03-04 18:12:33 -0800 (Fri, 04 Mar 2016) $
-;  $LastChangedRevision: 20333 $
+;  $LastChangedBy: jimmpc1 $
+;  $LastChangedDate: 2017-10-23 14:17:30 -0700 (Mon, 23 Oct 2017) $
+;  $LastChangedRevision: 24204 $
 ;  $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/combined/thm_part_time_interpolate.pro $
 ;-
 
@@ -42,9 +42,14 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
   ;concatenate time list from all target modes
   for i = 0,n_elements(target)-1 do begin
     target_mid_times = array_concat(((*target[i]).time+(*target[i]).end_time)/2d,target_mid_times)        
-    target_delta_times = array_concat(((*target[i]).end_time-(*target[i]).time),target_delta_times)    
+    target_delta_times = array_concat(((*target[i]).end_time-(*target[i]).time),target_delta_times)
   endfor
   
+;sort and check for extra or overlapping time array elements here, jmm, 2017-10-23
+  ss_mid_times = bsort(target_mid_times)
+  target_mid_times = target_mid_times[ss_mid_times]
+  ss_uniq_times = uniq(target_mid_times)
+  target_mid_times = target_mid_times[ss_uniq_times]
   
   for i = 0,n_elements(source)-1 do begin
   
@@ -85,12 +90,10 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
           endif 
         endfor
       endif
-      
       ;guarantees that final times match target exactly
       out_data.time = target_mid_times[idx]-target_delta_times[idx]/2d 
       out_data.end_time = target_mid_times[idx]+target_delta_times[idx]/2d 
-      
-      
+       
       ;temporary routine bombs on some machines if out_dist is undefined, but not others
       if ~undefined(out_dist) then begin 
         out_dist = array_concat(ptr_new(out_data,/no_copy),temporary(out_dist))
@@ -108,7 +111,7 @@ pro thm_part_time_interpolate,source,target,error=error,_extra=ex
     (*out_dist[n_elements(out_dist)-1]).end_time = target_mid_times[idx]+target_delta_times[idx]/2d
     (*out_dist[n_elements(out_dist)-1]).data = !VALUES.D_NAN
   endif
-  
+
   source=temporary(out_dist) 
   heap_gc ; remove pointers whose references were just deleted
   

@@ -29,8 +29,8 @@
 ;          Four additional TPLOT variables are created for diagnostics. 
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-07-31 15:24:02 -0700 (Mon, 31 Jul 2017) $
-; $LastChangedRevision: 23737 $
+; $LastChangedDate: 2017-12-18 12:25:16 -0800 (Mon, 18 Dec 2017) $
+; $LastChangedRevision: 24431 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_sc_negpot_twodir_burst.pro $
 ;
 ;CREATED BY:    Shaosui Xu  01-03-2017
@@ -63,7 +63,7 @@ pro mvn_swe_sc_negpot_twodir_burst, potential=phi, shadow=shadow, swidth=swidth,
 
     npts = n_elements(mvn_swe_engy)
     badphi = !values.f_nan  ; bad value guaranteed to be a NaN
-    phi = replicate(swe_pot_struct, npts)
+    phi = replicate(mvn_pot_struct, npts)
     phi.time = mvn_swe_engy.time
     phi.potential = badphi
     phi.method = -1
@@ -76,7 +76,7 @@ pro mvn_swe_sc_negpot_twodir_burst, potential=phi, shadow=shadow, swidth=swidth,
 
 ; Calculate potentials
 
-    print,'This program is experimental - use with caution.'
+    print,'MVN_SWE_SC_NEGPOT_TWODIR_BURST:  This program is experimental - use with caution.'
 
     tmin = min(pad3.time, max=tmax)
     tsp = [tmin, tmax]                     ; time coverage for PAD burst data
@@ -141,6 +141,7 @@ pro mvn_swe_sc_negpot_twodir_burst, potential=phi, shadow=shadow, swidth=swidth,
              (emin le ebase and emin gt 3.5) and $
              (abs(median(en[inn[*]])-0.5*(emax+emin)) le 2) then begin
                pot[i,0] = emin - ebase
+               ;pot[i,0] = emax - 27.0;ebase
                heii_pot[i,0] = emin
                if (emin-ebase ge -14 and ct gt 5) then pot[i,0] = badphi
           endif
@@ -163,7 +164,9 @@ pro mvn_swe_sc_negpot_twodir_burst, potential=phi, shadow=shadow, swidth=swidth,
              (emin le ebase and emin gt 3.5) and $
              (abs(median(en[inn[*]])-0.5*(emax+emin)) le 2) then begin
                 pot[i,1] = emin - ebase
+                ;pot[i,1] = emax - 27.0;ebase
                 heii_pot[i,1] = emin
+                
                 if (emin-ebase ge -14 and ct gt 5) then pot[i,1] = badphi
              endif
           endif
@@ -192,15 +195,15 @@ pro mvn_swe_sc_negpot_twodir_burst, potential=phi, shadow=shadow, swidth=swidth,
     endif
 
 ;   Package the result
-
-    pot1 = interpol(max(pot,dim=2,/nan), t, swe_sc_pot.time)
-    indx = nn(t, swe_sc_pot.time)
-    gap = where(abs(t[indx] - swe_sc_pot.time) gt maxdt, count)
+    scpot0=max(pot,dim=2,/nan)
+    pot1 = interpol(scpot0, t, mvn_sc_pot.time)
+    indx = nn(t, mvn_sc_pot.time)
+    gap = where(abs(t[indx] - mvn_sc_pot.time) gt maxdt, count)
     if (count gt 0L) then pot1[gap] = badphi  ; estimates too far away
 
     igud = where(finite(pot1), ngud, complement=ibad, ncomplement=nbad)
     if (ngud gt 0) then begin
-      store_data,'pot_inshdw',data={x:t[igud], y:pot1[igud]}
+      store_data,'pot_inshdw',data={x:mvn_sc_pot[igud].time, y:pot1[igud]}
       options,'pot_inshdw','psym',3
 
       phi[igud].potential = pot1[igud]
@@ -210,9 +213,9 @@ pro mvn_swe_sc_negpot_twodir_burst, potential=phi, shadow=shadow, swidth=swidth,
 ;   Fill in the common block (optional)
 
     if (dofill) then begin
-      indx = where((phi.method eq 5) and (swe_sc_pot.method lt 1), count)
+      indx = where((phi.method eq 5) and (mvn_sc_pot.method lt 1), count)
       if (count gt 0L) then begin
-        swe_sc_pot[indx] = phi[indx]
+        mvn_sc_pot[indx] = phi[indx]
         mvn_swe_engy[indx].sc_pot = phi[indx].potential
       endif             
     endif

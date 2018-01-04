@@ -1,8 +1,8 @@
-;$Author: nikos $
-;$Date: 2015-06-12 10:48:10 -0700 (Fri, 12 Jun 2015) $
-;$Header: /home/rumba/cdaweb/dev/control/RCS/spd_cdawlib_virtual_funcs.pro,v 1.0 
-;$Locker: kovalick $
-;$Revision: 17856 $
+;Author: ryurow $
+;Date: 2016/05/20 21:43:27 $
+;Header: /home/rumba/cdaweb/dev/control/RCS/virtual_funcs.pro,v 1.0 
+;Locker: ryurow $
+;Revision: 1.150 $
 ;
 ;Copyright 1996-2013 United States Government as represented by the 
 ;Administrator of the National Aeronautics and Space Administration. 
@@ -187,14 +187,72 @@ function check_myvartype, nbuf, org_names
    for i=0, n_elements(var_indices)-1 do begin
       wc=where(org_names eq var_names[i],wcn)
       if(wc[0] lt 0) then begin  ; this is not the originally requested var.
-        ;print,'***** not requested, make support_data : ',var_names[i]
+     ;   print,'***** not requested, make support_data : ',var_names[i]
         nbuf.(var_indices[i]).var_type = 'support_data'
         ;
         wc1=where(strupcase(compnames) eq var_names[i])
         if (wc1[0] ne -1) then nbuf.(var_indices[i]).var_type='additional_data'
-        ;if (wc1[0] ne -1) then print,'********** and a component, make additional_data: ',nbuf.(var_indices[i]).varname
+    ;    if (wc1[0] ne -1) then print,'********** and a component, make additional_data: ',nbuf.(var_indices[i]).varname
       endif
    endfor   
+   ;  Old logic: (RCJ 08/29/2012)
+   ;
+   ; RCJ 01/23/2007  depend_0s is to be used if one of the vars
+   ; becomes additional or ignore_data
+;   depend_0s=''
+;   for i=0,n_elements(tag_names(nbuf))-1 do begin
+;      depend_0s=[depend_0s,nbuf.(i).depend_0]
+;   endfor
+;   depend_0s=depend_0s[1:*]
+;   ; RCJ 11/09/2007  Added same thing for depend_1's
+;   depend_1s=''
+;   for i=0,n_elements(tag_names(nbuf))-1 do begin
+;      if (spd_cdawlib_tagindex('DEPEND_1',tag_names(nbuf.(i))) ge 0) then $
+;      depend_1s=[depend_1s,nbuf.(i).depend_1]
+;   endfor
+;   if n_elements(depend_1s) gt 1 then depend_1s=depend_1s[1:*]
+   ;
+       ; we don't want the var to be ignored in case we are going to write a cdf,
+       ; but we also don't want the var listed/plotted, so turn it into a
+       ; 'additional_data'.
+      ; if ((nbuf.(var_indices(i)).var_type eq 'data') or $
+      ;  (nbuf.(var_indices(i)).var_type eq 'support_data')) then $
+      ;   nbuf.(var_indices(i)).var_type = 'additional_data' else $
+      ;   nbuf.(var_indices(i)).var_type='ignore_data'
+      ; if ((nbuf.(var_indices(i)).var_type eq 'additional_data') or $
+      ;  (nbuf.(var_indices(i)).var_type eq 'ignore_data')) then begin
+      ;	  if nbuf.(var_indices(i)).depend_0 ne '' then begin
+      ;       q=where(depend_0s eq nbuf.(var_indices(i)).depend_0)
+      ;       if n_elements(q) eq 1 then $
+      ;	        s=execute("nbuf."+nbuf.(var_indices(i)).depend_0+".var_type='additional_data'")
+      ;    endif	
+      ;       if nbuf.(var_indices(i)).depend_1 ne '' then begin
+      ;       q=where(depend_1s eq nbuf.(var_indices(i)).depend_1)
+      ;       if n_elements(q) eq 1 then $
+      ;	        s=execute("nbuf."+nbuf.(var_indices(i)).depend_1+".var_type='additional_data'")
+      ;    endif	
+      ; endif	
+       ; RCJ 07/14/2008  Now we do want the depends listed.
+;       print,'*********** not requested: ', nbuf.(var_indices[i]).varname,'  ',nbuf.(var_indices[i]).var_type
+;       if (nbuf.(var_indices[i]).var_type eq 'data')  then $
+;         nbuf.(var_indices[i]).var_type='additional_data'
+;       if (nbuf.(var_indices[i]).var_type eq 'additional_data') then begin
+;      	  if nbuf.(var_indices[i]).depend_0 ne '' then begin
+;                   q=where(depend_0s eq nbuf.(var_indices[i]).depend_0)
+;                   if n_elements(q) eq 1 then $
+;      	        s=execute("nbuf."+nbuf.(var_indices[i]).depend_0+".var_type='additional_data'")
+;                endif	
+;      	  if nbuf.(var_indices[i]).depend_1 ne '' then begin
+;                   q=where(depend_1s eq nbuf.(var_indices[i]).depend_1)
+;                   if n_elements(q) eq 1 then $
+;      	        s=execute("nbuf."+nbuf.(var_indices[i]).depend_1+".var_type='additional_data'")
+;          endif	
+;      endif	
+;
+;    Even older logic:  (RCJ 08/29/2012)
+;
+    ;if(wc[0] lt 0) then nbuf.(var_indices[i]).var_type="ignore_data"
+    ;if(wc[0] lt 0) then nbuf.(var_indices[i]).var_type="metadata"   
 
 return, status
 end
@@ -213,8 +271,8 @@ end
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
-;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
+;  buf        - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -295,11 +353,10 @@ status=0
     if(component0_index ge 0) then begin
 ; WARNING if /NODATASTRUCT keyword not set an error will occur here
 ;TJK - changed this from tagnames to tagnames1
-      if(spd_cdawlib_tagindex('HANDLE',tagnames1) ge 0) then begin
-        buf.(vvtag_indices[i]).HANDLE=buf.(component0_index).HANDLE 
-      endif else begin 
-        print, "Set /NODATASTRUCT keyword in call to spd_cdawlib_read_mycdf" 
-      endelse   
+      if(spd_cdawlib_tagindex('HANDLE',tagnames1) ge 0) then $
+        buf.(vvtag_indices[i]).HANDLE=buf.(component0_index).HANDLE $
+
+      else print, "Set /NODATASTRUCT keyword in call to read_myCDF";
     endif else begin
      print, "ERROR= No COMPONENT0 variable found in alternate_view"
      print, "ERROR= Message: ",component0_index
@@ -318,6 +375,532 @@ status=0
 
 return, buf
 end
+
+;+
+; NAME: Function CLAMP_TO_ZERO
+;
+; PURPOSE: Clamp all values less than or equal to 'clamp_threshold' to zero. 
+;
+; CALLING SEQUENCE:
+;
+;          new_buf = clamp_to_zero(buf,org_names)
+;
+; VARIABLES:
+;
+; Input:
+;
+;  buf        - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
+;               variables in this list will remain tagged as 
+;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
+;
+; Output:
+;
+;  new_buf    - an IDL structure containing the populated virtual 
+;               variable 
+;  
+; Keyword Parameters: 
+;
+;
+; REQUIRED PROCEDURES:
+;
+;   none
+;
+; History: Written by Ron Yurow 08/15, based on alternate_view
+;-
+
+function clamp_to_zero, buf, org_names, index=index
+
+status=0
+
+; Establish error handler
+  catch, error_status
+  if(error_status ne 0) then begin
+   print, "ERROR= number: ",error_status," in clamp_to_zero"
+   print, "ERROR= Message: ",!ERR_STRING
+   status = -1
+   return, status
+  endif
+
+   tagnames = tag_names(buf)
+   tagnums = n_tags(buf)
+
+;   for i=0, n_elements(vvtag_indices)-1 do begin
+;    variable_name=arrayof_vvtags(i) 
+;    tag_index = spd_cdawlib_tagindex(variable_name, tagnames)
+
+   tagnames1 = tag_names(buf.(index))
+
+; now look for the COMPONENT_0 attribute tag for this VV.
+
+    component0_index = !NULL
+
+    if  (spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then begin
+
+         component0 = buf.(index).COMPONENT_0
+
+; Get the index of the component 0 variable. 
+
+         component0_index = spd_cdawlib_tagindex(component0, tagnames)
+
+    endif
+
+; and look for the COMPONENT_1 attribute tag for this VV.
+
+    component1_index = !NULL
+
+    if  (spd_cdawlib_tagindex('COMPONENT_1', tagnames1) ge 0) then begin
+
+        component1 = buf.(index).COMPONENT_1
+
+; Get the index of the component 1 variable.
+
+        component1_index = spd_cdawlib_tagindex(component1, tagnames)
+
+    endif
+
+; and get the fill value 
+
+    fillval = !NULL 
+
+    if  (spd_cdawlib_tagindex('FILLVAL', tagnames1) ge 0) then begin
+
+        fillval = buf.(index).FILLVAL
+
+    endif
+
+    if  (component0_index ne !NULL && component1_index ne !NULL) then begin
+
+; WARNING if /NODATASTRUCT keyword not set an error will occur here
+        if  (spd_cdawlib_tagindex('HANDLE', tagnames1) ge 0) then begin
+
+             handle_value, buf.(component0_index).handle, mydata
+
+             handle_value, buf.(component1_index).handle, limit
+
+             ; find values less then the threshold limit
+             clamp = WHERE(mydata le limit, cnt)
+
+             ; Make sure we have some values to clamp
+             IF  cnt gt 0 THEN BEGIN
+
+                 ; Select all of the elements that fulfill the clamp the criteria
+                 ; but which are not set FILLVAL
+                 notfv = where(mydata[clamp] ne fillval, /NULL) 
+
+                 ; Clamp to zero!!
+                 mydata[clamp[notfv]] = 0.D
+                                             
+             ENDIF
+                 
+                 buf.(index).HANDLE = handle_create()
+                 HANDLE_VALUE, buf.(index).HANDLE, mydata, /SET
+
+        ENDIF ELSE BEGIN
+
+            print, "Set /NODATASTRUCT keyword in call to read_myCDF";
+
+        ENDELSE
+
+    ENDIF ELSE BEGIN
+
+        print, "ERROR= No COMPONENT0 variable found in clamp_to_zero"
+        print, "ERROR= Message: ",component0_index
+        status = -1
+
+        RETURN, status
+   ENDELSE
+
+; Check that all variables in the original variable list are declared as
+; data otherwise set to support_data
+; Find variables w/ var_type == data
+
+   status = check_myvartype(buf, org_names)
+
+RETURN, buf
+end
+
+;+
+; NAME: Function COMPOSITE_TBL
+;
+; PURPOSE: Create a variable that is a composite of of multiple variables. 
+;
+; CALLING SEQUENCE:
+;
+;          new_buf = composite_tbl(buf,org_names)
+;
+; VARIABLES:
+;
+; Input:
+;
+;  buf        - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
+;               variables in this list will remain tagged as 
+;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
+;
+; Output:
+;
+;  new_buf    - an IDL structure containing the populated virtual 
+;               variable 
+;  
+; Keyword Parameters: 
+;
+;
+; REQUIRED PROCEDURES:
+;
+;   none
+;
+; History: Written by Ron Yurow 08/15, based on alternate_view
+;-
+
+function composite_tbl, buf, org_names, index=index
+
+status=0
+
+; Establish error handler
+  catch, error_status
+  if(error_status ne 0) then begin
+   print, "ERROR= number: ",error_status," in composite_tbl"
+   print, "ERROR= Message: ",!ERR_STRING
+   status = -1
+   return, status
+  endif
+
+   tagnames = tag_names(buf)
+   tagnums = n_tags(buf)
+
+;   for i=0, n_elements(vvtag_indices)-1 do begin
+;    variable_name=arrayof_vvtags(i) 
+;    tag_index = spd_cdawlib_tagindex(variable_name, tagnames)
+
+   tagnames1 = tag_names(buf.(index))
+
+; now look for the COMPONENT_0 attribute tag for this VV.
+
+    component0_index = !NULL
+
+    if  (spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then begin
+
+         component0 = buf.(index).COMPONENT_0
+
+; Get the index of the component 0 variable. 
+
+         component0_index = spd_cdawlib_tagindex(component0, tagnames)
+
+    endif
+
+; and look for the COMPONENT_1 attribute tag for this VV.
+
+    component1_index = !NULL
+
+    if  (spd_cdawlib_tagindex('COMPONENT_1', tagnames1) ge 0) then begin
+
+        component1 = buf.(index).COMPONENT_1
+
+; Get the index of the component 1 variable.
+
+        component1_index = spd_cdawlib_tagindex(component1, tagnames)
+
+    endif
+
+; and look for the COMPONENT_2 attribute tag for this VV.
+
+    component2_index = !NULL
+
+    if  (spd_cdawlib_tagindex('COMPONENT_2', tagnames1) ge 0) then begin
+
+        component2 = buf.(index).COMPONENT_2
+
+; Get the index of the component 1 variable.
+
+        component2_index = spd_cdawlib_tagindex(component2, tagnames)
+
+    endif
+
+; and get the fill value 
+
+    fillval = !NULL 
+
+    if  (spd_cdawlib_tagindex('FILLVAL', tagnames1) ge 0) then begin
+
+        fillval = buf.(index).FILLVAL
+
+    endif
+
+    all_good = 1
+
+    if  (component0_index eq !NULL) then all_good = 0
+    if  (component1_index eq !NULL) then all_good = 0
+    if  (component2_index eq !NULL) then all_good = 0
+    
+
+    if  (all_good) then begin
+
+; WARNING if /NODATASTRUCT keyword not set an error will occur here
+        if  (spd_cdawlib_tagindex('HANDLE', tagnames1) ge 0) then begin
+
+             handle_value, buf.(component0_index).handle, indicator
+
+             handle_value, buf.(component1_index).handle, v0
+
+             handle_value, buf.(component2_index).handle, v1
+
+             n_rec = n_elements(indicator)
+
+             v0dim = size(v0, /DIMENSIONS)
+             v1dim = size(v1, /DIMENSIONS)
+
+             IF  (~ ARRAY_EQUAL(v0dim, v1dim)) THEN BEGIN
+
+                 print, "ERROR= COMPONENT1 variable must have same dimensions as COMPONENT2 variable."
+                 status = -1
+
+                 return, status
+
+             ENDIF
+
+             v0type = size(v0, /TYPE)
+
+             composite = intarr(v0dim, n_elements(indicator)) 
+
+             composite = FIX(composite, TYPE = v0type)
+
+             index0 = where(indicator eq 0, cnt0)
+
+             index1 = where(indicator eq 1, cnt1)
+
+             IF  (cnt0 gt 0) THEN FOR i = 0, cnt0 - 1 do composite[0, index0[i]] = v0
+
+             IF  (cnt1 gt 0) THEN FOR i = 0, cnt1 - 1 do composite[0, index1[i]] = v1
+
+             buf.(index).HANDLE = handle_create()
+             HANDLE_VALUE, buf.(index).HANDLE, composite, /SET                 
+
+        ENDIF ELSE BEGIN
+
+            print, "Set /NODATASTRUCT keyword in call to read_myCDF"
+
+        ENDELSE
+
+    ENDIF ELSE BEGIN
+
+        print, "ERROR= Missing variables indicated by one of the following attributes: " + $
+               "COMPONENT0, COMPONENT1, or COMPONENT2."
+        status = -1
+
+        RETURN, status
+   ENDELSE
+
+; Check that all variables in the original variable list are declared as
+; data otherwise set to support_data
+; Find variables w/ var_type == data
+
+   status = check_myvartype(buf, org_names)
+
+RETURN, buf
+end
+
+;+
+; NAME: Function arr_slice
+;
+; PURPOSE: Create a variable by extracting a subset (slice) of a multidimensional array.  
+;          Works on variables up to 7 dimensions. 
+;
+;
+; CALLING SEQUENCE:
+;
+;          new_buf = arr_slice (buf,org_names)
+;
+; VARIABLES:
+;
+; Input:
+;
+;  buf        - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
+;               variables in this list will remain tagged as 
+;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
+;
+; Output:
+;
+;  new_buf    - an IDL structure containing the populated virtual 
+;               variable 
+;  
+; Keyword Parameters: 
+;
+;
+; REQUIRED PROCEDURES:
+;
+;   none
+;
+; History: Written by Ron Yurow 05/16, based on alternate_view
+;-
+
+function arr_slice, buf, org_names, index=index
+
+status=0
+
+; Establish error handler
+  catch, error_status
+  if(error_status ne 0) then begin
+   print, "ERROR= number: ",error_status," in ARR_SLICE"
+   print, "ERROR= Message: ",!ERR_STRING
+   status = -1
+   return, status
+  endif
+
+   tagnames = tag_names(buf)
+   tagnums = n_tags(buf)
+
+;   for i=0, n_elements(vvtag_indices)-1 do begin
+;    variable_name=arrayof_vvtags(i) 
+;    tag_index = spd_cdawlib_tagindex(variable_name, tagnames)
+
+   tagnames1 = tag_names(buf.(index))
+
+; now look for the COMPONENT_0 attribute tag for this VV.
+
+   component0_index = !NULL
+
+   if  (spd_cdawlib_tagindex('COMPONENT_0', tagnames1) ge 0) then begin
+
+       component0 = buf.(index).COMPONENT_0
+
+; Get the index of the component 0 variable. 
+
+       component0_index = spd_cdawlib_tagindex(component0, tagnames)
+
+   endif
+
+   ; Get the index of the array slice we should extract 
+   ind = !NULL
+
+   v = spd_cdawlib_tagindex(tagnames1, 'ARR_INDEX')
+
+   IF  ( v  ne -1) THEN BEGIN
+       ind = buf.(index).(v)
+   ENDIF
+
+   ; Get the dimension of the array we should reduce when extracting the slice
+   dim = !NULL
+
+   v = spd_cdawlib_tagindex(tagnames1, 'ARR_DIM')
+
+   IF  ( v  ne -1) THEN BEGIN
+       dim = buf.(index).(v)
+   ENDIF
+
+; and get the fill value 
+
+   fillval = !NULL 
+
+   IF  (spd_cdawlib_tagindex('FILLVAL', tagnames1) ge 0) THEN begin
+
+       fillval = buf.(index).FILLVAL
+
+   ENDIF
+
+   all_good = 1
+
+   IF  (component0_index eq !NULL) THEN all_good = 0
+   IF  (ind eq !NULL) THEN all_good = 0  
+   IF  (dim eq !NULL) THEN all_good = 0
+
+   IF  (all_good) THEN BEGIN
+
+; WARNING if /NODATASTRUCT keyword not set an error will occur here
+       if  (spd_cdawlib_tagindex('HANDLE', tagnames1) ge 0) THEN BEGIN
+
+            handle_value, buf.(component0_index).handle, src
+
+            n_dim = n_elements(buf.(component0_index).DIM_SIZES)
+
+            dim_sizes = (size(src, /DIMENSIONS))[0:n_dim-1]
+
+            ; Make sure we are not calling this on a one dimensional array
+            IF  (n_dim lt 2) THEN BEGIN
+                
+                print, "ERROR= COMPONENT0 variable must have dimensionality greater than 1."
+
+                status = -1
+
+                RETURN, status
+
+            END
+
+            ; also can not exceed the number of dimensions of the source variable.
+            IF  (dim gt n_dim - 1) THEN BEGIN
+                
+                print, "ERROR= Invalid dimension requestest from COMPONENT0 variable."
+
+                status = -1
+
+                RETURN, status
+
+            END
+            
+            ; Check that ind selects a valid slice of the source array
+            IF  (ind ge dim_sizes[dim] || ind lt 0) THEN BEGIN
+
+                print, "ERROR=  Invalid index specified to select array slice from COMPONENT0" + $
+                       " variable."
+
+                status = -1
+
+                RETURN, status
+
+            ENDIF
+
+            ; Brute force way of extracting the array slice, but easier than writing a 
+            ; more general solution.
+            CASE dim OF
+               0: trg = REFORM(src[ind, *, *, *, *, *, *, *]) 
+               1: trg = REFORM(src[*, ind, *, *, *, *, *, *]) 
+               2: trg = REFORM(src[*, *, ind, *, *, *, *, *]) 
+               3: trg = REFORM(src[*, *, *, ind, *, *, *, *]) 
+               4: trg = REFORM(src[*, *, *, *, ind, *, *, *]) 
+               5: trg = REFORM(src[*, *, *, *, *, ind, *, *]) 
+               6: trg = REFORM(src[*, *, *, *, *, *, ind, *]) 
+
+
+               ELSE: BEGIN
+                  print, "ERROR= Invalid dimension requested from COMPONENT0 variable." 
+
+                  status = -1
+
+                  RETURN, status
+
+               END
+
+            ENDCASE
+
+            buf.(index).HANDLE = handle_create()
+            HANDLE_VALUE, buf.(index).HANDLE, trg, /SET           
+
+        ENDIF ELSE BEGIN
+
+            print, "Set /NODATASTRUCT keyword in call to read_myCDF"
+
+        ENDELSE
+
+    ENDIF ELSE BEGIN
+
+        print, "ERROR= Missing variable indicated by COMPONENT0 or other required " + $
+               "attributes."
+
+        status = -1
+
+        RETURN, status
+   ENDELSE
+
+; Check that all variables in the original variable list are declared as
+; data otherwise set to support_data
+; Find variables w/ var_type == data
+
+   status = check_myvartype(buf, org_names)
+
+RETURN, buf
+end
+
 ;+
 ; NAME: Function CROP_IMAGE
 ;
@@ -507,12 +1090,12 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
  if (keyword_set(TSTART) and keyword_set(TSTOP))then begin
         start_time = 0.0D0 ; initialize
         b = size(TSTART) & c = n_elements(b)
-        if (b(c-2) eq 5) then start_time = TSTART $ ; double float already
-        else if (b(c-2) eq 7) then start_time = encode_cdfepoch(TSTART); string
+        if (b[c-2] eq 5) then start_time = TSTART $ ; double float already
+        else if (b[c-2] eq 7) then start_time = encode_cdfepoch(TSTART); string
         stop_time = 0.0D0 ; initialize
         b = size(TSTOP) & c = n_elements(b)
-        if (b(c-2) eq 5) then stop_time = TSTOP $ ; double float already
-        else if (b(c-2) eq 7) then stop_time = encode_cdfepoch(TSTOP); string
+        if (b[c-2] eq 5) then stop_time = TSTOP $ ; double float already
+        else if (b[c-2] eq 7) then stop_time = encode_cdfepoch(TSTOP); string
  endif
 
  ;m3int=fix((stop_time - start_time)/(180.0*1000.0))
@@ -573,6 +1156,11 @@ function conv_pos, buf, org_names, COORD=COORD, TSTART=TSTART, $
   tmax=buf.(index).VALIDMAX[1] 
   pmax=buf.(index).VALIDMAX[2] 
 
+;  x0=execute('cond0=buf.'+vvtag_indices[0]+'.COMPONENT_0') 
+;  x0=execute('handle_value, buf.'+org_names[0]+'.HANDLE,data') 
+;  x0=execute('fillval=buf.'+org_names[0]+'.fillval') 
+
+; if(COORD eq "SYN-GCI") then begin
   r=data[0,*]
   theta=data[1,*]
   phi=data[2,*]
@@ -1320,7 +1908,7 @@ function conv_map_image, buf, org_names, DEBUG=DEBUG
 
 ; Trap any errors propogated through buf
    if(buf_trap(buf)) then begin
-    print, "idl structure bad (conv_map_image)
+    print, "idl structure bad (conv_map_image)"
     return, buf 
    endif
 
@@ -1397,7 +1985,13 @@ if(ireturn) then return, buf ; Return only if all orig_names are already
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, im_time
    endif
-
+;
+;   a0=spd_cdawlib_tagindex(tagnames,'GCI_LOOK_DIR')
+;   if(a0 ne -1) then begin
+;    handle_value, buf.(a0).handle, look
+;   endif
+; help, look
+;
    a0=spd_cdawlib_tagindex(tagnames,'ATTITUDE')
    if(a0 ne -1) then begin
     handle_value, buf.(a0).handle, attit
@@ -1618,8 +2212,8 @@ FUNCTION calc_p, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
-;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
+;  buf        - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
 ;
@@ -1806,7 +2400,6 @@ FUNCTION Add_51s, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 	endif else begin 
     parent_times =  buf.(cond0).DAT
 	endelse	
-	
   shifted_times = parent_times ; create the same sized array
 
   num = n_elements(parent_times)-1
@@ -1969,7 +2562,7 @@ FUNCTION compute_magnitude, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 ;
 ; Input:
 ;
-;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdf
+;  buf        - an IDL structure built w/in spd_cdawlib_read_mycdfyCDF
 ;  org_names  - list of original variables input to spd_cdawlib_read_mycdf. Any
 ;               variables in this list will remain tagged as 
 ;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
@@ -2168,7 +2761,6 @@ FUNCTION extract_array, buf, org_names, INDEX=INDEX, DEBUG=DEBUG
 	endif else begin 
 	 parent =  buf.(cond0).DAT
 	endelse
-
   evarname = buf.(vvar_index).varname
 
 ;  print, 'variable name requesting values = ',evarname
@@ -2259,10 +2851,16 @@ handle_value,buf.(component0_index).handle,geo_coord
 
 ; get height from coordinates
 height=0
-for i=2L,n_elements(geo_coord)-1,3 do height=[height,geo_coord[i]]
+;  RCJ 06/05/2014  Small change in read_myCDF (look for valid_recs_isis)
+;   prompted this change. array = [0, lat, lon, height, lat, lon, height, etc..]  
+; Old line:  for i=2L,n_elements(geo_coord)-1,3 do height=[height,geo_coord[i]]
+for i=3L,n_elements(geo_coord)-1,3 do height=[height,geo_coord[i]]
 ; RCJ 10/01/2003 I would start the height array at [1:*] to eliminate the first
 ; 0 but a few more 0's come from spd_cdawlib_read_mycdf so I have to start it at [2:*] :
-height=height[2:*]
+;height=height[2:*]
+; RCJ 06/05/2014  Small change in read_myCDF (look for valid_recs_isis) 
+;  made this right again.
+height=height[1:*]
 buf.(index).handle=handle_create()
 handle_value,buf.(index).handle,height,/set
 
@@ -2527,7 +3125,6 @@ print, 'DEBUG, In comp_epoch'
   endif else begin 
     parent_times =  buf.(cond0).DAT
   endelse
-
 ; Determine the "parent variable's sidekick" component_1
   cond1=buf.(vvar_index).COMPONENT_1 
   if (handle_found) then handle_value, buf.(cond1).HANDLE,parent_subsec $
@@ -2841,6 +3438,7 @@ print, 'velocity fillvalu = ',fillval
       velocity =  buf.(cond0).DAT
   endelse
 
+
   num = n_elements(velocity)
   energy = velocity ;want the same data type and array sizes
   
@@ -2940,7 +3538,6 @@ print, 'DEBUG, In convert_Ni'
 ; Check to see if HANDLE is a tag name
   wh=where(var eq 'HANDLE',whn)
   if(whn) then handle_found = 1
-
 ; Determine the "parent variable" component_0
   cond0=buf.(vvar_index).COMPONENT_0 
   if (handle_found) then begin
@@ -3170,9 +3767,9 @@ print, 'DEBUG, In correct_FAST_By'
   
 ; set flagged data to nans
 ;TJK changed test for -1.e30 to fillval
-bf = where (ilat lt fillval, nf)
+bf = where(ilat lt fillval, nf)
 if (nf gt 0) then ilat[bf]=!values.f_nan
-bf = where (BY lt fillval, nf)
+bf = where(BY lt fillval, nf)
 if (nf gt 0) then BY[bf]=!values.f_nan
 
 ; set up arrays
@@ -3283,13 +3880,42 @@ endif
 
 ; calculate the cadence from one epoch to the next.
 num_epochs = n_elements(epoch)
+
+; Modification made by Ron Yurow (11/13/2014)
+; Check to make sure that CDF contains at least three records in order to
+; correctly compute a cadence.
+; Removed by Ron Yurow (11/14/2014)
+; So that an actual cadence will be returned no matter how many records are
+; the CDF contains.
+;if (num_epochs lt 3) then begin 
+;   print, "ERROR= error detected in compute_cadence"
+;   print, "ERROR= Message: Not enough epoch values to correctly compute cadence values."
+;   status = -1
+;   return, status
+;endif
+
 cadence = make_array(num_epochs, /double)
-cadence[0] = epoch[1]-epoch[0]
-cadence[num_epochs-1] = epoch[num_epochs-1]-epoch[num_epochs-2]
-for i=1L,num_epochs-2 do begin
-   if(epoch[i+1]-epoch[i]) < (epoch[i]-epoch[i-1])then $
-      cadence[i] = epoch[i+1]-epoch[i] else cadence[i] = epoch[i]-epoch[i-1]
-endfor
+; Modification made by Ron Yurow (11/14/2014)
+; Added special cases to handle when there are only 1 or 2 epochs in the CDF
+; A single epoch will result in a cadence of the FILLVAL
+; Two epochs will actually result in reasonable values for cadence.
+; I think .... 
+case num_epochs of 
+1:   cadence[0] = buf.(component0_index).fillval
+2:   begin
+       cadence[0] = epoch[1]-epoch[0]
+       cadence[1] = epoch[1]-epoch[0]
+     end
+else: begin
+       cadence[0] = epoch[1]-epoch[0]
+       cadence[num_epochs-1] = epoch[num_epochs-1]-epoch[num_epochs-2]
+
+       for i=1L,num_epochs-2 do begin
+           if(epoch[i+1]-epoch[i]) < (epoch[i]-epoch[i-1])then $
+           cadence[i] = epoch[i+1]-epoch[i] else cadence[i] = epoch[i]-epoch[i-1]
+       endfor
+     end
+endcase
 
 buf.(index).handle=handle_create()
 handle_value,buf.(index).handle,cadence,/set
@@ -3554,10 +4180,12 @@ function expand_wave_data, astruct, org_names, INDEX=index, DEBUG=DEBUG
 ;
 ;  PURPOSE:
 ;
-;This routine computes the epochs from the base times and the
-;timeoffsets.  Also restructures the data from size 4096 elements/record out
-;to a single dimensioned array for display as a timeseries (the
-;original/parent data is set up for a spectrogram display)
+;This routine computes TT2000 epochs from the base times and the
+;timeoffsets.  NEED to define the computed epoch variable in the
+;master to be of type tt2000.  Also restructures the data from 
+;size N elements/record out to a single dimensioned array for 
+;display as a timeseries (where the original/parent data is set 
+;up for a spectrogram display)
 ;
 ;
 ; CALLING SEQUENCE:
@@ -3606,7 +4234,7 @@ endif else begin ;get the 1st vv
 
 endelse
 
-print, 'In Expand_wave_data'
+;print, 'In Expand_wave_data'
 ;print, 'original variables ',org_names
 c_0 = astruct.(index).COMPONENT_0 ;1st component var (real/parent wave variable)
 
@@ -3624,6 +4252,14 @@ if (c_0 ne '') then begin ;this should be the real data
   fill_val = astruct.(var_idx).fillval
 endif else print, 'expand_wave_data - parent variable not found'
 
+;Get the datatype to determine how to process the different types of
+;data.  Doesn't seem to be any other way to determine some of this.
+datatype = astruct.(var_idx).data_type
+dtype = 1
+if strcmp(datatype, 'emfisis', 7, /fold_case) then dtype = 1
+if strcmp(datatype, 'TDS', 3, /fold_case) then dtype = 2
+print, 'Expand_wave_datatype ',datatype, dtype
+
 c_0 = astruct.(index).COMPONENT_1 ;2nd component var (Epoch)
 
 if (c_0 ne '') then begin ;this should be the Epoch base value
@@ -3631,14 +4267,27 @@ if (c_0 ne '') then begin ;this should be the Epoch base value
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
   d = spd_cdawlib_tagindex('DAT',itags)
-    if (d[0] ne -1) then  Epoch_base = astruct.(var_idx).DAT $
-    else begin
-      d = spd_cdawlib_tagindex('HANDLE',itags)
-      if (astruct.(var_idx).HANDLE ne 0) then $
+  if (d[0] ne -1) then  Epoch_base = astruct.(var_idx).DAT $
+  else begin
+    d = spd_cdawlib_tagindex('HANDLE',itags)
+    if (astruct.(var_idx).HANDLE ne 0) then $
         handle_value, astruct.(var_idx).HANDLE, Epoch_base
-    endelse
+  endelse
+  ;
+  ; RCJ 09/01/2015  Shouldn't make Epoch (depend_0) ignore_data w/o testing. It could be
+  ;     used for another requested variable.  Make array of depend_0's for 
+  ;     vars that are 'data' and see if any is Epoch.  More/different tests might be needed
+  ;     later.
+  qq=''
+  for k=0,n_elements(atags)-1 do begin
+     if astruct.(k).var_type eq 'data' then qq=[qq,strupcase(astruct.(k).depend_0)]
+  endfor 
+  q=where(qq eq c_0) ;  c_0 always Epoch here?  
+  if q[0] eq -1 then astruct.(var_idx).var_type = 'ignore_data'
+  ;
+  ;
+  ;astruct.(var_idx).var_type = 'ignore_data'
 endif else print, 'expand_wave_data - Epoch_base variable not found'
-
 
 ;TJK made an NRV version of the timeOffsets variable - so using this
 c_0 = astruct.(index).COMPONENT_2 ;3rd component var (time_offsets)
@@ -3648,48 +4297,129 @@ if (c_0 ne '') then begin ;this should be the time offset values
   itags = tag_names(astruct.(var_idx)) ;tags for the real data.
 
   d = spd_cdawlib_tagindex('DAT',itags)
-    if (d[0] ne -1) then  time_offsets = astruct.(var_idx).DAT $
-    else begin
-      d = spd_cdawlib_tagindex('HANDLE',itags)
-      if (astruct.(var_idx).HANDLE ne 0) then $
-        handle_value, astruct.(var_idx).HANDLE, time_offsets
-   endelse
-time_offsets = long64(temporary(time_offsets)) ; convert so math will work below
+  if (d[0] ne -1) then  time_offsets = astruct.(var_idx).DAT $
+  else begin
+    d = spd_cdawlib_tagindex('HANDLE',itags)
+    if (astruct.(var_idx).HANDLE ne 0) then $
+      handle_value, astruct.(var_idx).HANDLE, time_offsets
+  endelse
+  ; RCJ 09/23/2015  Same as above for component_1, make component_2 'ignore_data' if not
+  ;     used for another requested variable.
+  qq=''
+  for k=0,n_elements(atags)-1 do begin
+     if astruct.(k).var_type eq 'data' then qq=[qq,strupcase(astruct.(k).depend_0)]
+  endfor 
+  q=where(qq eq c_0) ;  c_0 always Epoch here?  
+  if q[0] eq -1 then astruct.(var_idx).var_type = 'ignore_data'
+  ;
 endif else print, 'expand_wave_data - time_offsets variable not found'
 
+;New epoch variable to be computed/created
+c_0 = astruct.(index).DEPEND_0 ;1st component var (real wave variable)
+
+if (c_0 ne '') then begin ;this should be the new Epoch variable
+  new_epoch_idx = spd_cdawlib_tagindex(c_0, atags)
+  itags = tag_names(astruct.(new_epoch_idx)) ;tags for the new Epoch variable.
+  d = spd_cdawlib_tagindex('CDFTYPE',itags)
+  tt2k = 0
+  if (d[0] ne -1) then begin
+     new_e_dtype = astruct.(new_epoch_idx).CDFTYPE
+     if (new_e_dtype eq 'CDF_TIME_TT2000') then tt2k = 1
+  endif
+
+endif
+;
+
 nrec = n_elements(Epoch_base)
-lenwave= n_elements(time_offsets) ;should be 4096 
+;lenwave= n_elements(time_offsets) ;should be 4096 
+time_size= size(time_offsets) ;can use above line w/ the time_offsets varys w/ time (2-d)
+lenwave = time_size(1);need the size of the 2nd dimension
 ; number of result records
 num_new_epoch= nrec*lenwave
-new_epoch = make_array(num_new_epoch+1, /double) ; regular epoch
-if (size(Epoch_base[0],/tname) eq 'LONG64') then new_epoch = lon64arr(num_new_epoch+1, /nozero) ;tt2k epoch
-new_samples = make_array(num_new_epoch+1, /double, value=0.0)
+;new_epoch = make_array(num_new_epoch+1, /double) ; regular epoch
+new_epoch = make_array(num_new_epoch, /double) ; regular epoch
+need_to_convert_base = 1
+if (size(Epoch_base[0],/tname) eq 'LONG64') then need_to_convert_base = 0
 
-;layout the Samples into one long time series
+if (tt2k) then begin ;checks for tt2k
+  new_epoch = lon64arr(num_new_epoch, /nozero) ;tt2k epoch
+  if (not need_to_convert_base) then time_offsets = long64(temporary(time_offsets)) ; convert so math will work below
+endif 
+;convert the cdf_epoch array to cdf_tt2000's if our new_epoch
+;is going to be of type tt2000 and our base epoch is cdf_epoch
+if (need_to_convert_base and tt2k) then begin
+
+  CDF_Epoch, Epoch_base, year,month,day,hour,minute,second,milli,micro,nano,/TOINTEGER,/BREAK
+;  print, 'Epoch base value = ', year,month,day,hour,minute,second,milli,micro,nano
+  CDF_TT2000, tt_Epoch_base, year,month,day,hour,minute,second,milli,micro,nano,/COMPUTE
+endif
+
+samples_type = size(samples, /type)
+;new_samples = make_array(num_new_epoch+1, type=samples_type, value=0)
+new_samples = make_array(num_new_epoch, type=samples_type, value=0)
+
+;lay out the Samples into one long time series
 ;compute the new epochs based on the base_epoch plus time_offsets for
 ;each base
 k = 0UL ; counter for the number of elements in the new arrays (needs to be big)
 for i=0,nrec-1 do begin
-;       CDF_EPOCH,Epoch_base[i],year,month,day,hour,minute,second,milli,micro,nano,/TOINTEGER,/BREAK
-;       print, Epoch_base[i]
-;       print, 'Epoch_base date : ', year,month,day,hour,minute,second,milli,micro,nano
-    for j=0,lenwave-1 do begin
-;time_offsets, should vary w/ time, but the cdfs aren't
-;populated that way... so for now just use the 1st records time_offsets
-;       print, 'time offset = ', time_offsets[j,i]
-;       new_epoch[k] = Epoch_base[i]+time_offsets[j,i]
+    time_varies = 0
+    if (size(time_offsets, /n_dim) eq 2) then time_varies = 1
 
-       new_epoch[k] = Epoch_base[i] + time_offsets[j]
+    if (time_varies) then begin
+      ;time_offsets, vary w/ time
+      for j=0,lenwave-1 do begin
+       if (tt2k and dtype eq 2) then begin
+          ;for wind tds time_offsets are in seconds so *1000000000 to get nanoseconds
+          offset = long64(1000000000*time_offsets[j,i]) ; and have to call long64 or else math below doesn't happen!
+          new_epoch[k] = tt_Epoch_base[i]+offset
+          CDF_EPOCH,new_epoch[k],year,month,day,hour,minute,second,milli,micro,nano,/TOINTEGER,/BREAK
+;          print, 'new epoch date : ',year,month,day,hour,minute,second,milli,micro,nano
+;          print, new_epoch[k]
+       endif else begin
+          new_epoch[k] = Epoch_base[i]+time_offsets[j,i]
+;          CDF_EPOCH,new_epoch[k],year,month,day,hour,minute,second,milli,/BREAK
+;          print, 'new epoch date : ',year,month,day,hour,minute,second,milli
+       endelse
        new_samples[k] = Samples[j,i]
        k = k + 1
-    endfor 
-endfor
+      endfor 
 
-;Populate the HFRsamples_times variable in the structure
+    endif else begin
+      ;time_offsets, should vary w/ time, but the RBSP waveform emfisis cdfs aren't
+      ;populated that way... so for now just use the 1st records time_offsets
+                                ; OR for when there's only one
+                                ; real epoch value found for
+                                ; the user's request
+;       print, 'Multiplying time_offset by 1000000000 to get nanoseconds '
+      for j=0,lenwave-1 do begin
+;       print, 'time offset = ', time_offsets[j]
+       if (tt2k and dtype eq 2) then begin ;for wind_tds
+                                ;for wind tds time_offsets are in
+                                ;seconds so *1000000000 to get
+                                ;nanoseconds
+;          print, 'time_offset in seconds = ',time_offsets[j]
+          offset = long64(1000000000*time_offsets[j]) ; and have to call long64 or else math below doesn't happen!
+;          print, 'offset in microseconds to be added to base = ',offset
+          new_epoch[k] = tt_Epoch_base+offset
+          CDF_EPOCH,new_epoch[k],year,month,day,hour,minute,second,milli,micro,nano,/TOINTEGER,/BREAK
+;          print, 'new epoch date : ',year,month,day,hour,minute,second,milli,micro,nano
+;          print, new_epoch[k]
+;stop;
+       endif else begin ;for rbsp original case
+          new_epoch[k] = Epoch_base[i] + time_offsets[j]
+       endelse
+       new_samples[k] = Samples[j,i]
+       k = k + 1
+      endfor 
+   endelse
+endfor
+;Populate the samples variable in the structure
 temp = handle_create(value=new_samples)
 astruct.(index).HANDLE = temp
 
-;Populate the HFRsamples_times associated variables (Depend_0/Epoch_exapanded)
+
+;Populate the new_times associated variables (Depend_0/Epoch_exapanded)
 ; Create handles and populated data in existing structure
 
 c_0 = astruct.(index).DEPEND_0 ;1st component var (real wave variable)
@@ -3707,6 +4437,7 @@ if (c_0 ne '') then begin ;this should be the new Epoch variable
 endif else print, 'expand_wave_data - new epoch variable not found'
 
 ; Check buf and reset variables not in orignal variable list to metadata
+
    status = check_myvartype(astruct, org_names)
 
    return, astruct
@@ -3850,7 +4581,7 @@ if (c_0 ne '') then begin ;this should be the real data
         if (b ne -1) then begin ; extract the name of the y variable and elist
            c = spd_cdawlib_break_mystring(ilist[inum],delimiter='(')
            if (n_elements(c) eq 2) then rem = strmid(c[1], 0,strlen(c[1])-1)
-           if (rem ne '') then begin ;apply the reduction syntax to the parent array
+    if (rem ne '') then begin ;apply the reduction syntax to the parent array
               new_array = parent_array[rem,*];last dim. is records
 ;stop;
               if (num_lists eq 1) then begin
@@ -3889,5 +4620,286 @@ astruct.(index).DISPLAY_TYPE = ndt ; should be just stack_plot
 return, astruct
 end
 
-pro spd_cdawlib_virtual_funcs 
+;+
+; NAME: Function fix_sparse
+;
+; PURPOSE: take the array of data specified by component_0
+; and replace all fill values w/ the preceding non-fill value - 
+; place the result in the return buffer.
+;
+; CALLING SEQUENCE:
+;
+;          new_buf = fix_sparse(buf,org_names)
+;
+; VARIABLES:
+;
+; Input:
+;
+;  astruct    - an IDL structure built w/in read_myCDF
+;  org_names  - list of original variables input to read_myCDF. Any
+;               variables in this list will remain tagged as
+;               VAR_TYPE= data otherwise VAR_TYPE = support_data.
+;  index - keyword - if set use this index value to find the virtual 
+;                    variable, otherwise, find the 1st vv in the structure.
+;
+; Output:
+;
+;  new_buf    - an IDL structure containing the populated virtual
+;               variable
+;
+; Keyword Parameters:
+;
+;
+; REQUIRED PROCEDURES:
+;
+;   none
+;
+;-------------------------------------------------------------------
+; History
+;
+;         1.0  T. Kovalick  ADNET     6/19/2013
+;               Initial version
+;
+;-------------------------------------------------------------------
+
+function fix_sparse, astruct,org_names,index=index
+
+status=0
+
+; Establish error handler
+  catch, error_status
+  if(error_status ne 0) then begin
+   print, "ERROR= number: ",error_status," in fix_sparse"
+   print, "ERROR= Message: ",!ERR_STRING
+   status = -1
+   return, status
+endif
+
+; If the index of the Virtual variable is given, use it, if not, then
+; find the 1st virtual variable in the structure.
+atags = tag_names(astruct) ;get the variable names.
+vv_tagnames=strarr(1)
+vv_tagindx = vv_names(astruct,names=vv_tagnames) ;find the virtual vars
+if keyword_set(index) then begin
+  index = index
+endif else begin ;get the 1st vv
+  index = vv_tagindx[0]
+  if (vv_tagindx[0] lt 0) then return, -1
+
+endelse
+
+;print, 'In fix_sparse'
+;print, 'original variables ',org_names
+c_0 = astruct.(index).COMPONENT_0 ;1st component var (real/parent variable)
+
+if (c_0 ne '') then begin ;this should be the real data
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = spd_cdawlib_tagindex('DAT',itags)
+  if (d[0] ne -1) then  parent_array = astruct.(var_idx).DAT $
+  else begin
+    d = spd_cdawlib_tagindex('HANDLE',itags)
+    if (astruct.(var_idx).HANDLE ne 0) then $
+      handle_value, astruct.(var_idx).HANDLE, parent_array
+    endelse
+;  help, parent_array
+;  print, 'parent_array', parent_array
+
+  new_array = parent_array  ; initialize to be identical
+  fill_is_nan = 0L
+  d = spd_cdawlib_tagindex('FILLVAL',itags)
+  if (d[0] ne -1) then begin ; fillval is define
+     fill_val = astruct.(var_idx).fillval
+     if finite(fill_val, /nan) then fill_is_nan = 1
+     dims = size(new_array,/dimensions)
+     if (n_elements(dims) eq 2) then begin
+       for i = 0, dims[0]-1 do begin
+          column = parent_array[i,*]
+;          save_value = (max(column, /nan) + min(column, /nan))/2 ; set an initial value if the array starts off w/ fill
+          save_value = fill_val; set an initial value, Bob says to use the fill_value
+          ; use finite, otherwise a value of NaN isn't caught
+          if (fill_is_nan) then nogood = where(finite(column, /nan), n_nogood) else $
+             nogood = where(column eq fill_val, n_nogood) 
+          
+          if (n_nogood gt 0 and (n_nogood ne n_elements(column))) then begin ;go through the column and replace values
+            for j = 0, dims[1]-1 do begin
+              if (finite(column[j]) and (column[j] ne fill_val)) then save_value = column[j] else new_array[i,j] = save_value
+            endfor
+         endif ; else don't replace any values
+       endfor
+    endif ;endif 2 dimensions
+  endif else print, 'fix_sparse - fillval required'
+
+endif else print, 'fix_sparse - parent variable not found'
+;print, new_array
+
+;Put the reduced sized array in the virtual variables handle
+temp = handle_create(value=new_array)
+astruct.(index).HANDLE = temp
+
+; Check that all variables in the original variable list are declared
+; as data otherwise set to support_data
+
+   status = check_myvartype(astruct, org_names)
+
+return, astruct
+end
+
+;Function: apply_filter_flag
+;Purpose: To use the filter variable to "filter" out unwanted data points
+;This one is different than the rest in that the user, through the
+;master cdf can specify the value to be tested against by using
+;the variable attribute COMPARE_VAL, if not defined, value defaults
+;to zero. It also looks for COMPARE_OPERATOR, defaults to "eq".
+;Author: Tami Kovalick, ADNET Inc, March 21, 2016
+;
+;
+;Copyright 1996-2013 United States Government as represented by the 
+;Administrator of the National Aeronautics and Space Administration. 
+;All Rights Reserved.
+;
+;------------------------------------------------------------------
+;
+function apply_filter_flag, astruct, orig_names, index=index
+
+;Input: astruct: the structure, created by read_myCDF that should
+;		 contain at least one Virtual variable.
+;	orig_names: the list of varibles that exist in the structure.
+;	index: the virtual variable (index number) for which this function
+;		is being called to compute.  If this isn't defined, then
+;		the function will find the 1st virtual variable.
+
+;this code assumes that the Component_0 is the original variable, and
+;Component_1 should be the filter variable.
+;COMPARE_VAL - this will be the value that the s/w will use to compare 
+;the filter data against. If COMPARE_VAL is not found, then the value defaults to 0.
+;It also looks for the operator to be used as another variable
+;attribute called COMPARE_OPERATOR, default is "eq", other acceptable
+;values are "ne", "gt", "ge", "lt", "le".
+
+atags = tag_names(astruct) ;get the variable names.
+vv_tagnames=strarr(1)
+vv_tagindx = vv_names(astruct,names=vv_tagnames) ;find the virtual vars
+
+if keyword_set(index) then begin
+  index = index
+endif else begin ;get the 1st vv
+
+  index = vv_tagindx[0]
+  if (vv_tagindx[0] lt 0) then return, -1
+
+endelse
+
+print, 'In apply_filter_flag'
+;print, 'original variables ',orig_names
+
+c_0 = astruct.(index).COMPONENT_0 ;1st component var (real flux var)
+
+if (c_0 ne '') then begin ;this should be the real data
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = spd_cdawlib_tagindex('DAT',itags)
+    if (d[0] ne -1) then  z_data = astruct.(var_idx).DAT $
+    else begin
+      d = spd_cdawlib_tagindex('HANDLE',itags)
+      handle_value, astruct.(var_idx).HANDLE, z_data
+    endelse
+  fill_val = astruct.(var_idx).fillval
+
+endif else print, 'Component_0 variable not found'
+
+
+c_0 = astruct.(index).COMPONENT_1 ; should be the filter variable
+
+if (c_0 ne '') then begin ;
+  var_idx = spd_cdawlib_tagindex(c_0, atags)
+  itags = tag_names(astruct.(var_idx)) ;tags for the real data.
+
+  d = spd_cdawlib_tagindex('DAT',itags)
+    if (d[0] ne -1) then  filter_data = astruct.(var_idx).DAT $
+    else begin
+      d = spd_cdawlib_tagindex('HANDLE',itags)
+      handle_value, astruct.(var_idx).HANDLE, filter_data
+    endelse
+  
+endif else print, 'Filter variable not found'
+
+;Next, get the value to compare against in order to apply the filter
+c = spd_cdawlib_tagindex('COMPARE_VAL',tag_names(astruct.(index))) ;if the COMPARE_VAL attribute and value exist
+if (c[0] ne -1) then compare_val = astruct.(index).COMPARE_VAL else compare_val = 0
+;handle the case where the attribute exists in the cdf, but no value defined for this variable
+if (compare_val eq '') then compare_val = 0 
+
+;if keyword_set(DEBUG) then
+ print, 'DEBUG compare_val set to ',compare_val
+
+;Next, get the operator, e.g. eq, gt, ge, lt, le to use, default will
+;be eq (which in the logic below is "ne" since we need to turn the
+;value ne to the campare_val to fill.
+c = spd_cdawlib_tagindex('COMPARE_OPERATOR',tag_names(astruct.(index))) ;if the COMPARE_OPERATOR attribute and value exist
+if (c[0] ne -1) then compare_operator = astruct.(index).COMPARE_OPERATOR else compare_operator = 'eq'
+;handle the case where the attribute exists in the cdf, but no value defined for this variable
+if (compare_operator eq '') then compare_operator = 'eq'
+
+print, 'DEBUG compare_operator set to ',compare_operator
+
+;change values not matching the compare_val to the appropriate fill values
+case (compare_operator) of
+   'eq': begin temp = where(filter_data ne compare_val, badcnt)                      ;***
+         end
+   'ne': begin temp = where(filter_data eq compare_val, badcnt)                      ;***
+         end
+   'lt': begin temp = where(filter_data ge compare_val, badcnt)                      ;***
+         end
+   'le': begin temp = where(filter_data gt compare_val, badcnt)                      ;***
+         end
+   'gt': begin temp = where(filter_data le compare_val, badcnt)                      ;***
+         end
+   'ge': begin temp = where(filter_data lt compare_val, badcnt) ;***
+   end
+   else: print, 'no apply_filter_flag operator specified'
+endcase
+
+
+;help, temp
+;print, badcnt
+
+if (badcnt ge 1) then begin
+   print, 'found ',badcnt, ' records of data turning to fill'
+   dims = size(z_data, /n_dimensions)
+   print, 'size of data = ',dims
+;help, filter_data
+;help, z_data
+
+   if (dims eq 1) then z_data[temp] = fill_val
+   if (dims eq 2) then z_data[*,temp] = fill_val
+   if (dims eq 3) then z_data[*,*,temp] = fill_val
+   if (dims eq 4) then z_data[*,*,*,temp] = fill_val
+endif
+
+;now, need to fill the virtual variable data structure with this new data array
+;and "turn off" the original variable.
+
+tempd = handle_create(value=z_data)
+
+astruct.(index).HANDLE = tempd
+
+z_data = 1B
+filter_data = 1B
+
+; Check astruct and reset variables not in orignal variable list to metadata,
+; so that variables that weren't requested won't be plotted/listed.
+
+   status = check_myvartype(astruct, orig_names)
+
+return, astruct
+
+;endif else return, -1 ;if there's no data return -1
+
+end
+
+pro spd_cdawlib_virtual_funcs
+;do nothing
 end

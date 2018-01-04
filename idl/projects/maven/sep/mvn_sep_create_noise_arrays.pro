@@ -21,9 +21,9 @@ endelse
 nt = n_elements(t)
 sidename = '_'+['A','B']
 for s=0,1 do begin
-   store_data,tname+sidename[s]+'_sigma',t, transpose(data_str.sigma[s*3:s*3+2]) ,dlimit ={colors:'bgr',yrange:[.5,2],ystyle:1,psym:-3}
-   store_data,tname+sidename[s]+'_baseline',t, transpose(data_str.baseline[s*3:s*3+2]) ,dlimit ={colors:'bgr',yrange:[-1,1],ystyle:1,psym:-3}
-   store_data,tname+sidename[s]+'_total',t, transpose(data_str.tot[s*3:s*3+2]) ,dlimit ={colors:'bgr',ystyle:1,psym:-3}
+   store_data,tname+sidename[s]+'_sigma',t, transpose(data_str.sigma[s*3:s*3+2]) ,dlimit ={colors:'bgr',yrange:[.5,2],ystyle:1,psym:-3,labels:['O','T','F'],labflag:-1}
+   store_data,tname+sidename[s]+'_baseline',t, transpose(data_str.baseline[s*3:s*3+2]) ,dlimit ={colors:'bgr',yrange:[-1,1],ystyle:1,psym:-3,labels:['O','T','F'],labflag:-1}
+   store_data,tname+sidename[s]+'_total',t, transpose(data_str.tot[s*3:s*3+2]) ,dlimit ={colors:'bgr',ystyle:1,psym:-3,labels:['O','T','F'],labflag:-1}
 endfor
 end
 

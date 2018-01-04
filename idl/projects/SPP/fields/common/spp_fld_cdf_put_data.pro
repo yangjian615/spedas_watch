@@ -33,12 +33,17 @@
 ; CREATED BY:
 ;   pulupa
 ;
-; $LastChangedBy: pulupa $
-; $LastChangedDate: 2017-08-17 17:21:12 -0700 (Thu, 17 Aug 2017) $
-; $LastChangedRevision: 23810 $
+; $LastChangedBy: spfuser $
+; $LastChangedDate: 2017-10-26 11:27:42 -0700 (Thu, 26 Oct 2017) $
+; $LastChangedRevision: 24219 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/SPP/fields/common/spp_fld_cdf_put_data.pro $
 ;-
 pro spp_fld_cdf_put_data, fileid, data, close = close
+
+  if not keyword_set(fileid) then begin
+    print, 'file must be specified'
+    return
+  endif
 
   foreach data_item, data, item_name do begin
 
@@ -103,6 +108,10 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
         dprint, 'Number of Strings:', n_elements(data_array_string), dlevel = 3
 
+        data_array_raw = (data_item['data_raw']).ToArray()
+
+        dprint, '# of Raw Data Points:', n_elements(data_array_raw), dlevel = 3
+
         ;stop
 
       end
@@ -164,6 +173,13 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
       endif
 
+      if n_elements(data_array_raw) GT 0 then begin
+
+        varid_str = cdf_varcreate(fileid, cdf_var_name + '_raw', $
+          dim = cdf_data_dims, /rec_vary, /zvariable, $
+          /cdf_int4)
+
+      endif
 
       dprint, '', dlevel = 3
       dprint, 'Variable ', varid, cdf_var_name, $
@@ -190,7 +206,7 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
 
         if n_elements(data_array_string) GT 0 then begin
 
-          case cdf_attname of 
+          case cdf_attname of
             'FORMAT': ; no FORMAT attribute for string variable
             'FILLVAL': cdf_attput, fileid, cdf_attname, varid_str, $
               ' ', /zvariable
@@ -203,9 +219,23 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
             ELSE: cdf_attput, fileid, cdf_attname, varid_str, $
               cdf_att, /zvar
           end
-
         end
-        ;end
+
+        if n_elements(data_array_raw) GT 0 then begin
+
+          case cdf_attname of
+            'FORMAT': cdf_attput, fileid, cdf_attname, varid_str, 'I16', /zvariable
+            'FILLVAL': cdf_attput, fileid, cdf_attname, varid_str, '-2147483647', /zvariable
+            'SCALEMIN': cdf_attput, fileid, cdf_attname, varid_str, '-2147483647', /zvariable
+            'SCALEMAX': cdf_attput, fileid, cdf_attname, varid_str, '2147483647', /zvariable
+            'VALIDMIN': cdf_attput, fileid, cdf_attname, varid_str, '-2147483647', /zvariable
+            'VALIDMAX': cdf_attput, fileid, cdf_attname, varid_str, '2147483647', /zvariable
+            'DATA_TYPE': cdf_attput, fileid, cdf_attname, varid_str, 'CDF_INT4', /zvariable
+            'UNITS':cdf_attput, fileid, cdf_attname, varid_str, "Counts", /zvar
+            ELSE: cdf_attput, fileid, cdf_attname, varid_str, $
+              cdf_att, /zvar
+          end
+        end
 
       endforeach
 
@@ -216,6 +246,12 @@ pro spp_fld_cdf_put_data, fileid, data, close = close
         if n_elements(data_array_string) GT 0 then begin
 
           cdf_varput, fileid, cdf_var_name + '_string', data_array_string
+
+        endif
+
+        if n_elements(data_array_raw) GT 0 then begin
+
+          cdf_varput, fileid, cdf_var_name + '_raw', data_array_raw
 
         endif
 

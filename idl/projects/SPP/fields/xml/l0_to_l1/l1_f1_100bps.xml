@@ -1,0 +1,787 @@
+<?xml version ="1.0" encoding ="UTF-8"?>
+
+<items>
+
+  <tmlib
+  	tmlib_event = 'f1_100bps'
+  	>
+  </tmlib>
+
+  <cdf_global
+      Title = "SPP FIELDS F1 100 bps Summary Telemetry"
+      Descriptor = "DCB>Data Control Board"
+      Data_type = "Summary Telemetry data"
+      Data_version = "0"
+      TEXT = "SPP FIELDS F1 Summary Telemetry Data"
+      Mods = "Revision 0"
+      Logical_source = "SPP_FLD_F1_100BPS"
+      Logical_source_description = "SPP FIELDS F1 100bps Summary Telemetry"
+      Dependencies = "None"
+      >
+  </cdf_global>
+
+  <idl_att
+      convert_routine = 'spp_fld_f1_100bps_convert'>
+  </idl_att>
+
+  <cdf_var
+      name = "RATE"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "RATE"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "RATE"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 100bps RATE"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "DCB_ARCWRPTR"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "DCB_ARCWRPTR"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "DCB_ARCWRPTR"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DCB SSR Archive Write Pointer"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "FLAGS"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "FLAGS"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "FLAGS"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 FLAGS (SPRTMR, SCMCAL, AEBHSK, THRUST)"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "SPRTMR"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "SPRTMR"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "SPRTMR"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 SPRTMR Indicator"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "SCMCAL"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "SCMCAL"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "SCMCAL"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 SCMCAL Indicator"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "AEBHSK"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "AEBHSK"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "AEBHSK"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 AEBHSK Indicator"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "THRUST"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "THRUST"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "THRUST"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "1"
+        SCALEMIN = "0"
+        SCALEMAX = "1"
+        UNITS = "None"
+        CATDESC = "F1 THRUST Indicator"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "CBS_PEAK0"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "CBS_PEAK0"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "CBS_PEAK0"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "255"
+        SCALEMIN = "0"
+        SCALEMAX = "255"
+        UNITS = "None"
+        CATDESC = "F1 CBS_PEAK0"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "CBS_PEAK1"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "CBS_PEAK1"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "CBS_PEAK1"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "255"
+        SCALEMIN = "0"
+        SCALEMAX = "255"
+        UNITS = "None"
+        CATDESC = "F1 CBS_PEAK1"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "CBS_PEAK2"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "CBS_PEAK2"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "CBS_PEAK2"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "255"
+        SCALEMIN = "0"
+        SCALEMAX = "255"
+        UNITS = "None"
+        CATDESC = "F1 CBS_PEAK2"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "CBS_PEAK3"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "CBS_PEAK3"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "CBS_PEAK3"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "255"
+        SCALEMIN = "0"
+        SCALEMAX = "255"
+        UNITS = "None"
+        CATDESC = "F1 CBS_PEAK3"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "CBS_AVG0"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "CBS_AVG0"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "CBS_AVG0"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "255"
+        SCALEMIN = "0"
+        SCALEMAX = "255"
+        UNITS = "None"
+        CATDESC = "F1 CBS_AVG0"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "CBS_AVG1"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "CBS_AVG1"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "CBS_AVG1"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "255"
+        SCALEMIN = "0"
+        SCALEMAX = "255"
+        UNITS = "None"
+        CATDESC = "F1 CBS_AVG1"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "CBS_AVG2"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "CBS_AVG2"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "CBS_AVG2"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "255"
+        SCALEMIN = "0"
+        SCALEMAX = "255"
+        UNITS = "None"
+        CATDESC = "F1 CBS_AVG2"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "CBS_AVG3"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "CBS_AVG3"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "CBS_AVG3"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "255"
+        SCALEMIN = "0"
+        SCALEMAX = "255"
+        UNITS = "None"
+        CATDESC = "F1 CBS_AVG3"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "VOLT1"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "VOLT1"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "VOLT1"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB DC V1"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "VOLT2"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "VOLT2"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "VOLT2"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB DC V2"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "VOLT3"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "VOLT3"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "VOLT3"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB DC V3"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+  
+  <cdf_var
+      name = "VOLT4"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "VOLT4"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "VOLT4"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB DC V4"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "MNMX_V1"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "MNMX_V1"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "MNMX_V1"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB DC MNMX_V1"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "MNMX_V2"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "MNMX_V2"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "MNMX_V1"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB DC MNMX_V2"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "MNMX_V3"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "MNMX_V3"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "MNMX_V3"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB DC MNMX_V3"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "MNMX_V4"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "MNMX_V4"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "MNMX_V4"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB DC MNMX_V4"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "BX"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "BX"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "BX"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "MAG BX"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+  
+  <cdf_var
+      name = "BY"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "BY"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "BY"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "MAG BY"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+  
+  <cdf_var
+      name = "BZ"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "BZ"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "BZ"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "MAG BZ"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+  
+  <cdf_var
+      name = "MNMX_BX"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "MNMX_BX"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "MNMX_BX"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "MAG MNMX_BX"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+  
+  <cdf_var
+      name = "MNMX_BY"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "MNMX_BY"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "MNMX_BY"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "MAG MNMX_BY"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+  
+  <cdf_var
+      name = "MNMX_BZ"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "MNMX_BZ"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "MNMX_BZ"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "MAG MNMX_BZ"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "RFS_HITS"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "RFS_HITS"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "RFS_HITS"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "256"
+        SCALEMIN = "0"
+        SCALEMAX = "256"
+        UNITS = "None"
+        CATDESC = "RFS_HITS"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "RFS_PLASMA"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "RFS_PLASMA"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "RFS_PLASMA"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "256"
+        SCALEMIN = "0"
+        SCALEMAX = "256"
+        UNITS = "None"
+        CATDESC = "RFS_PLASMA"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+  
+  <cdf_var
+      name = "DFB_BURST"
+      type = "Integer"> 
+    <cdf_att
+        FIELDNAM = "DFB_BURST"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "DFB_BURST"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB_BURST"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "DFB_V34AC_PEAK"
+      type = "Integer"
+      nelem = "7"> 
+    <cdf_att
+        FIELDNAM = "DFB_V34AC_PEAK"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "DFB_V34AC_PEAK"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB_V34AC_PEAK"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "DFB_V34AC_AVG"
+      type = "Integer"
+      nelem = "7"> 
+    <cdf_att
+        FIELDNAM = "DFB_V34AC_AVG"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "DFB_V34AC_AVG"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB_V34AC_AVG"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "DFB_SCM_PEAK"
+      type = "Integer"
+      nelem = "7"> 
+    <cdf_att
+        FIELDNAM = "DFB_SCM_PEAK"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "DFB_SCM_PEAK"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB_SCM_PEAK"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "DFB_SCM_AVG"
+      type = "Integer"
+      nelem = "7"> 
+    <cdf_att
+        FIELDNAM = "DFB_SCM_AVG"
+        FORMAT = "I016"
+        DATA_TYPE = "CDF_INT4"
+        LABLAXIS = "DFB_SCM_AVG"
+        VAR_TYPE = "data"
+        FILLVAL = "-2147483647"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-2147483647"
+        VALIDMAX = "2147483647"
+        SCALEMIN = "-2147483647"
+        SCALEMAX = "2147483647"
+        UNITS = "None"
+        CATDESC = "DFB_SCM_AVG"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+</items>

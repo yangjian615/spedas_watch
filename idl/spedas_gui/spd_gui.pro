@@ -24,8 +24,8 @@
 ;HISTORY:
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2016-10-28 10:35:00 -0700 (Fri, 28 Oct 2016) $
-;$LastChangedRevision: 22227 $
+;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+;$LastChangedRevision: 24103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/spd_gui.pro $
 ;-----------------------------------------------------------------------------------
 
@@ -1421,7 +1421,7 @@ PRO spd_gui,reset=reset,template_filename=template_filename
   saveAsMenu = Widget_Button(fileMenu, Value='Save SPEDAS Document As... ', UValue='SAVEAS')
 ;  saveWithMenu = Widget_Button(fileMenu, Value='Save With Data... ', UValue='SAVEWITH', $
 ;    Sensitive=0)
-  templateMenu = Widget_Button(fileMenu, Value='Template ',/menu)
+  templateMenu = Widget_Button(fileMenu, Value='Graph Options Template ',/menu)
   openTemplate = Widget_Button(templateMenu, Value='Open Template...  ', UValue='OPEN_TEMPLATE' )
   saveTemplate = Widget_Button(templateMenu, Value='Save Template... ', UValue='SAVE_TEMPLATE' )
   saveAsTemplate = Widget_Button(templateMenu, Value='Save Template As... ', UValue='SAVEAS_TEMPLATE')

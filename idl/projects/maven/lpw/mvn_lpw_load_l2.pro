@@ -113,7 +113,7 @@ varsALL=['wspecact', 'wspecpas', 'we12burstlf', 'we12burstmf', 'we12bursthf', 'w
 
 ;Make a list of any input variables that are not recognized; tell user available options:
 neleIn = n_elements(Vars)
-success = fltarr(neleIN) -1.  ;default
+success = fltarr(neleIN)  ;default
 
 notValid = ['']
 for tt = 0, neleIn-1 do begin

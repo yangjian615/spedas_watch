@@ -81,9 +81,12 @@
 ;
 ;       REALTIME:      Use realtime file naming convention: YYYYMMDD_HHMMSS_*_l0.dat
 ;
+;       VERBOSE:       Level of diagnostic message suppression.  Default = 0.  Set
+;                      to a higher number to see more diagnostic messages.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-08-14 11:10:32 -0700 (Mon, 14 Aug 2017) $
-; $LastChangedRevision: 23782 $
+; $LastChangedDate: 2017-10-02 16:46:12 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24088 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_load_l0.pro $
 ;
 ;CREATED BY:    David L. Mitchell  04-25-13
@@ -92,11 +95,17 @@
 pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes, badpkt=badpkt, $
                              cdrift=cdrift, sumplot=sumplot, status=status, orbit=orbit, $
                              loadonly=loadonly, spiceinit=spiceinit, nodupe=nodupe, $
-                             realtime=realtime, nospice=nospice
+                             realtime=realtime, nospice=nospice, verbose=verbose
 
   @mvn_swe_com
 
+; Define decompression, telemetry conversion factors, and data structures
+
+  mvn_swe_init
+
 ; Process keywords
+
+  if (size(verbose,/type) eq 0) then mvn_swe_verbose, get=verbose
 
   if not keyword_set(maxbytes) then maxbytes = 0
   if (size(nodupe,/type) eq 0) then nodupe = 1
@@ -114,7 +123,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
   if keyword_set(latest) then begin
     tmax = double(ceil(systime(/sec,/utc)/oneday))*oneday
     tmin = tmax - (14D*oneday)
-    file = mvn_pfp_file_retrieve(trange=[tmin,tmax],/l0,/valid,no_download=2,verbose=0)
+    file = mvn_pfp_file_retrieve(trange=[tmin,tmax],/l0,/valid,no_download=2,verbose=verbose)
     nfiles = n_elements(file)
     if (file[0] eq '') then begin
       print,"No L0 data in the last two weeks."
@@ -153,7 +162,7 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
       return
     endif
     tmin = min(time_double(trange), max=tmax)
-    file = mvn_pfp_file_retrieve(trange=[tmin,tmax],/l0,verbose=1)
+    file = mvn_pfp_file_retrieve(trange=[tmin,tmax],/l0,verbose=(verbose > 1))
     nfiles = n_elements(file)
   endelse
   
@@ -207,10 +216,6 @@ pro mvn_swe_load_l0, trange, filename=filename, latest=latest, maxbytes=maxbytes
     indx = where(mk ne '', count)
     if (keyword_set(spiceinit) or (count eq 0)) then mvn_swe_spice_init,/force
   endif
-
-; Define decompression, telemetry conversion factors, and data structures
-
-  mvn_swe_init
 
 ; Read in the telemetry file and store the packets in a byte array
 

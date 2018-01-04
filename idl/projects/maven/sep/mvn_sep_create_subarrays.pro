@@ -8,7 +8,7 @@
 
 
 pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapids=mapids $
-   ,yval=yval,zval=zval,smooth=smooth,smpar=smpar,units_name=units_name,lowres=lowres
+   ,yval=yval,zval=zval,smooth=smooth,smpar=smpar,units_name=units_name,lowres=lowres,arc=arc
 
    if keyword_set(units_name) then zval = units_name
    if not keyword_set(yval) then yval = 'Energy'
@@ -47,6 +47,7 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
      if mapnum eq 0 then continue
      tname = 'mvn_sep'+strtrim(sepn,2)
      if keyword_set(lowres) then tname = 'mvn_5min_sep'+strtrim(sepn,2)
+     if keyword_set(arc) then tname = 'mvn_arc_sep'+strtrim(sepn,2)
  ;    tname=data_str+string(mapnum,format='(i03)')
 ;     mapname = mvn_sep_mapnum_to_mapname(mapnum)
      wt = where(rawdat.mapid eq mapnum or finite(rawdat.time) eq 0,nt)   ; include gaps
@@ -109,9 +110,27 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          data = cnts/znorm
                          units = 'Cnts/s'
                          spec = 1
-                         zrange = [.03,10]
+                         zrange = [.03,100]
                          if (det eq 1) || (det eq 3) then zrange=[.03,1000]
                          tdata = total(data,2)
+                      end
+           'ratebin': begin
+                         znorm = dt#denergy
+                         data = cnts/znorm
+                         units = 'Cnts/s/keV'
+                         spec = 1
+                         zrange = [.001,1]
+                         if (det eq 1) || (det eq 3) then zrange=[.001,100]
+                         tdata = total(data*(replicate(1,nt)#denergy),2)
+                      end
+           'eratebin':begin
+                         znorm = dt#(denergy/energy)
+                         data = cnts/znorm
+                         units = 'keV*Cnts/s/keV'
+                         spec = 1
+                         zrange = [.1,300]
+                         if (det eq 1) || (det eq 3) then zrange=[.1,3e3]
+                         tdata = total(data*(replicate(1,nt)#denergy),2)
                       end
            'flux'   : begin
                          znorm = (geom * dt) # (eff * denergy)
@@ -131,17 +150,26 @@ pro mvn_sep_create_subarrays,data_str,trange=trange,tname=tname,bmaps=bmaps,mapi
                          units = 'Eflux'
                          if n_elements(denergy) gt 1  then tdata = total(data * (replicate(1,nt) # denergy),2) else tdata=data
                      end
+           'eflux1'  : begin ;assuming open attenuator
+                         znorm = (geoms[1] *dt) # ( eff * denergy/energy)
+                         data = cnts / znorm
+                         spec = 1
+                         zrange = [1.,3e4]
+                         yrange = zrange * 100
+                         units = 'Eflux1'
+                       if n_elements(denergy) gt 1  then tdata = total(data * (replicate(1,nt) # denergy),2) else tdata=data
+                     end
           endcase
           rdata[*,det-1] = tdata 
 ;          rdata[*,d] = ((nw gt 1) ? total(data,2) : data)
 ;          rnorm[*,d] = ((nw gt 1) ? total(tdata,2) : tdata)
           tempdata = {x:ptr_new(t),y:ptr_new(data,/no_copy),v:ptr_new(vals,/no_copy),znorm:ptr_new(znorm,/no_copy),map:ptr_new(bmap)}
           store_data,tname+'_'+cname+'_'+zname+'_'+yval,data=tempdata, dlimit={spec:spec,ystyle:1,zrange:zrange,ylog:ylog,zlog:1,$
-             labels:energy_label,labflag:-1 ,panel_size:.5+nw/80.,ztitle:units,colors:'mybycygyry'}
+             labels:energy_label,labflag:-1 ,panel_size:.5+nw/80.,ztitle:units,colors:'mybycygyry',ytickunits:'scientific',ztickunits:'scientific'}
        endfor
 ;       tempdata = {x:ptr_new(t),y:ptr_new(rdata/rnorm,/no_copy),znorm:ptr_new(dt # replicate(1.,6),/no_copy),map:ptr_new(bmap)}
        tempdata = {x:ptr_new(t),y:ptr_new(rdata,/no_copy),map:ptr_new(bmap)}
-       store_data,tname+'_'+sidename[s]+'_'+zname+'_tot',data=tempdata,dlimit ={colors:[2,4,6,1,3,0],yrange:yrange,ylog:1,ystyle:1,panel_size:1.,psym:-3,reverse_order:1}
+       store_data,tname+'_'+sidename[s]+'_'+zname+'_tot',data=tempdata,dlimit ={colors:[2,4,6,1,3,0],yrange:yrange,ylog:1,ystyle:1,panel_size:1.,psym:-3,reverse_order:1,labels:['O','T','F','OT','FT','FTO'],labflag:-1}
      endfor
    endfor
 end

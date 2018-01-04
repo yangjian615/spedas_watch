@@ -61,7 +61,7 @@ if file_test(mf) eq 0 then begin
     pathnames = file_dailynames(trange=t,file_format=pathformat,times=times)
     files = file_retrieve(pathnames,_extra=!wind,/last_version)
     mf = getenv('IDL_TMPDIR')+'wind/3dp/lz/index/wind_3dp_lz_index.txt'
-    file_open,'w',mf,unit=unit,dir_mode="777 ,file_mode="666
+    file_open,'w',mf,unit=unit,dir_mode='777'O ,file_mode='666'O
     for i=0,n_elements(times)-1 do begin
        printf,unit,format="(a,'  ',a,'  ',a,'  ',i3)",time_string(times[i]+[0,24d*3600d -1]),files[i],file_test(files[i])
     endfor

@@ -20,8 +20,8 @@
 ;HISTORY:
 ; Hacked from spec3d.pro, jmm, jimm@ssl.berkeley.edu
 ; $LastChangedBy: jimm $
-; $LastChangedDate: 2015-07-24 15:57:59 -0700 (Fri, 24 Jul 2015) $
-; $LastChangedRevision: 18252 $
+; $LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24078 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/ESA/thm_esa_dist2scpot.pro $
 ;
 ;-
@@ -81,6 +81,10 @@ Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
 ;and also the flux below the low energy part of the given slope should be
 ;greater than some threshold, say 5.0e7
   threshold_flag = dist[0:nenergy-2] Gt pvalue
+  For j = 0, nenergy-2 Do Begin
+     yes = where(dist[0:j] gt pvalue, nj)
+     If(nj Gt 0) Then threshold_flag[j] = 1b
+  Endfor
   
 ;Note that these numbers are empirical, except for the lower linit,
 ;which is determined by the slope of the secondary electrons.
@@ -93,6 +97,7 @@ Function thm_esa_dist2scpot, tempdat, pr_slope = pr_slope, $
 ;The magic slope is -m
   If(keyword_set(pr_slope)) Then print, slope, -m, energy, dist
   sltest = where(slope Lt -m and pflag Gt 0 and threshold_flag, nsltest)
+
   If(nsltest Eq 0 || (min(energy[sltest]) Gt 100.0)) Then Begin
      sc_pot_est = energy[0]
   Endif Else Begin

@@ -193,22 +193,24 @@ endif
     HDR_17:         b[17], $
     HDR_18:         b[18], $
     HDR_19:         b[19], $
-    RIO_20:         swap_endian(/swap_if_little_endian,  fix(b,20 ) ),$
-    RIO_21:         swap_endian(/swap_if_little_endian,  fix(b,22 ) ),$
+    RIO_P8I:         swap_endian(/swap_if_little_endian,  fix(b,20 ) ),$
+    RIO_N8I:         swap_endian(/swap_if_little_endian,  fix(b,22 ) ),$
     RIO_LVPS_TEMP:  MON_LVPS_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,24 ) ),$
-    RIO_22VA:       swap_endian(/swap_if_little_endian,  fix(b,26 ) ),$
-    RIO_1p5VD:      swap_endian(/swap_if_little_endian,  fix(b,28 ) ),$
-    RIO_3p3VDA:     swap_endian(/swap_if_little_endian,  fix(b,30 ) ),$
-    RIO_3p3VD:      swap_endian(/swap_if_little_endian,  fix(b,32 ) ),$
-    RIO_M8Va:       swap_endian(/swap_if_little_endian,  fix(b,34 ) ),$
-    RIO_M5VA:       swap_endian(/swap_if_little_endian,  fix(b,36 ) ),$
-    RIO_P85A:       swap_endian(/swap_if_little_endian,  fix(b,38 ) ),$
-    RIO_P5VA:       swap_endian(/swap_if_little_endian,  fix(b,40 ) ),$
+    ;RIO_LVPS_TEMP_HEX: swap_endian(/swap_if_little_endian,  fix(b,24 ) ), $
+    RIO_22VA:       swap_endian(/swap_if_little_endian,  fix(b,26 ) ) * 0.028104,$
+    RIO_1p5VD:      swap_endian(/swap_if_little_endian,  fix(b,28 ) ) * 0.002444,$
+    RIO_3p3VDA:     swap_endian(/swap_if_little_endian,  fix(b,30 ) ) * 0.003710,$
+    RIO_3p3VD:      swap_endian(/swap_if_little_endian,  fix(b,32 ) ) * 0.003710,$
+    RIO_M8Va:       swap_endian(/swap_if_little_endian,  fix(b,34 ) ) * 0.011730,$
+    RIO_M5VA:       swap_endian(/swap_if_little_endian,  fix(b,36 ) ) * 0.006295,$
+    RIO_P8VA:       swap_endian(/swap_if_little_endian,  fix(b,38 ) ) * 0.011730,$
+    RIO_P5VA:       swap_endian(/swap_if_little_endian,  fix(b,40 ) ) * 0.006295,$
     RIO_ANAL_TEMP:  MON_ANAL_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,42 ) ),$
-    RIO_3p3I:       swap_endian(/swap_if_little_endian,  fix(b,44 ) ),$
-    RIO_1p5I:       swap_endian(/swap_if_little_endian,  fix(b,46 ) ),$
-    RIO_P5IA:       swap_endian(/swap_if_little_endian,  fix(b,48 ) ),$
-    RIO_M5IA:       swap_endian(/swap_if_little_endian,  fix(b,50 ) ),$
+    ;RIO_ANAL_TEMP_HEX: swap_endian(/swap_if_little_endian,  fix(b,42 ) ), $
+    RIO_3p3I:       swap_endian(/swap_if_little_endian,  fix(b,44 ) ) * 0.572,$
+    RIO_1p5I:       swap_endian(/swap_if_little_endian,  fix(b,46 ) ) * 0.645,$
+    RIO_P5IA:       swap_endian(/swap_if_little_endian,  fix(b,48 ) ) * 2.434,$
+    RIO_M5IA:       swap_endian(/swap_if_little_endian,  fix(b,50 ) ) * 2.434,$
     adc_VMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,MCP_VMON_CH ) ) * ref*750./4095. , $
     adc_VMON_DEF1:  swap_endian(/swap_if_little_endian,  fix(b,54 ) )          * ref*1000./4095. , $
     adc_IMON_MCP:   swap_endian(/swap_if_little_endian,  fix(b,MCP_IMON_CH ) ) * ref*25./4095. , $
@@ -219,8 +221,10 @@ endif
     adc_PCB_TEMP:       MON_PCB_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,66 ) )             * ref/4095. , $
     adc_VMON_HEM:   swap_endian(/swap_if_little_endian,  fix(b,HEMI_VMON_CH ) )  * ref*500./4095. , $     ;  * ref*1271./4095. , $
     adc_FPGA_TEMP:      MON_FPGA_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,70 ) ) * ref/4095. , $
+    ;adc_FPGA_TEMP_HEX: swap_endian(/swap_if_little_endian,  fix(b,70 ) ), $
     adc_ch10:       swap_endian(/swap_if_little_endian,  fix(b,72 ) ) * ref*1000./40.2/4095. , $
     adc_ASIC_TEMP:      MON_ASIC_TEMP,$ ;swap_endian(/swap_if_little_endian,  fix(b,74 ) ) * ref/4095. , $
+    ;adc_ASIC_TEMP_HEX: swap_endian(/swap_if_little_endian,  fix(b,74 ) ), $
     adc_ch12:       swap_endian(/swap_if_little_endian,  fix(b,76 ) ) * ref/4095. , $
     adc_ch13:       swap_endian(/swap_if_little_endian,  fix(b,78 ) ) * ref/4095. , $
     adc_ch14:       swap_endian(/swap_if_little_endian,  fix(b,80 ) ) * ref/4095. , $

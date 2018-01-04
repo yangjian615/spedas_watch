@@ -16,16 +16,16 @@ endif
 setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 
 #check for lock file here
-if (! -e /tmp/SWEREPADlock.txt) then
+if (! -e /mydisks/home/maven/muser/SWEREPADlock.txt) then
     cd /mydisks/home/maven
     rm -f run_swe_repad.bm
-    rm -f /tmp/run_swe_repad.txt
+    rm -f /mydisks/home/maven/muser/run_swe_repad.txt
 
     set line="run_swe_repad"
     echo $line > run_swe_repad.bm
     echo exit >> run_swe_repad.bm
 
-    idl run_swe_repad.bm > /tmp/run_swe_repad.txt &
+    idl run_swe_repad.bm > /mydisks/home/maven/muser/run_swe_repad.txt &
 #else close quietly
 endif 
 

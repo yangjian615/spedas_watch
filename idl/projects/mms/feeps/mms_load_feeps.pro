@@ -63,6 +63,11 @@
 ;     See crib sheet mms_load_feeps_crib.pro for usage examples
 ;     
 ; NOTES:
+;     The MMS plug-in in SPEDAS requires IDL 8.4 to access data at the LASP SDC
+;    
+;     Attempts to load FEEPS CDF files with different major versions (e.g., 5.5 and 6.1) will likely lead to 
+;     errors; be sure to use the CDF version keywords to load only one major version at a time (e.g., /latest_version or /major_version)
+;     
 ;     Due to a change in variable names, this routine currently only supports v5.5+ of the FEEPS CDFs
 ;   
 ;     Have questions regarding this load routine, or its usage?
@@ -81,11 +86,14 @@
 ;     - Electron Eyes: 1, 2, 3, 4, 5, 9, 10, 11, 12
 ;     - Ion Eyes: 6, 7, 8
 ;     
+;     8Sept17: Updated to use different active telescopes before/after the CIDP software update on 16 August 2017
+;     14Sept17: Updated to use different active telescopes for level=SITL ^^
+;     
 ;     Please see the notes in mms_load_data for more information 
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-08-15 14:21:36 -0700 (Tue, 15 Aug 2017) $
-;$LastChangedRevision: 23791 $
+;$LastChangedDate: 2017-10-19 12:54:21 -0700 (Thu, 19 Oct 2017) $
+;$LastChangedRevision: 24188 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_load_feeps.pro $
 ;-
 pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
@@ -155,19 +163,22 @@ pro mms_load_feeps, trange = trange, probes = probes, datatype = datatype, $
         mms_feeps_remove_bad_data, probe=this_probe, datatype=this_datatype, $
           data_rate=data_rate_in, level = level, suffix = suffix
         
-        ; split the extra integral channel from all of the spectrograms
-        mms_feeps_split_integral_ch, data_units, this_datatype, this_probe, $
-          suffix = suffix, data_rate = data_rate_in, level = level_in
-        
         for data_units_idx = 0, n_elements(data_units)-1 do begin
+          ; updated active eyes, 9/8/2017
+          eyes = mms_feeps_active_eyes(tr, this_probe, data_rate_in, this_datatype, level)
+        
+          ; split the extra integral channel from all of the spectrograms
+          mms_feeps_split_integral_ch, data_units[data_units_idx], this_datatype, this_probe, $
+              suffix = suffix, data_rate = data_rate_in, level = level_in, sensor_eyes = eyes
+
           ; remove the sunlight contamination
           mms_feeps_remove_sun, probe = this_probe, datatype = this_datatype, level = level_in, $
               data_rate = data_rate_in, suffix = suffix, data_units = data_units[data_units_idx], $
-              tplotnames = tplotnames, trange=tr
+              tplotnames = tplotnames, trange=tr, sensor_eyes = eyes
     
           ; calculate the omni-directional spectra
           mms_feeps_omni, this_probe, datatype = this_datatype, tplotnames = tplotnames, data_units = data_units[data_units_idx], $
-            data_rate = data_rate_in, suffix=suffix, level = level_in
+              data_rate = data_rate_in, suffix=suffix, level = level_in, sensor_eyes = eyes
     
           ; calculate the spin averages
           mms_feeps_spin_avg, probe=this_probe, datatype=this_datatype, suffix = suffix, data_units = data_units[data_units_idx], $

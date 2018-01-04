@@ -195,7 +195,7 @@
 ;
 ;Example: ttrace2iono,'tha_state_pos',newname='tha_out_foot'
 ;
-;See: ttrace_crib for more examples
+;See: crib_ttrace for more examples
 ;
 ;Notes:
 ;  1. Relies on the IDL/Geopack Module provided by Haje Korth JHU/APL
@@ -212,9 +212,9 @@
 ;  4. All calculations are done internally in double precision
 ;
 ;
-; $LastChangedBy: pcruce $
-; $LastChangedDate: 2015-07-18 14:10:46 -0700 (Sat, 18 Jul 2015) $
-; $LastChangedRevision: 18174 $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2017-09-05 12:27:32 -0700 (Tue, 05 Sep 2017) $
+; $LastChangedRevision: 23888 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/external/IDL_GEOPACK/trace/ttrace2iono.pro $
 ;-
 
@@ -223,7 +223,7 @@ pro ttrace2iono, in_pos_tvar, newname = newname, trace_var_name = trace_tvar, in
     south = south, km = km, par=par, period=period, error = error, standard_mapping = standard_mapping, $
     r0=r0, rlim=rlim, noboundary=noboundary, storm=storm, pdyn=pdyn, dsti=dsti, yimf=yimf, zimf=zimf, $
     g1=g1, g2=g2, w1=w1, w2=w2, w3=w3, w4=w4, w5=w5, w6=w6, get_tilt=get_tilt, set_tilt=set_tilt, $
-    add_tilt=add_tilt, get_nperiod=get_nperiod, _extra=_extra
+    add_tilt=add_tilt, get_nperiod=get_nperiod, geopack_2008=geopack_2008, _extra=_extra
 
     error = 0
     

@@ -28,12 +28,15 @@
 ;                or 0 in case of error
 ;
 ;Notes:
-;  This is a work in progress
+;     The HPCA data is required to be at the center of the measurement interval for this routine
+;     to work properly; be sure to use the keyword: /center_measurement when calling mms_load_hpca
+;     
+;     Still a work in progress; report bugs to egrimes@igpp.ucla.edu
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-08-22 09:32:41 -0700 (Tue, 22 Aug 2017) $
-;$LastChangedRevision: 23825 $
+;$LastChangedDate: 2017-12-18 13:15:56 -0800 (Mon, 18 Dec 2017) $
+;$LastChangedRevision: 24436 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/hpca/mms_get_hpca_dist.pro $
 ;-
 
@@ -50,7 +53,8 @@ if name eq '' then begin
 endif
 
 ;pull data and metadata
-get_data, name, ptr=p
+get_data, name, ptr=p, dlimits=dl
+
 
 if ~is_struct(p) then begin
   dprint, dlevel=0, 'Variable: "'+tname+'" contains invalid data'
@@ -60,6 +64,19 @@ endif
 if size(*p.y,/n_dim) ne 3 then begin
   dprint, dlevel=0, 'Variable: "'+tname+'" has wrong number of elements'
   return, 0
+endif
+
+if ~is_struct(dl) then begin
+  dprint, dlevel=0, 'Variable: "'+tname+'" contains invalid metadata'
+  return, 0
+endif
+
+if ~tag_exist(dl, 'centered_on_load') then begin
+  dprint, dlevel=0, '########################### WARNING #############################'
+  dprint, dlevel=0, '#################################################################'
+  dprint, dlevel=0, 'Variable: "'+tname+'" does not appear to be at the center of the accumulation interval; /center_measurement is keyword required for HPCA distributions prior to calling this routine. You can ignore this warning if you have manually centered the data to the accumulation interval using a method other than the /center_measurement keyword in the call to mms_load_hpca'
+  dprint, dlevel=0, '#################################################################'
+  dprint, dlevel=0, '########################### WARNING #############################'
 endif
 
 ;get some basic info from name
@@ -139,7 +156,6 @@ if keyword_set(times) then begin
   return, (*azimuth.x)[full]
 endif
 
-
 ; Allow calling code to request a time range or specify index to specific sample.
 ;-----------------------------------------------------------------
 if ~undefined(single_time) then begin
@@ -164,6 +180,8 @@ endif else begin
     full = full[index]
   endif
 endelse
+
+if n_elements(data_idx) gt 1 && data_idx[0] eq -1 then data_idx = data_idx[1:*]
 data_idx = data_idx[full]
 
 
@@ -274,10 +292,8 @@ dist.dphi = transpose( dphi, [1,3,2,0] ) ;shuffle dimensions
 
 ;copy particle data
 for i=0,  n_elements(dist)-1 do begin
-
   ;shift from azimuth-energy-elevation to energy-azimuth-elevation
   dist[i].data = transpose( (*p.y)[data_idx[i]:data_idx[i]+(n_times-1),*,*], [1,0,2] )
-
 endfor
 
 ;ensure phi values are in [0,360]

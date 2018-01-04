@@ -17,15 +17,15 @@ endif
 setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 
 #check for lock file here, no messing around if process is running
-if (! -e /tmp/STAL2lock.txt) then
+if (! -e /mydisks/home/maven/muser/STAL2lock.txt) then
     cd /mydisks/home/maven
 
     rm -f mvn_l2gen_remove_0logs.bm
-    rm -f /tmp/mvn_l2gen_remove_0logs.txt
+    rm -f /mydisks/home/maven/muser/mvn_l2gen_remove_0logs.txt
 
     set line="mvn_l2gen_remove_0logs"
     echo $line > mvn_l2gen_remove_0logs.bm
     echo exit >> mvn_l2gen_remove_0logs.bm
 
-    idl mvn_l2gen_remove_0logs.bm > /tmp/mvn_l2gen_remove_0logs.txt &
+    idl mvn_l2gen_remove_0logs.bm > /mydisks/home/maven/muser/mvn_l2gen_remove_0logs.txt &
 endif

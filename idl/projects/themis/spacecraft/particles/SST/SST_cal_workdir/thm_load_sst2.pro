@@ -61,9 +61,9 @@
 ; Updated to use new code from Davin by pcruce Jun 2010
 ; 
 ;
-; $LastChangedBy: aaflores $
-; $LastChangedDate: 2015-04-30 15:28:49 -0700 (Thu, 30 Apr 2015) $
-; $LastChangedRevision: 17458 $
+; $LastChangedBy: jimm $
+; $LastChangedDate: 2017-10-02 11:19:09 -0700 (Mon, 02 Oct 2017) $
+; $LastChangedRevision: 24078 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spacecraft/particles/SST/SST_cal_workdir/thm_load_sst2.pro $
 ;-
 
@@ -320,7 +320,7 @@ my_themis = source_options
 
 vb = keyword_set(verbose) ? verbose : 0
 vb = vb > my_themis.verbose
-dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst2.pro 17458 2015-04-30 22:28:49Z aaflores $'
+dprint,dlevel=4,verbose=vb,'Start; $Id: thm_load_sst2.pro 24078 2017-10-02 18:19:09Z jimm $'
 
 vprobes = ['a','b','c','d','e'];,'f']
 vlevels = ['l1','l2']
@@ -365,7 +365,6 @@ if lvl ne 'l2' then begin
   datatype_cpy = strfilter(vdatatypes, datatype ,delimiter=' ',/string) 
   
   addmaster=0
-  
   for s=0,n_elements(probe)-1 do begin
   
        tn_pre_proc = tnames(create_time=cn_pre_proc)

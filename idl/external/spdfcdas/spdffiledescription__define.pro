@@ -8,7 +8,7 @@
 ; You can obtain a copy of the agreement at
 ;   docs/NASA_Open_Source_Agreement_1.3.txt
 ; or 
-;   http://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
+;   https://cdaweb.gsfc.nasa.gov/WebServices/NASA_Open_Source_Agreement_1.3.txt.
 ;
 ; See the Agreement for the specific language governing permissions
 ; and limitations under the Agreement.
@@ -22,9 +22,10 @@
 ;
 ; NOSA HEADER END
 ;
-; Copyright (c) 2010-2013 United States Government as represented by the 
-; National Aeronautics and Space Administration. No copyright is claimed 
-; in the United States under Title 17, U.S.Code. All Other Rights Reserved.
+; Copyright (c) 2010-2017 United States Government as represented by the
+; National Aeronautics and Space Administration. No copyright is claimed
+; in the United States under Title 17, U.S.Code. All Other Rights 
+; Reserved.
 ;
 ;
 
@@ -33,10 +34,10 @@
 ;+
 ; This class is an IDL representation of the FileDescription element 
 ; from the
-; <a href="http://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis 
+; <a href="https://cdaweb.gsfc.nasa.gov/">Coordinated Data Analysis 
 ; System</a> (CDAS) XML schema.
 ;
-; @copyright Copyright (c) 2010-2013 United States Government as 
+; @copyright Copyright (c) 2010-2017 United States Government as 
 ;     represented by the National Aeronautics and Space 
 ;     Administration. No copyright is claimed in the United States 
 ;     under Title 17, U.S.Code. All Other Rights Reserved.
@@ -47,6 +48,12 @@
 
 ;+
 ; Creates an SpdfFileDescription object.
+;
+; If access to the Internet is through an HTTP proxy, the caller 
+; should ensure that the HTTP_PROXY environment is correctly set 
+; before this method is called.  The HTTP_PROXY value should be of 
+; the form 
+; http://username:password@hostname:port/.
 ;
 ; @param name {in} {type=string}
 ;            name of file.
@@ -89,6 +96,23 @@ function SpdfFileDescription::init, $
 
         self.thumbnailId = thumbnailId
     end
+
+    http_proxy = getenv('HTTP_PROXY')
+
+    if strlen(http_proxy) gt 0 then begin
+
+        proxyComponents = parse_url(http_proxy)
+
+        self.proxy_hostname = proxyComponents.host
+        self.proxy_password = proxyComponents.password
+        self.proxy_port = proxyComponents.port
+        self.proxy_username = proxyComponents.username
+
+        if strlen(self.proxy_username) gt 0 then begin
+
+            self.proxy_authentication = 3
+        endif
+    endif
 
     return, self
 end
@@ -193,12 +217,29 @@ end
 
 
 ;+
+; Prints a textual representation of this object.
+;-
+pro SpdfFileDescription::print
+    compile_opt idl2
+
+    print, 'Name: ', self.name
+;    print, 'MimeType: ', self.mimeType
+;    if ptr_valid(self.timeInterval) then begin
+;    end
+;    print, 'Length: ', self.length
+;    print, 'LastModified: ', self.lastModified
+;    if ptr_valid(self.thumbnailDescription) then begin
+;    end
+end
+
+
+;+
 ; Retrieves this file from a remote HTTP or FTP server and writes 
 ; it to disk, a memory buffer, or an array of strings. The returned 
 ; data is written to disk in the location specified by the FILENAME 
 ; keyword. If the filename is not specified, the local name will be
 ; the same as this file's name in the current working directory.
-;
+; 
 ; @keyword buffer {in} {optional} {type=boolean} {default=false}
 ;            if this keyword is set, the return value is a buffer 
 ;            and the FILENAME keyword is ignored.
@@ -252,7 +293,13 @@ function SpdfFileDescription::getFile, $
         filename = file_basename(urlComponents.path)
     endif
 
-    fileUrl = obj_new('IDLnetUrl')
+    fileUrl = $
+        obj_new('IDLnetUrl', $
+                proxy_authentication = self.proxy_authentication, $
+                proxy_hostname = self.proxy_hostname, $
+                proxy_port = self.proxy_port, $
+                proxy_username = self.proxy_username, $
+                proxy_password = self.proxy_password)
 
     if keyword_set(callback_function) then begin
 
@@ -285,6 +332,12 @@ end
 ;            this file contains thumbnail images.  Otherwise, NULL.
 ; @field thumbnailId thumbnail description identifier when this file
 ;            contains thumbnail images.  Otherwise, ''.
+; @field proxy_authentication IDLnetURL PROXY_AUTHENTICATION property
+;            value.
+; @field proxy_hostname IDLnetURL PROXY_HOSTNAME property value.
+; @field proxy_password IDLnetURL PROXY_PASSWORD property value.
+; @field proxy_port IDLnetURL PROXY_PORT property value.
+; @field proxy_username IDLnetURL PROXY_USERNAME property value.
 ;-
 pro SpdfFileDescription__define
     compile_opt idl2
@@ -295,6 +348,11 @@ pro SpdfFileDescription__define
         length:0LL, $
         lastModified:0.0D, $
         thumbnailDescription:obj_new(), $
-        thumbnailId:'' $
+        thumbnailId:'', $
+        proxy_authentication:0, $
+        proxy_hostname:'', $
+        proxy_password:'', $
+        proxy_port:'', $
+        proxy_username:'' $
     }
 end

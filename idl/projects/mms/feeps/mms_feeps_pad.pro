@@ -33,27 +33,28 @@
 ;                       
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-27 20:54:36 -0700 (Tue, 27 Jun 2017) $
-;$LastChangedRevision: 23523 $
+;$LastChangedDate: 2017-11-07 15:41:47 -0800 (Tue, 07 Nov 2017) $
+;$LastChangedRevision: 24274 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/feeps/mms_feeps_pad.pro $
 ;-
 
 pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = level, $
   suffix = suffix_in, datatype = datatype, data_units = data_units, data_rate = data_rate, $
   num_smooth = num_smooth
-
+  
   if undefined(datatype) then datatype='electron' else datatype=strlowcase(datatype)
   if undefined(data_rate) then data_rate = 'srvy' else data_rate=strlowcase(data_rate)
   if undefined(probe) then probe = '1' else probe = strcompress(string(probe), /rem)
   if undefined(suffix_in) then suffix_in = ''
   prefix = 'mms'+strcompress(string(probe), /rem)
-  if undefined(bin_size) then bin_size = 15 ;deg
-  if undefined(energy) then energy = [70,1000]
+  if undefined(bin_size) then bin_size = 16.3636 ;deg
+  if undefined(energy) then energy = [70,600]
   if undefined(data_units) then data_units = 'intensity'
   if undefined(level) then level = 'l2' else level = strlowcase(level)
-  if data_units eq 'intensity' then out_units = '(cm!E2!N s sr KeV)!E-1!N'
-  if data_units eq 'cps' || data_units eq 'count_rate' then out_units = 'Counts/s'
-  if data_units eq 'counts' then out_units = 'Counts'
+  if undefined(num_smooth) then num_smooth = 1
+  if data_units eq 'intensity' then out_units = '[#/cm!E2!N-s-sr-keV]'
+  if data_units eq 'cps' || data_units eq 'count_rate' then out_units = '[counts/s]'
+  if data_units eq 'counts' then out_units = '[counts]'
   
   ; Added by DLT on 26 Jun 2017:
   ; Account for angular response (finite field of view) of instruments
@@ -81,7 +82,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
 
   ; temporary solution to issue with NaNs in the _pitch_angle variable
   ; calculate the pitch angles from the magnetic field data
-  mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=data_rate, datatype=datatype, suffix=suffix_in
+  mms_feeps_pitch_angles, trange=trange, probe=probe, level=level, data_rate=data_rate, datatype=datatype, suffix=suffix_in, idx_maps=idx_maps
   get_data, prefix+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_pa'+suffix_in, data=pa_data, dlimits=pa_dlimits
 
   if ~is_struct(pa_data) then begin
@@ -89,19 +90,21 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
     return
   endif
 
+  eyes = mms_feeps_active_eyes(trange, probe, data_rate, datatype, level)
+  
   pa_data_map = hash()
   if data_rate eq 'srvy' then begin
     ; From Allison Jaynes @ LASP: The 6,7,8 sensors (out of 12) are ions,
     ; so in the pitch angle array, the 5,6,7 columns (counting from zero) will be the ion pitch angles.
     ; for electrons:
-    pa_data_map['top-electron'] = [0, 1, 2, 3, 4]
-    pa_data_map['bottom-electron'] = [5, 6, 7, 8, 9]
+    if datatype eq 'electron' then pa_data_map['top-electron'] = (idx_maps[0])['electron-top']
+    if datatype eq 'electron' then pa_data_map['bottom-electron'] = (idx_maps[1])['electron-bottom']
     ; and ions:
-    pa_data_map['top-ion'] = [0, 1, 2]
-    pa_data_map['bottom-ion'] = [3, 4, 5]
+    if datatype eq 'ion' then pa_data_map['top-ion'] = (idx_maps[0])['ion-top']
+    if datatype eq 'ion' then pa_data_map['bottom-ion'] = (idx_maps[1])['ion-bottom']
 
     ; these should match n-1, where n is the telescope # in the variable names
-    particle_idxs = datatype eq 'electron' ? [2, 3, 4, 10, 11] : [5, 6, 7]
+   ; particle_idxs = datatype eq 'electron' ? [2, 3, 4, 10, 11] : [5, 6, 7]
   endif else if data_rate eq 'brst' then begin
     ; note: the following are indices of the top/bottom sensors in pa_data
     ; they should be consistent with pa_dlimits.labels
@@ -112,7 +115,7 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
     pa_data_map['bottom-ion'] = [3, 4, 5]
 
     ; these should match n-1, where n is the telescope # in the variable names
-    particle_idxs = datatype eq 'electron' ? [0, 1, 2, 3, 4, 8, 9, 10, 11] : [5, 6, 7]
+  ;  particle_idxs = datatype eq 'electron' ? [0, 1, 2, 3, 4, 8, 9, 10, 11] : [5, 6, 7]
   endif
 
   sensor_types = ['top', 'bottom']
@@ -125,6 +128,8 @@ pro mms_feeps_pad, bin_size = bin_size, probe = probe, energy = energy, level = 
   for s_type_idx = 0, n_elements(sensor_types)-1 do begin ; loop through top and bottom
     s_type = sensor_types[s_type_idx]
     pa_map = pa_data_map[s_type+'-'+datatype]
+    particle_idxs = eyes[s_type]-1
+
     for isen=0, n_elements(particle_idxs)-1 do begin ; loop through sensors
       ; get data
       var_name = strcompress('mms'+probe+'_epd_feeps_'+data_rate+'_'+level+'_'+datatype+'_'+s_type+'_'+data_units+'_sensorid_'+strcompress(string(particle_idxs[isen]+1), /rem)+'_clean_sun_removed'+suffix_in, /rem)

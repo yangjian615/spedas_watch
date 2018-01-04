@@ -28,9 +28,9 @@
 ;                days_in option. (passed through to mvn_sta_l2gen.pro)
 ;HISTORY:
 ;Hacked from thm_all_l1l2_gen, 17-Apr-2014, jmm
-; $LastChangedBy: muser $
-; $LastChangedDate: 2017-04-10 17:08:57 -0700 (Mon, 10 Apr 2017) $
-; $LastChangedRevision: 23133 $
+; $LastChangedBy: jimmpc1 $
+; $LastChangedDate: 2017-09-05 11:35:05 -0700 (Tue, 05 Sep 2017) $
+; $LastChangedRevision: 23885 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_call_sta_l2gen.pro $
 ;-
 Pro mvn_call_sta_l2gen, time_in = time_in, $
@@ -60,7 +60,7 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
 ;Open a file print out the error message, only once
      If(einit Eq 0) Then Begin
         einit = 1
-        efile = '/tmp/sta_l2_err_msg.txt'+ff_ext
+        efile = '/mydisks/home/maven/muser/sta_l2_err_msg.txt'+ff_ext
         openw, eunit, efile, /get_lun
         For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
         If(keyword_set(timei)) Then Begin
@@ -185,7 +185,7 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
      Endif Else Begin
         nproc = n_elements(timep_do)
 ;Send a message that processing is starting
-        ofile0 = '/tmp/sta_l2_msg0.txt'+ff_ext
+        ofile0 = '/mydisks/home/maven/muser/sta_l2_msg0.txt'+ff_ext
         openw, tunit, ofile0, /get_lun
         printf, tunit, 'Processing: '+instrk
         For i = 0, nproc-1 Do printf, tunit, timep_do[i]
@@ -226,7 +226,7 @@ Pro mvn_call_sta_l2gen, time_in = time_in, $
         Endfor
         SKIP_INSTR: load_position = 'instrument'
 ;Send a message that processing is done
-        ofile1 = '/tmp/sta_l2_msg1.txt'+ff_ext
+        ofile1 = '/mydisks/home/maven/muser/sta_l2_msg1.txt'+ff_ext
         openw, tunit, ofile1, /get_lun
         printf, tunit, 'Finished Processing: '+instrk
         free_lun, tunit

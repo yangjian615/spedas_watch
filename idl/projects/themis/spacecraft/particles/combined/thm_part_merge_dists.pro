@@ -111,7 +111,7 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
                 end_time: 0d, $
                 
                 data: comb_arr, $
-                scaling: comb_arr, $ ;placeholder for spectra/moments, TODO: populate valid portions?
+                scaling: comb_arr, $ ;placeholder for spectra/moments,
                 bins: comb_arr, $
 ;                nenergy: dim_out[0], $
                 
@@ -129,9 +129,11 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
     ;       var while freeing that used by the input would be preferable.
     out_str = replicate(template,dim_out[2])
     
+
     if ~keyword_set(only_sst) then begin
       ;copy values
       out_str.data = [esa_str.data, sst_str.data]
+      out_str.scaling = [esa_str.scaling, sst_str.scaling]
       out_str.bins = [esa_str.bins, sst_str.bins]
       
       out_str.energy = [esa_str.energy, sst_str.energy]
@@ -143,6 +145,7 @@ pro thm_part_merge_dists, esa_dist, sst_dist, out_dist=out_dist, probe=probe, es
     endif else begin
       ;copy values
       out_str.data = sst_str.data
+      out_str.scaling = sst_str.scaling
       out_str.bins = sst_str.bins
       
       out_str.energy = sst_str.energy

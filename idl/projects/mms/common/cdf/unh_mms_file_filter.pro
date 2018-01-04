@@ -36,8 +36,8 @@
 ;       LOADED_VERSIONS: The CDF version #s
 ;       
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-01-25 08:03:01 -0800 (Wed, 25 Jan 2017) $
-; $LastChangedRevision: 22663 $
+; $LastChangedDate: 2017-09-26 12:18:29 -0700 (Tue, 26 Sep 2017) $
+; $LastChangedRevision: 24031 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/cdf/unh_mms_file_filter.pro $
 ;-
 function unh_mms_file_filter, filenames, $
@@ -51,6 +51,16 @@ VERSION=version, $
 LOADED_VERSIONS=loaded_versions
 	compile_opt idl2
 	on_error, 2
+	
+	; allow the user to specify partial version #s
+	if keyword_set(min_version) then begin
+	  if n_elements(strsplit(min_version, '.')) eq 1 then min_version = min_version + '.0.0'
+	  if n_elements(strsplit(min_version, '.')) eq 2 then min_version = min_version + '.0'
+	endif
+	if keyword_set(version) then begin
+	  if n_elements(strsplit(version, '.')) eq 1 then version = version + '.0.0'
+	  if n_elements(strsplit(version, '.')) eq 2 then version = version + '.0'
+	endif
 	
 	;Defaults
 	tf_time   = ~keyword_set(no_time)

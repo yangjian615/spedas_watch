@@ -61,10 +61,12 @@
 ;     load MMS FGM data for MMS 1 and MMS 2
 ;     MMS>  mms_load_fgm, probes=[1, 2], trange=['2015-06-22', '2015-06-23']
 ;
+; NOTES:
+;     The MMS plug-in in SPEDAS requires IDL 8.4 to access data at the LASP SDC
 ;     
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-01-17 11:10:19 -0800 (Tue, 17 Jan 2017) $
-;$LastChangedRevision: 22610 $
+;$LastChangedDate: 2017-10-19 12:54:21 -0700 (Thu, 19 Oct 2017) $
+;$LastChangedRevision: 24188 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fgm/mms_load_fgm.pro $
 ;-
 
@@ -88,7 +90,7 @@ pro mms_load_fgm, trange = trange, probes = probes, datatype = datatype, $
     if undefined(probes) then probes = ['1'] ; default to MMS 1
     probes = strcompress(string(probes), /rem) ; force the array to be an array of strings
     if undefined(datatype) then datatype = '' ; grab all data in the CDF
-    ; default to QL if the trange is within the last 2 weeks, L2pre if older
+    ; default to QL if the trange is within the last 2 weeks, L2 if older
     if undefined(level) then begin 
         fourteen_days_ago = systime(/seconds)-60*60*24.*14.
         if tr[1] ge fourteen_days_ago then level = 'ql' else level = 'l2'

@@ -18,16 +18,16 @@ setenv IDL_PATH $IDL_PATH':'+$IDL_BASE_DIR
 setenv CDF_TMP /mydisks/home/maven
 
 #check for lock file here
-if (! -e /tmp/SWEL2lock.txt) then
+if (! -e /mydisks/home/maven/muser/SWEL2lock.txt) then
     cd /mydisks/home/maven
     rm -f run_swe_l2gen.bm
-    rm -f /tmp/run_swe_l2gen.txt
+    rm -f /mydisks/home/maven/muser/run_swe_l2gen.txt
 
     set line="run_swe_l2gen"
     echo $line > run_swe_l2gen.bm
     echo exit >> run_swe_l2gen.bm
 
-    idl run_swe_l2gen.bm > /tmp/run_swe_l2gen.txt &
+    idl run_swe_l2gen.bm > /mydisks/home/maven/muser/run_swe_l2gen.txt &
 #else close quietly
 endif 
 

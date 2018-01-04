@@ -16,9 +16,9 @@
 ;                L0's -- for reprocessing
 ;HISTORY:
 ; 2014-05-14, jmm, jimm@ssl.berkeley.edu
-; $LastChangedBy: jimm $
-; $LastChangedDate: 2017-04-12 10:15:47 -0700 (Wed, 12 Apr 2017) $
-; $LastChangedRevision: 23142 $
+; $LastChangedBy: jimmpc1 $
+; $LastChangedDate: 2017-09-05 11:35:05 -0700 (Tue, 05 Sep 2017) $
+; $LastChangedRevision: 23885 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/l2util/mvn_sta_l2gen.pro $
 ;-
 Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
@@ -39,14 +39,14 @@ Pro mvn_sta_l2gen, date = date, l0_input_file = l0_input_file, $
 ;Open a file print out the error message, only once
         If(einit Eq 0) Then Begin
            einit = 1
-           openw, eunit, '/tmp/sta_l2_err_msg.txt', /get_lun
+           openw, eunit, '/mydisks/home/maven/muser/sta_l2_err_msg.txt', /get_lun
            For ll = 0, n_elements(err_msg)-1 Do printf, eunit, err_msg[ll]
            If(keyword_set(datein)) Then Begin
               printf, eunit, datein
            Endif Else printf, eunit, 'Date unavailable'
            free_lun, eunit
 ;mail it to jimm@ssl.berkeley.edu
-           cmd_rq = 'mailx -s "Problem with STA L2 process" jimm@ssl.berkeley.edu < /tmp/sta_l2_err_msg.txt'
+           cmd_rq = 'mailx -s "Problem with STA L2 process" jimm@ssl.berkeley.edu < /mydisks/home/maven/muser/sta_l2_err_msg.txt'
            spawn, cmd_rq
         Endif
         case load_position of

@@ -2,20 +2,121 @@
 ;
 ; Unit tests for mms_load_fpi
 ;
-; Requires both the SPEDAS QA folder (not distributed with SPEDAS) and mgunit
-; in the local path
+; To run:
+;     IDL> mgunit, 'mms_load_fpi_ut'
 ;
 ; warning: ACR tests in test_integration_time_get_dist require special, non-public CDFs
 ; to work / expect this test to fail if you don't have those files
 ; 
 ; 
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-07-19 11:08:11 -0700 (Wed, 19 Jul 2017) $
-; $LastChangedRevision: 23650 $
+; $LastChangedDate: 2017-11-28 14:50:45 -0800 (Tue, 28 Nov 2017) $
+; $LastChangedRevision: 24355 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/tests/mms_load_fpi_ut__define.pro $
 ;-
 
+;; the following are tests for moka_mms_pad_fpi
+function mms_load_fpi_ut::test_moka_mms_pad_fpi_df_suberr
+  mms_load_fpi, data_rate='brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], datatype='des-dist', probe=1
+  mms_load_fgm, trange=['2015-10-16/13:06', '2015-10-16/13:07'], probe=1
+  dist = mms_get_dist('mms1_des_dist_brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], /subtract_err, error='mms1_des_disterr_brst')
+  df =  moka_mms_pad_fpi(dist, time='2015-10-16/13:06:30', samples=1, units='df', mag_data='mms1_fgm_b_dmpa_srvy_l2_bvec')
+  return, 1
+end
+
+function mms_load_fpi_ut::test_moka_mms_pad_fpi_eflux_suberr
+  mms_load_fpi, data_rate='brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], datatype='des-dist', probe=1
+  mms_load_fgm, trange=['2015-10-16/13:06', '2015-10-16/13:07'], probe=1
+  dist = mms_get_dist('mms1_des_dist_brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], /subtract_err, error='mms1_des_disterr_brst')
+  eflux =  moka_mms_pad_fpi(dist, time='2015-10-16/13:06:30', samples=1, units='eflux', mag_data='mms1_fgm_b_dmpa_srvy_l2_bvec')
+  return, 1
+end
+
+function mms_load_fpi_ut::test_moka_mms_pad_fpi_time_window
+  mms_load_fpi, data_rate='brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], datatype='des-dist', probe=1
+  mms_load_fgm, trange=['2015-10-16/13:06', '2015-10-16/13:07'], probe=1, data_rate='brst'
+  dist = mms_get_dist('mms1_des_dist_brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], /subtract_err, error='mms1_des_disterr_brst')
+  df =  moka_mms_pad_fpi(dist, time='2015-10-16/13:06:30', window=6, units='df', mag_data='mms1_fgm_b_dmpa_brst_l2_bvec')
+  assert, array_equal(time_string(df.trange), ['2015-10-16/13:06:30', '2015-10-16/13:06:36']), 'Regression with time/windw in PAD code'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_moka_mms_pad_fpi_trange
+  mms_load_fpi, data_rate='brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], datatype='des-dist', probe=1
+  mms_load_fgm, trange=['2015-10-16/13:06', '2015-10-16/13:07'], probe=1, data_rate='brst'
+  dist = mms_get_dist('mms1_des_dist_brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], /subtract_err, error='mms1_des_disterr_brst')
+  df =  moka_mms_pad_fpi(dist, trange=['2015-10-16/13:06:30', '2015-10-16/13:06:38'], mag_data='mms1_fgm_b_dmpa_brst_l2_bvec')
+  assert, array_equal(time_string(df.trange), ['2015-10-16/13:06:30', '2015-10-16/13:06:38']), 'Regression with trange in PAD code'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_moka_mms_pad_fpi_time_samples
+  mms_load_fpi, data_rate='brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], datatype='des-dist', probe=1
+  mms_load_fgm, trange=['2015-10-16/13:06', '2015-10-16/13:07'], probe=1, data_rate='brst'
+  dist = mms_get_dist('mms1_des_dist_brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], /subtract_err, error='mms1_des_disterr_brst')
+  df =  moka_mms_pad_fpi(dist, time='2015-10-16/13:06:30', samples=14, units='df', mag_data='mms1_fgm_b_dmpa_brst_l2_bvec')
+  assert, array_equal(time_string(df.trange, tformat='YYYY-MM-DD/hh:mm:ss.fff'), ['2015-10-16/13:06:29.775', '2015-10-16/13:06:30.195']), 'Regression with time/samples in PAD code'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_moka_mms_pad_fpi_window_centered
+  mms_load_fpi, data_rate='brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], datatype='des-dist', probe=1
+  mms_load_fgm, trange=['2015-10-16/13:06', '2015-10-16/13:07'], probe=1, data_rate='brst'
+  dist = mms_get_dist('mms1_des_dist_brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], /subtract_err, error='mms1_des_disterr_brst')
+  df =  moka_mms_pad_fpi(/center_time, dist, time='2015-10-16/13:06:30', window=9, units='df', mag_data='mms1_fgm_b_dmpa_brst_l2_bvec')
+  assert, array_equal(time_string(df.trange, tformat='YYYY-MM-DD/hh:mm:ss.fff'), ['2015-10-16/13:06:25.500', '2015-10-16/13:06:34.500']), 'Regression with time/window (centered) in PAD code'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_moka_mms_pad_fpi_nbin
+  mms_load_fpi, data_rate='brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], datatype='des-dist', probe=1
+  mms_load_fgm, trange=['2015-10-16/13:06', '2015-10-16/13:07'], probe=1, data_rate='brst'
+  dist = mms_get_dist('mms1_des_dist_brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], /subtract_err, error='mms1_des_disterr_brst')
+  df =  moka_mms_pad_fpi(nbin=33, dist, trange=['2015-10-16/13:06:30', '2015-10-16/13:06:38'], mag_data='mms1_fgm_b_dmpa_brst_l2_bvec')
+  assert, n_elements(df.pa) eq 35, 'Regression with nbins in PAD code'
+  return, 1
+end
+
+function mms_load_fpi_ut::test_moka_mms_pad_fpi_norm
+  mms_load_fpi, data_rate='brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], datatype='des-dist', probe=1
+  mms_load_fgm, trange=['2015-10-16/13:06', '2015-10-16/13:07'], probe=1, data_rate='brst'
+  dist = mms_get_dist('mms1_des_dist_brst', trange=['2015-10-16/13:06', '2015-10-16/13:07'], /subtract_err, error='mms1_des_disterr_brst')
+  df =  moka_mms_pad_fpi(/norm, dist, trange=['2015-10-16/13:06:30', '2015-10-16/13:06:38'], mag_data='mms1_fgm_b_dmpa_brst_l2_bvec')
+  assert, array_equal(minmax(df.data), [0.0, 1.0]), 'Regression with /norm keyword in PAD code'
+  return, 1
+end
+;; end moka_mms_pad_fpi tests
+
+function mms_load_fpi_ut::test_subtract_disterr
+  mms_load_fpi, trange=['2015-10-16/13:06', '2015-10-16/13:07'], data_rate='brst', datatype='des-dist', probe=1, /time_clip
+  dist = mms_get_fpi_dist('mms1_des_dist_brst')
+  dist_data = *dist
+  disterr = mms_get_fpi_dist('mms1_des_disterr_brst')
+  disterr_data = *disterr
+  distSub = mms_get_fpi_dist('mms1_des_dist_brst', error='mms1_des_disterr_brst', /subtract_error)
+  distsub_data = *distSub
+  assert, array_equal(dist_data.data-disterr_data.data, distsub_data.data), 'Problem with disterr subtraction in mms_get_fpi_dist'
+  return, 1
+end
+
 ; regression tests ---------->
+; problem / crash with compressionloss variable for fast survey data
+function mms_load_fpi_ut::test_fast_compressionloss
+  tr_load  = time_double('2017-07-17/'+['14:05:00','16:00:00'])
+  mms_load_fpi,trange=tr_load,probe='3',data_rate='fast',level='l2', datatype=['des-dist']
+  get_data, 'mms3_des_compressionloss_fast_dist', data=d
+  assert, n_elements(d.X) eq n_elements(d.Y), 'Problem with FPI fast survey compressionloss variable'
+  return, 1
+end
+
+; FPI distribution error data
+function mms_load_fpi_ut::test_get_fpi_dist_err
+  mms_load_fpi, datatype='des-dist', trange=['2015-12-15', '2015-12-16'], probe=1
+  fpi_err_dist = mms_get_dist('mms1_des_disterr_fast')
+  assert, is_struct(*fpi_err_dist), 'Problem with FPI distribution error regression in mms_get_dist'
+  return, 1
+end
+
 ; same as below, except using mms_get_dist
 function mms_load_fpi_ut::test_integration_time_get_dist
   mms_load_fpi, trange=['2015-10-16/13:00', '2015-10-16/13:10'], datatype=['dis-dist', 'des-dist'], data_rate='brst'
@@ -288,6 +389,17 @@ end
 ; mms_get_fpi_dist on a burst interval with gaps
 function mms_load_fpi_ut::test_dist_burst_with_gaps
   mms_load_fpi, trange=['2015-12-15/11:18', '2015-12-15/11:36'], data_rate='brst', /time_clip, datatype='des-dist'
+  return, 1
+end
+
+; load data from v3.3 and v3.2 CDF files
+function mms_load_fpi_ut::test_moms_errorflags_updates
+  mms_load_fpi, level='l1b', trange=['2015-10-16', '2015-10-17'], data_rate='brst', cdf_version='3.3', datatype='dis-moms', suffix='_new'
+  mms_load_fpi, level='l1b', trange=['2015-10-16', '2015-10-17'], data_rate='brst', cdf_version='3.2', datatype='dis-moms', suffix='_old'
+  get_data, 'mms3_dis_errorflags_brst_new_moms_flagbars_full', data=newdata
+  get_data, 'mms3_dis_errorflags_brst_old_moms_flagbars_full', data=olddata
+  assert, round(total(olddata.Y[0, *]*10, /nan)) eq 15, 'Problem with v3.2 -> v3.3 regression'
+  assert, round(total(newdata.Y[0, *]*10, /nan)) eq 13, 'Problem with v3.2 -> v3.3 regression'
   return, 1
 end
 

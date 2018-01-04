@@ -25,8 +25,8 @@
 ;          subtract_bulk: subtract the bulk velocity prior to 
 ;              creating the PA-energy figure
 ;          pa_en_units: units for the PA-energy figure (defaults to 'df_cm')
-;          postscript: save the plots as postscript files
-;          png: save the plots as PNG files
+;          postscript: save the plots as postscript files (can't be set with /png)
+;          png: save the plots as PNG files (can't be set with /postscript)
 ;          center_measurement: shift the data to the center of the 
 ;              measurement interval
 ;          xsize: x-size of the figures (default: 550px)
@@ -40,8 +40,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-06-14 09:09:10 -0700 (Wed, 14 Jun 2017) $
-;$LastChangedRevision: 23469 $
+;$LastChangedDate: 2017-11-20 14:57:18 -0800 (Mon, 20 Nov 2017) $
+;$LastChangedRevision: 24324 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fpi/mms_fpi_ang_ang.pro $
 ;-
 
@@ -65,6 +65,11 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
   if undefined(fgm_level) then fgm_level = 'l2'
   if undefined(fgm_instrument) then fgm_instrument='fgm'
   pa_en_units_str = spd_units_string(pa_en_units)
+  
+  if ~undefined(postscript) and ~undefined(png) then begin
+    dprint, dlevel = 0, 'Error, both PNG and POSTSCRIPT output requested, but can only do one at a time; defaulting to postscript'
+    undefine, png
+  endif
   
   if ~undefined(zrange) then begin
     if zrange[1] lt zrange[0] then begin
@@ -123,6 +128,7 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
   data_summed = total(data_at_ens, 3, /nan)
 
   distptr = mms_get_dist('mms'+probe+'_d'+species+'s_dist_'+data_rate, single_time=time)
+  disterrptr = mms_get_dist('mms'+probe+'_d'+species+'s_disterr_'+data_rate, single_time=time)
 
   if ~ptr_valid(distptr) then begin
     dprint, dlevel = 4, 'Error, no data found for this time: '+time_string(time)
@@ -178,14 +184,14 @@ pro mms_fpi_ang_ang, time, probe=probe, energy_range=energy_range, data_rate=dat
     if fgm_instrument eq 'dfg' and fgm_level eq 'l2pre' then begin
       if tnames('mms'+probe+'_dfg_srvy_l2pre_dmpa_bvec') ne '' then b_field = 'mms'+probe+'_dfg_srvy_l2pre_dmpa_bvec' else b_field = 'mms'+probe+'_dfg_b_dmpa_srvy_l2pre_bvec'
     endif else b_field = 'mms'+probe+'_fgm_b_dmpa_srvy_l2_bvec'
-    
-    if ~undefined(subtract_bulk) then $
-        pad = moka_mms_pad(b_field, 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, vname='mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate, subtract_bulk=subtract_bulk, units=pa_en_units) $
-    else $
-        pad = moka_mms_pad(b_field, 'mms'+probe+'_d'+species+'s_dist_'+data_rate, trange_pad, subtract_bulk=0, units=pa_en_units)
 
-    
-    plotxyz, pad.PA, pad.EGY, pad.DATA, /noisotropic, /ylog, /zlog, title=time_string(closest_time, tformat='YYYY-MM-DD/hh:mm:ss.fff'), $
+
+    if ~undefined(subtract_bulk) then $
+      pad = moka_mms_pad_fpi(*distptr, *disterrptr, time=closest_time, mag_data=b_field, vel_data='mms'+probe+'_d'+species+'s_bulkv_dbcs_'+data_rate, subtract_bulk=subtract_bulk, units=pa_en_units) $
+    else $
+      pad = moka_mms_pad_fpi(*distptr, *disterrptr, time=closest_time, subtract_bulk=0, units=pa_en_units, mag_data=b_field)
+
+    plotxyz, pad.PA, pad.EGY, transpose(pad.DATA), /noisotropic, /ylog, /zlog, title=time_string(closest_time, tformat='YYYY-MM-DD/hh:mm:ss.fff'), $
       xrange=[0,180], zrange=zrange, xtitle='Pitch angle (deg)', ytitle='Energy (eV)', ztitle=pa_en_units_str, window=4, xsize=xsize, ysize=ysize
 
     if ~undefined(png) then makepng, 'pad_vs_energy'+filename_suffix

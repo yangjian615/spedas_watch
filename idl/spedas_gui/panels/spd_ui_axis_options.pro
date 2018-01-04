@@ -22,9 +22,9 @@
 ;NB: This problem doesn't seem to happen with the panel title on Panel Options window.
 ;If we could work out why the panel title combobox worked there it would be better to fix axis label title to match rather than truncating.
 ;
-;$LastChangedBy: crussell $
-;$LastChangedDate: 2016-01-19 14:01:09 -0800 (Tue, 19 Jan 2016) $
-;$LastChangedRevision: 19759 $
+;$LastChangedBy: nikos $
+;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+;$LastChangedRevision: 24103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_axis_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -2631,11 +2631,15 @@ PRO spd_ui_axis_options_event, event
           state.template->setProperty,y_axis=axissettings->copy()
           axis_string = 'Y'
         endelse
-        state.statusbar->update,'Saved Current '+axis_string+'-Axis Settings to Template'
-        state.historywin->update,'Saved Current '+axis_string+'-Axis Settigns to Template'
+        state.statusbar->update,'Current '+axis_string+'-Axis options stored for use in a Template'  
+        state.historywin->update,'Current '+axis_string+'-Axis options stored for use in a Template'
+
+        messageString = 'These values have now been stored!' +  string(10B) + string(10B) + 'To save them in a template, click File->Graph Options Template->Save Template'
+        response=dialog_message(messageString,/CENTER, /information)
+
       endif else begin
-        state.statusbar->update,'Cannot save template. Needs a valid panel to save axis template.'
-        state.historywin->update,'Cannot save template. Needs a valid panel to save axis template.'
+        state.statusbar->update,'Cannot store options. Needs a valid panel to save axis options for a template.'
+        state.historywin->update,'Cannot store options. Needs a valid panel to save axis options for a template.'
       endelse
       ;not sure if this is necessary
       spd_ui_init_axis_window, state = state
@@ -4508,7 +4512,7 @@ applyButton = Widget_Button(buttonBase, Value='Apply', UValue='APPLY',Tooltip='A
 applyToAllButton = Widget_Button(buttonBase, Value='Apply to All Panels', Uvalue='APPLYTOALL', sens=1, $
    Tooltip='Apply settings from the current tab to all panels',XSize=125)
 cancelButton = Widget_Button(buttonBase, Value='Cancel', UValue='CANC', XSize=75)
-templateButton = Widget_Button(buttonBase,  Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template")
+templateButton = Widget_Button(buttonBase,  Value='Store for a Template', UValue='TEMP',xsize=125,tooltip='Use these settings when saving a Graph Options Template')
 ;helpButton = Widget_Button(buttonBase, Value='Help', XSize=75)
 
 

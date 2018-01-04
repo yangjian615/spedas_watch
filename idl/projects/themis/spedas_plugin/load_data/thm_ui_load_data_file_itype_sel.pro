@@ -15,9 +15,9 @@
 ;OUTPUT:
 ; None
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-08-16 09:38:01 -0700 (Wed, 16 Aug 2017) $
-;$LastChangedRevision: 23802 $
+;$LastChangedBy: jimmpc1 $
+;$LastChangedDate: 2017-09-06 15:00:33 -0700 (Wed, 06 Sep 2017) $
+;$LastChangedRevision: 23896 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/themis/spedas_plugin/load_data/thm_ui_load_data_file_itype_sel.pro $
 ;-
 pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
@@ -182,7 +182,8 @@ pro thm_ui_load_data_file_itype_sel, state, from_coord_sel=from_coord_sel
         
               if n_invali eq 0 then begin
                   if array_equal(dlist2_all,'*',/no_typeconv) then dlist2_all = 'None'
-              endif else if (state.instr ne 'sst') and (state.instr ne 'esa') then begin ;don't remove coord selections from list for sst l2
+              endif else if (state.instr ne 'sst') and (state.instr ne 'esa') $
+                 and (state.instr ne 'mom') and (state.instr ne 'gmom') then begin ;don't remove coord selections from list l2 particles, jmm, 2017-09-06
                   invali = invali[where(invali gt 0, n_invali_i)]
                   dlist2_all_t[invali] = 'invalid'
                   dlist2_all = dlist2_all[where(dlist2_all_t ne 'invalid')]

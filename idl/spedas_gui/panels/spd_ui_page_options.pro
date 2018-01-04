@@ -15,8 +15,8 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2015-01-09 16:00:41 -0800 (Fri, 09 Jan 2015) $
-;$LastChangedRevision: 16632 $
+;$LastChangedDate: 2017-10-03 14:12:59 -0700 (Tue, 03 Oct 2017) $
+;$LastChangedRevision: 24103 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_page_options.pro $
 ;
 ;---------------------------------------------------------------------------------
@@ -938,8 +938,12 @@ PRO spd_ui_page_options_event, event, pagesettings
     spd_ui_page_set_value,event.top,state
     ; NO orientation update as this will change the way the page appears NOW.
     state.template->setProperty,page=state.pagesettings->Copy()
-    state.statusbar->update,'Saved Current Page Settings to Template'
-    state.historywin->update,'Saved Current Page Settings to Template'
+    state.statusbar->update,'Current page options stored for use in a Template'
+    state.historywin->update,'Current page options stored for use in a Template'
+    
+    messageString = 'These values have now been stored!' +  string(10B) + string(10B) + 'To save them in a template, click File->Graph Options Template->Save Template'
+    response=dialog_message(messageString,/CENTER, /information)
+    
   end
   
   'BPALETTE': begin ; background palette
@@ -1851,7 +1855,7 @@ pro spd_ui_page_options, info
   applyButton = Widget_Button(buttonBase, Value='Apply', XSize = 75, uval='APPLY')
   applytoallButton = Widget_Button(buttonBase, Value='Apply to All Pages', XSize = 115, uval='APPLYTOALLPAGES')
   cancelButton = Widget_Button(buttonBase, Value='Cancel', UValue='CANC', XSize = 75)
-  templateButton = Widget_Button(buttonBase, Value='Save as Default', UValue='TEMP',xsize=125,tooltip="Save current settings as default template")
+  templateButton = Widget_Button(buttonBase, Value='Store for a Template', UValue='TEMP',xsize=125,tooltip='Use these settings when saving a Graph Options Template')
   ;  helpButton = Widget_Button(buttonBase, Value='Help', XSize = 75)
   
   ; Create Status Bar Object

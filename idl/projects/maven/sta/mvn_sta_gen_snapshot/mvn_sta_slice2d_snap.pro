@@ -53,6 +53,9 @@
 ;
 ;       VSC:      Corrects for the spacecraft velocity.
 ;
+;      VOFF:      Offset velocity for slice.  Centers the slice in the dimension
+;                 orthogonal to the slice.
+;
 ;  SHOWDATA:      Plos all the data points over the contour (symsize = showdata).
 ;                 Pluses = Free sky bins, Crosses = Blocked bins.
 ;
@@ -61,6 +64,10 @@
 ;   DATPLOT:      Returns a structure which contains data used to plot.
 ;
 ;     UNITS:      Specifies the units (e.g., 'eflux', 'df', etc). Default is 'df'.
+;
+;     V_ESC:      Overplot a circle with radius = escape velocity.
+;
+;      DIAG:      Print out diagnistics on the plot: S/C pot, S/C velocity
 ;
 ;USAGE EXAMPLES:
 ;         1.      ; Normal case
@@ -90,16 +97,17 @@
 ;CREATED BY:      Takuya Hara on 2015-05-22.
 ;
 ;LAST MODIFICATION:
-; $LastChangedBy: hara $
-; $LastChangedDate: 2017-04-05 10:48:55 -0700 (Wed, 05 Apr 2017) $
-; $LastChangedRevision: 23115 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2017-11-30 21:18:06 -0800 (Thu, 30 Nov 2017) $
+; $LastChangedRevision: 24371 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/sta/mvn_sta_gen_snapshot/mvn_sta_slice2d_snap.pro $
 ;
 ;-
 PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _extra=_extra, $
                           bline=bline, mass=mass, m_int=mq, mmin=mmin, mmax=mmax, apid=id, units=units, $
                           verbose=verbose, keepwin=keepwin, charsize=chsz, sum=sum, burst=burst, $
-                          dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange, datplot=datplot
+                          dopot=dopot, sc_pot=sc_pot, vsc=vsc, showdata=showdata, erange=erange, $
+                          v_esc=v_esc, datplot=datplot, diag=diag, subtract=subtract
 
   IF STRUPCASE(STRMID(!version.os, 0, 3)) EQ 'WIN' THEN lbreak = STRING([13B, 10B]) ELSE lbreak = STRING(10B)
   tplot_options, get_option=topt
@@ -112,6 +120,7 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
   IF SIZE(var2, /type) NE 0 THEN trange = time_double(var2)
   IF keyword_set(dopot) THEN dopot = 1 else dopot = 0
   IF SIZE(sc_pot, /type) NE 0 THEN forcepot = 1 else forcepot = 0
+  voff = subtract
 
   IF keyword_set(window) THEN wnum = window ELSE BEGIN
      IF !d.name NE 'PS' THEN BEGIN
@@ -209,15 +218,16 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
         str_element, d, 'nenergy', (d.nenergy), /add_replace
         str_element, d, 'bins', REBIN(TRANSPOSE(d.bins), d.nenergy, d.nbins), /add_replace
         str_element, d, 'bins_sc', REBIN(TRANSPOSE(d.bins_sc), d.nenergy, d.nbins), /add_replace
+        tmid = (d.time + d.end_time)/2D
         IF (dopot OR keyword_set(vsc)) THEN BEGIN
            IF keyword_set(vsc) THEN BEGIN
-              sstat = EXECUTE("v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')")
+              sstat = EXECUTE("v_sc = spice_body_vel('MAVEN', 'MARS', utc=tmid, frame='MAVEN_MSO')")
               IF sstat EQ 0 THEN BEGIN
                  mvn_spice_load, /download, verbose=verbose
-                 v_sc = spice_body_vel('MAVEN', 'MARS', utc=0.5*(d.time + d.end_time), frame='MAVEN_MSO')
+                 v_sc = spice_body_vel('MAVEN', 'MARS', utc=tmid, frame='MAVEN_MSO')
               ENDIF 
               IF SIZE(v_sc, /type) NE 0 THEN BEGIN
-                 v_sc = spice_vector_rotate(v_sc, 0.5*(d.time + d.end_time), 'MAVEN_MSO', 'MAVEN_STATIC', verbose=verbose)
+                 v_sc = spice_vector_rotate(v_sc, tmid, 'MAVEN_MSO', 'MAVEN_STATIC', verbose=verbose)
                  dprint, dlevel=2, verbose=verbose, $
                          lbreak + '  Correcting f(v) for the spacecraft velocity:' + lbreak + $
                          '  V_sc (km/s) = [   ' + STRING(v_sc, '(3(F0, :, ",   "))') + '].'
@@ -241,6 +251,21 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            IF nbad GT 0 THEN d.bins[badbin] = 0
            vel -= v_sc                                 ; Removing V_sc from the bulk flow.
         ENDIF ELSE vel = v_3d(d)
+        
+        if keyword_set(v_esc) then begin
+          M = 6.4171d26    ; https://nssdc.gsfc.nasa.gov/planetary/factsheet/index.html
+          G = 6.673889d-8  ; Anderson, J.D., et al., EPL 110 (2015) 10002 doi: 10.1209/0295-5075/110/10002
+
+          sstat = execute("pos = spice_body_pos('MAVEN', 'MARS', utc=tmid, frame='MAVEN_MSO')")
+          if (sstat eq 0) then begin
+            mvn_spice_load, /download, verbose=verbose
+            pos = spice_body_pos('MAVEN', 'MARS', utc=tmid, frame='MAVEN_MSO')
+          endif
+          Vesc = sqrt(2D*G*M/(1.d15*sqrt(total(pos^2.))))
+          phi = 2.*!pi*findgen(101)/100.
+          Vesc_x = Vesc*cos(phi)
+          Vesc_y = Vesc*sin(phi)
+        endif
 
         IF !d.name NE 'PS' THEN BEGIN
            wstat = EXECUTE("wset, wnum")
@@ -251,33 +276,45 @@ PRO mvn_sta_slice2d_snap, var1, var2, archive=archive, window=window, mso=mso, _
            dummy = d
            dummy = conv_units(dummy, 'df')
            dummy.data = FLOAT(dummy.bins_sc)
-           status = EXECUTE("slice2d, dummy, _extra=_extra, vel=vel, /noplot, datplot=block, /verbose")
+           status = EXECUTE("slice2d, dummy, _extra=_extra, vel=vel, subtract=subtract, /noplot, datplot=block, /verbose")
            undefine, dummy
         ENDIF
 
-        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, datplot=datplot, units=units")
+        status = EXECUTE("slice2d, d, _extra=_extra, sundir=bdir, vel=vel, subtract=subtract, datplot=datplot, units=units")
         IF status EQ 1 THEN BEGIN
+           if keyword_set(v_esc) then oplot, Vesc_x, Vesc_y, linestyle=2, thick=2
+
            x0 = !x.window[0]*1.2
            y0 = !y.window[1]*0.95
            dy = 0.04
            XYOUTS, x0, y0, mtit, charsize=!p.charsize, /normal
-           if (dopot) then begin
+           y0 -= dy
+           vmsg = strtrim(string(sqrt(total(vel*vel)),vel,'(f11.2)'),2)
+           msg = 'V_bulk = ' + vmsg[0] + ' = [' + vmsg[1] + ', ' + vmsg[2] + ', ' + vmsg[3] + '] km/s'
+           XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
+           case voff of
+             2 : begin
+                   y0 -= dy
+                   xyouts, x0, y0, 'Slice through V_x = ' + vmsg[1], charsize=!p.charsize, /normal
+                 end
+             3 : begin
+                   y0 -= dy
+                   xyouts, x0, y0, 'Slice through V_y = ' + vmsg[2], charsize=!p.charsize, /normal
+                 end
+             4 : begin
+                   y0 -= dy
+                   xyouts, x0, y0, 'Slice through V_z = ' + vmsg[3], charsize=!p.charsize, /normal
+                 end
+             else : ; do nothing
+           endcase
+           if keyword_set(diag) then begin
              y0 -= dy
              msg = string(-d.sc_pot,'("s/c pot = ",f5.1," V")')
              XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
-           endif
-           if keyword_set(vsc) then begin
              y0 -= dy
              msg = string(sqrt(total(v_sc*v_sc)),'("s/c vel = ",f5.2," km/s")')
              XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
            endif
-           y0 -= dy
-           msg = string(sqrt(total(vel*vel)),'("bulk vel = ",f5.2," km/s")')
-           XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
-           y0 -= dy
-           vbulk=sqrt(total(vel*vel))
-           msg = string(vbulk^2*0.005*mq,'("energy = ",f5.2," eV")')
-           XYOUTS, x0, y0, msg, charsize=!p.charsize, /normal
            IF keyword_set(showdata) THEN BEGIN
               wb = WHERE(block.v LE 0., nwb, complement=wf, ncomplement=nwf)
               IF nwb GT 0 THEN OPLOT, block.x[wb], block.y[wb], psym=7, color=1, symsize=showdata ; blocked bins
