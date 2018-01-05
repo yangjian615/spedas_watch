@@ -57,8 +57,8 @@
 ;                    two regions will be overwritten with draped.
 ;
 ; $LastChangedBy: xussui $
-; $LastChangedDate: 2017-12-18 15:02:50 -0800 (Mon, 18 Dec 2017) $
-; $LastChangedRevision: 24440 $
+; $LastChangedDate: 2018-01-04 12:39:36 -0800 (Thu, 04 Jan 2018) $
+; $LastChangedRevision: 24477 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_topo.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 11/03/2017
@@ -84,6 +84,10 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     endif
     if (size(parng,/type) eq 0) then parng=1 ;PA=30
     mvn_swe_shape_restore,trange,results=data,tplot=1,parng=parng
+
+    ;now convert to index to be used directly
+    parng = parng - 1
+
     ;create indices for shape parameter
     if (size(thrd_shp,/type) eq 0) then thrd_shp=1. ;default threshold for shape par
     if (size(fthrd,/type) eq 0) then fthrd=1.e5 ;default threshold for e- voids
@@ -94,8 +98,9 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     shp_away=reform(data.shape[0,parng]) ;away shape parameter
     shp_twd=reform(data.shape[1,parng]) ;twd shape parameter
     f40 = reform(data.f40) ;eflux at 40 eV, used to determine e- voids
+    npts = n_elements(shp_away)
 
-    jshp_away=shp_away
+    jshp_away=bytarr(npts)
     inna = where(shp_away ne shp_away,nac,com=ina,ncom=ac)
     ;if not NAN, below threshold, j=0, else j=1
     if ac gt 0 then jshp_away[ina] =[floor(shp_away[ina]/thrd_shp)] < 1
@@ -103,7 +108,7 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     ;set NANs to j=2
     if nac gt 0 then jshp_away[inna] = 2
 
-    jshp_twd=jshp_away
+    jshp_twd=bytarr(npts)
     innt = where(shp_twd ne shp_twd,ntc,com=ints,ncom=tc)
     ;if not NAN, below threshold, j=0, else j=1
     if tc gt 0 then jshp_twd[ints] = [floor(shp_twd[ints]/thrd_shp)] < 1
@@ -111,7 +116,7 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     ;set NANs to j=2
     if ntc gt 0 then jshp_twd[innt] = 2
 
-    jf=jshp_twd
+    jf=bytarr(npts)
 ;    innf = where(f40 ne f40 or f40 eq 0.0,nfc,com=inf,ncom=fc)
     innf = where(f40 ne f40,nfc,com=inf,ncom=fc);some voids have f40=0 as well, need another fix
     ;if not NAN, below threshold, j=0, else j=1
@@ -177,7 +182,7 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     ;-----for day/night---
     ;this index is place holder, will not change topo results regardless
     ;if it's on dayside or night. it's set to be 1 here.
-    jdn = jf
+    jdn = bytarr(npts)
     ;jdn[*] = 1
 
     ;-----enlisting this index for field-aligned flux ratio---
@@ -185,7 +190,7 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     fratio=reform(data.fratio_a2t[0,parng]) ;0--low energy, 1--high energy
     inna = where(fratio ne fratio,nac,com=ina,ncom=ac)
     ;thrd_frat = 0.75 ;could be converted to a nob 
-    ;if not NAN, below threshold, j=0, else j=1                                                
+    ;if not NAN, below threshold, j=0, else j=1               
     if ac gt 0L then jdn[ina] =[floor(fratio[ina]/thrd_frat)] < 1
     if nac gt 0L then jdn[inna] = 2
 
