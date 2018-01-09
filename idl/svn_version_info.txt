@@ -2,9 +2,9 @@ Path: repos
 URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos
 Repository Root: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos
 Repository UUID: ea83537a-ea1e-0410-8ee1-cd5f2ce86762
-Revision: 24484
+Revision: 24490
 Node Kind: directory
 Last Changed Author: egrimes
-Last Changed Rev: 24484
-Last Changed Date: 2018-01-05 13:19:41 -0800 (Fri, 05 Jan 2018)
+Last Changed Rev: 24490
+Last Changed Date: 2018-01-08 16:29:26 -0800 (Mon, 08 Jan 2018)
 
