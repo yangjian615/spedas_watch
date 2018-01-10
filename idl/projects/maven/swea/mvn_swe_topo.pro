@@ -56,9 +56,9 @@
 ;                    ID=1, solar wind; ID=2, sheath. The topology for these 
 ;                    two regions will be overwritten with draped.
 ;
-; $LastChangedBy: xussui $
-; $LastChangedDate: 2018-01-04 12:39:36 -0800 (Thu, 04 Jan 2018) $
-; $LastChangedRevision: 24477 $
+; $LastChangedBy: dmitchell $
+; $LastChangedDate: 2018-01-09 15:49:15 -0800 (Tue, 09 Jan 2018) $
+; $LastChangedRevision: 24492 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_topo.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 11/03/2017
@@ -200,7 +200,6 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
 
     if keyword_set(filter_reg) then begin
        mvn_swe_regid_restore,res=regid,/tplot
-       idname = ['?','SW','Sheath','Iono','Iono-P','Lobe']
        if (size(regid,/type) eq 8) then begin
           id = round(interp(regid.id, regid.time, data.t, interp_thresh=60D, /no_extrap))
           infilter = where(id eq 1 or id eq 2,count) ; 1--solar wind, 2--sheath
@@ -208,13 +207,17 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
        endif
        get_data,'reg_id',data=reg_id,index=i
        if (i gt 0) then begin
-         store_data,'reg_id_lab',data={x:timerange(), y:replicate(!values.f_nan,2,8), v:indgen(8)}
+         indx = where(reg_id.y gt 3, count)
+         if (count gt 0) then reg_id.y[indx] -= 1
+         store_data,'reg_id',data=reg_id
+         idname = ['?','SW','Sheath','Iono','Lobe']
+         store_data,'reg_id_lab',data={x:timerange(), y:replicate(!values.f_nan,2,5), v:indgen(5)}
          options,'reg_id_lab','labels',idname
          options,'reg_id_lab','labflag',1
-         options,'reg_id_lab','colors',replicate(!p.color,8)
+         options,'reg_id_lab','colors',replicate(!p.color,5)
          options,'reg_id','colors',4
          store_data,'reg_ids',data=['reg_id_lab','reg_id']
-         ylim,'reg_ids',-0.5,5.5,0
+         ylim,'reg_ids',-0.5,4.5,0
          options,'reg_ids','ytitle','Region'
          options,'reg_ids','yminor',1
        endif
