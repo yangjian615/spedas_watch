@@ -16,15 +16,13 @@ pro spp_read_magswing_mag, rotat = rotat, swing = swing, raster = raster, all = 
   if rotat then begin
     ;Read Goddard Mags first
     ;First AB
-    path = '/Users/phyllisw/Desktop/magdata/Goddard/Rotation_Test_Files/*AB.txt'
-    ;path = '/Users/phyllisw/Desktop/magdata/Goddard/Swing_Test_File_Group_1/*AB.txt'
-    file = file_search(path)
+    path = 'spp/data/sci/sweap/prelaunch/magswing/magdata/Goddard/Rotation_Test_Files/*AB.txt'
+    file = spp_file_retrieve(path)
     data_tagsAB = {time:0d, rel_time:0d, mag_a:[0.,0.,0.], mag_b:[0.,0.,0.], grad_ab:[0.,0.,0.]}
     mag_AB_data = read_asc(file, format = data_tagsAB)
     ;Second CD
-    path = '/Users/phyllisw/Desktop/magdata/Goddard/Rotation_Test_Files/*CD.txt'
-    ;path = '/Users/phyllisw/Desktop/magdata/Goddard/Swing_Test_File_Group_1/*CD.txt'
-    file = file_search(path)
+    path = 'spp/data/sci/sweap/prelaunch/magswing/magdata/Goddard/Rotation_Test_Files/*CD.txt'
+    file = spp_file_retrieve(path)
     data_tagsCD = {time:0d, rel_time:0d, mag_c:[0.,0.,0.], mag_d:[0.,0.,0.], grad_cd:[0.,0.,0.]}
     mag_CD_data = read_asc(file, format = data_tagsCD)
     
@@ -46,8 +44,8 @@ pro spp_read_magswing_mag, rotat = rotat, swing = swing, raster = raster, all = 
     
     ;Then read APL mags
     ;pathAPL = '/Users/phyllisw/Desktop/magdata/APL_MAG_Swing_data/RT_20cm_H?/Grad4-????????-??????_filtered.csv'
-    pathAPL = '/Users/phyllisw/Desktop/magdata/APL_MAG_Swing_data/RT_20cm_H?/Grad4-????????-??????_filtered.csv'
-    fileAPL = file_search(pathAPL)
+    pathAPL = 'spp/data/sci/sweap/prelaunch/magswing/magdata/APL%20MAG%20Swing%20data/RT_20cm_H?/Grad4-????????-??????_filtered.csv'
+    fileAPL = spp_file_retrieve(pathAPL)
     print, 'fileAPL ', fileAPL
     print, 'n_elements(fileAPL) ', n_elements(fileAPL)
     data_tagsAPL = {sample:0l, mag_1:[0.,0.,0.], mag_2:[0.,0.,0.], mag_3:[0.,0.,0.], mag_4:[0.,0.,0.], range:0.}
@@ -83,14 +81,14 @@ pro spp_read_magswing_mag, rotat = rotat, swing = swing, raster = raster, all = 
 
   if swing then begin
     ;Read Goddard Mags first
-    path = '/Users/phyllisw/Desktop/magdata/Goddard/Swing_Test_File_Group_?/*AB.txt'
-    file = file_search(path)
+    path = 'spp/data/sci/sweap/prelaunch/magswing/magdata/Goddard/Swing_Test_File_Group_?/*AB.txt'
+    file = spp_file_retrieve(path)
     data_tagsAB = {time:0d, rel_time:0d, mag_a:[0.,0.,0.], mag_b:[0.,0.,0.], grad_ab:[0.,0.,0.]}
     mag_AB_data = []
     mag_AB_data = read_asc(file, format = data_tagsAB)
     ;Second CD
-    path = '/Users/phyllisw/Desktop/magdata/Goddard/Swing_Test_File_Group_?/*CD.txt'
-    file = file_search(path)
+    path = 'spp/data/sci/sweap/prelaunch/magswing/magdata/Goddard/Swing_Test_File_Group_?/*CD.txt'
+    file = spp_file_retrieve(path)
     data_tagsCD = {time:0d, rel_time:0d, mag_c:[0.,0.,0.], mag_d:[0.,0.,0.], grad_cd:[0.,0.,0.]}
     mag_CD_data = []
     mag_CD_data = read_asc(file, format = data_tagsCD)
@@ -112,14 +110,14 @@ pro spp_read_magswing_mag, rotat = rotat, swing = swing, raster = raster, all = 
     
     ;------------------
     ;Then read APL mags
-    pathAPL = '/Users/phyllisw/Desktop/magdata/APL_MAG_Swing_data/TT_*m_H?_*/Grad4-????????-??????_filtered.csv'
-    fileAPL = file_search(pathAPL)
+    pathAPL = 'spp/data/sci/sweap/prelaunch/magswing/magdata/APL%20MAG%20Swing%20data/TT_*m_H*/Grad4-????????-??????_filtered.csv'
+    fileAPL = spp_file_retrieve(pathAPL)
     print, 'fileAPL ', fileAPL
     print, 'n_elements(fileAPL) ', n_elements(fileAPL)
     data_tagsAPL = {sample:0l, mag_1:[0.,0.,0.], mag_2:[0.,0.,0.], mag_3:[0.,0.,0.], mag_4:[0.,0.,0.], range:0.}
     ;put the following 3 lines in a loop
     i = 0
-    offset = replicate(90, n_elements(fileAPL)) ; replace this later with a proper array
+    offset = replicate(88.5, n_elements(fileAPL)) ; replace this later with a proper array
     secsIn4hours = 14400.
     mag_APL_data = []
     ;This segment needs to be in an explicit loop because the individual headers must be parsed for time variable
@@ -161,8 +159,12 @@ pro spp_read_magswing_mag, rotat = rotat, swing = swing, raster = raster, all = 
     mag2_clean = [[mag2_clean], [(mag_APL_data[109000:-1].mag_2 - meanField[*,5] # replicate(1,n_elements(mag_APL_data[109000:-1])))]]
     mag3_clean = [[mag3_clean], [(mag_APL_data[109000:-1].mag_3 - meanField[*,6] # replicate(1,n_elements(mag_APL_data[109000:-1])))]]
     mag4_clean = [[mag4_clean], [(mag_APL_data[109000:-1].mag_4 - meanField[*,7] # replicate(1,n_elements(mag_APL_data[109000:-1])))]]
-
-    mag_APL_cleaned = {time:mag_APL_data.time, mag_1_clean:mag1_clean, mag_2_clean:mag2_clean, mag_3_clean:mag3_clean, mag_4_clean:mag4_clean}
+;    mag1_scalar = sqrt(transpose(mag1_clean)#mag1_clean)
+;    mag2_scalar = sqrt(transpose(mag2_clean)#mag2_clean)
+;    mag3_scalar = sqrt(transpose(mag3_clean)#mag3_clean)
+;    mag4_scalar = sqrt(transpose(mag4_clean)#mag4_clean)
+    mag_APL_cleaned = {time:mag_APL_data.time, mag_1_clean:mag1_clean, mag_2_clean:mag2_clean, mag_3_clean:mag3_clean, mag_4_clean:mag4_clean};,$
+;       mag_1_scalar: mag1_scalar, mag_2_scalar: mag2_scalar, mag_3_scalar: mag3_scalar, mag_4_scalar: mag4_scalar}
     store_data, 'swing_APL_', data = mag_APL_cleaned, tagnames = '*'
   endif
 end
