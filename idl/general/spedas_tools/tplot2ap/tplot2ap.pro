@@ -36,8 +36,8 @@
 ;         click 'Allow' for private networks)
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-01-11 15:44:19 -0800 (Thu, 11 Jan 2018) $
-; $LastChangedRevision: 24511 $
+; $LastChangedDate: 2018-01-12 08:41:13 -0800 (Fri, 12 Jan 2018) $
+; $LastChangedRevision: 24512 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/tplot2ap/tplot2ap.pro $
 ;-
 
@@ -65,11 +65,11 @@ pro tplot2ap, tvars, port=port, connect_timeout=connect_timeout, read_timeout=re
   cd,c=current_working_dir
   
   for tvar_idx=0, n_elements(tvars)-1 do begin
-    printf, unit, 'plot('+strcompress(string(tvar_idx), /rem)+', "'+current_working_dir+'/'+cdf_filename+'.cdf?'+tvars[tvar_idx]+'")'
+    printf, unit, 'plot('+strcompress(string(tvar_idx), /rem)+', "'+current_working_dir+'/'+cdf_filename+'.cdf?'+tvars[tvar_idx]+'");'
 
-    ; pause required on Windows before freeing the handle, otherwise the previous plot() command fails
-    wait, 1
   endfor
 
+  ; pause required on Windows before freeing the handle, otherwise the previous plot() command fails
+  wait, 1
   free_lun, unit
 end
