@@ -7,13 +7,16 @@
 ; The keyword default_cdf_attributes adds default variable attibutes to the tplot vatiables
 ; ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2017-12-22 00:21:43 -0800 (Fri, 22 Dec 2017) $
-; $LastChangedRevision: 24456 $
+; $LastChangedDate: 2018-01-12 19:07:58 -0800 (Fri, 12 Jan 2018) $
+; $LastChangedRevision: 24516 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf2.pro $
 ;-
 
 pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attributes=g_attributes_structure,tt2000=tt2000, default_cdf_attributes=default_cdf_attributes 
   
+  FORWARD_FUNCTION cdf_default_inq_structure, cdf_default_g_attributes_structure  
+  RESOLVE_ROUTINE, 'cdf_default_cdfi_structure', /IS_FUNCTION, /NO_RECOMPILE
+   
   if undefined(filename) then return ; todo: add error
   
   if undefined(inq_structure) then inq_structure = cdf_default_inq_structure()

@@ -25,19 +25,14 @@
 ;         This routine sends the tplot data to Autoplot via a CDF file stored in your 
 ;         IDL working directory (so this creates a 'temporary' file every time you
 ;         send data to Autoplot)
-;         
-;         If you have trouble with syntax errors in tplot2cdf2, try the following:
-;             IDL> .compile cdf_default_structure
-;             IDL> .compile tplot_add_cdf_attributes
-;             IDL> .compile tplot2cdf2
 ;
 ;         On Windows, you'll have to allow Autoplot / SPEDAS to have access to the 
 ;         local network via the Firewall (it should prompt automatically, simply 
 ;         click 'Allow' for private networks)
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-01-12 08:41:13 -0800 (Fri, 12 Jan 2018) $
-; $LastChangedRevision: 24512 $
+; $LastChangedDate: 2018-01-13 13:18:45 -0800 (Sat, 13 Jan 2018) $
+; $LastChangedRevision: 24517 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/tplot2ap/tplot2ap.pro $
 ;-
 

@@ -5,9 +5,9 @@
 ; Number of functions that generate default structured for CDF files 
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2017-12-22 00:21:43 -0800 (Fri, 22 Dec 2017) $
-; $LastChangedRevision: 24456 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_default_structure.pro $
+; $LastChangedDate: 2018-01-12 19:07:58 -0800 (Fri, 12 Jan 2018) $
+; $LastChangedRevision: 24516 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_default_cdfi_structure.pro $
 ;-
 
 function cdf_default_inq_structure
