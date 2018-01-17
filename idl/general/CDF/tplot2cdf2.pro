@@ -3,12 +3,12 @@
 ; Warning: this file is under development!
 ;
 ; Save tplot variables into cdf file
-; The CDF global attributes can be specifyed by keywords inq and g_attributes
-; The keyword default_cdf_attributes adds default variable attibutes to the tplot vatiables
-; ;
+; The CDF global attributes can be specified by keywords inq and g_attributes
+; The keyword default_cdf_attributes adds default variable attributes to the tplot variables
+; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-12 19:07:58 -0800 (Fri, 12 Jan 2018) $
-; $LastChangedRevision: 24516 $
+; $LastChangedDate: 2018-01-16 16:31:13 -0800 (Tue, 16 Jan 2018) $
+; $LastChangedRevision: 24527 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf2.pro $
 ;-
 
@@ -39,7 +39,7 @@ pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attrib
   ; main loop
   for i =0,N_ELEMENTS(tplot_vars)-1 do begin    
     ; add default attributes. 
-    ; this optrion will not overwrite existing fields
+    ; this option will not overwrite existing fields
     tname = tplot_vars(i)
     if KEYWORD_SET(default_cdf_attributes) then tplot_add_cdf_attributes,tname    
     
@@ -52,8 +52,8 @@ pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attrib
     if ~is_struct(d) then x = d
 
            
-    ; here we don't check existance of CDF structure, it must be defined before
-    ; we also don't check existanse of x field
+    ; here we don't check existence of CDF structure, it must be defined before
+    ; we also don't check existence of x field
     VAR = s.CDF.VARS
     
     t = TAG_NAMES(s.CDF)
@@ -104,7 +104,7 @@ pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attrib
      endfor
    
      if InArray eq 0 then begin ; add new support variable              
-       if ndimen(v) eq 2 then begin ; if support variable is 2d, then the first demention correspons to time 
+       if ndimen(v) eq 2 then begin ; if support variable is 2d, then the first dimension corresponds to time 
         attr = *SupportVAR.ATTRPTR     
         str_element, attr,'DEPEND_0',EpochName,/add 
         SupportVAR.ATTRPTR = ptr_new(attr)
@@ -135,5 +135,5 @@ pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attrib
   idl_structure.NV = N_ELEMENTS(VARS)
   str_element, idl_structure,'VARS',VARS,/add
   ;help, idl_structure
-  dummy=cdf_save_vars(idl_structure,filename)
+  tplot2cdf_save_vars, idl_structure, filename
 end   
