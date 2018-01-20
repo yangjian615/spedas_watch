@@ -1,6 +1,6 @@
 ;+
 ;Procedure:
-;  mms_part_products_crib
+;  mms_part_getspec_crib
 ;
 ;
 ;Purpose:
@@ -8,9 +8,9 @@
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-05-03 15:55:00 -0700 (Wed, 03 May 2017) $
-;$LastChangedRevision: 23266 $
-;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_products_crib.pro $
+;$LastChangedDate: 2018-01-19 15:28:11 -0800 (Fri, 19 Jan 2018) $
+;$LastChangedRevision: 24556 $
+;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_getspec_crib.pro $
 ;-
 
 

@@ -11,12 +11,17 @@
 ; CDF.DEPEND_1 - supporting data (tplot v variable)
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2017-12-22 00:21:43 -0800 (Fri, 22 Dec 2017) $
-; $LastChangedRevision: 24456 $
+; $LastChangedDate: 2018-01-19 12:28:36 -0800 (Fri, 19 Jan 2018) $
+; $LastChangedRevision: 24548 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot_add_cdf_attributes.pro $
 ;-
 
 pro tplot_add_cdf_attributes, tplot_vars, tt2000=tt2000
+
+  ; resolve dependeces
+  FORWARD_FUNCTION cdf_default_vars_structure, cdf_default_vars_structure
+  RESOLVE_ROUTINE, 'cdf_default_cdfi_structure', /IS_FUNCTION, /NO_RECOMPILE
+
   for i=0,n_elements(tplot_vars)-1 do begin
     get_data,tplot_vars(i),data=d,alimits=s
     
