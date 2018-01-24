@@ -1,6 +1,6 @@
 ;+
 ; PROCEDURE:
-;         mms_tplot2autoplot
+;         mms_tplot2autoplot_crib
 ;
 ; PURPOSE:
 ;         Crib sheet showing how to send MMS data to Autoplot
@@ -10,9 +10,9 @@
 ;         the 'Options' menu with the default port (12345)
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-01-19 15:24:57 -0800 (Fri, 19 Jan 2018) $
-; $LastChangedRevision: 24554 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_tplot2autoplot.pro $
+; $LastChangedDate: 2018-01-22 12:57:57 -0800 (Mon, 22 Jan 2018) $
+; $LastChangedRevision: 24563 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_tplot2autoplot_crib.pro $
 ;-
 
 mms_load_fgm, trange=['2015-10-16', '2015-10-17']

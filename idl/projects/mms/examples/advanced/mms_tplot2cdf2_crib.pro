@@ -6,10 +6,10 @@
 ; It is originally designed for testing purpuses
 ; This examples loads and processes data from THEMIS and MMS mission. It saves the results into the cdf file using tplot variables.
 ;
-; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-16 16:37:57 -0800 (Tue, 16 Jan 2018) $
-; $LastChangedRevision: 24529 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/crib_tplot2cdf2.pro $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2018-01-22 08:56:35 -0800 (Mon, 22 Jan 2018) $
+; $LastChangedRevision: 24558 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_tplot2cdf2_crib.pro $
 ;-
 
 del_data, '*'

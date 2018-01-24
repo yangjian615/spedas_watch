@@ -9,9 +9,9 @@
 ;   please send them to egrimes@igpp.ucla.edu
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2017-03-27 13:01:47 -0700 (Mon, 27 Mar 2017) $
-; $LastChangedRevision: 23048 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_multi_axis_figure.pro $
+; $LastChangedDate: 2018-01-22 13:00:58 -0800 (Mon, 22 Jan 2018) $
+; $LastChangedRevision: 24564 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_multiaxis_crib.pro $
 ;-
 
 ; load the data
