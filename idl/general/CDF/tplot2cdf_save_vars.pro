@@ -17,8 +17,8 @@
 ;and if you are using Solaris you need to be in 32-bit mode NOT 64-bit (ie, idl -32)
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-16 16:33:41 -0800 (Tue, 16 Jan 2018) $
-; $LastChangedRevision: 24528 $
+; $LastChangedDate: 2018-01-23 20:24:48 -0800 (Tue, 23 Jan 2018) $
+; $LastChangedRevision: 24573 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf_save_vars.pro $
 ;-
 
@@ -26,7 +26,6 @@ pro tplot2cdf_save_vars, cdf_structure, new_cdf_name, compress_cdf=compress_cdf,
 
 ;check input
 ;-----------
-if not keyword_set(compress_cdf) then compress_cdf=0 else compress_cdf=1
 
 if not keyword_set(cdf_structure) then begin
   print, "No valid input."
@@ -44,9 +43,12 @@ endif
 ;---------------
 
 file=new_cdf_name
-cdf_parameters=create_struct(cdf_structure.inq.encoding,1,cdf_structure.inq.decoding,1,cdf_structure.inq.majority,1)
-id=cdf_create(file,/clobber,/single_file,_extra=cdf_parameters)
+; cdf_parameters=create_struct(cdf_structure.inq.encoding,1,cdf_structure.inq.decoding,1,cdf_structure.inq.majority,1)
+id=cdf_create(file,/clobber,/single_file,/COL_MAJOR) ;,_extra=cdf_parameters)
 
+; Compression
+; -----------
+if keyword_set(compress_cdf) then CDF_COMPRESSION,id,SET_COMPRESSION=compress_cdf 
 
 ;add global attributes
 ;---------------------
@@ -115,7 +117,7 @@ for i=0,cdf_structure.nv-1 do begin
 	   endif else numelem=1
 	endif else numelem=1
 	
-	if (cdf_structure.vars[i].datatype eq 'CDF_EPOCH16') then datatype='CDF_LONG_EPOCH' else datatype=cdf_structure.vars[i].datatype
+	if (cdf_structure.vars[i].datatype eq 'CDF_EPOCH16') then datatype='CDF_LONG_EPOCH' else datatype=cdf_structure.vars[i].datatype	
 	
 	var_parameters=create_struct(datatype,1,recvary,1,'numelem',numelem)
 	
@@ -163,9 +165,4 @@ endfor  ; i
 ;close cdf file
 ;--------------
 cdf_close,id
-
-; after the file is produced, we can compress it
-if (compress_cdf eq 1) then begin
-  spd_cdf_compress, new_cdf_name, replace=1, cdfconvert=cdfconvert, cdfparams=cdfparams, cdf_compress_error=cdf_compress_error, cdf_tmp_dir=cdf_tmp_dir
-endif
 end

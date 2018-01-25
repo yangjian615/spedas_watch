@@ -1,14 +1,14 @@
 ;
 ; This crib demonstrates basic work with tplot2cdf2
 ; 
-; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-01-22 09:10:01 -0800 (Mon, 22 Jan 2018) $
-; $LastChangedRevision: 24559 $
+; $LastChangedBy: adrozdov $
+; $LastChangedDate: 2018-01-23 20:30:27 -0800 (Tue, 23 Jan 2018) $
+; $LastChangedRevision: 24574 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot2cdf2_basic.pro $
 
 ; Let's create simple data set, an example of a simple wave
 time_start   = '2001-01-01'
-time_sec_arr = indgen(200) / 10.
+time_sec_arr = indgen(200) / 10.0d
 time_arr = time_double(time_start) + time_sec_arr
 
 omega = 1./10. * 2. * !pi ; 100 mHz

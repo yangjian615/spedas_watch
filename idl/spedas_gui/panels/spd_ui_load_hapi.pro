@@ -8,8 +8,8 @@
 ;
 ;
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2018-01-19 12:02:46 -0800 (Fri, 19 Jan 2018) $
-;$LastChangedRevision: 24545 $
+;$LastChangedDate: 2018-01-23 16:14:05 -0800 (Tue, 23 Jan 2018) $
+;$LastChangedRevision: 24570 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_load_hapi.pro $
 ;-
 
@@ -178,48 +178,48 @@ end
 
 Pro spd_ui_load_hapi, gui_id, historywin, statusbar,timeRangeObj=timeRangeObj
 
-  mainBase = widget_base(/column, title = 'Load Data using HAPI', /modal, Group_Leader=gui_id, scr_xsize = 700 )
+  mainBase = widget_base(/column, title = 'Load Data using HAPI', /modal, Group_Leader=gui_id, scr_xsize = 700)
 
-  topBase = widget_base(mainbase, col=2, /align_top, scr_xsize = 700, scr_ysize = 300)
+  topBase = widget_base(mainbase, col=2, /align_top)
   bottomBase = widget_base(mainbase, col=2, /align_top)
 
   upLeftBase = widget_base(topBase, /col, /align_top, scr_xsize = 300, scr_ysize = 300)
-  upRightBase = widget_base(topBase, /col, /align_top, scr_ysize = 300)
+  upRightBase = widget_base(topBase, /col, /align_top, scr_xsize = 300, scr_ysize = 300)
 
   botLeftBase = widget_base(bottomBase, /col, /align_top, scr_xsize = 300)
   botRightBase = widget_base(bottomBase, /col, /align_top)
 
   ;Select hapi server
-  selectServerLabel = widget_label(upLeftBase, value='1. Select HAPI server', /align_top, scr_xsize = 250, scr_ysize = 20)
+  selectServerLabel = widget_label(upLeftBase, value='1. Select HAPI server', /align_top)
   hapi_servers=['http://datashop.elasticbeanstalk.com/hapi','http://tsds.org/get/SSCWeb/hapi', $
     'http://mag.gmu.edu/TestData/hapi','https://voyager.gsfc.nasa.gov/hapiproto','http://jfaden.net/HapiServerDemo/hapi']
   serverList = widget_list(upLeftBase, value=hapi_servers, /align_top, scr_xsize = 250, scr_ysize = 100, uvalue='SERVERLIST', uname='SERVERLIST')
   selectServerLabelEmpty11 = widget_label(upLeftBase, value=' ', /align_top, scr_xsize = 250)
   selectServerLabel = widget_label(upLeftBase, value='Selected HAPI server:', /align_top, scr_xsize = 250)
-  selectedServer = widget_text(upLeftBase, value='', /editable, /align_top, scr_xsize = 250 )
+  selectedServer = widget_text(upLeftBase, value=' ', /editable, /align_top, scr_xsize = 250 )
   selectServerLabelEmpty12 = widget_label(upLeftBase, value=' ', /align_top, scr_xsize = 250)
   getServerInfoButton = widget_button(upLeftBase, value = 'Get HAPI server info ', uvalue= 'SERVERINFO', /align_top, scr_xsize = 150)
-  capabilitiesLabel = widget_label(upLeftBase, value='', /align_top, scr_xsize = 250, scr_ysize = 40, /dynamic_resize)
+  capabilitiesLabel = widget_label(upLeftBase, value=' ', /align_top, scr_xsize = 250, scr_ysize = 40, /dynamic_resize )
 
   ;Datasets
   listDatasetsLabel = widget_label(upRightBase, value='2. List datasets', /align_top)
-  selectServerLabelEmpty21 = widget_label(upRightBase, value=' ', /align_top, scr_xsize = 250)
-  loadButton = widget_button(upRightBase, value = ' Load Datasets from Server ', uvalue= 'LOADSETS', /align_top, scr_xsize = 150)
-  datasetList = widget_list(upRightBase, value='', /align_top, scr_xsize = 340, scr_ysize = 230, uvalue='DATASETLIST', uname='DATASETLIST')
+  ;selectServerLabelEmpty21 = widget_label(upRightBase, value=' ', /align_top, scr_xsize = 250)
+  loadButton = widget_button(upRightBase, value = ' Load Datasets from Server ', uvalue= 'LOADSETS', /align_top)
+  datasetList = widget_list(upRightBase, value=' ', /align_top, scr_xsize = 340, scr_ysize = 230, uvalue='DATASETLIST', uname='DATASETLIST')
 
 
   ; Selected dataset
   dataInfoLabel = widget_label(botLeftBase, value='3. Selected dataset', /align_top)
-  selectedDataset = widget_text(botLeftBase, value='', /align_top, scr_xsize = 250 )
+  selectedDataset = widget_text(botLeftBase, value=' ', /align_top, scr_xsize = 250 )
   selectServerLabelEmpty31 = widget_label(botLeftBase, value=' ', /align_top, scr_xsize = 250)
   selectServerLabelEmpty32 = widget_label(upLeftBase, value=' ', /align_top, scr_xsize = 250)
   dataInfoButton = widget_button(botLeftBase, value = ' Get dataset information ', uvalue= 'DATAINFO', /align_top, scr_xsize = 150)
-  dataInfoShowLabel = widget_text(botLeftBase, value='', /align_top, scr_xsize = 250, scr_ysize = 100, /SCROLL)
+  dataInfoShowLabel = widget_text(botLeftBase, value=' ', /align_top, scr_xsize = 250, scr_ysize = 100, /SCROLL)
 
 
   ;Time
   selectDatesLabel = widget_label(botRightBase, value='4. Select dates and prefix', /align_top)
-  selectServerLabelEmpty41 = widget_label(botRightBase, value=' ', /align_top, scr_xsize = 250)
+  ;selectServerLabelEmpty41 = widget_label(botRightBase, value=' ', /align_top, scr_xsize = 250)
   new_col_base = widget_base(botRightBase, col=1)
 
   timeWidget = spd_ui_time_widget(new_col_base,$
