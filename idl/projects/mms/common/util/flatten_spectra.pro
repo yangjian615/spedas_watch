@@ -38,9 +38,9 @@
 ; NOTES:
 ;     work in progress; suggestions, comments, complaints, etc: egrimes@igpp.ucla.edu
 ;     
-;$LastChangedBy: adrozdov $
-;$LastChangedDate: 2017-11-20 19:31:47 -0800 (Mon, 20 Nov 2017) $
-;$LastChangedRevision: 24329 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2018-01-25 09:03:15 -0800 (Thu, 25 Jan 2018) $
+;$LastChangedRevision: 24588 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/util/flatten_spectra.pro $
 ;-
 
@@ -89,7 +89,7 @@ pro flatten_spectra, xlog=xlog, ylog=ylog, xrange=xrange, yrange=yrange, nolegen
   if undefined(time_in) and undefined(trange_in) then begin ; use cursor or the input variable
     ctime,t,npoints=1,prompt="Use cursor to select a time to plot the spectra", /silent 
       ;hours=hours,minutes=minutes,seconds=seconds,days=days  
-    if t eq 0 then return ; exit on the right click
+    if undefined(t) || t eq 0 then return ; exit on the right click or if t isn't defined for some reason
   endif else begin    
     if undefined(trange_in) then t = time_double(time_in) ; if user set time_in, but not trange
     if ~undefined(trange_in) then begin ; if user set trange for the averaging

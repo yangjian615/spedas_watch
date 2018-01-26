@@ -56,9 +56,17 @@
 ;                    ID=1, solar wind; ID=2, sheath. The topology for these 
 ;                    two regions will be overwritten with draped.
 ;
+;       quality:     A 3-element array with quality flags:
+;                        quality[0] : LPW potentials available (1=yes, 0=no)
+;                        quality[1] : Shape parameter available (1=yes, 0=no)
+;                        quality[2] : Padscore available (1=yes, 0=no)
+;
+;       success:     Returns 1 if topology information available (at whatever
+;                    quality), 0 otherwise.
+;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2018-01-09 15:49:15 -0800 (Tue, 09 Jan 2018) $
-; $LastChangedRevision: 24492 $
+; $LastChangedDate: 2018-01-25 16:15:32 -0800 (Thu, 25 Jan 2018) $
+; $LastChangedRevision: 24593 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_swe_topo.pro $
 ;
 ;CREATED BY:    Shaosui Xu, 11/03/2017
@@ -67,7 +75,10 @@
 Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
                  tbl = tbl, orbit = orbit, thrd_shp=thrd_shp,fthrd=fthrd, $
                  lcThreshold = lcThreshold, parng=parng, filter_reg=filter_reg, $
-                 thrd_frat = thrd_frat
+                 thrd_frat = thrd_frat, quality=quality, success=success
+
+    success = 0
+    quality = [0,0,0]
 
     if keyword_set(orbit) then begin
         imin = min(orbit, max=imax)
@@ -85,47 +96,54 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     if (size(parng,/type) eq 0) then parng=1 ;PA=30
     mvn_swe_shape_restore,trange,results=data,tplot=1,parng=parng
 
-    ;now convert to index to be used directly
-    parng = parng - 1
+    if (size(data,/type) eq 8) then begin
+      quality[0:1] = 1
 
-    ;create indices for shape parameter
-    if (size(thrd_shp,/type) eq 0) then thrd_shp=1. ;default threshold for shape par
-    if (size(fthrd,/type) eq 0) then fthrd=1.e5 ;default threshold for e- voids
-    if (size(lcThreshold,/type) eq 0) then lcThreshold = 2.0
-    if (size(tbl,/type) eq 0) then tbl=[0,1,2,3,4,5,6,7]
-    if (size(thrd_frat,/type) eq 0) then thrd_frat = 0.75
+      ;now convert to index to be used directly
+      parng = parng - 1
 
-    shp_away=reform(data.shape[0,parng]) ;away shape parameter
-    shp_twd=reform(data.shape[1,parng]) ;twd shape parameter
-    f40 = reform(data.f40) ;eflux at 40 eV, used to determine e- voids
-    npts = n_elements(shp_away)
+      ;create indices for shape parameter
+      if (size(thrd_shp,/type) eq 0) then thrd_shp=1. ;default threshold for shape par
+      if (size(fthrd,/type) eq 0) then fthrd=1.e5 ;default threshold for e- voids
+      if (size(lcThreshold,/type) eq 0) then lcThreshold = 2.0
+      if (size(tbl,/type) eq 0) then tbl=[0,1,2,3,4,5,6,7]
+      if (size(thrd_frat,/type) eq 0) then thrd_frat = 0.75
 
-    jshp_away=bytarr(npts)
-    inna = where(shp_away ne shp_away,nac,com=ina,ncom=ac)
-    ;if not NAN, below threshold, j=0, else j=1
-    if ac gt 0 then jshp_away[ina] =[floor(shp_away[ina]/thrd_shp)] < 1
-    ;if ac gt 0 then jshp_away[ina] = min([floor(shp_away[ina]/thrd_shp),1])
-    ;set NANs to j=2
-    if nac gt 0 then jshp_away[inna] = 2
+      shp_away=reform(data.shape[0,parng]) ;away shape parameter
+      shp_twd=reform(data.shape[1,parng]) ;twd shape parameter
+      f40 = reform(data.f40) ;eflux at 40 eV, used to determine e- voids
+      npts = n_elements(shp_away)
 
-    jshp_twd=bytarr(npts)
-    innt = where(shp_twd ne shp_twd,ntc,com=ints,ncom=tc)
-    ;if not NAN, below threshold, j=0, else j=1
-    if tc gt 0 then jshp_twd[ints] = [floor(shp_twd[ints]/thrd_shp)] < 1
-    ;if tc gt 0 then jshp_twd[ints] = min([floor(shp_twd[ints]/thrd_shp),1])
-    ;set NANs to j=2
-    if ntc gt 0 then jshp_twd[innt] = 2
+      jshp_away=bytarr(npts)
+      inna = where(shp_away ne shp_away,nac,com=ina,ncom=ac)
+      ;if not NAN, below threshold, j=0, else j=1
+      if ac gt 0 then jshp_away[ina] =[floor(shp_away[ina]/thrd_shp)] < 1
+      ;if ac gt 0 then jshp_away[ina] = min([floor(shp_away[ina]/thrd_shp),1])
+      ;set NANs to j=2
+      if nac gt 0 then jshp_away[inna] = 2
 
-    jf=bytarr(npts)
-;    innf = where(f40 ne f40 or f40 eq 0.0,nfc,com=inf,ncom=fc)
-    innf = where(f40 ne f40,nfc,com=inf,ncom=fc);some voids have f40=0 as well, need another fix
-    ;if not NAN, below threshold, j=0, else j=1
-    if fc gt 0 then jf[inf]=[floor(f40[inf]/fthrd)] < 1
-    ;if fc gt 0 then jf[inf]=min([floor(f40/fthrd),1])
-    ;set NANs to j=2
-    if nfc gt 0 then jf[innf]=2
+      jshp_twd=bytarr(npts)
+      innt = where(shp_twd ne shp_twd,ntc,com=ints,ncom=tc)
+      ;if not NAN, below threshold, j=0, else j=1
+      if tc gt 0 then jshp_twd[ints] = [floor(shp_twd[ints]/thrd_shp)] < 1
+      ;if tc gt 0 then jshp_twd[ints] = min([floor(shp_twd[ints]/thrd_shp),1])
+      ;set NANs to j=2
+      if ntc gt 0 then jshp_twd[innt] = 2
 
-    numShp = n_elements(jshp_away)
+      jf=bytarr(npts)
+;      innf = where(f40 ne f40 or f40 eq 0.0,nfc,com=inf,ncom=fc)
+      innf = where(f40 ne f40,nfc,com=inf,ncom=fc);some voids have f40=0 as well, need another fix
+      ;if not NAN, below threshold, j=0, else j=1
+      if fc gt 0 then jf[inf]=[floor(f40[inf]/fthrd)] < 1
+      ;if fc gt 0 then jf[inf]=min([floor(f40/fthrd),1])
+      ;set NANs to j=2
+      if nfc gt 0 then jf[innf]=2
+
+      numShp = n_elements(jshp_away)
+    endif else begin
+      print,"Warning: PAD Shape not available!"
+      return
+    endelse
 
     ;-----from PAD--------
     ;jupz, assuming 1 being lc, 0 being non lc
@@ -133,6 +151,8 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
     mvn_swe_pad_lc_restore, trange = trange, result = padLC
 
     if (n_elements(padLC) gt 0L) then begin
+      quality[2] = 1
+
       ;coAddNum = 4
 
       jupz = bytarr(numShp)
@@ -263,4 +283,7 @@ Pro mvn_swe_topo,trange = trange, result=result, storeTplot = storeTplot, $
         store_data,'topo_alt',data=['topo_lab','alt_'+ft[1:7]]
         
     endif
+    success = 1
+
+    return
 end

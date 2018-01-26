@@ -8,8 +8,8 @@
 ; Time (x variable of tplot) should be in SPEDAS (unix) format, please see time_double for details
 ; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-24 15:58:41 -0800 (Wed, 24 Jan 2018) $
-; $LastChangedRevision: 24581 $
+; $LastChangedDate: 2018-01-24 22:43:19 -0800 (Wed, 24 Jan 2018) $
+; $LastChangedRevision: 24586 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf2.pro $
 ;-
 
@@ -127,7 +127,7 @@ pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attrib
      
      InArray = 0
      for j=0,N_ELEMENTS(SupportVARS)-1 do begin
-       if ARRAY_EQUAL(*SupportVARS[j].DATAPTR, *SupportVARS.DATAPTR) then begin
+       if ARRAY_EQUAL(*SupportVARS[j].DATAPTR, *SupportVAR.DATAPTR) then begin
          InArray = 1
          SupportName = SupportVARS[j].NAME
        endif
