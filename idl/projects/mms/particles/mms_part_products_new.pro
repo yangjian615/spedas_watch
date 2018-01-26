@@ -103,8 +103,8 @@
 ;
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2017-07-13 15:17:29 -0700 (Thu, 13 Jul 2017) $
-;$LastChangedRevision: 23609 $
+;$LastChangedDate: 2018-01-24 10:39:40 -0800 (Wed, 24 Jan 2018) $
+;$LastChangedRevision: 24576 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_products_new.pro $
 ;-
 pro mms_part_products_new, $
@@ -137,6 +137,8 @@ pro mms_part_products_new, $
                      suffix=suffix, $ ;tplot suffix to apply when generating outputs
                      
                      subtract_bulk=subtract_bulk, $ ;subtract bulk velocity from FAC angular spectra
+                     subtract_error=subtract_error, $ ; subtract the distribution error variable from the data prior to doing the calculations
+                     error_variable=error_variable, $ ; name of the tplot variable containing the distribution error (required if /subtract_error keyword is specified)
                      
                      datagap=datagap, $ ;setting for tplot variables, controls how long a gap must be before it is drawn.(can also manually degap)
                             
@@ -370,7 +372,6 @@ pro mms_part_products_new, $
     mms_pgs_clean_support, times, probe, vel_name=vel_name, vel_out=vel_data
   endif
 
-
   ;--------------------------------------------------------
   ;Loop over time to build the spectrograms/moments
   ;--------------------------------------------------------
@@ -382,7 +383,8 @@ pro mms_part_products_new, $
     ;Get the data structure for this sample
 
     dist = mms_get_dist(in_tvarname, time_idx[i], /structure, probe=probe, $
-                        species=species, instrument=instrument, units=input_units)
+                        species=species, instrument=instrument, units=input_units, $
+                        subtract_error=subtract_error, error=error_variable)
     
     str_element, dist, 'orig_energy', dist.energy[*, 0, 0], /add
 
@@ -533,7 +535,8 @@ pro mms_part_products_new, $
     if in_set(outputs_lc, 'fac_moments') then begin
       clean_data.theta = 90-clean_data.theta ;convert back to latitude for moments calc
       ;re-add required fields stripped by FAC transform (should fix there if feature becomes standard)
-      clean_data = create_struct('charge',dist.charge,'magf',[0,0,0.],'sc_pot',0.,clean_data)
+      if undefined(sc_pot_data) then scpot=0.0 else scpot = sc_pot_data[i]
+      clean_data = create_struct('charge',dist.charge,'magf',[0,0,0.],'sc_pot',scpot,clean_data)
       spd_pgs_moments, clean_data, moments=fac_moments, sc_pot_data=sc_pot_data, index=i, _extra=ex
     endif 
     

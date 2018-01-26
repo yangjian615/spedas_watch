@@ -3,7 +3,8 @@
 ;     find_nearest_neighbor2
 ;     
 ; Purpose:
-;     Faster versin of find_nearest_neighbor. Use minimum to search in a time series to find the array element closest to the target time
+;     Faster versin of find_nearest_neighbor. Use minimum to search in a time series to find the array element closest to the target time.
+;     nn function uses similar algorithm providing nearest index in time.
 ;     
 ; Input:
 ;     time_series: monotonically increasing time series array (stored as doubles)
@@ -26,10 +27,12 @@
 ;           
 ;     >> print, find_nearest_neighbor2([5,4,3,7,8,2,4,6,7], 7.6, /sort)
 ;           8
+; See also:
+;   find_nearest_neighbor, nn
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2017-12-22 00:15:34 -0800 (Fri, 22 Dec 2017) $
-; $LastChangedRevision: 24454 $
+; $LastChangedDate: 2018-01-10 17:03:26 -0800 (Wed, 10 Jan 2018) $
+; $LastChangedRevision: 24506 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/misc/find_nearest_neighbor2.pro $
 ;-
 function find_nearest_neighbor2, time_series, target_time, quiet = quiet, sort = sort, allow_outside = allow_outside

@@ -68,6 +68,12 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
   options, prefix + 'concat', 'yrange', [-0.5,15.5]
   options, prefix + 'concat', 'ystyle', 1
 
+  options, prefix + 'saturation_flags', 'tplot_routine', 'bitplot'
+  options, prefix + 'saturation_flags', 'numbits', 16
+  options, prefix + 'saturation_flags', 'yminor', 1
+  options, prefix + 'saturation_flags', 'colors', colors
+  options, prefix + 'saturation_flags', 'psyms', spec_number + 3
+
   get_data, prefix + 'spec', data = spec_data
 
   get_data, prefix + 'navg', data = navg_data
@@ -77,6 +83,8 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
   get_data, prefix + 'spec_nelem', data = nelem_data
 
   get_data, prefix + 'concat', data = concat_data
+
+  get_data, prefix + 'saturation_flags', data = sat_data
 
   ; TODO: Make this work with all configurations of spectra
 
@@ -105,18 +113,27 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
 
         n_total = n_elements(spec_data.y)
 
+        ; The spectral data as returned by TMlib are not in order, instead 
+        ; the order goes like (fs represent increasing frequencies)
+        ; [f1, f0, f3, f2, f5, f4, ...]
+        ; This reorders the spectra:
+        
         spec_data_y = reform( $
           transpose($
           [[[spec_data.y[*,1:*:2]]], $
           [[spec_data.y[*,0:*:2]]]],[0,2,1]), $
           size(/dim,spec_data.y))
 
+        ; This takes the concatenated spectra array and makes a new array with
+        ; one spectra per column
+        
         new_data_y = transpose(reform(reform(transpose(spec_data_y), n_total), $
           n_bins, n_total/n_bins))
 
         ; TODO: Make this more precise using TMlib time
 
         new_data_x = []
+        new_data_sat_y = []
 
         if is_ac then begin
 
@@ -130,7 +147,11 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
         endelse
 
         for i = 0, n_elements(spec_data.x)-1 do begin
-          new_data_x = [new_data_x,spec_data.x[i] + delta_x * dindgen(n_spec)]
+          new_data_x = [new_data_x,spec_data.x[i] + $
+            delta_x * dindgen(n_spec)]
+
+          new_data_sat_y = [new_data_sat_y, $
+            (sat_data.y[i] / 2l^lindgen(16) MOD 2)[0:n_spec-1]]
         endfor
 
         data_v = transpose(rebin(freq_bins.freq_avg,$
@@ -151,6 +172,19 @@ pro spp_fld_dfb_spec_load_l1, file, prefix = prefix
         options, prefix + 'spec_converted', 'ztitle', 'Log Auto [arb.]'
         options, prefix + 'spec_converted', 'ystyle', 1
         options, prefix + 'spec_converted', 'yrange', minmax(freq_bins.freq_avg)
+
+        store_data, prefix + 'sat', $
+          data = {x:new_data_x, y:new_data_sat_y}
+        
+        options, prefix + 'sat', 'psym', spec_number + 3
+        options, prefix + 'sat', 'yrange', [-0.25,1.25]
+        options, prefix + 'sat', 'ystyle', 1
+        options, prefix + 'sat', 'yticks', 1
+        options, prefix + 'sat', 'ytickv', [0,1]
+        options, prefix + 'sat', 'yminor', 1
+        options, prefix + 'sat', 'ysubtitle', ''
+        options, prefix + 'sat', 'panel_size', 0.35
+        options, prefix + 'sat', 'colors', colors
 
       endif else begin
 

@@ -7,9 +7,9 @@
 ; Note: status and FoM bars currently require an MMS team password for the SDC
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2016-05-25 09:30:45 -0700 (Wed, 25 May 2016) $
-; $LastChangedRevision: 21193 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/spd_mms_load_bss_crib.pro $
+; $LastChangedDate: 2018-01-22 12:54:55 -0800 (Mon, 22 Jan 2018) $
+; $LastChangedRevision: 24560 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_burst_status_crib.pro $
 ;-
 
 

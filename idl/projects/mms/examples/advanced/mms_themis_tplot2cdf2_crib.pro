@@ -3,12 +3,13 @@
 ; Warning: this file is under development!
 ;
 ; Example of tplot2cdf2 
-; It is designed for testing purpuses
+; It is originally designed for testing purpuses
+; This examples loads and processes data from THEMIS and MMS mission. It saves the results into the cdf file using tplot variables.
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2017-12-22 00:22:23 -0800 (Fri, 22 Dec 2017) $
-; $LastChangedRevision: 24457 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot2cdf2.pro $
+; $LastChangedDate: 2018-01-23 20:38:14 -0800 (Tue, 23 Jan 2018) $
+; $LastChangedRevision: 24575 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_themis_tplot2cdf2_crib.pro $
 ;-
 
 del_data, '*'
@@ -33,6 +34,7 @@ tplot_names
 
 
 tvars = ['tha_psef_data','tha_psef_count_rate','mms1_epd_feeps_srvy_l2_electron_intensity_omni','mms1_epd_feeps_srvy_l2_electron_intensity_omni_spin']
+; set the file na
 tplot2cdf2, filename='test', tvars=tvars, /default 
 
 end
