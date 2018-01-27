@@ -1,26 +1,46 @@
 ;+
+;PROCEDURE:
+;  TPLOT_ADD_CDF_STRUCTURE, tplot_vars, ...
+;   
+;PURPOSE:  
+;  In order to be saved in CDF file using TPLOT2CDF2, tplot variable must have CDF structure as a tplot option (see OPTIONS) 
+;  The attributes of the tplot data (x, y or v) are stored in the CDF structure
+;  CDF.VARS     - structure of attributes that describe the data (tplot y variable)
+;  CDF.DEPEND_0 - structure of attributes that describe the time (tplot x variable)
+;  CDF.DEPEND_1 - structure of attributes that supporting data (tplot v variable)
+;  
+;  Each structure of attributes must have following fileds:
+;  CATDESC, DISPLAY_TYPE ,FIELDNAM, LABLAXIS, UNITS (automatically defined for time), VAR_TYPE
+;  FILLVAL, VALIDMIN, VALIDMAX, FORMAT defined based on the nature of the data
+;  
+;  TPLOT_ADD_CDF_STRUCTURE adds appropriate CDF structure and defines some of the attributes base on the tplot data
+;  This procedure must be called before tplot2cdf2. Alternatively, keyword /default of tplto2cdf2 can be used.
+;  Most of the attributes are defined as 'undefined' ans should be specify.  
+;  
+;  If tplot has 2d y but v, that suppose to describe second dimension is absent, then v will be created and an index of the second dimension of y
+;   
+;INPUT:
+;   tplot_vars: (string or array of strings) Tplot variable name, or list of the tplot variables  
+;   
+;KEYWORDS:
+;   TT2000: (flag) Reserved for future use
 ;
-; Warning: this file is under development!
-;
-; Create default CDF attibutes in the tplot variable
-; tplot2cdf2 function requires additional CDF attribute structure
-; The attibutes are stored in CDF structure in the tplot limits
-; The possible fields are:
-; CDF.VARS - default field that describe the data (tplot y variable)
-; CDF.DEPEND_0 - this field correspond to time (tplot x variable)   
-; CDF.DEPEND_1 - supporting data (tplot v variable)
-; 
-; If y is 2d but it v is absent, v will be created and an index of the second dimension of y
+;EXAMPLES:   
+;   store_date, 'example_tplot',data={x:time_double('2001-01-01')+[1, 2, 3],y:[10, 20, 30]}
+;   tplot_add_cdf_structure, 'example_plot'  
+;   tplot2cdf2, filename='example_cdf_file', tvars='example_plot'
+;  
+;  See crib_tplot2cdf2_basic for additional examples 
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-23 20:24:48 -0800 (Tue, 23 Jan 2018) $
-; $LastChangedRevision: 24573 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot_add_cdf_attributes.pro $
+; $LastChangedDate: 2018-01-26 13:24:32 -0800 (Fri, 26 Jan 2018) $
+; $LastChangedRevision: 24598 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot_add_cdf_structure.pro $
 ;-
 
-pro tplot_add_cdf_attributes, tplot_vars, tt2000=tt2000
+pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000
 
-  ; resolve dependeces
+  ; resolve dependences
   FORWARD_FUNCTION cdf_default_vars_structure, cdf_default_vars_structure
   RESOLVE_ROUTINE, 'cdf_default_cdfi_structure', /IS_FUNCTION, /NO_RECOMPILE
 

@@ -1,9 +1,12 @@
 ;+
-; PROCEDURE: tplot2cdf_save_vars(cdf_structure,new_cdf_name)
-; PURPOSE:  To dump data and metadata from an IDL structure into a CDF file.
-;		 This is a fork of the cdf_load_vars.pro.
+; PROCEDURE: 
+;    tplot2cdf_save_vars(cdf_structure,new_cdf_name)
+; PURPOSE:  
+;    To dump data and metadata from an IDL structure into a CDF file.
+;		 This is a fork of the cdf_load_vars.pro!
 ;					
-; INPUTS:   cdf_structure : IDL structure defined by cdf_load_vars.pro
+; INPUTS:   
+;     cdf_structure : IDL structure defined by cdf_load_vars.pro
 ;	    new_cdf_name  : a string to name the new CDF file with
 ;	    
 ;	    compress_cdf: if this is set, the produced cdf is compressed
@@ -11,14 +14,15 @@
 ;	    cdfparams: (optional) cdf compression parameters
 ;	    cdf_compress_error: (optional) return string for compression errors 
 ;	    cdf_tmp_dir: (optional) compression uses this directory for temporary files
-; EXAMPLE:  cdf_save_vars(cdfi,'newcdf.cdf')
+; EXAMPLE:  
+;     cdf_save_vars(cdfi,'newcdf.cdf')
 ;
 ;Note: To use this routine you must have the CDF_EPOCH/CDF_EPOCH16 bug patch on your IDL6.3
 ;and if you are using Solaris you need to be in 32-bit mode NOT 64-bit (ie, idl -32)
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-23 20:24:48 -0800 (Tue, 23 Jan 2018) $
-; $LastChangedRevision: 24573 $
+; $LastChangedDate: 2018-01-26 13:24:32 -0800 (Fri, 26 Jan 2018) $
+; $LastChangedRevision: 24598 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf_save_vars.pro $
 ;-
 
@@ -44,7 +48,8 @@ endif
 
 file=new_cdf_name
 ; cdf_parameters=create_struct(cdf_structure.inq.encoding,1,cdf_structure.inq.decoding,1,cdf_structure.inq.majority,1)
-id=cdf_create(file,/clobber,/single_file,/COL_MAJOR) ;,_extra=cdf_parameters)
+id=cdf_create(file,/clobber,/single_file) ; ,/COL_MAJOR ,_extra=cdf_parameters)
+dprint,'Open CDF file ' + file  + ' (id :' + string(id) + ')',dlevel=2  
 
 ; Compression
 ; -----------
@@ -165,4 +170,5 @@ endfor  ; i
 ;close cdf file
 ;--------------
 cdf_close,id
+dprint,'CDF file ' + file  + ' is closed',dlevel=2  
 end

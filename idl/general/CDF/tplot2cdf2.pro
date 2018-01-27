@@ -1,24 +1,47 @@
 ;+
+;PROCEDURE:
+;  TPLOT2CDF2, ...
+;   
+;PURPOSE:
+;  Save tplot variables into cdf file
+;  tplot variable must have appropriate CDF structure as the option (limits) (see TPLOT_ADD_CDF_STRUCTURE, OPTIONS)
+;  Time (x variable of tplot) must be in SPEDAS (unix) format, (see TIME_DOUBLE)
+;   
+;KEYWORDS:
+;   FILENAME: (string) Name of the cdf file to be saved. .cdf extension can be omitted.
+;   TVARS: (string or array of strings) Tplot variable name, or list of the tplot variables to be saved 
+;   DEFAULT_CDF_STRUCTURE: (flag) Create default CDF structure in tplot variables                   
+;   COMPRESS_CDF: (int) Compress CDF file. See CDF_COMPRESSION
+;   G_ATTRIBUTES: (struct) Global attributes of CDF file
+;  
+;  Additional keywords:    
+;   INQ: (struct) Structure of CDF file parameters, see TPLOT2CDF_SAVE_VARS code
+;   TT2000: (flag) Reserved for future use
 ;
-; Warning: this file is under development!
-;
-; Save tplot variables into cdf file
-; The CDF global attributes can be specified by keywords inq and g_attributes
-; The keyword default_cdf_attributes adds default variable attributes to the tplot variables
-; Time (x variable of tplot) should be in SPEDAS (unix) format, please see time_double for details
+;EXAMPLES:   
+;   store_date, 'example_tplot',data={x:time_double('2001-01-01')+[1, 2, 3],y:[10, 20, 30]}
+;   tplot2cdf2, filename='example_cdf_file', tvars='example_plot', /default  
+;   
+;   store_date, 'example_tplot2',data={x:time_double('2001-01-02')+[1, 2],y:[10, 20]}
+;   tplot2cdf2, filename='example_cdf_file2', tvars=['example_plot', 'example_tplot2'], /default
+;  
+;  See crib_tplot2cdf2_basic for additional examples 
 ; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-24 22:43:19 -0800 (Wed, 24 Jan 2018) $
-; $LastChangedRevision: 24586 $
+; $LastChangedDate: 2018-01-26 13:24:32 -0800 (Fri, 26 Jan 2018) $
+; $LastChangedRevision: 24598 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf2.pro $
 ;-
 
-pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attributes=g_attributes_custom,tt2000=tt2000, default_cdf_attributes=default_cdf_attributes, compress_cdf=compress_cdf 
+pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attributes=g_attributes_custom,tt2000=tt2000, default_cdf_structure=default_cdf_structure, compress_cdf=compress_cdf 
   
   FORWARD_FUNCTION cdf_default_inq_structure, cdf_default_g_attributes_structure  
   RESOLVE_ROUTINE, 'cdf_default_cdfi_structure', /IS_FUNCTION, /NO_RECOMPILE
    
-  if undefined(filename) then return ; todo: add error
+  if undefined(filename) then BEGIN
+    print, "ERROR: Missing CDF filename"
+    return 
+  endif
   
   if undefined(inq_structure) then inq_structure = cdf_default_inq_structure()
   g_attributes_structure = cdf_default_g_attributes_structure()
@@ -49,14 +72,14 @@ pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attrib
     ; add default attributes. 
     ; this option will not overwrite existing fields
     tname = tplot_vars(i)
-    if KEYWORD_SET(default_cdf_attributes) then tplot_add_cdf_attributes,tname    
+    if KEYWORD_SET(default_cdf_structure) then tplot_add_cdf_structure,tname    
     
     get_data,tname,data=d,alimit=s
     
     str_element,s,'CDF',SUCCESS=cdf_s
     if cdf_s eq 0  then begin
       print, "ERROR: Missing CDF structure in tplot variable " + tname
-      print, "Use tplot_add_cdf_attributes procedure to define CDF structure or use /default_cdf_attributes keyword"
+      print, "Use tplot_add_cdf_structure procedure to define CDF structure or use /default_cdf_structure keyword"
       return
     endif
         

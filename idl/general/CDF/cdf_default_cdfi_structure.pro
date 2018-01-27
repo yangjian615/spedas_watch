@@ -1,12 +1,13 @@
 ;+
-;
-; Warning: this file is under development!
-;
-; Number of functions that generate default structured for CDF files 
-;
+;PURPOSE: 
+; Number of functions that generate default structures for CDF files
+; This file is designed for developers
+; 
+; Please use TPLOT_ADD_CDF_STRUCTURE instead
+; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-23 20:24:48 -0800 (Tue, 23 Jan 2018) $
-; $LastChangedRevision: 24573 $
+; $LastChangedDate: 2018-01-26 13:24:32 -0800 (Fri, 26 Jan 2018) $
+; $LastChangedRevision: 24598 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_default_cdfi_structure.pro $
 ;-
 
