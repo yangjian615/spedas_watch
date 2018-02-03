@@ -1,10 +1,10 @@
 ;
-; This crib demonstrates basic work with tplot2cdf2
+; This crib demonstrates basic work with tplot2cdf
 ; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-25 20:26:05 -0800 (Thu, 25 Jan 2018) $
-; $LastChangedRevision: 24595 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot2cdf2_basic.pro $
+; $LastChangedDate: 2018-02-02 11:32:56 -0800 (Fri, 02 Feb 2018) $
+; $LastChangedRevision: 24631 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/examples/crib_tplot2cdf_basic.pro $
 
 ; clear variables
 del_data,'*'
@@ -15,7 +15,7 @@ store_data,'array_variable',data={x:time_double('2001-01-01')+dindgen(120),y:din
 ; To save cdf file tplot variable must have a CDF structure. 
 ; Keyword /default creates this structure automatically, but most of the fields are undefined.
 print, "Saving tplot variable array_variable into example_array_variable.cdf file"  
-tplot2cdf2, filename='example_array_variable', tvars='array_variable', /default
+tplot2cdf, filename='example_array_variable', tvars='array_variable', /default
 print, "example_array_variable.cdf file is created"  
 ; Now you can use program like autoplot to read example_array_variable.cdf
 stop
@@ -24,8 +24,8 @@ stop
 del_data,'*'
 store_data,'array_variable',data={x:time_double('2001-01-01')+dindgen(120),y:dindgen(120)^2}
 
-; CDF structure in tplot variable can be created manually using tplot_add_cdf_attributes procedure
-tplot_add_cdf_attributes, 'array_variable'
+; CDF structure in tplot variable can be created manually using tplot_add_cdf_structure procedure
+tplot_add_cdf_structure, 'array_variable'
 
 ; Now, let's extract tplot options (limits)
 get_data, 'array_variable', limits=s
@@ -66,20 +66,20 @@ options,'array_variable','CDF', s.CDF
 ; Save cdf file
 ; Note, that /default keyword is now omitted
 print, "Saving tplot variable array_variable with attributes into example_array_variable_w_attibutes.cdf file"  
-tplot2cdf2, filename='example_array_variable_w_attibutes', tvars='array_variable'
+tplot2cdf, filename='example_array_variable_w_attibutes', tvars='array_variable'
 stop
 
 ; Modify tplot variable adding 2d y variable 
 store_data,'array_variable',data={x:time_double('2001-01-01')+dindgen(120),y:dindgen(120,3)^2}  
 
-; Because we y is 2d array, but supporting variable v is not defined, tplot_add_cdf_attributes will automatically add it (as the index on the each column)
-tplot_add_cdf_attributes, 'array_variable'
+; Because we y is 2d array, but supporting variable v is not defined, tplot_add_cdf_structure will automatically add it (as the index on the each column)
+tplot_add_cdf_structure, 'array_variable'
 get_data, 'array_variable', data=d, limits=s
-print, "Tplot variable array_variable has v variable that was automatically created by tplot_add_cdf_attributes procedure"
+print, "Tplot variable array_variable has v variable that was automatically created by tplot_add_cdf_structure procedure"
 help, d, /struct
 
 ; Note, previously saved attributes are preserved
-print, "Some previously defined attributes are not overwritten by tplot_add_cdf_attributes"
+print, "Some previously defined attributes are not overwritten by tplot_add_cdf_structure"
 help, *s.CDF.VARS.attrptr, /struct
 
 ; DEPEND_1 correspond to v
@@ -88,14 +88,14 @@ cdf_v_attr_struct.CATDESC = 'Array index'
 cdf_v_attr_struct.LABLAXIS = 'Index'
 cdf_v_attr_struct.UNITS = '#'
 ; add additional attributes, that were not automatically included in CDF attributes structure
-str_element,cdf_v_attr_struct,'VAR_NOTES','Index of the array was automatically created by tplot_add_cdf_attributes function',/add
+str_element,cdf_v_attr_struct,'VAR_NOTES','Index of the array was automatically created by tplot_add_cdf_structure function',/add
 s.CDF.DEPEND_1.attrptr = ptr_new(cdf_v_attr_struct)
 
 ; Save CDF structure into tplot variable
 options,'array_variable','CDF', s.CDF
 
 print, "Saving tplot variable array_variable with attributes and supporting variable v into example_array_variable_w_v.cdf file"  
-tplot2cdf2, filename='example_array_variable_w_v', tvars='array_variable'
+tplot2cdf, filename='example_array_variable_w_v', tvars='array_variable'
 stop
 
 ; Let's create additional data set, an example of a simple wave
@@ -110,11 +110,11 @@ var = amp * sin(omega * time_sec_arr)
 ; Create a tplot variable 
 store_data, 'mHz_sin_wave', data={x:time_arr,y:var}
 ; Add CDF structure
-tplot_add_cdf_attributes, 'mHz_sin_wave'
+tplot_add_cdf_structure, 'mHz_sin_wave'
 
 ; Multiple tplot variables can be saved in cdf file
 print, "Saving multiple tplot variables (array_variable and mHz_sin_wave) into example_array_variable_w_sin_wave.cdf file"  
-tplot2cdf2, filename='example_array_variable_w_sin_wave', tvars=['mHz_sin_wave', 'array_variable']
+tplot2cdf, filename='example_array_variable_w_sin_wave', tvars=['mHz_sin_wave', 'array_variable']
 ; Note, because 'mHz_sin_wave' and 'array_variable' have different time, Epoch and Epoch_1 will be created in the CDF file
 stop
 
@@ -123,7 +123,7 @@ var = amp * cos(omega * time_sec_arr)
 store_data, 'mHz_cos_wave', data={x:time_arr,y:var}
 
 ; Add CDF structure
-tplot_add_cdf_attributes, 'mHz_cos_wave'
+tplot_add_cdf_structure, 'mHz_cos_wave'
 
 ; Let's define the some attribute of the time variable.
 get_data, 'mHz_cos_wave', limits=s
@@ -134,22 +134,22 @@ cdf_x_attr_struct.CATDESC = 'Time of the waves'
 s.CDF.DEPEND_0.attrptr = ptr_new(cdf_x_attr_struct)
 options,'mHz_cos_wave','CDF', s.CDF
 
-; Since 'mHz_sin_wave' and 'mHz_cos_wave' are calculated using the same time variable, tplot2cdf2 will determine that and will save only one Epoch
+; Since 'mHz_sin_wave' and 'mHz_cos_wave' are calculated using the same time variable, tplot2cdf will determine that and will save only one Epoch
 ; Since 'mHz_cos_wave' goes first in the list of tvars, the defined attributes of the Epoch will be taken from CDF structure of 'mHz_cos_wave'  
 print, "Saving multiple tplot variables (mHz_sin_wave and mHz_sin_wave) that share the same time into example_cos_and_sin_wave.cdf file"
-tplot2cdf2, filename='example_cos_and_sin_wave', tvars=['mHz_cos_wave', 'mHz_sin_wave']
+tplot2cdf, filename='example_cos_and_sin_wave', tvars=['mHz_cos_wave', 'mHz_sin_wave']
 
 ; Now let's add some general properties of the cdf file using /g_attributes keyword
 general_structure = {PI_affiliation:'UCLA',Acknowledgment:'SPEDAS development team'}
 print, "Saving multiple tplot variables and some general attributes of CDF file into example_cos_and_sin_wave_general.cdf file"
-tplot2cdf2, filename='example_cos_and_sin_wave_general', tvars=['mHz_cos_wave', 'mHz_sin_wave'], g_attributes=general_structure
+tplot2cdf, filename='example_cos_and_sin_wave_general', tvars=['mHz_cos_wave', 'mHz_sin_wave'], g_attributes=general_structure
 stop
 
 ; Finally, let save compressed cdf file using 'compress' (compress_cdf) parameter 
 ; compress_cdf parameter correspond to SET_COMPRESSION parameter of CDF_COMPRESSION
 ; In this case GZIP compression is used
 print, "Saving multiple tplot variables into gzip compressed example_cos_and_sin_wave_compressed.cdf file"
-tplot2cdf2, filename='example_cos_and_sin_wave_compressed', tvars=['mHz_cos_wave', 'mHz_sin_wave'], g_attributes=general_structure, compress=5
+tplot2cdf, filename='example_cos_and_sin_wave_compressed', tvars=['mHz_cos_wave', 'mHz_sin_wave'], g_attributes=general_structure, compress=5
 
 print, "End of the crib"
 end

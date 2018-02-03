@@ -3,7 +3,7 @@
 ;This procedure is not yet working.
 ;-
 
-pro tplot2cdf,varnames,filename=filename,trange=trange,overwrite=overwrite
+pro tplot2cdf_deprecated,varnames,filename=filename,trange=trange,overwrite=overwrite
 
 
 if not keyword_set(filename) then begin

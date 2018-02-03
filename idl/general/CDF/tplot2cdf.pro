@@ -1,6 +1,6 @@
 ;+
 ;PROCEDURE:
-;  TPLOT2CDF2, ...
+;  TPLOT2CDF, ...
 ;   
 ;PURPOSE:
 ;  Save tplot variables into cdf file
@@ -20,20 +20,20 @@
 ;
 ;EXAMPLES:   
 ;   store_date, 'example_tplot',data={x:time_double('2001-01-01')+[1, 2, 3],y:[10, 20, 30]}
-;   tplot2cdf2, filename='example_cdf_file', tvars='example_plot', /default  
+;   tplot2cdf, filename='example_cdf_file', tvars='example_plot', /default  
 ;   
 ;   store_date, 'example_tplot2',data={x:time_double('2001-01-02')+[1, 2],y:[10, 20]}
-;   tplot2cdf2, filename='example_cdf_file2', tvars=['example_plot', 'example_tplot2'], /default
+;   tplot2cdf, filename='example_cdf_file2', tvars=['example_plot', 'example_tplot2'], /default
 ;  
 ;  See crib_tplot2cdf2_basic for additional examples 
 ; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-26 13:24:32 -0800 (Fri, 26 Jan 2018) $
-; $LastChangedRevision: 24598 $
-; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf2.pro $
+; $LastChangedDate: 2018-02-02 11:32:56 -0800 (Fri, 02 Feb 2018) $
+; $LastChangedRevision: 24631 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf.pro $
 ;-
 
-pro tplot2cdf2, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attributes=g_attributes_custom,tt2000=tt2000, default_cdf_structure=default_cdf_structure, compress_cdf=compress_cdf 
+pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attributes=g_attributes_custom,tt2000=tt2000, default_cdf_structure=default_cdf_structure, compress_cdf=compress_cdf 
   
   FORWARD_FUNCTION cdf_default_inq_structure, cdf_default_g_attributes_structure  
   RESOLVE_ROUTINE, 'cdf_default_cdfi_structure', /IS_FUNCTION, /NO_RECOMPILE

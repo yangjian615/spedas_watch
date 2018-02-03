@@ -3,7 +3,7 @@
 ;  TPLOT_ADD_CDF_STRUCTURE, tplot_vars, ...
 ;   
 ;PURPOSE:  
-;  In order to be saved in CDF file using TPLOT2CDF2, tplot variable must have CDF structure as a tplot option (see OPTIONS) 
+;  In order to be saved in CDF file using TPLOT2CDF, tplot variable must have CDF structure as a tplot option (see OPTIONS) 
 ;  The attributes of the tplot data (x, y or v) are stored in the CDF structure
 ;  CDF.VARS     - structure of attributes that describe the data (tplot y variable)
 ;  CDF.DEPEND_0 - structure of attributes that describe the time (tplot x variable)
@@ -14,7 +14,7 @@
 ;  FILLVAL, VALIDMIN, VALIDMAX, FORMAT defined based on the nature of the data
 ;  
 ;  TPLOT_ADD_CDF_STRUCTURE adds appropriate CDF structure and defines some of the attributes base on the tplot data
-;  This procedure must be called before tplot2cdf2. Alternatively, keyword /default of tplto2cdf2 can be used.
+;  This procedure must be called before tplot2cdf. Alternatively, keyword /default of tplto2cdf2 can be used.
 ;  Most of the attributes are defined as 'undefined' ans should be specify.  
 ;  
 ;  If tplot has 2d y but v, that suppose to describe second dimension is absent, then v will be created and an index of the second dimension of y
@@ -28,13 +28,13 @@
 ;EXAMPLES:   
 ;   store_date, 'example_tplot',data={x:time_double('2001-01-01')+[1, 2, 3],y:[10, 20, 30]}
 ;   tplot_add_cdf_structure, 'example_plot'  
-;   tplot2cdf2, filename='example_cdf_file', tvars='example_plot'
+;   tplot2cdf, filename='example_cdf_file', tvars='example_plot'
 ;  
 ;  See crib_tplot2cdf2_basic for additional examples 
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-26 13:24:32 -0800 (Fri, 26 Jan 2018) $
-; $LastChangedRevision: 24598 $
+; $LastChangedDate: 2018-02-02 11:32:56 -0800 (Fri, 02 Feb 2018) $
+; $LastChangedRevision: 24631 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot_add_cdf_structure.pro $
 ;-
 
