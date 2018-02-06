@@ -15,6 +15,7 @@
 ;         data_rate:    instrument data rates ['brst', 'srvy' (default), 'fast', 'slow']
 ;         energy:       energy range to include in the calculation
 ;         datatype:     extof (default), phxtof, electronenergy
+;         suffix:       suffix used when loading the data
 ;
 ; CREATED BY: I. Cohen, 2017-08-14
 ;
@@ -27,11 +28,12 @@
 ;                                   of mms_eis_pad.pro and mms_eis_pad_combine_proton_pad.pro;
 ;                                   replaced species keyword definition with species and removed
 ;                                   species
-;       + 2018-01-04, I. Cohen    : fixed if statement for species case of 'proton'                       
+;       + 2018-01-04, I. Cohen    : fixed if statement for species case of 'proton'
+;       + 2018-02-05, I. Cohen    : added suffix keyword                       
 ;
 ;-
 pro mms_eis_pad_combine_sc, probes = probes, trange = trange, species = species, level = level, data_rate = data_rate, $
-                energy = energy, data_units = data_units, datatype = datatype
+                energy = energy, data_units = data_units, datatype = datatype, suffix = suffix
   ;
   compile_opt idl2
   if not KEYWORD_SET(probes) then if (time_double(trange[0]) gt time_double('2016-01-31')) then probes = ['2','3','4'] else probes = ['1','2','3','4']
@@ -42,6 +44,7 @@ pro mms_eis_pad_combine_sc, probes = probes, trange = trange, species = species,
   if not KEYWORD_SET(data_units) then data_units = 'flux'
   if not KEYWORD_SET(datatype) then datatype = 'extof'
   if not KEYWORD_SET(species) then species = 'proton'
+  if not KEYWORD_SET(suffix) then suffix = ''
   if (datatype eq 'electronenergy') then species = 'electron'
   case species of 
     'proton':   if (energy[0] gt 50) and (energy[1] gt 50) then datatype = 'extof' $
