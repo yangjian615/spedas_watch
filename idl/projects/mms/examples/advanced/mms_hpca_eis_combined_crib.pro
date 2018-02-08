@@ -5,11 +5,16 @@
 ; This crib sheet shows how to create a spectra plot with EIS and HPCA data
 ; on the same panel
 ;
+; ***** WARNING ON USING THIS CRIB SHEET *****
+; The EPD and HPCA instrument teams have not fully investigated the 
+; cross-calibration of these instruments; combining these spectra 
+; should be done on a case-by-case basis. Please contact the instrument 
+; teams before combining data from the EPD and plasma instruments.
 ;
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-02-02 20:03:39 -0800 (Fri, 02 Feb 2018) $
-; $LastChangedRevision: 24637 $
+; $LastChangedDate: 2018-02-07 09:04:36 -0800 (Wed, 07 Feb 2018) $
+; $LastChangedRevision: 24662 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_hpca_eis_combined_crib.pro $
 ;-
 
@@ -34,6 +39,7 @@ store_data, 'combined_flux', data='mms1_epd_eis_extof_proton_flux_omni_spin mms1
 options, 'combined_flux', ylog=1, yrange=[1, 1e7], ystyle=1, yticks=7, zrange=[0.1, 1e7]
 options, 'combined_flux', ztitle='H+ Flux (cm!U2!N s sr eV)!U-1!N', ytitle='EIS - HPCA', ysubtitle='[eV]'
 
+; potential cross-calibration issue here; please contact the instrument teams before trusting these results
 tplot, 'combined_flux'
 
 stop
