@@ -31,12 +31,12 @@
 ;         click 'Allow' for private networks)
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-01-13 13:18:45 -0800 (Sat, 13 Jan 2018) $
-; $LastChangedRevision: 24517 $
+; $LastChangedDate: 2018-02-08 14:21:48 -0800 (Thu, 08 Feb 2018) $
+; $LastChangedRevision: 24678 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/tplot2ap/tplot2ap.pro $
 ;-
 
-pro tplot2ap, tvars, port=port, connect_timeout=connect_timeout, read_timeout=read_timeout
+pro tplot2ap, tvars, port=port, connect_timeout=connect_timeout, read_timeout=read_timeout, local_data_dir=local_data_dir
   if undefined(port) then port = 12345
   if undefined(connect_timeout) then connect_timeout = 6 ; seconds
   if undefined(read_timeout) then read_timeout = 30 ; seconds
@@ -45,9 +45,18 @@ pro tplot2ap, tvars, port=port, connect_timeout=connect_timeout, read_timeout=re
     dprint, dlevel=0, 'Syntax: tplot2ap, ["variable"]'
     return
   endif
+  
+  ; allow the user to input tplot #s instead of the full names
+  tvars = tnames(tvars)
 
-  cdf_filename = 'test' + strcompress(string(randomu(seed, 1, /long)), /rem)
-  tplot2cdf2, filename=cdf_filename, tvars=tvars, /default 
+  if undefined(local_data_dir) then local_data_dir = spd_default_local_data_dir() + 'autoplot/'
+  
+  ; make sure to create the local data directory if it doesn't already exist
+  dir_exists = file_test(local_data_dir, /directory)
+  if ~dir_exists then file_mkdir2, local_data_dir
+  
+  cdf_filename = local_data_dir+'tplot2ap' + strcompress(string(randomu(seed, 1, /long)), /rem)
+  tplot2cdf, filename=cdf_filename, tvars=tvars, /default
   
   socket, unit, '127.0.0.1', port, /get_lun, error=error, read_timeout=read_timeout, connect_timeout=connect_timeout
   
@@ -57,11 +66,11 @@ pro tplot2ap, tvars, port=port, connect_timeout=connect_timeout, read_timeout=re
     return
   endif
   
-  cd,c=current_working_dir
+  ; the directory needs to be escaped prior to sending to Autoplot on Windows machines
+  cdf_filename = strjoin(strsplit(cdf_filename, '\', /extract), '\\')
   
   for tvar_idx=0, n_elements(tvars)-1 do begin
-    printf, unit, 'plot('+strcompress(string(tvar_idx), /rem)+', "'+current_working_dir+'/'+cdf_filename+'.cdf?'+tvars[tvar_idx]+'");'
-
+    printf, unit, 'plot('+strcompress(string(tvar_idx), /rem)+', "'+cdf_filename+'.cdf?'+tvars[tvar_idx]+'");'
   endfor
 
   ; pause required on Windows before freeing the handle, otherwise the previous plot() command fails

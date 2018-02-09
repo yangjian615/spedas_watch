@@ -28,8 +28,8 @@
 ;  See crib_tplot2cdf2_basic for additional examples 
 ; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-02 11:32:56 -0800 (Fri, 02 Feb 2018) $
-; $LastChangedRevision: 24631 $
+; $LastChangedDate: 2018-02-07 21:18:03 -0800 (Wed, 07 Feb 2018) $
+; $LastChangedRevision: 24666 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf.pro $
 ;-
 
@@ -63,7 +63,10 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
   ; main arrays of data
   VARS = []   
   EpochVARS = []  
-  SupportVARS = []
+  SupportVARS1 = []
+  SupportVARS2 = []
+  SupportVARS3 = []
+  
   EpochType = 'CDF_EPOCH' ; default Epoch type
   if KEYWORD_SET(tt2000) then EpochType = 'TT2000'
   
@@ -87,6 +90,9 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
     str_element,d,'x',value=x
     str_element,d,'y',value=y
     str_element,d,'v',value=v
+    str_element,d,'v1',value=v1
+    str_element,d,'v2',value=v2
+    str_element,d,'v3',value=v3
     if ~is_struct(d) then x = d
 
            
@@ -141,18 +147,19 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
     endif
     
     ;
-    ; Then we work with supporting data, same scenario
+    ; Then we work with supporting data (1), same scenario
     ;   
+    if ~undefined(v1) then v = TEMPORARY(v1) ; Use v1 isdead of v if we have v1         
     if array_contains(t,'DEPEND_1') then begin
-     SupportName = s.CDF.DEPEND_1.NAME
+     SupportName1 = s.CDF.DEPEND_1.NAME
      SupportVAR = s.CDF.DEPEND_1
      SupportVAR.DATAPTR = ptr_new(v, /NO_COPY)
      
      InArray = 0
-     for j=0,N_ELEMENTS(SupportVARS)-1 do begin
-       if ARRAY_EQUAL(*SupportVARS[j].DATAPTR, *SupportVAR.DATAPTR) then begin
+     for j=0,N_ELEMENTS(SupportVARS1)-1 do begin
+       if ARRAY_EQUAL(*SupportVARS1[j].DATAPTR, *SupportVAR.DATAPTR) then begin
          InArray = 1
-         SupportName = SupportVARS[j].NAME
+         SupportName1 = SupportVARS1[j].NAME
        endif
      endfor
    
@@ -161,8 +168,58 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
        if ndimen(v) eq 2 then str_element, attr,'DEPEND_0',EpochName,/add ; if support variable is 2d, then the first dimension corresponds to time               
        if STRCMP(attr.VAR_TYPE, 'undefined') then attr.VAR_TYPE = 'support_data' ;Change attributes for support variable variable
        SupportVAR.ATTRPTR = ptr_new(attr)
-       SupportVARS = array_concat(SupportVAR,SupportVARS)       
+       SupportVARS1 = array_concat(SupportVAR,SupportVARS1)       
      endif
+    endif
+    
+    ;
+    ; supporting data (2)
+    ;    
+    if array_contains(t,'DEPEND_2') then begin
+      SupportName2 = s.CDF.DEPEND_2.NAME
+      SupportVAR = s.CDF.DEPEND_2
+      SupportVAR.DATAPTR = ptr_new(v2, /NO_COPY)
+
+      InArray = 0
+      for j=0,N_ELEMENTS(SupportVARS2)-1 do begin
+        if ARRAY_EQUAL(*SupportVARS2[j].DATAPTR, *SupportVAR.DATAPTR) then begin
+          InArray = 1
+          SupportName2 = SupportVARS2[j].NAME
+        endif
+      endfor
+
+      if InArray eq 0 then begin ; add new support variable
+        attr = *SupportVAR.ATTRPTR
+        if ndimen(v2) eq 2 then str_element, attr,'DEPEND_0',EpochName,/add ; if support variable is 2d, then the first dimension corresponds to time
+        if STRCMP(attr.VAR_TYPE, 'undefined') then attr.VAR_TYPE = 'support_data' ;Change attributes for support variable variable
+        SupportVAR.ATTRPTR = ptr_new(attr)
+        SupportVARS2 = array_concat(SupportVAR,SupportVARS2)
+      endif
+    endif
+    
+    ;
+    ; supporting data (3)
+    ;
+    if array_contains(t,'DEPEND_3') then begin
+      SupportName3 = s.CDF.DEPEND_3.NAME
+      SupportVAR = s.CDF.DEPEND_3
+      SupportVAR.DATAPTR = ptr_new(v3, /NO_COPY)
+
+      InArray = 0
+      for j=0,N_ELEMENTS(SupportVARS3)-1 do begin
+        if ARRAY_EQUAL(*SupportVARS3[j].DATAPTR, *SupportVAR.DATAPTR) then begin
+          InArray = 1
+          SupportName3 = SupportVARS3[j].NAME
+        endif
+      endfor
+
+      if InArray eq 0 then begin ; add new support variable
+        attr = *SupportVAR.ATTRPTR
+        if ndimen(v3) eq 2 then str_element, attr,'DEPEND_0',EpochName,/add ; if support variable is 2d, then the first dimension corresponds to time
+        if STRCMP(attr.VAR_TYPE, 'undefined') then attr.VAR_TYPE = 'support_data' ;Change attributes for support variable variable
+        SupportVAR.ATTRPTR = ptr_new(attr)
+        SupportVARS3 = array_concat(SupportVAR,SupportVARS3)
+      endif
     endif
     
     ;
@@ -184,7 +241,10 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
         endif
       endif
       if array_contains(t,'DEPEND_0') then str_element, attr,'DEPEND_0',EpochName,/add            
-      if array_contains(t,'DEPEND_1') then str_element, attr,'DEPEND_1',SupportName,/add 
+      if array_contains(t,'DEPEND_1') then str_element, attr,'DEPEND_1',SupportName1,/add 
+      if array_contains(t,'DEPEND_2') then str_element, attr,'DEPEND_2',SupportName2,/add
+      if array_contains(t,'DEPEND_3') then str_element, attr,'DEPEND_3',SupportName3,/add
+      
       VAR.ATTRPTR = ptr_new(attr)
       VAR.DATAPTR = ptr_new(y, /NO_COPY)
             
@@ -192,8 +252,11 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
     endif    
   endfor
   
-  VARS = array_concat(SupportVARS,VARS)
   VARS = array_concat(EpochVARS,VARS)
+  VARS = array_concat(VARS,SupportVARS1)
+  VARS = array_concat(VARS,SupportVARS2)
+  VARS = array_concat(VARS,SupportVARS3)
+  
   
   
   idl_structure.NV = N_ELEMENTS(VARS)

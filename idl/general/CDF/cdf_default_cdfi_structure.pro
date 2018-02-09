@@ -6,8 +6,8 @@
 ; Please use TPLOT_ADD_CDF_STRUCTURE instead
 ; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-26 13:24:32 -0800 (Fri, 26 Jan 2018) $
-; $LastChangedRevision: 24598 $
+; $LastChangedDate: 2018-02-07 21:18:03 -0800 (Wed, 07 Feb 2018) $
+; $LastChangedRevision: 24666 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_default_cdfi_structure.pro $
 ;-
 
@@ -78,7 +78,7 @@ function cdf_default_vars_structure
     NUMELEM:0,$
     RECVARY:1b,$   ; is the variable time varying 
     NUMREC:01,$
-    NDIMEN:0,$
+    NDIMEN:0,$     ; number of dimentions
     D:lonarr(6),$  ; potential potential variable size
     DATAPTR:ptr_new(),$
     ATTRPTR:ptr_new(cdf_default_attr_structure())$
