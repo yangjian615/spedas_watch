@@ -15,17 +15,25 @@
 ;  CATDESC, DISPLAY_TYPE ,FIELDNAM, LABLAXIS, UNITS (automatically defined for time), VAR_TYPE
 ;  FILLVAL, VALIDMIN, VALIDMAX, FORMAT defined based on the nature of the data
 ;  
+;  If CDF structure already defined in the tplot variable the defined fields od the strucutre will remane the same.
+;  This means, if there was any mistake (e.g. wrong Epoch format), then CDF structure must be recreated (for example, using /new keyword).  
+;  
 ;  TPLOT_ADD_CDF_STRUCTURE adds appropriate CDF structure and defines some of the attributes base on the tplot data
 ;  This procedure must be called before tplot2cdf. Alternatively, keyword /default of tplto2cdf2 can be used.
 ;  Most of the attributes are defined as 'undefined' ans should be specify.  
 ;  
 ;  If tplot has 2d y but v, that suppose to describe second dimension is absent, then v will be created and an index of the second dimension of y
+;  
+;  If tplot has n-d y but number of dimensions does not correspond to number or supporting variables (x, v or v1, v2 ...) then extra supporting variables (v1, v2 ...) will be removed.
+;  This behaivour ensures the saving of the tplot into CDF file. 
 ;   
 ;INPUT:
 ;   tplot_vars: (string or array of strings) Tplot variable name, or list of the tplot variables  
 ;   
 ;KEYWORDS:
-;   TT2000: (flag) Reserved for future use
+;   TT2000: (flag) Indicates that time should be included as TT2000
+;           If x type is double, x will be converted to LONG64 using CDF_PARSE_TT2000
+;   NEW: (flag) Create new CDF structure or ignore existing CDF structure
 ;
 ;EXAMPLES:   
 ;   store_date, 'example_tplot',data={x:time_double('2001-01-01')+[1, 2, 3],y:[10, 20, 30]}
@@ -35,12 +43,12 @@
 ;  See crib_tplot2cdf2_basic for additional examples 
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-07 21:18:03 -0800 (Wed, 07 Feb 2018) $
-; $LastChangedRevision: 24666 $
+; $LastChangedDate: 2018-02-09 16:47:26 -0800 (Fri, 09 Feb 2018) $
+; $LastChangedRevision: 24685 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot_add_cdf_structure.pro $
 ;-
 
-pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000
+pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
 
   ; resolve dependences
   FORWARD_FUNCTION cdf_default_vars_structure, cdf_default_vars_structure
@@ -52,7 +60,7 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000
     if is_struct(s) then t = STRUPCASE(TAG_NAMES(s)) else t = ''
            
     ; get original structure if exist
-    if array_contains(t, 'CDF') then cdf_struct = s.cdf else cdf_struct = {}
+    if array_contains(t, 'CDF') and ~KEYWORD_SET(new) then cdf_struct = s.cdf else cdf_struct = {}
     vars = cdf_default_vars_structure()
     depend_0 = cdf_default_vars_structure()
     
@@ -76,14 +84,38 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000
 ; === CDF_EPOCH ===    
     if ~undefined(x) then begin
       depend_0.name = 'Epoch'
-      depend_0.datatype = 'CDF_EPOCH'           
       attr = *depend_0.attrptr
+      if KEYWORD_SET(tt2000) then begin
+      ; Convert time to tt2000 if double is detected  
+      if  size(x,/type) eq 5 then begin ; double x detected
+        x = CDF_PARSE_TT2000(time_string(x,tformat='YYYY-MM-DDThh:mm:ss.fffffffff')) ; convert to TT2000       
+        ;save modified tplot        
+        dt = CREATE_STRUCT('x',x) ; create structure with new time         
+        if ~is_struct(d)  then d = CREATE_STRUCT('x',x) ; create, or recreate structure
+        extract_tags,d,dt ; we use extract_tags to copy dt.x to structure d, which comes from tplot 
+        store_data,tplot_vars(i),data=d ; save new data into tplot var                 
+      endif else begin
+        if size(x,/type) ne 14 then dprint,'Warning: x type is not LONG64 as requred by TT2000',dlevel=1        
+      endelse
+      
+      depend_0.datatype = 'CDF_TIME_TT2000'
+      str_element,attr,'FILLVAL',-9223372036854775808LL ,/add
+      str_element,attr,'VALIDMIN',CDF_PARSE_TT2000('1990-01-01T00:00:00.000000000') ,/add
+      str_element,attr,'VALIDMAX',CDF_PARSE_TT2000('2100-01-01T00:00:00.000000000') ,/add
+      attr.FORMAT = ' '
+      attr.UNITS  = 'ns'              
+      str_element, attr,'TIME_BASE','J2000',/add  ; Additional attibute is added for netCDF files
+      endif else begin        
+      if size(x,/type) ne 5 then dprint,'Warning: x type is not double. You may expect error using tplot2cdf. CDF structure must be recreated. Use /new flag to create new CDF strucure',dlevel=1      
+      depend_0.datatype = 'CDF_EPOCH'                 
       str_element,attr,'FILLVAL',-1.0d31 ,/add
       str_element,attr,'VALIDMIN',0.0d ,/add
       str_element,attr,'VALIDMAX',time_epoch('9999-12-31:23:59:59.999'),/add
-      attr.FORMAT = ' '      
+      attr.FORMAT = ' '
       attr.UNITS  = 'ms'      
       str_element, attr,'TIME_BASE','0AD',/add  ; Additional attibute is added for netCDF files
+      end
+      
       depend_0.attrptr = ptr_new(attr)  
     endif
     
@@ -100,18 +132,6 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000
 ;          *depend_0.attrptr))
 ;    endif
     
-; === CDF_TIME_TT2000 ===    
-    if KEYWORD_SET(tt2000) then begin
-; TODO: implement tt2000 case
-;      depend_0.datatype = 'CDF_TIME_TT2000'
-;      attr = *(depend_0.attrptr)
-;      attr.FILLVAL = -9223372036854775808LL
-;      attr.VALIDMIN = time_epoch(time_double('0000-01-01:00:00:00.000000000')) ; this is most likely incorrect
-;      attr.VALIDMAX = time_epoch(time_double('9999-12-31:23:59:59.999999999')) ; this is most likely incorrect      
-;      'UNITS',''
-;      depend_0.attrptr = ptr_new(attr)
-    endif
-        
     if ~undefined(y) then begin
       vars.name = tplot_vars(i)     
       vars.datatype = idl2cdftype(y, validmax_out=vmax, validmin_out=vmin, fillval_out=vfill, format_out=format_out)  

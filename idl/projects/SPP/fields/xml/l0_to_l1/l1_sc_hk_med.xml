@@ -1,0 +1,67 @@
+<?xml version ="1.0" encoding ="UTF-8"?>
+
+<items>
+
+  <tmlib
+  	tmlib_event = 'sc_hk_med'
+  	>
+  </tmlib>
+
+  <cdf_global
+      Title = "PSP SC Housekeeping Medium"
+      Descriptor = "PSP Housekeeping"
+      Data_type = "Spacecraft housekeeping data"
+      Data_version = "0"
+      TEXT = "PSP Spacecraft Housekeeping Data"
+      Mods = "Revision 0"
+      Logical_source = "SPP_FLD_SC_HK_MED"
+      Logical_source_description = "PSP Spacecraft Housekeeping Data"
+      Dependencies = "None"
+      >
+  </cdf_global>
+
+  <cdf_var
+      name = "PDU_FIELDS1_CURR"
+      type = "double"
+      raw = "PDU_FIELDS1_CURR_raw">
+    <cdf_att
+        FIELDNAM = "PDU_FIELDS1_CURR"
+        FORMAT = "F15.3"
+        LABLAXIS = "PDU_FIELDS1_CURR"
+        DATA_TYPE = "CDF_DOUBLE"
+        VAR_TYPE = "data"
+        FILLVAL = "-1.0E31"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-0.557"
+        VALIDMAX = "4.187"
+        SCALEMIN = "-1"
+        SCALEMAX = "5"
+        UNITS = "A"
+        CATDESC = "PDU FIELDS1 Current"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "PDU_FIELDS2_CURR"
+      type = "double"
+      raw = "PDU_FIELDS2_CURR_raw">
+    <cdf_att
+        FIELDNAM = "PDU_FIELDS2_CURR"
+        FORMAT = "F15.3"
+        LABLAXIS = "PDU_FIELDS2_CURR"
+        DATA_TYPE = "CDF_DOUBLE"
+        VAR_TYPE = "data"
+        FILLVAL = "-1.0E31"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "-0.557"
+        VALIDMAX = "4.187"
+        SCALEMIN = "-1"
+        SCALEMAX = "5"
+        UNITS = "A"
+        CATDESC = "PDU FIELDS2 Current"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+</items>

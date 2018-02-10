@@ -6,8 +6,8 @@
 ;     IDL> mgunit, 'spd_tplot_add_cdf_structure_ut'
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-07 21:19:49 -0800 (Wed, 07 Feb 2018) $
-; $LastChangedRevision: 24668 $
+; $LastChangedDate: 2018-02-09 16:47:26 -0800 (Fri, 09 Feb 2018) $
+; $LastChangedRevision: 24685 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/qa_tools/mgunit/spd_tplot_add_cdf_structure_ut__define.pro $
 ;-
 
@@ -64,6 +64,60 @@ function spd_tplot_add_cdf_structure_ut::test_v123_epoch
   return, 1
 end
 
+function spd_tplot_add_cdf_structure_ut::test_tt2000
+  store_data, 'test_tt2000', data={x: CDF_PARSE_TT2000('2005-12-04T20:19:18.176214648') }
+  tplot_add_cdf_structure, 'test_tt2000', /tt2000
+  get_data, 'test_tt2000', limits=s, data=d  
+  assert, size(d.x,/type) eq 14, 'TT2000 Epoch is not LONG64'
+  assert, s.CDF.VARS.DATATYPE eq 'CDF_TIME_TT2000', 'Wrong TT2000 datatype'
+  return, 1
+end
+
+function spd_tplot_add_cdf_structure_ut::test_tt2000_double
+  store_data, 'test_tt2000_double', data={x: double(indgen(2)) }
+  tplot_add_cdf_structure, 'test_tt2000_double', /tt2000
+  get_data, 'test_tt2000_double', limits=s, data=d
+  assert, size(d.x,/type) eq 14, 'TT2000 Epoch is not converted from double to LONG64'
+  assert, s.CDF.VARS.DATATYPE eq 'CDF_TIME_TT2000', 'Wrong TT2000 datatype'
+  return, 1
+end
+
+function spd_tplot_add_cdf_structure_ut::test_tt2000_double_and_vars
+  store_data, 'test_tt2000_double_and_vars1', data={x: double(indgen(2)), y:double(indgen(2)+10)}
+  get_data, 'test_tt2000_double_and_vars1', data=original_d    
+  tplot_add_cdf_structure, 'test_tt2000_double_and_vars1', /tt2000  
+  get_data, 'test_tt2000_double_and_vars1', data=d
+  assert, size(d.x,/type) eq 14, 'TT2000 Epoch is not converted from double to LONG64'
+  assert, ARRAY_EQUAL(d.y,original_d.y), 'TT2000 flag does not trasfer the data'
+  
+  store_data, 'test_tt2000_double_and_vars2', data={x: double(indgen(2)), y:double(indgen(2,3)+10), v:indgen(3)}
+  get_data, 'test_tt2000_double_and_vars2', data=original_d
+  tplot_add_cdf_structure, 'test_tt2000_double_and_vars2', /tt2000
+  get_data, 'test_tt2000_double_and_vars2', data=d
+  assert, size(d.x,/type) eq 14, 'TT2000 Epoch is not converted from double to LONG64'
+  assert, ARRAY_EQUAL(d.y,original_d.y) and ARRAY_EQUAL(d.v,original_d.v), 'TT2000 flag does not trasfer the data'
+  
+  store_data, 'test_tt2000_double_and_vars3', data={x: double(indgen(2)), y:double(indgen(2,3,4)+10), v1:indgen(3), v2:indgen(2,4)+5}
+  get_data, 'test_tt2000_double_and_vars3', data=original_d
+  tplot_add_cdf_structure, 'test_tt2000_double_and_vars3', /tt2000
+  get_data, 'test_tt2000_double_and_vars3',  data=d
+  assert, size(d.x,/type) eq 14, 'TT2000 Epoch is not converted from double to LONG64'
+  assert, ARRAY_EQUAL(d.y,original_d.y) and ARRAY_EQUAL(d.v1,original_d.v1) and ARRAY_EQUAL(d.v2,original_d.v2), 'TT2000 flag does not trasfer the data'
+  return, 1
+end
+
+function spd_tplot_add_cdf_structure_ut::test_new
+    del_data, '*'
+    store_data, 'test_tt2000_new', data={x: double(indgen(2))}
+    tplot_add_cdf_structure, 'test_tt2000_new'
+    get_data, 'test_tt2000_new',  limits=s   
+    assert, s.CDF.VARS.DATATYPE eq 'CDF_EPOCH', 'Unexpected type of Epoch'    
+    store_data, 'test_tt2000_new', data={x: LONG64(indgen(2))}
+    tplot_add_cdf_structure, 'test_tt2000_new', /tt2000, /new
+    get_data, 'test_tt2000_new',  limits=s    
+    assert, s.CDF.VARS.DATATYPE eq 'CDF_TIME_TT2000', 'CDF structure was not recreated'
+  return, 1
+end
 
 pro spd_tplot_add_cdf_structure_ut::setup
   del_data, '*'

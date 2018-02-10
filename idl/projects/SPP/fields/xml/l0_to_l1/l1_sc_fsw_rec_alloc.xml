@@ -1,0 +1,45 @@
+<?xml version ="1.0" encoding ="UTF-8"?>
+
+<items>
+
+  <tmlib
+  	tmlib_event = 'sc_fsw_rec_alloc'
+  	>
+  </tmlib>
+
+  <cdf_global
+      Title = "PSP SC Flight Recorder Allocation"
+      Descriptor = "PSP Housekeeping"
+      Data_type = "Spacecraft housekeeping data"
+      Data_version = "0"
+      TEXT = "PSP Spacecraft Housekeeping Data"
+      Mods = "Revision 0"
+      Logical_source = "SPP_FLD_SC_HK_HIGH"
+      Logical_source_description = "PSP Spacecraft Flight Recorder Allocation Data"
+      Dependencies = "None"
+      >
+  </cdf_global>
+
+  <cdf_var
+      name = "FSW_REC_ALLOC_PERCENT_USED_FIELDS"
+      type = "double"
+      raw = "FSW_REC_ALLOC_PERCENT_USED_FIELDS_raw">
+    <cdf_att
+        FIELDNAM = "FSW_REC_ALLOC_PERCENT_USED_FIELDS"
+        FORMAT = "F15.3"
+        LABLAXIS = "FSW_REC_ALLOC_PERCENT_USED_FIELDS"
+        DATA_TYPE = "CDF_DOUBLE"
+        VAR_TYPE = "data"
+        FILLVAL = "-1.0E31"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0"
+        VALIDMAX = "100"
+        SCALEMIN = "0"
+        SCALEMAX = "100"
+        UNITS = "None"
+        CATDESC = "PDU Flight Recorder Percent Used (FIELDS)"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+</items>

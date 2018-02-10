@@ -13,10 +13,10 @@
 ;   DEFAULT_CDF_STRUCTURE: (flag) Create default CDF structure in tplot variables                   
 ;   COMPRESS_CDF: (int) Compress CDF file. See CDF_COMPRESSION
 ;   G_ATTRIBUTES: (struct) Global attributes of CDF file
+;   TT2000: (flag) Indicates that time is in TT2000 format.
 ;  
 ;  Additional keywords:    
 ;   INQ: (struct) Structure of CDF file parameters, see TPLOT2CDF_SAVE_VARS code
-;   TT2000: (flag) Reserved for future use
 ;
 ;EXAMPLES:   
 ;   store_date, 'example_tplot',data={x:time_double('2001-01-01')+[1, 2, 3],y:[10, 20, 30]}
@@ -28,8 +28,8 @@
 ;  See crib_tplot2cdf2_basic for additional examples 
 ; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-07 21:18:03 -0800 (Wed, 07 Feb 2018) $
-; $LastChangedRevision: 24666 $
+; $LastChangedDate: 2018-02-09 16:47:26 -0800 (Fri, 09 Feb 2018) $
+; $LastChangedRevision: 24685 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf.pro $
 ;-
 
@@ -68,14 +68,14 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
   SupportVARS3 = []
   
   EpochType = 'CDF_EPOCH' ; default Epoch type
-  if KEYWORD_SET(tt2000) then EpochType = 'TT2000'
+  if KEYWORD_SET(tt2000) then EpochType = 'CDF_TIME_TT2000'
   
   ; main loop
   for i =0,N_ELEMENTS(tplot_vars)-1 do begin    
     ; add default attributes. 
     ; this option will not overwrite existing fields
     tname = tplot_vars(i)
-    if KEYWORD_SET(default_cdf_structure) then tplot_add_cdf_structure,tname    
+    if KEYWORD_SET(default_cdf_structure) then tplot_add_cdf_structure,tname,tt2000=tt2000
     
     get_data,tname,data=d,alimit=s
     
@@ -102,49 +102,65 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
     
     t = TAG_NAMES(s.CDF)
     
-    ;
-    ; Work with Epoch first
-    ;
-    ; If user defined only one x variable in tplot we consider it as Epoch
-    ; In this case CDF may contain only one field VARS wich is Epoch  
-    EpochName = 'Epoch'
-    if s.CDF.VARS.DATATYPE eq EpochType then begin
-      EpochVAR = s.CDF.VARS      
-      UNDEFINE, VAR ; remove var
-    endif
-    
-    if array_contains(t,'DEPEND_0') then begin
-      if s.CDF.DEPEND_0.DATATYPE eq EpochType then EpochVAR  = s.CDF.DEPEND_0
-    endif
-    
-    ; === CDF_EPOCH ===
-    ; 
-    ; Time should be in SPEDAS format, which is UNIX time.
-    ; Add variable and convert it into Epoch
-    EpochVAR.DATAPTR = ptr_new(time_epoch(x), /NO_COPY)
-    
-    ; === CDF_TIME_TT2000 ===
-    ; is long 64 ?? No? - exit!
-    ; EpochVAR.DATAPTR = ptr_new(long64(x)?, /NO_COPY)
-    ; str_element, *(EpochVAR.ATTRPTR),'TIME_BASE','J2000',/add
-    
-    
-    
-    InArray = 0 ; flag of having Epoch in array EpochVARS  
-    for j=0,N_ELEMENTS(EpochVARS)-1 do begin
-      if ARRAY_EQUAL(*EpochVARS[j].DATAPTR, *EpochVAR.DATAPTR) then begin
-        InArray = 1
-        EpochName = EpochVARS[j].NAME
+    if ~undefined(x) then begin
+      ; Work with Epoch first
+      ;
+      ; If user defined only one x variable in tplot we consider it as Epoch
+      ; In this case CDF may contain only one field VARS wich is Epoch  
+      EpochName = 'Epoch'
+      if s.CDF.VARS.DATATYPE eq EpochType then begin
+        EpochVAR = s.CDF.VARS      
+        UNDEFINE, VAR ; remove var
       endif
-    endfor
-    
-    if InArray eq 0 then begin ; add new epoch variable
-      EpochN = N_ELEMENTS(EpochVARS)
-      if EpochN gt 0 then EpochName = EpochName + '_' + strtrim(string(EpochN),1)
-      EpochVAR.NAME = EpochName ; name      
-      (*Epochvar.ATTRPTR).VAR_TYPE = 'support_data' ; Automaticaly change attributes for Epoch variable      
-      EpochVARS = array_concat(EpochVAR,EpochVARS)       
-    endif
+      
+      if array_contains(t,'DEPEND_0') then begin
+        if s.CDF.DEPEND_0.DATATYPE eq EpochType then EpochVAR  = s.CDF.DEPEND_0
+      endif
+      
+      if undefined(EpochVAR) then begin
+        print, "ERROR: Missing valid Epoch in tplot variable " + tname
+        print, "Check DATATYPE of the Epoch in CDF structure. CDF_Epoch cannot be used with TT2000 flag"
+        return
+      endif
+      
+      if KEYWORD_SET(tt2000) then begin
+        ; === CDF_TIME_TT2000 ===
+        ; is long 64 ?? No? - exit!
+        if size(x,/type) ne 14 then begin
+          print, "ERROR: type of TT2000 time in tplot variable " + tname + " is not long64"
+          return
+        endif
+        EpochVAR.DATAPTR = ptr_new(x, /NO_COPY)
+      endif else begin      
+        ; === CDF_EPOCH ===
+        ; Time should be in SPEDAS format, which is UNIX time.
+        ; Add variable and convert it into Epoch
+        if size(x,/type) ne 5 then begin
+          print, "ERROR: type of Epoch in tplot variable " + tname + " is not double"      
+          return
+        endif    
+        EpochVAR.DATAPTR = ptr_new(time_epoch(x), /NO_COPY)    
+      end
+      
+      
+      
+      InArray = 0 ; flag of having Epoch in array EpochVARS  
+      for j=0,N_ELEMENTS(EpochVARS)-1 do begin
+        if ARRAY_EQUAL(*EpochVARS[j].DATAPTR, *EpochVAR.DATAPTR) then begin
+          InArray = 1
+          EpochName = EpochVARS[j].NAME
+        endif
+      endfor
+      
+      if InArray eq 0 then begin ; add new epoch variable
+        EpochN = N_ELEMENTS(EpochVARS)
+        if EpochN gt 0 then EpochName = EpochName + '_' + strtrim(string(EpochN),1)
+        EpochVAR.NAME = EpochName ; name      
+        (*Epochvar.ATTRPTR).VAR_TYPE = 'support_data' ; Automaticaly change attributes for Epoch variable      
+        EpochVARS = array_concat(EpochVAR,EpochVARS)       
+      endif
+          
+    endif ; x
     
     ;
     ; Then we work with supporting data (1), same scenario

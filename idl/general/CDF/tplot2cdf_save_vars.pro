@@ -21,8 +21,8 @@
 ;and if you are using Solaris you need to be in 32-bit mode NOT 64-bit (ie, idl -32)
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-07 21:18:03 -0800 (Wed, 07 Feb 2018) $
-; $LastChangedRevision: 24666 $
+; $LastChangedDate: 2018-02-09 16:47:26 -0800 (Fri, 09 Feb 2018) $
+; $LastChangedRevision: 24685 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf_save_vars.pro $
 ;-
 
@@ -163,7 +163,7 @@ for i=0,cdf_structure.nv-1 do begin
 	
 		att_exists=cdf_attexists(id,va_names(j),/zvariable)
 		if (att_exists eq 0) then dummy=cdf_attcreate(id,va_names(j),/variable_scope)
-		if cdf_structure.vars[i].datatype eq 'CDF_EPOCH' && ((va_names(j) eq 'FILLVAL') || (va_names(j) eq 'VALIDMIN') || (va_names(j) eq 'VALIDMAX')) then begin
+		if ( cdf_structure.vars[i].datatype eq 'CDF_EPOCH' or cdf_structure.vars[i].datatype eq 'CDF_TIME_TT2000' ) && ((va_names(j) eq 'FILLVAL') || (va_names(j) eq 'VALIDMIN') || (va_names(j) eq 'VALIDMAX')) then begin
 		  cdf_attput,id,va_names(j),cdf_structure.vars[i].name,va.(j),/zvariable,/cdf_epoch
 		endif else cdf_attput,id,va_names(j),cdf_structure.vars[i].name,va.(j),/zvariable
 			
