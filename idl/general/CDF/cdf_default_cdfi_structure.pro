@@ -5,9 +5,12 @@
 ; 
 ; Please use TPLOT_ADD_CDF_STRUCTURE instead
 ; 
+;CREATED BY:
+;  Alexander Drozdov
+; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-07 21:18:03 -0800 (Wed, 07 Feb 2018) $
-; $LastChangedRevision: 24666 $
+; $LastChangedDate: 2018-02-12 12:13:23 -0800 (Mon, 12 Feb 2018) $
+; $LastChangedRevision: 24690 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_default_cdfi_structure.pro $
 ;-
 

@@ -40,11 +40,14 @@
 ;   tplot_add_cdf_structure, 'example_plot'  
 ;   tplot2cdf, filename='example_cdf_file', tvars='example_plot'
 ;  
-;  See crib_tplot2cdf2_basic for additional examples 
+;  See crib_tplot2cdf_basic for additional examples 
+;
+;CREATED BY:
+;  Alexander Drozdov
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-09 16:47:26 -0800 (Fri, 09 Feb 2018) $
-; $LastChangedRevision: 24685 $
+; $LastChangedDate: 2018-02-12 12:13:23 -0800 (Mon, 12 Feb 2018) $
+; $LastChangedRevision: 24690 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot_add_cdf_structure.pro $
 ;-
 

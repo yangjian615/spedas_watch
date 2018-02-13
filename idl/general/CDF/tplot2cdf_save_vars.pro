@@ -20,9 +20,12 @@
 ;Note: To use this routine you must have the CDF_EPOCH/CDF_EPOCH16 bug patch on your IDL6.3
 ;and if you are using Solaris you need to be in 32-bit mode NOT 64-bit (ie, idl -32)
 ;
+;CREATED BY:
+;  Alexander Drozdov
+;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-09 16:47:26 -0800 (Fri, 09 Feb 2018) $
-; $LastChangedRevision: 24685 $
+; $LastChangedDate: 2018-02-12 12:13:23 -0800 (Mon, 12 Feb 2018) $
+; $LastChangedRevision: 24690 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf_save_vars.pro $
 ;-
 
