@@ -39,7 +39,7 @@
 ; ----------------------------------------------------------------------------
 
 ; we can load data from the fluxgate magnetometer (FGM)
-mms_load_fgm, trange=['2015-10-16', '2015-10-17'], probe=4, cdf_filenames=fgm_filenames, versions=fgm_versions
+mms_load_fgm, trange=['2015-10-16', '2015-10-17'], probe=4, cdf_filenames=fgm_filenames, versions=fgm_versions, /spdf
 tplot, 'mms4_fgm_b_gse_srvy_l2_bvec'
 stop
 
@@ -53,7 +53,7 @@ tplot ; empty call to tplot replots the previous plot with the updated options
 stop
 
 ; and the search-coil magnetometer (SCM)
-mms_load_scm, trange=['2015-10-16', '2015-10-17'], probe=4, cdf_filenames=scm_filenames, versions=scm_versions
+mms_load_scm, trange=['2015-10-16', '2015-10-17'], probe=4, cdf_filenames=scm_filenames, versions=scm_versions, /spdf
 tplot, 'mms4_scm_acb_gse_scsrvy_srvy_l2', /add
 stop
 
@@ -63,17 +63,17 @@ tplot
 stop
 
 ; and the electric field data from SDP/ADP instruments (EDP)
-mms_load_edp, trange=['2015-10-16', '2015-10-17'], probe=4, cdf_filenames=edp_filenames, versions=edp_versions
+mms_load_edp, trange=['2015-10-16', '2015-10-17'], probe=4, cdf_filenames=edp_filenames, versions=edp_versions, /spdf
 tplot, 'mms4_edp_dce_gse_fast_l2', /add
 stop
 
 ; load the data from the electron drift instrument (EDI)
-mms_load_edi, trange=['2015-10-16', '2015-10-17'], probe=4, cdf_filenames=edi_filenames, versions=edi_versions
+mms_load_edi, trange=['2015-10-16', '2015-10-17'], probe=4, cdf_filenames=edi_filenames, versions=edi_versions, /spdf
 tplot, ['mms4_edi_vdrift_gse_srvy_l2', 'mms4_edi_e_gse_srvy_l2'], /add
 stop
 
 ; load the data from the digital siginal processor (DSP)
-mms_load_dsp, trange=['2015-10-16', '2015-10-17'], probe=4, level='l2', datatype='epsd', data_rate='fast', cdf_filenames=dsp_filenames, versions=dsp_versions
+mms_load_dsp, trange=['2015-10-16', '2015-10-17'], probe=4, level='l2', datatype='epsd', data_rate='fast', cdf_filenames=dsp_filenames, versions=dsp_versions, /spdf
 tplot, 'mms4_dsp_epsd_omni', /add
 stop
 
@@ -126,11 +126,11 @@ stop
 ; important routines: mms_cotrans, mms_qcotrans
 ; crib sheets:
 ;       projects/mms/examples/basic/mms_cotrans_crib.pro
-;       projects/mms/examples/basic/mms_qcotrans_crib.pro
+;       projects/mms/examples/basic/
 
 ; load the support data (quaternions/right ascension/declination) from the MEC files
 ; these are required for coordinate transformations
-mms_load_mec, trange=['2015-10-16', '2015-10-17'], probe=4
+mms_load_mec, trange=['2015-10-16', '2015-10-17'], probe=4, /spdf
 stop
 
 ; you can find the coordinate system of a tplot variable programmatically using cotrans_get_coord
@@ -181,8 +181,9 @@ options, 'mva_data_day', ysubtitle='single transformation!C[nT]'
 
 ;limit time range to plot
 timespan, '2015-10-16/13:00', 1, /hour
-tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_day'
+tplot, 'mms1_fgm_b_gse_srvy_l2_bvec mva_data_day'
 
+stop
 
 ; ----------------------------------------------------------------------------
 ; ----------------------------------------------------------------------------
@@ -194,7 +195,7 @@ tplot, 'mms1_fgm_b_gse_srvy_l2_bvec  mva_data_day'
 ;       projects/mms/examples/basic/mms_curlometer_crib.pro
 
 ; ephemeris data were added to the FGM files to allow for quick/easy curlometer calculations
-mms_load_fgm, trange=['2015-10-16/13', '2015-10-16/13:10'], /get_fgm_ephemeris, probes=[1, 2, 3, 4], data_rate='brst', /time_clip
+mms_load_fgm, trange=['2015-10-16/13', '2015-10-16/13:10'], /get_fgm_ephemeris, probes=[1, 2, 3, 4], data_rate='brst', /time_clip, /spdf
 
 ; method #1: mms_curl; code provided by Dr. Jonathan Eastwood
 mms_curl, trange=['2015-10-16/13', '2015-10-16/13:10'], $
@@ -232,7 +233,7 @@ stop
 ; crib sheets:
 ;       projects/mms/examples/advanced/mms_wavpol_crib.pro
 
-mms_load_scm, probe='4', trange=['2015-10-16/1', '2015-10-16/2']
+mms_load_scm, probe='4', trange=['2015-10-16/1', '2015-10-16/2'], /spdf
 
 ; check the header of twavpol for more details on the data products produced
 twavpol, 'mms4_scm_acb_gse_scsrvy_srvy_l2', nopfft=512
@@ -273,7 +274,7 @@ stop
 ; crib sheets:
 ;       projects/mms/examples/basic/mms_load_scm_crib.pro
 
-mms_load_scm, probe='4', trange=['2015-10-16/1', '2015-10-16/2']
+mms_load_scm, probe='4', trange=['2015-10-16/1', '2015-10-16/2'], /spdf
 
 tdpwrspc, 'mms4_scm_acb_gse_scsrvy_srvy_l2', nboxpoints=512
 
@@ -292,6 +293,7 @@ calc, '"f_ci"="w_ci"/(2*'+string(!dpi)+')'
 stop
 
 store_data, 'x_dpwrspc_with_f', data='mms4_scm_acb_gse_scsrvy_srvy_l2_x_dpwrspc f_ci'
+;store_data, 'x_dpwrspc_with_f', data=['mms4_scm_acb_gse_scsrvy_srvy_l2_x_dpwrspc', 'f_ci']
 store_data, 'y_dpwrspc_with_f', data='mms4_scm_acb_gse_scsrvy_srvy_l2_y_dpwrspc f_ci'
 store_data, 'z_dpwrspc_with_f', data='mms4_scm_acb_gse_scsrvy_srvy_l2_z_dpwrspc f_ci'
 
@@ -314,8 +316,8 @@ stop
 ; crib sheets:
 ;       projects/mms/examples/advanced/mms_poynting_flux_crib.pro
 
-mms_load_scm, trange=['2015-10-16/13', '2015-10-16/14'], probe=4, data_rate='brst'
-mms_load_edp, trange=['2015-10-16/13', '2015-10-16/14'], probe=4, data_rate='brst'
+mms_load_scm, trange=['2015-10-16/13', '2015-10-16/14'], probe=4, data_rate='brst', /spdf
+mms_load_edp, trange=['2015-10-16/13', '2015-10-16/14'], probe=4, data_rate='brst', /spdf
 
 tinterpol, 'mms4_scm_acb_gse_scb_brst_l2', 'mms4_edp_dce_gse_brst_l2'
 
@@ -351,6 +353,20 @@ options, 'poynting_flux', ytitle='S', ysubtitle='[!4l!3W/m!U2!N]', colors=[2, 4,
 tlimit, /full
 
 tplot, 'poynting_flux'
+stop
+
+; Question from the webinar: how to change the linestyle for a single component of the vector
+; split the vector into its components (each component with its own tplot variable)
+split_vec, 'poynting_flux'
+
+; change the linestyle using options
+options, 'poynting_flux_x', linestyle=4
+
+; now recombine the components into another tplot variable
+store_data, 'new_pf', data=['poynting_flux_x', 'poynting_flux_y', 'poynting_flux_z']
+
+; replot with the X-component has a linestyle set
+tplot, 'new_pf'
 stop
 
 ; ----------------------------------------------------------------------------
