@@ -12,6 +12,33 @@
 ;         probes:       list of probes, valid values for MMS probes are ['1','2','3','4'].
 ;                       if no probe is specified the default is probe '1'
 ;         level:        indicates level of data processing. the default if no level is specified is 'l3'
+;         data_rates:   instrument data rate
+;         local_data_dir: local directory to store the CDF files
+;         source:       sets a different system variable. By default the MMS mission system variable
+;                       is !mms
+;         tplotnames:   returns a list of the loaded tplot variables
+;         get_support_data: when set this routine will load any support data (support data is specified in the CDF file)
+;         no_color_setup: don't setup graphics configuration; use this keyword when you're using this load routine from a
+;                       terminal without an X server running
+;         time_clip:    clip the data to the requested time range; note that if you
+;                       do not use this keyword, you may load a longer time range than requested
+;         no_update:    use local data only, don't query the SDC for updated files.
+;         suffix:       append a suffix to tplot variables names
+;         varformat:    should be a string (wildcards accepted) that will match the CDF variables
+;                       that should be loaded into tplot variables
+;         cdf_filenames:returns the names of the CDF files used when loading the data
+;         cdf_version:  specify a specific CDF version # to load (e.g., cdf_version='4.3.0')
+;         latest_version: only grab the latest CDF version in the requested time interval
+;             (e.g., /latest_version)
+;         major_version: only open the latest major CDF version (e.g., X in vX.Y.Z) in the requested time interval
+;         min_version:   specify a minimum CDF version # to load
+;         spdf:          grab the data from the SPDF instead of the LASP SDC (only works for public access)
+;         available:     returns a list of files available at the SDC for the requested parameters
+;                        this is useful for finding which files would be downloaded (along with their sizes) if
+;                        you didn't specify this keyword (also outputs total download size)
+;         versions:      this keyword returns the version #s of the CDF files used when loading the data
+;         always_prompt: set this keyword to always prompt for your username and password;
+;                        useful if you accidently save an incorrect password, or if your SDC password has changed
 ;
 ;
 ; EXAMPLE:
@@ -21,8 +48,8 @@
 ;     The MMS plug-in in SPEDAS requires IDL 8.4 to access data at the LASP SDC
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2018-02-14 13:56:33 -0800 (Wed, 14 Feb 2018) $
-;$LastChangedRevision: 24712 $
+;$LastChangedDate: 2018-02-15 10:24:03 -0800 (Thu, 15 Feb 2018) $
+;$LastChangedRevision: 24718 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/fsm/mms_load_fsm.pro $
 ;-
 
@@ -48,6 +75,7 @@ pro mms_load_fsm, trange = trange, probes = probes, datatype = datatype, $
   if undefined(instrument) then instrument = 'fsm'
   if undefined(data_rate) then data_rate = 'brst'
   if undefined(suffix) then suffix = ''
+  if undefined(get_support_data) then get_support_data = 1 ; load the flags by default
 
   mms_load_data, trange = trange, probes = probes, level = level, instrument = instrument, $
     data_rate = data_rate, local_data_dir = local_data_dir, source = source, $
