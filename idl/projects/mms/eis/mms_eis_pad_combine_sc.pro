@@ -21,15 +21,12 @@
 ;
 ; REVISION HISTORY:
 ;       + 2017-11-14, I. Cohen    : removed num_smooth keyword and calls to spd_smooth_time
-;       + 2017-11-15, I. Cohen    : removed n_pad_spec and num_smooth keywords; added energy,
-;                                   data_units, datatype, and species keywords to mirror call
-;                                   to mms_eis_pad.pro
-;       + 2017-11-17, I. Cohen    : removed combination of phxtof and extof data to rely on use
-;                                   of mms_eis_pad.pro and mms_eis_pad_combine_proton_pad.pro;
-;                                   replaced species keyword definition with species and removed
-;                                   species
+;       + 2017-11-15, I. Cohen    : removed n_pad_spec and num_smooth keywords; added energy, data_units, datatype, and species keywords to mirror call to mms_eis_pad.pro
+;       + 2017-11-17, I. Cohen    : removed combination of phxtof and extof data to rely on use of mms_eis_pad.pro and mms_eis_pad_combine_proton_pad.pro;
+;                                   replaced species keyword definition with species and removed species
 ;       + 2018-01-04, I. Cohen    : fixed if statement for species case of 'proton'
-;       + 2018-02-05, I. Cohen    : added suffix keyword                       
+;       + 2018-02-05, I. Cohen    : added suffix keyword
+;       + 2018-02-19, I. Cohen    : added ability to handle multiple species                   
 ;
 ;-
 pro mms_eis_pad_combine_sc, probes = probes, trange = trange, species = species, level = level, data_rate = data_rate, $
@@ -45,19 +42,20 @@ pro mms_eis_pad_combine_sc, probes = probes, trange = trange, species = species,
   if not KEYWORD_SET(datatype) then datatype = 'extof'
   if not KEYWORD_SET(species) then species = 'proton'
   if not KEYWORD_SET(suffix) then suffix = ''
-  if (datatype eq 'electronenergy') then species = 'electron'
-  case species of 
+  if (datatype[0] eq 'electronenergy') then species = 'electron'
+  if undefined(combine_proton_spec) then combine_proton_spec = 0
+  case species of
     'proton':   if (energy[0] gt 50) and (energy[1] gt 50) then datatype = 'extof' $
-                else if (energy[0] gt 50) and (energy[1] lt 50) then datatype = ['combined','phxtof','extof'] $
-                else if (energy[0] lt 50) and (energy[1] lt 50) then datatype = 'phxtof' $
-                else if (energy[0] lt 50) and (energy[1] gt 50) then datatype = ['combined','phxtof','extof']
-    'alpha': datatype = 'extof'
-    'oxygen': datatype = 'extof'
-    'electron': datatype = 'electronenergy'
+                  else if (energy[0] lt 50) and (energy[1] lt 50) then datatype = 'phxtof' $
+                  else begin
+                    if (combine_proton_spec eq 1) then datatype = ['combined','phxtof','extof']  else datatype = ['phxtof','extof']
+                  endelse
+    'alpha':      datatype = 'extof'
+    'oxygen':     datatype = 'extof'
+    'electron':   datatype = 'electronenergy'
   endcase
   ;
   ; Combine flux from all MMS spacecraft into omni-directional array
-  ;
   if (data_rate eq 'brst') then allmms_prefix = 'mms'+probes[0]+'-'+probes[-1]+'_epd_eis_brst_' else allmms_prefix = 'mms'+probes[0]+'-'+probes[-1]+'_epd_eis_'
   ;
   for dd=0,n_elements(datatype)-1 do begin
@@ -136,4 +134,5 @@ pro mms_eis_pad_combine_sc, probes = probes, trange = trange, species = species,
     ;
     spd_smooth_time, allmms_prefix+datatype[dd]+'_'+strtrim(string(fix(common_energy[0])),2)+'-'+strtrim(string(fix(common_energy[-1])),2)+'keV_'+species+'_flux_omni_pad', newname=allmms_prefix+datatype[dd]+'_'+strtrim(string(fix(common_energy[0])),2)+'-'+strtrim(string(fix(common_energy[-1])),2)+'keV_'+species+'_flux_omni_pad_smth', 20, /nan
   endfor
+  ;
 end

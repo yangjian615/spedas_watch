@@ -24,6 +24,7 @@
 ;                                         variables for each individual telescope, instead of just the omni variable;
 ;                                         added calls to mms_eis_spin_avg.pro and mms_eis_omni.pro
 ;       + 2018-01-19, I. Cohen          : added capability to handle multiple s/c at once and combine at the end
+;       + 2018-02-19, I. Cohen          : added "total" to NAN creation on lines 77-78 to fix syntax
 ;                                         
 ;-
 pro mms_eis_combine_proton_spec, probes=probes, data_rate = data_rate, data_units = data_units
@@ -73,8 +74,8 @@ pro mms_eis_combine_proton_spec, probes=probes, data_rate = data_rate, data_unit
         phxtof_spec_data = proton_phxtof.y
         extof_spec_data = proton_extof.y[0:n_elements(proton_phxtof.x)-1,*]
       endif
-      if (where(phxtof_spec_data eq 0) ge 0) then phxtof_spec_data[where(phxtof_spec_data eq 0)] = !Values.d_NAN
-      if (where(extof_spec_data eq 0) ge 0) then extof_spec_data[where(extof_spec_data eq 0)] = !Values.d_NAN
+      if (total(where(phxtof_spec_data eq 0)) ge 0) then phxtof_spec_data[where(phxtof_spec_data eq 0)] = !Values.d_NAN
+      if (total(where(extof_spec_data eq 0) ge 0)) then extof_spec_data[where(extof_spec_data eq 0)] = !Values.d_NAN
       ;
       target_phxtof_energies = where(proton_phxtof.v lt 42, n_target_phxtof_energies)
       target_phxtof_crossover_energies = where(proton_phxtof.v gt 42, n_target_phxtof_crossover_energies)
