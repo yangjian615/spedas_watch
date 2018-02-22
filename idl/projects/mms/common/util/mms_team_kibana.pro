@@ -6,6 +6,10 @@
 ;         Opens the MMS Kibana page using your web browser; allows you to see which
 ;         data files are available at the SDC, and when they're available
 ; 
+; KEYWORDS:
+;         only one keyword allowed specifying the instrument you're interested in, e.g., 
+;         /fgm for FGM data, /fpi for FPI data, etc.
+;         
 ;     
 ; NOTES:
 ;         The webpage is restricted to MMS team-members only
@@ -16,8 +20,8 @@
 ;         
 ;         
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-02-20 14:36:30 -0800 (Tue, 20 Feb 2018) $
-; $LastChangedRevision: 24754 $
+; $LastChangedDate: 2018-02-21 09:06:31 -0800 (Wed, 21 Feb 2018) $
+; $LastChangedRevision: 24755 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/common/util/mms_team_kibana.pro $
 ;-
 
