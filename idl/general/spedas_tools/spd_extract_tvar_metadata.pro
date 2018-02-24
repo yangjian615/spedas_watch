@@ -12,8 +12,8 @@
 ;         - dlimits.cdf structure (stored in the CDF file)
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-02-16 12:55:33 -0800 (Fri, 16 Feb 2018) $
-; $LastChangedRevision: 24729 $
+; $LastChangedDate: 2018-02-23 11:52:33 -0800 (Fri, 23 Feb 2018) $
+; $LastChangedRevision: 24765 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_extract_tvar_metadata.pro $
 ;-
 
@@ -24,13 +24,17 @@ function spd_extract_tvar_metadata, tvar
       return, -1
     endif
     
-    out = create_struct('units', '', 'labels', '', 'catdesc', '', 'ztitle', '', 'ytitle', tvar)
+    out = create_struct('units', '', 'labels', '', 'catdesc', '', 'ztitle', '', 'ytitle', tvar, 'spec', 0b)
     
     get_data, tvar, dlimits=dl, limits=l
     if is_struct(dl) then begin
       ; first try the CDF info
       if is_struct(dl.cdf.vatt) then begin
-        if dl.cdf.vatt[0].catdesc ne '' then out.catdesc = dl.cdf.vatt[0].catdesc
+        str_element, dl.cdf.vatt[0], 'catdesc', success=s
+        if s then out.catdesc = dl.cdf.vatt[0].catdesc
+        
+        str_element, dl.cdf.vatt[0], 'units', success=s
+        if s then out.units = dl.cdf.vatt[0].units
       endif
       
       ; now override of the load routine set the metadata
@@ -51,6 +55,9 @@ function spd_extract_tvar_metadata, tvar
       
       str_element, dl, 'labels', success=labels_exists
       if labels_exists then str_element, out, 'labels', dl.labels, /add
+      
+      str_element, dl, 'spec', success=exists
+      if exists && byte(dl.spec) ne 0 then out.spec = 1b
     endif
     if is_struct(l) then begin
       ; try to extract data from the limits last, as 'limits' are set by the user
@@ -71,6 +78,9 @@ function spd_extract_tvar_metadata, tvar
 
       str_element, l, 'labels', success=labels_exists
       if labels_exists then str_element, out, 'labels', l.labels, /add
+      
+      str_element, l, 'spec', success=exists
+      if exists && byte(l.spec) ne 0 then out.spec = 1b
     endif
     
     return, out
