@@ -3,7 +3,8 @@
 ;  TPLOT_ADD_CDF_STRUCTURE, tplot_vars, ...
 ;   
 ;PURPOSE:  
-;  In order to be saved in CDF file using TPLOT2CDF, tplot variable must have CDF structure as a tplot option (see OPTIONS) 
+;  In order to be saved in CDF file using TPLOT2CDF, tplot variable must have CDF
+;  structure as a tplot option (see OPTIONS) 
 ;  The attributes of the tplot data (x, y or v) are stored in the CDF structure
 ;  CDF.VARS     - structure of attributes that describe the data (tplot y variable)
 ;  CDF.DEPEND_0 - structure of attributes that describe the time (tplot x variable)
@@ -15,16 +16,23 @@
 ;  CATDESC, DISPLAY_TYPE ,FIELDNAM, LABLAXIS, UNITS (automatically defined for time), VAR_TYPE
 ;  FILLVAL, VALIDMIN, VALIDMAX, FORMAT defined based on the nature of the data
 ;  
-;  If CDF structure already defined in the tplot variable the defined fields od the strucutre will remane the same.
-;  This means, if there was any mistake (e.g. wrong Epoch format), then CDF structure must be recreated (for example, using /new keyword).  
+;  If CDF structure already defined in the tplot variable the defined fields of 
+;  the CDF strucutre will remane the same. This means, if there was any mistake 
+;  (e.g. wrong Epoch format), then CDF structure must be recreated (for example, using /new keyword).  
 ;  
 ;  TPLOT_ADD_CDF_STRUCTURE adds appropriate CDF structure and defines some of the attributes base on the tplot data
 ;  This procedure must be called before tplot2cdf. Alternatively, keyword /default of tplto2cdf2 can be used.
 ;  Most of the attributes are defined as 'undefined' ans should be specify.  
 ;  
-;  If tplot has 2d y but v, that suppose to describe second dimension is absent, then v will be created and an index of the second dimension of y
-;  
-;  If tplot has n-d y but number of dimensions does not correspond to number or supporting variables (x, v or v1, v2 ...) then extra supporting variables (v1, v2 ...) will be removed.
+;  If tplot has 2d y, but variable v, that suppose to describe second dimension 
+;  is absent, then v will be created and an index of the second dimension of y
+;  If Label field is found in metadata of the tplot variable and if number of elements 
+;  of along second dimention of y is the same as number of Labels, then v variable
+;  will be prepared to be LABL_PTR_1. 
+;  TPLOT_ADD_CDF_STRUCTURE supports only LABL_PTR_1 (one label) case. 
+;   
+;  If tplot has n-d y but number of dimensions does not correspond to number or 
+;  supporting variables (x, v or v1, v2 ...) then extra supporting variables (v1, v2 ...) will be removed.
 ;  This behaivour ensures the saving of the tplot into CDF file. 
 ;   
 ;INPUT:
@@ -46,8 +54,8 @@
 ;  Alexander Drozdov
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-12 12:13:23 -0800 (Mon, 12 Feb 2018) $
-; $LastChangedRevision: 24690 $
+; $LastChangedDate: 2018-02-26 12:50:29 -0800 (Mon, 26 Feb 2018) $
+; $LastChangedRevision: 24780 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot_add_cdf_structure.pro $
 ;-
 
@@ -58,7 +66,7 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
   RESOLVE_ROUTINE, 'cdf_default_cdfi_structure', /IS_FUNCTION, /NO_RECOMPILE
 
   for i=0,n_elements(tplot_vars)-1 do begin
-    get_data,tplot_vars(i),data=d,alimits=s
+    get_data,tplot_vars[i],data=d,alimits=s
     
     if is_struct(s) then t = STRUPCASE(TAG_NAMES(s)) else t = ''
            
@@ -75,6 +83,9 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
     str_element,d,'v2',value=v2
     str_element,d,'v3',value=v3
     if ~is_struct(d) then x = d
+    
+    ; extract metadata
+     metadata = spd_extract_tvar_metadata(tplot_vars[i])
     
     ; cases:
     ; d is an array
@@ -96,7 +107,7 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
         dt = CREATE_STRUCT('x',x) ; create structure with new time         
         if ~is_struct(d)  then d = CREATE_STRUCT('x',x) ; create, or recreate structure
         extract_tags,d,dt ; we use extract_tags to copy dt.x to structure d, which comes from tplot 
-        store_data,tplot_vars(i),data=d ; save new data into tplot var                 
+        store_data,tplot_vars[i],data=d ; save new data into tplot var                 
       endif else begin
         if size(x,/type) ne 14 then dprint,'Warning: x type is not LONG64 as requred by TT2000',dlevel=1        
       endelse
@@ -136,7 +147,7 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
 ;    endif
     
     if ~undefined(y) then begin
-      vars.name = tplot_vars(i)     
+      vars.name = tplot_vars[i]     
       vars.datatype = idl2cdftype(y, validmax_out=vmax, validmin_out=vmin, fillval_out=vfill, format_out=format_out)  
       attr = *vars.attrptr 
       str_element,attr,'FILLVAL',vfill,/add
@@ -144,13 +155,32 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
       str_element,attr,'VALIDMAX',vmax,/add
       attr.FORMAT = format_out      
       str_element, attr,'DEPEND_0','Epoch',/add
+      
+      ; Add metadata
+      if ((metadata.catdesc ne '') and (attr.CATDESC eq 'none')) then attr.CATDESC = metadata.catdesc
+      if ((metadata.units ne '') and (attr.UNITS eq 'undefined')) then attr.UNITS = metadata.UNITS
+      if ((metadata.ytitle ne '') and (attr.LABLAXIS eq 'undefined')) then attr.LABLAXIS = metadata.ytitle
+      
       vars.attrptr = ptr_new(attr)       
       
       dy = dimen(y)      
      ;  === Checking the missing v(#) if we have [2|3|4]D y ===
       CASE ndimen(y) OF
         2: begin           
-             if undefined(v) then v = INDGEN(dy[1]) ; just indexing 
+             if undefined(v) then begin
+              ; If variable has predefined labels, we go we LABL_PTR_1, otherwise we put indexes instead
+              ; The label must have the same number of dimentions as data
+              ; Next, the attibutes of the label variable will be defined based on exitance of LABL_PTR_1 attribute
+                                           
+              if (dy[1] eq dimen(metadata.labels) and ~array_equal(metadata.labels, '')) then begin
+                v = metadata.labels
+                attr = *vars.attrptr 
+                str_element,attr,'LABL_PTR_1',tplot_vars[i] + '_v',/add
+                vars.attrptr = ptr_new(attr)
+              endif else begin
+                v = INDGEN(dy[1]) ; just indexing
+              endelse
+             endif
              if ~undefined(x) then ds = {x:x,y:y,v:v} else ds = {y:y,v:v}
            end           
         3: begin
@@ -168,7 +198,7 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
             if ~undefined(x) then ds = {x:x,y:y} else ds = {y:y} ; default (assuming 1d)
            end
       ENDCASE
-        store_data, tplot_vars(i),data= ds ; save possible v(#) into the tplot variable
+        store_data, tplot_vars[i],data= ds ; save possible v(#) into the tplot variable
               
     endif else begin ; no y
       ; this case if tplot is 1d
@@ -182,29 +212,47 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
       if ~undefined(v1) then v = TEMPORARY(v1) 
       
       depend_1 = cdf_default_vars_structure()
-      depend_1.name = tplot_vars(i) + v_str
-      depend_1.datatype = idl2cdftype(v, validmax_out=vmax, validmin_out=vmin, fillval_out=vfill, format_out=format_out)
-      attr = *depend_1.attrptr    
-      str_element,attr,'FILLVAL',vfill,/add
-      str_element,attr,'VALIDMIN',vmin,/add
-      str_element,attr,'VALIDMAX',vmax,/add
-      attr.FORMAT = format_out
-      depend_1.attrptr = ptr_new(attr)         
-      str_element, *vars.attrptr,'DEPEND_1',depend_1.name,/add               
-     ; if v is 2d
-     if ndimen(v) gt 1 then begin
-       ; in this case first dimension of v is time (we don't check the actual number of records)
-       ; vars.attrptr = ptr_new(CREATE_STRUCT('DEPEND_0','Epoch',*vars.attrptr)) ; one line addition to the attribute structure             
-       str_element, *depend_1.attrptr,'DEPEND_0','Epoch',/add
-     endif else begin
-       ; if v is 1d then it does not change in time
-        depend_1.recvary = 0b
-     endelse       
+      depend_1.name = tplot_vars[i] + v_str
+      depend_1.datatype = idl2cdftype(v, validmax_out=vmax, validmin_out=vmin, fillval_out=vfill, format_out=format_out)      
+      attr = *depend_1.attrptr
+      
+      
+      ; Check if v is LABL_PTR_1
+      varsattr = *vars.attrptr
+      str_element, varsattr, 'LABL_PTR_1', success=s
+      if s then begin ; LABL_PTR_1 found! v is the label
+        if(attr.CATDESC  eq 'none') then attr.CATDESC = 'Label of ' + tplot_vars[i]
+        if(attr.FIELDNAM eq 'none') then attr.FIELDNAM = 'Label of ' + tplot_vars[i]
+        if(attr.VAR_TYPE eq 'undefined') then attr.VAR_TYPE = 'metadata'
+        depend_1.recvary = 0b ; metadata does not changhe with time
+        depend_1.attrptr = ptr_new(attr) ; save the atributes
+      endif else begin ; If not, then this vatiable should be processed as the supporting data variable
+                
+                        
+        str_element,attr,'FILLVAL',vfill,/add
+        str_element,attr,'VALIDMIN',vmin,/add
+        str_element,attr,'VALIDMAX',vmax,/add
+        attr.FORMAT = format_out
+       depend_1.attrptr = ptr_new(attr) ; save the atributes
+        ; Add metadata
+        if ((metadata.ztitle ne '') and (attr.LABLAXIS eq 'undefined')) then attr.LABLAXIS = metadata.ztitle
+
+        str_element, *vars.attrptr,'DEPEND_1',depend_1.name,/add
+        ; if v is 2d
+        if ndimen(v) gt 1 then begin
+          ; in this case first dimension of v is time (we don't check the actual number of records)
+          ; vars.attrptr = ptr_new(CREATE_STRUCT('DEPEND_0','Epoch',*vars.attrptr)) ; one line addition to the attribute structure
+          str_element, *depend_1.attrptr,'DEPEND_0','Epoch',/add
+        endif else begin
+          ; if v is 1d then it does not change in time
+          depend_1.recvary = 0b
+        endelse
+      endelse                  
     endif
     
     if ~undefined(v2) then begin
       depend_2 = cdf_default_vars_structure()
-      depend_2.name = tplot_vars(i) + '_v2'
+      depend_2.name = tplot_vars[i] + '_v2'
       depend_2.datatype = idl2cdftype(v2, validmax_out=vmax, validmin_out=vmin, fillval_out=vfill, format_out=format_out)
       attr = *depend_2.attrptr
       str_element,attr,'FILLVAL',vfill,/add
@@ -227,7 +275,7 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
     
     if ~undefined(v3) then begin
       depend_3 = cdf_default_vars_structure()
-      depend_3.name = tplot_vars(i) + '_v3'
+      depend_3.name = tplot_vars[i] + '_v3'
       depend_3.datatype = idl2cdftype(v3, validmax_out=vmax, validmin_out=vmin, fillval_out=vfill, format_out=format_out)
       attr = *depend_3.attrptr
       str_element,attr,'FILLVAL',vfill,/add

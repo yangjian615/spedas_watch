@@ -33,8 +33,8 @@
 ;         click 'Allow' for private networks)
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-02-16 12:57:22 -0800 (Fri, 16 Feb 2018) $
-; $LastChangedRevision: 24730 $
+; $LastChangedDate: 2018-02-26 13:07:49 -0800 (Mon, 26 Feb 2018) $
+; $LastChangedRevision: 24787 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/tplot2ap/tplot2ap.pro $
 ;-
 
@@ -57,7 +57,12 @@ pro tplot2ap, tvars, port=port, connect_timeout=connect_timeout, read_timeout=re
   endif
   
   ; allow the user to input tplot #s instead of the full names
-  tvars = tnames(tvars)
+  for tvar_idx=0, n_elements(tvars)-1 do begin
+    tvars_test = tnames(tvars[tvar_idx])
+    append_array, tvars_input, tvars_test
+  endfor
+  
+  if ~undefined(tvars_input) then tvars = tvars_input
   
   ; make sure to create the local data directory if it doesn't already exist
   dir_exists = file_test(local_data_dir, /directory)

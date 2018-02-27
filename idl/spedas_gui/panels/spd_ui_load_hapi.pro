@@ -7,9 +7,9 @@
 ; Load data from a HAPI server
 ;
 ;
-;$LastChangedBy: nikos $
-;$LastChangedDate: 2018-01-23 16:14:05 -0800 (Tue, 23 Jan 2018) $
-;$LastChangedRevision: 24570 $
+;$LastChangedBy: egrimes $
+;$LastChangedDate: 2018-02-26 11:37:59 -0800 (Mon, 26 Feb 2018) $
+;$LastChangedRevision: 24779 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/spedas_gui/panels/spd_ui_load_hapi.pro $
 ;-
 
@@ -192,7 +192,7 @@ Pro spd_ui_load_hapi, gui_id, historywin, statusbar,timeRangeObj=timeRangeObj
   ;Select hapi server
   selectServerLabel = widget_label(upLeftBase, value='1. Select HAPI server', /align_top)
   hapi_servers=['http://datashop.elasticbeanstalk.com/hapi','http://tsds.org/get/SSCWeb/hapi', $
-    'http://mag.gmu.edu/TestData/hapi','https://voyager.gsfc.nasa.gov/hapiproto','http://jfaden.net/HapiServerDemo/hapi']
+    'http://mag.gmu.edu/TestData/hapi','https://voyager.gsfc.nasa.gov/hapiproto']
   serverList = widget_list(upLeftBase, value=hapi_servers, /align_top, scr_xsize = 250, scr_ysize = 100, uvalue='SERVERLIST', uname='SERVERLIST')
   selectServerLabelEmpty11 = widget_label(upLeftBase, value=' ', /align_top, scr_xsize = 250)
   selectServerLabel = widget_label(upLeftBase, value='Selected HAPI server:', /align_top, scr_xsize = 250)

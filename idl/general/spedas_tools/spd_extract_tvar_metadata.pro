@@ -12,8 +12,8 @@
 ;         - dlimits.cdf structure (stored in the CDF file)
 ;
 ; $LastChangedBy: egrimes $
-; $LastChangedDate: 2018-02-23 11:52:33 -0800 (Fri, 23 Feb 2018) $
-; $LastChangedRevision: 24765 $
+; $LastChangedDate: 2018-02-26 08:55:30 -0800 (Mon, 26 Feb 2018) $
+; $LastChangedRevision: 24777 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/spedas_tools/spd_extract_tvar_metadata.pro $
 ;-
 
@@ -28,8 +28,11 @@ function spd_extract_tvar_metadata, tvar
     
     get_data, tvar, dlimits=dl, limits=l
     if is_struct(dl) then begin
+      ; check that the CDF structure exists
+      str_element, dl, 'cdf', success=s
+      
       ; first try the CDF info
-      if is_struct(dl.cdf.vatt) then begin
+      if s && is_struct(dl.cdf.vatt) then begin
         str_element, dl.cdf.vatt[0], 'catdesc', success=s
         if s then out.catdesc = dl.cdf.vatt[0].catdesc
         
