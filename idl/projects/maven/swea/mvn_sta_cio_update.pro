@@ -14,31 +14,21 @@
 ;                      specified, then the earliest and latest times are used.
 ;                      Fractional days (hh:mm:ss) are ignored.
 ;
-;       ndays:         Number of dates to process.  Only used if TRANGE has
-;                      only one element.  Default = 1.
-;
-;       noguff:        Force update of the shape parameter elements.
-;
-;       parng:         Pitch angle range for shape parameter elements.
-;                        1 = 0-30 deg (default); 2 = 0-45 deg ; 3 = 0-60 deg
-;
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2017-10-06 09:36:43 -0700 (Fri, 06 Oct 2017) $
-; $LastChangedRevision: 24120 $
+; $LastChangedDate: 2018-02-27 18:09:20 -0800 (Tue, 27 Feb 2018) $
+; $LastChangedRevision: 24798 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_cio_update.pro $
 ;
 ;CREATED BY:    David L. Mitchell
 ;FILE: mvn_sta_cio_update.pro
 ;-
-pro mvn_sta_cio_update, trange, ndays, noguff=noguff, parng=parng
+pro mvn_sta_cio_update, trange, ndays
 
   dpath = root_data_dir() + 'maven/data/sci/sta/l3/cio/'
   froot = 'mvn_sta_cio_'
   dt = 86400D  ; process one day at a time
-  noguff = keyword_set(noguff)
-  if not keyword_set(parng) then parng = 1
 
   case n_elements(trange) of
      0  :  begin
@@ -70,41 +60,46 @@ pro mvn_sta_cio_update, trange, ndays, noguff=noguff, parng=parng
     mm = strmid(tstring,5,2)
     dd = strmid(tstring,8,2)
     opath = dpath + yyyy + '/' + mm + '/'
-    file_mkdir2, opath, mode='0774'o  ; create directory structure, if needed
-    ofile = opath + froot + yyyy + mm + dd + '.sav'
+    ofile = opath + froot + yyyy + mm + dd + '_v02.sav'
 
     finfo = file_info(ofile)
     if (finfo.exists) then begin
+      mvn_swe_spice_init, /force, /list
+      maven_orbit_tplot, /load
       restore, filename=ofile
-      str_element, cio_h, 'flux40', success=already_done
-      if (noguff or ~already_done) then begin
-        dt = cio_h[1].time - cio_h[0].time
-        mvn_swe_shape_restore, parng=parng, result=shape
-        if (size(shape,/type) eq 8) then begin
 
-          shp = smooth_in_time(transpose(shape.shape[0:1,parng]), shape.t, dt)
-          cio_h.shape[0] = interpol(shp[*,0], shape.t, cio_h.time)
-          cio_h.shape[1] = interpol(shp[*,1], shape.t, cio_h.time)
-          cio_o1.shape = cio_h.shape
-          cio_o2.shape = cio_h.shape
+; Elevation angle of the Sun in the APP frame
+;   0 deg = i-j plane ; +90 deg = +k
+;   cold-ion configuration is ~0 deg
 
-          f40 = smooth_in_time(shape.f40, shape.t, dt)
-          flux40 = interpol(f40, shape.t, cio_h.time)/1.e5
-          str_element, cio_h, 'flux40', flux40, /add
-          str_element, cio_o1, 'flux40', flux40, /add
-          str_element, cio_o2, 'flux40', flux40, /add
+      mvn_sundir, frame='app', /polar
+      get_data,'Sun_APP_The',data=sthe_app,index=i
+      if (i gt 0) then begin
+        cio_h.sthe_app = spline(sthe_app.x, sthe_app.y, time)
+        cio_o1.sthe_app = cio_h.sthe_app
+        cio_o2.sthe_app = cio_h.sthe_app
+      endif else print,'MVN_STA_CIO_UPDATE: Failed to get Sun (APP) direction!'
 
-          frat40 = smooth_in_time(shape.fratio_a2t[0,parng], shape.t, dt)
-          ratio = interpol(frat40, shape.t, cio_h.time)
-          str_element, cio_h, 'ratio', ratio, /add
-          str_element, cio_o1, 'ratio', ratio, /add
-          str_element, cio_o2, 'ratio', ratio, /add
+; Elevation angle of MSO RAM in the APP frame
+;   0 deg = i-j plane ; +90 deg = +k
+;   cold-ion configuration is ~0 deg
 
-          save, cio_h, cio_o1, cio_o2, filename=ofile
-        endif else print,'Could not restore shape parameter.'
-      endif else print,'Save file already up to date: ',ofile
+      mvn_ramdir, /mso, frame='app', /polar
+      get_data,'V_sc_APP_The',data=rthe_app,index=i
+      if (i gt 0) then begin
+        cio_h.rthe_app = spline(rthe_app.x, rthe_app.y, time)
+        cio_o1.rthe_app = cio_h.rthe_app
+        cio_o2.rthe_app = cio_h.rthe_app
+      endif else print,'MVN_STA_CIO_UPDATE: Failed to get MSO RAM direction!'
+
+; Save the updated structures
+
+      save, cio_h, cio_o1, cio_o2, file=ofile
 
     endif else print,'Save file does not exist: ',ofile
+
+    delta_t = (systime(/sec) - timer_start)/60D
+    print, delta_t, format='("Elapsed time: ",f7.2," min")'
   endfor
 
   return
