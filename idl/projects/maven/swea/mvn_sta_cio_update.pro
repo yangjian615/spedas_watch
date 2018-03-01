@@ -17,8 +17,8 @@
 ;KEYWORDS:
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2018-02-27 18:09:20 -0800 (Tue, 27 Feb 2018) $
-; $LastChangedRevision: 24798 $
+; $LastChangedDate: 2018-02-27 18:37:52 -0800 (Tue, 27 Feb 2018) $
+; $LastChangedRevision: 24801 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_cio_update.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -73,9 +73,9 @@ pro mvn_sta_cio_update, trange, ndays
 ;   cold-ion configuration is ~0 deg
 
       mvn_sundir, frame='app', /polar
-      get_data,'Sun_APP_The',data=sthe_app,index=i
-      if (i gt 0) then begin
-        cio_h.sthe_app = spline(sthe_app.x, sthe_app.y, time)
+      get_data,'Sun_APP_The',data=sthe_app,index=j
+      if (j gt 0) then begin
+        cio_h.sthe_app = spline(sthe_app.x, sthe_app.y, cio_h.time)
         cio_o1.sthe_app = cio_h.sthe_app
         cio_o2.sthe_app = cio_h.sthe_app
       endif else print,'MVN_STA_CIO_UPDATE: Failed to get Sun (APP) direction!'
@@ -85,9 +85,9 @@ pro mvn_sta_cio_update, trange, ndays
 ;   cold-ion configuration is ~0 deg
 
       mvn_ramdir, /mso, frame='app', /polar
-      get_data,'V_sc_APP_The',data=rthe_app,index=i
-      if (i gt 0) then begin
-        cio_h.rthe_app = spline(rthe_app.x, rthe_app.y, time)
+      get_data,'V_sc_APP_The',data=rthe_app,index=j
+      if (j gt 0) then begin
+        cio_h.rthe_app = spline(rthe_app.x, rthe_app.y, cio_h.time)
         cio_o1.rthe_app = cio_h.rthe_app
         cio_o2.rthe_app = cio_h.rthe_app
       endif else print,'MVN_STA_CIO_UPDATE: Failed to get MSO RAM direction!'
@@ -100,6 +100,7 @@ pro mvn_sta_cio_update, trange, ndays
 
     delta_t = (systime(/sec) - timer_start)/60D
     print, delta_t, format='("Elapsed time: ",f7.2," min")'
+
   endfor
 
   return

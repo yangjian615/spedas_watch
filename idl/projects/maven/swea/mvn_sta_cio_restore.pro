@@ -27,8 +27,8 @@
 ;       SUCCESS:       Success flag.
 ;
 ; $LastChangedBy: dmitchell $
-; $LastChangedDate: 2018-02-27 17:56:56 -0800 (Tue, 27 Feb 2018) $
-; $LastChangedRevision: 24796 $
+; $LastChangedDate: 2018-02-28 11:18:56 -0800 (Wed, 28 Feb 2018) $
+; $LastChangedRevision: 24804 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/maven/swea/mvn_sta_cio_restore.pro $
 ;
 ;CREATED BY:    David L. Mitchell
@@ -90,53 +90,53 @@ pro mvn_sta_cio_restore, trange, loadonly=loadonly, result_h=result_h, $
     if (first) then begin
       restore, filename=file[i]
       if (size(cio_h,/type) eq 8) then begin
-        cio_h  = temporary(cio_h)
-        cio_o1 = temporary(cio_o1)
-        cio_o2 = temporary(cio_o2)
+        result_h  = temporary(cio_h)
+        result_o1 = temporary(cio_o1)
+        result_o2 = temporary(cio_o2)
         first = 0
       endif else print,"No data were restored."
     endif else begin
       restore, filename=file[i]
       if (size(cio_h,/type) eq 8) then begin
-        cio_h  = [temporary(cio_h),  temporary(cio_h)]
-        cio_o1 = [temporary(cio_o1), temporary(cio_o1)]
-        cio_o2 = [temporary(cio_o2), temporary(cio_o2)]
+        result_h  = [temporary(result_h),  temporary(cio_h)]
+        result_o1 = [temporary(result_o1), temporary(cio_o1)]
+        result_o2 = [temporary(result_o2), temporary(cio_o2)]
       endif else print,"No data were restored."
     endelse
   endfor
 
-  npts = n_elements(cio_h.time)
+  npts = n_elements(result_h.time)
 
 ; Trim to the requested time range
 
-  indx = where((cio_h.time ge tmin) and (cio_h.time le tmax), mpts)
+  indx = where((result_h.time ge tmin) and (result_h.time le tmax), mpts)
 
   if (mpts eq 0L) then begin
     print,"No data within specified time range!"
-    cio_h = 0
-    cio_o1 = 0
-    cio_o2 = 0
+    result_h = 0
+    result_o1 = 0
+    result_o2 = 0
     success = 0
     return
   endif
 
   if (mpts lt npts) then begin
-    cio_h  = temporary(cio_h[indx])
-    cio_o1 = temporary(cio_o1[indx])
-    cio_o2 = temporary(cio_o2[indx])
+    cio_h  = temporary(result_h[indx])
+    cio_o1 = temporary(result_o1[indx])
+    cio_o2 = temporary(result_o2[indx])
     npts = mpts
   endif
+
+; Store results in common block
+
+  cio_h = result_h
+  cio_o1 = result_o1
+  cio_o2 = result_o2
+  success = 1
 
 ; Make tplot variables
 
   if keyword_set(doplot) then mvn_sta_cio_tplot
-
-; Make copies of the results
-
-  result_h = cio_h
-  result_o1 = cio_o1
-  result_o2 = cio_o2
-  success = 1
 
   return
 
