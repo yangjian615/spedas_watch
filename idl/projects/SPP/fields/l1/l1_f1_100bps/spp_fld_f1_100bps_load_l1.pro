@@ -133,7 +133,7 @@ pro spp_fld_f1_100bps_load_l1, file, prefix = prefix
       name = f1_100bps_names[i]
 
       get_data, name, alim = alim
-      
+
       options, name, 'ynozero', 1
       ;options, name, 'horizontal_ytitle', 1
       ;options, name, 'colors', [6]
@@ -156,5 +156,7 @@ pro spp_fld_f1_100bps_load_l1, file, prefix = prefix
     endfor
 
   endif
+
+  options, '*f1_100*', 'datagap', 30.
 
 end

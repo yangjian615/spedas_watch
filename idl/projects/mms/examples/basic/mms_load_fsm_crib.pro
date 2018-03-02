@@ -7,10 +7,10 @@
 ;
 ;
 ;
-; $LastChangedBy:  $
-; $LastChangedDate:  $
-; $LastChangedRevision:  $
-; $URL:  $
+; $LastChangedBy: egrimes $
+; $LastChangedDate: 2018-03-01 15:04:33 -0800 (Thu, 01 Mar 2018) $
+; $LastChangedRevision: 24816 $
+; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/basic/mms_load_fsm_crib.pro $
 ;-
 
 

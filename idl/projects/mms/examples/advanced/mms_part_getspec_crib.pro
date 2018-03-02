@@ -8,8 +8,8 @@
 ;  spectrograms and moments from level 2 MMS HPCA and FPI distributions.
 ;
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2018-01-19 15:28:11 -0800 (Fri, 19 Jan 2018) $
-;$LastChangedRevision: 24556 $
+;$LastChangedDate: 2018-03-01 13:55:24 -0800 (Thu, 01 Mar 2018) $
+;$LastChangedRevision: 24815 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/examples/advanced/mms_part_getspec_crib.pro $
 ;-
 
@@ -64,7 +64,7 @@ stop
 ;clear data
 del_data,'*'
 
-timespan, '2015-10-16/13:02:30', 5, /min
+timespan, '2016-10-16/13:09', 2, /min
 
 mms_part_getspec, instrument='hpca', probe='1', species='hplus', data_rate='brst', level='l2', outputs=['phi', 'theta', 'energy', 'pa', 'gyro', 'moments']
 
