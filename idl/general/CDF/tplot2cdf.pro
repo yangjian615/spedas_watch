@@ -31,13 +31,14 @@
 ;  Alexander Drozdov
 ;   
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-12 12:13:23 -0800 (Mon, 12 Feb 2018) $
-; $LastChangedRevision: 24690 $
+; $LastChangedDate: 2018-03-05 11:27:44 -0800 (Mon, 05 Mar 2018) $
+; $LastChangedRevision: 24829 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf.pro $
 ;-
 
 pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attributes=g_attributes_custom,tt2000=tt2000, default_cdf_structure=default_cdf_structure, compress_cdf=compress_cdf 
   
+  compile_opt idl2
   FORWARD_FUNCTION cdf_default_inq_structure, cdf_default_g_attributes_structure  
   RESOLVE_ROUTINE, 'cdf_default_cdfi_structure', /IS_FUNCTION, /NO_RECOMPILE
    
@@ -77,7 +78,7 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
   for i =0,N_ELEMENTS(tplot_vars)-1 do begin    
     ; add default attributes. 
     ; this option will not overwrite existing fields
-    tname = tplot_vars(i)
+    tname = tplot_vars[i]
     if KEYWORD_SET(default_cdf_structure) then tplot_add_cdf_structure,tname,tt2000=tt2000
     
     get_data,tname,data=d,alimit=s
@@ -149,7 +150,7 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
       
       InArray = 0 ; flag of having Epoch in array EpochVARS  
       for j=0,N_ELEMENTS(EpochVARS)-1 do begin
-        if ARRAY_EQUAL(*EpochVARS[j].DATAPTR, *EpochVAR.DATAPTR) then begin
+        if ARRAY_EQUAL(*EpochVARS[j].DATAPTR, *EpochVAR.DATAPTR, /QUIET) then begin
           InArray = 1
           EpochName = EpochVARS[j].NAME
         endif
@@ -176,7 +177,7 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
      
      InArray = 0
      for j=0,N_ELEMENTS(SupportVARS1)-1 do begin
-       if ARRAY_EQUAL(*SupportVARS1[j].DATAPTR, *SupportVAR.DATAPTR) then begin
+       if ARRAY_EQUAL(*SupportVARS1[j].DATAPTR, *SupportVAR.DATAPTR, /QUIET) then begin
          InArray = 1
          SupportName1 = SupportVARS1[j].NAME
        endif
@@ -201,7 +202,7 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
 
       InArray = 0
       for j=0,N_ELEMENTS(SupportVARS2)-1 do begin
-        if ARRAY_EQUAL(*SupportVARS2[j].DATAPTR, *SupportVAR.DATAPTR) then begin
+        if ARRAY_EQUAL(*SupportVARS2[j].DATAPTR, *SupportVAR.DATAPTR, /QUIET) then begin
           InArray = 1
           SupportName2 = SupportVARS2[j].NAME
         endif
@@ -226,7 +227,7 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
 
       InArray = 0
       for j=0,N_ELEMENTS(SupportVARS3)-1 do begin
-        if ARRAY_EQUAL(*SupportVARS3[j].DATAPTR, *SupportVAR.DATAPTR) then begin
+        if ARRAY_EQUAL(*SupportVARS3[j].DATAPTR, *SupportVAR.DATAPTR, /QUIET) then begin
           InArray = 1
           SupportName3 = SupportVARS3[j].NAME
         endif

@@ -54,13 +54,14 @@
 ;  Alexander Drozdov
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-26 12:50:29 -0800 (Mon, 26 Feb 2018) $
-; $LastChangedRevision: 24780 $
+; $LastChangedDate: 2018-03-05 11:27:44 -0800 (Mon, 05 Mar 2018) $
+; $LastChangedRevision: 24829 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot_add_cdf_structure.pro $
 ;-
 
 pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
 
+  compile_opt idl2
   ; resolve dependences
   FORWARD_FUNCTION cdf_default_vars_structure, cdf_default_vars_structure
   RESOLVE_ROUTINE, 'cdf_default_cdfi_structure', /IS_FUNCTION, /NO_RECOMPILE
@@ -303,6 +304,6 @@ pro tplot_add_cdf_structure, tplot_vars, tt2000=tt2000, new=new
     if ~undefined(depend_1) and ~array_contains(t, 'DEPEND_1') then cdf_struct = CREATE_STRUCT(cdf_struct, {DEPEND_1:depend_1})    
     if ~undefined(depend_2) and ~array_contains(t, 'DEPEND_2') then cdf_struct = CREATE_STRUCT(cdf_struct, {DEPEND_2:depend_2})
     if ~undefined(depend_3) and ~array_contains(t, 'DEPEND_3') then cdf_struct = CREATE_STRUCT(cdf_struct, {DEPEND_3:depend_3})
-    options,tplot_vars(i),'CDF',cdf_struct
+    options,tplot_vars[i],'CDF',cdf_struct
   endfor
 end
