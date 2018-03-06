@@ -1,12 +1,16 @@
 ;+
-;
-; Warning: this file is under development!
-;
-; Number of functions that generate default structured for CDF files 
-;
+;PURPOSE: 
+; Number of functions that generate default structures for CDF files
+; This file is designed for developers
+; 
+; Please use TPLOT_ADD_CDF_STRUCTURE instead
+; 
+;CREATED BY:
+;  Alexander Drozdov
+; 
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-01-23 20:24:48 -0800 (Tue, 23 Jan 2018) $
-; $LastChangedRevision: 24573 $
+; $LastChangedDate: 2018-02-12 12:13:23 -0800 (Mon, 12 Feb 2018) $
+; $LastChangedRevision: 24690 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/cdf_default_cdfi_structure.pro $
 ;-
 
@@ -77,7 +81,7 @@ function cdf_default_vars_structure
     NUMELEM:0,$
     RECVARY:1b,$   ; is the variable time varying 
     NUMREC:01,$
-    NDIMEN:0,$
+    NDIMEN:0,$     ; number of dimentions
     D:lonarr(6),$  ; potential potential variable size
     DATAPTR:ptr_new(),$
     ATTRPTR:ptr_new(cdf_default_attr_structure())$

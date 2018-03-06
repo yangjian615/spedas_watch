@@ -29,40 +29,10 @@
 ;     Graduate School of Science,The University of Tokyo (keika at eps.u-tokyo.ac.jp)
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-12-05 22:09:27 -0800 (Tue, 05 Dec 2017) $
-; $LastChangedRevision: 24403 $
+; $LastChangedDate: 2018-01-31 13:01:38 -0800 (Wed, 31 Jan 2018) $
+; $LastChangedRevision: 24615 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/erg/satellite/erg/orb/erg_load_orb.pro $
 ;-
-pro remove_duplicated_tframe, tvars 
-  
-  if n_params() ne 1 then return 
-  tvars = tnames(tvars) 
-  if strlen(tvars[0]) lt 1 then return 
-  
-  for i=0L, n_elements(tvars)-1 do begin
-    tvar = tvars[i] 
-    
-    get_data, tvar, time, data, dl=dl, lim=lim 
-    n = n_elements(time) 
-    dt = [ time[1:(n-1)], time[n-1]+1 ] - time[0:(n-1)] 
-    idx = where( abs(dt) gt 0d, n1 ) 
-    
-    if n ne n1 then begin
-      newtime = time[idx] 
-      if size(data,/n_dim) eq 1 then begin
-        newdata = data[idx]
-      endif else newdata = data[ idx, *] 
-      store_data, tvar, data={x:newtime, y:newdata},dl=dl, lim=lim
-    endif
-    
-    
-  endfor
-  
-  
-  
-  return
-end
-
 
 
 pro erg_load_orb, $
@@ -120,7 +90,7 @@ pro erg_load_orb, $
 		store_data, tvar_pos, data=data, dlim=dlim
      
     if  total(strlen(tnames('erg_orb_l2_*')) gt 1) eq 19 then begin
-      remove_duplicated_tframe, tnames('erg_orb_l2_*') 
+      erg_remove_duplicated_tframe, tnames('erg_orb_l2_*') 
 	
      ; - - - - OPTIONS FOR TPLOT VARIABLES - - - -
      options, prefix+'pos_'+['gse','gsm','sm'], 'labels', ['X','Y','Z']

@@ -7,7 +7,7 @@
 ;
 ;HISTORY:
 ;$LastChangedBy: nikos $
-;$LastChangedDate: 2017-12-07 11:13:57 -0800 (Thu, 07 Dec 2017) $
+;$LastChangedDate: 2018-02-22 11:09:13 -0800 (Thu, 22 Feb 2018) $
 ; 
 ;Modifications:
 ;A. Shinbori, 12/05/2010
@@ -37,8 +37,6 @@ pro iug_ui_load_data_load_pro,    $
                       overwrite_selections=overwrite_selections 
                          
   compile_opt hidden,idl2
-
-  resolve_routine, 'iugonet_missing', /compile_full_file, /either
 
   iug_init
   loaded = 0
@@ -179,8 +177,12 @@ pro iug_ui_load_data_load_pro,    $
       ;----- geomagnetic field fluxgate ----;
       'geomagnetic_field_fluxgate' : begin
           case datatype of
+              'icswse' : begin
+                  iug_load_gmag_icswse_iaga, trange = timeRange, site = site_or_param, resolution = parameters
+                  par_names=tnames('kyumag_mag_*') 
+              end
               'magdas#' : begin
-                  erg_load_gmag_magdas_1sec, range = timeRange, site = site_or_param
+                  erg_load_gmag_magdas_1sec, trange = timeRange, site = site_or_param
                   par_names=tnames('magdas_mag_*') 
               end 
               '210mm#' : begin

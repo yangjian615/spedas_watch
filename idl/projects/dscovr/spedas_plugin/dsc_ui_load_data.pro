@@ -8,8 +8,8 @@
 ;CREATED BY: Ayris Narock (ADNET/GSFC) 2017
 ;
 ; $LastChangedBy: nikos $
-; $LastChangedDate: 2017-11-20 12:45:47 -0800 (Mon, 20 Nov 2017) $
-; $LastChangedRevision: 24321 $
+; $LastChangedDate: 2018-02-26 15:42:24 -0800 (Mon, 26 Feb 2018) $
+; $LastChangedRevision: 24788 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/dscovr/spedas_plugin/dsc_ui_load_data.pro $
 ;--------------------------------------------------------------------------------
 pro dsc_ui_load_data_event,event
@@ -236,14 +236,14 @@ pro dsc_ui_load_data,tabid,loadedData,historyWin,statusBar,treeCopyPtr,timeRange
 	
 	clearDataButton = widget_button(clearDataBase,value='Delete All Data',uvalue='CLEARDATA',/align_center,ToolTip='Deletes all loaded data')
 	
-	startt_def = '2016-06-04/00:00:00'
-	endt_def = '2016-06-05/00:00:00'
-	if obj_valid(timeRangeObj) && (obj_class(timeRangeObj) eq 'SPD_UI_TIME_RANGE') then begin
-		res = timeRangeObj.setStartTime(startt_def)
-		res = timeRangeObj.setEndTime(endt_def)
-	endif else begin
-		timeRangeObj = Obj_New("SPD_UI_TIME_RANGE",startTime=startt_def,endTime=endt_def)
-	endelse
+	;startt_def = '2016-06-04/00:00:00'
+	;endt_def = '2016-06-05/00:00:00'
+	;if obj_valid(timeRangeObj) && (obj_class(timeRangeObj) eq 'SPD_UI_TIME_RANGE') then begin
+	;	res = timeRangeObj.setStartTime(startt_def)
+	;	res = timeRangeObj.setEndTime(endt_def)
+	;endif else begin
+	;	timeRangeObj = Obj_New("SPD_UI_TIME_RANGE",startTime=startt_def,endTime=endt_def)
+	;endelse
 	
  timeWidget = spd_ui_time_widget( $
  	selectionBase,$

@@ -1,0 +1,68 @@
+<?xml version ="1.0" encoding ="UTF-8"?>
+
+<items>
+
+  <tmlib
+  	tmlib_event = 'sc_hk_high'
+  	>
+  </tmlib>
+
+  <cdf_global
+      Title = "PSP SC Housekeeping High"
+      Descriptor = "PSP Housekeeping"
+      Data_type = "Spacecraft housekeeping data"
+      Data_version = "0"
+      TEXT = "PSP Spacecraft Housekeeping Data"
+      Mods = "Revision 0"
+      Logical_source = "SPP_FLD_SC_HK_HIGH"
+      Logical_source_description = "PSP Spacecraft Housekeeping Data"
+      Dependencies = "None"
+      >
+  </cdf_global>
+
+  <cdf_var
+      name = "PDU_MAIN_BUS_A_VOLT"
+      type = "double"
+      raw = "PDU_MAIN_BUS_A_VOLT_raw">
+    <cdf_att
+        FIELDNAM = "PDU_MAIN_BUS_A_VOLT"
+        FORMAT = "F15.3"
+        LABLAXIS = "PDU_MAIN_BUS_A_VOLT"
+        DATA_TYPE = "CDF_DOUBLE"
+        VAR_TYPE = "data"
+        FILLVAL = "-1.0E31"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0.257"
+        VALIDMAX = "49.905"
+        SCALEMIN = "0"
+        SCALEMAX = "50"
+        UNITS = "V"
+        CATDESC = "PDU Main Bus Voltage A"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+  <cdf_var
+      name = "PDU_MAIN_BUS_B_VOLT"
+      type = "double"
+      raw = "PDU_MAIN_BUS_B_VOLT_raw">
+    <cdf_att
+        FIELDNAM = "PDU_MAIN_BUS_B_VOLT"
+        FORMAT = "F15.3"
+        LABLAXIS = "PDU_MAIN_BUS_B_VOLT"
+        DATA_TYPE = "CDF_DOUBLE"
+        VAR_TYPE = "data"
+        FILLVAL = "-1.0E31"
+        DISPLAY_TYPE = "time_series"
+        VALIDMIN = "0.168"
+        VALIDMAX = "49.940"
+        SCALEMIN = "0"
+        SCALEMAX = "50"
+        UNITS = "V"
+        CATDESC = "PDU Main Bus Voltage B"
+        DEPEND_0 = "epoch">
+    </cdf_att>
+  </cdf_var>
+
+
+</items>

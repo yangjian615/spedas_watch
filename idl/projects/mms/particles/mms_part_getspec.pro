@@ -32,8 +32,8 @@
 ;         Updated to automatically center HPCA measurements if not specified already, 18Oct2017
 ;         
 ;$LastChangedBy: egrimes $
-;$LastChangedDate: 2018-01-24 10:52:02 -0800 (Wed, 24 Jan 2018) $
-;$LastChangedRevision: 24577 $
+;$LastChangedDate: 2018-02-22 11:35:31 -0800 (Thu, 22 Feb 2018) $
+;$LastChangedRevision: 24759 $
 ;$URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/projects/mms/particles/mms_part_getspec.pro $
 ;-
 
@@ -80,6 +80,7 @@ pro mms_part_getspec, probes=probes, $
                       add_ram_dir=add_ram_dir, $
                       dir_interval=dir_interval, $
                       
+                      spdf=spdf, $
                       _extra=ex 
 
     compile_opt idl2
@@ -117,6 +118,14 @@ pro mms_part_getspec, probes=probes, $
     if ~keyword_set(mag_suffix) then mag_suffix = ''
     if ~keyword_set(dir_interval) then dir_interval = 60d 
     
+    if keyword_set(subtract_error) && instrument eq 'hpca' then begin
+      dprint, dlevel = 0, 'Error, /subtract_error keyword currently only valid for FPI data. No disterr is being subtracted.'
+      stop
+    endif
+    
+    ; prevents concatenation from previous calls
+    undefine, tplotnames
+    
     ; HPCA is required to be at the center of the accumulation interval
     if instrument eq 'hpca' and ~keyword_set(center_measurement) then center_measurement = 1
     
@@ -128,31 +137,31 @@ pro mms_part_getspec, probes=probes, $
     endfor
 
     ; load state data (needed for coordinate transforms and field aligned coordinates)
-    if defined(state_to_load) then mms_load_state, probes=state_to_load, trange=support_trange
+    if defined(state_to_load) then mms_load_state, probes=state_to_load, trange=support_trange, spdf=spdf
 
     ; load magnetic field data
-    if defined(fgm_to_load) then mms_load_fgm, probes=fgm_to_load, trange=support_trange, level='l2', suffix=mag_suffix, /time_clip
+    if defined(fgm_to_load) then mms_load_fgm, probes=fgm_to_load, trange=support_trange, level='l2', suffix=mag_suffix, spdf=spdf, /time_clip
 
     if instrument eq 'fpi' then begin
         mms_load_fpi, probes=probes, trange=trange, data_rate=data_rate, level=level, $
             datatype='d'+species+'s-dist', /time_clip, center_measurement=center_measurement, $
             cdf_version=cdf_version, latest_version=latest_version, major_version=major_version, $
-            min_version=min_version
+            min_version=min_version, spdf=spdf
             
         ; load the bulk velocity if the user requested to subtract it
         if keyword_set(subtract_bulk) then mms_load_fpi, probes=probes, trange=trange, data_rate=data_rate, level=level, $
-            datatype='d'+species+'s-moms'
+            datatype='d'+species+'s-moms', spdf=spdf
     endif else if instrument eq 'hpca' then begin
         mms_load_hpca, probes=probes, trange=trange, data_rate=data_rate, level=level, $
             datatype='ion', center_measurement=center_measurement,  $
             cdf_version=cdf_version, latest_version=latest_version, major_version=major_version, $
-            min_version=min_version
+            min_version=min_version, spdf=spdf
         
         ; load the bulk velocity if the user requested to subtract it
         if keyword_set(subtract_bulk) then mms_load_hpca, probes=probes, trange=trange, $
-            data_rate=data_rate, level=level, datatype='moments'
+            data_rate=data_rate, level=level, datatype='moments', spdf=spdf
     endif
-
+    
     for probe_idx = 0, n_elements(probes)-1 do begin
         bname = 'mms'+probes[probe_idx]+'_fgm_b_dmpa_srvy_l2_bvec'+mag_suffix
         pos_name = 'mms'+probes[probe_idx]+ '_defeph_pos'
@@ -171,10 +180,10 @@ pro mms_part_getspec, probes=probes, $
             outputs=outputs, suffix=suffix, datagap=datagap, subtract_bulk=subtract_bulk, $
             tplotnames=tplotnames_thisprobe, subtract_error=subtract_error, $
             error_variable=error_variable, _extra=ex
-            
+
         if undefined(tplotnames_thisprobe) then continue ; nothing created by mms_part_products
         append_array, tplotnames, tplotnames_thisprobe
-        
+
         if keyword_set(add_ram_dir) then begin
             ; average the velocity data before adding to the plot
             avg_data, 'mms'+probes[probe_idx]+'_mec_v_gse', dir_interval
