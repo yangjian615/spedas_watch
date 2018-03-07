@@ -6,8 +6,8 @@
 ;     IDL> mgunit, 'spd_tplot_add_cdf_structure_ut'
 ;
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-02-09 16:47:26 -0800 (Fri, 09 Feb 2018) $
-; $LastChangedRevision: 24685 $
+; $LastChangedDate: 2018-03-05 19:24:23 -0800 (Mon, 05 Mar 2018) $
+; $LastChangedRevision: 24832 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/qa_tools/mgunit/spd_tplot_add_cdf_structure_ut__define.pro $
 ;-
 
@@ -118,6 +118,21 @@ function spd_tplot_add_cdf_structure_ut::test_new
     assert, s.CDF.VARS.DATATYPE eq 'CDF_TIME_TT2000', 'CDF structure was not recreated'
   return, 1
 end
+
+function spd_tplot_add_cdf_structure_ut::test_labl_ptr_1
+  metadata = {units:'#', labels:['x','y','z'], ytitle:'3 components'}
+  store_data, 'test_labl_ptr_1', data={x: time_double('2018-01-01')+[1, 2, 3], y: [[5,5,5],[6,6,6],[7,7,7]]}, dlimits=metadata
+  tplot_add_cdf_structure, 'test_labl_ptr_1' 
+  get_data, 'test_labl_ptr_1', alim=s, data=d
+
+  assert, ARRAY_EQUAL(d.v, metadata.labels, /QUIET), 'Problem with v variable'  
+  assert, ~undefined((*s.CDF.VARS.ATTRPTR).LABL_PTR_1), 'Problem with LABL_PTR_1'
+  assert, (*s.CDF.VARS.ATTRPTR).UNITS eq metadata.units, 'Problem with units in attrptr'
+  assert, (*s.CDF.VARS.ATTRPTR).LABLAXIS eq metadata.ytitle, 'Problem with ytitle in attrptr'
+  return, 1
+end
+
+
 
 pro spd_tplot_add_cdf_structure_ut::setup
   del_data, '*'
