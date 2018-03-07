@@ -31,8 +31,8 @@
 ;  Alexander Drozdov
 ;   
 ; $LastChangedBy: adrozdov $
-; $LastChangedDate: 2018-03-05 11:27:44 -0800 (Mon, 05 Mar 2018) $
-; $LastChangedRevision: 24829 $
+; $LastChangedDate: 2018-03-05 19:22:19 -0800 (Mon, 05 Mar 2018) $
+; $LastChangedRevision: 24831 $
 ; $URL: svn+ssh://thmsvn@ambrosia.ssl.berkeley.edu/repos/spdsoft/trunk/general/CDF/tplot2cdf.pro $
 ;-
 
@@ -150,10 +150,12 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
       
       InArray = 0 ; flag of having Epoch in array EpochVARS  
       for j=0,N_ELEMENTS(EpochVARS)-1 do begin
-        if ARRAY_EQUAL(*EpochVARS[j].DATAPTR, *EpochVAR.DATAPTR, /QUIET) then begin
+       if size(*EpochVARS[j].DATAPTR, /type) eq size(*EpochVAR.DATAPTR,/type) then begin
+        if ARRAY_EQUAL(*EpochVARS[j].DATAPTR, *EpochVAR.DATAPTR) then begin
           InArray = 1
           EpochName = EpochVARS[j].NAME
         endif
+       endif
       endfor
       
       if InArray eq 0 then begin ; add new epoch variable
@@ -177,10 +179,12 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
      
      InArray = 0
      for j=0,N_ELEMENTS(SupportVARS1)-1 do begin
+      if size(*SupportVARS1[j].DATAPTR, /type) eq size(*SupportVAR.DATAPTR, /type) then begin
        if ARRAY_EQUAL(*SupportVARS1[j].DATAPTR, *SupportVAR.DATAPTR, /QUIET) then begin
          InArray = 1
          SupportName1 = SupportVARS1[j].NAME
        endif
+      endif 
      endfor
    
      if InArray eq 0 then begin ; add new support variable
@@ -202,10 +206,12 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
 
       InArray = 0
       for j=0,N_ELEMENTS(SupportVARS2)-1 do begin
+       if size(*SupportVARS2[j].DATAPTR, /type) eq size(*SupportVAR.DATAPTR, /type) then begin
         if ARRAY_EQUAL(*SupportVARS2[j].DATAPTR, *SupportVAR.DATAPTR, /QUIET) then begin
           InArray = 1
           SupportName2 = SupportVARS2[j].NAME
         endif
+       endif
       endfor
 
       if InArray eq 0 then begin ; add new support variable
@@ -227,10 +233,12 @@ pro tplot2cdf, filename=filename, tvars=tplot_vars, inq=inq_structure, g_attribu
 
       InArray = 0
       for j=0,N_ELEMENTS(SupportVARS3)-1 do begin
+       if size(*SupportVARS3[j].DATAPTR, /type) eq size(*SupportVAR.DATAPTR, /type) then begin
         if ARRAY_EQUAL(*SupportVARS3[j].DATAPTR, *SupportVAR.DATAPTR, /QUIET) then begin
           InArray = 1
           SupportName3 = SupportVARS3[j].NAME
         endif
+       endif
       endfor
 
       if InArray eq 0 then begin ; add new support variable
